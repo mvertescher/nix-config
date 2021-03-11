@@ -2,7 +2,15 @@
 
 { pkgs, ... }:
 
-let imports = [ ./alacritty.nix ./git.nix ./shell.nix ./vim.nix ./vscode.nix ];
+let
+  imports = [
+    ./alacritty.nix
+    # ./firefox.nix
+    ./git.nix
+    ./shell.nix
+    ./vim.nix
+    ./vscode.nix
+  ];
 in {
   inherit imports;
 
