@@ -4,10 +4,11 @@
 
 let
   imports = [
-    ./alacritty.nix
     # ./firefox.nix
+    ./alacritty.nix
     ./git.nix
     ./shell.nix
+    ./tmux.nix
     ./vim.nix
     ./vscode.nix
   ];
@@ -75,6 +76,8 @@ in {
 
     # Other
     flameshot
+    google-chrome
+    openconnect
     qutebrowser
     stdenv
     zathura
