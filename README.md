@@ -17,7 +17,7 @@ curl -L https://nixos.org/nix/install | sh
 2. Run the bootstrap script in this repository:
 
 ```
-./script/non-nixos-bootstrap.sh
+./scripts/non-nixos-bootstrap.sh
 ```
 
 3. Build and activate the configuration!
