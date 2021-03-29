@@ -12,6 +12,12 @@ let
     ./vim.nix
     ./vscode.nix
   ];
+
+  # TODO: Properly autodetect nvidia version
+  nixGL = pkgs.callPackage "${builtins.fetchTarball {
+    url = https://github.com/guibou/nixGL/archive/7d6bc1b21316bab6cf4a6520c2639a11c25a220e.tar.gz;
+    sha256 = "02y38zmdplk7a9ihsxvnrzhhv7324mmf5g8hmxqizaid5k5ydpr3";
+  }}/nixGL.nix" { nvidiaVersion = "440.82"; };
 in {
   inherit imports;
 
@@ -56,6 +62,7 @@ in {
     # Nix
     niv
     nix-tree
+    nixGL.nixGLIntel
     nixfmt
 
     # Node.js
