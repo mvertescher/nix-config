@@ -6,6 +6,7 @@ let
   imports = [
     # ./firefox.nix
     ./alacritty.nix
+    ./gdb.nix
     ./git.nix
     ./shell.nix
     ./tmux.nix
