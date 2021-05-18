@@ -43,6 +43,7 @@ in {
     tree
     unzip
     whois
+    zenith
 
     # Development
     binutils
@@ -53,6 +54,7 @@ in {
     gcc-arm-embedded
     gdb
     gnumake
+    jq
     libimobiledevice
     openocd
     openssl
