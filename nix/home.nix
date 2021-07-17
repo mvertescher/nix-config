@@ -47,6 +47,7 @@ in {
 
     # Development
     binutils
+    ccache
     conda
     dfeet
     docker
@@ -67,6 +68,7 @@ in {
     nix-tree
     nixGL.nixGLIntel
     nixfmt
+    nixops
 
     # Node.js
     nodePackages.node-pre-gyp
@@ -87,9 +89,11 @@ in {
     # Other
     flameshot
     google-chrome
+    libreoffice
     openconnect
     qutebrowser
     stdenv
+    xournal
     zathura
   ];
 }
