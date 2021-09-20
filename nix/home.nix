@@ -84,6 +84,7 @@ in {
     vlc
 
     # Rust
+    cargo-make
     rustup
 
     # Other
@@ -95,5 +96,6 @@ in {
     stdenv
     xournal
     zathura
+    meld
   ];
 }
