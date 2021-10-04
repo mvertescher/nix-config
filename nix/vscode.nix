@@ -3,6 +3,19 @@
 {
   programs.vscode = {
     enable = true;
+
+
+    userSettings = {
+      "window.zoomLevel" = -1;
+
+      # Fix `no_std` can't find crate for `test`
+      # See: https://github.com/rust-lang/vscode-rust/issues/729
+      "rust.target" = "thumbv7em-none-eabihf";
+      "rust.all_targets" = false;
+      "rust-analyzer.cargo.target" = "thumbv7em-none-eabihf";
+      "rust-analyzer.checkOnSave.allTargets" = false;
+    };
+
     extensions = with pkgs.vscode-extensions; [
       bbenoist.Nix
       matklad.rust-analyzer

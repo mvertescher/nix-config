@@ -21,6 +21,7 @@ let
   }}/nixGL.nix" { nvidiaVersion = "440.82"; };
 
   cargo-index = pkgs.callPackage ./pkgs/cargo-index.nix {};
+  form-rs = pkgs.callPackage ./pkgs/form-rs.nix {};
 
 in {
   inherit imports;
@@ -90,7 +91,10 @@ in {
     cargo
     cargo-index
     cargo-make
+    form-rs
     rustc
+    rustfmt
+    svd2rust
     # rustup
 
     # Other
