@@ -61,6 +61,7 @@ in {
     gnumake
     jq
     libimobiledevice
+    lxi-tools
     openocd
     openssl
     qemu
@@ -84,6 +85,7 @@ in {
 
     # Media
     ffmpeg
+    obs-studio
     spotify
     vlc
 
