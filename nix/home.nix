@@ -1,4 +1,4 @@
-# Rebuild with `home-manager` switch
+# Rebuild with `home-manager switch`
 
 { pkgs, ... }:
 
@@ -21,13 +21,23 @@ let
   }}/nixGL.nix" { nvidiaVersion = "440.82"; };
 
   cargo-index = pkgs.callPackage ./pkgs/cargo-index.nix {};
+  cargo-local-registry = pkgs.callPackage ./pkgs/cargo-local-registry.nix {};
   form-rs = pkgs.callPackage ./pkgs/form-rs.nix {};
+
+  rust-overlay = (import (builtins.fetchTarball "https://github.com/oxalica/rust-overlay/archive/master.tar.gz"));
 
 in {
   inherit imports;
 
   programs.home-manager.enable = true;
   nixpkgs.config.allowUnfree = true;
+
+  nixpkgs.overlays = [
+    rust-overlay
+  #  (self: super: {
+  #    rust-bin = rust-overlay.rust-bin.stable.latest.default;
+  #  })
+  ];
 
   home.packages = with pkgs; [
     # CLI
@@ -50,30 +60,35 @@ in {
     zenith
 
     # Development
-    binutils
+    # binutils
     ccache
+    clang
     conda
     dfeet
     docker
-    gcc
+    # gcc
     gcc-arm-embedded
     gdb
+    gitRepo
     gnumake
     jq
     libimobiledevice
+    libusb1
     lxi-tools
     openocd
     openssl
     qemu
     sqlite
     wireshark
+    etcher
+    woeusb
 
     # Nix
     niv
     nix-tree
     nixGL.nixGLIntel
     nixfmt
-    nixops
+    # nixops
 
     # Node.js
     nodePackages.node-pre-gyp
@@ -81,7 +96,7 @@ in {
 
     # Chat
     slack
-    zoom-us
+    # zoom-us
 
     # Media
     ffmpeg
@@ -90,13 +105,18 @@ in {
     vlc
 
     # Rust
-    cargo
     cargo-index
+    cargo-local-registry
     cargo-make
     form-rs
-    rustc
-    rustfmt
-    svd2rust
+    rustup
+    # rust-bin.stable.latest.default
+
+
+    # cargo
+    # rustc
+    # rustfmt
+    # svd2rust
     # rustup
 
     # Other
