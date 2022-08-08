@@ -22,6 +22,7 @@
       matklad.rust-analyzer
       ms-azuretools.vscode-docker
       ms-python.python
+      ms-vscode-remote.remote-ssh
       ms-vscode.cpptools
       serayuzgur.crates
       vscodevim.vim
