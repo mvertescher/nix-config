@@ -10,18 +10,18 @@ hopefully work.
 1. Install Nix and activate the local shell:
 
 ```
-curl -L https://nixos.org/nix/install | sh
+sh <(curl -L https://nixos.org/nix/install) --no-daemon
 . ~/.nix-profile/etc/profile.d/nix.sh
 ```
 
-2. Run the bootstrap script in this repository:
+2. Run the flake bootstrap script in this repository:
 
 ```
-./scripts/non-nixos-bootstrap.sh
+./scripts/flake-bootstrap.sh
 ```
 
 3. Build and activate the configuration!
 
 ```
-home-manager switch
+home-manager switch --flake './#mvertescher'
 ```

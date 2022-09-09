@@ -16,7 +16,7 @@
       gsu = "git submodule update --init --recursive";
 
       # Nix aliases
-      hms = "home-manager switch";
+      hms = "home-manager switch --flake '/home/mvertescher/nix-config/#mvertescher'";
       ndc = "nix develop -c";
       rb = "sudo nixos-rebuild switch";
 

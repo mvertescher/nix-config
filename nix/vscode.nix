@@ -19,6 +19,7 @@
     extensions = with pkgs.vscode-extensions; [
       bbenoist.nix
       eamodio.gitlens
+      golang.go
       matklad.rust-analyzer
       ms-azuretools.vscode-docker
       ms-python.python

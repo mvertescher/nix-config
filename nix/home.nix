@@ -24,16 +24,19 @@ let
   cargo-local-registry = pkgs.callPackage ./pkgs/cargo-local-registry.nix {};
   form-rs = pkgs.callPackage ./pkgs/form-rs.nix {};
 
-  rust-overlay = (import (builtins.fetchTarball "https://github.com/oxalica/rust-overlay/archive/master.tar.gz"));
+  # rust-overlay = (import (builtins.fetchTarball "https://github.com/oxalica/rust-overlay/archive/master.tar.gz"));
 
 in {
   inherit imports;
 
+  home.stateVersion = "22.05";
+  home.username = "mvertescher";
+  home.homeDirectory = "/home/mvertescher";
+
   programs.home-manager.enable = true;
-  nixpkgs.config.allowUnfree = true;
 
   nixpkgs.overlays = [
-    rust-overlay
+  #  rust-overlay
   #  (self: super: {
   #    rust-bin = rust-overlay.rust-bin.stable.latest.default;
   #  })
@@ -66,22 +69,32 @@ in {
     conda
     dfeet
     docker
+    # etcher
     # gcc
-    gcc-arm-embedded
+    # gcc-arm-embedded
     gdb
     gitRepo
     gnumake
+    google-cloud-sdk
     jq
     libimobiledevice
     libusb1
+    linux-router
     lxi-tools
+    minicom
     openocd
     openssl
     qemu
     sqlite
     wireshark
-    etcher
     woeusb
+
+    # Go
+    delve
+    go
+    go-outline
+    go-tools
+    gopls
 
     # Nix
     niv
@@ -95,7 +108,7 @@ in {
     nodePackages.node2nix
 
     # Chat
-    slack
+    # slack
     # zoom-us
 
     # Media
@@ -111,7 +124,6 @@ in {
     form-rs
     rustup
     # rust-bin.stable.latest.default
-
 
     # cargo
     # rustc
