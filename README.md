@@ -14,13 +14,20 @@ sh <(curl -L https://nixos.org/nix/install) --no-daemon
 . ~/.nix-profile/etc/profile.d/nix.sh
 ```
 
-2. Run the flake bootstrap script in this repository:
+2. Make sure your local Nix configuration includes the following features:
+
+```
+$ cat ~/.config/nix/nix.conf
+experimental-features = nix-command flakes
+```
+
+3. Run the flake bootstrap script in this repository:
 
 ```
 ./scripts/flake-bootstrap.sh
 ```
 
-3. Build and activate the configuration!
+4. Build and activate the configuration!
 
 ```
 home-manager switch --flake './#mvertescher'

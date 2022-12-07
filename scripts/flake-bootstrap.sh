@@ -6,7 +6,6 @@ set -ex
 
 # Install home-manager and apply the configuration
 # Use "nix --show-trace ..." to see errors
-nix --show-trace build --no-link ./#homeConfigurations.mvertescher.activationPackage 
+nix --show-trace build --no-link ./#homeConfigurations.mvertescher.activationPackage
 "$(nix path-info ./#homeConfigurations.mvertescher.activationPackage)"/activate
-
 
