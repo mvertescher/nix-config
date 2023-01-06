@@ -17,4 +17,3 @@ fi
 # Use "nix --show-trace ..." to see errors
 nix --show-trace build --no-link ./#homeConfigurations.${CONFIG}.activationPackage
 "$(nix path-info ./#homeConfigurations.${CONFIG}.activationPackage)"/activate
-
