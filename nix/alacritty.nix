@@ -3,6 +3,6 @@
 {
   programs.alacritty = {
     enable = true;
-    settings = { shell = "zsh"; };
+    settings = { shell.program = "zsh"; };
   };
 }

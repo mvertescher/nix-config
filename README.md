@@ -32,3 +32,7 @@ experimental-features = nix-command flakes
 ```
 home-manager switch --flake './#mvertescher'
 ```
+
+## Useful resources
+
+- [Misterio's Nix config](https://git.sr.ht/~misterio/nix-config)

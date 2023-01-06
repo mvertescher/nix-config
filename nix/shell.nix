@@ -3,6 +3,8 @@
 {
   programs.zsh = {
     enable = true;
+    # Set $SHELL appropriately
+    envExtra = "export SHELL=${pkgs.zsh}/bin/zsh";
     shellAliases = {
       ".." = "cd ..";
       c = "bat";

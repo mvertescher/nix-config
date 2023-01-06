@@ -31,7 +31,7 @@ in {
 
   home.stateVersion = "22.05";
   home.username = "mvertescher";
-  home.homeDirectory = "/home/mvertescher";
+  home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/mvertescher" else "/home/mvertescher";
 
   programs.home-manager.enable = true;
 
@@ -60,14 +60,11 @@ in {
     tree
     unzip
     whois
-    zenith
 
     # Development
     # binutils
     ccache
     clang
-    conda
-    dfeet
     docker
     # etcher
     # gcc
@@ -79,15 +76,12 @@ in {
     jq
     libimobiledevice
     libusb1
-    linux-router
-    lxi-tools
     minicom
     openocd
     openssl
     qemu
     sqlite
     wireshark
-    woeusb
 
     # Go
     delve
@@ -99,7 +93,6 @@ in {
     # Nix
     niv
     nix-tree
-    nixGL.nixGLIntel
     nixfmt
     # nixops
 
@@ -113,13 +106,10 @@ in {
 
     # Media
     ffmpeg
-    obs-studio
-    spotify
-    vlc
 
     # Rust
-    cargo-index
-    cargo-local-registry
+    # cargo-index
+    # cargo-local-registry
     cargo-make
     form-rs
     rustup
@@ -132,14 +122,27 @@ in {
     # rustup
 
     # Other
-    flameshot
-    google-chrome
-    libreoffice
     openconnect
-    qutebrowser
     stdenv
     xournal
     zathura
     meld
+  ] ++ lib.optionals (stdenv.isLinux) [
+    conda
+    dfeet
+    flameshot
+    google-chrome
+    libreoffice
+    linux-router
+    lxi-tools
+    nixGL.nixGLIntel
+    obs-studio
+    qutebrowser
+    spotify
+    vlc
+    woeusb
+    zenith
+  ] ++ lib.optionals (stdenv.isDarwin) [
+    m-cli
   ];
 }

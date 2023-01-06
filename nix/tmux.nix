@@ -4,10 +4,12 @@
     programs.tmux = {
         enable = true;
 
+        shell = "${pkgs.zsh}/bin/zsh";
         aggressiveResize = true;
         baseIndex = 1;
         keyMode = "vi";
         shortcut = "a";
+        sensibleOnTop = true;
 
         plugins = with pkgs; [
             tmuxPlugins.cpu
@@ -18,10 +20,10 @@
             # Reload ~/.tmux.conf using PREFIX r
             bind r source-file ~/.tmux.conf \; display " Reloaded!"
             # Use zsh
-            set -g default-shell "\${pkgs.zsh}/bin/zsh"
+            # set -g default-command "${pkgs.zsh}/bin/zsh"
             # Disable mouse support for easy system mouse copy/paste
             # set-option -g mouse on
-      
+
             # easy-to-remember split pane commands
             bind | split-window -h -c "#{pane_current_path}"
             bind - split-window -v -c "#{pane_current_path}"
@@ -37,7 +39,7 @@
             # Status Bar
             # Center status bar window list for clarity
             set -g status-justify centre
-            
+
             # Set status bar colors
             set-option -g status-bg colour235 # base02
             set-option -g status-fg yellow # yellow

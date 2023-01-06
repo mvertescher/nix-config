@@ -4,8 +4,9 @@
   programs.vscode = {
     enable = true;
 
-
     userSettings = {
+      "[nix]"."editor.tabSize" = 2;
+      "files.trimTrailingWhitespace" = true;
       "window.zoomLevel" = -1;
 
       # Fix `no_std` can't find crate for `test`
@@ -24,7 +25,6 @@
       ms-azuretools.vscode-docker
       ms-python.python
       ms-vscode-remote.remote-ssh
-      ms-vscode.cpptools
       serayuzgur.crates
       vscodevim.vim
     ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [{
@@ -32,6 +32,8 @@
       publisher = "bungcip";
       version = "0.3.2";
       sha256 = "g+LfgjAnSuSj/nSmlPdB0t29kqTmegZB5B1cYzP8kCI=";
-    }];
+    }] ++ pkgs.lib.optionals (!pkgs.stdenv.isDarwin) [
+      ms-vscode.cpptools
+    ];
   };
 }
