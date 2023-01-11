@@ -15,5 +15,6 @@ fi
 
 # Install home-manager and apply the configuration
 # Use "nix --show-trace ..." to see errors
-nix --show-trace build --no-link ./#homeConfigurations.${CONFIG}.activationPackage
+# `--inpure` is a temporary workaround to include submodule files in flakes
+nix --show-trace build --no-link --impure ./#homeConfigurations.${CONFIG}.activationPackage
 "$(nix path-info ./#homeConfigurations.${CONFIG}.activationPackage)"/activate

@@ -3,6 +3,8 @@
 { pkgs, ... }:
 
 let
+  work = builtins.getEnv "PWD" + "/work/home.nix";
+
   imports = [
     # ./firefox.nix
     ./alacritty.nix
@@ -12,6 +14,9 @@ let
     ./tmux.nix
     ./vim.nix
     ./vscode.nix
+
+    # Add work configuration
+    work
   ];
 
   # TODO: Properly autodetect nvidia version
