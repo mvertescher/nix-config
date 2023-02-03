@@ -17,4 +17,4 @@ fi
 # Use "nix --show-trace ..." to see errors
 # `--inpure` is a temporary workaround to include submodule files in flakes
 nix --show-trace build --no-link --impure ./#homeConfigurations.${CONFIG}.activationPackage
-"$(nix path-info ./#homeConfigurations.${CONFIG}.activationPackage)"/activate
+"$(nix path-info --impure ./#homeConfigurations.${CONFIG}.activationPackage)"/activate

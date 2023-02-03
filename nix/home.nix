@@ -28,6 +28,7 @@ let
   cargo-index = pkgs.callPackage ./pkgs/cargo-index.nix {};
   cargo-local-registry = pkgs.callPackage ./pkgs/cargo-local-registry.nix {};
   form-rs = pkgs.callPackage ./pkgs/form-rs.nix {};
+  puncover = pkgs.callPackage ./pkgs/puncover.nix {};
 
   # rust-overlay = (import (builtins.fetchTarball "https://github.com/oxalica/rust-overlay/archive/master.tar.gz"));
 
@@ -60,6 +61,8 @@ in {
     file
     htop
     neofetch
+    # TODO: Get this package working
+    # puncover
     ripgrep
     tokei
     tree
