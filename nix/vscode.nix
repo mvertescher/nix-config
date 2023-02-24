@@ -26,6 +26,7 @@
       ms-python.python
       ms-vscode-remote.remote-ssh
       serayuzgur.crates
+      streetsidesoftware.code-spell-checker
       vscodevim.vim
     ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [{
       name = "better-toml";
