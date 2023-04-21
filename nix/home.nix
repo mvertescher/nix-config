@@ -59,11 +59,13 @@ in {
     exa
     fd
     file
+    graphviz
     htop
     neofetch
     # TODO: Get this package working
     # puncover
     ripgrep
+    socat
     tokei
     tree
     unzip
@@ -118,8 +120,16 @@ in {
     # Rust
     # cargo-index
     # cargo-local-registry
+    cargo-audit
+    cargo-bloat
+    cargo-expand
+    cargo-fuzz
+    cargo-geiger
     cargo-make
+    cargo-raze
+    cargo-tarpaulin
     form-rs
+    rust-bindgen
     rustup
     # rust-bin.stable.latest.default
 
