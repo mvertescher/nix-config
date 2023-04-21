@@ -28,7 +28,7 @@ let
   cargo-index = pkgs.callPackage ./pkgs/cargo-index.nix {};
   cargo-local-registry = pkgs.callPackage ./pkgs/cargo-local-registry.nix {};
   form-rs = pkgs.callPackage ./pkgs/form-rs.nix {};
-  puncover = pkgs.callPackage ./pkgs/puncover.nix {};
+  puncover = pkgs.python311Packages.callPackage ./pkgs/puncover {};
 
   # rust-overlay = (import (builtins.fetchTarball "https://github.com/oxalica/rust-overlay/archive/master.tar.gz"));
 
@@ -62,8 +62,7 @@ in {
     graphviz
     htop
     neofetch
-    # TODO: Get this package working
-    # puncover
+    puncover
     ripgrep
     socat
     tokei
