@@ -9,8 +9,8 @@
       "files.trimTrailingWhitespace" = true;
       "window.zoomLevel" = -1;
 
-      "rust-analyzer.diagnostics.disabled" = ["unresolved-proc-macro"];
-      "rust-analyzer.procMacro.attributes.enable" = true;
+      # "rust-analyzer.diagnostics.disabled" = ["unresolved-proc-macro"];
+      # "rust-analyzer.procMacro.attributes.enable" = true;
       # "rust-analyzer.check.extraArgs" = ["--target-dir" "target_ra"];
 
       # Fix `no_std` can't find crate for `test`
