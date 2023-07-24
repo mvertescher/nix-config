@@ -72,6 +72,7 @@ in {
 
     # Development
     # binutils
+    bazel
     ccache
     clang
     docker
@@ -130,6 +131,7 @@ in {
     form-rs
     rust-bindgen
     rustup
+    twiggy
     # rust-bin.stable.latest.default
 
     # cargo

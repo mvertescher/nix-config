@@ -22,6 +22,7 @@
     };
 
     extensions = with pkgs.vscode-extensions; [
+      # bazelbuild.vscode-bazel
       bbenoist.nix
       eamodio.gitlens
       golang.go
