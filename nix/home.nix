@@ -56,7 +56,7 @@ in {
     curl
     direnv
     du-dust
-    exa
+    # exa
     fd
     file
     graphviz
