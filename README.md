@@ -21,16 +21,16 @@ $ cat ~/.config/nix/nix.conf
 experimental-features = nix-command flakes
 ```
 
-3. Run the flake bootstrap script in this repository:
+3. Install `home-manager` and use a basic configuration:
 
 ```
-./scripts/flake-bootstrap.sh
+nix run home-manager/master -- init --switch
 ```
 
 4. Build and activate the configuration!
 
 ```
-home-manager switch --flake './#mvertescher'
+home-manager switch --flake ./#mvertescher@linux
 ```
 
 ## Useful resources

@@ -3,7 +3,7 @@
 { pkgs, ... }:
 
 let
-  work = builtins.getEnv "PWD" + "/work/home.nix";
+  # work = builtins.getEnv "PWD" + "/work/home.nix";
 
   imports = [
     # ./firefox.nix
@@ -16,14 +16,14 @@ let
     ./vscode.nix
 
     # Add work configuration
-    work
+    # work
   ];
 
   # TODO: Properly autodetect nvidia version
-  nixGL = pkgs.callPackage "${builtins.fetchTarball {
-    url = https://github.com/guibou/nixGL/archive/7d6bc1b21316bab6cf4a6520c2639a11c25a220e.tar.gz;
-    sha256 = "02y38zmdplk7a9ihsxvnrzhhv7324mmf5g8hmxqizaid5k5ydpr3";
-  }}/nixGL.nix" { nvidiaVersion = "440.82"; };
+  # nixGL = pkgs.callPackage "${builtins.fetchTarball {
+  #  url = https://github.com/guibou/nixGL/archive/7d6bc1b21316bab6cf4a6520c2639a11c25a220e.tar.gz;
+  #  sha256 = "02y38zmdplk7a9ihsxvnrzhhv7324mmf5g8hmxqizaid5k5ydpr3";
+  # }}/nixGL.nix" { nvidiaVersion = "440.82"; };
 
   cargo-index = pkgs.callPackage ./pkgs/cargo-index.nix {};
   cargo-local-registry = pkgs.callPackage ./pkgs/cargo-local-registry.nix {};
@@ -62,7 +62,7 @@ in {
     graphviz
     htop
     neofetch
-    puncover
+    # puncover
     ripgrep
     socat
     tokei
@@ -124,11 +124,11 @@ in {
     cargo-bloat
     cargo-expand
     cargo-fuzz
-    cargo-geiger
+    # cargo-geiger
     cargo-make
     cargo-raze
     cargo-tarpaulin
-    form-rs
+    # form-rs
     rust-bindgen
     rustup
     twiggy
@@ -143,18 +143,18 @@ in {
     # Other
     openconnect
     stdenv
-    xournal
+    # xournal
     zathura
     meld
   ] ++ lib.optionals (stdenv.isLinux) [
     conda
-    dfeet
+    # dfeet
     flameshot
     google-chrome
     libreoffice
     linux-router
     lxi-tools
-    nixGL.nixGLIntel
+    # nixGL.nixGLIntel
     obs-studio
     qutebrowser
     spotify

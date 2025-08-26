@@ -26,9 +26,9 @@
       bbenoist.nix
       eamodio.gitlens
       golang.go
-      matklad.rust-analyzer
+      rust-lang.rust-analyzer
       ms-azuretools.vscode-docker
-      ms-python.python
+      # ms-python.python
       ms-vscode-remote.remote-ssh
       serayuzgur.crates
       streetsidesoftware.code-spell-checker
