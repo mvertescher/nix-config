@@ -36,3 +36,4 @@ home-manager switch --flake ./#mvertescher@linux
 ## Useful resources
 
 - [Misterio's Nix config](https://git.sr.ht/~misterio/nix-config)
+- [gvolpe's Nix config](https://github.com/gvolpe/nix-config)

@@ -1,0 +1,70 @@
+{ pkgs, ... }:
+
+let
+  commonShellAliases = {
+    # ".." = "cd ..";
+    c = "bat";
+    l = "exa";
+    ll = "exa -al";
+    s = "stg";
+    sse = "stg series";
+
+    # Git aliases
+    gits = "git status";
+    gsu = "git submodule update --init --recursive";
+
+    # Nix aliases
+    hms = "home-manager switch --flake ~/nix-config/#mvertescher@linux";
+    ndc = "nix develop -c";
+    rb = "sudo nixos-rebuild switch";
+  };
+in {
+  programs.zsh = {
+    enable = true;
+    # Set $SHELL appropriately
+    envExtra = "export SHELL=${pkgs.zsh}/bin/zsh";
+    shellAliases = {
+      ".." = "cd ..";
+
+      # Git aliases
+      gcdxf = "git clean -dxf && git submodule foreach --recursive git clean -dxf";
+
+      # Temporary fix to get around OpenGL issues
+      # term = "LD_PRELOAD=/lib/x86_64-linux-gnu/libnss_cache.so.2 nixGLIntel alacritty";
+      term = "nixGLIntel alacritty";
+    };
+  };
+
+  programs.nushell = {
+    enable = true;
+
+    envFile = { text = ''
+    ''; };
+
+    configFile = { text = ''
+      let $config = {
+        filesize_metric: false,
+        show_banner: false,
+        table_mode: rounded,
+        use_ls_colors: true,
+      }
+    ''; };
+
+    shellAliases = commonShellAliases // {
+    };
+  };
+
+  programs.skim = { enable = true; };
+
+  programs.starship = {
+    enable = true;
+    enableBashIntegration = false;
+
+    settings = {
+      # Don't print a new line at the start of the prompt
+      add_newline = false;
+      # This can be _very_ slow for larger repos, so disable
+      git_status.disabled = true;
+    };
+  };
+}

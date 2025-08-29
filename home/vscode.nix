@@ -4,7 +4,7 @@
   programs.vscode = {
     enable = true;
 
-    userSettings = {
+    profiles.default.userSettings = {
       "[nix]"."editor.tabSize" = 2;
       "files.trimTrailingWhitespace" = true;
       "window.zoomLevel" = -1;
@@ -21,7 +21,7 @@
       # "rust-analyzer.checkOnSave.allTargets" = false;
     };
 
-    extensions = with pkgs.vscode-extensions; [
+    profiles.default.extensions = with pkgs.vscode-extensions; [
       # bazelbuild.vscode-bazel
       bbenoist.nix
       eamodio.gitlens

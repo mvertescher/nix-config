@@ -4,7 +4,7 @@
     programs.tmux = {
         enable = true;
 
-        shell = "${pkgs.zsh}/bin/zsh";
+        shell = "${pkgs.nushell}/bin/nu";
         aggressiveResize = true;
         baseIndex = 1;
         keyMode = "vi";

@@ -1,6 +1,6 @@
 # Rebuild with `home-manager switch`
 
-{ pkgs, ... }:
+{ inputs, system, pkgs, ... }:
 
 let
   # work = builtins.getEnv "PWD" + "/work/home.nix";
@@ -56,12 +56,13 @@ in {
     curl
     direnv
     du-dust
-    # exa
+    eza
     fd
     file
     graphviz
     htop
     neofetch
+    nushell
     # puncover
     ripgrep
     socat
@@ -69,8 +70,10 @@ in {
     tree
     unzip
     whois
+    writedisk
 
     # Development
+    android-tools
     # binutils
     bazel
     ccache
@@ -102,6 +105,7 @@ in {
 
     # Nix
     niv
+    nix-search-cli
     nix-tree
     nixfmt
     # nixops
@@ -130,6 +134,7 @@ in {
     cargo-tarpaulin
     # form-rs
     rust-bindgen
+    rust-cbindgen
     rustup
     twiggy
     # rust-bin.stable.latest.default
@@ -154,7 +159,7 @@ in {
     libreoffice
     linux-router
     lxi-tools
-    # nixGL.nixGLIntel
+    nixgl
     obs-studio
     qutebrowser
     spotify
@@ -164,4 +169,7 @@ in {
   ] ++ lib.optionals (stdenv.isDarwin) [
     m-cli
   ];
+
+  # top replacement
+  programs.bottom.enable = true;
 }
