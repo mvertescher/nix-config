@@ -2,14 +2,13 @@
 
 let
     overlays = f: p: {
-        nixgl = inputs.nixgl;
-        
         builders = {
-            mkHome = { pkgs ? f }:
-                import ../outputs/hm.nix { inherit inputs pkgs system; };
+            mkHome = { pkgs ? f, extraHomeConfig ? { } }:
+                import ../outputs/hm.nix { inherit extraHomeConfig inputs pkgs system; };
         };
     };
-in 
+in
 [
     overlays
+    inputs.nixgl.overlay
 ]

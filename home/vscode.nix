@@ -22,23 +22,26 @@
     };
 
     profiles.default.extensions = with pkgs.vscode-extensions; [
-      # bazelbuild.vscode-bazel
-      bbenoist.nix
+      jnoortheen.nix-ide
+      # bbenoist.nix
       eamodio.gitlens
       golang.go
       rust-lang.rust-analyzer
       ms-azuretools.vscode-docker
       # ms-python.python
       ms-vscode-remote.remote-ssh
-      serayuzgur.crates
+      # serayuzgur.crates
       streetsidesoftware.code-spell-checker
       vscodevim.vim
-    ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [{
-      name = "better-toml";
-      publisher = "bungcip";
-      version = "0.3.2";
-      sha256 = "g+LfgjAnSuSj/nSmlPdB0t29kqTmegZB5B1cYzP8kCI=";
-    }] ++ pkgs.lib.optionals (!pkgs.stdenv.isDarwin) [
+      tamasfe.even-better-toml
+    ]
+    # ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [{
+    #  name = "better-toml";
+    #   publisher = "bungcip";
+    #   version = "0.3.2";
+    #   sha256 = "g+LfgjAnSuSj/nSmlPdB0t29kqTmegZB5B1cYzP8kCI=";
+    # }]
+    ++ pkgs.lib.optionals (!pkgs.stdenv.isDarwin) [
       ms-vscode.cpptools
     ];
   };

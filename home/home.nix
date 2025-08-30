@@ -14,16 +14,7 @@ let
     ./tmux.nix
     ./vim.nix
     ./vscode.nix
-
-    # Add work configuration
-    # work
   ];
-
-  # TODO: Properly autodetect nvidia version
-  # nixGL = pkgs.callPackage "${builtins.fetchTarball {
-  #  url = https://github.com/guibou/nixGL/archive/7d6bc1b21316bab6cf4a6520c2639a11c25a220e.tar.gz;
-  #  sha256 = "02y38zmdplk7a9ihsxvnrzhhv7324mmf5g8hmxqizaid5k5ydpr3";
-  # }}/nixGL.nix" { nvidiaVersion = "440.82"; };
 
   cargo-index = pkgs.callPackage ./pkgs/cargo-index.nix {};
   cargo-local-registry = pkgs.callPackage ./pkgs/cargo-local-registry.nix {};
@@ -37,16 +28,19 @@ in {
 
   home.stateVersion = "22.05";
   home.username = "mvertescher";
-  home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/mvertescher" else "/home/mvertescher";
+  # home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/mvertescher" else "/home/mvertescher";
 
   programs.home-manager.enable = true;
 
-  nixpkgs.overlays = [
+  # notifications about home-manager news
+  news.display = "silent";
+
+  # nixpkgs.overlays = [
   #  rust-overlay
   #  (self: super: {
   #    rust-bin = rust-overlay.rust-bin.stable.latest.default;
   #  })
-  ];
+  # ];
 
   home.packages = with pkgs; [
     # CLI
@@ -159,7 +153,8 @@ in {
     libreoffice
     linux-router
     lxi-tools
-    nixgl
+    # nixgl
+    nixgl.nixGLIntel
     obs-studio
     qutebrowser
     spotify
