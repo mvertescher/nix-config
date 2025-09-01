@@ -24,6 +24,6 @@ let
   };
 in
 {
-    # TODO: Add multiple wm outputs
-    mvertescher = mkHome { };
+  # TODO: Add multiple wm outputs
+  mvertescher = mkHome { };
 }

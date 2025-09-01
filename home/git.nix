@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 {
   programs.git = {
@@ -6,7 +6,7 @@
     enable = true;
 
     userName = "Matt Vertescher";
-    userEmail = "mvertescher@gmail.com";
+    userEmail = lib.mkDefault "mvertescher@gmail.com";
 
     lfs.enable = true;
 

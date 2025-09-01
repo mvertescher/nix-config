@@ -2,7 +2,6 @@
 
 let
   commonShellAliases = {
-    # ".." = "cd ..";
     c = "bat";
     l = "exa";
     ll = "exa -al";
@@ -14,7 +13,7 @@ let
     gsu = "git submodule update --init --recursive";
 
     # Nix aliases
-    hms = "home-manager switch --flake ~/nix-config/#mvertescher@linux";
+    # hms = "home-manager switch --flake ~/nix-config/#mvertescher@linux";
     ndc = "nix develop -c";
     rb = "sudo nixos-rebuild switch";
   };
@@ -42,12 +41,13 @@ in {
     ''; };
 
     configFile = { text = ''
-      let $config = {
-        filesize_metric: false,
-        show_banner: false,
-        table_mode: rounded,
-        use_ls_colors: true,
+      $env.config = {
+        # filesize_metric: false
+        show_banner: false
+        # table_mode: rounded
+        # use_ls_colors: true
       }
+      $env.config.show_banner = false
     ''; };
 
     shellAliases = commonShellAliases // {

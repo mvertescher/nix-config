@@ -22,19 +22,25 @@
     };
 
     profiles.default.extensions = with pkgs.vscode-extensions; [
-      jnoortheen.nix-ide
-      # bbenoist.nix
       eamodio.gitlens
       golang.go
-      rust-lang.rust-analyzer
+      jnoortheen.nix-ide
       ms-azuretools.vscode-docker
-      # ms-python.python
       ms-vscode-remote.remote-ssh
-      # serayuzgur.crates
+      rust-lang.rust-analyzer
       streetsidesoftware.code-spell-checker
-      vscodevim.vim
       tamasfe.even-better-toml
+      vscodevim.vim
+
+      # ms-python.python
+      # serayuzgur.crates
     ]
+    ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [{
+      name = "vscode-nushell-lang";
+      publisher = "TheNuProjectContributors";
+      version = "1.10.0";
+      sha256 = "AfClskNZwQIC67VrM8XKxF6nIbXPp576CRmls0WCKwU=";
+    }]
     # ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [{
     #  name = "better-toml";
     #   publisher = "bungcip";
