@@ -25,5 +25,9 @@ let
 in
 {
   # TODO: Add multiple wm outputs
-  mvertescher = mkHome { };
+  # mvertescher = mkHome { };
+
+  desktop = mkHyprlandHome { };
+  laptop = mkHyprlandHome { };
+  server = mkHome { };
 }
