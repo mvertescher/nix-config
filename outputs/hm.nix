@@ -19,7 +19,7 @@ let
   mkHyprlandHome = { mut ? false }: mkHome {
     inherit mut;
     mods = [
-      ../home/gui/hyprland.nix
+      ../home/hyprland
     ];
   };
 in
