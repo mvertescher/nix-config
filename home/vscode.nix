@@ -31,9 +31,7 @@
       streetsidesoftware.code-spell-checker
       tamasfe.even-better-toml
       vscodevim.vim
-
-      # ms-python.python
-      # serayuzgur.crates
+      bazelbuild.vscode-bazel
     ]
     ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [{
       name = "vscode-nushell-lang";
@@ -41,12 +39,18 @@
       version = "1.10.0";
       sha256 = "AfClskNZwQIC67VrM8XKxF6nIbXPp576CRmls0WCKwU=";
     }]
-    # ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [{
-    #  name = "better-toml";
-    #   publisher = "bungcip";
-    #   version = "0.3.2";
-    #   sha256 = "g+LfgjAnSuSj/nSmlPdB0t29kqTmegZB5B1cYzP8kCI=";
-    # }]
+    ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [{
+      name = "android-system-tools";
+      publisher = "flimberger";
+      version = "0.0.2";
+      sha256 = "9IDMvtfJ/F+Y+vBUG8EjIhofxOZE3zSMRDM3NjtbODg=";
+    }]
+    ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [{
+      name = "selinuxhelper";
+      publisher = "SELinuxHelper";
+      version = "1.1.1";
+      sha256 = "evaYv48qfrhf+Y1pzk+X4Hba/xSiOY0IAv/b8Jq0BH8=";
+    }]
     ++ pkgs.lib.optionals (!pkgs.stdenv.isDarwin) [
       ms-vscode.cpptools
     ];
