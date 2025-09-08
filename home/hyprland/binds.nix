@@ -43,23 +43,18 @@ in {
       [
         "${mainMod}, Return, exec, ${terminal}"
         "${mainMod}, b, exec, ${browser}"
+        "${mainMod}, r, exec, ${menu}"
+        "${mainMod}, f, exec, firefox"
 
         "${mainMod}, c, killactive"
         "${mainMod}, m, exit"
         "${mainMod}, v, togglefloating"
+        "${mainMod}, p, pseudo" # dwindle
+        "${mainMod}, p, togglesplit" # dwindle
 
-        # bind = $mainMod, Q, exec, $safeTerminal
         # bind = $mainMod, W, exec, $code
-        # bind = $mainMod, Return, exec, $terminal
         # bind = $mainMod, N, exec, $nixConfigUpdate
-        # bind = $mainMod, C, killactive,
-        # bind = $mainMod, M, exit,
         # bind = $mainMod, E, exec, $fileManager
-        # bind = $mainMod, V, togglefloating,
-        # bind = $mainMod, R, exec, $menu
-        # bind = $mainMod, P, pseudo, # dwindle
-        # bind = $mainMod, U, togglesplit, # dwindle
-        # bind = $mainMod, B, exec, $browser
       ]
       ++
       # Change workspace

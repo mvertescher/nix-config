@@ -1,8 +1,8 @@
-# nixos configuration
+# general nixos configuration
 
 { config, pkgs, ... }:
 
-let 
+let
 
 in
 {
@@ -16,20 +16,19 @@ in
     curl
     git
     vim
-    wget
   ];
- 
-  # Nix daemon config
+
+  # nix daemon config
   nix = {
     gc = {
       automatic = true;
       dates = "weekly";
       options = "--delete-older-than 7d";
     };
-    
+
     # Flakes settings
     package = pkgs.nixVersions.latest;
-   
+
     settings = {
       experimental-features = [ "nix-command" "flakes" ];
       warn-dirty = true;
@@ -39,7 +38,7 @@ in
   services = {
     sshd.enable = true;
   };
-  
+
   users.users.mverte = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
