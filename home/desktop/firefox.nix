@@ -10,11 +10,11 @@
 
   programs.firefox = {
     enable = true;
-    extensions = with pkgs.nur.repos.rycee.firefox-addons; [
-      lastpass-password-manager
-      ublock-origin
-    ];
-    
+    # extensions = with pkgs.nur.repos.rycee.firefox-addons; [
+    #   lastpass-password-manager
+    #   ublock-origin
+    # ];
+
     profiles = {
       default = {
         id = 0;

@@ -43,7 +43,7 @@
       out = { inherit pkgs overlays; };
 
       homeConfigurations = pkgs.builders.mkHome { };
-      # nixosConfigurations = pkgs.builders.mkNixos { };
+      nixosConfigurations = pkgs.builders.mkNixos { };
     };
 }
 

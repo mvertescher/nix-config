@@ -2,7 +2,7 @@
 
 {
   imports = [
-    # ./firefox.nix
+    ./firefox.nix
     ./alacritty.nix
     ./vscode.nix
   ];

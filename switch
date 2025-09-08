@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -eux
+
+switch_terra() {
+  sudo nixos-rebuild switch --flake .#terra
+}
+
+case $1 in
+  "terra")
+    switch_terra;;
+  *)
+    echo "unknown argument";;
+esac
+

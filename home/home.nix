@@ -10,8 +10,9 @@ let
 in {
   inherit imports;
 
-  home.stateVersion = "22.05";
-  home.username = "mvertescher";
+  # home.stateVersion = "22.05";
+  # home.username = "mverte";
+  # home.homeDirectory = "/home/mverte";
   # home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/mvertescher" else "/home/mvertescher";
 
   programs.home-manager.enable = true;
