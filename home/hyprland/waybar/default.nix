@@ -1,0 +1,3 @@
+# waybar configuration
+
+# TODO

@@ -2,19 +2,23 @@
 
 let
   commonShellAliases = {
-    c = "bat";
-    l = "exa";
-    ll = "exa -al";
+    cat = "bat";
+    l = "eza";
+    ll = "eza -al";
     s = "stg";
     sse = "stg series";
+    tree = "eza -T";
 
     # Git aliases
+    gcdxf = "git clean -dxf; git submodule foreach --recursive git clean -dxf";
     gits = "git status";
     gsu = "git submodule update --init --recursive";
 
     # Nix aliases
     # hms = "home-manager switch --flake ~/nix-config/#mvertescher@linux";
+    hm = "home-manager";
     ndc = "nix develop -c";
+    ns = "nix-search";
     rb = "sudo nixos-rebuild switch";
   };
 in {
@@ -24,9 +28,6 @@ in {
     envExtra = "export SHELL=${pkgs.zsh}/bin/zsh";
     shellAliases = {
       ".." = "cd ..";
-
-      # Git aliases
-      gcdxf = "git clean -dxf && git submodule foreach --recursive git clean -dxf";
 
       # Temporary fix to get around OpenGL issues
       # term = "LD_PRELOAD=/lib/x86_64-linux-gnu/libnss_cache.so.2 nixGLIntel alacritty";

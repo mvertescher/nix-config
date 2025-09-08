@@ -43,6 +43,8 @@
 
   programs.steam.enable = true;
 
+  services.hardware.openrgb.enable = true;
+
   # Never change this.
   system.stateVersion = "25.05";
 }
