@@ -37,6 +37,7 @@
       pkgs = import inputs.nixpkgs {
         inherit overlays system;
         config.allowUnfree = true;
+        config.allowUnfreePredicate = (_: true);
       };
     in
     {
@@ -46,33 +47,3 @@
       nixosConfigurations = pkgs.builders.mkNixos { };
     };
 }
-
-/*
-  outputs = { nixpkgs, home-manager, nixgl, ... }:
-    let
-      supportedSystems = [ "x86_64-linux" "aarch64-linux" ];
-      forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
-    in
-    {
-      homeConfigurations = {
-        # MacOS configuration
-        "mvertescher@macos" = home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs {
-            system = "x86_64-darwin";
-            config.allowUnfree = true;
-          };
-          modules = [ ./nix/home.nix ];
-        };
-
-        # Portable Linux configuration
-        "mvertescher@linux" = home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs {
-            system = "x86_64-linux";
-            config.allowUnfree = true;
-            overlays = [ nixgl.overlay ];
-          };
-          modules = [ ./nix/home.nix ];
-        };
-      };
-    };
-*/

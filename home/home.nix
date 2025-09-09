@@ -1,3 +1,5 @@
+# common home manager configuration
+
 { inputs, system, pkgs, ... }:
 
 let
@@ -10,12 +12,9 @@ let
 in {
   inherit imports;
 
-  # home.stateVersion = "22.05";
-  # home.username = "mverte";
-  # home.homeDirectory = "/home/mverte";
-  # home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/mvertescher" else "/home/mvertescher";
-
   programs.home-manager.enable = true;
+
+  # home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/mvertescher" else "/home/mvertescher";
 
   # notifications about home-manager news
   news.display = "silent";
