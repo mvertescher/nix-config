@@ -5,6 +5,8 @@ let
 in {
   imports = [
     ./binds.nix
+    ./hyprlock.nix
+    ./hyprpaper.nix
   ];
 
   # home.pointerCursor.hyprcursor.enable = true;
@@ -59,7 +61,7 @@ in {
       };
 
       fullscreen_opacity = 1.0;
-      active_opacity = 1.0;
+      active_opacity = 0.99;
       inactive_opacity = 0.95;
 
       shadow = {
