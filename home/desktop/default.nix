@@ -15,7 +15,7 @@
     # slack
     # zoom-us
   ] ++ lib.optionals (stdenv.isLinux) [
-    google-chrome
+    # google-chrome
     libreoffice
     obs-studio
     qutebrowser
