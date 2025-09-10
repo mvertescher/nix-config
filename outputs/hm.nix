@@ -5,6 +5,14 @@ let
     extraHomeConfig
   ];
 
+  # TODO: refactor these
+
+  mkDesktopHome = { mut ? false, mods ? [ ] }:
+    inputs.home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        modules = modules' ++ mods ++ [ ../home/host/desktop.nix ];
+    };
+
   mkLaptopHome = { mut ? false, mods ? [ ] }:
     inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
@@ -34,7 +42,7 @@ in
   # TODO: Add multiple wm outputs
   # mvertescher = mkHome { };
 
-  desktop = mkHyprlandHome { };
+  desktop = mkDesktopHome { };
   laptop = mkLaptopHome { };
   server = mkHome { };
 }
