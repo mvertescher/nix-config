@@ -48,9 +48,14 @@ in {
 
         "${mainMod}, c, killactive"
         "${mainMod}, m, exit"
-        "${mainMod}, v, togglefloating"
+        "${mainMod}, o, togglesplit" # dwindle
         "${mainMod}, p, pseudo" # dwindle
-        "${mainMod}, p, togglesplit" # dwindle
+        "${mainMod}, v, togglefloating"
+
+        # special scratchpad workspace
+        "${mainMod}, s, togglespecialworkspace, magic"
+        "${mainMod} shift, s, movetoworkspace, special:magic"
+
 
         # bind = $mainMod, W, exec, $code
         # bind = $mainMod, N, exec, $nixConfigUpdate
