@@ -46,9 +46,12 @@
 
   services.hardware.openrgb.enable = true;
 
-  stylix.enable = true;
-  # stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/gruvbox-dark-hard.yaml";
-  stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/nord.yaml";
+  stylix = {
+    enable = true;
+    # base16Scheme = "${pkgs.base16-schemes}/share/themes/gruvbox-dark-hard.yaml";
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/nord.yaml";
+    image = config.lib.stylix.pixel "base0C";
+  };
 
   # Never change this.
   system.stateVersion = "25.05";

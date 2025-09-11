@@ -6,7 +6,7 @@ in {
   imports = [
     ./binds.nix
     ./hyprlock.nix
-    ./hyprpaper.nix
+    # ./hyprpaper.nix
   ];
 
   # home.pointerCursor.hyprcursor.enable = true;
