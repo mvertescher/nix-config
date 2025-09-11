@@ -2,8 +2,9 @@
 
 {
   imports = [
-    ./firefox.nix
     ./alacritty.nix
+    ./firefox.nix
+    # ./neovim-ide.nix
     ./vscode.nix
   ];
 

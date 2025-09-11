@@ -6,6 +6,7 @@
   imports = [
     ./hardware-configuration.nix
     ../../wm/hyprland.nix
+    ../../fonts
   ];
 
   # Use systemd boot
@@ -44,6 +45,10 @@
   programs.steam.enable = true;
 
   services.hardware.openrgb.enable = true;
+
+  stylix.enable = true;
+  # stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/gruvbox-dark-hard.yaml";
+  stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/nord.yaml";
 
   # Never change this.
   system.stateVersion = "25.05";

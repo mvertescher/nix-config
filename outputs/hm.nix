@@ -7,18 +7,6 @@ let
 
   # TODO: refactor these
 
-  mkDesktopHome = { mut ? false, mods ? [ ] }:
-    inputs.home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        modules = modules' ++ mods ++ [ ../home/host/desktop.nix ];
-    };
-
-  mkLaptopHome = { mut ? false, mods ? [ ] }:
-    inputs.home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        modules = modules' ++ mods ++ [ ../home/host/laptop.nix ];
-    };
-
   mkHome = { mut ? false, mods ? [ ] }:
     inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
@@ -29,6 +17,18 @@ let
         # ];
 
         modules = modules' ++ mods ++ [ ../home/home.nix ];
+    };
+
+  mkDesktopHome = { mut ? false, mods ? [ ] }:
+    inputs.home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        modules = modules' ++ mods ++ [ ../home/host/desktop.nix ];
+    };
+
+  mkLaptopHome = { mut ? false, mods ? [ ] }:
+    inputs.home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        modules = modules' ++ mods ++ [ ../home/host/laptop.nix ];
     };
 
   mkHyprlandHome = { mut ? false }: mkHome {

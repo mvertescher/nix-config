@@ -22,6 +22,7 @@ let
           home-manager.useUserPackages = true;
           home-manager.users.mverte = ../home/host/${host}.nix;
         }
+        inputs.stylix.nixosModules.stylix
       ];
     };
   };
