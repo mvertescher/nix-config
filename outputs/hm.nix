@@ -6,7 +6,6 @@ let
   ];
 
   # TODO: refactor these
-
   mkHome = { mut ? false, mods ? [ ] }:
     inputs.home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
@@ -16,33 +15,29 @@ let
         #   { inherit hidpi; dotfiles.mutable = mut; }
         # ];
 
-        modules = modules' ++ mods ++ [ ../home/home.nix ];
+        modules = modules' ++ mods ++ [
+          inputs.stylix.homeModules.stylix
+        ];
     };
 
-  mkDesktopHome = { mut ? false, mods ? [ ] }:
-    inputs.home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        modules = modules' ++ mods ++ [ ../home/host/desktop.nix ];
-    };
-
-  mkLaptopHome = { mut ? false, mods ? [ ] }:
-    inputs.home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        modules = modules' ++ mods ++ [ ../home/host/laptop.nix ];
-    };
-
-  mkHyprlandHome = { mut ? false }: mkHome {
+  mkDesktopHome = { mut ? false }: mkHome {
     inherit mut;
-    mods = [
-      ../home/hyprland
-    ];
+    mods = [ ../home/host/desktop.nix ];
   };
+
+  mkLaptopHome = { mut ? false }: mkHome {
+    inherit mut;
+    mods = [ ../home/host/laptop.nix ];
+  };
+
+  mkServerHome = { mut ? false }: mkHome {
+    inherit mut;
+    mods = [ ../home/host/server.nix ];
+  };
+
 in
 {
-  # TODO: Add multiple wm outputs
-  # mvertescher = mkHome { };
-
   desktop = mkDesktopHome { };
   laptop = mkLaptopHome { };
-  server = mkHome { };
+  server = mkServerHome { };
 }
