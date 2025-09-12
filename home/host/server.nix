@@ -7,6 +7,5 @@
     ../home.nix
   ];
 
-  home.homeDirectory = "/home/mvertescher";
   home.stateVersion = "25.05";
 }
