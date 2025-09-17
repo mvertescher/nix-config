@@ -10,6 +10,8 @@
         keyMode = "vi";
         shortcut = "a";
         sensibleOnTop = true;
+        clock24 = true;
+        mouse = false;
 
         plugins = with pkgs; [
             tmuxPlugins.cpu
@@ -18,7 +20,7 @@
 
         extraConfig = ''
             # Reload ~/.tmux.conf using PREFIX r
-            bind r source-file ~/.tmux.conf \; display " Reloaded!"
+            # bind r source-file ~/.tmux.conf \; display " Reloaded!"
             # Use zsh
             # set -g default-command "${pkgs.zsh}/bin/zsh"
             # Disable mouse support for easy system mouse copy/paste
@@ -36,6 +38,7 @@
             # Vim like copy-mode
             bind-key -T copy-mode-vi 'v' send -X begin-selection
             bind-key -T copy-mode-vi 'y' send -X copy-selection-and-cancel
+
             # Status Bar
             # Center status bar window list for clarity
             set -g status-justify centre

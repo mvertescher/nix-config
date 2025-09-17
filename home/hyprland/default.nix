@@ -9,6 +9,12 @@ in {
     # ./hyprpaper.nix
   ];
 
+  home.packages = with pkgs; [
+    hyprland
+    nemo # file manager
+    wofi # app launcher
+  ];
+
   # home.pointerCursor.hyprcursor.enable = true;
 
   wayland.windowManager.hyprland = {
