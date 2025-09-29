@@ -10,6 +10,7 @@ in
   imports = [
     ./gdb.nix
     ./git.nix
+     #./helix.nix
     ./shell.nix
     ./tmux.nix
     ./vim.nix
