@@ -31,7 +31,7 @@ in
     curl
     direnv
     docker
-    du-dust
+    dust
     eza # better ls
     fd # better find
     ffmpeg # media converter

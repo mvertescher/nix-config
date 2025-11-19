@@ -2,7 +2,7 @@
 
 {
   programs.git = {
-    package = pkgs.gitAndTools.gitFull;
+    # package = pkgs.gitAndTools.gitFull;
     enable = true;
 
     userName = "Matt Vertescher";
@@ -21,5 +21,5 @@
     };
   };
 
-  home.packages = with pkgs; [ gitAndTools.stgit ];
+  home.packages = with pkgs; [ stgit ];
 }
