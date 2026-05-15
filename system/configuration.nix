@@ -42,5 +42,6 @@ in
   users.users.mverte = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
+    initialPassword = "mverte";
   };
 }

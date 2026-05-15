@@ -16,6 +16,8 @@ in {
   # notifications about home-manager news
   news.display = "silent";
 
+  gtk.gtk4.theme = null;
+
   home.packages = with pkgs; [
     # Other
     stdenv

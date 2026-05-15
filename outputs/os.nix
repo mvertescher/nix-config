@@ -13,7 +13,7 @@ let
 
   make = host: {
     ${host} = nixosSystem {
-      inherit lib pkgs system;
+      inherit lib pkgs;
       specialArgs = { inherit inputs; };
       modules = modules' ++ [
         ../system/host/${host}

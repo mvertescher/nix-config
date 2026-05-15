@@ -5,12 +5,12 @@
     # package = pkgs.gitAndTools.gitFull;
     enable = true;
 
-    userName = "Matt Vertescher";
-    userEmail = lib.mkDefault "mvertescher@gmail.com";
+    settings = {
+      user = {
+        name = "Matt Vertescher";
+        email = lib.mkDefault "mvertescher@gmail.com";
+      };
 
-    lfs.enable = true;
-
-    extraConfig = {
       core = {
         editor = "vim";
         whitespace = "trailing-space,space-before-tab";
@@ -19,6 +19,8 @@
       # Fast forward only
       pull.ff = "only";
     };
+
+    lfs.enable = true;
   };
 
   home.packages = with pkgs; [ stgit ];

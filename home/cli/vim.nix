@@ -10,7 +10,7 @@
     };
 
     plugins = with pkgs.vimPlugins; [
-      fugitive
+      vim-fugitive
       git-messenger-vim
       nord-vim
       skim

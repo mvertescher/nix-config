@@ -46,7 +46,7 @@ in
     libimobiledevice
     libusb1
     minicom # serial console
-    neofetch
+    # neofetch
     nushell
     openconnect # vpn client
     openocd

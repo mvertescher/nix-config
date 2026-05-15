@@ -1,15 +1,11 @@
-{ pkgs, ... }:
+{ pkgs, config, ... }:
 
 {
-  nixpkgs.config.packageOverrides = pkgs: {
-    nur = import (builtins.fetchTarball
-      "https://github.com/nix-community/NUR/archive/master.tar.gz") {
-        inherit pkgs;
-      };
-  };
+  stylix.targets.firefox.profileNames = [ "default" ];
 
   programs.firefox = {
     enable = true;
+    configPath = "${config.xdg.configHome}/mozilla/firefox";
     # extensions = with pkgs.nur.repos.rycee.firefox-addons; [
     #   lastpass-password-manager
     #   ublock-origin
