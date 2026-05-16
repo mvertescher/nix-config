@@ -14,7 +14,7 @@ mkdir -p "${WORKDIR}"
 
 echo "Starting VM with CD-ROM attached..."
 
-nohup bash "${SCRIPT_DIR}/start-vm.sh" --cdrom > "${WORKDIR}/vm.log" 2>&1 &
+nohup bash "${SCRIPT_DIR}/start-vm.sh" --cdrom --headless > "${WORKDIR}/vm.log" 2>&1 &
 
 echo "Waiting for QEMU monitor socket to appear (ISO may be downloading)..."
 while [ ! -S "${WORKDIR}/monitor.sock" ]; do

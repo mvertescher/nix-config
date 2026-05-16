@@ -19,11 +19,22 @@ in {
 
   wayland.windowManager.hyprland = {
     enable = true;
+    systemd.enable = false;
     plugins = [ ];
     configType = "hyprlang";
+    extraConfig = ''
+      # Pass-through mode for virtualization (QEMU/VMs)
+      bind = SUPER, Escape, exec, hyprctl notify 0 2500 "rgb(ff9900)" "Passthrough Mode Enabled"
+      bind = SUPER, Escape, submap, passthru
+      submap = passthru
+      bind = SUPER, Escape, exec, hyprctl notify 0 2500 "rgb(00ff00)" "Passthrough Mode Disabled"
+      bind = SUPER, Escape, submap, reset
+      submap = reset
+    '';
   };
 
   wayland.windowManager.hyprland.settings = {
+    exec-once = [ "hyprctl dispatch workspace 3" ];
     general = {
       gaps_in = 5;
       gaps_out = 20;
@@ -121,8 +132,6 @@ in {
       ];
     };
 
-    # Ignore maximize requests from apps
-    windowrule = "suppressevent maximize, class:.*";
 
     debug = {
       disable_logs = false;

@@ -2,6 +2,7 @@
 set -euo pipefail
 
 USE_CDROM=false
+HEADLESS=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -9,9 +10,13 @@ while [[ $# -gt 0 ]]; do
             USE_CDROM=true
             shift
             ;;
+        --headless|-h)
+            HEADLESS=true
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 [--cdrom]"
+            echo "Usage: $0 [--cdrom] [--headless]"
             exit 1
             ;;
     esac
@@ -60,6 +65,11 @@ QEMU_ARGS=(
     -qmp unix:"${QMP_PATH}",server,nowait
     -monitor unix:"${MONITOR_PATH}",server,nowait
 )
+
+if [[ "${HEADLESS}" == "true" ]]; then
+    echo "Running in headless mode (-display none)..."
+    QEMU_ARGS+=( -display none )
+fi
 
 if [[ "${USE_CDROM}" == "true" ]]; then
     echo "Attaching ISO and booting from CD-ROM..."
