@@ -46,6 +46,9 @@
 
   services.hardware.openrgb.enable = true;
 
+  virtualisation.docker.enable = true;
+  users.users.mverte.extraGroups = [ "docker" ];
+
   stylix = {
     enable = true;
     # base16Scheme = "${pkgs.base16-schemes}/share/themes/gruvbox-dark-hard.yaml";
