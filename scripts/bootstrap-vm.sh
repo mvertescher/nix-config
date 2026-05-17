@@ -12,9 +12,14 @@ echo "Cleaning up working directory..."
 rm -rf "${WORKDIR}"
 mkdir -p "${WORKDIR}"
 
-echo "Starting VM with CD-ROM attached..."
+echo "Starting local Nix cache server in the background..."
+nohup bash "${SCRIPT_DIR}/start-local-cache.sh" > "${WORKDIR}/cache.log" 2>&1 &
+CACHE_PID=$!
+trap 'echo "Cleaning up background cache server (PID ${CACHE_PID})..."; kill ${CACHE_PID} 2>/dev/null || true' EXIT
 
-nohup bash "${SCRIPT_DIR}/start-vm.sh" --cdrom --headless > "${WORKDIR}/vm.log" 2>&1 &
+echo "Starting VM with CD-ROM attached on DISPLAY=:20..."
+
+nohup env DISPLAY=:20 bash "${SCRIPT_DIR}/start-vm.sh" --cdrom > "${WORKDIR}/vm.log" 2>&1 &
 
 echo "Waiting for QEMU monitor socket to appear (ISO may be downloading)..."
 while [ ! -S "${WORKDIR}/monitor.sock" ]; do
@@ -25,8 +30,8 @@ echo "Monitor socket detected. Pressing Enter at boot menu..."
 sleep 5
 echo "sendkey ret" | socat - unix-connect:"${WORKDIR}/monitor.sock"
 
-echo "Waiting 60 seconds for NixOS live CD to boot to console login..."
-sleep 60
+echo "Waiting 120 seconds for NixOS live CD to boot to console login..."
+sleep 120
 
 VM_HOST="localhost"
 VM_PORT=2222
@@ -37,8 +42,8 @@ FLAKE_DIR=$(pwd)
 # Common SSH options to bypass host key checking and prompt
 SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=60 -p ${VM_PORT}"
 
-# Wrapper command using cached sshpass binary directly
-SSH_CMD="/nix/store/ml4rw2qalsx6cag1z2qp420gbws796w6-sshpass-1.10/bin/sshpass -p ${VM_PASS} ssh ${SSH_OPTS}"
+# Wrapper command using nix run to dynamically fetch sshpass
+SSH_CMD="nix run nixpkgs#sshpass -- -p ${VM_PASS} ssh ${SSH_OPTS}"
 
 MONITOR_PATH="/tmp/nix-config-vm/monitor.sock"
 echo "Sending commands to QEMU monitor to enable SSH and reset root password..."

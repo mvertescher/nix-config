@@ -36,3 +36,11 @@ This repository manages a NixOS and Home Manager configuration using Nix Flakes.
 - Follow existing Nix formatting (mostly 2-space indentation).
 - Prefer `with pkgs; [ ... ]` for package lists within modules.
 - Add brief comments next to packages to explain their purpose if not immediately obvious (e.g., `bat # better cat`).
+
+## AI Agent Instructions
+
+### Taking Screenshots
+If an AI coding agent needs to take a screenshot or capture the screen during verification in a Wayland/Hyprland environment, use the `grimblast` utility from the command line:
+- **Capture entire screen to file**: `grimblast save screen /path/to/output.png`
+- **Capture active window to file**: `grimblast save active /path/to/output.png`
+- **Capture entire screen to clipboard**: `grimblast copy screen`

@@ -10,6 +10,7 @@ in {
   ];
 
   home.packages = with pkgs; [
+    grimblast # hyprland screenshot tool
     hyprland
     nemo # file manager
     wofi # app launcher
