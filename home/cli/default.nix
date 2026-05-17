@@ -36,6 +36,7 @@ in
     fd # better find
     ffmpeg # media converter
     file
+    gemini-cli
     gdb
     gitRepo
     gnumake

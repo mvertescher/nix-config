@@ -1,4 +1,4 @@
-{ extraSystemConfig, inputs, system, pkgs, ... }:
+{ extraSystemConfig, inputs, pkgs, ... }:
 
 let
   inherit (inputs.nixpkgs.lib) nixosSystem;
@@ -20,6 +20,7 @@ let
         inputs.home-manager.nixosModules.home-manager {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
+          home-manager.backupFileExtension = "backup";
           home-manager.users.mverte = ../home/host/${host}.nix;
         }
         inputs.stylix.nixosModules.stylix

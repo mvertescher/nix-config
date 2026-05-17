@@ -28,7 +28,7 @@
 
   hardware.nvidia = {
     # Modesetting is required
-    # modesetting.enabled = true;
+    modesetting.enable = true;
 
     powerManagement.enable = false;
     powerManagement.finegrained = false;

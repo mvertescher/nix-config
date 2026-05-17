@@ -36,7 +36,7 @@
       # TODO: Support MacOS, maybe others
       # system = "x86_64-darwin";
 
-      overlays = import ./lib/overlays.nix { inherit inputs system; };
+      overlays = import ./lib/overlays.nix { inherit inputs; };
 
       pkgs = import inputs.nixpkgs {
         inherit overlays system;

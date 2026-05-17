@@ -1,4 +1,4 @@
-{ extraHomeConfig, inputs, system, pkgs, ... }:
+{ extraHomeConfig, inputs, pkgs, ... }:
 
 let
   modules' = [

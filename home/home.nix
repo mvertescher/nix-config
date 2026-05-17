@@ -1,6 +1,6 @@
 # common home manager configuration
 
-{ inputs, system, pkgs, ... }:
+{ inputs, pkgs, ... }:
 
 let
   imports = [

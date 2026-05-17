@@ -90,11 +90,12 @@ in {
       };
     };
 
-    # TODO: Add these
-    # env = [
-    #   "XCURSOR_SIZE,24"
-    #   "HYPRCURSOR_SIZE,24"
-    # ];
+    env = [
+      "LIBVA_DRIVER_NAME,nvidia"
+      "XDG_SESSION_TYPE,wayland"
+      "GBM_BACKEND,nvidia-drm"
+      "__GLX_VENDOR_LIBRARY_NAME,nvidia"
+    ];
 
     animations = {
       enabled = 1;
