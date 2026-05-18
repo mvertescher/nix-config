@@ -37,9 +37,14 @@ in {
   imports = [
     ./binds.nix
     ./hyprlock.nix
-    # ./hyprpaper.nix
+    ./hyprpaper.nix
     ./swaync.nix
   ];
+
+  custom.wallpaper = {
+    enable = true;
+    name = "roppongi";
+  };
 
   home.packages = with pkgs; [
     grimblast # hyprland screenshot tool
