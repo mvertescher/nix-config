@@ -48,6 +48,7 @@ in {
 
         "${mainMod}, c, killactive"
         "${mainMod}, m, exit"
+        "${mainMod} shift, r, exec, hyprctl reload"
         "${mainMod}, o, layoutmsg, togglesplit" # dwindle
         "${mainMod}, p, pseudo" # dwindle
         "${mainMod}, v, togglefloating"
