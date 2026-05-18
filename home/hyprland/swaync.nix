@@ -11,7 +11,7 @@
       positionX = "right";
       positionY = "bottom";
       layer = "overlay";
-      control-center-layer = "top";
+      control-center-layer = "overlay";
       layer-shell = true;
       cssPriority = "user";
       layer-shell-cover-screen = true;
