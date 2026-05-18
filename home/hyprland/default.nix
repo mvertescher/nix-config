@@ -7,6 +7,7 @@ in {
     ./binds.nix
     ./hyprlock.nix
     # ./hyprpaper.nix
+    ./swaync.nix
   ];
 
   home.packages = with pkgs; [
