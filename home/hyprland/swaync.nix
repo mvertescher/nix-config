@@ -372,5 +372,8 @@
     exec-once = [
       "swaync"
     ];
+    bind = [
+      "SUPER, N, exec, swaync-client -t"
+    ];
   };
 }
