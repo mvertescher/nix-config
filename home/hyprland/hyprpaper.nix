@@ -34,10 +34,10 @@ in
       default = "";
       description = "SHA256 hash of the wallpaper. Only required if using a custom wallpaper not pre-configured.";
     };
-    monitor = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "Monitor name to apply the wallpaper to. Leave empty to apply to all monitors.";
+    monitors = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "List of monitor names to apply the wallpaper to. Leave empty to apply to all monitors.";
     };
   };
 
@@ -47,9 +47,13 @@ in
     stylix.targets.hyprpaper.enable = lib.mkForce false;
     services.hyprpaper.enable = lib.mkForce false;
 
-    xdg.configFile."hypr/hyprpaper.conf".text = ''
+    xdg.configFile."hypr/hyprpaper.conf".text = let
+      wallpaperLines = if cfg.monitors == [ ]
+                       then "wallpaper = ,${wallpaperFile}"
+                       else lib.concatMapStringsSep "\n" (mon: "wallpaper = ${mon},${wallpaperFile}") cfg.monitors;
+    in ''
       preload = ${wallpaperFile}
-      wallpaper = ${cfg.monitor},${wallpaperFile}
+      ${wallpaperLines}
       ipc = true
       splash = false
     '';
