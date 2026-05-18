@@ -5,6 +5,7 @@ let
     shibuya = "0r9d7bx74wy6hml4rjsbxadph183fj3r2sn39h9hi54wmdaxhx9p";
     akihabara = "1d93p8lq5n0gzr4bswg5vn5yby1mjgn9iannr4jj7lg5am698dd0";
     roppongi = "0papw2l73mzma2528fcyfvy52dm4mzsg3s30yw1x4f71dfixpb56";
+    shinjuku = "1917mxf5r0kxnbkpwv6dl9gxjxhgay7nv6wjry0c7rv06k622112";
   };
 
   cfg = config.custom.wallpaper;
@@ -48,12 +49,22 @@ in
     services.hyprpaper.enable = lib.mkForce false;
 
     xdg.configFile."hypr/hyprpaper.conf".text = let
-      wallpaperLines = if cfg.monitors == [ ]
-                       then "wallpaper = ,${wallpaperFile}"
-                       else lib.concatMapStringsSep "\n" (mon: "wallpaper = ${mon},${wallpaperFile}") cfg.monitors;
+      wallpaperBlocks = if cfg.monitors == [ ]
+                        then ''
+                          wallpaper {
+                              monitor = *
+                              path = ${wallpaperFile}
+                          }
+                        ''
+                        else lib.concatMapStringsSep "\n" (mon: ''
+                          wallpaper {
+                              monitor = ${mon}
+                              path = ${wallpaperFile}
+                          }
+                        '') cfg.monitors;
     in ''
       preload = ${wallpaperFile}
-      ${wallpaperLines}
+      ${wallpaperBlocks}
       ipc = true
       splash = false
     '';

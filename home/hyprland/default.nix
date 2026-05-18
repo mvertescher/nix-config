@@ -42,8 +42,8 @@ in {
   ];
 
   custom.wallpaper = {
-    enable = true;
-    name = "roppongi";
+    enable = lib.mkDefault true;
+    name = lib.mkDefault "roppongi";
   };
 
   home.packages = with pkgs; [
