@@ -1,18 +1,27 @@
+# Cybrcolors Base16 Palette
+# Based on: https://github.com/cybrcore/cybrcolors#palette
+
 scheme: "Cybrcolors"
 author: "cybrcore"
-base00: "030408"
-base01: "05070D"
-base02: "0A0E1A"
-base03: "393B42"
-base04: "4D5A80"
-base05: "F24848"
-base06: "898D99"
-base07: "F230B2"
-base08: "F24848"
-base09: "F26118"
-base0A: "F2D230"
-base0B: "30F291"
-base0C: "29BECC"
-base0D: "3061F2"
-base0E: "A130F2"
-base0F: "F230B2"
+
+# Backgrounds
+base00: "030408" # no0 (Black - Default Background)
+base01: "05070D" # no1 (Black mid - Lighter Background)
+base02: "0A0E1A" # no2 (Black light - Selection Background)
+
+# Foregrounds / Text / Guides
+base03: "393B42" # wh1 (White mid - Dark grey, Comments/Invisibles)
+base04: "4D5A80" # me0 (Metal grey base - Dark Foreground/Status)
+base05: "F24848" # re0 (Red base - Default Foreground/Main text)
+base06: "898D99" # wh0 (White base - Light Foreground/Secondary text)
+base07: "F230B2" # pi0 (Pink base - Lightest Foreground)
+
+# Accents
+base08: "F24848" # re0 (Red base)
+base09: "F26118" # og0 (Orange base)
+base0A: "F2D230" # ye0 (Yellow base)
+base0B: "30F291" # gr0 (Green base)
+base0C: "29BECC" # cy0 (Cyan base)
+base0D: "3061F2" # bl0 (Blue base)
+base0E: "A130F2" # vi0 (Violet base)
+base0F: "F230B2" # pi0 (Pink base)
