@@ -1,7 +1,38 @@
 { pkgs, lib, ... }:
 
 let
+  # Lucid Color Palette (from vars.conf)
+  no0 = "030408"; # Black
+  no1 = "05070D";
+  re0 = "F24848"; # Red
+  re1 = "631F21";
+  gr0 = "30F291"; # Green
+  vi0 = "A130F2"; # Violet
+  vi1 = "421666";
+  cy0 = "29BECC"; # Cyan
 
+  # Transparency Levels (Alpha channel)
+  tr0 = "00";
+  tr2 = "20";
+  tr7 = "70";
+  trF = "FF"; # Full
+
+  # Layout & Decoration Metrics
+  border = 1;
+  gapS = 4;   # Inner gap
+  gapM = 8;   # Outer gap
+  radius = 28; # Rounding bevel radius
+  power = 1.0; # Bevel power
+  activeTr = 1.0;
+  inActiveTr = 1.0;
+
+  # Blur & Noise
+  blurSize = 6;
+  blurPass = 4;
+  noise = 0.05;
+  
+  # Fonts
+  fontM = 12;
 in {
   imports = [
     ./binds.nix
@@ -45,11 +76,11 @@ in {
   wayland.windowManager.hyprland.settings = {
     exec-once = [ "hyprctl dispatch workspace 3" ];
     general = {
-      gaps_in = 5;
-      gaps_out = 20;
-      border_size = 2;
-      # "col.active_border" = "rgba(33ccffee) rgba(00ff99ee) 45deg";
-      # "col.inactive_border" = "rgba(595959aa)";
+      gaps_in = gapS;
+      gaps_out = gapM;
+      border_size = border;
+      "col.inactive_border" = lib.mkForce "rgba(${cy0}${tr0})";
+      "col.active_border" = lib.mkForce "rgba(${re0}${trF})";
       resize_on_border = false;
       allow_tearing = false;
       layout = "dwindle";
@@ -77,26 +108,34 @@ in {
     };
 
     decoration = {
-      rounding = 4;
-      # rounding_power = 2
+      rounding = lib.mkForce radius;
+      rounding_power = power;
+      active_opacity = activeTr;
+      inactive_opacity = inActiveTr;
 
       blur = {
         enabled = true;
-        size = 3;
-        passes = 1;
-        vibrancy = 0.1696;
+        size = blurSize;
+        passes = blurPass;
+        noise = noise;
+        ignore_opacity = true;
+        new_optimizations = true;
+        xray = false;
+        popups = true;
       };
-
-      fullscreen_opacity = 1.0;
-      active_opacity = 0.99;
-      inactive_opacity = 0.95;
 
       shadow = {
         enabled = true;
-        range = 4;
-        render_power = 3;
-        # color = "rgba(1a1a1aee)";
+        range = 30;
+        scale = 2;
+        render_power = 5;
+        color = lib.mkForce "rgba(${re0}${tr2})";
+        color_inactive = lib.mkForce "rgba(${no0}${tr2})";
       };
+
+      dim_inactive = false;
+      dim_strength = 1.0;
+      dim_special = 0.0;
     };
 
     env = [
@@ -107,41 +146,28 @@ in {
     ];
 
     animations = {
-      enabled = 1;
-
-      # Default curves
-      bezier = [
-        # NAME,          X0,   Y0,   X1,   Y1
-        "easeOutQuint,   0.23, 1,    0.32, 1"
-        "easeInOutCubic, 0.65, 0.05, 0.36, 1"
-        "linear,         0,    0,    1,    1"
-        "almostLinear,   0.5,  0.5,  0.75, 1"
-        "quick,          0.15, 0,    0.1,  1"
-      ];
-
-      # Default animations
-      animation = [
-        # NAME,         ONOFF, SPEED, CURVE,        [STYLE]
-        "global,        1,     10,    default"
-        "border,        1,     5.39,  easeOutQuint"
-        "windows,       1,     4.79,  easeOutQuint"
-        "windowsIn,     1,     4.1,   easeOutQuint, popin 87%"
-        "windowsOut,    1,     1.49,  linear,       popin 87%"
-        "fadeIn,        1,     1.73,  almostLinear"
-        "fadeOut,       1,     1.46,  almostLinear"
-        "fade,          1,     3.03,  quick"
-        "layers,        1,     3.81,  easeOutQuint"
-        "layersIn,      1,     4,     easeOutQuint, fade"
-        "layersOut,     1,     1.5,   linear,       fade"
-        "fadeLayersIn,  1,     1.79,  almostLinear"
-        "fadeLayersOut, 1,     1.39,  almostLinear"
-        "workspaces,    1,     1.94,  almostLinear, fade"
-        "workspacesIn,  1,     1.21,  almostLinear, fade"
-        "workspacesOut, 1,     1.94,  almostLinear, fade"
-        "zoomFactor,    1,     7,     quick"
-      ];
+      enabled = false;
     };
 
+
+    group = {
+      "col.border_active" = lib.mkForce "rgba(${re0}${trF})";
+      "col.border_inactive" = lib.mkForce "rgba(${re1}${trF})";
+      "col.border_locked_active" = lib.mkForce "rgba(${vi0}${trF})";
+      "col.border_locked_inactive" = lib.mkForce "rgba(${vi0}${tr7})";
+
+      groupbar = {
+        "col.active" = lib.mkForce "rgba(${re0}${trF})";
+        "col.inactive" = lib.mkForce "rgba(${re1}${trF})";
+        "col.locked_active" = lib.mkForce "rgba(${vi0}${trF})";
+        "col.locked_inactive" = lib.mkForce "rgba(${vi0}${tr7})";
+        font_size = fontM;
+        text_color = lib.mkForce "rgba(${no0}${trF})";
+        height = 1;
+        indicator_height = 24;
+        text_offset = -12;
+      };
+    };
 
     debug = {
       disable_logs = false;
