@@ -16,7 +16,14 @@ in {
     wofi # app launcher
   ];
 
-  # home.pointerCursor.hyprcursor.enable = true;
+  home.pointerCursor = {
+    name = "Bibata-Modern-Ice";
+    package = pkgs.bibata-cursors;
+    size = 24;
+    gtk.enable = true;
+    x11.enable = true;
+    hyprcursor.enable = true;
+  };
 
   wayland.windowManager.hyprland = {
     enable = true;

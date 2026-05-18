@@ -48,7 +48,7 @@ in {
 
         "${mainMod}, c, killactive"
         "${mainMod}, m, exit"
-        "${mainMod}, o, togglesplit" # dwindle
+        "${mainMod}, o, layoutmsg, togglesplit" # dwindle
         "${mainMod}, p, pseudo" # dwindle
         "${mainMod}, v, togglefloating"
 
