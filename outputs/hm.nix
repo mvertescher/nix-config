@@ -27,7 +27,7 @@ let
 
   mkLaptopHome = { mut ? false }: mkHome {
     inherit mut;
-    mods = [ ../home/host/laptop.nix ];
+    mods = [ ../home/host/laptop ];
   };
 
   mkServerHome = { mut ? false }: mkHome {
