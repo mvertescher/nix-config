@@ -12,7 +12,7 @@ base02: "0A0E1A" # no2 (Black light - Selection Background)
 # Foregrounds / Text / Guides
 base03: "393B42" # wh1 (White mid - Dark grey, Comments/Invisibles)
 base04: "4D5A80" # me0 (Metal grey base - Dark Foreground/Status)
-base05: "F24848" # re0 (Red base - Default Foreground/Main text)
+base05: "898D99" # wh0 (White base - Default Foreground/Main text)
 base06: "898D99" # wh0 (White base - Light Foreground/Secondary text)
 base07: "F230B2" # pi0 (Pink base - Lightest Foreground)
 
