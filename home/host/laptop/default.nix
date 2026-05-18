@@ -1,6 +1,6 @@
 # laptop specific home manager configuration
 
-{ pkgs, config, ... }:
+{ pkgs, config, lib, ... }:
 
 {
   imports = [
@@ -22,6 +22,12 @@
     monitor = [
       "eDP-1, preferred, auto, 1"
     ];
+  };
+
+  programs.alacritty.settings = {
+    window = {
+      opacity = lib.mkForce 0.85;
+    };
   };
 
   home.homeDirectory = "/home/mvertescher";
