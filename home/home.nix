@@ -18,6 +18,13 @@ in {
 
   gtk.gtk4.theme = null;
 
+  stylix.fonts = {
+    monospace = {
+      package = pkgs.nerd-fonts.geist-mono;
+      name = "GeistMono Nerd Font";
+    };
+  };
+
   home.packages = with pkgs; [
     # Other
     stdenv
