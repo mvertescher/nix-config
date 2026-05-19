@@ -62,5 +62,13 @@
                 ${config.programs.tmux.statusBarExtraConfig}
             '';
         };
+
+        home.activation.reloadTmux = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            # Check if tmux server is running before trying to reload
+            if ${pkgs.tmux}/bin/tmux info &>/dev/null; then
+                echo "Reloading tmux configuration for active sessions..."
+                ${pkgs.tmux}/bin/tmux source-file ~/.config/tmux/tmux.conf || true
+            fi
+        '';
     };
 }
