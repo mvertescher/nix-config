@@ -6,7 +6,6 @@
   imports = [
     ../../home.nix
     ../../hyprland
-    ./starship.nix
   ];
 
   stylix = {

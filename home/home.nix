@@ -6,6 +6,7 @@ let
   imports = [
     ./cli
     ./desktop
+    ./starship.nix
   ];
 
 in {
