@@ -26,6 +26,9 @@ in {
     };
   };
 
+  # Enable declarative vivid LS_COLORS generation!
+  programs.vivid.enable = true;
+
   home.packages = with pkgs; [
     # Other
     stdenv
@@ -38,4 +41,7 @@ in {
   ] ++ lib.optionals (stdenv.isDarwin) [
     m-cli
   ];
+
+  # Enable dynamic base16 file-type coloring for eza listings!
+  stylix.targets.vivid.enable = true;
 }
