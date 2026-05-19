@@ -49,6 +49,7 @@ in {
   };
 
   home.packages = with pkgs; [
+    brightnessctl
     grimblast # hyprland screenshot tool
     hyprland
     nemo # file manager
