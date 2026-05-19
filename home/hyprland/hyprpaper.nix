@@ -61,13 +61,17 @@ let
       )
 
       # Query active wallpaper path via hyprctl IPC
-      ACTIVE_PATH=$(hyprctl hyprpaper active | head -n 1 | awk -F ' = ' '{print $2}')
+      ACTIVE_PATH=$(hyprctl hyprpaper "listactive" | head -n 1 | awk -F ': ' '{print $2}')
 
       if [[ -z "$ACTIVE_PATH" ]]; then
         NEXT_WALLPAPER="shibuya"
       else
         ACTIVE_FILE=$(basename "$ACTIVE_PATH")
         ACTIVE_NAME="''${ACTIVE_FILE%.jpg}"
+        # Strip the front hash part (e.g. yfadwr7iz6wi4ax6ps2223aw5v9ic080-)
+        ACTIVE_NAME="''${ACTIVE_NAME#*-}"
+        # Strip the back resolution part (e.g. -3840x2160)
+        ACTIVE_NAME="''${ACTIVE_NAME%-*}"
 
         ACTIVE_INDEX=-1
         for i in "''${!WALLPAPERS[@]}"; do
@@ -86,9 +90,9 @@ let
       # Query all active monitors dynamically
       MONITORS=$(hyprctl monitors | grep "Monitor" | awk '{print $2}')
 
-      # Instantly reload the wallpaper for each active monitor
+      # Instantly reload the wallpaper for each active monitor using the quoted direct wallpaper command
       for mon in $MONITORS; do
-        hyprctl hyprpaper reload "$mon,$WALLPAPERS_DIR/$NEXT_WALLPAPER.jpg"
+        hyprctl hyprpaper "wallpaper $mon,$WALLPAPERS_DIR/$NEXT_WALLPAPER.jpg"
       done
     '';
   };
