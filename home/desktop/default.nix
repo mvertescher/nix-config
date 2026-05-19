@@ -3,7 +3,7 @@
 {
   imports = [
     ./alacritty.nix
-    ./firefox.nix
+    ./firefox
     # ./neovim-ide.nix
     ./vscode.nix
   ];
