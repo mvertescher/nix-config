@@ -1,54 +1,66 @@
-{ pkgs, ... }:
+{ pkgs, lib, config, ... }:
 
 {
-    programs.tmux = {
-        enable = true;
+    options = {
+        programs.tmux.statusBarExtraConfig = lib.mkOption {
+            type = lib.types.lines;
+            default = ''
+                # Status Bar
+                # Center status bar window list for clarity
+                set -g status-justify centre
 
-        shell = "${pkgs.nushell}/bin/nu";
-        aggressiveResize = true;
-        baseIndex = 1;
-        keyMode = "vi";
-        shortcut = "a";
-        sensibleOnTop = true;
-        clock24 = true;
-        mouse = false;
-        customPaneNavigationAndResize = true;
+                # Set status bar colors
+                set-option -g status-bg colour235 # base02
+                set-option -g status-fg yellow # yellow
+                # Configure the left status bar
+                set -g status-left-length 70
+                set -g status-left "#[fg=colour153]: #h : #[fg=colour123]#(curl icanhazip.com) #[fg=colour220]#(ifconfig en0 | grep 'inet ' | awk '{print \"en0 \" $2}') #(ifconfig en1 | grep 'inet ' | awk '{print \"en1 \" $2}') #[fg=red]#(ifconfig tun0 | grep 'inet ' | awk '{print \"vpn \" $2}') "
+                # Configure the right status bar
+                # show session name, window & pane number, date and time
+                set -g status-right-length 60
+                set -g status-right "#[fg=colour250]#S #I:#P #[fg=colour87]:: %l:%M %p ::"
+            '';
+            description = "Extra tmux config for status bar.";
+        };
+    };
 
-        plugins = with pkgs; [
-            tmuxPlugins.cpu
-            tmuxPlugins.yank
-        ];
+    config = {
+        programs.tmux = {
+            enable = true;
 
-        extraConfig = ''
-            # Reload ~/.tmux.conf using PREFIX r
-            # bind r source-file ~/.tmux.conf \; display " Reloaded!"
-            # Use zsh
-            # set -g default-command "${pkgs.zsh}/bin/zsh"
-            # Disable mouse support for easy system mouse copy/paste
-            # set-option -g mouse on
+            shell = "${pkgs.nushell}/bin/nu";
+            aggressiveResize = true;
+            baseIndex = 1;
+            keyMode = "vi";
+            shortcut = "a";
+            sensibleOnTop = true;
+            clock24 = true;
+            mouse = false;
+            customPaneNavigationAndResize = true;
 
-            # easy-to-remember split pane commands
-            bind | split-window -h -c "#{pane_current_path}"
-            bind - split-window -v -c "#{pane_current_path}"
-            bind c new-window -c "#{pane_current_path}"
-            # Vim like copy-mode
-            bind-key -T copy-mode-vi 'v' send -X begin-selection
-            bind-key -T copy-mode-vi 'y' send -X copy-selection-and-cancel
+            plugins = with pkgs; [
+                tmuxPlugins.cpu
+                tmuxPlugins.yank
+            ];
 
-            # Status Bar
-            # Center status bar window list for clarity
-            set -g status-justify centre
+            extraConfig = ''
+                # Reload ~/.tmux.conf using PREFIX r
+                # bind r source-file ~/.tmux.conf \; display " Reloaded!"
+                # Use zsh
+                # set -g default-command "${pkgs.zsh}/bin/zsh"
+                # Disable mouse support for easy system mouse copy/paste
+                # set-option -g mouse on
 
-            # Set status bar colors
-            set-option -g status-bg colour235 # base02
-            set-option -g status-fg yellow # yellow
-            # Configure the left status bar
-            set -g status-left-length 70
-            set -g status-left "#[fg=colour153]: #h : #[fg=colour123]#(curl icanhazip.com) #[fg=colour220]#(ifconfig en0 | grep 'inet ' | awk '{print \"en0 \" $2}') #(ifconfig en1 | grep 'inet ' | awk '{print \"en1 \" $2}') #[fg=red]#(ifconfig tun0 | grep 'inet ' | awk '{print \"vpn \" $2}') "
-            # Configure the right status bar
-            # show session name, window & pane number, date and time
-            set -g status-right-length 60
-            set -g status-right "#[fg=colour250]#S #I:#P #[fg=colour87]:: %l:%M %p ::"
-        '';
+                # easy-to-remember split pane commands
+                bind | split-window -h -c "#{pane_current_path}"
+                bind - split-window -v -c "#{pane_current_path}"
+                bind c new-window -c "#{pane_current_path}"
+                # Vim like copy-mode
+                bind-key -T copy-mode-vi 'v' send -X begin-selection
+                bind-key -T copy-mode-vi 'y' send -X copy-selection-and-cancel
+
+                ${config.programs.tmux.statusBarExtraConfig}
+            '';
+        };
     };
 }
