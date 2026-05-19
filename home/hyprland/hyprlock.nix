@@ -29,6 +29,8 @@ let
   noise = 0.05;
 in
 {
+  stylix.targets.hyprlock.enable = lib.mkForce false;
+
   programs.hyprlock = {
     enable = true;
     settings = {
@@ -98,6 +100,17 @@ in
           position = "0, -105";
           halign = "center";
           valign = "center";
+        }
+        # Hostname HUD (Top-Left)
+        {
+          monitor = "";
+          text = "cmd[update:3600000] echo \"<span font_family='${font}' font_weight='bold'>$(uname -n)</span>\"";
+          color = lib.mkForce "rgba(${re0}${trF})";
+          font_size = fontM;
+          position = "20, -20";
+          halign = "left";
+          valign = "top";
+          shadow_passes = 0;
         }
       ];
 
