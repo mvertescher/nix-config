@@ -1,15 +1,17 @@
-{ pkgs, lib, ... }:
+{ pkgs, lib, config, ... }:
 
 let
-  # Lucid Color Palette (from vars.conf)
-  no0 = "030408"; # Black
-  no1 = "05070D";
-  re0 = "F24848"; # Red
+  # Lucid Color Palette dynamically derived from Stylix!
+  no0 = config.lib.stylix.colors.base00; # Black
+  no1 = config.lib.stylix.colors.base01;
+  re0 = config.lib.stylix.colors.base08; # Red
+  gr0 = config.lib.stylix.colors.base0B; # Green
+  vi0 = config.lib.stylix.colors.base0E; # Violet
+  cy0 = config.lib.stylix.colors.base0C; # Cyan
+
+  # Secondary dark accent shades
   re1 = "631F21";
-  gr0 = "30F291"; # Green
-  vi0 = "A130F2"; # Violet
   vi1 = "421666";
-  cy0 = "29BECC"; # Cyan
 
   # Transparency Levels (Alpha channel)
   tr0 = "00";

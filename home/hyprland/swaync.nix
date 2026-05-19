@@ -1,7 +1,8 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 {
   stylix.targets.swaync.enable = false;
+  systemd.user.services.swaync.Install.WantedBy = lib.mkForce [ ];
 
   services.swaync = {
     enable = true;

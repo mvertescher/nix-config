@@ -1,12 +1,14 @@
 { config, lib, pkgs, ... }:
 
 let
-  # Lucid Color Palette (from vars.conf)
-  no0 = "030408"; # Black
-  re0 = "F24848"; # Red
+  # Lucid Color Palette dynamically derived from Stylix!
+  no0 = config.lib.stylix.colors.base00; # Black
+  re0 = config.lib.stylix.colors.base08; # Red
+  gr0 = config.lib.stylix.colors.base0B; # Green
+  ye0 = config.lib.stylix.colors.base0A; # Yellow
+
+  # Secondary dark accent shades
   re2 = "331215";
-  gr0 = "30F291"; # Green
-  ye0 = "F2D230"; # Yellow
   trF = "FF"; # Full opacity
   tr2 = "20"; # Shadow opacity
 
