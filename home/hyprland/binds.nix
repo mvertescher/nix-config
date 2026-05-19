@@ -54,6 +54,7 @@ in {
         "${mainMod}, b, exec, ${browser}"
         "${mainMod}, r, exec, ${menu}"
         "${mainMod}, f, exec, firefox"
+        "${mainMod}, w, exec, hyprland-rotate-wallpaper"
 
         "${mainMod}, c, killactive"
         "${mainMod}, m, exit"
