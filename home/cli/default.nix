@@ -8,6 +8,7 @@ let
 in
 {
   imports = [
+    ./bat.nix
     ./gdb.nix
     ./git.nix
      #./helix.nix
@@ -23,7 +24,6 @@ in
     # puncover
     android-tools
     asciinema
-    bat # better cat
     bazel # google build tool
     ccache
     clang
