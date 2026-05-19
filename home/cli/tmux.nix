@@ -12,6 +12,7 @@
         sensibleOnTop = true;
         clock24 = true;
         mouse = false;
+        customPaneNavigationAndResize = true;
 
         plugins = with pkgs; [
             tmuxPlugins.cpu
@@ -30,11 +31,6 @@
             bind | split-window -h -c "#{pane_current_path}"
             bind - split-window -v -c "#{pane_current_path}"
             bind c new-window -c "#{pane_current_path}"
-            # Moving between panes with vim movement keys
-            bind h select-pane -L
-            bind j select-pane -D
-            bind k select-pane -U
-            bind l select-pane -R
             # Vim like copy-mode
             bind-key -T copy-mode-vi 'v' send -X begin-selection
             bind-key -T copy-mode-vi 'y' send -X copy-selection-and-cancel
