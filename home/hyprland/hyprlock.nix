@@ -1,5 +1,31 @@
-{ ... }:
+{ config, lib, pkgs, ... }:
 
+let
+  # Lucid Color Palette (from vars.conf)
+  no0 = "030408"; # Black
+  re0 = "F24848"; # Red
+  re2 = "331215";
+  gr0 = "30F291"; # Green
+  ye0 = "F2D230"; # Yellow
+  trF = "FF"; # Full opacity
+  tr2 = "20"; # Shadow opacity
+
+  # Metrics & Typography
+  border = 1;
+  font = "GeistMono Nerd Font";
+  fontXL = 64;
+  fontM = 12;
+
+  # Dynamic Wallpaper Integration
+  wallpaperPath = if config.custom.wallpaper.enable
+                  then "${config.custom.wallpaper.file}"
+                  else "";
+
+  # Blur & Noise settings matching cybr-hyprland
+  blurSize = 6;
+  blurPass = 4;
+  noise = 0.05;
+in
 {
   programs.hyprlock = {
     enable = true;
@@ -8,56 +34,89 @@
         hide_cursor = true;
       };
 
-      animations = {
-        enabled = true;
-        bezier = [
-          "easeout,0.5, 1, 0.9, 1"
-          "easeoutback,0.34,1.22,0.65,1"
-        ];
-        animation = [
-          "fade, 1, 3, easeout"
-          "inputField, 1, 1, easeoutback"
-        ];
+      background = {
+        monitor = "";
+        path = lib.mkForce wallpaperPath;
+        color = lib.mkForce "rgba(${re0}${trF})";
+        blur_size = blurSize;
+        blur_passes = blurPass;
+        noise = noise;
+        contrast = 1.3;
+        brightness = 0.8;
+        vibrancy = 0.2;
+        vibrancy_darkness = 0.0;
+        ignore_opacity = true;
+        new_optimizations = true;
       };
 
       input-field = {
-        placeholder_text = "";
-
-        size = "20%, 5%";
-        outline_thickness = 3;
-        # inner_color = "rgba(0, 0, 0, 0.0)"; # no fill
-
-        # outer_color = "rgba(33ccffee) rgba(00ff99ee) 45deg";
-        # check_color = "rgba(00ff99ee) rgba(ff6633ee) 120deg";
-        # fail_color = "rgba(ff6633ee) rgba(ff0066ee) 40deg";
-
-        # font_color = "rgb(143, 143, 143)";
-        fade_on_empty = false;
-        rounding = "15";
-
-        position = "0, -20";
+        monitor = "";
+        rounding = 0;
+        shadow_passes = 0;
+        size = "300, 50";
+        outline_thickness = border;
+        dots_size = 0.2;
+        dots_spacing = 1.0;
+        dots_center = true;
+        font_color = lib.mkForce "rgba(${re0}${trF})";
+        inner_color = lib.mkForce "rgba(${re2}${trF})";
+        check_color = lib.mkForce "rgba(${gr0}${trF})";
+        fail_color = lib.mkForce "rgba(${ye0}${trF})";
+        fail_text = "<i>$FAIL <b>($ATTEMPTS)</b></i>";
+        fail_transition = 300;
+        fade_on_empty = true;
+        placeholder_text = "<i>Password</i>";
+        hide_input = false;
+        position = "0, 50";
         halign = "center";
-        valign = "center";
+        valign = "bottom";
       };
 
-      label = {
-        text = "$TIME";
-        color = "rgba(200, 200, 200, 1.0)";
-        font_size = 25;
-        font_family = "Noto Sans";
+      label = [
+        # Clock
+        {
+          monitor = "";
+          shadow_passes = 0;
+          text = "cmd[update:1000] echo \"<b><big> $(date +\"%H:%M\") </big></b>\"";
+          color = lib.mkForce "rgba(${re0}${trF})";
+          font_size = fontXL;
+          font_family = font;
+          position = "0, -35";
+          halign = "center";
+          valign = "center";
+        }
+        # Active playing song info
+        {
+          monitor = "";
+          text = "cmd[update:1000] echo \"$(${pkgs.playerctl}/bin/playerctl metadata --format '{{title}} - {{artist}}' 2>/dev/null || true)\"";
+          shadow_passes = 0;
+          color = lib.mkForce "rgba(${re0}${trF})";
+          font_size = fontM;
+          font_family = font;
+          position = "0, -105";
+          halign = "center";
+          valign = "center";
+        }
+      ];
 
-        position = "0, 80";
+      # Avatar image
+      image = {
+        monitor = "";
+        path = "$HOME/.config/hypr/face.png";
+        outline_thickness = 2;
+        border_size = border;
+        border_color = lib.mkForce "rgba(${re0}${trF})";
+        rounding = 0;
+        position = "0, 150";
         halign = "center";
         valign = "center";
       };
     };
   };
 
-  wayland.windowManager.hyprland = {
-    settings = {
-      bind = [
-        "SUPER, backspace, exec, hyprlock"
-      ];
-    };
+  wayland.windowManager.hyprland.settings = {
+    bind = [
+      "SUPER, backspace, exec, hyprlock"
+    ];
   };
 }

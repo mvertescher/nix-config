@@ -40,9 +40,15 @@ in
       default = [ ];
       description = "List of monitor names to apply the wallpaper to. Leave empty to apply to all monitors.";
     };
+    file = lib.mkOption {
+      type = lib.types.package;
+      description = "Internal read-only reference to the downloaded wallpaper package.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
+    custom.wallpaper.file = wallpaperFile;
+
     home.packages = [ pkgs.hyprpaper ];
 
     stylix.targets.hyprpaper.enable = lib.mkForce false;
