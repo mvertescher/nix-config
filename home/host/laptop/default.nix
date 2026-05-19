@@ -26,7 +26,7 @@
 
   programs.alacritty.settings = {
     window = {
-      opacity = lib.mkForce 0.85;
+      opacity = lib.mkForce 0.50;
     };
   };
 
