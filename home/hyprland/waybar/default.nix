@@ -18,12 +18,12 @@ let
     [
       "'kitty --class scratchpad-btop btop'"
       "'kitty --class scratchpad-nvtop nvtop'"
-      "'kitty --class scratchpad-large fish -c upall'"
+      "'kitty --class scratchpad-large nu -c upall'"
     ]
     [
       "'${mkScratchpadCmd "scratchpad-btop" "btop"}'"
       "'${mkScratchpadCmd "scratchpad-nvtop" "nvtop"}'"
-      "'${mkScratchpadCmd "scratchpad-large" "fish -c upall"}'"
+      "'${mkScratchpadCmd "scratchpad-large" "nu -c upall"}'"
     ]
     modulesTemplate;
 in

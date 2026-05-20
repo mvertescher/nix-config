@@ -245,7 +245,7 @@
 		},
 		"exec-if": "which waybar-updates",
 		"exec": "waybar-updates",
-		"on-click": "~/.config/hypr/scripts/toggle_scratchpad.sh scratchpad-large 'kitty --class scratchpad-large fish -c upall'",
+		"on-click": "~/.config/hypr/scripts/toggle_scratchpad.sh scratchpad-large 'kitty --class scratchpad-large nu -c upall'",
 		"hide-empty-text": true
 	},
 	/* RECORDER */
