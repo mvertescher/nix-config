@@ -23,12 +23,6 @@
     ];
   };
 
-  programs.alacritty.settings = {
-    window = {
-      opacity = lib.mkForce 0.50;
-    };
-  };
-
   home.homeDirectory = "/home/mvertescher";
   home.stateVersion = "25.05";
 }
