@@ -1,9 +1,18 @@
 { extraHomeConfig, inputs, pkgs, ... }:
 
 let
+  lib = pkgs.lib;
+
   modules' = [
     extraHomeConfig
   ];
+
+  hasPrivateConfig = target:
+    builtins.typeOf extraHomeConfig == "path" &&
+    builtins.pathExists (extraHomeConfig + "/host/${target}.nix");
+
+  privateConfig = target:
+    if hasPrivateConfig target then [ (extraHomeConfig + "/host/${target}.nix") ] else [];
 
   # TODO: refactor these
   mkHome = { mut ? false, mods ? [ ] }:
@@ -22,17 +31,17 @@ let
 
   mkDesktopHome = { mut ? false }: mkHome {
     inherit mut;
-    mods = [ ../home/host/desktop.nix ];
+    mods = [ ../home/host/desktop.nix ] ++ privateConfig "desktop";
   };
 
   mkLaptopHome = { mut ? false }: mkHome {
     inherit mut;
-    mods = [ ../home/host/laptop ];
+    mods = [ ../home/host/laptop ] ++ privateConfig "laptop";
   };
 
   mkServerHome = { mut ? false }: mkHome {
     inherit mut;
-    mods = [ ../home/host/server.nix ];
+    mods = [ ../home/host/server.nix ] ++ privateConfig "server";
   };
 
 in
