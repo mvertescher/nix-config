@@ -5,7 +5,7 @@
     enable = true;
     settings = {
       terminal.shell.program = "nu";
-      window.opacity = lib.mkDefault 0.10;
+      window.opacity = lib.mkForce 0.10;
 
       # font = {
       #   normal = {
