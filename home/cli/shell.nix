@@ -39,6 +39,8 @@ in {
     enable = true;
 
     envFile = { text = ''
+      # Prepend Nix profile binaries to PATH
+      $env.PATH = ($env.PATH | split row (char esep) | prepend ($env.HOME | path join .nix-profile bin))
     ''; };
 
     configFile = { text = ''
