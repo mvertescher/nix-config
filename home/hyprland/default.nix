@@ -54,6 +54,7 @@ in {
     grimblast # hyprland screenshot tool
     hyprland
     nemo # file manager
+    playerctl
     wofi # app launcher
   ];
 
