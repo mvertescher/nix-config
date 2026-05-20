@@ -1,10 +1,11 @@
-{ ... }:
+{ lib, ... }:
 
 {
   programs.alacritty = {
     enable = true;
     settings = {
       terminal.shell.program = "nu";
+      window.opacity = lib.mkForce 0.10;
 
       # font = {
       #   normal = {
