@@ -4,7 +4,6 @@ let
   lib = pkgs.lib;
 
   modules' = [
-    extraHomeConfig
   ];
 
   hasPrivateConfig = target:
