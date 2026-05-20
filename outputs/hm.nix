@@ -6,12 +6,16 @@ let
   modules' = [
   ];
 
-  hasPrivateConfig = target:
-    builtins.typeOf extraHomeConfig == "path" &&
-    builtins.pathExists (extraHomeConfig + "/host/${target}.nix");
-
   privateConfig = target:
-    if hasPrivateConfig target then [ (extraHomeConfig + "/host/${target}.nix") ] else [];
+    if builtins.typeOf extraHomeConfig == "path" then
+      if builtins.pathExists (extraHomeConfig + "/host/${target}.nix") then
+        [ (extraHomeConfig + "/host/${target}.nix") ]
+      else if builtins.pathExists (extraHomeConfig + "/host/${target}") then
+        [ (extraHomeConfig + "/host/${target}") ]
+      else
+        []
+    else
+      [];
 
   # TODO: refactor these
   mkHome = { mut ? false, mods ? [ ] }:
