@@ -41,6 +41,7 @@ in {
     ./hyprlock.nix
     ./hyprpaper.nix
     ./swaync.nix
+    ./waybar
   ];
 
   custom.wallpaper = {
