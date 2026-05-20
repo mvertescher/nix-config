@@ -98,28 +98,7 @@ let
   };
 in
 {
-  options.custom.wallpaper = {
-    enable = lib.mkEnableOption "Custom cybrpapers wallpaper";
-    name = lib.mkOption {
-      type = lib.types.str;
-      default = "roppongi";
-      description = "Name of the wallpaper from cybrpapers repo (e.g. shibuya, akihabara, roppongi)";
-    };
-    sha256 = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "SHA256 hash of the wallpaper. Only required if using a custom wallpaper not pre-configured.";
-    };
-    monitors = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      description = "List of monitor names to apply the wallpaper to. Leave empty to apply to all monitors.";
-    };
-    file = lib.mkOption {
-      type = lib.types.package;
-      description = "Internal read-only reference to the downloaded wallpaper package.";
-    };
-  };
+
 
   config = lib.mkIf cfg.enable {
     custom.wallpaper.file = wallpaperFile;
