@@ -4,6 +4,10 @@
   imports = [
     ./starship.nix
     ./firefox
+    ./hyprlock.nix
+    ./hyprpaper.nix
+    ./swaync.nix
+    ./waybar
   ];
 
   stylix = {

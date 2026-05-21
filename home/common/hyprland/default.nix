@@ -38,10 +38,6 @@ let
 in {
   imports = [
     ./binds.nix
-    ./hyprlock.nix
-    ./hyprpaper.nix
-    ./swaync.nix
-    ./waybar
   ];
 
   custom.wallpaper = {
