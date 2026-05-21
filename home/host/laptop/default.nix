@@ -4,8 +4,8 @@
 
 {
   imports = [
-    ../../home.nix
-    ../../hyprland
+    ../../common/home.nix
+    ../../common/hyprland
   ];
 
   stylix = {
@@ -13,7 +13,7 @@
     # base16Scheme = "${pkgs.base16-schemes}/share/themes/gruvbox-dark-hard.yaml";
     # base16Scheme = "${pkgs.base16-schemes}/share/themes/nord.yaml";
     # base16Scheme = "${pkgs.base16-schemes}/share/themes/tarot.yaml";
-    base16Scheme = ../../cybrcolors.yaml;
+    base16Scheme = ../../common/cybrcolors.yaml;
     image = config.lib.stylix.pixel "base0B";
   };
 

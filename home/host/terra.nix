@@ -4,8 +4,8 @@
 
 {
   imports = [
-    ../home.nix
-    ../hyprland
+    ../common/home.nix
+    ../common/hyprland
   ];
 
   home.username = "mverte";

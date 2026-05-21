@@ -4,13 +4,13 @@
 
 {
   imports = [
-    ../home.nix
-    ../hyprland
+    ../common/home.nix
+    ../common/hyprland
   ];
 
   stylix = {
     enable = true;
-    base16Scheme = ../cybrcolors.yaml;
+    base16Scheme = ../common/cybrcolors.yaml;
     image = config.lib.stylix.pixel "base0C";
   };
 
