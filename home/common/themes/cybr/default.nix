@@ -3,6 +3,7 @@
 {
   imports = [
     ./starship.nix
+    ./firefox
   ];
 
   stylix = {
