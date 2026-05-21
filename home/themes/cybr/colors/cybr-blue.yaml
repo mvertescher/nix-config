@@ -1,0 +1,28 @@
+# Cybrcolors Blue Variant
+# Generated from the Cybrcolors palette spec.
+# This scheme uses the Blue base colors for backgrounds:
+# - base00 (Default Background): bl2 (#0C1737) - Blue dark
+# - base01 (Lighter Background): bl1 (#152966) - Blue mid
+# - base02 (Selection Background): no2 (#0A0E1A) - Black light (for contrast)
+# - base07 (Lightest Foreground): bl0 (#3061F2) - Blue base (dominant accent)
+# All other colors and accents match the standard Cybrcolors palette.
+
+scheme: "Cybr Blue"
+author: "cybrcore (generated for Stylix)"
+
+base00: "0c1737"
+base01: "152966"
+base02: "0a0e1a"
+base03: "393b42"
+base04: "4d5a80"
+base05: "898d99"
+base06: "898d99"
+base07: "3061f2"
+base08: "f24848"
+base09: "f26118"
+base0A: "f2d230"
+base0B: "30f291"
+base0C: "29becc"
+base0D: "3061f2"
+base0E: "a130f2"
+base0F: "f230b2"

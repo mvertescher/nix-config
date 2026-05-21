@@ -12,7 +12,7 @@
 
   stylix = {
     enable = true;
-    base16Scheme = ./cybrcolors.yaml;
+    base16Scheme = ./colors/cybrcolors.yaml;
     image = lib.mkDefault (config.lib.stylix.pixel "base0C");
   };
 
