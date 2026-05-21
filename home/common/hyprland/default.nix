@@ -32,7 +32,7 @@ let
   blurSize = 6;
   blurPass = 4;
   noise = 0.05;
-  
+
   # Fonts
   fontM = 12;
 in {
@@ -180,4 +180,3 @@ in {
     };
   };
 }
-

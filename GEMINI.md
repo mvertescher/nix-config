@@ -40,6 +40,7 @@ This repository manages a NixOS and Home Manager configuration using Nix Flakes.
 - Follow existing Nix formatting (mostly 2-space indentation).
 - Prefer `with pkgs; [ ... ]` for package lists within modules.
 - Add brief comments next to packages to explain their purpose if not immediately obvious (e.g., `bat # better cat`).
+- **Trailing Whitespace**: All files MUST be kept clean of trailing whitespace. Always ensure trailing whitespace is removed before committing.
 
 ## AI Agent Instructions
 

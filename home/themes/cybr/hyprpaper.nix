@@ -104,8 +104,8 @@ in
     custom.wallpaper.file = wallpaperFile;
 
     # Install both hyprpaper and our rotation script helper
-    home.packages = [ 
-      pkgs.hyprpaper 
+    home.packages = [
+      pkgs.hyprpaper
       rotateWallpaperScript
     ];
 

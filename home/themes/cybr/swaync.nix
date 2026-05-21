@@ -61,7 +61,7 @@
       };
     };
     style = ''
-      /* 
+      /*
       # ---------------------------------------
       # cybr-swaync    lucid theme for swaync
       # Project:       https://github.com/cybrcore/cybr-swaync

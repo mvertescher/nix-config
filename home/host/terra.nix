@@ -16,4 +16,3 @@
   home.packages = with pkgs; [
   ];
 }
-

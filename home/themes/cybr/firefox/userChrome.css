@@ -1,7 +1,7 @@
 :root {
   --font-family: "GeistMono Nerd Font";
   --font-sizeS: 0.9rem; /* def: 0.85rem */
-  
+
   --color-base-00: rgba(0, 0, 0, 0);
 	--color-base-05: #030408; /* bg */
 	--color-base-06: #03040899; /* bg */
@@ -28,7 +28,7 @@
 	--color-base-90: #FB932E; /* yellow */
 	--color-base-91: #FB932E27; /* yellow alpha; dropdown bg */
 	--color-base-92: #3d1f01;
-  
+
   --lwt-accent-color: var(--color-base-00) !important;
 
   --toolbar-color: var(--color-base-70) !important;
@@ -43,27 +43,27 @@
   --toolbar-field-focus-background-color: var(--color-base-05) !important;
   --focus-outline: none !important;
   --chrome-content-separator-color: var(--color-base-70) !important;
-  
+
   --toolbar-field-border: none !important;
   --toolbar-field-border-color: none !important;
   --toolbar-field-background-color: var(--color-base-06) !important;
-  
+
   --toolbar-field-focus-color: var(--color-base-70) !important;
   --toolbar-field-focus-background-color: var(--color-base-05) !important;
-  
+
   --focus-outline: var(--color-base-70) !important;
-  
+
   --urlbarView-hover-background: var(--color-base-73) !important;
 
   --in-content-page-background: var(--color-base-30) !important;
   --in-content-primary-button-background: var(--color-base-30) !important;
-  
+
   --notchXs: 3px;
   	--path-notchXs: polygon(
-    0% var(--notchXs), 
-    var(--notchXs) 0%, 
-    calc(100% - 0px) 0%, 
-    100% 0px, 
+    0% var(--notchXs),
+    var(--notchXs) 0%,
+    calc(100% - 0px) 0%,
+    100% 0px,
     100% calc(100% - var(--notchXs)),
     calc(100% - var(--notchXs)) 100%,
     0px 100%,
@@ -72,10 +72,10 @@
 
 	--notchS: 5px;
   	--path-notchS: polygon(
-    0% var(--notchS), 
-    var(--notchS) 0%, 
-    calc(100% - 0px) 0%, 
-    100% 0px, 
+    0% var(--notchS),
+    var(--notchS) 0%,
+    calc(100% - 0px) 0%,
+    100% 0px,
     100% calc(100% - var(--notchS)),
     calc(100% - var(--notchS)) 100%,
     0px 100%,
@@ -181,7 +181,7 @@ button, .toolbarbutton-1, .tabbrowser-tab {
 
 .urlbar-input-box {
   color: var(--color-base-70) !important;
-  
+
   &:focused {
    box-shadow: 0 0 0 0 !important;
   }
@@ -265,7 +265,7 @@ body {
 vbox#titlebar {
   * {
       background-color: (--tabpanel-background-color) !important;
-  }    
+  }
 }
 
 @-moz-document url-prefix("chrome://browser/content/webext-panels.xhtml") {
@@ -438,7 +438,7 @@ panel {
 
 panelmultiview {
   color: var(--color-base-70) !important;
-  background-color: var(--color-base-05) !important;  
+  background-color: var(--color-base-05) !important;
 }
 
 #notification-popup-panel, #unified-extensions-panel {
@@ -785,7 +785,7 @@ treechildren::-moz-tree-cell-text(selected, focus) {
 
 @media not -moz-pref("mod.disable.extensions-menu.separator") {
   @media not -moz-pref("mod.hide.faded-extensions.inside.extensions-menu") {
-  /* Line separator when "faded out" extension is present. 
+  /* Line separator when "faded out" extension is present.
      It automatically turns off if there are no faded out extensions
      present */
   #unified-extensions-view

@@ -43,9 +43,9 @@
   background-color: transparent !important;
   color: #F75049 !important;
   clip-path: polygon(
-    0% var(--notchXs), 
-    var(--notchXs) 0%, 
-    100% 0%, 
+    0% var(--notchXs),
+    var(--notchXs) 0%,
+    100% 0%,
     100% calc(100% - var(--notchXs)),
     calc(100% - var(--notchXs)) 100%,
     0px 100%,
