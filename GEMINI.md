@@ -6,10 +6,14 @@ This repository manages a NixOS and Home Manager configuration using Nix Flakes.
 
 - `flake.nix`: Entry point for the flake, defining inputs and system/home configurations.
 - `home/`: Home Manager configurations.
-    - `cli/`: CLI-related tools and configurations.
-    - `desktop/`: Desktop-related tools and configurations.
-    - `host/`: Host-specific Home Manager overrides.
-    - `pkgs/`: Custom package definitions or overrides.
+    - `common/`: Shared configurations and reusable settings.
+        - `cli/`: CLI-related tools and configurations.
+        - `gui/`: Graphical User Interface packages (Alacritty, VSCode).
+        - `hyprland/`: Desktop layout and key binds.
+        - `pkgs/`: Custom package definitions or overrides.
+    - `themes/`: Visual styles and customization resources.
+        - `cybr/`: Cybrcolors Base16 theme configurations, wallpapers, status bar (Waybar), lockscreens (Hyprlock), notifications (SwayNC), and browser styles (Firefox).
+    - `host/`: Host-specific machine profiles (desktop, laptop, server, terra).
 - `system/`: NixOS system-level configurations.
     - `host/`: Machine-specific hardware and system configurations.
     - `wm/`: Window manager configurations (e.g., Hyprland).
