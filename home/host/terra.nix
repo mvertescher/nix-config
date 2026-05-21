@@ -6,7 +6,7 @@
   imports = [
     ../common/home.nix
     ../common/hyprland
-    ../common/themes/cybr
+    ../themes/cybr
   ];
 
   home.username = "mverte";

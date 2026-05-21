@@ -6,7 +6,7 @@
   imports = [
     ../../common/home.nix
     ../../common/hyprland
-    ../../common/themes/cybr
+    ../../themes/cybr
   ];
 
   stylix.image = config.lib.stylix.pixel "base0B";

@@ -6,7 +6,7 @@
   imports = [
     ../common/home.nix
     ../common/hyprland
-    ../common/themes/cybr
+    ../themes/cybr
   ];
 
   home.stateVersion = "25.05";
