@@ -17,4 +17,9 @@
   };
 
   programs.alacritty.settings.window.opacity = lib.mkForce 0.10;
+
+  programs.alacritty.settings.colors.selection = {
+    background = lib.mkForce "#${config.lib.stylix.colors.base0F}";
+    text = lib.mkForce "#${config.lib.stylix.colors.base00}";
+  };
 }
