@@ -5,14 +5,8 @@
 {
   imports = [
     ../common/home.nix
+    ../common/themes/cybr
   ];
-
-  # Enable Stylix on server to cleanly colorize headless terminal prompts!
-  stylix = {
-    enable = true;
-    base16Scheme = ../common/themes/cybr/cybrcolors.yaml;
-    image = config.lib.stylix.pixel "base0C";
-  };
 
   home.stateVersion = "25.05";
 }

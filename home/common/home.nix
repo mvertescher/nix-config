@@ -6,7 +6,6 @@ let
   imports = [
     ./cli
     ./desktop
-    ./themes/cybr/starship.nix
   ];
 in
 {
