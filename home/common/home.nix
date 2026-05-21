@@ -5,7 +5,7 @@
 let
   imports = [
     ./cli
-    ./desktop
+    ./gui
   ];
 in
 {
