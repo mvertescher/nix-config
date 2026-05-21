@@ -10,7 +10,7 @@
 
   stylix = {
     enable = true;
-    base16Scheme = ../common/cybrcolors.yaml;
+    base16Scheme = ../common/themes/cybr/cybrcolors.yaml;
     image = config.lib.stylix.pixel "base0C";
   };
 
