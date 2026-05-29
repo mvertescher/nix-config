@@ -10,19 +10,19 @@
 scheme: "Cybr Cyan"
 author: "cybrcore (generated for Stylix)"
 
-base00: "0b292f"
-base01: "124e56"
-base02: "0a0e1a"
-base03: "393b42"
-base04: "4d5a80"
-base05: "898d99"
-base06: "898d99"
-base07: "29becc"
-base08: "f24848"
-base09: "f26118"
-base0A: "f2d230"
-base0B: "30f291"
-base0C: "29becc"
-base0D: "3061f2"
-base0E: "a130f2"
-base0F: "f230b2"
+base00: "0b292f" # cy2 (Cyan dark)
+base01: "124e56" # cy1 (Cyan mid)
+base02: "0a0e1a" # no2 (Black light)
+base03: "393b42" # wh1 (White mid)
+base04: "4d5a80" # me0 (Metal grey base)
+base05: "898d99" # wh0 (White base)
+base06: "898d99" # wh0 (White base)
+base07: "29becc" # cy0 (Cyan base)
+base08: "f24848" # re0 (Red base)
+base09: "f26118" # og0 (Orange base)
+base0A: "f2d230" # ye0 (Yellow base)
+base0B: "30f291" # gr0 (Green base)
+base0C: "29becc" # cy0 (Cyan base)
+base0D: "3061f2" # bl0 (Blue base)
+base0E: "a130f2" # vi0 (Violet base)
+base0F: "f230b2" # pi0 (Pink base)
