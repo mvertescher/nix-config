@@ -66,7 +66,7 @@
 
       character = {
         success_symbol = "[❯ ](fg:${re0})";
-        error_symbol = "[](fg:${re0})";
+        error_symbol = "[ ](fg:${re0})";
         vicmd_symbol = "[󰆤](fg:${ye0})";
         format = "$symbol";
       };
