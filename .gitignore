@@ -1,1 +1,5 @@
 result*
+home/common/pkgs/entropism-ui/fonts/
+**/Cargo.lock
+**/target/
+home/common/pkgs/entropism-ui/entropism-ui/

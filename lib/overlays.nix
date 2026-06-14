@@ -2,6 +2,7 @@
 
 let
     overlays = f: p: {
+        craneLib = inputs.crane.mkLib p;
         builders = {
             mkHome = { pkgs ? f, extraHomeConfig ? { } }:
                 import ../outputs/hm.nix { inherit extraHomeConfig inputs pkgs; };

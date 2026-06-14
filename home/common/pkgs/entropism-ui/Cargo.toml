@@ -1,0 +1,29 @@
+[package]
+name = "entropism-ui"
+version = "0.1.0"
+edition = "2021"
+autoexamples = false
+autobins = false
+
+[dependencies]
+iced = { version = "0.13", features = ["canvas", "tokio"] }
+
+[[bin]]
+name = "entropism-ui-demo"
+path = "examples/entropism-ui-demo.rs"
+
+[[bin]]
+name = "entropism-ui-login"
+path = "examples/entropism-ui-login.rs"
+
+[[bin]]
+name = "entropism-ui-mail"
+path = "examples/entropism-ui-mail.rs"
+
+[[bin]]
+name = "entropism-ui-store"
+path = "examples/entropism-ui-store.rs"
+
+[[bin]]
+name = "entropism-ui-default-layout"
+path = "examples/entropism-ui-default-layout.rs"
