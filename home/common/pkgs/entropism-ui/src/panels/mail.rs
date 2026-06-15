@@ -1,6 +1,6 @@
+use crate::glow::{get_radial_offsets, glowing_border_container, glowing_text};
 use iced::widget::{button, column, container, row, scrollable, text, Space};
 use iced::{Alignment, Background, Border, Color, Element, Length, Shadow, Task};
-use crate::glow::{glowing_text, get_radial_offsets, glowing_border_container};
 
 #[derive(Debug, Clone)]
 pub struct Email {
@@ -59,9 +59,7 @@ impl MailScreen {
                 self.focused_item = btn_idx + self.emails.len();
                 (None, Task::none())
             }
-            Message::GoBack => {
-                (Some(ScreenEvent::GoToDashboard), Task::none())
-            }
+            Message::GoBack => (Some(ScreenEvent::GoToDashboard), Task::none()),
         }
     }
 
@@ -71,7 +69,11 @@ impl MailScreen {
         }
 
         let emails_count = self.emails.len();
-        let max_email_idx = if emails_count > 0 { emails_count - 1 } else { 0 };
+        let max_email_idx = if emails_count > 0 {
+            emails_count - 1
+        } else {
+            0
+        };
         let btn_start = emails_count;
         let btn_end = emails_count + 3;
         let enc_start = emails_count + 4;
@@ -85,7 +87,9 @@ impl MailScreen {
                 return Some(Message::ActionButtonPressed(self.focused_item - btn_start));
             }
             if self.focused_item >= enc_start && self.focused_item <= enc_end {
-                return Some(Message::EncryptionLevelSelected(self.focused_item - enc_start));
+                return Some(Message::EncryptionLevelSelected(
+                    self.focused_item - enc_start,
+                ));
             }
         }
 
@@ -102,10 +106,18 @@ impl MailScreen {
                     } else if self.focused_item >= enc_start && self.focused_item <= enc_end {
                         // T1, T2, T3, T4 grid navigation
                         match self.focused_item - enc_start {
-                            0 => { self.focused_item = btn_start; }     // T1 -> Reply
-                            1 => { self.focused_item = btn_start + 1; } // T2 -> Forward
-                            2 => { self.focused_item = enc_start; }     // T3 -> T1
-                            3 => { self.focused_item = enc_start + 1; } // T4 -> T2
+                            0 => {
+                                self.focused_item = btn_start;
+                            } // T1 -> Reply
+                            1 => {
+                                self.focused_item = btn_start + 1;
+                            } // T2 -> Forward
+                            2 => {
+                                self.focused_item = enc_start;
+                            } // T3 -> T1
+                            3 => {
+                                self.focused_item = enc_start + 1;
+                            } // T4 -> T2
                             _ => {}
                         }
                     }
@@ -122,8 +134,12 @@ impl MailScreen {
                         }
                     } else if self.focused_item >= enc_start && self.focused_item <= enc_end {
                         match self.focused_item - enc_start {
-                            0 => { self.focused_item = enc_start + 2; } // T1 -> T3
-                            1 => { self.focused_item = enc_start + 3; } // T2 -> T4
+                            0 => {
+                                self.focused_item = enc_start + 2;
+                            } // T1 -> T3
+                            1 => {
+                                self.focused_item = enc_start + 3;
+                            } // T2 -> T4
                             _ => {}
                         }
                     }
@@ -138,8 +154,12 @@ impl MailScreen {
                         }
                     } else if self.focused_item >= enc_start && self.focused_item <= enc_end {
                         match self.focused_item - enc_start {
-                            1 => { self.focused_item = enc_start; }     // T2 -> T1
-                            3 => { self.focused_item = enc_start + 2; } // T4 -> T3
+                            1 => {
+                                self.focused_item = enc_start;
+                            } // T2 -> T1
+                            3 => {
+                                self.focused_item = enc_start + 2;
+                            } // T4 -> T3
                             _ => {}
                         }
                     }
@@ -154,8 +174,12 @@ impl MailScreen {
                         }
                     } else if self.focused_item >= enc_start && self.focused_item <= enc_end {
                         match self.focused_item - enc_start {
-                            0 => { self.focused_item = enc_start + 1; } // T1 -> T2
-                            2 => { self.focused_item = enc_start + 3; } // T3 -> T4
+                            0 => {
+                                self.focused_item = enc_start + 1;
+                            } // T1 -> T2
+                            2 => {
+                                self.focused_item = enc_start + 3;
+                            } // T3 -> T4
                             _ => {}
                         }
                     }
@@ -202,8 +226,16 @@ impl MailScreen {
             let is_selected = self.selected_email == idx;
             let is_focused = self.focused_item == idx;
 
-            let text_color = if is_selected { color_bg } else { color_green_accent };
-            let box_bg = if is_selected { Some(Background::Color(color_green_accent)) } else { None };
+            let text_color = if is_selected {
+                color_bg
+            } else {
+                color_green_accent
+            };
+            let box_bg = if is_selected {
+                Some(Background::Color(color_green_accent))
+            } else {
+                None
+            };
 
             let est_item_y = h * 0.2 + (idx as f32) * 80.0;
             let (off_x, off_y) = get_radial_offsets(w * 0.15, est_item_y, w, h);
@@ -214,9 +246,13 @@ impl MailScreen {
 
             let item_content = if is_selected {
                 column![
-                    text(subject_txt).size(14).style(move |_| text::Style { color: Some(text_color) }),
+                    text(subject_txt).size(14).style(move |_| text::Style {
+                        color: Some(text_color)
+                    }),
                     Space::new(0.0, 4.0),
-                    text(from_txt).size(10).style(move |_| text::Style { color: Some(text_color) }),
+                    text(from_txt).size(10).style(move |_| text::Style {
+                        color: Some(text_color)
+                    }),
                 ]
             } else {
                 column![
@@ -226,15 +262,12 @@ impl MailScreen {
                 ]
             };
 
-            button(
-                container(item_content)
-                    .padding(iced::Padding {
-                        left: 10.0,
-                        right: 10.0,
-                        top: 10.0,
-                        bottom: 10.0,
-                    })
-            )
+            button(container(item_content).padding(iced::Padding {
+                left: 10.0,
+                right: 10.0,
+                top: 10.0,
+                bottom: 10.0,
+            }))
             .width(Length::Fill)
             .height(Length::Fixed(70.0))
             .on_press(Message::EmailSelected(idx))
@@ -260,7 +293,13 @@ impl MailScreen {
         let col_a = column![
             section_header("A", "CAPSA NUNTIORUM", w * 0.33, 50.0),
             Space::new(0.0, 5.0),
-            glowing_text("SPARE TIME MANAGER WAS DEVELOPED BY\nSEOCHO. SERVING CUSTOMERS SINCE 2006.", 9, color_green_accent, -0.5, -0.6),
+            glowing_text(
+                "SPARE TIME MANAGER WAS DEVELOPED BY\nSEOCHO. SERVING CUSTOMERS SINCE 2006.",
+                9,
+                color_green_accent,
+                -0.5,
+                -0.6
+            ),
             Space::new(0.0, 15.0),
             glowing_border_container(
                 scrollable(email_list)
@@ -284,7 +323,13 @@ impl MailScreen {
                 section_header("B", "EPISTULA", w * 0.78, 50.0),
                 Space::new(0.0, 15.0),
                 glowing_border_container(
-                    glowing_text("NULLUS NUNTIUS", 14, color_green_accent, col_b_off_x, col_b_off_y),
+                    glowing_text(
+                        "NULLUS NUNTIUS",
+                        14,
+                        color_green_accent,
+                        col_b_off_x,
+                        col_b_off_y
+                    ),
                     1.0,
                     color_green_accent,
                     col_b_off_x,
@@ -297,9 +342,17 @@ impl MailScreen {
             let make_action_button = |idx: usize, label: &'static str| {
                 let item_idx = idx + self.emails.len();
                 let is_focused = self.focused_item == item_idx;
-                
-                let text_color = if is_focused { color_bg } else { color_green_accent };
-                let btn_bg = if is_focused { Some(Background::Color(color_green_accent)) } else { None };
+
+                let text_color = if is_focused {
+                    color_bg
+                } else {
+                    color_green_accent
+                };
+                let btn_bg = if is_focused {
+                    Some(Background::Color(color_green_accent))
+                } else {
+                    None
+                };
 
                 let btn_label = if is_focused {
                     format!("> {}", label)
@@ -308,7 +361,12 @@ impl MailScreen {
                 };
 
                 let btn_content: Element<Message> = if is_focused {
-                    text(btn_label).size(12).style(move |_| text::Style { color: Some(text_color) }).into()
+                    text(btn_label)
+                        .size(12)
+                        .style(move |_| text::Style {
+                            color: Some(text_color),
+                        })
+                        .into()
                 } else {
                     glowing_text(btn_label, 12, text_color, col_b_off_x, col_b_off_y)
                 };
@@ -337,9 +395,21 @@ impl MailScreen {
                         // Email Header block
                         container(
                             column![
-                                glowing_text(&current_email.subject, 16, color_green_accent, col_b_off_x, col_b_off_y),
+                                glowing_text(
+                                    &current_email.subject,
+                                    16,
+                                    color_green_accent,
+                                    col_b_off_x,
+                                    col_b_off_y
+                                ),
                                 Space::new(0.0, 4.0),
-                                glowing_text(format!("ab: {}", current_email.from), 12, color_green_accent, col_b_off_x, col_b_off_y),
+                                glowing_text(
+                                    format!("ab: {}", current_email.from),
+                                    12,
+                                    color_green_accent,
+                                    col_b_off_x,
+                                    col_b_off_y
+                                ),
                             ]
                             .padding(10)
                         )
@@ -354,9 +424,13 @@ impl MailScreen {
                         }),
                         Space::new(0.0, 15.0),
                         // Email Body
-                        container(
-                            glowing_text(&current_email.body, 12, color_green_accent, col_b_off_x, col_b_off_y)
-                        )
+                        container(glowing_text(
+                            &current_email.body,
+                            12,
+                            color_green_accent,
+                            col_b_off_x,
+                            col_b_off_y
+                        ))
                         .width(Length::Fill)
                         .height(Length::Fill),
                         Space::new(0.0, 15.0),
@@ -386,8 +460,16 @@ impl MailScreen {
             let is_selected = self.encryption_level == level;
             let is_focused = self.focused_item == item_idx;
 
-            let text_color = if is_selected { color_bg } else { color_green_accent };
-            let btn_bg = if is_selected { Some(Background::Color(color_green_accent)) } else { None };
+            let text_color = if is_selected {
+                color_bg
+            } else {
+                color_green_accent
+            };
+            let btn_bg = if is_selected {
+                Some(Background::Color(color_green_accent))
+            } else {
+                None
+            };
 
             let btn_text = if is_focused {
                 format!("> {}", label)
@@ -410,7 +492,12 @@ impl MailScreen {
             let (off_x, off_y) = get_radial_offsets(est_x, est_y, w, h);
 
             let btn_content = if is_selected {
-                text(btn_text).size(16).style(move |_| text::Style { color: Some(text_color) }).into()
+                text(btn_text)
+                    .size(16)
+                    .style(move |_| text::Style {
+                        color: Some(text_color),
+                    })
+                    .into()
             } else {
                 glowing_text(btn_text, 16, text_color, off_x, off_y)
             };
@@ -456,7 +543,7 @@ impl MailScreen {
             row![col_a, col_b, col_c]
                 .spacing(25)
                 .width(Length::Fill)
-                .height(Length::Fill)
+                .height(Length::Fill),
         )
         .padding(iced::Padding {
             left: 15.0,

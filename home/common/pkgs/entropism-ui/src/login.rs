@@ -36,7 +36,9 @@ impl LoginScreen {
 
     pub fn view(&self, color_bg: Color, color_green_accent: Color) -> Element<Message> {
         column![
-            text("USERNAME:").size(22).style(move |_| text::Style { color: Some(color_green_accent) }),
+            text("USERNAME:").size(22).style(move |_| text::Style {
+                color: Some(color_green_accent)
+            }),
             row![
                 text_input("**********", &self.username)
                     .on_input(Message::UsernameChanged)
@@ -56,19 +58,21 @@ impl LoginScreen {
                         placeholder: Color::from_rgba(0.57, 0.72, 0.62, 0.4),
                         selection: Color::from_rgba(0.57, 0.72, 0.62, 0.2),
                     }),
-                button(text("NEXT").size(18).style(move |_| text::Style { color: Some(color_bg) }))
-                    .on_press(Message::Submit)
-                    .padding(12)
-                    .style(move |_, _| button::Style {
-                        background: Some(Background::Color(color_green_accent)),
-                        border: Border {
-                            color: color_green_accent,
-                            width: 1.0,
-                            radius: 0.0.into(),
-                        },
-                        shadow: Shadow::default(),
-                        text_color: color_bg,
-                    })
+                button(text("NEXT").size(18).style(move |_| text::Style {
+                    color: Some(color_bg)
+                }))
+                .on_press(Message::Submit)
+                .padding(12)
+                .style(move |_, _| button::Style {
+                    background: Some(Background::Color(color_green_accent)),
+                    border: Border {
+                        color: color_green_accent,
+                        width: 1.0,
+                        radius: 0.0.into(),
+                    },
+                    shadow: Shadow::default(),
+                    text_color: color_bg,
+                })
             ]
             .spacing(12)
         ]

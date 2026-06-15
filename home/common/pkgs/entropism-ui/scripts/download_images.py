@@ -4,21 +4,24 @@ import os
 import argparse
 
 ENTROPISM_IMAGES = [
-    ("img_00_f5dd1e118663901.60e5fa6f085fd.png", "f5dd1e118663901.60e5fa6f085fd.png"),
-    ("img_01_274a8b118663901.60e5fa6097ef3.png", "274a8b118663901.60e5fa6097ef3.png"),
-    ("img_02_264e0d118663901.60901b1b6088f.png", "264e0d118663901.60901b1b6088f.png"),
-    ("img_03_a42bf7118663901.60901b1b6176a.png", "a42bf7118663901.60901b1b6176a.png"),
-    ("img_04_30ba36118663901.60e5fa609903c.png", "30ba36118663901.60e5fa609903c.png"),
-    ("img_05_3c1773118663901.60e5fa60984dc.png", "3c1773118663901.60e5fa60984dc.png"),
-    ("img_06_9c9903118663901.60901b1b61cb4.png", "9c9903118663901.60901b1b61cb4.png"),
-    ("img_07_a1de39118663901.60e5fa609775f.png", "a1de39118663901.60e5fa609775f.png"),
-    ("img_08_48e1d6118663901.60e5fa6098aa5.png", "48e1d6118663901.60e5fa6098aa5.png"),
-    ("img_09_360994118663901.60901b1b6119b.png", "360994118663901.60901b1b6119b.png"),
+    ("img-00-login.png", "f5dd1e118663901.60e5fa6f085fd.png"),
+    ("img-01-dashboard.png", "274a8b118663901.60e5fa6097ef3.png"),
+    ("img-02-emails.png", "264e0d118663901.60901b1b6088f.png"),
+    ("img-03-matrix.png", "a42bf7118663901.60901b1b6176a.png"),
+    ("img-04-store.png", "30ba36118663901.60e5fa609903c.png"),
+    ("img-05-chat.png", "3c1773118663901.60e5fa60984dc.png"),
+    ("img-06-private.png", "9c9903118663901.60901b1b61cb4.png"),
+    ("img-07-devices.png", "a1de39118663901.60e5fa609775f.png"),
+    ("img-08-network.png", "48e1d6118663901.60e5fa6098aa5.png"),
+    ("img-09-terminal.png", "360994118663901.60901b1b6119b.png"),
 ]
 
 def main():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    default_dest = os.path.abspath(os.path.join(script_dir, "..", "images"))
+
     parser = argparse.ArgumentParser(description="Download Entropism UI design images from Behance.")
-    parser.add_argument("-o", "--output", default="entropism-ui", help="Destination folder (defaults to 'entropism-ui')")
+    parser.add_argument("-o", "--output", default=default_dest, help=f"Destination folder (defaults to '{default_dest}')")
     args = parser.parse_args()
 
     dest_dir = os.path.abspath(args.output)

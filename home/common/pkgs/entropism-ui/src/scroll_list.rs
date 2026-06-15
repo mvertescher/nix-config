@@ -23,13 +23,13 @@ impl ScrollList {
         let target_y = (self.selected_index as f32) * self.item_height;
         let total_height = (total_items as f32) * self.item_height;
         let max_scroll = (total_height - self.viewport_height).max(0.0);
-        
+
         let center_offset = target_y - (self.viewport_height / 2.0) + (self.item_height / 2.0);
         let final_y = center_offset.clamp(0.0, max_scroll);
 
         iced::widget::scrollable::scroll_to(
             self.scrollable_id.clone(),
-            iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: final_y }
+            iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: final_y },
         )
     }
 }

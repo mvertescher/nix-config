@@ -1,6 +1,6 @@
+use crate::glow::{get_radial_offsets, glowing_border_container, glowing_text};
 use iced::widget::{column, container, row, text, Space};
 use iced::{Alignment, Background, Border, Color, Element, Length, Shadow};
-use crate::glow::{glowing_text, get_radial_offsets, glowing_border_container};
 
 const VISIBLE_COLS: usize = 12;
 const VISIBLE_ROWS: usize = 22;
@@ -30,7 +30,9 @@ pub struct MatrixScreen {
 impl MatrixScreen {
     pub fn new() -> Self {
         let cols = (0..25).map(|i| format!("SECURE_NODE_{:02}", i)).collect();
-        let rows = (0..60).map(|i| format!("PORT_{:04}", 8000 + i * 11)).collect();
+        let rows = (0..60)
+            .map(|i| format!("PORT_{:04}", 8000 + i * 11))
+            .collect();
 
         // Generate deterministic mock data
         let mut data = Vec::new();
@@ -67,7 +69,8 @@ impl MatrixScreen {
                 None
             }
             Message::ScrollRight => {
-                self.scroll_col = (self.scroll_col + 1).min(self.cols.len().saturating_sub(VISIBLE_COLS));
+                self.scroll_col =
+                    (self.scroll_col + 1).min(self.cols.len().saturating_sub(VISIBLE_COLS));
                 None
             }
             Message::ScrollUp => {
@@ -75,7 +78,8 @@ impl MatrixScreen {
                 None
             }
             Message::ScrollDown => {
-                self.scroll_row = (self.scroll_row + 1).min(self.rows.len().saturating_sub(VISIBLE_ROWS));
+                self.scroll_row =
+                    (self.scroll_row + 1).min(self.rows.len().saturating_sub(VISIBLE_ROWS));
                 None
             }
         }
@@ -110,23 +114,24 @@ impl MatrixScreen {
         let (off_x, off_y) = get_radial_offsets(w * 0.5, h * 0.5, w, h);
 
         // Header and back button
-        let back_btn = iced::widget::button(
-            text("RETURN TO DASHBOARD")
-                .size(12)
-                .style(move |_| text::Style { color: Some(color_green_accent) })
-        )
-        .padding(8)
-        .on_press(Message::GoBack)
-        .style(move |_, _| iced::widget::button::Style {
-            background: None,
-            border: Border {
-                color: color_green_accent,
-                width: 1.0,
-                radius: 0.0.into(),
-            },
-            shadow: Shadow::default(),
-            text_color: color_green_accent,
-        });
+        let back_btn =
+            iced::widget::button(text("RETURN TO DASHBOARD").size(12).style(move |_| {
+                text::Style {
+                    color: Some(color_green_accent),
+                }
+            }))
+            .padding(8)
+            .on_press(Message::GoBack)
+            .style(move |_, _| iced::widget::button::Style {
+                background: None,
+                border: Border {
+                    color: color_green_accent,
+                    width: 1.0,
+                    radius: 0.0.into(),
+                },
+                shadow: Shadow::default(),
+                text_color: color_green_accent,
+            });
 
         // Grid offset indicator HUD
         let coords_hud = container(
@@ -138,7 +143,9 @@ impl MatrixScreen {
                 self.scroll_row + VISIBLE_ROWS - 1
             ))
             .size(12)
-            .style(move |_| text::Style { color: Some(color_green_accent) })
+            .style(move |_| text::Style {
+                color: Some(color_green_accent),
+            }),
         )
         .padding(8)
         .style(move |_| container::Style {
@@ -151,7 +158,13 @@ impl MatrixScreen {
         });
 
         let header_row = row![
-            glowing_text("MATRIX DATA ROUTING GRID", 20, color_green_accent, off_x, off_y),
+            glowing_text(
+                "MATRIX DATA ROUTING GRID",
+                20,
+                color_green_accent,
+                off_x,
+                off_y
+            ),
             Space::new(Length::Fill, 0.0),
             coords_hud,
             Space::new(20.0, 0.0),
@@ -169,35 +182,32 @@ impl MatrixScreen {
         let visible_rows = &self.rows[self.scroll_row..self.scroll_row + VISIBLE_ROWS];
 
         // Render header row cells: [ "PORT / NODE", cols[0], cols[1], ... ]
-        let mut col_headers = vec![
-            container(
-                text("PORT // NODE")
-                    .size(11)
-                    .style(move |_| text::Style { color: Some(color_green_accent) })
-            )
-            .width(Length::Fixed(cell_width))
-            .height(Length::Fixed(cell_height))
-            .align_x(Alignment::Center)
-            .align_y(Alignment::Center)
-            .style(move |_| container::Style {
-                border: Border {
-                    color: color_green_accent,
-                    width: 1.0,
-                    radius: 0.0.into(),
-                },
-                background: Some(Background::Color(Color::from_rgba(0.57, 0.72, 0.62, 0.08))),
-                ..Default::default()
-            })
-            .into()
-        ];
+        let mut col_headers =
+            vec![
+                container(text("PORT // NODE").size(11).style(move |_| text::Style {
+                    color: Some(color_green_accent),
+                }))
+                .width(Length::Fixed(cell_width))
+                .height(Length::Fixed(cell_height))
+                .align_x(Alignment::Center)
+                .align_y(Alignment::Center)
+                .style(move |_| container::Style {
+                    border: Border {
+                        color: color_green_accent,
+                        width: 1.0,
+                        radius: 0.0.into(),
+                    },
+                    background: Some(Background::Color(Color::from_rgba(0.57, 0.72, 0.62, 0.08))),
+                    ..Default::default()
+                })
+                .into(),
+            ];
 
         for col_name in visible_cols {
             col_headers.push(
-                container(
-                    text(col_name)
-                        .size(10)
-                        .style(move |_| text::Style { color: Some(color_green_accent) })
-                )
+                container(text(col_name).size(10).style(move |_| text::Style {
+                    color: Some(color_green_accent),
+                }))
                 .width(Length::Fixed(cell_width))
                 .height(Length::Fixed(cell_height))
                 .align_x(Alignment::Center)
@@ -211,7 +221,7 @@ impl MatrixScreen {
                     background: Some(Background::Color(Color::from_rgba(0.57, 0.72, 0.62, 0.05))),
                     ..Default::default()
                 })
-                .into()
+                .into(),
             );
         }
 
@@ -223,27 +233,28 @@ impl MatrixScreen {
         for (r_relative, row_name) in visible_rows.iter().enumerate() {
             let r_actual = self.scroll_row + r_relative;
 
-            let mut row_cells = vec![
-                container(
-                    text(row_name)
-                        .size(11)
-                        .style(move |_| text::Style { color: Some(color_green_accent) })
-                )
-                .width(Length::Fixed(cell_width))
-                .height(Length::Fixed(cell_height))
-                .align_x(Alignment::Center)
-                .align_y(Alignment::Center)
-                .style(move |_| container::Style {
-                    border: Border {
-                        color: color_green_accent,
-                        width: 1.0,
-                        radius: 0.0.into(),
-                    },
-                    background: Some(Background::Color(Color::from_rgba(0.57, 0.72, 0.62, 0.05))),
-                    ..Default::default()
-                })
-                .into()
-            ];
+            let mut row_cells =
+                vec![
+                    container(text(row_name).size(11).style(move |_| text::Style {
+                        color: Some(color_green_accent),
+                    }))
+                    .width(Length::Fixed(cell_width))
+                    .height(Length::Fixed(cell_height))
+                    .align_x(Alignment::Center)
+                    .align_y(Alignment::Center)
+                    .style(move |_| container::Style {
+                        border: Border {
+                            color: color_green_accent,
+                            width: 1.0,
+                            radius: 0.0.into(),
+                        },
+                        background: Some(Background::Color(Color::from_rgba(
+                            0.57, 0.72, 0.62, 0.05,
+                        ))),
+                        ..Default::default()
+                    })
+                    .into(),
+                ];
 
             for c_relative in 0..VISIBLE_COLS {
                 let c_actual = self.scroll_col + c_relative;
@@ -259,11 +270,9 @@ impl MatrixScreen {
                 };
 
                 row_cells.push(
-                    container(
-                        text(cell_val)
-                            .size(10)
-                            .style(move |_| text::Style { color: Some(cell_color) })
-                    )
+                    container(text(cell_val).size(10).style(move |_| text::Style {
+                        color: Some(cell_color),
+                    }))
                     .width(Length::Fixed(cell_width))
                     .height(Length::Fixed(cell_height))
                     .align_x(Alignment::Center)
@@ -276,7 +285,7 @@ impl MatrixScreen {
                         },
                         ..Default::default()
                     })
-                    .into()
+                    .into(),
                 );
             }
 
@@ -285,8 +294,7 @@ impl MatrixScreen {
 
         // Draw a static viewport of rows/columns
         let total_grid_width = cell_width * (VISIBLE_COLS + 1) as f32;
-        let inner_grid = column(grid_rows)
-            .width(Length::Fixed(total_grid_width));
+        let inner_grid = column(grid_rows).width(Length::Fixed(total_grid_width));
 
         let grid_container = glowing_border_container(
             container(inner_grid)
@@ -300,13 +308,9 @@ impl MatrixScreen {
             off_y,
         );
 
-        let layout_content = column![
-            header_row,
-            Space::new(0.0, 15.0),
-            grid_container
-        ]
-        .width(Length::Fill)
-        .height(Length::Fill);
+        let layout_content = column![header_row, Space::new(0.0, 15.0), grid_container]
+            .width(Length::Fill)
+            .height(Length::Fill);
 
         container(layout_content)
             .width(Length::Fill)

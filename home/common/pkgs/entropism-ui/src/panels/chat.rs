@@ -1,6 +1,6 @@
-use iced::widget::{column, container, text, Space, button};
+use crate::glow::{get_radial_offsets, glowing_border_container, glowing_text};
+use iced::widget::{button, column, container, text, Space};
 use iced::{Alignment, Border, Color, Element, Length, Shadow};
-use crate::glow::{glowing_text, get_radial_offsets, glowing_border_container};
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -18,9 +18,7 @@ pub struct ChatScreen {
 
 impl ChatScreen {
     pub fn new() -> Self {
-        Self {
-            _focused_item: 0,
-        }
+        Self { _focused_item: 0 }
     }
 
     pub fn update(&mut self, message: Message) -> Option<ScreenEvent> {
@@ -53,7 +51,13 @@ impl ChatScreen {
         let (off_x, off_y) = get_radial_offsets(w * 0.5, h * 0.5, w, h);
 
         let content = column![
-            glowing_text("CHAT MODULE // OFFLINE", 24, color_green_accent, off_x, off_y),
+            glowing_text(
+                "CHAT MODULE // OFFLINE",
+                24,
+                color_green_accent,
+                off_x,
+                off_y
+            ),
             Space::new(0.0, 20.0),
             glowing_text("PEER CONNECTIONS: 0", 16, color_green_accent, off_x, off_y),
             Space::new(0.0, 40.0),
@@ -61,11 +65,15 @@ impl ChatScreen {
                 column![
                     text("CHAT CHANNELS ARE LOCKED.")
                         .size(16)
-                        .style(move |_| text::Style { color: Some(color_green_accent) }),
+                        .style(move |_| text::Style {
+                            color: Some(color_green_accent)
+                        }),
                     Space::new(0.0, 10.0),
                     text("ESTABLISHING SECURE SSH TUNNEL... TIMEOUT.")
                         .size(14)
-                        .style(move |_| text::Style { color: Some(color_green_accent) }),
+                        .style(move |_| text::Style {
+                            color: Some(color_green_accent)
+                        }),
                 ]
                 .padding(20)
                 .width(Length::Fill),
@@ -78,7 +86,9 @@ impl ChatScreen {
             button(
                 text("RETURN TO DASHBOARD")
                     .size(14)
-                    .style(move |_| text::Style { color: Some(color_green_accent) })
+                    .style(move |_| text::Style {
+                        color: Some(color_green_accent)
+                    })
             )
             .padding(12)
             .on_press(Message::GoBack)

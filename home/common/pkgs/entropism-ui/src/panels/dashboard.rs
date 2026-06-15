@@ -1,6 +1,6 @@
+use crate::glow::{get_radial_offsets, glowing_border_container, glowing_text, radiate_element};
 use iced::widget::{button, column, container, row, text, Space};
 use iced::{Alignment, Background, Border, Color, Element, Length, Shadow};
-use crate::glow::{glowing_text, get_radial_offsets, glowing_border_container, radiate_element};
 
 pub struct DashboardScreen {
     selected_block: usize,
@@ -27,11 +27,23 @@ pub enum ScreenEvent {
 
 const BLOCKS: &[(&str, &str)] = &[
     ("EMAILS", "Access terminal archive and mail client modules."),
-    ("MATRIX", "Manage data routing grids and sub-net architectures."),
-    ("STORE", "Browse internal inventory database and purchase combat hardware surplus."),
-    ("CHAT", "Access real-time local networks and peer chat channels."),
+    (
+        "MATRIX",
+        "Manage data routing grids and sub-net architectures.",
+    ),
+    (
+        "STORE",
+        "Browse internal inventory database and purchase combat hardware surplus.",
+    ),
+    (
+        "CHAT",
+        "Access real-time local networks and peer chat channels.",
+    ),
     ("PRIVATE", "Encrypted vault modules for credential storage."),
-    ("DEVICES", "Control connected neural links and local access bridges."),
+    (
+        "DEVICES",
+        "Control connected neural links and local access bridges.",
+    ),
 ];
 
 impl DashboardScreen {
@@ -72,9 +84,7 @@ impl DashboardScreen {
                 self.focused_item = level + 6;
                 None
             }
-            Message::Disconnect => {
-                Some(ScreenEvent::Disconnect)
-            }
+            Message::Disconnect => Some(ScreenEvent::Disconnect),
         }
     }
 
@@ -92,68 +102,60 @@ impl DashboardScreen {
         }
         if let iced::keyboard::Key::Character(c) = key {
             match c.as_str() {
-                "h" => {
-                    match self.focused_item {
-                        1 | 2 | 4 | 5 => {
-                            self.focused_item -= 1;
-                            self.selected_block = self.focused_item;
-                            return Some(Message::BlockSelected(self.focused_item));
-                        }
-                        6 | 7 => {
-                            self.focused_item = 2;
-                            self.selected_block = 2;
-                            return Some(Message::BlockSelected(2));
-                        }
-                        8 | 9 => {
-                            self.focused_item = 5;
-                            self.selected_block = 5;
-                            return Some(Message::BlockSelected(5));
-                        }
-                        _ => {}
+                "h" => match self.focused_item {
+                    1 | 2 | 4 | 5 => {
+                        self.focused_item -= 1;
+                        self.selected_block = self.focused_item;
+                        return Some(Message::BlockSelected(self.focused_item));
                     }
-                }
-                "l" => {
-                    match self.focused_item {
-                        0 | 1 | 3 | 4 => {
-                            self.focused_item += 1;
-                            self.selected_block = self.focused_item;
-                            return Some(Message::BlockSelected(self.focused_item));
-                        }
-                        2 => {
-                            self.focused_item = 7;
-                        }
-                        5 => {
-                            self.focused_item = 9;
-                        }
-                        _ => {}
+                    6 | 7 => {
+                        self.focused_item = 2;
+                        self.selected_block = 2;
+                        return Some(Message::BlockSelected(2));
                     }
-                }
-                "k" => {
-                    match self.focused_item {
-                        3 | 4 | 5 => {
-                            self.focused_item -= 3;
-                            self.selected_block = self.focused_item;
-                            return Some(Message::BlockSelected(self.focused_item));
-                        }
-                        7 | 8 | 9 => {
-                            self.focused_item -= 1;
-                        }
-                        _ => {}
+                    8 | 9 => {
+                        self.focused_item = 5;
+                        self.selected_block = 5;
+                        return Some(Message::BlockSelected(5));
                     }
-                }
-                "j" => {
-                    match self.focused_item {
-                        0 | 1 | 2 => {
-                            self.focused_item += 3;
-                            self.selected_block = self.focused_item;
-                            return Some(Message::BlockSelected(self.focused_item));
-                        }
-                        6 | 7 | 8 => {
-                            self.focused_item += 1;
-                        }
-                        _ => {}
+                    _ => {}
+                },
+                "l" => match self.focused_item {
+                    0 | 1 | 3 | 4 => {
+                        self.focused_item += 1;
+                        self.selected_block = self.focused_item;
+                        return Some(Message::BlockSelected(self.focused_item));
                     }
-                }
+                    2 => {
+                        self.focused_item = 7;
+                    }
+                    5 => {
+                        self.focused_item = 9;
+                    }
+                    _ => {}
+                },
+                "k" => match self.focused_item {
+                    3 | 4 | 5 => {
+                        self.focused_item -= 3;
+                        self.selected_block = self.focused_item;
+                        return Some(Message::BlockSelected(self.focused_item));
+                    }
+                    7 | 8 | 9 => {
+                        self.focused_item -= 1;
+                    }
+                    _ => {}
+                },
+                "j" => match self.focused_item {
+                    0 | 1 | 2 => {
+                        self.focused_item += 3;
+                        self.selected_block = self.focused_item;
+                        return Some(Message::BlockSelected(self.focused_item));
+                    }
+                    6 | 7 | 8 => {
+                        self.focused_item += 1;
+                    }
+                    _ => {}
+                },
                 _ => {}
             }
         }
@@ -191,17 +193,26 @@ impl DashboardScreen {
         };
 
         // --- Column A: MAIL BOX ---
-        let make_block = |idx: usize| {
+        let make_block = |idx: usize| -> Element<Message> {
             let name = BLOCKS[idx].0;
             let is_selected = self.focused_item == idx;
 
-            let text_color = if is_selected { color_bg } else { color_green_accent };
-            let box_bg = if is_selected { Some(Background::Color(color_green_accent)) } else { None };
+            let text_color = if is_selected {
+                color_bg
+            } else {
+                color_green_accent
+            };
+            let box_bg = if is_selected {
+                Some(Background::Color(color_green_accent))
+            } else {
+                None
+            };
 
-            let metadata_divider = container(Space::new(1.0, Length::Fill)).style(move |_| container::Style {
-                background: Some(Background::Color(text_color)),
-                ..Default::default()
-            });
+            let metadata_divider =
+                container(Space::new(1.0, Length::Fill)).style(move |_| container::Style {
+                    background: Some(Background::Color(text_color)),
+                    ..Default::default()
+                });
 
             // Estimated layout center coordinates for each tile
             let (est_x, est_y) = match idx {
@@ -219,7 +230,9 @@ impl DashboardScreen {
             let inner_content = if is_selected {
                 column![
                     Space::new(0.0, Length::Fill),
-                    text(name).size(16).style(move |_| text::Style { color: Some(text_color) }),
+                    text(name).size(16).style(move |_| text::Style {
+                        color: Some(text_color)
+                    }),
                     Space::new(0.0, Length::Fill),
                     container(Space::new(Length::Fill, 1.0)).style(move |_| container::Style {
                         background: Some(Background::Color(text_color)),
@@ -227,11 +240,19 @@ impl DashboardScreen {
                     }),
                     row![
                         Space::new(3.0, 0.0),
-                        text("BLOCK DETAIL LEFT").size(7).style(move |_| text::Style { color: Some(text_color) }),
+                        text("BLOCK DETAIL LEFT")
+                            .size(7)
+                            .style(move |_| text::Style {
+                                color: Some(text_color)
+                            }),
                         Space::new(3.0, 0.0),
                         metadata_divider,
                         Space::new(3.0, 0.0),
-                        text("BLOCK DETAIL RIGHT").size(7).style(move |_| text::Style { color: Some(text_color) }),
+                        text("BLOCK DETAIL RIGHT")
+                            .size(7)
+                            .style(move |_| text::Style {
+                                color: Some(text_color)
+                            }),
                         Space::new(3.0, 0.0),
                     ]
                     .align_y(Alignment::Center)
@@ -262,21 +283,49 @@ impl DashboardScreen {
                 .align_x(Alignment::Center)
             };
 
-            button(inner_content)
-                .width(Length::Fixed(170.0))
-                .height(Length::Fixed(195.0))
-                .padding(0)
-                .on_press(Message::BlockEntered(idx))
-                .style(move |_, _| button::Style {
-                    background: box_bg,
-                    border: Border {
-                        color: color_green_accent,
-                        width: 1.0,
-                        radius: 0.0.into(),
-                    },
-                    shadow: Shadow::default(),
-                    text_color,
-                })
+            if is_selected {
+                let block_btn = button(inner_content)
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .padding(0)
+                    .on_press(Message::BlockEntered(idx))
+                    .style(move |_, _| button::Style {
+                        background: box_bg,
+                        border: Border {
+                            color: color_green_accent,
+                            width: 1.0,
+                            radius: 0.0.into(),
+                        },
+                        shadow: Shadow::default(),
+                        text_color,
+                    });
+
+                container(block_btn)
+                    .padding(8.0)
+                    .width(Length::Fixed(170.0))
+                    .height(Length::Fixed(195.0))
+                    .into()
+            } else {
+                let block_btn = button(inner_content)
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .padding(0)
+                    .on_press(Message::BlockEntered(idx))
+                    .style(move |_, _| button::Style {
+                        background: None,
+                        border: Border::default(),
+                        shadow: Shadow::default(),
+                        text_color,
+                    });
+
+                let glowing_container =
+                    glowing_border_container(block_btn, 1.0, color_green_accent, off_x, off_y);
+
+                container(glowing_container)
+                    .width(Length::Fixed(170.0))
+                    .height(Length::Fixed(195.0))
+                    .into()
+            }
         };
 
         let grid_row1 = row![make_block(0), make_block(1), make_block(2)].spacing(45);
@@ -310,7 +359,7 @@ impl DashboardScreen {
                         container(
                             text(selected_block_data.0)
                                 .size(16)
-                                .style(move |_| text::Style { color: Some(c) })
+                                .style(move |_| text::Style { color: Some(c) }),
                         )
                         .padding(12)
                         .width(Length::Fill)
@@ -325,7 +374,13 @@ impl DashboardScreen {
                         .into()
                     }),
                     Space::new(0.0, 15.0),
-                    glowing_text(selected_block_data.1, 14, color_green_accent, col_b_off_x, col_b_off_y),
+                    glowing_text(
+                        selected_block_data.1,
+                        14,
+                        color_green_accent,
+                        col_b_off_x,
+                        col_b_off_y
+                    ),
                 ]
                 .padding(15),
                 1.0,
@@ -355,8 +410,16 @@ impl DashboardScreen {
                 label.to_string()
             };
 
-            let text_color = if is_selected { color_bg } else { color_green_accent };
-            let btn_bg = if is_selected { Some(Background::Color(color_green_accent)) } else { None };
+            let text_color = if is_selected {
+                color_bg
+            } else {
+                color_green_accent
+            };
+            let btn_bg = if is_selected {
+                Some(Background::Color(color_green_accent))
+            } else {
+                None
+            };
 
             // Dynamic offsets for levels (Column C is far right)
             let est_level_y = match level {
@@ -369,7 +432,12 @@ impl DashboardScreen {
             let (col_c_off_x, col_c_off_y) = get_radial_offsets(w * 0.95, est_level_y, w, h);
 
             let btn_content = if is_selected {
-                text(btn_text).size(16).style(move |_| text::Style { color: Some(text_color) }).into()
+                text(btn_text)
+                    .size(16)
+                    .style(move |_| text::Style {
+                        color: Some(text_color),
+                    })
+                    .into()
             } else {
                 glowing_text(btn_text, 16, text_color, col_c_off_x, col_c_off_y)
             };
@@ -393,14 +461,9 @@ impl DashboardScreen {
         let col_c = column![
             section_header("C", "SECURITY LEVEL", w * 0.95, 50.0),
             Space::new(0.0, 15.0),
-            column![
-                make_level(0),
-                make_level(1),
-                make_level(2),
-                make_level(3),
-            ]
-            .spacing(15)
-            .height(Length::Fill)
+            column![make_level(0), make_level(1), make_level(2), make_level(3),]
+                .spacing(15)
+                .height(Length::Fill)
         ]
         .width(Length::Shrink);
 
@@ -408,7 +471,7 @@ impl DashboardScreen {
             row![col_a, col_b, col_c]
                 .spacing(25)
                 .width(Length::Fill)
-                .height(Length::Fill)
+                .height(Length::Fill),
         )
         .padding(iced::Padding {
             left: 15.0,

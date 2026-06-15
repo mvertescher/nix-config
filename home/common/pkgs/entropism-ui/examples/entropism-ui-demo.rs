@@ -1,10 +1,10 @@
 use iced::widget::{column, container, Space};
 use iced::{event, Background, Color, Element, Length, Subscription, Task};
-use entropism_ui::dashboard::{self, DashboardScreen};
-use entropism_ui::mail::{self, MailScreen};
-use entropism_ui::store::{self, StoreScreen};
-use entropism_ui::chat::{self, ChatScreen};
-use entropism_ui::matrix::{self, MatrixScreen};
+use entropism_ui::panels::chat::{self, ChatScreen};
+use entropism_ui::panels::dashboard::{self, DashboardScreen};
+use entropism_ui::panels::mail::{self, MailScreen};
+use entropism_ui::panels::matrix::{self, MatrixScreen};
+use entropism_ui::panels::store::{self, StoreScreen};
 use entropism_ui::layout;
 
 use entropism_ui::fonts;
@@ -243,7 +243,7 @@ impl App {
     }
 }
 
-fn get_demo_emails() -> Vec<entropism_ui::mail::Email> {
+fn get_demo_emails() -> Vec<entropism_ui::panels::mail::Email> {
     struct Lcg {
         state: u32,
     }
@@ -309,7 +309,7 @@ fn get_demo_emails() -> Vec<entropism_ui::mail::Email> {
         }
         let body = body_parts.join("\n\n");
 
-        emails.push(entropism_ui::mail::Email { subject, from, body });
+        emails.push(entropism_ui::panels::mail::Email { subject, from, body });
     }
 
     emails
@@ -325,30 +325,30 @@ fn get_demo_store_categories() -> Vec<String> {
     ]
 }
 
-fn get_demo_store_items() -> Vec<Vec<entropism_ui::store::StoreItem>> {
+fn get_demo_store_items() -> Vec<Vec<entropism_ui::panels::store::StoreItem>> {
     vec![
         // Hasta (Rifles)
         vec![
-            entropism_ui::store::StoreItem { name: "AURUM".to_string(), sub: "MODUS OPERANDI".to_string(), dps: 120, pnt: 45, acc: 8, rof: 6, desc: "Gravitas: XII\nCeleritas: V\nSpatium: XLV\n\nBonus:\nFortuna +V% celeris".to_string() },
-            entropism_ui::store::StoreItem { name: "ARGENTUM".to_string(), sub: "BELLUM ACER".to_string(), dps: 98, pnt: 32, acc: 6, rof: 8, desc: "Gravitas: XV\nCeleritas: VIII\nSpatium: XXXVIII\n\nBonus:\nImpeditus +X% armor".to_string() },
+            entropism_ui::panels::store::StoreItem { name: "AURUM".to_string(), sub: "MODUS OPERANDI".to_string(), dps: 120, pnt: 45, acc: 8, rof: 6, desc: "Gravitas: XII\nCeleritas: V\nSpatium: XLV\n\nBonus:\nFortuna +V% celeris".to_string() },
+            entropism_ui::panels::store::StoreItem { name: "ARGENTUM".to_string(), sub: "BELLUM ACER".to_string(), dps: 98, pnt: 32, acc: 6, rof: 8, desc: "Gravitas: XV\nCeleritas: VIII\nSpatium: XXXVIII\n\nBonus:\nImpeditus +X% armor".to_string() },
         ],
         // Gladius (SMG)
         vec![
-            entropism_ui::store::StoreItem { name: "VERTIGO".to_string(), sub: "TEMPUS FUGIT".to_string(), dps: 86, pnt: 30, acc: 5, rof: 5, desc: "Gravitas: XX\nCeleritas: XXII\nSpatium: XII\n\nBonus:\nReflexio +IX virtutis\nNexus modularis +II".to_string() },
-            entropism_ui::store::StoreItem { name: "IGNIS".to_string(), sub: "CARPE DIEM".to_string(), dps: 95, pnt: 25, acc: 4, rof: 10, desc: "Gravitas: XVIII\nCeleritas: XXV\nSpatium: XV\n\nBonus:\nReflexio +V virtutis".to_string() },
-            entropism_ui::store::StoreItem { name: "AQUA".to_string(), sub: "MEMENTO MORI".to_string(), dps: 78, pnt: 28, acc: 9, rof: 4, desc: "Gravitas: VIII\nCeleritas: VI\nSpatium: XXV\n\nBonus:\nIntellectus modularis".to_string() },
+            entropism_ui::panels::store::StoreItem { name: "VERTIGO".to_string(), sub: "TEMPUS FUGIT".to_string(), dps: 86, pnt: 30, acc: 5, rof: 5, desc: "Gravitas: XX\nCeleritas: XXII\nSpatium: XII\n\nBonus:\nReflexio +IX virtutis\nNexus modularis +II".to_string() },
+            entropism_ui::panels::store::StoreItem { name: "IGNIS".to_string(), sub: "CARPE DIEM".to_string(), dps: 95, pnt: 25, acc: 4, rof: 10, desc: "Gravitas: XVIII\nCeleritas: XXV\nSpatium: XV\n\nBonus:\nReflexio +V virtutis".to_string() },
+            entropism_ui::panels::store::StoreItem { name: "AQUA".to_string(), sub: "MEMENTO MORI".to_string(), dps: 78, pnt: 28, acc: 9, rof: 4, desc: "Gravitas: VIII\nCeleritas: VI\nSpatium: XXV\n\nBonus:\nIntellectus modularis".to_string() },
         ],
         // Sagitta (Sniper)
         vec![
-            entropism_ui::store::StoreItem { name: "SOLIS".to_string(), sub: "AMOR FATI".to_string(), dps: 220, pnt: 85, acc: 9, rof: 1, desc: "Gravitas: XLV\nCeleritas: II\nSpatium: CXX\n\nBonus:\nAdfero potentia xII.V".to_string() },
+            entropism_ui::panels::store::StoreItem { name: "SOLIS".to_string(), sub: "AMOR FATI".to_string(), dps: 220, pnt: 85, acc: 9, rof: 1, desc: "Gravitas: XLV\nCeleritas: II\nSpatium: CXX\n\nBonus:\nAdfero potentia xII.V".to_string() },
         ],
         // Scutum (Shotgun)
         vec![
-            entropism_ui::store::StoreItem { name: "TERRA".to_string(), sub: "AD ASTRA".to_string(), dps: 180, pnt: 15, acc: 2, rof: 1, desc: "Gravitas: LXXX\nCeleritas: LXV\nSpatium: VIII\n\nBonus:\nImpactus +XL% celeris".to_string() },
+            entropism_ui::panels::store::StoreItem { name: "TERRA".to_string(), sub: "AD ASTRA".to_string(), dps: 180, pnt: 15, acc: 2, rof: 1, desc: "Gravitas: LXXX\nCeleritas: LXV\nSpatium: VIII\n\nBonus:\nImpactus +XL% celeris".to_string() },
         ],
         // Pugio (Pistol)
         vec![
-            entropism_ui::store::StoreItem { name: "VENTUS".to_string(), sub: "IN MEDIAS RES".to_string(), dps: 110, pnt: 40, acc: 7, rof: 2, desc: "Gravitas: XXXV\nCeleritas: XII\nSpatium: XXX\n\nBonus:\nLetalis letum xII.O".to_string() },
+            entropism_ui::panels::store::StoreItem { name: "VENTUS".to_string(), sub: "IN MEDIAS RES".to_string(), dps: 110, pnt: 40, acc: 7, rof: 2, desc: "Gravitas: XXXV\nCeleritas: XII\nSpatium: XXX\n\nBonus:\nLetalis letum xII.O".to_string() },
         ],
     ]
 }

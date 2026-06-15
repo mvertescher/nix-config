@@ -1,6 +1,6 @@
 use iced::widget::{column, container, Space};
 use iced::{event, Background, Color, Element, Length, Subscription, Task};
-use entropism_ui::mail::{self, MailScreen};
+use entropism_ui::panels::mail::{self, MailScreen};
 use entropism_ui::layout;
 
 use entropism_ui::fonts;
@@ -98,7 +98,7 @@ impl App {
     }
 }
 
-fn get_demo_emails() -> Vec<entropism_ui::mail::Email> {
+fn get_demo_emails() -> Vec<entropism_ui::panels::mail::Email> {
     struct Lcg {
         state: u32,
     }
@@ -161,7 +161,7 @@ fn get_demo_emails() -> Vec<entropism_ui::mail::Email> {
         }
         let body = body_parts.join("\n\n");
 
-        emails.push(entropism_ui::mail::Email { subject, from, body });
+        emails.push(entropism_ui::panels::mail::Email { subject, from, body });
     }
 
     emails

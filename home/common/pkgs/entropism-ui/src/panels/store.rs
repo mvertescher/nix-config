@@ -1,6 +1,6 @@
+use crate::glow::{get_radial_offsets, glowing_border_container, glowing_text};
 use iced::widget::{button, column, container, row, text, Space};
 use iced::{Alignment, Background, Border, Color, Element, Length, Shadow};
-use crate::glow::{glowing_text, get_radial_offsets, glowing_border_container};
 
 #[derive(Debug, Clone)]
 pub struct StoreItem {
@@ -75,15 +75,17 @@ impl StoreScreen {
                 self.focused_item = idx + self.categories.len();
                 None
             }
-            Message::GoBack => {
-                Some(ScreenEvent::GoToDashboard)
-            }
+            Message::GoBack => Some(ScreenEvent::GoToDashboard),
             Message::Tick(_instant) => {
                 if self.selected_category < self.items.len() {
                     let count = self.items[self.selected_category].len();
                     for i in 0..count {
                         if i < self.card_heights.len() {
-                            let target = if self.selected_item == i { 320.0 } else { 105.0 };
+                            let target = if self.selected_item == i {
+                                320.0
+                            } else {
+                                105.0
+                            };
                             let diff = target - self.card_heights[i];
                             if diff.abs() > 0.5 {
                                 self.card_heights[i] += diff * 0.25;
@@ -208,30 +210,44 @@ impl StoreScreen {
         let customer_metadata = glowing_border_container(
             column![
                 row![
-                    text("CUSTOMER").size(10).style(move |_| text::Style { color: Some(color_green_accent) }),
+                    text("CUSTOMER").size(10).style(move |_| text::Style {
+                        color: Some(color_green_accent)
+                    }),
                     Space::new(Length::Fill, 0.0),
-                    text("#NC488402").size(10).style(move |_| text::Style { color: Some(color_green_accent) }),
+                    text("#NC488402").size(10).style(move |_| text::Style {
+                        color: Some(color_green_accent)
+                    }),
                 ],
                 container(Space::new(Length::Fill, 1.0)).style(move |_| container::Style {
                     background: Some(Background::Color(color_green_accent)),
                     ..Default::default()
                 }),
                 row![
-                    text("LOYALTY DISCOUNT").size(8).style(move |_| text::Style { color: Some(color_green_accent) }),
+                    text("LOYALTY DISCOUNT")
+                        .size(8)
+                        .style(move |_| text::Style {
+                            color: Some(color_green_accent)
+                        }),
                     Space::new(Length::Fill, 0.0),
-                    text("10%").size(8).style(move |_| text::Style { color: Some(color_green_accent) }),
+                    text("10%").size(8).style(move |_| text::Style {
+                        color: Some(color_green_accent)
+                    }),
                 ],
                 row![
-                    text("LAST UPDATE").size(8).style(move |_| text::Style { color: Some(color_green_accent) }),
+                    text("LAST UPDATE").size(8).style(move |_| text::Style {
+                        color: Some(color_green_accent)
+                    }),
                     Space::new(Length::Fill, 0.0),
-                    text("10/05/2077").size(8).style(move |_| text::Style { color: Some(color_green_accent) }),
+                    text("10/05/2077").size(8).style(move |_| text::Style {
+                        color: Some(color_green_accent)
+                    }),
                 ],
             ]
             .spacing(4),
             1.0,
             color_green_accent,
             col_a_meta_off_x,
-            col_a_meta_off_y
+            col_a_meta_off_y,
         );
 
         let make_category_button = |idx: usize| {
@@ -239,8 +255,16 @@ impl StoreScreen {
             let is_selected = self.selected_category == idx;
             let is_focused = self.focused_item == idx;
 
-            let text_color = if is_selected { color_bg } else { color_green_accent };
-            let btn_bg = if is_selected { Some(Background::Color(color_green_accent)) } else { None };
+            let text_color = if is_selected {
+                color_bg
+            } else {
+                color_green_accent
+            };
+            let btn_bg = if is_selected {
+                Some(Background::Color(color_green_accent))
+            } else {
+                None
+            };
 
             let label = if is_focused && !is_selected {
                 format!("> {}", name)
@@ -249,9 +273,15 @@ impl StoreScreen {
             };
 
             let btn_content: Element<Message> = if is_selected {
-                text(label).size(14).style(move |_| text::Style { color: Some(text_color) }).into()
+                text(label)
+                    .size(14)
+                    .style(move |_| text::Style {
+                        color: Some(text_color),
+                    })
+                    .into()
             } else {
-                let (off_x, off_y) = get_radial_offsets(w * 0.1, h * 0.3 + (idx as f32) * 50.0, w, h);
+                let (off_x, off_y) =
+                    get_radial_offsets(w * 0.1, h * 0.3 + (idx as f32) * 50.0, w, h);
                 glowing_text(label, 14, text_color, off_x, off_y)
             };
 
@@ -283,7 +313,13 @@ impl StoreScreen {
             Space::new(0.0, 15.0),
             category_list,
             Space::new(0.0, Length::Fill),
-            glowing_text("SPARE TIME MANAGER WAS DEVELOPED BY\nSEOCHO. SERVING CUSTOMERS SINCE 2006.", 8, color_green_accent, -0.8, 0.8),
+            glowing_text(
+                "SPARE TIME MANAGER WAS DEVELOPED BY\nSEOCHO. SERVING CUSTOMERS SINCE 2006.",
+                8,
+                color_green_accent,
+                -0.8,
+                0.8
+            ),
         ]
         .width(Length::FillPortion(2))
         .height(Length::Fill);
@@ -300,7 +336,9 @@ impl StoreScreen {
 
         // Horizontal card picker list
         const EMPTY_ITEMS: &[StoreItem] = &[];
-        let current_category_items = self.items.get(self.selected_category)
+        let current_category_items = self
+            .items
+            .get(self.selected_category)
             .map(|v| v.as_slice())
             .unwrap_or(EMPTY_ITEMS);
         let make_item_card = |idx: usize| {
@@ -308,8 +346,16 @@ impl StoreScreen {
             let is_selected = self.selected_item == idx;
             let is_focused = self.focused_item == idx + self.categories.len();
 
-            let text_color = if is_selected { color_bg } else { color_green_accent };
-            let card_header_bg = if is_selected { Some(Background::Color(color_green_accent)) } else { None };
+            let text_color = if is_selected {
+                color_bg
+            } else {
+                color_green_accent
+            };
+            let card_header_bg = if is_selected {
+                Some(Background::Color(color_green_accent))
+            } else {
+                None
+            };
 
             // Calculate dynamic radial offsets
             let est_x = w * 0.45 + (idx as f32) * 220.0;
@@ -323,10 +369,17 @@ impl StoreScreen {
 
             let card_header = container(
                 column![
-                    text(&item.name).size(14).font(bold_font).style(move |_| text::Style { color: Some(text_color) }),
-                    text(&item.sub).size(9).style(move |_| text::Style { color: Some(text_color) }),
+                    text(&item.name)
+                        .size(14)
+                        .font(bold_font)
+                        .style(move |_| text::Style {
+                            color: Some(text_color)
+                        }),
+                    text(&item.sub).size(9).style(move |_| text::Style {
+                        color: Some(text_color)
+                    }),
                 ]
-                .padding(8)
+                .padding(8),
             )
             .width(Length::Fill)
             .style(move |_| container::Style {
@@ -341,13 +394,29 @@ impl StoreScreen {
 
             // Card statistics block
             let stats_block = row![
-                column![text("DPS").size(8), text(item.dps.to_string()).size(14).font(bold_font)].align_x(Alignment::Center),
+                column![
+                    text("DPS").size(8),
+                    text(item.dps.to_string()).size(14).font(bold_font)
+                ]
+                .align_x(Alignment::Center),
                 Space::new(Length::Fill, 0.0),
-                column![text("PNT").size(8), text(item.pnt.to_string()).size(14).font(bold_font)].align_x(Alignment::Center),
+                column![
+                    text("PNT").size(8),
+                    text(item.pnt.to_string()).size(14).font(bold_font)
+                ]
+                .align_x(Alignment::Center),
                 Space::new(Length::Fill, 0.0),
-                column![text("ACC").size(8), text(item.acc.to_string()).size(14).font(bold_font)].align_x(Alignment::Center),
+                column![
+                    text("ACC").size(8),
+                    text(item.acc.to_string()).size(14).font(bold_font)
+                ]
+                .align_x(Alignment::Center),
                 Space::new(Length::Fill, 0.0),
-                column![text("ROF").size(8), text(item.rof.to_string()).size(14).font(bold_font)].align_x(Alignment::Center),
+                column![
+                    text("ROF").size(8),
+                    text(item.rof.to_string()).size(14).font(bold_font)
+                ]
+                .align_x(Alignment::Center),
             ]
             .padding(6);
 
@@ -360,14 +429,21 @@ impl StoreScreen {
                     background: Some(Background::Color(color_green_accent)),
                     ..Default::default()
                 }),
-                container(
-                    text(&item.desc).size(11).style(move |_| text::Style { color: Some(color_green_accent) })
-                )
+                container(text(&item.desc).size(11).style(move |_| text::Style {
+                    color: Some(color_green_accent)
+                }))
                 .padding(8)
                 .height(Length::Fill),
             ];
 
-            let border_color = if is_focused { color_green_accent } else { Color { a: 0.4, ..color_green_accent } };
+            let border_color = if is_focused {
+                color_green_accent
+            } else {
+                Color {
+                    a: 0.4,
+                    ..color_green_accent
+                }
+            };
             let border_width = if is_focused { 2.0 } else { 1.0 };
 
             button(inner_card_content)
@@ -406,7 +482,7 @@ impl StoreScreen {
             row![left_panel, right_panel]
                 .spacing(35)
                 .width(Length::Fill)
-                .height(Length::Fill)
+                .height(Length::Fill),
         )
         .padding(iced::Padding {
             left: 15.0,
