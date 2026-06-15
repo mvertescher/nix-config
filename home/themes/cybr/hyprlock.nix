@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   # Lucid Color Palette dynamically derived from Stylix!
@@ -19,9 +24,7 @@ let
   fontM = 12;
 
   # Dynamic Wallpaper Integration
-  wallpaperPath = if config.custom.wallpaper.enable
-                  then "${config.custom.wallpaper.file}"
-                  else "";
+  wallpaperPath = if config.custom.wallpaper.enable then "${config.custom.wallpaper.file}" else "";
 
   # Blur & Noise settings matching cybr-hyprland
   blurSize = 6;
@@ -89,10 +92,10 @@ in
           halign = "center";
           valign = "center";
         }
-        # Active playing song info
+        # Uptime
         {
           monitor = "";
-          text = "cmd[update:1000] echo \"$(${pkgs.playerctl}/bin/playerctl metadata --format '{{title}} - {{artist}}' 2>/dev/null || true)\"";
+          text = ''cmd[update:1000] echo "󰔚 $(${pkgs.gawk}/bin/awk '{s=$1; d=int(s/86400); h=int((s%86400)/3600); m=int((s%3600)/60); sec=int(s%60); printf "%02d:%02d:%02d:%02d\n", d, h, m, sec}' /proc/uptime)"'';
           shadow_passes = 0;
           color = lib.mkForce "rgba(${re0}${trF})";
           font_size = fontM;
