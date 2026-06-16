@@ -49,6 +49,7 @@ in {
     brightnessctl
     grimblast # hyprland screenshot tool
     hyprland
+    hyprpicker
     nemo # file manager
     playerctl
     wofi # app launcher
