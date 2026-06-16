@@ -1,5 +1,5 @@
-use iced::widget::{column, container, Space};
-use iced::{event, Background, Color, Element, Length, Subscription, Task};
+use iced::widget::{column, container};
+use iced::{event, Background, Element, Length, Subscription, Task};
 use entropism_ui::panels::chat::{self, ChatScreen};
 use entropism_ui::panels::dashboard::{self, DashboardScreen};
 use entropism_ui::panels::mail::{self, MailScreen};
@@ -158,7 +158,6 @@ impl App {
                             return self.update(Message::MatrixMsg(msg));
                         }
                     }
-                    _ => {}
                 }
             }
             Message::WindowResized(size) => {
@@ -183,7 +182,7 @@ impl App {
         Subscription::batch(subs)
     }
 
-    fn view(&self) -> Element<Message> {
+    fn view(&self) -> Element<'_, Message> {
         use entropism_ui::colors;
         let color_bg = colors::COLOR_BG;
         let color_green_accent = colors::COLOR_GREEN_ACCENT;

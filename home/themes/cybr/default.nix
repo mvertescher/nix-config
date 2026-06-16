@@ -1,5 +1,11 @@
 { pkgs, config, lib, ... }:
 
+let
+  theme = import ./colors/cybrcolors.nix;
+  staticPixel = pkgs.runCommand "base0C-pixel.png" {
+    color = "#${theme.base0C}";
+  } "${lib.getExe' pkgs.imagemagick "convert"} xc:$color png32:$out";
+in
 {
   imports = [
     ./starship.nix
@@ -12,8 +18,8 @@
 
   stylix = {
     enable = true;
-    base16Scheme = import ./colors/cybrcolors.nix;
-    image = lib.mkDefault (config.lib.stylix.pixel "base0C");
+    base16Scheme = theme;
+    image = staticPixel;
   };
 
   programs.alacritty.settings.window.opacity = lib.mkForce 0.10;

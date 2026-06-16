@@ -167,7 +167,7 @@ impl DashboardScreen {
         color_bg: Color,
         color_green_accent: Color,
         window_size: Option<iced::Size>,
-    ) -> Element<Message> {
+    ) -> Element<'_, Message> {
         let (w, h) = match window_size {
             Some(size) => (size.width, size.height),
             None => (1920.0, 1080.0),

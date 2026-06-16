@@ -1,5 +1,5 @@
-use iced::widget::{column, container, Space};
-use iced::{event, Background, Color, Element, Length, Subscription, Task};
+use iced::widget::{column, container};
+use iced::{event, Background, Element, Length, Subscription, Task};
 use entropism_ui::panels::mail::{self, MailScreen};
 use entropism_ui::layout;
 
@@ -70,7 +70,7 @@ impl App {
         ])
     }
 
-    fn view(&self) -> Element<Message> {
+    fn view(&self) -> Element<'_, Message> {
         use entropism_ui::colors;
         let color_bg = colors::COLOR_BG;
         let color_green_accent = colors::COLOR_GREEN_ACCENT;
@@ -80,16 +80,27 @@ impl App {
         let body = self.mail_screen.view(color_bg, color_green_accent, self.window_size)
             .map(Message::MailMsg);
 
+        let central_area = container(body)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .center_x(Length::Fill)
+            .center_y(Length::Fill);
+
+        let footer_banner = layout::bottom_bar(color_bg, color_green_accent, self.window_size, true);
+
         let layout_content = column![
             header,
-            Space::new(0.0, 15.0),
-            body
+            central_area,
+            footer_banner
         ]
-        .padding(20);
+        .spacing(20)
+        .width(Length::Fill)
+        .height(Length::Fill);
 
         container(layout_content)
             .width(Length::Fill)
             .height(Length::Fill)
+            .padding(20)
             .style(move |_| container::Style {
                 background: Some(Background::Color(color_bg)),
                 ..Default::default()

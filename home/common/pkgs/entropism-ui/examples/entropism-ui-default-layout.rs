@@ -1,5 +1,5 @@
 use iced::widget::{column, container, Space};
-use iced::{event, Background, Color, Element, Length, Subscription, Task};
+use iced::{event, Background, Element, Length, Subscription, Task};
 use entropism_ui::layout;
 
 use entropism_ui::fonts;
@@ -27,6 +27,7 @@ struct App {
 
 #[derive(Debug, Clone)]
 enum Message {
+    #[allow(dead_code)]
     Event(iced::Event),
     WindowResized(iced::Size),
 }
@@ -57,7 +58,7 @@ impl App {
         ])
     }
 
-    fn view(&self) -> Element<Message> {
+    fn view(&self) -> Element<'_, Message> {
         use entropism_ui::colors;
         let color_bg = colors::COLOR_BG;
         let color_green_accent = colors::COLOR_GREEN_ACCENT;

@@ -34,7 +34,7 @@ impl LoginScreen {
         }
     }
 
-    pub fn view(&self, color_bg: Color, color_green_accent: Color) -> Element<Message> {
+    pub fn view(&self, color_bg: Color, color_green_accent: Color) -> Element<'_, Message> {
         column![
             text("USERNAME:").size(22).style(move |_| text::Style {
                 color: Some(color_green_accent)

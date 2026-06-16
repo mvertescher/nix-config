@@ -80,7 +80,7 @@ impl App {
         ])
     }
 
-    fn view(&self) -> Element<Message> {
+    fn view(&self) -> Element<'_, Message> {
         use entropism_ui::colors;
         let color_bg = colors::COLOR_BG;
         let color_green_accent = colors::COLOR_GREEN_ACCENT;
