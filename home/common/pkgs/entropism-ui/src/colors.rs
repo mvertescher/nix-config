@@ -8,11 +8,11 @@ pub const COLOR_BG: Color = Color {
 };
 
 pub const COLOR_GREEN_ACCENT: Color = Color {
-    r: 0.57,
-    g: 0.72,
-    b: 0.62,
+    r: 0.5490,
+    g: 0.7373,
+    b: 0.5333,
     a: 1.0,
-};
+}; // #8CBC88
 
 pub const COLOR_RED: Color = Color {
     r: 0.9686,

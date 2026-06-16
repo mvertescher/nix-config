@@ -112,7 +112,9 @@ impl App {
 
         let central_area = container(central_content)
             .width(Length::Fill)
-            .height(Length::Fill);
+            .height(Length::Fill)
+            .center_x(Length::Fill)
+            .center_y(Length::Fill);
 
         let is_dark_bottom_bar = match &self.screen {
             Screen::Login(_) => false,
