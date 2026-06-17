@@ -1,0 +1,13 @@
+[package]
+name = "neomil-ui"
+version = "0.1.0"
+edition = "2021"
+autoexamples = false
+autobins = false
+
+[dependencies]
+iced = { version = "0.13", features = ["canvas", "tokio"] }
+
+[[bin]]
+name = "neomil-ui-demo"
+path = "examples/neomil-ui-demo.rs"

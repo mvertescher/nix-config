@@ -6,6 +6,9 @@ let
   entropism-ui-demo = pkgs.callPackage ../pkgs/entropism-ui {
     inherit rajdhani-fontshare;
   };
+  neomil-ui-demo = pkgs.callPackage ../pkgs/neomil-ui {
+    inherit orbitron;
+  };
 in
 {
   imports = [
@@ -27,6 +30,7 @@ in
     entropism-ui-demo
     # google-chrome
     libreoffice
+    neomil-ui-demo
     obs-studio
     qutebrowser
     spotify
