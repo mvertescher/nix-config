@@ -51,6 +51,7 @@ in
       minicom # serial console
       # neofetch
       nixfmt-rfc-style
+      nufmt
       nushell
       openconnect # vpn client
       openocd
