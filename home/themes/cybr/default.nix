@@ -19,7 +19,7 @@ in
   stylix = {
     enable = true;
     base16Scheme = theme;
-    image = staticPixel;
+    image = lib.mkDefault staticPixel;
   };
 
   programs.alacritty.settings.window.opacity = lib.mkForce 0.10;
