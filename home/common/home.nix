@@ -40,7 +40,7 @@ in
     # notifications about home-manager news
     news.display = "silent";
 
-    gtk.gtk4.theme = null;
+
 
     stylix.fonts = {
       monospace = {

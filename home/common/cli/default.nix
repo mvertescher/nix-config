@@ -5,6 +5,7 @@ let
   cargo-local-registry = pkgs.callPackage ../pkgs/cargo-local-registry.nix { };
   form-rs = pkgs.callPackage ../pkgs/form-rs.nix { };
   puncover = pkgs.python311Packages.callPackage ../pkgs/puncover { };
+  repo-rs = pkgs.callPackage ../pkgs/repo-rs.nix { };
 in
 {
   imports = [
@@ -41,6 +42,14 @@ in
       gemini-cli
       gdb
       gitRepo
+      # repo-rs is a Rust implementation of the Android repo tool.
+      # It is significantly faster (10x+) for everyday query operations like:
+      #   repo-rs status
+      #   repo-rs diff
+      #   repo-rs list
+      # However, it contains upstream bugs (such as 'repo-rs info' crashing on path resolution),
+      # so we co-install both standard Python 'gitRepo' (repo) and 'repo-rs'.
+      repo-rs
       gnumake
       google-cloud-sdk
       graphviz
