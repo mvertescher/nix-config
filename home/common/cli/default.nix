@@ -3,6 +3,7 @@
 let
   cargo-index = pkgs.callPackage ../pkgs/cargo-index.nix { };
   cargo-local-registry = pkgs.callPackage ../pkgs/cargo-local-registry.nix { };
+  dprint = pkgs.callPackage ../pkgs/dprint.nix { };
   form-rs = pkgs.callPackage ../pkgs/form-rs.nix { };
   puncover = pkgs.python311Packages.callPackage ../pkgs/puncover { };
   repo-rs = pkgs.callPackage ../pkgs/repo-rs.nix { };
@@ -33,6 +34,7 @@ in
       cmatrix
       curl
       direnv
+      dprint
       docker
       dust
       eza # better ls
