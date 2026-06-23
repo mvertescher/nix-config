@@ -1,10 +1,8 @@
-
-- create scripts/download_images.py to download all the neomil related images from:
+- [x] create scripts/download_images.py to download all the neomil related images from:
   - https://www.behance.net/gallery/118663901/Cyberpunk-2077User-Interface-(Part-1)
   - https://www.behance.net/gallery/133185623/Cyberpunk-2077User-Interface-(Part-2)
-- define main colors.rs:
+- [x] define main colors.rs:
   - primary red #FF3B45
   - primary black #DEDE17
   - also need to set opacities properly
-- create iced advanced container. "chip type 1"
-
+- [x] create iced advanced container. "chip type 1"

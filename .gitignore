@@ -1,9 +1,9 @@
-result*
-home/common/pkgs/entropism-ui/fonts/
-home/common/pkgs/neomil-ui/fonts/
 **/Cargo.lock
 **/target/
-home/common/pkgs/entropism-ui/entropism-ui/
+home/common/pkgs/entropism-ui/fonts/
 home/common/pkgs/entropism-ui/images/
+home/common/pkgs/neomil-ui/fonts/
+home/common/pkgs/neomil-ui/images/
+result*
 
 
