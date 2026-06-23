@@ -10,7 +10,6 @@ let
     tree = "eza -T";
 
     # Git aliases
-    gcdxf = "git clean -dxf; git submodule foreach --recursive git clean -dxf";
     gits = "git status";
     gsu = "git submodule update --init --recursive";
 
@@ -32,6 +31,9 @@ in {
       # Temporary fix to get around OpenGL issues
       # term = "LD_PRELOAD=/lib/x86_64-linux-gnu/libnss_cache.so.2 nixGLIntel alacritty";
       term = "nixGLIntel alacritty";
+
+      # Git clean alias (uses Zsh-specific multi-command syntax)
+      gcdxf = "git clean -dxf; git submodule foreach --recursive git clean -dxf";
     };
   };
 
@@ -51,6 +53,12 @@ in {
         # use_ls_colors: true
       }
       $env.config.show_banner = false
+
+      # Git clean command (Nushell-compatible function)
+      def gcdxf [] {
+        ^git clean -dxf
+        ^git submodule foreach --recursive git clean -dxf
+      }
     ''; };
 
     shellAliases = commonShellAliases // {
