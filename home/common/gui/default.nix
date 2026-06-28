@@ -7,7 +7,7 @@ let
     inherit rajdhani-fontshare;
   };
   neomil-ui-demo = pkgs.callPackage ../pkgs/neomil-ui {
-    inherit orbitron;
+    inherit orbitron rajdhani-fontshare;
   };
 in
 {

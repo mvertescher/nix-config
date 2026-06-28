@@ -10,6 +10,7 @@
 , xorg
 , wayland
 , orbitron
+, rajdhani-fontshare
 }:
 
 let
@@ -52,7 +53,20 @@ craneLib.buildPackage {
 
   preBuild = ''
     mkdir -p fonts
-    cp ${orbitron}/share/fonts/truetype/*.ttf fonts/
+    if [ -f "${orbitron}/share/fonts/truetype/Orbitron-Regular.ttf" ]; then
+      cp ${orbitron}/share/fonts/truetype/*.ttf fonts/
+    else
+      cp "${orbitron}/share/fonts/truetype/Orbitron Light.ttf" fonts/Orbitron-Regular.ttf
+      cp "${orbitron}/share/fonts/truetype/Orbitron Medium.ttf" fonts/Orbitron-Medium.ttf
+      cp "${orbitron}/share/fonts/truetype/Orbitron Bold.ttf" fonts/Orbitron-SemiBold.ttf
+      cp "${orbitron}/share/fonts/truetype/Orbitron Bold.ttf" fonts/Orbitron-Bold.ttf
+    fi
+    cp ${rajdhani-fontshare}/share/fonts/truetype/*.ttf fonts/
+  '';
+
+  postInstall = ''
+    mkdir -p $out/share/fonts/truetype
+    cp fonts/Orbitron-*.ttf $out/share/fonts/truetype/
   '';
 
   postFixup = ''

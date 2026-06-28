@@ -6,3 +6,8 @@
   - primary black #DEDE17
   - also need to set opacities properly
 - [x] create iced advanced container. "chip type 1"
+- [ ] Reproduce dashboard image (`img-07-dashboard.png`) in demo app:
+  - [ ] Implement custom background (gradient/glow)
+  - [ ] Implement `InfoPanel` widget (chamfered top-right/bottom-left)
+  - [ ] Implement `DiamondMenu` widget (interlocking interactive diamonds)
+  - [ ] Update demo app layout, colors, and text to match image

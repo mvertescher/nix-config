@@ -39,3 +39,12 @@ pub const COLOR_PRIMARY_BLACK_TRANSLUCENT: Color = Color {
     b: 0.0902,
     a: 0.15,
 };
+
+// Subtle blue/teal glow color for background
+pub const COLOR_GLOW: Color = Color {
+    r: 0.0,
+    g: 0.1,
+    b: 0.2,
+    a: 1.0,
+};
+

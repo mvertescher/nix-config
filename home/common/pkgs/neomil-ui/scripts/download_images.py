@@ -4,16 +4,16 @@ import os
 import argparse
 
 NEOMIL_IMAGES = [
-    ("img-00-login.png", "5707b7118663901.60e5fa6f09768.png"),
-    ("img-01-dashboard.png", "065b4f118663901.60e5fa6a80a6b.png"),
-    ("img-02-emails.png", "e0d82b118663901.60901b222676f.png"),
-    ("img-03-matrix.png", "c0c628118663901.60e5fa6a810c2.png"),
-    ("img-04-store.png", "cfff3f118663901.60901b22240e8.png"),
-    ("img-05-chat.png", "ea286f118663901.60e5fa6a7fab1.png"),
+    # ("img-00-login.png", "5707b7118663901.60e5fa6f09768.png"),
+    # ("img-01-dashboard.png", "065b4f118663901.60e5fa6a80a6b.png"),
+    # ("img-02-emails.png", "e0d82b118663901.60901b222676f.png"),
+    # ("img-03-matrix.png", "c0c628118663901.60e5fa6a810c2.png"),
+    # ("img-04-store.png", "cfff3f118663901.60901b22240e8.png"),
+    # ("img-05-chat.png", "ea286f118663901.60e5fa6a7fab1.png"),
     ("img-06-private.png", "6cfb20118663901.60901b2225a24.png"),
-    ("img-07-devices.png", "3fc4ef118663901.60e5fa6a7f2f7.png"),
-    ("img-08-network.png", "c2e462118663901.60e5fa6a80470.png"),
-    ("img-09-terminal.png", "2ff48a118663901.60901b22249d2.png"),
+    ("img-07-dashboard.png", "3fc4ef118663901.60e5fa6a7f2f7.png"),
+    ("img-08-main.png", "c2e462118663901.60e5fa6a80470.png"),
+    ("img-09-store.png", "2ff48a118663901.60901b22249d2.png"),
 ]
 
 def main():
