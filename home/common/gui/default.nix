@@ -6,7 +6,7 @@ let
   entropism-ui-demo = pkgs.callPackage ../pkgs/entropism-ui {
     inherit rajdhani-fontshare;
   };
-  neomil-ui-demo = pkgs.callPackage ../pkgs/neomil-ui {
+  neomil-ui-dashboard = pkgs.callPackage ../pkgs/neomil-ui {
     inherit orbitron rajdhani-fontshare;
   };
 in
@@ -30,7 +30,7 @@ in
     entropism-ui-demo
     # google-chrome
     libreoffice
-    neomil-ui-demo
+    neomil-ui-dashboard
     obs-studio
     qutebrowser
     spotify

@@ -8,3 +8,46 @@ pub const RAJDHANI_REGULAR: &[u8] = include_bytes!("../fonts/Rajdhani-Regular.tt
 pub const RAJDHANI_MEDIUM: &[u8] = include_bytes!("../fonts/Rajdhani-Medium.ttf");
 pub const RAJDHANI_SEMIBOLD: &[u8] = include_bytes!("../fonts/Rajdhani-SemiBold.ttf");
 pub const RAJDHANI_BOLD: &[u8] = include_bytes!("../fonts/Rajdhani-Bold.ttf");
+
+// iced::Font constants for easy use
+pub const FONT_ORBITRON_REGULAR: iced::Font = iced::Font {
+    family: iced::font::Family::Name("Orbitron"),
+    weight: iced::font::Weight::Normal,
+    stretch: iced::font::Stretch::Normal,
+    style: iced::font::Style::Normal,
+};
+
+pub const FONT_ORBITRON_MEDIUM: iced::Font = iced::Font {
+    family: iced::font::Family::Name("Orbitron"),
+    weight: iced::font::Weight::Medium,
+    stretch: iced::font::Stretch::Normal,
+    style: iced::font::Style::Normal,
+};
+
+pub const FONT_ORBITRON_BOLD: iced::Font = iced::Font {
+    family: iced::font::Family::Name("Orbitron"),
+    weight: iced::font::Weight::Bold,
+    stretch: iced::font::Stretch::Normal,
+    style: iced::font::Style::Normal,
+};
+
+pub const FONT_RAJDHANI_REGULAR: iced::Font = iced::Font {
+    family: iced::font::Family::Name("Rajdhani"),
+    weight: iced::font::Weight::Normal,
+    stretch: iced::font::Stretch::Normal,
+    style: iced::font::Style::Normal,
+};
+
+pub const FONT_RAJDHANI_MEDIUM: iced::Font = iced::Font {
+    family: iced::font::Family::Name("Rajdhani"),
+    weight: iced::font::Weight::Medium,
+    stretch: iced::font::Stretch::Normal,
+    style: iced::font::Style::Normal,
+};
+
+pub const FONT_RAJDHANI_BOLD: iced::Font = iced::Font {
+    family: iced::font::Family::Name("Rajdhani"),
+    weight: iced::font::Weight::Bold,
+    stretch: iced::font::Stretch::Normal,
+    style: iced::font::Style::Normal,
+};

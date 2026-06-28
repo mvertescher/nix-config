@@ -9,5 +9,5 @@ autobins = false
 iced = { version = "0.13", features = ["canvas", "tokio"] }
 
 [[bin]]
-name = "neomil-ui-demo"
-path = "examples/neomil-ui-demo.rs"
+name = "neomil-ui-dashboard"
+path = "examples/neomil-ui-dashboard.rs"

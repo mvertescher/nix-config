@@ -7,6 +7,20 @@ pub const COLOR_BG: Color = Color {
     a: 1.0,
 };
 
+pub const COLOR_BG_TRANSPARENT: Color = Color {
+    r: 0.05,
+    g: 0.05,
+    b: 0.05,
+    a: 0.9,
+};
+
+pub const COLOR_BG_VERY_TRANSPARENT: Color = Color {
+    r: 0.0,
+    g: 0.0,
+    b: 0.0,
+    a: 0.15,
+};
+
 // Primary Red: #FF3B45
 pub const COLOR_PRIMARY_RED: Color = Color {
     r: 1.0,
