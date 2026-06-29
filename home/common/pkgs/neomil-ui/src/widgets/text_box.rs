@@ -40,8 +40,8 @@ impl<Message> canvas::Program<Message> for TextBoxBackground {
         let y_top = MARGIN + inset;
         let y_bottom = h - MARGIN - inset;
 
-        let y_tab_start = y_top + cut_s + 20.0;
-        let y_tab_height = 120.0; // Height of the text part of the tab
+        let y_tab_start = y_top + cut_s;
+        let y_tab_height = 160.0; // Height of the text part of the tab
         let y_ext_height = 80.0;  // Height of the filled extension
         let y_tab_end = y_tab_start + y_tab_height;
         let y_ext_end = y_tab_end + y_ext_height;
@@ -140,6 +140,7 @@ pub fn text_box<'a, Message: 'static>(
     logo_char: &'a str,
     logo_sub1: &'a str,
     logo_sub2: &'a str,
+    footer: Option<Element<'a, Message>>,
     color_accent: Color,
 ) -> Element<'a, Message> {
     // Background is accent color at 5% opacity
@@ -192,6 +193,10 @@ pub fn text_box<'a, Message: 'static>(
         .align_y(Alignment::Center);
         
         left_content = left_content.push(logo);
+    }
+
+    if let Some(foot) = footer {
+        left_content = left_content.push(foot);
     }
 
     // Right padding is increased by TAB_DEPTH to keep content inside the main box area

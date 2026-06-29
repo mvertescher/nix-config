@@ -61,7 +61,7 @@ pub fn top_bar<'a, Message: 'static + Clone>() -> Element<'a, Message> {
             ..Default::default()
         })
     ]
-    .align_x(Alignment::Center);
+    .align_x(Alignment::Start);
 
     // --- SECURITY LEVELS (Top-Right) ---
     let security_levels = column![
@@ -81,7 +81,7 @@ pub fn top_bar<'a, Message: 'static + Clone>() -> Element<'a, Message> {
     // --- ASSEMBLE TOP BAR ROW ---
     let top_bar_row = row![
         customer_level,
-        Space::with_width(Length::Fill),
+        Space::with_width(Length::Fixed(40.0)),
         logo,
         Space::with_width(Length::Fill),
         security_levels,

@@ -70,7 +70,7 @@ craneLib.buildPackage {
   '';
 
   postFixup = ''
-    for bin in neomil-ui-dashboard; do
+    for bin in neomil-ui-dashboard neomil-ui-mail; do
       wrapProgram $out/bin/$bin \
         --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [
           vulkan-loader

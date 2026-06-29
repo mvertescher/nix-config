@@ -107,6 +107,7 @@ pub fn dashboard<'a, Message: 'static + Clone>(
             "M",
             "PRECISION LIQUID",
             "POLYMER MUSCLE",
+            None,
             colors::COLOR_PRIMARY_RED,
         )
     ]

@@ -5,25 +5,27 @@ stdenv.mkDerivation rec {
   version = "2.0";
 
   srcs = [
+    # Downloaded from official Google Fonts repo because Fontshare versions
+    # had corrupted metadata (family: "false" for Regular and Bold).
     (fetchurl {
-      url = "https://cdn.fontshare.com/wf/LD4GN5DAY3TSLWUL3GLS46MEB6VPUTR3/Q7KOJ6SEN53YLOGH553ZT4C4CRM26FS5/KEUOY5K2E2AMUOGQQJXBQIRNTOH7KQHK.ttf";
-      sha256 = "0awy199gipwjx085h8031nkv211bdg8ai8n25a6c52ni6bd6l6b1";
+      url = "https://raw.githubusercontent.com/google/fonts/main/ofl/rajdhani/Rajdhani-Light.ttf";
+      sha256 = "1hqk29j1rbhpskzpnzl8xad0ck2rh5zwy3vqqmhq2lv9mw9ry3hl";
     })
     (fetchurl {
-      url = "https://cdn.fontshare.com/wf/TORRJZXM2VMPF273F2CW63EE7L3YA4M6/BFYFLXKSXG7BLHOLOWBOHF5NM7G6JOGB/LDKU4RGE4SF5XSV27OQVKWRBND7BGDBM.ttf";
-      sha256 = "1lz12s88yxnf4yf8dimrihhhqpwnz8b2xpqlsb5gwfjfxx9qqm5r";
+      url = "https://raw.githubusercontent.com/google/fonts/main/ofl/rajdhani/Rajdhani-Regular.ttf";
+      sha256 = "164v0f76ii7cricjzyc2qmb4c7mcgg2jwl39wnk530iim0lc47vf";
     })
     (fetchurl {
-      url = "https://cdn.fontshare.com/wf/NA4IAGUSLF4EHK37TDKERPZ7NDGSDIRO/4XGPZHVJIUBBZRT537KB4JKL6RNS3XIB/VX4XSJAXNZJ4VVJS4IPP5XNZGYR2DJJL.ttf";
-      sha256 = "1b6kjdv9pmg2z9b0z8gz8m94blr7fr4iwqiw55an64j0q6mp9s84";
+      url = "https://raw.githubusercontent.com/google/fonts/main/ofl/rajdhani/Rajdhani-Medium.ttf";
+      sha256 = "1hpaj5jqvf4pdg18cnkzzaifczdmx9i1ffy5ba3y61n2wk7pvzqj";
     })
     (fetchurl {
-      url = "https://cdn.fontshare.com/wf/3YMFAGHETBCEBNTBSRMIDXZ6E24ARXRZ/ECW7GXGVRFMXAJVR23A2AEV3VB6POCLM/O6HA6YRXLOW7WGNAXUQYSMKUL6HRPNEV.ttf";
-      sha256 = "10nm926l3g45r7qkv6n0qdsdwjpfn5fff5bpv41d55pmhaf3q72i";
+      url = "https://raw.githubusercontent.com/google/fonts/main/ofl/rajdhani/Rajdhani-SemiBold.ttf";
+      sha256 = "1nimy9dq4w02l2fbx2xprw6qcazxx5ym6nmhzscmjrna31dd5fwl";
     })
     (fetchurl {
-      url = "https://cdn.fontshare.com/wf/HWEVYDWNEA25ABA6YXCAQYCSVDGT2JQF/AURV42SMU5UVKKBWBHHSOHVPHFYA5SHQ/3HBRNX5OMPHHFNBDA65YLCJ5FPUVDT52.ttf";
-      sha256 = "1vwz3kbxv2hasfdcls0h60y62zq1lr6kr0lim93162c4a316ikvh";
+      url = "https://raw.githubusercontent.com/google/fonts/main/ofl/rajdhani/Rajdhani-Bold.ttf";
+      sha256 = "1zba4aii129c3bdcn5ajp90rh5wnazvhn3clfyb4x8c66bfp0539";
     })
   ];
 
