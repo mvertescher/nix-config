@@ -27,17 +27,24 @@ impl<Message> canvas::Program<Message> for MessageCardBackground {
         let h = bounds.height;
         let cut = self.cut_size;
 
+        let is_selected = self.is_selected;
+        let offset = if is_selected { 0.0 } else { 1.0 };
+        let w_eff = w - offset;
+        let h_eff = h - offset;
+        let x0 = offset;
+        let y0 = offset;
+
         let path = canvas::Path::new(|builder| {
-            builder.move_to(Point::new(0.0, 0.0)); // Top-left sharp
-            builder.line_to(Point::new(w - cut, 0.0)); // Top-right cut start
-            builder.line_to(Point::new(w, cut)); // Top-right cut end
-            builder.line_to(Point::new(w, h)); // Bottom-right sharp
-            builder.line_to(Point::new(cut, h)); // Bottom-left cut start
-            builder.line_to(Point::new(0.0, h - cut)); // Bottom-left cut end
+            builder.move_to(Point::new(x0, y0)); // Top-left sharp
+            builder.line_to(Point::new(w_eff - cut, y0)); // Top-right cut start
+            builder.line_to(Point::new(w_eff, y0 + cut)); // Top-right cut end
+            builder.line_to(Point::new(w_eff, h_eff)); // Bottom-right sharp
+            builder.line_to(Point::new(x0 + cut, h_eff)); // Bottom-left cut start
+            builder.line_to(Point::new(x0, h_eff - cut)); // Bottom-left cut end
             builder.close();
         });
 
-        if self.is_selected {
+        if is_selected {
             frame.fill(&path, self.color);
         } else {
             // Translucent background (5% opacity)
@@ -149,10 +156,20 @@ pub fn message_card<'a, Message: 'static + Clone>(
             .align_y(Alignment::Center)
     ]
     .width(Length::Fill)
-    .height(Length::Fixed(60.0));
+    .height(Length::Fill);
 
-    // Make the entire card clickable
-    mouse_area(card_content)
-        .on_press(on_press)
-        .into()
+    // Make the entire card clickable and wrap in a padded container to prevent clipping
+    container(
+        mouse_area(card_content)
+            .on_press(on_press)
+    )
+    .width(Length::Fill)
+    .height(Length::Fixed(60.0))
+    .padding(iced::Padding {
+        top: 1.0,
+        right: 0.0,
+        bottom: 1.0,
+        left: 0.0,
+    })
+    .into()
 }

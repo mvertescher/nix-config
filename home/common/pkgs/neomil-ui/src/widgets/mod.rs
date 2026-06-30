@@ -4,6 +4,7 @@ pub mod level_badge;
 pub mod vertical_text;
 pub mod text_box;
 pub mod floppy_icon;
+pub mod floppy_vector;
 pub mod message_card;
 
 pub use chip::{chip_type_1, info_panel};

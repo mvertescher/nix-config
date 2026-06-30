@@ -28,6 +28,7 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
     selected_id: Option<usize>,
     on_select: impl Fn(usize) -> Message + Clone + 'static,
     on_delete: impl Fn(usize) -> Message + Clone + 'static,
+    scrollable_id: iced::widget::scrollable::Id,
     color_accent: Color,
 ) -> Element<'a, Message> {
     
@@ -53,11 +54,19 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
     .width(Length::Fill);
 
     // Build the list of message rows
-    let mut list_column = column![].spacing(10).width(Length::Fill);
+    let mut list_column = column![]
+        .spacing(10)
+        .width(Length::Fill)
+        .padding(iced::Padding {
+            top: 0.0,
+            right: 20.0,
+            bottom: 0.0,
+            left: 0.0,
+        });
     for email in emails {
         let is_selected = Some(email.id) == selected_id;
         let row_item = row![
-            floppy_icon(color_accent),
+            floppy_icon(color_accent, is_selected, 1.0),
             Space::with_width(10),
             message_card(
                 &email.title,
@@ -78,8 +87,46 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
         left_header,
         Space::with_height(20),
         scrollable(list_column)
+            .id(scrollable_id)
+            .direction(iced::widget::scrollable::Direction::Vertical(
+                iced::widget::scrollable::Scrollbar::new()
+                    .width(4.0)
+                    .scroller_width(4.0)
+                    .margin(5.0)
+            ))
             .height(Length::Fill)
             .width(Length::Fill)
+            .style(move |_, _| {
+                use iced::widget::scrollable::{Style, Rail, Scroller};
+                Style {
+                    container: iced::widget::container::Style::default(),
+                    vertical_rail: Rail {
+                        background: Some(Color { a: 0.02, ..color_accent }.into()),
+                        border: iced::Border {
+                            color: Color::TRANSPARENT,
+                            width: 0.0,
+                            radius: 0.0.into(),
+                        },
+                        scroller: Scroller {
+                            color: Color { a: 0.3, ..color_accent },
+                            border: iced::Border {
+                                color: Color::TRANSPARENT,
+                                width: 0.0,
+                                radius: 4.0.into(),
+                            },
+                        },
+                    },
+                    horizontal_rail: Rail {
+                        background: None,
+                        border: iced::Border::default(),
+                        scroller: Scroller {
+                            color: Color::TRANSPARENT,
+                            border: iced::Border::default(),
+                        },
+                    },
+                    gap: None,
+                }
+            })
     ]
     .width(Length::FillPortion(3))
     .height(Length::Fill);

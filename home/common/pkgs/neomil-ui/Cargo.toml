@@ -15,3 +15,7 @@ path = "examples/neomil-ui-dashboard.rs"
 [[bin]]
 name = "neomil-ui-mail"
 path = "examples/neomil-ui-mail.rs"
+
+[[bin]]
+name = "neomil-ui-floppy"
+path = "examples/neomil-ui-floppy.rs"
