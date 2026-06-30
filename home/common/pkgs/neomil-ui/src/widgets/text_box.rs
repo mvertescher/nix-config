@@ -1,4 +1,4 @@
-use iced::widget::{canvas, column, container, row, text, Space, stack};
+use iced::widget::{canvas, column, container, row, text, Space, stack, scrollable};
 use iced::{Alignment, Color, Element, Length, Point, Rectangle, Renderer, Theme, mouse, Vector};
 use crate::fonts::{FONT_ORBITRON_BOLD, FONT_RAJDHANI_REGULAR};
 
@@ -135,7 +135,9 @@ impl<Message> canvas::Program<Message> for TextBoxBackground {
 /// and Cyberpunk-themed decorative elements (step-out tab on the right with vertical text and filled extension, and bottom logo).
 pub fn text_box<'a, Message: 'static>(
     title: &'a str,
-    body: &'a str,
+    timestamp: Option<&'a str>,
+    content: impl Into<Element<'a, Message>>,
+    scrollable_id: Option<iced::widget::scrollable::Id>,
     vertical_texts: &[&'a str],
     logo_char: &'a str,
     logo_sub1: &'a str,
@@ -156,17 +158,89 @@ pub fn text_box<'a, Message: 'static>(
     };
 
     // --- Content Layout (Title, Body, Logo) ---
+    // Wrap content in a container with right padding to prevent scrollbar overlap
+    let padded_content = container(content.into())
+        .padding(iced::Padding {
+            top: 0.0,
+            right: 15.0,
+            bottom: 0.0,
+            left: 0.0,
+        })
+        .width(Length::Fill);
+
+    let mut s = scrollable(padded_content)
+        .height(Length::Fill)
+        .width(Length::Fill)
+        .direction(iced::widget::scrollable::Direction::Vertical(
+            iced::widget::scrollable::Scrollbar::new()
+                .width(4.0)
+                .scroller_width(4.0)
+                .margin(5.0)
+        ))
+        .style(move |_, _| {
+            use iced::widget::scrollable::{Style, Rail, Scroller};
+            Style {
+                container: iced::widget::container::Style::default(),
+                vertical_rail: Rail {
+                    background: Some(Color { a: 0.02, ..color_accent }.into()),
+                    border: iced::Border {
+                        color: Color::TRANSPARENT,
+                        width: 0.0,
+                        radius: 0.0.into(),
+                    },
+                    scroller: Scroller {
+                        color: Color { a: 0.15, ..color_accent }, // Match 15% opacity
+                        border: iced::Border {
+                            color: Color::TRANSPARENT,
+                            width: 0.0,
+                            radius: 0.0.into(), // Match sharp corners (0.0 radius)
+                        },
+                    },
+                },
+                horizontal_rail: Rail {
+                    background: None,
+                    border: iced::Border::default(),
+                    scroller: Scroller {
+                        color: Color::TRANSPARENT,
+                        border: iced::Border::default(),
+                    },
+                },
+                gap: None,
+            }
+        });
+    if let Some(id) = scrollable_id {
+        s = s.id(id);
+    }
+
+    let title_row = if let Some(ts) = timestamp {
+        row![
+            text(title)
+                .size(20)
+                .font(FONT_ORBITRON_BOLD)
+                .style(move |_| text::Style { color: Some(color_accent) }),
+            Space::with_width(Length::Fill),
+            text(ts)
+                .size(12)
+                .font(FONT_RAJDHANI_REGULAR)
+                .style(move |_| text::Style { color: Some(Color { a: 0.4, ..color_accent }) }),
+        ]
+        .align_y(Alignment::Center)
+        .width(Length::Fill)
+    } else {
+        row![
+            text(title)
+                .size(20)
+                .font(FONT_ORBITRON_BOLD)
+                .style(move |_| text::Style { color: Some(color_accent) })
+        ]
+        .width(Length::Fill)
+    };
+
     let mut left_content = column![
-        text(title)
-            .size(20)
-            .font(FONT_ORBITRON_BOLD)
-            .style(move |_| text::Style { color: Some(color_accent) }),
+        title_row,
         Space::with_height(15),
-        text(body)
-            .size(12)
-            .font(FONT_RAJDHANI_REGULAR)
-            .style(move |_| text::Style { color: Some(color_accent) }),
-        Space::with_height(Length::Fill),
+        s,
+        Space::with_height(10),
     ]
     .spacing(0)
     .width(Length::Fill);
@@ -195,8 +269,32 @@ pub fn text_box<'a, Message: 'static>(
         left_content = left_content.push(logo);
     }
 
+    // Wrap main content in a padded container
+    let padded_main = container(left_content)
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .padding(iced::Padding {
+            top: 20.0 + MARGIN,
+            bottom: if footer.is_some() { 10.0 } else { 20.0 + MARGIN },
+            left: 20.0 + MARGIN,
+            right: 20.0 + MARGIN + TAB_DEPTH,
+        });
+
+    let mut full_column = column![padded_main]
+        .width(Length::Fill)
+        .height(Length::Fill);
+
     if let Some(foot) = footer {
-        left_content = left_content.push(foot);
+        // Footer has special padding to dock to the borders
+        let docked_footer = container(foot)
+            .width(Length::Fill)
+            .padding(iced::Padding {
+                top: 0.0,
+                bottom: MARGIN + 2.0, // +2.0 for border width
+                left: MARGIN + 2.0,
+                right: MARGIN + TAB_DEPTH + 2.0,
+            });
+        full_column = full_column.push(docked_footer);
     }
 
     // Right padding is increased by TAB_DEPTH to keep content inside the main box area
@@ -204,15 +302,7 @@ pub fn text_box<'a, Message: 'static>(
         canvas(bg_program)
             .width(Length::Fill)
             .height(Length::Fill),
-        container(left_content)
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .padding(iced::Padding {
-                top: 20.0 + MARGIN,
-                bottom: 20.0 + MARGIN,
-                left: 20.0 + MARGIN,
-                right: 20.0 + MARGIN + TAB_DEPTH,
-            })
+        full_column
     ]
     .width(Length::Fill)
     .height(Length::Fill)

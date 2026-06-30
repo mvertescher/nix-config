@@ -6,6 +6,7 @@ use crate::widgets::{diamond_menu, text_box, DiamondMenuItem, VerticalText};
 use crate::top_bar::top_bar;
 use crate::fonts::{
     FONT_ORBITRON_REGULAR, FONT_ORBITRON_MEDIUM, FONT_ORBITRON_BOLD,
+    FONT_RAJDHANI_REGULAR,
 };
 
 // Aliases
@@ -102,7 +103,12 @@ pub fn dashboard<'a, Message: 'static + Clone>(
         Space::with_height(20),
         text_box(
             "GO HOME",
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nQuis ipsum suspendisse ultrices gravida. Risus commodo viverra maecenas accumsan lacus vel facilisis.",
+            None, // timestamp
+            text("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nQuis ipsum suspendisse ultrices gravida. Risus commodo viverra maecenas accumsan lacus vel facilisis.")
+                .size(12)
+                .font(FONT_RAJDHANI_REGULAR)
+                .style(|_| text::Style { color: Some(colors::COLOR_PRIMARY_RED) }),
+            None, // scrollable_id
             &["PETROCHEM", "BETTERLIFE TEC"],
             "M",
             "PRECISION LIQUID",

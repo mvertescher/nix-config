@@ -1,7 +1,7 @@
 use iced::{Element, Subscription, Task, Event, keyboard};
 use neomil_ui::fonts;
 use neomil_ui::colors;
-use neomil_ui::panels::{mail_panel, Email};
+use neomil_ui::panels::{mail_panel, Email, ThreadMessage, MailFocus};
 
 pub fn main() -> iced::Result {
     iced::application("NEOMIL // MAIL SYSTEM", App::update, App::view)
@@ -35,7 +35,9 @@ pub fn main() -> iced::Result {
 struct App {
     emails: Vec<Email>,
     selected_id: Option<usize>,
-    scrollable_id: iced::widget::scrollable::Id,
+    list_scrollable_id: iced::widget::scrollable::Id,
+    content_scrollable_id: iced::widget::scrollable::Id,
+    focus: MailFocus,
 }
 
 impl Default for App {
@@ -43,115 +45,215 @@ impl Default for App {
         let emails = vec![
             Email {
                 id: 1,
-                title: "Lorem ipsum dolor".to_string(),
-                sender: "Aenean Vulputate".to_string(),
-                body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin sodales elit id neque porta, ac dictum magna elementum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Aliquam sit amet luctus magna. Suspendisse potenti. Duis ac sem non ante eleifend dictum. Duis quis magna eget diam lobortis facilisis.".to_string(),
+                title: "Lorem Ipsum Dolor".to_string(),
+                sender: "Marcus Aurelius".to_string(),
+                body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nSystem status report:\n\n| Subsystem | Status | Load |\n|---|---|---|\n| Core ICE | NOMINAL | 42% |\n| Buffer | ACTIVE | 18% |\n| Uplink | STABLE | 88% |\n\nPlease verify credentials.".to_string(),
                 is_new: true,
+                timestamp: "22:00".to_string(),
+                thread: vec![
+                    ThreadMessage {
+                        sender: "Julius Caesar".to_string(),
+                        body: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\n\nExcepteur sint occaecat cupidatat non proident:\n- Subnet breach detected\n- ICE deployed successfully\n- Packet loss at 12%\n\nStatus: MONITORING.".to_string(),
+                        timestamp: "22:02".to_string(),
+                    },
+                    ThreadMessage {
+                        sender: "Cicero".to_string(),
+                        body: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.".to_string(),
+                        timestamp: "22:03".to_string(),
+                    },
+                    ThreadMessage {
+                        sender: "Seneca".to_string(),
+                        body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit:\n\n* Premium coverage active\n* High-threat zone deployment\n* Life-saving speed guaranteed\n* 24/7 neural monitoring".to_string(),
+                        timestamp: "22:05".to_string(),
+                    },
+                    ThreadMessage {
+                        sender: "Pliny".to_string(),
+                        body: "Target coordinates and payout:\n\n| Target | Sector | Eddies |\n|---|---|---|\n| T-Bug | Kabuki | 5000 |\n| Vik | Watson | 2000 |".to_string(),
+                        timestamp: "22:08".to_string(),
+                    },
+                    ThreadMessage {
+                        sender: "Tacitus".to_string(),
+                        body: "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.".to_string(),
+                        timestamp: "22:09".to_string(),
+                    },
+                    ThreadMessage {
+                        sender: "Lucretius".to_string(),
+                        body: "De rerum natura. Analysis of the grid:\n\n- Node 1: STABLE\n- Node 2: UNSTABLE\n- Node 3: DISCONNECTED".to_string(),
+                        timestamp: "22:12".to_string(),
+                    },
+                    ThreadMessage {
+                        sender: "Virgil".to_string(),
+                        body: "Arma virumque cano. Battle statistics:\n\n| Unit | HP | Armor | Status |\n|---|---|---|---|\n| V | 100 | 150 | OK |\n| Jackie | 0 | 0 | KIA |".to_string(),
+                        timestamp: "22:15".to_string(),
+                    },
+                    ThreadMessage {
+                        sender: "Horace".to_string(),
+                        body: "Carpe diem. Minimalist list:\n* Live today\n* Trust tomorrow\n* Drink wine".to_string(),
+                        timestamp: "22:18".to_string(),
+                    },
+                    ThreadMessage {
+                        sender: "Ovid".to_string(),
+                        body: "Metamorphoses. Changing states:\n\n| Before | After | Duration |\n|---|---|---|\n| Human | Cyberpsycho | 12s |\n| Flesh | Metal | Permanent |".to_string(),
+                        timestamp: "22:20".to_string(),
+                    },
+                    ThreadMessage {
+                        sender: "Marcus Aurelius".to_string(),
+                        body: "Meditations. Conclusion reached: All is opinion. The patient is stable, the netrunners are traced. Job done.".to_string(),
+                        timestamp: "22:25".to_string(),
+                    }
+                ],
             },
             Email {
                 id: 2,
-                title: "Donec pretium posuere".to_string(),
-                sender: "Morbi Tristique".to_string(),
-                body: "Donec pretium posuere diam, at sodales magna elementum eget. Phasellus congue accumsan nisl, vel rhoncus est volutpat eu. Mauris convallis rhoncus erat, vel varius leo viverra id. Nullam placerat varius magna, a laoreet magna convallis a. Sed eget massa ac purus sodales imperdiet.".to_string(),
+                title: "Consectetur Adipiscing".to_string(),
+                sender: "Seneca".to_string(),
+                body: "Epistulae Morales ad Lucilium. Short advice on cyberware:\n\n* Less is more\n* Protect your wetware\n* Avoid cheap rippers".to_string(),
                 is_new: true,
+                timestamp: "18:30".to_string(),
+                thread: vec![
+                    ThreadMessage {
+                        sender: "Lucilius".to_string(),
+                        body: "But what about the new Sandevistan?\n\n| Model | Speed | Cost |\n|---|---|---|\n| Apogee | +500% | 100k |\n| Falcon | +300% | 50k |".to_string(),
+                        timestamp: "18:32".to_string(),
+                    },
+                    ThreadMessage {
+                        sender: "Seneca".to_string(),
+                        body: "It is a golden shackle. Useful, but dangerous. Use with caution.".to_string(),
+                        timestamp: "18:35".to_string(),
+                    }
+                ],
             },
             Email {
                 id: 3,
-                title: "Nulla facilisi".to_string(),
-                sender: "Phasellus Porta".to_string(),
-                body: "Nulla facilisi. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla.".to_string(),
+                title: "Tempor Incididunt".to_string(),
+                sender: "Trauma Team".to_string(),
+                body: "Your premium membership details:\n\n| Benefit | Status |\n|---|---|\n| 3m Response | ACTIVE |\n| Aero-dyne | ACTIVE |\n| Platinum Care | ACTIVE |".to_string(),
                 is_new: false,
+                timestamp: "15:45".to_string(),
+                thread: vec![],
             },
             Email {
                 id: 4,
-                title: "Curabitur sodales".to_string(),
-                sender: "Vestibulum Lacinia".to_string(),
-                body: "Curabitur sodales ligula in libero. Sed dignissim lacinia nunc. Curabitur tortor. Pellentesque nibh. Aenean quam. In scelerisque sem at dolor. Maecenas mattis. Sed convallis tristique sem. Proin ut ligula vel nunc egestas porttitor. Morbi lectus risus, iaculis vel, suscipit quis, luctus non, massa.".to_string(),
+                title: "Labore Et Dolore".to_string(),
+                sender: "Militech".to_string(),
+                body: "Militech logistics update. Delayed items:\n- 10x Heavy Combat Mechs\n- 50x Smart Rifles\n- 100x Grenades\n\nSecurity clearance required.".to_string(),
                 is_new: false,
+                timestamp: "12:10".to_string(),
+                thread: vec![],
             },
             Email {
                 id: 5,
-                title: "Aenean auctor wisi".to_string(),
-                sender: "Marcus Aurelius".to_string(),
-                body: "Aenean auctor wisi et urna. Aliquam erat volutpat. Duis ac turpis. Integer rutrum ante eu lacus. Vestibulum libero nisl, porta vel, scelerisque eget, malesuada at, neque. Vivamus eget nibh. Etiam cursus leo vel metus.".to_string(),
+                title: "Ut Enim Ad Minim".to_string(),
+                sender: "Cicero".to_string(),
+                body: "In Catilinam. Quo usque tandem abutere, Catilina, patientia nostra?:\n\n1. Catilina is plotting\n2. The Senate knows\n3. O tempora, o mores!".to_string(),
                 is_new: true,
+                timestamp: "10:30".to_string(),
+                thread: vec![],
             },
             Email {
                 id: 6,
-                title: "Vestibulum ante ipsum".to_string(),
+                title: "Quis Nostrud".to_string(),
                 sender: "Julius Caesar".to_string(),
-                body: "Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Morbi lacinia molestie dui. Praesent blandit dolor. Sed non quam. In vel mi sit amet augue congue elementum.".to_string(),
+                body: "De Bello Gallico. Gallia est omnis divisa in partes tres:\n* Belgae\n* Aquitani\n* Celtae\n\nWe conquered them all.".to_string(),
                 is_new: false,
+                timestamp: "09:15".to_string(),
+                thread: vec![],
             },
             Email {
                 id: 7,
-                title: "Mauris ipsum nulla".to_string(),
-                sender: "Cicero".to_string(),
-                body: "Mauris ipsum nulla, metus accumsan a, ultricies sit amet, lacinia eget, lectus. Mauris imperdiet, sem ac laoreet interdum, magna tellus gravida elit, ac dignissim magna sed pede. Aliquam erat volutpat.".to_string(),
+                title: "Ullamco Laboris".to_string(),
+                sender: "Pliny".to_string(),
+                body: "Naturalis Historia. Observations on Mount Vesuvius eruption. It was big. Lots of ash. Stay away.".to_string(),
                 is_new: false,
+                timestamp: "Yesterday".to_string(),
+                thread: vec![],
             },
             Email {
                 id: 8,
-                title: "Donec quis dui".to_string(),
-                sender: "Seneca".to_string(),
-                body: "Donec quis dui at dolor tempor interdum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Mauris viverra et, ac laoreet interdum, magna tellus gravida elit.".to_string(),
+                title: "Aliquip Ex Ea".to_string(),
+                sender: "Tacitus".to_string(),
+                body: "Annales. The fire of Rome. Nero was playing the lyre. Suspicious:\n\n| suspect | Motive | Alibi |\n|---|---|---|\n| Nero | Rebuilding | Playing lyre |\n| Christians | Scapegoat | None |".to_string(),
                 is_new: true,
+                timestamp: "Yesterday".to_string(),
+                thread: vec![
+                    ThreadMessage {
+                        sender: "Pliny".to_string(),
+                        body: "I agree, Nero is guilty. We should write a letter about it.".to_string(),
+                        timestamp: "Yesterday".to_string(),
+                    }
+                ],
             },
             Email {
                 id: 9,
-                title: "Phasellus neque".to_string(),
-                sender: "Pliny the Elder".to_string(),
-                body: "Phasellus neque. Cras ac dui. In hac habitasse platea dictumst. Vivamus convallis eleifend nisl. Nullam eget leo leo. Aliquam vulputate, pede vel vehicula accumsan, mi neque rutrum erat.".to_string(),
+                title: "Duis Aute Irure".to_string(),
+                sender: "Lucretius".to_string(),
+                body: "De rerum natura. Atoms and void. That's all there is. No gods, no cyberpsychosis, just physics.".to_string(),
                 is_new: false,
+                timestamp: "2 days ago".to_string(),
+                thread: vec![],
             },
             Email {
                 id: 10,
-                title: "Integer in mauris".to_string(),
-                sender: "Tacitus".to_string(),
-                body: "Integer in mauris eu nibh euismod gravida. Duis ac tellus. Donec quis dui at dolor tempor interdum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae.".to_string(),
+                title: "Dolore Eu Fugiat".to_string(),
+                sender: "Virgil".to_string(),
+                body: "Aeneid. The wooden horse. Timeo Danaos et dona ferentes:\n- It's a trap\n- Don't bring it in\n- Laocoon was right".to_string(),
                 is_new: false,
+                timestamp: "3 days ago".to_string(),
+                thread: vec![],
             },
             Email {
                 id: 11,
-                title: "Vivamus eget nibh".to_string(),
-                sender: "Suetonius".to_string(),
-                body: "Vivamus eget nibh. Etiam cursus leo vel metus. Nulla facilisi. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet.".to_string(),
+                title: "Excepteur Sint".to_string(),
+                sender: "Horace".to_string(),
+                body: "Ars Poetica. How to write good code:\n1. Keep it simple\n2. Don't panic\n3. Use Ref Cell only when needed".to_string(),
                 is_new: true,
+                timestamp: "3 days ago".to_string(),
+                thread: vec![],
             },
             Email {
                 id: 12,
-                title: "Etiam cursus leo".to_string(),
-                sender: "Plutarch".to_string(),
-                body: "Etiam cursus leo vel metus. Nulla facilisi. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum.".to_string(),
+                title: "Occaecat Cupidatat".to_string(),
+                sender: "Ovid".to_string(),
+                body: "Ars Amatoria. How to hack hearts:\n* Be mysterious\n* Send encrypted shards\n* Never reply instantly".to_string(),
                 is_new: false,
+                timestamp: "4 days ago".to_string(),
+                thread: vec![],
             },
             Email {
                 id: 13,
-                title: "Cras ac dui".to_string(),
-                sender: "Livy".to_string(),
-                body: "Cras ac dui. In hac habitasse platea dictumst. Vivamus convallis eleifend nisl. Nullam eget leo leo. Aliquam vulputate, pede vel vehicula accumsan, mi neque rutrum erat, eu congue orci.".to_string(),
+                title: "Non Proident".to_string(),
+                sender: "Tacitus".to_string(),
+                body: "Germania. The tribes of the north. They are tough. They don't use cyberware, just axes. Dangerous.".to_string(),
                 is_new: false,
+                timestamp: "5 days ago".to_string(),
+                thread: vec![],
             },
             Email {
                 id: 14,
-                title: "Duis ac turpis".to_string(),
-                sender: "Ovid".to_string(),
-                body: "Duis ac turpis. Integer rutrum ante eu lacus. Vestibulum libero nisl, porta vel, scelerisque eget, malesuada at, neque. Vivamus eget nibh. Etiam cursus leo vel metus. Nulla facilisi.".to_string(),
+                title: "Sunt In Culpa".to_string(),
+                sender: "Cicero".to_string(),
+                body: "De Officiis. On duties. A citizen must:\n- Pay taxes\n- Hack Arasaka\n- Protect the family".to_string(),
                 is_new: true,
+                timestamp: "1 week ago".to_string(),
+                thread: vec![],
             },
             Email {
                 id: 15,
-                title: "Nullam eget leo".to_string(),
-                sender: "Virgil".to_string(),
-                body: "Nullam eget leo leo. Aliquam vulputate, pede vel vehicula accumsan, mi neque rutrum erat, eu congue orci lorem eget lorem. Vestibulum ante ipsum primis in faucibus orci luctus.".to_string(),
+                title: "Qui Officia".to_string(),
+                sender: "Seneca".to_string(),
+                body: "De Brevitate Vitae. Life is short, but cyberware makes it feel longer. Or shorter, if you get shot. Choose wisely.".to_string(),
                 is_new: false,
+                timestamp: "1 week ago".to_string(),
+                thread: vec![],
             },
         ];
 
         App {
             emails,
             selected_id: Some(1),
-            scrollable_id: iced::widget::scrollable::Id::unique(),
+            list_scrollable_id: iced::widget::scrollable::Id::unique(),
+            content_scrollable_id: iced::widget::scrollable::Id::unique(),
+            focus: MailFocus::List,
         }
     }
 }
@@ -184,7 +286,7 @@ impl App {
                 let final_y = center_offset.clamp(0.0, max_scroll);
 
                 iced::widget::scrollable::scroll_to(
-                    self.scrollable_id.clone(),
+                    self.list_scrollable_id.clone(),
                     iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: final_y },
                 )
             } else {
@@ -195,75 +297,204 @@ impl App {
         }
     }
 
+    fn delete_email(&mut self, id: usize) -> Task<Message> {
+        self.emails.retain(|e| e.id != id);
+        if self.selected_id == Some(id) {
+            self.selected_id = self.emails.first().map(|e| e.id);
+        }
+        self.scroll_to_selected()
+    }
+
+    fn add_random_email(&mut self) {
+        const SENDERS: &[&str] = &[
+            "Marcus Aurelius",
+            "Julius Caesar",
+            "Cicero",
+            "Seneca",
+            "Pliny",
+            "Tacitus",
+            "Lucretius",
+            "Virgil",
+            "Horace",
+            "Ovid",
+        ];
+        const TITLES: &[&str] = &[
+            "Lorem Ipsum Dolor",
+            "Consectetur Adipiscing",
+            "Tempor Incididunt",
+            "Labore Et Dolore",
+            "Ut Enim Ad Minim",
+            "Quis Nostrud",
+            "Ullamco Laboris",
+            "Aliquip Ex Ea",
+            "Duis Aute Irure",
+            "Dolore Eu Fugiat",
+        ];
+        const BODIES: &[&str] = &[
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit:\n\n* Premium coverage active\n* High-threat zone deployment\n* Life-saving speed guaranteed\n* 24/7 neural monitoring",
+            "Tempor incididunt ut labore et dolore magna aliqua. System status report:\n\n| Subsystem | Status | Load |\n|---|---|---|\n| Core ICE | NOMINAL | 42% |\n| Buffer | ACTIVE | 18% |\n| Uplink | STABLE | 88% |\n\nPlease verify credentials.",
+            "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\n\nExcepteur sint occaecat cupidatat non proident:\n- Subnet breach detected\n- ICE deployed successfully\n- Packet loss at 12%\n\nStatus: MONITORING.",
+            "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.\n\nTarget coordinates and payout:\n\n| Target | Sector | Eddies |\n|---|---|---|\n| T-Bug | Kabuki | 5000 |\n| Vik | Watson | 2000 |",
+        ];
+
+        let next_id = self.emails.iter().map(|e| e.id).max().unwrap_or(0) + 1;
+        let index = next_id;
+        
+        // Pseudo-random length between 5 and 20
+        let thread_len = 5 + (index * 7 + 3) % 16; // 5 + [0..15] = 5..20
+        
+        let mut thread = Vec::new();
+        for i in 0..thread_len {
+            let sender_index = (index + i * 3 + 1) % SENDERS.len();
+            let body_index = (index + i * 7 + 2) % BODIES.len();
+            let timestamp = format!("{}m ago", (thread_len - i) * 2);
+            
+            thread.push(ThreadMessage {
+                sender: SENDERS[sender_index].to_string(),
+                body: BODIES[body_index].to_string(),
+                timestamp,
+            });
+        }
+
+        let root_timestamp = format!("{}m ago", (thread_len + 1) * 2);
+
+        let new_email = Email {
+            id: next_id,
+            title: TITLES[index % TITLES.len()].to_string(),
+            sender: SENDERS[index % SENDERS.len()].to_string(),
+            body: BODIES[index % BODIES.len()].to_string(),
+            is_new: true,
+            timestamp: root_timestamp,
+            thread,
+        };
+        
+        self.emails.push(new_email);
+    }
+
     fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::SelectEmail(id) => {
+                self.focus = MailFocus::List;
                 return self.select_email(id);
             }
             Message::DeleteEmail(id) => {
-                self.emails.retain(|e| e.id != id);
-                if self.selected_id == Some(id) {
-                    self.selected_id = self.emails.first().map(|e| e.id);
-                }
-                return self.scroll_to_selected();
+                return self.delete_email(id);
             }
-            Message::Event(Event::Keyboard(keyboard::Event::KeyPressed { key, .. })) => {
-                match key {
-                    keyboard::Key::Character(c) => {
-                        match c.as_str() {
-                            "j" => {
-                                let next_id = if let Some(selected_id) = self.selected_id {
-                                    if let Some(index) = self.emails.iter().position(|e| e.id == selected_id) {
-                                        if index < self.emails.len() - 1 {
-                                            Some(self.emails[index + 1].id)
-                                        } else {
-                                            Some(selected_id)
+            Message::Event(event) => {
+                if let Event::Keyboard(ref kevent) = event {
+                    println!("DEBUG: Keyboard event: {:?}", kevent);
+                }
+                if let Event::Keyboard(keyboard::Event::KeyPressed { key, modifiers, .. }) = event {
+                    match key {
+                        keyboard::Key::Character(c) => {
+                            let ctrl = modifiers.control();
+                            match c.as_str() {
+                                "f" if ctrl => {
+                                    println!("DEBUG: Ctrl-F pressed, scrolling page down");
+                                    return iced::widget::scrollable::scroll_by(
+                                        self.content_scrollable_id.clone(),
+                                        iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: 400.0 },
+                                    );
+                                }
+                                "b" if ctrl => {
+                                    println!("DEBUG: Ctrl-B pressed, scrolling page up");
+                                    return iced::widget::scrollable::scroll_by(
+                                        self.content_scrollable_id.clone(),
+                                        iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: -400.0 },
+                                    );
+                                }
+                                "a" => {
+                                    println!("DEBUG: 'a' pressed, adding email");
+                                    self.add_random_email();
+                                }
+                                "d" => {
+                                    println!("DEBUG: 'd' pressed, deleting email");
+                                    if let Some(id) = self.selected_id {
+                                        return self.delete_email(id);
+                                    }
+                                }
+                                "h" => {
+                                    println!("DEBUG: 'h' pressed, focusing List");
+                                    self.focus = MailFocus::List;
+                                }
+                                "l" => {
+                                    println!("DEBUG: 'l' pressed, focusing Content");
+                                    if self.selected_id.is_some() {
+                                        self.focus = MailFocus::Content;
+                                    } else if let Some(first) = self.emails.first() {
+                                        self.selected_id = Some(first.id);
+                                        self.focus = MailFocus::Content;
+                                        return self.scroll_to_selected();
+                                    }
+                                }
+                                "j" => {
+                                    match self.focus {
+                                        MailFocus::List => {
+                                            println!("DEBUG: 'j' pressed in List focus, navigating down");
+                                            let next_id = if let Some(selected_id) = self.selected_id {
+                                                if let Some(index) = self.emails.iter().position(|e| e.id == selected_id) {
+                                                    if index < self.emails.len() - 1 {
+                                                        Some(self.emails[index + 1].id)
+                                                    } else {
+                                                        Some(selected_id)
+                                                    }
+                                                } else {
+                                                    self.emails.first().map(|e| e.id)
+                                                }
+                                            } else {
+                                                self.emails.first().map(|e| e.id)
+                                            };
+                                            if let Some(id) = next_id {
+                                                return self.select_email(id);
+                                            }
                                         }
-                                    } else {
-                                        self.emails.first().map(|e| e.id)
-                                    }
-                                } else {
-                                    self.emails.first().map(|e| e.id)
-                                };
-                                if let Some(id) = next_id {
-                                    return self.select_email(id);
-                                }
-                            }
-                            "k" => {
-                                let prev_id = if let Some(selected_id) = self.selected_id {
-                                    if let Some(index) = self.emails.iter().position(|e| e.id == selected_id) {
-                                        if index > 0 {
-                                            Some(self.emails[index - 1].id)
-                                        } else {
-                                            Some(selected_id)
+                                        MailFocus::Content => {
+                                            println!("DEBUG: 'j' pressed in Content focus, scrolling down");
+                                            return iced::widget::scrollable::scroll_by(
+                                                self.content_scrollable_id.clone(),
+                                                iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: 30.0 },
+                                            );
                                         }
-                                    } else {
-                                        self.emails.first().map(|e| e.id)
-                                    }
-                                } else {
-                                    self.emails.first().map(|e| e.id)
-                                };
-                                if let Some(id) = prev_id {
-                                    return self.select_email(id);
-                                }
-                            }
-                            "h" => {
-                                self.selected_id = None;
-                            }
-                            "l" => {
-                                if self.selected_id.is_none() {
-                                    if let Some(first) = self.emails.first() {
-                                        return self.select_email(first.id);
                                     }
                                 }
+                                "k" => {
+                                    match self.focus {
+                                        MailFocus::List => {
+                                            println!("DEBUG: 'k' pressed in List focus, navigating up");
+                                            let prev_id = if let Some(selected_id) = self.selected_id {
+                                                if let Some(index) = self.emails.iter().position(|e| e.id == selected_id) {
+                                                    if index > 0 {
+                                                        Some(self.emails[index - 1].id)
+                                                    } else {
+                                                        Some(selected_id)
+                                                    }
+                                                } else {
+                                                    self.emails.first().map(|e| e.id)
+                                                }
+                                            } else {
+                                                self.emails.first().map(|e| e.id)
+                                            };
+                                            if let Some(id) = prev_id {
+                                                return self.select_email(id);
+                                            }
+                                        }
+                                        MailFocus::Content => {
+                                            println!("DEBUG: 'k' pressed in Content focus, scrolling up");
+                                            return iced::widget::scrollable::scroll_by(
+                                                self.content_scrollable_id.clone(),
+                                                iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: -30.0 },
+                                            );
+                                        }
+                                    }
+                                }
+                                _ => {}
                             }
-                            _ => {}
                         }
+                        _ => {}
                     }
-                    _ => {}
                 }
             }
-            _ => {}
         }
         Task::none()
     }
@@ -278,7 +509,9 @@ impl App {
             self.selected_id,
             Message::SelectEmail,
             Message::DeleteEmail,
-            self.scrollable_id.clone(),
+            self.list_scrollable_id.clone(),
+            self.content_scrollable_id.clone(),
+            self.focus,
             colors::COLOR_PRIMARY_RED,
         )
     }
