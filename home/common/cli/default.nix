@@ -73,6 +73,7 @@ in
       sqlite
       tokei
       tree
+      uhubctl
       unzip
       whois
       writedisk
