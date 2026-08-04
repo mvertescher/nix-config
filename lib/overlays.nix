@@ -14,4 +14,5 @@ in
 [
     overlays
     inputs.nixgl.overlay
+    inputs.rust-overlay.overlays.default
 ]

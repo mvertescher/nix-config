@@ -342,7 +342,28 @@
         "nix-search-cli": "nix-search-cli",
         "nixgl": "nixgl",
         "nixpkgs": "nixpkgs_2",
+        "rust-overlay": "rust-overlay",
         "stylix": "stylix"
+      }
+    },
+    "rust-overlay": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1785736145,
+        "narHash": "sha256-DauSP0ACycrq3MEEmDz/Scsxhs9TPBTexwKbTuE8Bw8=",
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "rev": "292249772330735cb32b90dedf44feddec40e7d0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "type": "github"
       }
     },
     "stylix": {
