@@ -6,37 +6,31 @@ umount -R /mnt 2>/dev/null || true
 swapoff /dev/vda2 2>/dev/null || true
 wipefs -a /dev/vda
 
-# --- Partition the disk (single disk, UEFI, matches Vultr's default boot mode) ---
+# --- Partition the disk (single disk, LEGACY BIOS/GRUB) ---
 parted -s /dev/vda -- mklabel gpt
-parted -s /dev/vda -- mkpart ESP fat32 1MB 512MB
-parted -s /dev/vda -- set 1 esp on
-parted -s /dev/vda -- mkpart swap linux-swap 512MB 4.5GB
-parted -s /dev/vda -- mkpart root ext4 4.5GB 100%
+parted -s /dev/vda -- mkpart bios_boot 1MB 2MB
+parted -s /dev/vda -- set 1 bios_grub on
+parted -s /dev/vda -- mkpart swap linux-swap 2MB 4.1GB
+parted -s /dev/vda -- mkpart root ext4 4.1GB 100%
 
-mkfs.fat -F 32 -n boot /dev/vda1
 mkswap -L swap /dev/vda2
 mkfs.ext4 -F -L nixos /dev/vda3
 
-# --- Let udev catch up before mounting by label ---
 udevadm settle
 
 mount /dev/vda3 /mnt
-mkdir -p /mnt/boot
-mount /dev/vda1 /mnt/boot
 swapon /dev/vda2
 
-# --- Generate hardware config for this box ---
 nixos-generate-config --root /mnt
 
-# --- Write configuration.nix ---
 cat > /mnt/etc/nixos/configuration.nix <<'EOF'
 { config, pkgs, ... }:
 
 {
   imports = [ ./hardware-configuration.nix ];
 
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.grub.enable = true;
+  boot.loader.grub.device = "/dev/vda";
 
   networking.hostName = "devbox";
   networking.useDHCP = true;
