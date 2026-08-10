@@ -17,13 +17,18 @@ mkfs.fat -F 32 -n boot /dev/vda1
 mkswap -L swap /dev/vda2
 mkfs.ext4 -F -L nixos /dev/vda3
 
-mount /dev/disk/by-label/nixos /mnt
+# --- Let udev catch up before mounting by label ---
+udevadm settle
+
+mount /dev/vda3 /mnt
 mkdir -p /mnt/boot
-mount /dev/disk/by-label/boot /mnt/boot
+mount /dev/vda1 /mnt/boot
 swapon /dev/vda2
 
+# --- Generate hardware config for this box ---
 nixos-generate-config --root /mnt
 
+# --- Write configuration.nix ---
 cat > /mnt/etc/nixos/configuration.nix <<'EOF'
 { config, pkgs, ... }:
 
