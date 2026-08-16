@@ -1,14 +1,17 @@
 # server specific nixos configuration
 
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   imports = [
+    inputs.disko.nixosModules.disko
+    ./disko.nix
     ./hardware-configuration.nix
   ];
 
+  # Legacy BIOS boot; disko sets boot.loader.grub.devices from the
+  # EF02 (bios_grub) partition in disko.nix.
   boot.loader.grub.enable = true;
-  boot.loader.grub.device = "/dev/vda";
 
   networking = {
     hostName = "server";
