@@ -20,8 +20,10 @@
 
   time.timeZone = "UTC";
 
+  # Static fallback keys — login keeps working if GitHub is unreachable.
   users.users.mverte.openssh.authorizedKeys.keys = [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILBrJP87O00JevRDmMIOvR23XvB820Ta62on5GGyTvMZ"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGnJOapYZ5xo+PGkl6pa9PKn5Oa86gyRXe/MYK/tGiPG mverte@devbox"
   ];
 
   security.sudo.wheelNeedsPassword = false;
@@ -30,6 +32,16 @@
     enable = true;
     settings.PasswordAuthentication = false;
     settings.PermitRootLogin = "no";
+
+    # Also accept any key on the GitHub account, fetched at login time.
+    # New machine access = `gh ssh-key add ~/.ssh/id_ed25519.pub` — no
+    # rebuild/redeploy needed. Consulted in addition to the static keys
+    # above, so a GitHub outage can't lock us out.
+    authorizedKeysCommand = "${pkgs.writeShellScript "github-authorized-keys" ''
+      [ "$1" = "mverte" ] || exit 0
+      exec ${pkgs.curl}/bin/curl -sf --max-time 5 https://github.com/mvertescher.keys
+    ''} %u";
+    authorizedKeysCommandUser = "nobody";
   };
 
   environment.systemPackages = with pkgs; [
