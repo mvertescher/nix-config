@@ -31,6 +31,7 @@ in
       bazel # google build tool
       ccache
       clang
+      claude-code
       cmatrix
       curl
       direnv
@@ -43,6 +44,7 @@ in
       file
       gemini-cli
       gdb
+      gh # github cli
       gitRepo
       # repo-rs is a Rust implementation of the Android repo tool.
       # It is significantly faster (10x+) for everyday query operations like:
@@ -68,6 +70,7 @@ in
       openocd
       openssl
       qemu
+      rclone # cloud storage sync (Google Drive, S3, etc.)
       ripgrep # better grep
       socat
       sqlite

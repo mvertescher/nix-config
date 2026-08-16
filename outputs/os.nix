@@ -4,7 +4,7 @@ let
   inherit (inputs.nixpkgs.lib) nixosSystem;
   inherit (pkgs) lib;
 
-  hosts = [ "terra" ];
+  hosts = [ "terra" "server" ];
 
   modules' = [
     ../system/configuration.nix
