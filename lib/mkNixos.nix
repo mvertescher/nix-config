@@ -8,8 +8,9 @@
 #     hosts = {
 #       myhost = {
 #         system = "x86_64-linux";        # optional, per-host (SBCs are aarch64)
+#         user = "mverte";                # optional, per-host login user
 #         modules = [ ./hosts/myhost ];   # host identity: hardware, disks, ...
-#         homeModules = [ ./hosts/myhost/home.nix ];  # mverte's HM imports
+#         homeModules = [ ./hosts/myhost/home.nix ];  # the user's HM imports
 #       };
 #     };
 #     extraSystemConfig = { };            # optional module shared by all hosts
@@ -23,16 +24,13 @@
 { hosts, extraSystemConfig ? { } }:
 
 let
-  mkPkgs = system: import inputs.nixpkgs {
-    inherit overlays system;
-    config.allowUnfree = true;
-    config.allowUnfreePredicate = (_: true);
-  };
+  mkPkgs = import ./pkgs.nix { inherit inputs overlays; };
 
   make = name: host:
     let
       pkgs = mkPkgs (host.system or "x86_64-linux");
       lib = pkgs.lib;
+      user = host.user or "mverte";
     in
     inputs.nixpkgs.lib.nixosSystem {
       inherit lib pkgs;
@@ -49,7 +47,7 @@ let
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.backupFileExtension = "backup";
-          home-manager.users.mverte.imports = host.homeModules or [ ];
+          home-manager.users.${user}.imports = host.homeModules or [ ];
         }
         inputs.stylix.nixosModules.stylix
       ];

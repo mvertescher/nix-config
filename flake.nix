@@ -56,26 +56,19 @@
 
       overlays = import ./lib/overlays.nix { inherit inputs; };
 
-      pkgs = import inputs.nixpkgs {
-        inherit overlays system;
-        config.allowUnfree = true;
-        config.allowUnfreePredicate = (_: true);
-      };
+      pkgs = import ./lib/pkgs.nix { inherit inputs overlays; } system;
     in
     {
-      # `out.pkgs` is a frozen reach-through: the home-manager-only
-      # wrapper gets its overlaid pkgs (and `pkgs.builders.mkHome`)
-      # here. Keep it stable.
+      # Escape hatch for wrappers that need this repo's overlaid pkgs
+      # directly; the builders construct their own pkgs per host.
       out = { inherit pkgs overlays; };
 
       # Library entry points for wrapper flakes. This repo defines no
-      # configurations of its own: wrappers pass their host sets to
-      # mkNixos, and home-manager wrappers call mkHome (either here or
-      # via the frozen `pkgs.builders.mkHome` shim).
+      # configurations of its own: wrappers own machine identity and
+      # pass their host sets here (see the files' own docs).
       lib = {
         mkNixos = import ./lib/mkNixos.nix { inherit inputs overlays; };
-        mkHome = { extraHomeConfig ? { } }:
-          import ./lib/mkHome.nix { inherit extraHomeConfig inputs pkgs; };
+        mkHome = import ./lib/mkHome.nix { inherit inputs overlays; };
       };
 
       # Installer ISO with SSH keys baked in, for unattended provisioning

@@ -24,9 +24,18 @@ git submodule add https://github.com/mvertescher/nix-config.git public
 
   outputs = { self, nix-config, ... }:
     {
-      # Home-manager only (e.g. running Nix on a non-NixOS host):
-      homeConfigurations = nix-config.out.pkgs.builders.mkHome {
-        extraHomeConfig = ./home;
+      # Home-manager only (e.g. running Nix on a non-NixOS host). The
+      # wrapper owns machine identity — username, home directory,
+      # monitors — in its host module, which imports this repo's shared
+      # home/ modules by path:
+      homeConfigurations = nix-config.lib.mkHome {
+        hosts = {
+          myhost = {
+            # user = "mvertescher";              # optional (the default)
+            # system = "aarch64-linux";          # optional, per host
+            modules = [ ./hosts/myhost/home.nix ];
+          };
+        };
       };
 
       # NixOS: this repo defines no hosts — the wrapper owns machine
@@ -52,11 +61,11 @@ Notes:
 - **`?submodules=1` is required** on flake refs so Nix can see the
   submodule: `home-manager switch --flake '.?submodules=1#<host>'`,
   `nixos-rebuild switch --flake '.?submodules=1#<host>'`.
-- **`extraHomeConfig` discovery** (`mkHome`): pass a path; any file or
-  directory under `<path>/host/` whose name matches a host (exactly, or
-  as a suffix — `foo-laptop.nix` matches `laptop`) is merged into that
-  host's home configuration. See `lib/private-config.nix`.
-- **`mkNixos` host layout convention**: keep each host under
+- **Identity defaults** (`mkHome`): `home.username` and
+  `home.homeDirectory` are defaulted from the host's `user` at
+  `mkDefault` priority — home directories vary per machine, so a host
+  module's plain definition overrides without `mkForce`.
+- **Host layout convention**: keep each host under
   `hosts/<name>/` with its `hardware-configuration.nix` — that's where
   `scripts/provision-server.sh` writes the generated one.
 - Shared modules are importable from the wrapper by path, e.g.

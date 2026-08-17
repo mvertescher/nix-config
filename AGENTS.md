@@ -22,8 +22,8 @@ name — and never commit secrets or private host details; everything in
 this repo's history is public.
 
 This repo defines no hosts or deployable configurations of its own:
-wrappers own machine identity and call `lib.mkNixos` /
-`pkgs.builders.mkHome` (see README). Deploy/VM/caching workflows run
+wrappers own machine identity and call `lib.mkNixos` / `lib.mkHome`
+with their host sets (see README). Deploy/VM/caching workflows run
 from a wrapper checkout, not from here.
 
 ## Conventions
