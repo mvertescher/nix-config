@@ -66,6 +66,13 @@
     homeManagerIntegration.followSystem = false;
   };
 
+  # The home-manager activation clones nix-config from GitHub (see
+  # home/host/server.nix); on first boot it otherwise races DNS coming up.
+  systemd.services.home-manager-mverte = {
+    wants = [ "network-online.target" ];
+    after = [ "network-online.target" ];
+  };
+
   # Never change this.
   system.stateVersion = "26.05";
 }
