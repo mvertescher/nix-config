@@ -69,5 +69,13 @@
 
       homeConfigurations = pkgs.builders.mkHome { };
       nixosConfigurations = pkgs.builders.mkNixos { };
+
+      # Installer ISO with SSH keys baked in, for unattended provisioning
+      # via scripts/provision-server.sh. Plain nixpkgs, no overlays needed.
+      packages.${system}.installer-iso =
+        (nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [ ./system/installer.nix ];
+        }).config.system.build.isoImage;
     };
 }

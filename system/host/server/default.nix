@@ -21,10 +21,7 @@
   time.timeZone = "UTC";
 
   # Static fallback keys — login keeps working if GitHub is unreachable.
-  users.users.mverte.openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILBrJP87O00JevRDmMIOvR23XvB820Ta62on5GGyTvMZ"
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGnJOapYZ5xo+PGkl6pa9PKn5Oa86gyRXe/MYK/tGiPG mverte@devbox"
-  ];
+  users.users.mverte.openssh.authorizedKeys.keys = import ../../../lib/ssh-keys.nix;
 
   security.sudo.wheelNeedsPassword = false;
 
