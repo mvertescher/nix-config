@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 #
-# Unattended (re)provisioning of a Vultr instance with this flake's config.
+# Unattended (re)provisioning of a Vultr instance.
 #
-# Usage:
-#   VULTR_API_KEY=... ./scripts/provision-server.sh <ip> [host]
+# Run from the root of a *wrapper* flake (this repo defines no hosts):
+# the flake must expose nixosConfigurations.<host>, with the host's
+# hardware config at ./hosts/<host>/hardware-configuration.nix.
+#
+# Usage (from the wrapper repo root):
+#   VULTR_API_KEY=... ./public/scripts/provision-server.sh <ip> [host]
 #
 #   <ip>    main IP of an existing Vultr instance
 #   [host]  flake nixosConfiguration to install (default: server)
@@ -123,8 +127,8 @@ sleep 15 # let the reboot begin so we don't hit the old system's sshd
 wait_for_ssh root
 log "running nixos-anywhere"
 nix run github:nix-community/nixos-anywhere -- \
-  --flake ".#$HOST" \
-  --generate-hardware-config nixos-generate-config "./system/host/$HOST/hardware-configuration.nix" \
+  --flake ".?submodules=1#$HOST" \
+  --generate-hardware-config nixos-generate-config "./hosts/$HOST/hardware-configuration.nix" \
   --phases kexec,disko,install \
   --ssh-option StrictHostKeyChecking=no \
   --ssh-option UserKnownHostsFile=/dev/null \
@@ -138,4 +142,4 @@ sleep 15
 # --- 6. Verify ---
 wait_for_ssh mverte
 log "done: $(ssh "${SSH_OPTS[@]}" "mverte@$IP" hostname) is up at $IP"
-log "remember to commit the regenerated system/host/$HOST/hardware-configuration.nix"
+log "remember to commit the regenerated hosts/$HOST/hardware-configuration.nix"

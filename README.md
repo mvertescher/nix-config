@@ -23,19 +23,25 @@ git submodule add https://github.com/mvertescher/nix-config.git public
   inputs.nix-config.url = "path:./public";
 
   outputs = { self, nix-config, ... }:
-    let
-      pkgs = nix-config.out.pkgs;
-    in
     {
       # Home-manager only (e.g. running Nix on a non-NixOS host):
-      homeConfigurations = pkgs.builders.mkHome {
+      homeConfigurations = nix-config.out.pkgs.builders.mkHome {
         extraHomeConfig = ./home;
       };
 
-      # Full NixOS hosts:
-      nixosConfigurations = pkgs.builders.mkNixos {
-        extraSystemConfig = ./system;   # extra NixOS module, all hosts
-        extraHomeConfig = ./home;       # same discovery as mkHome
+      # NixOS: this repo defines no hosts — the wrapper owns machine
+      # identity (hardware config, disks, per-host modules) and this
+      # library wraps each host with the shared stack (base system
+      # config, home-manager, stylix).
+      nixosConfigurations = nix-config.lib.mkNixos {
+        hosts = {
+          myhost = {
+            # system = "aarch64-linux";          # optional, per host
+            modules = [ ./hosts/myhost ];        # incl. hardware-configuration.nix
+            homeModules = [ ./hosts/myhost/home.nix ];
+          };
+        };
+        extraSystemConfig = ./system;            # optional, all hosts
       };
     };
 }
@@ -46,12 +52,16 @@ Notes:
 - **`?submodules=1` is required** on flake refs so Nix can see the
   submodule: `home-manager switch --flake '.?submodules=1#<host>'`,
   `nixos-rebuild switch --flake '.?submodules=1#<host>'`.
-- **`extraHomeConfig` discovery**: pass a path; any file or directory
-  under `<path>/host/` whose name matches a host (exactly, or as a
-  suffix — `foo-laptop.nix` matches `laptop`) is merged into that
+- **`extraHomeConfig` discovery** (`mkHome`): pass a path; any file or
+  directory under `<path>/host/` whose name matches a host (exactly, or
+  as a suffix — `foo-laptop.nix` matches `laptop`) is merged into that
   host's home configuration. See `lib/private-config.nix`.
-- **`extraSystemConfig`** is a single NixOS module added to every
-  host; gate host-specific parts on `config.networking.hostName`.
+- **`mkNixos` host layout convention**: keep each host under
+  `hosts/<name>/` with its `hardware-configuration.nix` — that's where
+  `scripts/provision-server.sh` writes the generated one.
+- Shared modules are importable from the wrapper by path, e.g.
+  `public/system/wm/hyprland.nix` or `public/home/common/cli`, from a
+  host's own modules.
 - The `path:` input evaluates the submodule's working tree as-is, so
   local edits here apply on the next rebuild without committing. Bump
   the submodule pin like any other: commit in `public/`, then

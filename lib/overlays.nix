@@ -3,11 +3,13 @@
 let
     overlays = f: p: {
         craneLib = inputs.crane.mkLib p;
+        # Frozen shim: the home-manager-only wrapper calls
+        # `pkgs.builders.mkHome { extraHomeConfig }` and its call sites
+        # can't be updated from here — signature changes must be
+        # additive. NixOS wrappers use `nix-config.lib.mkNixos` instead.
         builders = {
             mkHome = { pkgs ? p, extraHomeConfig ? { } }:
-                import ../outputs/hm.nix { inherit extraHomeConfig inputs pkgs; };
-            mkNixos = { pkgs ? f, extraSystemConfig ? { }, extraHomeConfig ? { } }:
-                import ../outputs/os.nix { inherit extraSystemConfig extraHomeConfig inputs pkgs; };
+                import ./mkHome.nix { inherit extraHomeConfig inputs pkgs; };
         };
     };
 

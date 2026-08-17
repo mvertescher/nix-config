@@ -6,7 +6,7 @@ let
   modules' = [
   ];
 
-  privateConfig = import ../lib/private-config.nix { inherit lib; } extraHomeConfig;
+  privateConfig = import ./private-config.nix { inherit lib; } extraHomeConfig;
 
   # TODO: refactor these
   mkHome = { mut ? false, mods ? [ ] }:
@@ -33,14 +33,8 @@ let
     mods = [ ../home/host/laptop ] ++ privateConfig "laptop";
   };
 
-  mkServerHome = { mut ? false }: mkHome {
-    inherit mut;
-    mods = [ ../home/host/server.nix ] ++ privateConfig "server";
-  };
-
 in
 {
   desktop = mkDesktopHome { };
   laptop = mkLaptopHome { };
-  server = mkServerHome { };
 }
