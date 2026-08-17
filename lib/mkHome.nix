@@ -1,40 +1,33 @@
+# Standalone home-manager configurations, reached as
+# `pkgs.builders.mkHome { extraHomeConfig }` (or `lib.mkHome`). This is
+# the frozen entry point for the home-manager-only wrapper: its call
+# sites can't be updated from here, so signature changes must be
+# additive. Per host, any matching modules under
+# <extraHomeConfig>/host are merged in (see ./private-config.nix).
 { extraHomeConfig, inputs, pkgs, ... }:
 
 let
   lib = pkgs.lib;
 
-  modules' = [
-  ];
-
   privateConfig = import ./private-config.nix { inherit lib; } extraHomeConfig;
 
-  # TODO: refactor these
-  mkHome = { mut ? false, mods ? [ ] }:
+  # mkDefault so the bare library evaluates on its own; a wrapper's
+  # definitions (via extraHomeConfig) override cleanly.
+  defaults = {
+    home.username = lib.mkDefault "mverte";
+    home.homeDirectory = lib.mkDefault "/home/mverte";
+  };
+
+  mkHome = host: mods:
     inputs.home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-
-        # extraSpecialArgs = pkgs.xargs;
-        # modules = modules' ++ mods ++ [
-        #   { inherit hidpi; dotfiles.mutable = mut; }
-        # ];
-
-        modules = modules' ++ mods ++ [
-          inputs.stylix.homeModules.stylix
-        ];
+      inherit pkgs;
+      modules = mods ++ privateConfig host ++ [
+        inputs.stylix.homeModules.stylix
+        defaults
+      ];
     };
-
-  mkDesktopHome = { mut ? false }: mkHome {
-    inherit mut;
-    mods = [ ../home/host/desktop.nix ] ++ privateConfig "desktop";
-  };
-
-  mkLaptopHome = { mut ? false }: mkHome {
-    inherit mut;
-    mods = [ ../home/host/laptop ] ++ privateConfig "laptop";
-  };
-
 in
 {
-  desktop = mkDesktopHome { };
-  laptop = mkLaptopHome { };
+  desktop = mkHome "desktop" [ ../home/host/desktop.nix ];
+  laptop = mkHome "laptop" [ ../home/host/laptop ];
 }

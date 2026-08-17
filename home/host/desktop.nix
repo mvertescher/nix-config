@@ -1,4 +1,4 @@
-# laptop specific home manager configuration
+# desktop specific home manager configuration
 
 { pkgs, config, ... }:
 
