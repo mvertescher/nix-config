@@ -1,8 +1,10 @@
-{ extraSystemConfig, inputs, pkgs, ... }:
+{ extraSystemConfig, extraHomeConfig ? { }, inputs, pkgs, ... }:
 
 let
   inherit (inputs.nixpkgs.lib) nixosSystem;
   inherit (pkgs) lib;
+
+  privateHome = import ../lib/private-config.nix { inherit lib; } extraHomeConfig;
 
   hosts = [ "terra" "server" ];
 
@@ -21,7 +23,8 @@ let
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.backupFileExtension = "backup";
-          home-manager.users.mverte = ../home/host/${host}.nix;
+          home-manager.users.mverte.imports =
+            [ ../home/host/${host}.nix ] ++ privateHome host;
         }
         inputs.stylix.nixosModules.stylix
       ];

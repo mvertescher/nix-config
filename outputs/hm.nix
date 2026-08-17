@@ -6,23 +6,7 @@ let
   modules' = [
   ];
 
-  privateConfig = target:
-    let
-      hostDir = extraHomeConfig + "/host";
-    in
-    if builtins.typeOf extraHomeConfig == "path" && builtins.pathExists hostDir then
-      let
-        entries = builtins.readDir hostDir;
-        matches = lib.filterAttrs (name: _:
-          let
-            cleanName = lib.removeSuffix ".nix" name;
-          in
-          cleanName == target || lib.hasSuffix target cleanName
-        ) entries;
-      in
-      lib.mapAttrsToList (name: _: hostDir + "/${name}") matches
-    else
-      [];
+  privateConfig = import ../lib/private-config.nix { inherit lib; } extraHomeConfig;
 
   # TODO: refactor these
   mkHome = { mut ? false, mods ? [ ] }:

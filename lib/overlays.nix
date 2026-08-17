@@ -6,8 +6,8 @@ let
         builders = {
             mkHome = { pkgs ? p, extraHomeConfig ? { } }:
                 import ../outputs/hm.nix { inherit extraHomeConfig inputs pkgs; };
-            mkNixos = { pkgs ? f, extraSystemConfig ? { } }:
-                import ../outputs/os.nix { inherit extraSystemConfig inputs pkgs; };
+            mkNixos = { pkgs ? f, extraSystemConfig ? { }, extraHomeConfig ? { } }:
+                import ../outputs/os.nix { inherit extraSystemConfig extraHomeConfig inputs pkgs; };
         };
     };
 
