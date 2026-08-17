@@ -67,24 +67,32 @@ instance_id="$(vcurl "$API/instances?per_page=500" |
 log "instance: $instance_id"
 
 # --- 2. Ensure installer ISO exists in the Vultr account ---
+# Match only our custom installer by its exact filename — the account may
+# also hold stock NixOS ISOs, which have no SSH keys baked in.
+ISO_FILENAME="nix-config-installer.iso"
 iso_id="$(vcurl "$API/iso?per_page=500" |
-  jq -r '.isos[] | select(.filename | test("nixos-.*\\.iso")) | select(.status == "complete") | .id' |
+  jq -r --arg f "$ISO_FILENAME" '.isos[] | select(.filename == $f) | select(.status == "complete") | .id' |
   head -1)"
 
 if [[ -z "$iso_id" ]]; then
-  log "no installer ISO in Vultr account; building"
+  log "no $ISO_FILENAME in Vultr account; building"
   nix build .#installer-iso -o result-iso
   iso_file="$(find -L result-iso/iso -name '*.iso' | head -1)"
   [[ -n "$iso_file" ]] || { log "ISO build produced no .iso"; exit 1; }
 
-  log "publishing $(basename "$iso_file") as GitHub release asset"
+  # Upload under the distinctive name (asset name = source file basename).
+  staged_iso="$(mktemp -d)/$ISO_FILENAME"
+  cp "$iso_file" "$staged_iso"
+
+  log "publishing $ISO_FILENAME as GitHub release asset"
   if gh release view "$ISO_TAG" --repo "$REPO" >/dev/null 2>&1; then
-    gh release upload "$ISO_TAG" "$iso_file" --repo "$REPO" --clobber
+    gh release upload "$ISO_TAG" "$staged_iso" --repo "$REPO" --clobber
   else
-    gh release create "$ISO_TAG" "$iso_file" --repo "$REPO" \
+    gh release create "$ISO_TAG" "$staged_iso" --repo "$REPO" \
       --title "Installer ISO" --notes "NixOS installer with SSH keys baked in; built from system/installer.nix. Consumed by scripts/provision-server.sh."
   fi
-  url="https://github.com/$REPO/releases/download/$ISO_TAG/$(basename "$iso_file")"
+  rm -rf "$(dirname "$staged_iso")"
+  url="https://github.com/$REPO/releases/download/$ISO_TAG/$ISO_FILENAME"
 
   log "asking Vultr to fetch $url"
   iso_id="$(vcurl -X POST "$API/iso" -H 'Content-Type: application/json' \
@@ -98,6 +106,14 @@ fi
 log "iso: $iso_id"
 
 # --- 3. Attach ISO (reboots the instance into the installer) ---
+# Detach any currently attached ISO first (attach fails otherwise).
+attached="$(vcurl "$API/instances/$instance_id/iso" | jq -r '.iso_status.state // "ready"')"
+if [[ "$attached" == "isomounted" ]]; then
+  log "detaching currently attached ISO first"
+  vcurl -X POST "$API/instances/$instance_id/iso/detach" >/dev/null
+  sleep 20
+fi
+
 log "attaching ISO (instance will reboot into it)"
 vcurl -X POST "$API/instances/$instance_id/iso/attach" \
   -H 'Content-Type: application/json' -d "{\"iso_id\": \"$iso_id\"}" >/dev/null
