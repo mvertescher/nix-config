@@ -53,8 +53,6 @@
   outputs = inputs @ { self, nixpkgs, ... }:
     let
       system = "x86_64-linux";
-      # TODO: Support MacOS, maybe others
-      # system = "x86_64-darwin";
 
       overlays = import ./lib/overlays.nix { inherit inputs; };
 
