@@ -9,6 +9,7 @@
 #         modules = [ ./hosts/myhost/home.nix ];
 #       };
 #     };
+#     extraOverlays = [ ];               # optional, applied to all hosts
 #   }
 #
 # This repo defines no hosts: the wrapper owns machine identity
@@ -19,14 +20,25 @@
 # overrides without mkForce.
 { inputs, overlays }:
 
-{ hosts }:
+{ hosts, extraOverlays ? [ ] }:
 
 let
-  mkPkgs = import ./pkgs.nix { inherit inputs overlays; };
+  mkPkgs = import ./pkgs.nix {
+    inherit inputs;
+    overlays = overlays ++ extraOverlays;
+  };
 
   make = name: host:
     let
-      pkgs = mkPkgs (host.system or "x86_64-linux");
+      hostOverlays = host.extraOverlays or [ ];
+      pkgs =
+        if hostOverlays != [ ] then
+          (import ./pkgs.nix {
+            inherit inputs;
+            overlays = overlays ++ extraOverlays ++ hostOverlays;
+          }) (host.system or "x86_64-linux")
+        else
+          mkPkgs (host.system or "x86_64-linux");
       lib = pkgs.lib;
       user = host.user or "mvertescher";
     in
