@@ -29,3 +29,15 @@
   lvp_icd.x86_64.json, since iced panics rather than falling back
   when wgpu finds no adapter) — which would make every build a visual
   regression test, CI-able the day this becomes its own repo.
+
+## Palette correction (2026-08-21)
+
+- [x] The original task's "primary black #DEDE17" was a double typo —
+  pixel analysis of the reference images found ZERO yellow anywhere
+  (0 px within 25% fuzz across img-06/07/08); #DEDE17 is almost
+  certainly a mangled #DE2E2E, the fill red sampled from the reference
+  diamonds. colors.rs now carries the sampled three-red system
+  (bright #FF3B45 / fill #DE2E2E / deep #5E1112) + sparing #DEDEDE
+  off-white; COLOR_PRIMARY_BLACK and COLOR_YELLOW are gone. If a
+  warning accent is ever wanted, it is a deliberate extension, not
+  reference canon.
