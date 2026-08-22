@@ -96,6 +96,30 @@ let
   eraOverride = lib.mkOverride 40;
   rgba = role: "rgba(${lib.removePrefix "#" c.${role}}ff)";
 
+  # The resolved theme, published for programs that are not configured
+  # through home-manager -- the in-tree Iced toolkits, chiefly.
+  #
+  # Written to a fixed, era-agnostic path so a reader does not have to
+  # know which era is active, and carrying every role rather than a
+  # curated subset so the toolkit can decide what it needs. This is the
+  # authoritative copy: a Rust crate keeping its own hardcoded palette
+  # is a second source of truth that drifts silently (neomil-ui's
+  # colors.rs was transcribed by hand and is exactly that risk).
+  themeToml = ''
+    # ${header}
+    # Read this rather than compiling a palette in; fall back to your own
+    # defaults if the file is absent, so the crate still runs standalone.
+    era = "${lib.toLower name}"
+    variant = "${variant}"
+    polarity = "${(import ./roles.nix).polarityOf roles}"
+
+    [font]
+    ui = "${font.name}"
+
+    [colors]
+    ${lib.concatStringsSep "\n" (map (role: ''${role} = "${c.${role}}"'') (import ./roles.nix).names)}
+  '';
+
   # Everything the browser chrome is generated from. Hashing the inputs
   # rather than the stylesheet means the stamp moves exactly when the
   # theme does.
@@ -120,6 +144,8 @@ lib.mkMerge [
       image = lib.mkDefault wallpaper;
       fonts.sansSerif = lib.mkDefault { inherit (font) package name; };
     };
+
+    xdg.configFile."theme/current.toml".text = themeToml;
 
     # --- window manager ------------------------------------------------
     wayland.windowManager.hyprland.settings = {
