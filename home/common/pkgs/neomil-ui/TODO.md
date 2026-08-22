@@ -106,3 +106,23 @@ Remaining for the checkPhase itself:
   first: a GPU-less compositor is exactly the kind of thing that fails
   for environmental reasons, and it should not block every build of the
   toolkit until it has proven stable.
+
+## Black window on the nvidia/Hyprland session (2026-08-22)
+
+- [ ] **The app renders headless but not on the real desktop.** Under
+  weston headless with the llvmpipe Vulkan ICD it draws correctly (that
+  is what tests.visual captures). Launched on terra's Hyprland session
+  with the nvidia driver it starts, stays alive, logs *nothing* to
+  stderr, and presents a solid black window. Forcing
+  `WGPU_BACKEND=vulkan` does not change it, and `nvidia_icd.json` is
+  present in /run/opengl-driver/share/vulkan/icd.d, so the ICD is
+  findable.
+
+  Worth noting the visual test cannot catch this: it exercises the
+  software path only. A green build does not mean the app works on the
+  machine you use.
+
+  Things not yet tried: `WGPU_BACKEND=gl`, running under
+  `nixGL`/`nixglhost`, checking whether the wrapper's LD_LIBRARY_PATH
+  shadows the driver's libvulkan, and whether the compositor reporting
+  `explicit sync: no` matters for wgpu presentation on nvidia.

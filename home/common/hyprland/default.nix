@@ -40,6 +40,7 @@ let
 in {
   imports = [
     ./binds.nix
+    ./workspace-app.nix
   ];
 
   custom.wallpaper = {
