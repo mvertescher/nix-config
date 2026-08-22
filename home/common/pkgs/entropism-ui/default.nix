@@ -57,7 +57,13 @@ craneLib.buildPackage {
 
   postFixup = ''
     for bin in entropism-ui-demo entropism-ui-login entropism-ui-mail entropism-ui-store entropism-ui-default-layout; do
+      # This machine class exposes several Vulkan adapters (discrete
+      # nvidia, the CPU's integrated RADV, llvmpipe). wgpu otherwise
+      # picks one that cannot present to the display and the app draws a
+      # solid black window - alive, silent, no error. set-default so it
+      # can still be overridden.
       wrapProgram $out/bin/$bin \
+        --set-default WGPU_POWER_PREF high \
         --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [
           vulkan-loader
           libGL
