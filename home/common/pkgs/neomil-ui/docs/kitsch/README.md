@@ -1,60 +1,95 @@
 # Kitsch design targets
 
-Proposals, not sampled. The neomil targets next door were derived from
-the Behance reference images; these are drawn from the era's description
-— maximalist, gilded, glossy, ornament for its own sake — and should be
-checked against reference art before anything is built from them.
+Sampled, second attempt. The first version of these mockups was drawn
+from the era's *description* (maximalist → gilded, damask, filigree)
+and looked nothing like the source. These are drawn from the actual
+Behance references.
 
-- `target-components.svg` — the widget sheet, and the two test cases the
-  crate-boundary decision turns on.
-- `target-app.svg` — "MAISON", a salon booking screen composed from
-  those widgets. Deliberately carries the *same information* as a neomil
-  screen (list, detail panel, actions, status strip) so the two can be
-  compared like for like: everything that differs is decoration.
+## Provenance
 
-## What the component sheet is arguing
+The Part 1 gallery (`Cyberpunk 2077 User Interface (Part 1)`,
+Vilimovský) contains 146 images. The four era explorations are
+document-order runs of ten images each, opening with a title card:
 
-It exists to answer one question before code is written: **is
-era-difference expressible as parameters, or is it a codebase?**
+| era | title card at | run |
+|---|---|---|
+| Entropism | doc #23 | 23–32 |
+| **Kitsch** | doc #33 | 33–42 |
+| Neo Militarism | doc #43 | 43–52 |
+| Neo Kitsch | doc #53 | 53–62 |
 
-**Test 1 — silhouette.** The same chip drawn three ways: entropism
-square, neomil chamfered, kitsch scalloped. This is one number in a path
-builder — `chip.rs` already has `cut` as a local. A `Silhouette`
-parameter covers all three, and no crate split is needed for this axis.
+The kitsch run: guest logins, extruded fan menus, the braindance
+callout, the mailbox, and the 4ST store.
 
-**Test 2 — ornament.** A gilded panel with four filigree corners, three
-nested strokes and a damask fill. This is *not* an outline; it is extra
-geometry laid over the base, in counts and positions the base knows
-nothing about. A trait shaped as "give me the outline path" cannot carry
-it.
+**Attribution warning:** aesthetic priors are unreliable here. The
+pink/teal/yellow system is **kitsch**; the champagne-gold-on-black
+system with wood-veneer card fills that *looks* gaudy-luxurious is
+**neokitsch**. The first draft of these mockups had them inverted.
+Anyone drawing neokitsch next: its run is doc #53–62, gold outline
+cards with clipped corners over a violet bloom.
 
-Neither test says "fourth crate". Together they say: one toolkit, a
-silhouette parameter plus a decoration layer, and per-era widget modules
-where the interaction model genuinely differs (a radial dial versus
-neomil's `diamond_menu`, which is 511 lines of mostly hit-testing).
+## Sampled palette
 
-**The open risk**, stated on the sheet: if the decoration layer starts
-needing to know widget internals — where the label sits, how tall a row
-is — the abstraction is wrong and the conclusion should be revisited.
-
-## Roles
-
-Kitsch needs more than the shared seven. The sheet proposes `gild` (a
-gradient, not a colour), `sheen` and a second accent, which is what
-`roles.nix`'s `toBase16 { accents = ...; }` argument exists for.
+Pixel reads off the 1400px modules (`p1-072` store, `p1-129` fan menu):
 
 ```
-bg #17071a  panel #2a0f2e  border #d4a13c  dim #a2739e
-fg #ffd2ee  alert #ff2f6d  tape #ffd75e
-gild (gradient)  sheen #fff3fb  accent2 #45e0d2
+bg           #0b0b07     warm near-black
+bloom        #a63355 → #6c1c3d   rose radial, heavy vignette
+teal         #7ddec8     strokes, titles, product art
+teal solid   #1cb39b     page-curl, chips, PROTECTED bars
+mint         #87f4d9     stat-highlight fill
+yellow       #fcc428 / #fcbb15   shelf bands, selection fills
+on-yellow    #37220f
+bezel        #f08c1e     rounded CRT frame on device screens
 ```
 
-## Rendering
+Role mapping: `bg`=bg, `panel`=the bloom field, `border`/`fg`=teal,
+`alert`=yellow, `tape`=bezel orange. Note the inversion: in kitsch,
+yellow is *selection*, not alarm.
+
+## Observed era rules
+
+- Everything rounded; no chamfers anywhere.
+- Teal line-work carries all structure; yellow is always a solid fill
+  and always means "the selected thing".
+- One solid teal page-curl per screen, at the foot of the container
+  outline.
+- Card shelf-bands poke past the card's left edge and carry compliance
+  glyphs plus a brand tag.
+- 3D slabs (fan menus) get stacked-outline extrusion receding up-right.
+- A rose bloom vignettes every screen from a corner.
+- Tiny dim-teal captions everywhere; boxed A/B/C footnote markers.
+- Device screens sit inside an orange rounded bezel.
+
+## What this does to the crate decision
+
+The sampled kitsch **weakens** the ornament worry recorded in the
+repo TODO. Real kitsch is not additive filigree — it is rounded
+silhouettes, solid fills, one curl motif, and a bloom background. All
+of that is parameterisable: corner radius, a curl decoration, a
+background treatment. The genuinely new widget is the extruded fan
+menu, which is an interaction-model difference (like neomil's diamond
+menu) — a per-era widget module, not a crate boundary.
+
+The heavy-ornament question does not disappear; it moves to
+**neokitsch**, whose selected cards are filled with a wood-veneer
+*texture* — the first raster asset in any era. That, not gilding, is
+the thing the toolkit abstraction should be tested against.
+
+## Files
+
+- `target-components.svg` — the widget sheet: ticket-pill nav with
+  page-curl container, product card in both states, fan menu, callout
+  panel, mail list, device bezel, guest card, security strip, sampled
+  swatches.
+- `target-app.svg` — the 4ST store screen, tracking the reference
+  closely enough to judge fidelity by eye against `p1-072`. The
+  acceptance test: when this can be built from library widgets,
+  kitsch is feature-complete.
+
+Render with Rajdhani on fontconfig:
 
 ```sh
 nix shell nixpkgs#librsvg --command \
-  rsvg-convert -w 1600 target-components.svg -o /tmp/kitsch-components.png
+  rsvg-convert -w 1600 target-app.svg -o /tmp/kitsch-app.png
 ```
-
-Rajdhani is expected on fontconfig; without it the sheet still renders,
-in a fallback face.

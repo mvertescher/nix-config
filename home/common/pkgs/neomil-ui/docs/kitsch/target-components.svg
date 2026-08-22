@@ -1,203 +1,365 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" font-family="Rajdhani">
-  <!-- KITSCH component sheet.
+  <!-- KITSCH component sheet, SAMPLED from the Behance Part 1 kitsch run
+       (the nine screens following the "KITSCH - STYLE OVER SUBSTANCE"
+       title card: guest login, fan menus, braindance callout, mailbox,
+       4ST store).
 
-       Kitsch is the maximalist era: more is more. Where entropism strips
-       and neomil issues, kitsch decorates - gilding, sheen, scalloped
-       edges, pattern for its own sake.
-
-       Proposed roles (seven shared + three kitsch-only):
-         bg #17071a  panel #2a0f2e  border #d4a13c  dim #a2739e
-         fg #ffd2ee  alert #ff2f6d  tape #ffd75e
-         gild (gradient)  sheen #fff3fb  accent2 #45e0d2
-
-       This sheet exists to answer one question before any code is
-       written: is era-difference expressible as parameters, or is it a
-       codebase? Columns 2 and 3 are the two test cases. -->
+       Sampled palette (ImageMagick pixel reads off the 1400px modules):
+         bg           #0b0b07   warm near-black
+         bloom        #a63355 -> #6c1c3d rose radial, heavy vignette
+         teal text    #7ddec8   strokes, titles, product art
+         teal solid   #1cb39b   page-curl blob, chips, PROTECTED bars
+         mint bar     #87f4d9   stat-highlight fill
+         yellow       #fcc428 / #fcbb15   shelf bands, selection fills
+         text-on-yel  #37220f
+         bezel orange #f08c1e   rounded CRT frame on device screens
+       The era reads as a late-CRT product catalogue: teal line-work and
+       yellow selection over a rose bloom, everything rounded, one
+       solid page-curl per screen. -->
   <defs>
-    <linearGradient id="gild" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#ffe9a8"/>
-      <stop offset="45%" stop-color="#d4a13c"/>
-      <stop offset="55%" stop-color="#8a5f18"/>
-      <stop offset="100%" stop-color="#e6c76a"/>
-    </linearGradient>
-    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#fff3fb" stop-opacity="0.55"/>
-      <stop offset="50%" stop-color="#fff3fb" stop-opacity="0.06"/>
-      <stop offset="100%" stop-color="#ff2f6d" stop-opacity="0.18"/>
-    </linearGradient>
-    <linearGradient id="candy" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#ff2f6d"/>
-      <stop offset="60%" stop-color="#c02fd0"/>
-      <stop offset="100%" stop-color="#45e0d2"/>
-    </linearGradient>
-    <radialGradient id="bloom" cx="50%" cy="0%" r="80%">
-      <stop offset="0%" stop-color="#5c1f57" stop-opacity="0.85"/>
-      <stop offset="100%" stop-color="#5c1f57" stop-opacity="0"/>
+    <radialGradient id="bloom" cx="78%" cy="4%" r="72%">
+      <stop offset="0%" stop-color="#a63355" stop-opacity="0.95"/>
+      <stop offset="45%" stop-color="#6c1c3d" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#6c1c3d" stop-opacity="0"/>
     </radialGradient>
-    <pattern id="damask" width="26" height="26" patternUnits="userSpaceOnUse">
-      <path d="M13 3 q6 6 0 10 q-6 -4 0 -10 Z" fill="#d4a13c" opacity="0.20"/>
-      <circle cx="13" cy="18" r="1.6" fill="#ffd75e" opacity="0.18"/>
+    <linearGradient id="selYellow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fcc428"/>
+      <stop offset="100%" stop-color="#f0a80a"/>
+    </linearGradient>
+    <!-- dotted matrix square used in the EMPTY SOCKET rows -->
+    <pattern id="dotmat" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect width="4" height="4" fill="none"/>
+      <rect x="0" y="0" width="2" height="2" fill="#7ddec8"/>
     </pattern>
-
-    <!-- One filigree corner, reused at four rotations. This is the
-         thing a silhouette parameter cannot express: it is not the
-         outline, it is extra geometry laid on top of it. -->
-    <path id="filigree"
-          d="M0 0 q14 0 20 -8 q4 -6 12 -6 q-6 4 -7 11 q-1 8 -9 10 q7 1 11 7
-             q-8 -3 -14 1 q-6 4 -13 2 q6 -4 6 -10 q0 -5 -6 -7 Z"
-          fill="url(#gild)"/>
+    <pattern id="dotmatY" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="2" height="2" fill="#37220f"/>
+    </pattern>
   </defs>
 
-  <rect width="1920" height="1080" fill="#17071a"/>
+  <rect width="1920" height="1080" fill="#0b0b07"/>
   <rect width="1920" height="1080" fill="url(#bloom)"/>
-  <rect width="1920" height="1080" fill="url(#damask)"/>
 
-  <!-- header: gilded band, scalloped underside -->
-  <rect x="0" y="0" width="1920" height="46" fill="url(#gild)"/>
-  <path d="M0 46 q24 14 48 0 q24 -14 48 0 q24 14 48 0 q24 -14 48 0 q24 14 48 0
-           q24 -14 48 0 q24 14 48 0 q24 -14 48 0 q24 14 48 0 q24 -14 48 0
-           q24 14 48 0 q24 -14 48 0 q24 14 48 0 q24 -14 48 0 q24 14 48 0
-           q24 -14 48 0 q24 14 48 0 q24 -14 48 0 q24 14 48 0 q24 -14 48 0
-           q24 14 48 0 q24 -14 48 0 q24 14 48 0 q24 -14 48 0 q24 14 48 0
-           q24 -14 48 0 q24 14 48 0 q24 -14 48 0 q24 14 48 0 q24 -14 48 0
-           q24 14 48 0 q24 -14 48 0 q24 14 48 0 q24 -14 48 0 q24 14 48 0
-           q24 -14 48 0 q24 14 48 0 q24 -14 48 0 L1920 46 L1920 0 L0 0 Z"
-        fill="url(#gild)"/>
-  <text x="34" y="31" font-size="20" font-weight="bold" letter-spacing="6" fill="#17071a">KITSCH // COMPONENT SHEET</text>
-  <text x="1640" y="30" font-size="15" letter-spacing="3" fill="#3b2408">v0.1 PROPOSAL</text>
+  <!-- sheet header, kept in the era's own dress -->
+  <text x="60" y="58" font-size="34" font-weight="700" letter-spacing="2" fill="#7ddec8">4S<tspan font-weight="300">T</tspan></text>
+  <text x="60" y="82" font-size="13" letter-spacing="8" fill="#7ddec8">K I T S C H // C O M P O N E N T S</text>
+  <rect x="60" y="94" width="560" height="2" fill="#fcc428"/>
+  <text x="1860" y="58" font-size="14" letter-spacing="3" fill="#4d9484" text-anchor="end">v0.2 TARGET — SAMPLED</text>
 
-  <!-- ============ COLUMN 1: ordinary widgets ============ -->
-  <text x="70" y="110" font-size="15" letter-spacing="4" fill="#a2739e">BUTTONS</text>
-
-  <path d="M70 126 h180 q14 0 14 14 v22 q0 14 -14 14 h-180 q-14 0 -14 -14 v-22 q0 -14 14 -14 Z"
-        fill="url(#candy)" stroke="url(#gild)" stroke-width="3"/>
-  <path d="M74 130 h172 q10 0 10 10 v10 h-192 v-10 q0 -10 10 -10 Z" fill="url(#gloss)"/>
-  <text x="120" y="159" font-size="17" font-weight="700" letter-spacing="3" fill="#17071a">INDULGE</text>
-
-  <path d="M70 190 h180 q14 0 14 14 v22 q0 14 -14 14 h-180 q-14 0 -14 -14 v-22 q0 -14 14 -14 Z"
-        fill="#2a0f2e" stroke="url(#gild)" stroke-width="2"/>
-  <text x="126" y="223" font-size="17" letter-spacing="3" fill="#ffd2ee">MAYBE</text>
-
-  <path d="M70 254 h180 q14 0 14 14 v22 q0 14 -14 14 h-180 q-14 0 -14 -14 v-22 q0 -14 14 -14 Z"
-        fill="#2a0f2e" stroke="#5b3a55" stroke-width="2"/>
-  <text x="118" y="287" font-size="17" letter-spacing="3" fill="#5b3a55">DENIED</text>
-
-  <text x="70" y="348" font-size="15" letter-spacing="4" fill="#a2739e">INPUT</text>
-  <path d="M70 364 h250 q16 0 16 16 v26 q0 16 -16 16 h-250 q-16 0 -16 -16 v-26 q0 -16 16 -16 Z"
-        fill="#200a24" stroke="url(#gild)" stroke-width="2"/>
-  <text x="88" y="392" font-size="16" fill="#a2739e">say something lovely</text>
-  <circle cx="316" cy="393" r="5" fill="#ffd75e"/>
-
-  <text x="70" y="452" font-size="15" letter-spacing="4" fill="#a2739e">TAGS</text>
+  <!-- ============ COLUMN 1: nav + curl (from the 4ST store) ============ -->
   <g>
-    <path d="M70 468 h96 q12 0 12 12 v14 q0 12 -12 12 h-96 q-12 0 -12 -12 v-14 q0 -12 12 -12 Z" fill="#ff2f6d"/>
-    <text x="88" y="491" font-size="14" font-weight="700" letter-spacing="2" fill="#17071a">LUXE</text>
-    <path d="M186 468 h96 q12 0 12 12 v14 q0 12 -12 12 h-96 q-12 0 -12 -12 v-14 q0 -12 12 -12 Z" fill="#45e0d2"/>
-    <text x="202" y="491" font-size="14" font-weight="700" letter-spacing="2" fill="#17071a">FRESH</text>
-  </g>
+    <text x="60" y="150" font-size="13" letter-spacing="4" fill="#4d9484">NAV / TICKET PILLS</text>
 
-  <!-- ============ COLUMN 2: THE SILHOUETTE TEST ============ -->
-  <g>
-    <rect x="430" y="86" width="480" height="2" fill="#45e0d2"/>
-    <text x="430" y="112" font-size="16" letter-spacing="4" fill="#45e0d2">TEST 1 — SILHOUETTE (parameterisable)</text>
-    <text x="430" y="136" font-size="14" fill="#a2739e">One widget, one path builder, one number changed.</text>
-    <text x="430" y="156" font-size="14" fill="#a2739e">chip.rs already does this: `cut` is a local.</text>
+    <rect x="60" y="164" width="190" height="26" rx="13" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <text x="76" y="182" font-size="13" fill="#7ddec8">customer</text>
+    <text x="238" y="182" font-size="13" fill="#7ddec8" text-anchor="end">#NC488402</text>
+    <text x="60" y="212" font-size="12" fill="#4d9484">loyalty discount</text>
+    <text x="250" y="212" font-size="12" fill="#7ddec8" text-anchor="end">10%</text>
+    <text x="60" y="230" font-size="12" fill="#4d9484">last update</text>
+    <text x="250" y="230" font-size="12" fill="#7ddec8" text-anchor="end">10/05/2077</text>
 
-    <!-- entropism: square -->
-    <text x="430" y="200" font-size="13" letter-spacing="3" fill="#a2739e">ENTROPISM — cut = 0</text>
-    <path d="M430 212 h180 v56 h-180 Z" fill="#2a0f2e" stroke="#d4a13c" stroke-width="2"/>
-    <text x="452" y="247" font-size="16" letter-spacing="2" fill="#ffd2ee">CHIP</text>
+    <!-- the enclosing outline that flows around the nav and ends in the
+         solid page-curl: the era's signature container -->
+    <path d="M282 168
+             q22 0 22 22 v300
+             q0 26 -26 26 h-180
+             q-26 0 -26 -26 v-190"
+          fill="none" stroke="#7ddec8" stroke-width="1.5"/>
 
-    <!-- neomil: chamfer -->
-    <text x="430" y="304" font-size="13" letter-spacing="3" fill="#a2739e">NEOMIL — cut = 14, straight</text>
-    <path d="M430 316 h180 v42 l-14 14 h-166 Z" fill="#2a0f2e" stroke="#d4a13c" stroke-width="2"/>
-    <text x="452" y="351" font-size="16" letter-spacing="2" fill="#ffd2ee">CHIP</text>
+    <!-- ticket pills: rounded left, notched right corner -->
+    <g font-size="16" letter-spacing="1">
+      <path d="M92 258 h130 l14 12 v10 q0 10 -10 10 h-134 q-10 0 -10 -10 v-12 q0 -10 10 -10 Z"
+            fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+      <text x="108" y="280" fill="#7ddec8">RIFLES</text>
 
-    <!-- kitsch: scallop -->
-    <text x="430" y="408" font-size="13" letter-spacing="3" fill="#a2739e">KITSCH — cut = 14, scalloped</text>
-    <path d="M430 420 h180 v28 q0 14 -14 14 q-14 0 -14 14 h-124 q-14 0 -14 -14 q0 -14 -14 -14 Z"
-          fill="#2a0f2e" stroke="#d4a13c" stroke-width="2"/>
-    <text x="452" y="455" font-size="16" letter-spacing="2" fill="#ffd2ee">CHIP</text>
+      <path d="M92 302 h130 l14 12 v10 q0 10 -10 10 h-134 q-10 0 -10 -10 v-12 q0 -10 10 -10 Z"
+            fill="url(#selYellow)"/>
+      <text x="108" y="324" fill="#37220f" font-weight="600">SMG</text>
 
-    <rect x="430" y="492" width="480" height="1" fill="#5b3a55"/>
-    <text x="430" y="516" font-size="14" fill="#ffd2ee">VERDICT: a `Silhouette` parameter covers all three.</text>
-    <text x="430" y="536" font-size="14" fill="#ffd2ee">No crate split needed for this axis.</text>
-  </g>
+      <path d="M92 346 h130 l14 12 v10 q0 10 -10 10 h-134 q-10 0 -10 -10 v-12 q0 -10 10 -10 Z"
+            fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+      <text x="108" y="368" fill="#7ddec8">SNIPER</text>
 
-  <!-- ============ COLUMN 3: THE ORNAMENT TEST ============ -->
-  <g>
-    <rect x="990" y="86" width="520" height="2" fill="#ff2f6d"/>
-    <text x="990" y="112" font-size="16" letter-spacing="4" fill="#ff2f6d">TEST 2 — ORNAMENT (additive)</text>
-    <text x="990" y="136" font-size="14" fill="#a2739e">Not an outline. Extra geometry laid over the base,</text>
-    <text x="990" y="156" font-size="14" fill="#a2739e">in counts and positions the base knows nothing about.</text>
-
-    <!-- gilded panel with filigree corners and nested strokes -->
-    <rect x="990" y="188" width="440" height="280" fill="#2a0f2e" stroke="url(#gild)" stroke-width="4"/>
-    <rect x="1000" y="198" width="420" height="260" fill="none" stroke="#d4a13c" stroke-width="1.5" opacity="0.75"/>
-    <rect x="1008" y="206" width="404" height="244" fill="none" stroke="#ffd75e" stroke-width="0.8" opacity="0.5"/>
-    <rect x="990" y="188" width="440" height="280" fill="url(#damask)"/>
-
-    <use href="#filigree" x="0" y="0" transform="translate(1004 202)"/>
-    <use href="#filigree" x="0" y="0" transform="translate(1416 202) scale(-1 1)"/>
-    <use href="#filigree" x="0" y="0" transform="translate(1004 454) scale(1 -1)"/>
-    <use href="#filigree" x="0" y="0" transform="translate(1416 454) scale(-1 -1)"/>
-
-    <text x="1210" y="268" font-size="26" font-weight="700" letter-spacing="4" fill="#ffd75e" text-anchor="middle">SALON</text>
-    <path d="M1090 284 h240" stroke="url(#gild)" stroke-width="2"/>
-    <path d="M1210 278 l10 6 l-10 6 l-10 -6 Z" fill="#ffd75e"/>
-    <text x="1210" y="322" font-size="15" fill="#ffd2ee" text-anchor="middle">every surface earns its keep</text>
-    <text x="1210" y="346" font-size="15" fill="#a2739e" text-anchor="middle">by being looked at</text>
-
-    <path d="M1090 380 h240 q12 0 12 12 v20 q0 12 -12 12 h-240 q-12 0 -12 -12 v-20 q0 -12 12 -12 Z"
-          fill="url(#candy)" stroke="url(#gild)" stroke-width="2"/>
-    <text x="1210" y="407" font-size="15" font-weight="700" letter-spacing="3" fill="#17071a" text-anchor="middle">RESERVE</text>
-
-    <rect x="990" y="492" width="520" height="1" fill="#5b3a55"/>
-    <text x="990" y="516" font-size="14" fill="#ffd2ee">VERDICT: a "give me the outline" trait cannot express</text>
-    <text x="990" y="536" font-size="14" fill="#ffd2ee">4 filigree + 3 nested strokes + a damask fill.</text>
-    <text x="990" y="556" font-size="14" fill="#ff2f6d">Needs a decoration layer — still not a fourth crate.</text>
-  </g>
-
-  <!-- ============ COLUMN 4: roles ============ -->
-  <g>
-    <text x="1570" y="110" font-size="15" letter-spacing="4" fill="#a2739e">ROLES</text>
-    <g font-size="13" fill="#ffd2ee">
-      <rect x="1570" y="126" width="40" height="26" fill="#17071a" stroke="#5b3a55"/><text x="1622" y="144">bg</text>
-      <rect x="1570" y="160" width="40" height="26" fill="#2a0f2e" stroke="#5b3a55"/><text x="1622" y="178">panel</text>
-      <rect x="1570" y="194" width="40" height="26" fill="#d4a13c"/><text x="1622" y="212">border</text>
-      <rect x="1570" y="228" width="40" height="26" fill="#a2739e"/><text x="1622" y="246">dim</text>
-      <rect x="1570" y="262" width="40" height="26" fill="#ffd2ee"/><text x="1622" y="280">fg</text>
-      <rect x="1570" y="296" width="40" height="26" fill="#ff2f6d"/><text x="1622" y="314">alert</text>
-      <rect x="1570" y="330" width="40" height="26" fill="#ffd75e"/><text x="1622" y="348">tape</text>
+      <path d="M92 390 h130 l14 12 v10 q0 10 -10 10 h-134 q-10 0 -10 -10 v-12 q0 -10 10 -10 Z"
+            fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+      <text x="108" y="412" fill="#7ddec8">SHOTGUN</text>
     </g>
 
-    <text x="1570" y="396" font-size="15" letter-spacing="4" fill="#ff2f6d">KITSCH-ONLY</text>
-    <g font-size="13" fill="#ffd2ee">
-      <rect x="1570" y="412" width="40" height="26" fill="url(#gild)"/><text x="1622" y="430">gild</text>
-      <rect x="1570" y="446" width="40" height="26" fill="#fff3fb"/><text x="1622" y="464">sheen</text>
-      <rect x="1570" y="480" width="40" height="26" fill="#45e0d2"/><text x="1622" y="498">accent2</text>
+    <!-- solid teal page curl at the container's foot -->
+    <path d="M72 516 q0 -62 62 -62 h20 q-40 8 -46 44 q-5 30 -36 34 Z" fill="#1cb39b"/>
+    <path d="M134 454 h148" stroke="#7ddec8" stroke-width="1.5"/>
+
+    <!-- footnote marker -->
+    <text x="60" y="560" font-size="10" fill="#4d9484">SPARE TIME MANAGER WAS DEVELOPED</text>
+    <text x="60" y="574" font-size="10" fill="#4d9484">BY SEOCHO. SERVING SINCE 2006.</text>
+    <rect x="238" y="548" width="20" height="20" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <text x="248" y="563" font-size="12" font-weight="700" fill="#7ddec8" text-anchor="middle">A</text>
+
+    <!-- barcode strip (guest login screens carry one bottom-left) -->
+    <text x="60" y="622" font-size="13" letter-spacing="4" fill="#4d9484">BARCODE</text>
+    <g fill="#7ddec8">
+      <rect x="60" y="634" width="3" height="26"/><rect x="66" y="634" width="1.5" height="26"/>
+      <rect x="71" y="634" width="4" height="26"/><rect x="79" y="634" width="1.5" height="26"/>
+      <rect x="84" y="634" width="2.5" height="26"/><rect x="90" y="634" width="5" height="26"/>
+      <rect x="98" y="634" width="1.5" height="26"/><rect x="103" y="634" width="3" height="26"/>
+      <rect x="110" y="634" width="1.5" height="26"/><rect x="115" y="634" width="4" height="26"/>
+      <rect x="122" y="634" width="2" height="26"/><rect x="127" y="634" width="1.5" height="26"/>
+      <rect x="132" y="634" width="5" height="26"/><rect x="140" y="634" width="2" height="26"/>
     </g>
-    <text x="1570" y="536" font-size="13" fill="#a2739e">The seven assume one</text>
-    <text x="1570" y="554" font-size="13" fill="#a2739e">working colour. Kitsch</text>
-    <text x="1570" y="572" font-size="13" fill="#a2739e">needs a gradient, a</text>
-    <text x="1570" y="590" font-size="13" fill="#a2739e">highlight and a second</text>
-    <text x="1570" y="608" font-size="13" fill="#a2739e">accent. Pass these via</text>
-    <text x="1570" y="626" font-size="13" fill="#a2739e">toBase16's `accents`.</text>
+    <text x="60" y="676" font-size="10" letter-spacing="2" fill="#4d9484">1-234567-1234567-89</text>
+
+    <!-- guest chip card, from the login trio -->
+    <text x="60" y="726" font-size="13" letter-spacing="4" fill="#4d9484">GUEST CARD + ACTION BARS</text>
+    <g>
+      <rect x="60" y="740" width="200" height="26" rx="4" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+      <rect x="66" y="745" width="16" height="16" fill="#1cb39b"/>
+      <text x="92" y="758" font-size="13" letter-spacing="1" fill="#7ddec8">GUEST 7702</text>
+
+      <rect x="60" y="778" width="200" height="24" rx="12" fill="#87f4d9"/>
+      <text x="160" y="795" font-size="13" font-weight="600" letter-spacing="2" fill="#0b3b31" text-anchor="middle">ENTER</text>
+
+      <rect x="60" y="812" width="200" height="24" rx="12" fill="#1cb39b"/>
+      <text x="160" y="829" font-size="13" font-weight="600" letter-spacing="2" fill="#04241d" text-anchor="middle">PROTECTED</text>
+    </g>
   </g>
 
-  <!-- ============ bottom: the decision ============ -->
-  <rect x="70" y="640" width="1780" height="2" fill="url(#gild)"/>
-  <text x="70" y="676" font-size="18" letter-spacing="4" fill="#ffd75e">WHAT THIS SHEET IS FOR</text>
-  <text x="70" y="708" font-size="15" fill="#ffd2ee">Test 1 says outline geometry is a parameter: one chip serves entropism, neomil and kitsch.</text>
-  <text x="70" y="732" font-size="15" fill="#ffd2ee">Test 2 says ornament is not an outline — it is additive, and a silhouette trait cannot carry it.</text>
-  <text x="70" y="756" font-size="15" fill="#ffd2ee">Neither says "fourth crate". Both say: one toolkit, silhouette parameter plus a decoration layer,</text>
-  <text x="70" y="780" font-size="15" fill="#ffd2ee">and per-era widget modules where the interaction model genuinely differs.</text>
-  <text x="70" y="820" font-size="14" fill="#a2739e">Open risk: if the decoration layer starts needing to know widget internals — where the label sits,</text>
-  <text x="70" y="842" font-size="14" fill="#a2739e">how tall the row is — the abstraction is wrong and this conclusion should be revisited.</text>
+  <!-- ============ COLUMN 2: product card, both states ============ -->
+  <g>
+    <text x="360" y="150" font-size="13" letter-spacing="4" fill="#4d9484">PRODUCT CARD ×2 STATES</text>
+
+    <!-- default card: teal outline, yellow shelf band poking left -->
+    <g>
+      <rect x="372" y="170" width="230" height="290" rx="14" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+      <text x="388" y="198" font-size="17" letter-spacing="1" fill="#7ddec8">MAGNUM 650</text>
+      <text x="388" y="216" font-size="12" letter-spacing="2" fill="#7ddec8">HAND GUN</text>
+
+      <!-- shelf band: pokes past the left edge, carries the compliance
+           glyphs and the brand tag -->
+      <path d="M360 228 h242 v20 h-230 l-12 8 Z" fill="#fcc428"/>
+      <rect x="368" y="232" width="10" height="10" fill="url(#dotmatY)"/>
+      <rect x="382" y="232" width="10" height="10" fill="none" stroke="#37220f"/>
+      <path d="M398 242 l5 -9 l5 9 Z" fill="none" stroke="#37220f"/>
+      <text x="598" y="241" font-size="9" font-weight="700" letter-spacing="1" fill="#37220f" text-anchor="end">PETROCHEM · BETTERLIFE TEC</text>
+
+      <!-- product art stand-in, teal -->
+      <g stroke="#7ddec8" stroke-width="2" fill="none">
+        <path d="M404 300 h120 l14 10 h24 v14 h-30 l-10 12 h-70 l-8 -10 h-40 Z"/>
+        <path d="M436 336 v18 h16 v-18"/>
+      </g>
+
+      <!-- stats with the mint highlight bar -->
+      <g font-size="12" letter-spacing="1" fill="#7ddec8" text-anchor="middle">
+        <text x="410" y="392">DPS</text><text x="462" y="392">PNT</text>
+        <text x="514" y="392">ACC</text><text x="566" y="392">ROF</text>
+      </g>
+      <rect x="388" y="400" width="198" height="20" fill="#87f4d9"/>
+      <g font-size="15" font-weight="600" fill="#0b3b31" text-anchor="middle">
+        <text x="410" y="416">86</text><text x="462" y="416">30</text>
+        <text x="514" y="416">5</text><text x="566" y="416">5</text>
+      </g>
+
+      <!-- socket row -->
+      <g>
+        <rect x="388" y="428" width="24" height="24" fill="url(#dotmat)"/>
+        <rect x="420" y="428" width="54" height="24" fill="none" stroke="#7ddec8"/>
+        <rect x="482" y="428" width="54" height="24" fill="none" stroke="#7ddec8"/>
+        <rect x="544" y="428" width="42" height="24" fill="none" stroke="#7ddec8"/>
+        <text x="447" y="444" font-size="8" letter-spacing="0.5" fill="#7ddec8" text-anchor="middle">EMPTY SOCKET</text>
+        <text x="509" y="444" font-size="8" letter-spacing="0.5" fill="#7ddec8" text-anchor="middle">EMPTY SOCKET</text>
+        <text x="565" y="444" font-size="8" letter-spacing="0.5" fill="#7ddec8" text-anchor="middle">EMPTY</text>
+      </g>
+      <text x="372" y="478" font-size="9" fill="#4d9484">ONLY CC35 CERTIFIED OFFICERS ARE ALLOWED TO</text>
+      <text x="372" y="490" font-size="9" fill="#4d9484">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+    </g>
+
+    <!-- selected card: whole card goes solid yellow and grows details -->
+    <g>
+      <path d="M372 530 h230 q14 0 14 14 v336 q0 14 -14 14 h-230 q-14 0 -14 -14 v-336 q0 -14 14 -14 Z"
+            fill="url(#selYellow)"/>
+      <path d="M360 588 h242 v20 h-230 l-12 8 Z" fill="#f0a80a"/>
+      <text x="388" y="562" font-size="17" letter-spacing="1" fill="#37220f" font-weight="600">MAGNUM 650</text>
+      <text x="388" y="580" font-size="12" letter-spacing="2" fill="#37220f">HAND GUN</text>
+      <g stroke="#37220f" stroke-width="2" fill="none">
+        <path d="M404 646 h120 l14 10 h24 v14 h-30 l-10 12 h-70 l-8 -10 h-40 Z"/>
+      </g>
+      <g font-size="12" letter-spacing="1" fill="#37220f" text-anchor="middle">
+        <text x="410" y="718">DPS</text><text x="462" y="718">PNT</text>
+        <text x="514" y="718">ACC</text><text x="566" y="718">ROF</text>
+      </g>
+      <g font-size="15" font-weight="700" fill="#37220f" text-anchor="middle">
+        <text x="410" y="740">86</text><text x="462" y="740">30</text>
+        <text x="514" y="740">5</text><text x="566" y="740">5</text>
+      </g>
+      <g font-size="13" fill="#37220f">
+        <text x="390" y="772">20&#160;&#160;Recoil</text>
+        <text x="390" y="790">22&#160;&#160;Spread</text>
+        <text x="390" y="808">12&#160;&#160;Range</text>
+        <text x="390" y="834" font-weight="700">Bonus</text>
+        <text x="390" y="852">+9 Reflexes</text>
+        <text x="390" y="870">+2 Modules Slots</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ============ COLUMN 3: fan menu + callout + mail rows ============ -->
+  <g>
+    <text x="700" y="150" font-size="13" letter-spacing="4" fill="#4d9484">EXTRUDED FAN MENU</text>
+
+    <!-- 3D slabs: face + stacked extrusion copies receding up-right.
+         Teal slabs, the active one yellow. From the braindance screens. -->
+    <g>
+      <!-- extrusions first (behind) -->
+      <g opacity="0.5" fill="none" stroke="#177a6b" stroke-width="1">
+        <path d="M760 258 l96 -26 l7 24 l-96 26 Z" transform="translate(6 -8)"/>
+        <path d="M760 258 l96 -26 l7 24 l-96 26 Z" transform="translate(12 -16)"/>
+        <path d="M872 300 l98 12 l-2 25 l-98 -12 Z" transform="translate(6 -8)"/>
+        <path d="M872 300 l98 12 l-2 25 l-98 -12 Z" transform="translate(12 -16)"/>
+        <path d="M792 356 l88 44 l-11 22 l-88 -44 Z" transform="translate(6 -8)"/>
+        <path d="M792 356 l88 44 l-11 22 l-88 -44 Z" transform="translate(12 -16)"/>
+      </g>
+      <!-- faces -->
+      <path d="M760 258 l96 -26 l7 24 l-96 26 Z" fill="#2bc4ac"/>
+      <text x="798" y="264" font-size="13" font-weight="600" fill="#04241d" transform="rotate(-15 798 264)">VEHICLES</text>
+
+      <path d="M872 300 l98 12 l-2 25 l-98 -12 Z" fill="url(#selYellow)"/>
+      <text x="886" y="322" font-size="13" font-weight="700" fill="#37220f" transform="rotate(7 886 322)">NETWORK</text>
+
+      <path d="M792 356 l88 44 l-11 22 l-88 -44 Z" fill="#2bc4ac"/>
+      <text x="806" y="382" font-size="13" font-weight="600" fill="#04241d" transform="rotate(27 806 382)">EVENTS</text>
+    </g>
+    <text x="700" y="452" font-size="10" letter-spacing="2" fill="#4d9484">DEVICE SOFTWARE</text>
+
+    <!-- yellow callout panel with flag tag: the braindance card -->
+    <text x="700" y="502" font-size="13" letter-spacing="4" fill="#4d9484">CALLOUT / FLAG PANEL</text>
+    <path d="M700 540 h96 l12 -22 h84 l10 22 v0 h0" fill="none"/>
+    <path d="M700 518 h110 l14 20 h-124 Z" fill="url(#selYellow)"/>
+    <text x="712" y="533" font-size="12" font-weight="700" letter-spacing="1" fill="#37220f">BRAINDANCE</text>
+    <path d="M700 538 h250 q12 0 12 12 v148 q0 12 -12 12 h-238 q-12 0 -12 -12 Z"
+          fill="none" stroke="#fcc428" stroke-width="1.5"/>
+    <g font-size="12" fill="#fcc428">
+      <text x="716" y="566">Ut enim ad minim veniam, quis</text>
+      <text x="716" y="584">nostrud exercitation ullamco</text>
+      <text x="716" y="602">laboris nisi ut aliquip ex ea</text>
+      <text x="716" y="620">commodo consequat.</text>
+      <text x="716" y="646">Duis aute irure dolor in</text>
+      <text x="716" y="664">reprehenderit in voluptate.</text>
+    </g>
+    <!-- folded corner -->
+    <path d="M938 696 l24 0 l-24 14 Z" fill="#f0a80a"/>
+
+    <!-- mail rows: numbered, selected yellow with flag -->
+    <text x="700" y="762" font-size="13" letter-spacing="4" fill="#4d9484">MAIL LIST</text>
+    <g font-size="13">
+      <text x="700" y="790" fill="#7ddec8">01</text>
+      <path d="M728 776 h180 l12 18 h-192 Z" fill="url(#selYellow)"/>
+      <text x="738" y="790" fill="#37220f" font-weight="600">You'll regret that</text>
+
+      <text x="700" y="818" fill="#7ddec8">02</text>
+      <text x="738" y="818" fill="#7ddec8">Urgent information (!)</text>
+      <path d="M728 824 h192" stroke="#2e5f57" stroke-width="1"/>
+
+      <text x="700" y="846" fill="#7ddec8">03</text>
+      <text x="738" y="846" fill="#7ddec8">Heist data sent to you</text>
+      <path d="M728 852 h192" stroke="#2e5f57" stroke-width="1"/>
+
+      <text x="700" y="874" fill="#7ddec8">04</text>
+      <text x="738" y="874" fill="#7ddec8">Special offer to you!</text>
+      <path d="M728 880 h192" stroke="#2e5f57" stroke-width="1"/>
+    </g>
+  </g>
+
+  <!-- ============ COLUMN 4: device bezel + security + palette ============ -->
+  <g>
+    <text x="1050" y="150" font-size="13" letter-spacing="4" fill="#4d9484">DEVICE BEZEL</text>
+    <!-- orange rounded CRT frame with a mini login inside -->
+    <rect x="1050" y="166" width="380" height="240" rx="26" fill="none" stroke="#f08c1e" stroke-width="3"/>
+    <g>
+      <rect x="1090" y="220" width="130" height="24" rx="4" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+      <rect x="1095" y="224" width="14" height="14" fill="#1cb39b"/>
+      <text x="1116" y="237" font-size="12" fill="#7ddec8">GUEST 7702</text>
+      <rect x="1090" y="254" width="130" height="20" rx="10" fill="#87f4d9"/>
+      <text x="1155" y="268" font-size="11" font-weight="600" letter-spacing="2" fill="#0b3b31" text-anchor="middle">ENTER</text>
+
+      <rect x="1250" y="220" width="130" height="24" rx="4" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+      <rect x="1255" y="224" width="14" height="14" fill="#1cb39b"/>
+      <text x="1276" y="237" font-size="12" fill="#7ddec8">GUEST 7702</text>
+      <rect x="1250" y="254" width="130" height="20" rx="10" fill="#1cb39b"/>
+      <text x="1315" y="268" font-size="11" font-weight="600" letter-spacing="2" fill="#04241d" text-anchor="middle">PROTECTED</text>
+
+      <text x="1090" y="196" font-size="12" fill="#4d9484">10:20 PM</text>
+      <g fill="#7ddec8" opacity="0.8">
+        <rect x="1090" y="356" width="2" height="18"/><rect x="1094" y="356" width="1" height="18"/>
+        <rect x="1097" y="356" width="3" height="18"/><rect x="1103" y="356" width="1" height="18"/>
+        <rect x="1106" y="356" width="2" height="18"/><rect x="1111" y="356" width="4" height="18"/>
+      </g>
+    </g>
+
+    <!-- security level strip, from the mailbox header -->
+    <text x="1050" y="452" font-size="13" letter-spacing="4" fill="#4d9484">SECURITY LEVEL</text>
+    <g font-size="13" text-anchor="middle">
+      <rect x="1050" y="464" width="34" height="24" rx="4" fill="none" stroke="#7ddec8"/>
+      <text x="1067" y="481" fill="#7ddec8">01</text>
+      <rect x="1092" y="464" width="34" height="24" rx="4" fill="url(#selYellow)"/>
+      <text x="1109" y="481" fill="#37220f" font-weight="600">02</text>
+      <rect x="1134" y="464" width="34" height="24" rx="4" fill="none" stroke="#7ddec8"/>
+      <text x="1151" y="481" fill="#7ddec8">03</text>
+      <rect x="1176" y="464" width="34" height="24" rx="4" fill="none" stroke="#7ddec8"/>
+      <text x="1193" y="481" fill="#7ddec8">04</text>
+    </g>
+
+    <!-- palette swatches, sampled -->
+    <text x="1050" y="546" font-size="13" letter-spacing="4" fill="#4d9484">SAMPLED PALETTE</text>
+    <g font-size="12" fill="#7ddec8">
+      <rect x="1050" y="560" width="36" height="24" fill="#0b0b07" stroke="#2e5f57"/><text x="1096" y="577">bg #0b0b07</text>
+      <rect x="1050" y="592" width="36" height="24" fill="#a63355"/><text x="1096" y="609">bloom #a63355</text>
+      <rect x="1050" y="624" width="36" height="24" fill="#7ddec8"/><text x="1096" y="641">teal #7ddec8</text>
+      <rect x="1050" y="656" width="36" height="24" fill="#1cb39b"/><text x="1096" y="673">teal solid #1cb39b</text>
+      <rect x="1050" y="688" width="36" height="24" fill="#87f4d9"/><text x="1096" y="705">mint #87f4d9</text>
+      <rect x="1050" y="720" width="36" height="24" fill="#fcc428"/><text x="1096" y="737">yellow #fcc428</text>
+      <rect x="1050" y="752" width="36" height="24" fill="#f08c1e"/><text x="1096" y="769">bezel #f08c1e</text>
+      <rect x="1050" y="784" width="36" height="24" fill="#37220f"/><text x="1096" y="801">on-yellow #37220f</text>
+    </g>
+
+    <!-- role mapping note -->
+    <g font-size="12" fill="#4d9484">
+      <text x="1050" y="850">Role mapping: bg=bg, panel=bloom field,</text>
+      <text x="1050" y="868">border/fg=teal, alert=yellow selection,</text>
+      <text x="1050" y="886">tape=bezel orange. Kitsch inverts the</text>
+      <text x="1050" y="904">usual rule: yellow is *selection*, not</text>
+      <text x="1050" y="922">alarm - failure states are rare here.</text>
+    </g>
+  </g>
+
+  <!-- ============ COLUMN 5: era notes ============ -->
+  <g>
+    <text x="1530" y="150" font-size="13" letter-spacing="4" fill="#4d9484">ERA RULES (observed)</text>
+    <g font-size="13" fill="#7ddec8">
+      <text x="1530" y="182">· everything rounded; no chamfers</text>
+      <text x="1530" y="206">· teal line-work carries structure</text>
+      <text x="1530" y="230">· yellow = the selected thing,</text>
+      <text x="1530" y="254">&#160;&#160;always a solid fill</text>
+      <text x="1530" y="278">· one solid page-curl per screen</text>
+      <text x="1530" y="302">· shelf bands poke past the card edge</text>
+      <text x="1530" y="326">· 3D slabs get stacked-outline</text>
+      <text x="1530" y="350">&#160;&#160;extrusion, receding up-right</text>
+      <text x="1530" y="374">· rose bloom vignettes every screen</text>
+      <text x="1530" y="398">· captions everywhere, tiny, dim teal</text>
+      <text x="1530" y="422">· device screens sit in an orange</text>
+      <text x="1530" y="446">&#160;&#160;rounded bezel</text>
+    </g>
+
+    <g font-size="12" fill="#4d9484">
+      <text x="1530" y="500">Attribution note: the four-era runs in</text>
+      <text x="1530" y="518">the Part 1 gallery are document-order,</text>
+      <text x="1530" y="536">ten images from each title card. This</text>
+      <text x="1530" y="554">pink/teal/yellow system IS kitsch; the</text>
+      <text x="1530" y="572">champagne-gold-on-black system that</text>
+      <text x="1530" y="590">follows NEO KITSCH's card belongs to</text>
+      <text x="1530" y="608">that era, not this one.</text>
+    </g>
+  </g>
 
   <!-- footer -->
-  <rect x="0" y="1034" width="1920" height="46" fill="#2a0f2e"/>
-  <rect x="0" y="1034" width="1920" height="2" fill="url(#gild)"/>
-  <text x="34" y="1063" font-size="14" letter-spacing="3" fill="#a2739e">KITSCH — MORE IS MORE</text>
-  <text x="1886" y="1063" font-size="14" letter-spacing="3" fill="#ffd75e" text-anchor="end">PROPOSAL, NOT SAMPLED</text>
+  <path d="M0 1040 h1920" stroke="#2e5f57" stroke-width="1"/>
+  <text x="60" y="1066" font-size="12" letter-spacing="3" fill="#4d9484">KITSCH — STYLE OVER SUBSTANCE</text>
+  <text x="1860" y="1066" font-size="12" letter-spacing="3" fill="#7ddec8" text-anchor="end">SAMPLED FROM BEHANCE PART 1, DOC #34–42</text>
 </svg>
