@@ -73,3 +73,36 @@ when that screen assembles from library widgets. Priority order:
   placeholders.
 - [ ] **Motion**: hover flicker + panel boot-in as canned animations
   (the diamond_menu Cache-invalidation pattern is the plumbing).
+
+## Headless check: feasibility settled (2026-08-22)
+
+Both unknowns blocking "visual regression as a nix checkPhase" were
+probed inside an actual nix build sandbox, not just on a headless box.
+
+- [x] **Weston runs in the build sandbox.** `--backend=headless
+  --renderer=pixman --shell=kiosk --no-config` starts and enables its
+  output, with `XDG_RUNTIME_DIR` pointed at a mode-700 dir under
+  `$TMPDIR` and `HOME` set. No seat, no /dev/dri needed.
+- [x] **The app renders, but the recorded recipe was incomplete.** A
+  software Vulkan ICD alone is not sufficient. Without forcing the
+  backend, wgpu picks GLES and panics in
+  `wgpu-hal-0.19.5/src/gles/egl.rs:789` — `unwrap()` on `None`, i.e. no
+  EGL display in the sandbox. The fix is **`WGPU_BACKEND=vulkan`**
+  alongside
+  `VK_ICD_FILENAMES=<mesa>/share/vulkan/icd.d/lvp_icd.x86_64.json`
+  (mesa 26.1.2 ships it at that path). With both set the app runs
+  clean.
+
+Remaining for the checkPhase itself:
+
+- [ ] Capture with `weston-screenshooter` and compare. Note the
+  comparison target has to change: `images/` is **gitignored**, so the
+  downloaded Behance references are not in the repo and cannot be in a
+  hermetic build. Diff against the tracked `docs/target-*.svg`
+  rasterised instead — which is also the cleaner answer, since those
+  are our own design targets rather than someone else's copyrighted
+  artwork.
+- [ ] Wire it as `passthru.tests` rather than a gating `checkPhase`
+  first: a GPU-less compositor is exactly the kind of thing that fails
+  for environmental reasons, and it should not block every build of the
+  toolkit until it has proven stable.
