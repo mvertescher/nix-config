@@ -41,3 +41,35 @@
   off-white; COLOR_PRIMARY_BLACK and COLOR_YELLOW are gone. If a
   warning accent is ever wanted, it is a deliberate extension, not
   reference canon.
+
+## Full toolkit build-out (design targets in docs/, added 2026-08-22)
+
+Implement the widget set mocked in `docs/target-components.svg`;
+`docs/target-app.svg` ("NEOMIL OPS") is the acceptance test — done
+when that screen assembles from library widgets. Priority order:
+
+- [ ] **Theme/Catalog first**: replace loose color consts at call
+  sites with a semantic iced Theme + widget catalogs (surface/
+  primary/dim/danger...) so every later widget styles against tokens.
+  Everything below is written twice if this comes second.
+- [ ] **Migrate to iced 0.14** (0.13 pinned; 0.14 is stable now) —
+  before the widget build-out, not after.
+- [ ] **Form controls** (style iced built-ins, don't hand-canvas):
+  button (primary/ghost/override-hatch/disabled/icon), text_input
+  with focus treatment, checkbox/toggle/radio, pick_list + menu,
+  slider with ticks.
+- [ ] **App shell**: `neomil_ui::app(...)` bootstrap (fonts, theme,
+  transparent window, background layer) replacing the per-example
+  ritual.
+- [ ] **Data display**: styled scrollable/scrollbar, table/list rows
+  with selection, key-value spec rows, log view with severity colors.
+- [ ] **Feedback**: segmented meter, progress bar (+indeterminate
+  scan), toast/banner (warn = dim red, error = bright red), modal
+  with scrim, tooltip, status bar.
+- [ ] **Chrome**: tab bar (generalize the T-chips), context menu,
+  parameterized top_bar (move the demo copy into examples/).
+- [ ] **Icon set**: 16px-grid canvas path icons behind one
+  `icon(Icon::..., color, size)` entry point; retire the pixel-blob
+  placeholders.
+- [ ] **Motion**: hover flicker + panel boot-in as canned animations
+  (the diamond_menu Cache-invalidation pattern is the plumbing).
