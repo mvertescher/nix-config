@@ -81,7 +81,7 @@ pub fn message_card<'a, Message: 'static + Clone>(
 
     // Text colors based on selection state
     let text_color = if is_selected {
-        colors::COLOR_BG // Dark text on solid accent background
+        *colors::COLOR_BG // Dark text on solid accent background
     } else {
         color_accent
     };

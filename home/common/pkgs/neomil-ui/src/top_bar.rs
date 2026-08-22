@@ -16,21 +16,21 @@ pub fn top_bar<'a, Message: 'static + Clone>() -> Element<'a, Message> {
     let customer_level = column![
         text("CUSTOMER")
             .size(10)
-            .style(|_| text::Style { color: Some(colors::COLOR_PRIMARY_RED) }),
+            .style(|_| text::Style { color: Some(*colors::COLOR_PRIMARY_RED) }),
         level_badge(
             column![
                 text("LEVEL")
                     .size(8)
                     .font(FONT_ORBITRON_REGULAR)
-                    .style(|_| text::Style { color: Some(colors::COLOR_PRIMARY_RED) }),
+                    .style(|_| text::Style { color: Some(*colors::COLOR_PRIMARY_RED) }),
                 text("T1")
                     .size(14)
                     .font(FONT_ORBITRON_BOLD)
-                    .style(|_| text::Style { color: Some(colors::COLOR_PRIMARY_RED) })
+                    .style(|_| text::Style { color: Some(*colors::COLOR_PRIMARY_RED) })
             ]
             .spacing(2)
             .align_x(Alignment::Center),
-            colors::COLOR_PRIMARY_RED,
+            *colors::COLOR_PRIMARY_RED,
             LevelBadgeStyle::Outline,
         )
     ]
@@ -40,24 +40,24 @@ pub fn top_bar<'a, Message: 'static + Clone>() -> Element<'a, Message> {
     let logo = column![
         text("#NC488402")
             .size(10)
-            .style(|_| text::Style { color: Some(colors::COLOR_PRIMARY_RED) }),
+            .style(|_| text::Style { color: Some(*colors::COLOR_PRIMARY_RED) }),
         text("next")
             .size(36)
             .font(FONT_BOLD)
-            .style(|_| text::Style { color: Some(colors::COLOR_PRIMARY_RED) }),
+            .style(|_| text::Style { color: Some(*colors::COLOR_PRIMARY_RED) }),
         text("TECHNOLOGY")
             .size(12)
             .font(FONT_MEDIUM)
-            .style(|_| text::Style { color: Some(colors::COLOR_PRIMARY_RED) }),
+            .style(|_| text::Style { color: Some(*colors::COLOR_PRIMARY_RED) }),
         container(
             text("JHN 102 CKC 151 CC10 S111")
                 .size(8)
                 .font(FONT_ORBITRON_REGULAR)
-                .style(|_| text::Style { color: Some(colors::COLOR_BG) })
+                .style(|_| text::Style { color: Some(*colors::COLOR_BG) })
         )
         .padding([2, 8])
         .style(|_| container::Style {
-            background: Some(iced::Background::Color(colors::COLOR_PRIMARY_RED)),
+            background: Some(iced::Background::Color(*colors::COLOR_PRIMARY_RED)),
             ..Default::default()
         })
     ]
@@ -67,7 +67,7 @@ pub fn top_bar<'a, Message: 'static + Clone>() -> Element<'a, Message> {
     let security_levels = column![
         text("SECURITY LEVEL")
             .size(10)
-            .style(|_| text::Style { color: Some(colors::COLOR_PRIMARY_RED) }),
+            .style(|_| text::Style { color: Some(*colors::COLOR_PRIMARY_RED) }),
         row![
             make_sec_level("T1", true),
             make_sec_level("T2", false),
@@ -92,7 +92,7 @@ pub fn top_bar<'a, Message: 'static + Clone>() -> Element<'a, Message> {
     // --- RED DIVIDER LINE ---
     let red_line = container(Space::new(Length::Fill, 1.5))
         .style(|_| container::Style {
-            background: Some(iced::Background::Color(colors::COLOR_PRIMARY_RED)),
+            background: Some(iced::Background::Color(*colors::COLOR_PRIMARY_RED)),
             ..Default::default()
         });
 
@@ -112,14 +112,14 @@ fn make_sec_level<'a, Message: 'static>(level: &'a str, active: bool) -> Element
         .size(8)
         .font(FONT_ORBITRON_REGULAR)
         .style(move |_| text::Style {
-            color: Some(if active { colors::COLOR_BG } else { colors::COLOR_PRIMARY_RED }),
+            color: Some(if active { *colors::COLOR_BG } else { *colors::COLOR_PRIMARY_RED }),
         });
 
     let val = text(level)
         .size(14)
         .font(FONT_ORBITRON_BOLD)
         .style(move |_| text::Style {
-            color: Some(if active { colors::COLOR_BG } else { colors::COLOR_PRIMARY_RED }),
+            color: Some(if active { *colors::COLOR_BG } else { *colors::COLOR_PRIMARY_RED }),
         });
 
     let content = column![title, val]
@@ -128,7 +128,7 @@ fn make_sec_level<'a, Message: 'static>(level: &'a str, active: bool) -> Element
 
     level_badge(
         content,
-        colors::COLOR_PRIMARY_RED,
+        *colors::COLOR_PRIMARY_RED,
         if active {
             LevelBadgeStyle::Solid
         } else {

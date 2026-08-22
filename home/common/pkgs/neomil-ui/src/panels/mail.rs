@@ -264,12 +264,12 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
                 text("68SD1D1100D15")
                     .size(10)
                     .font(FONT_BOLD)
-                    .style(|_| text::Style { color: Some(colors::COLOR_BG) }),
+                    .style(|_| text::Style { color: Some(*colors::COLOR_BG) }),
                 Space::with_width(15),
                 text("COMBAT COLONIZATION\nDEFENCE PROGRAM")
                     .size(8)
                     .font(FONT_MEDIUM)
-                    .style(|_| text::Style { color: Some(colors::COLOR_BG) }),
+                    .style(|_| text::Style { color: Some(*colors::COLOR_BG) }),
             ]
             .align_y(Alignment::Center)
         )
@@ -344,8 +344,8 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
 
     background(
         screen_layout,
-        colors::COLOR_BG_VERY_TRANSPARENT,
-        colors::COLOR_GLOW,
+        *colors::COLOR_BG_VERY_TRANSPARENT,
+        *colors::COLOR_GLOW,
         true,
     )
 }
@@ -669,7 +669,7 @@ fn cut_button<'a, Message: 'static + Clone>(
     };
     
     let text_color = if is_solid {
-        colors::COLOR_BG
+        *colors::COLOR_BG
     } else {
         color_accent
     };

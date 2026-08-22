@@ -29,7 +29,7 @@ pub fn main() -> iced::Result {
         })
         .window(window_settings)
         .style(|_state, _theme| iced::application::Appearance {
-            background_color: colors::COLOR_BG, // Use dark background (0x080808)
+            background_color: *colors::COLOR_BG, // Use dark background (0x080808)
             text_color: Color::WHITE,
         })
         .run()

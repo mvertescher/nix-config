@@ -512,7 +512,7 @@ impl App {
             self.list_scrollable_id.clone(),
             self.content_scrollable_id.clone(),
             self.focus,
-            colors::COLOR_PRIMARY_RED,
+            *colors::COLOR_PRIMARY_RED,
         )
     }
 }

@@ -27,12 +27,12 @@ pub fn dashboard<'a, Message: 'static + Clone>(
             text("COMPUTER SYSTEMS")
                 .size(12)
                 .font(FONT_MEDIUM)
-                .style(|_| text::Style { color: Some(colors::COLOR_PRIMARY_RED) })
+                .style(|_| text::Style { color: Some(*colors::COLOR_PRIMARY_RED) })
         )
         .padding([5, 15])
         .style(|_| container::Style {
             border: iced::Border {
-                color: colors::COLOR_PRIMARY_RED,
+                color: *colors::COLOR_PRIMARY_RED,
                 width: 1.0,
                 radius: 0.0.into(),
             },
@@ -73,8 +73,8 @@ pub fn dashboard<'a, Message: 'static + Clone>(
                         on_press: (on_menu_select.clone())(5),
                     },
                 ],
-                colors::COLOR_PRIMARY_RED,
-                colors::COLOR_BG,
+                *colors::COLOR_PRIMARY_RED,
+                *colors::COLOR_BG,
             )
         )
         .width(Length::Fill)
@@ -89,12 +89,12 @@ pub fn dashboard<'a, Message: 'static + Clone>(
             text("DESCRIPTION")
                 .size(12)
                 .font(FONT_MEDIUM)
-                .style(|_| text::Style { color: Some(colors::COLOR_PRIMARY_RED) })
+                .style(|_| text::Style { color: Some(*colors::COLOR_PRIMARY_RED) })
         )
         .padding([5, 15])
         .style(|_| container::Style {
             border: iced::Border {
-                color: colors::COLOR_PRIMARY_RED,
+                color: *colors::COLOR_PRIMARY_RED,
                 width: 1.0,
                 radius: 0.0.into(),
             },
@@ -107,14 +107,14 @@ pub fn dashboard<'a, Message: 'static + Clone>(
             text("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n\nQuis ipsum suspendisse ultrices gravida. Risus commodo viverra maecenas accumsan lacus vel facilisis.")
                 .size(12)
                 .font(FONT_RAJDHANI_REGULAR)
-                .style(|_| text::Style { color: Some(colors::COLOR_PRIMARY_RED) }),
+                .style(|_| text::Style { color: Some(*colors::COLOR_PRIMARY_RED) }),
             None, // scrollable_id
             &["PETROCHEM", "BETTERLIFE TEC"],
             "M",
             "PRECISION LIQUID",
             "POLYMER MUSCLE",
             None,
-            colors::COLOR_PRIMARY_RED,
+            *colors::COLOR_PRIMARY_RED,
         )
     ]
     .width(Length::FillPortion(2))
@@ -138,18 +138,18 @@ pub fn dashboard<'a, Message: 'static + Clone>(
                 text("68SD1D1100D15")
                     .size(10)
                     .font(FONT_BOLD)
-                    .style(|_| text::Style { color: Some(colors::COLOR_BG) }),
+                    .style(|_| text::Style { color: Some(*colors::COLOR_BG) }),
                 Space::with_width(15),
                 text("COMBAT COLONIZATION\nDEFENCE PROGRAM")
                     .size(8)
                     .font(FONT_MEDIUM)
-                    .style(|_| text::Style { color: Some(colors::COLOR_BG) }),
+                    .style(|_| text::Style { color: Some(*colors::COLOR_BG) }),
             ]
             .align_y(Alignment::Center)
         )
         .padding([8, 15])
         .style(|_| container::Style {
-            background: Some(iced::Background::Color(colors::COLOR_PRIMARY_RED)),
+            background: Some(iced::Background::Color(*colors::COLOR_PRIMARY_RED)),
             ..Default::default()
         })
     ]
@@ -167,7 +167,7 @@ pub fn dashboard<'a, Message: 'static + Clone>(
     // Far left vertical text
     let left_edge = canvas(VerticalText {
         text: "JHN 102 CKC 151 CC10 S111".to_string(),
-        color: colors::COLOR_PRIMARY_RED,
+        color: *colors::COLOR_PRIMARY_RED,
         size: 8.0,
         font: FONT_ORBITRON_REGULAR,
     })
@@ -180,7 +180,7 @@ pub fn dashboard<'a, Message: 'static + Clone>(
         container(
             canvas(VerticalText {
                 text: "JHN 102 CKC 151 CC10 S111".to_string(),
-                color: colors::COLOR_PRIMARY_RED,
+                color: *colors::COLOR_PRIMARY_RED,
                 size: 8.0,
                 font: FONT_ORBITRON_REGULAR,
             })
@@ -193,7 +193,7 @@ pub fn dashboard<'a, Message: 'static + Clone>(
         container(
             canvas(VerticalText {
                 text: "KIROSHI".to_string(),
-                color: colors::COLOR_PRIMARY_RED,
+                color: *colors::COLOR_PRIMARY_RED,
                 size: 10.0,
                 font: FONT_BOLD,
             })
@@ -218,8 +218,8 @@ pub fn dashboard<'a, Message: 'static + Clone>(
 
     background(
         screen_layout,
-        colors::COLOR_BG_VERY_TRANSPARENT,
-        colors::COLOR_GLOW,
+        *colors::COLOR_BG_VERY_TRANSPARENT,
+        *colors::COLOR_GLOW,
         true,
     )
 }
