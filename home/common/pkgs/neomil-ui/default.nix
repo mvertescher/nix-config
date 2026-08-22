@@ -1,4 +1,8 @@
 { lib
+, runCommand
+, weston
+, mesa
+, python3
 , craneLib
 , pkg-config
 , cmake
@@ -31,8 +35,7 @@ let
       wayland
     ];
   };
-in
-craneLib.buildPackage {
+  package = craneLib.buildPackage {
   src = cleanSrc;
   inherit cargoArtifacts;
   pname = "neomil-ui";
@@ -85,9 +88,26 @@ craneLib.buildPackage {
     done
   '';
 
-  meta = with lib; {
-    description = "A UI toolkit using Rust and Iced.";
-    license = licenses.mit;
-    platforms = platforms.linux;
+    meta = with lib; {
+      description = "A UI toolkit using Rust and Iced.";
+      license = licenses.mit;
+      platforms = platforms.linux;
+    };
   };
-}
+in
+
+# Visual regression: render the dashboard on a headless compositor and
+# compare it against a committed golden image.
+#
+# passthru.tests rather than a gating checkPhase on purpose: a GPU-less
+# compositor is exactly the kind of thing that fails for environmental
+# reasons, and it should not block every build of the toolkit until it
+# has proven stable.
+package.overrideAttrs (old: {
+  passthru = (old.passthru or { }) // {
+    tests.visual = import ./tests/visual.nix {
+      inherit lib runCommand weston mesa python3;
+      neomil-ui = package;
+    };
+  };
+})
