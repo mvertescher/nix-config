@@ -1,0 +1,33 @@
+/* 
+# ---------------------------------------
+# cybr-rofi   rofi emoji script theme (part of cybrcore)
+# Project:    https://github.com/cybrcore/cybr-rofi
+# Author:     scherrer-txt   |   License:     GPL-3.0
+# Source:     ~/.config/rofi/scripts/emoji/style.rasi
+# ---------------------------------------
+*/
+
+@theme "~/.config/rofi/style.rasi"
+
+listview {
+    enabled:						true;
+	columns:						20;
+    lines:							15;
+    flow:							horizontal;
+}
+
+entry {
+	enabled:						true;
+}
+
+element-text {
+	vertical-align:					0.5;
+	horizontal-align:				0.5;
+}
+
+
+// --- Disabled
+
+element-icon {
+	enabled:						false;
+}

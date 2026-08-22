@@ -12,6 +12,7 @@ in
     ./firefox
     ./hyprlock.nix
     ./hyprpaper.nix
+    ./rofi
     ./swaync.nix
     ./waybar
   ];
