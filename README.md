@@ -105,6 +105,15 @@ A wrapper picks `entropism` from a host's home-manager modules:
 
     # Override any semantic role; unset roles keep the variant's value.
     colors.fg = "#c8d0c4";
+
+    # Wallpaper treatment, generated from `bg`:
+    # none (default) | scanlines | noise
+    texture = "scanlines";
+
+    # Defaults to Rajdhani, the typeface Cyberpunk 2077 sets its own
+    # interface in. `pkgs.departure-mono` is the bitmap-adjacent
+    # alternative.
+    # uiFont = { package = pkgs.departure-mono; name = "Departure Mono"; };
   };
 }
 ```

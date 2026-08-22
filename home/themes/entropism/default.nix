@@ -58,10 +58,51 @@ let
   # they beat stylix. A second mkForce here would be a same-priority
   # collision, not an override, so the theme sits one step stronger.
   entropismOverride = lib.mkOverride 40;
+
+  magick = lib.getExe' pkgs.imagemagick "magick";
+
+  # Generated rather than shipped: the wallpaper is derived from the same
+  # `bg` role as everything else, so it follows an override instead of
+  # becoming a stale asset with a colour baked into it.
+  wallpaper =
+    pkgs.runCommand "entropism-${cfg.variant}-${cfg.texture}.png"
+      {
+        bg = resolved.bg;
+        line = resolved.panel;
+      }
+      (
+        {
+          none = ''
+            ${magick} -size 3840x2160 xc:"$bg" png32:$out
+          '';
+
+          # Horizontal lines every 4px, one pixel tall: a CRT that has
+          # been left on too long. Built as a tile then repeated, rather
+          # than with an mpr: register, which does not survive the
+          # write/delete round trip reliably.
+          scanlines = ''
+            ${magick} -size 1x3 xc:"$bg" -size 1x1 xc:"$line" -append tile.png
+            ${magick} -size 3840x2160 tile:tile.png png32:$out
+          '';
+
+          # Fine grain, as though the panel is amplifying its own noise.
+          # Grey noise blended over the background keeps the hue.
+          noise = ''
+            ${magick} -size 3840x2160 xc:gray50 -attenuate 1.2 +noise Gaussian \
+              -colorspace Gray grain.png
+            ${magick} -size 3840x2160 xc:"$bg" grain.png \
+              -compose blend -define compose:args=7 -composite png32:$out
+          '';
+        }
+        .${cfg.texture}
+      );
 in
 {
   imports = [
+    ./firefox.nix
+    ./hyprpaper.nix
     ./rofi.nix
+    ./starship.nix
     ./swaync.nix
     ./waybar.nix
   ];
@@ -103,19 +144,41 @@ in
         options = {
           package = lib.mkOption {
             type = lib.types.package;
-            default = pkgs.departure-mono;
+            default = pkgs.callPackage ../../common/pkgs/rajdhani-fontshare { };
           };
           name = lib.mkOption {
             type = lib.types.str;
-            default = "Departure Mono";
+            default = "Rajdhani";
           };
         };
       };
       default = { };
       description = ''
-        Bitmap-adjacent face for the bar, launcher and notifications.
+        Face for the bar, launcher and notifications. Defaults to
+        Rajdhani, which is the typeface Cyberpunk 2077 actually sets its
+        in-game interface in (Orbitron is its secondary), and which this
+        repo already vendors.
+
+        For a more literal salvaged-terminal read, `pkgs.departure-mono`
+        ("Departure Mono") is bitmap-adjacent and also packaged.
+
         Terminal content keeps whatever stylix.fonts.monospace is, so
         code stays legible.
+      '';
+    };
+
+    texture = lib.mkOption {
+      type = lib.types.enum [
+        "none"
+        "scanlines"
+        "noise"
+      ];
+      default = "none";
+      description = ''
+        Wallpaper treatment. "none" is a flat field of `bg`; the others
+        add a degraded-display artefact generated from the same colour.
+        Off by default -- an entropism display earns its texture from
+        age, not from decoration.
       '';
     };
 
@@ -147,13 +210,10 @@ in
         # other slot is fg or dim. No rainbow.
         base16Scheme = scheme.toBase16 cfg.variant resolved;
 
-        # A flat field of the background colour. mkDefault so a host can
-        # still supply a real wallpaper, and so it loses to a system
-        # image propagated by stylix.homeManagerIntegration.
-        image = lib.mkDefault (
-          pkgs.runCommand "entropism-${cfg.variant}-bg.png" { color = resolved.bg; }
-            "${lib.getExe' pkgs.imagemagick "convert"} xc:$color png32:$out"
-        );
+        # mkDefault so a host can still supply a real wallpaper, and so
+        # it loses to a system image propagated by
+        # stylix.homeManagerIntegration.
+        image = lib.mkDefault wallpaper;
 
         # UI face for GTK and friends. Terminal content deliberately
         # keeps home/common's monospace.
