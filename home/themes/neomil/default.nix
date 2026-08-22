@@ -103,6 +103,31 @@ in
       '';
     };
 
+    lock = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = ''
+          Generate a hyprlock configuration from the theme roles and
+          bind it. Every generated value is mkDefault, so a host can
+          override any single setting with a plain definition; turn
+          this off only if you want to drive programs.hyprlock
+          entirely yourself.
+        '';
+      };
+
+      bind = lib.mkOption {
+        type = lib.types.str;
+        default = "SUPER, backspace";
+        example = "SUPER SHIFT, L";
+        description = ''
+          Key that locks the session. Set to "" to add no binding,
+          for example if an idle daemon is the only thing that should
+          lock.
+        '';
+      };
+    };
+
     firefox.restartOnActivation = lib.mkOption {
       type = lib.types.bool;
       default = true;
@@ -140,6 +165,7 @@ in
         roles = resolved;
         font = cfg.uiFont;
         browserRestart = cfg.firefox.restartOnActivation;
+        inherit (cfg) lock;
       })
     ]))
   ];

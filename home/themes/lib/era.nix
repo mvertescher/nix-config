@@ -32,6 +32,11 @@
   # Per-era styling knobs. The defaults are the shared "hard edges"
   # house style; an ornamental era overrides them.
   knobs ? { },
+  # Lock screen. Everything it generates is mkDefault, so a host
+  # overrides any individual setting with a plain definition; set
+  # enable = false to opt out of the theme's lock entirely and drive
+  # programs.hyprlock yourself.
+  lock ? { },
 }:
 
 let
@@ -50,6 +55,13 @@ let
     hostTape = true;
   }
   // knobs;
+
+  lk = {
+    enable = true;
+    # Set to "" for no binding at all.
+    bind = "SUPER, backspace";
+  }
+  // lock;
 
   magick = lib.getExe' pkgs.imagemagick "magick";
 
@@ -730,6 +742,103 @@ lib.mkMerge [
       };
     };
   }
+
+  # --- lock screen -----------------------------------------------------
+  #
+  # Generated from the same roles, in the same house style: square,
+  # 1px, unlit, no blur. Every value is mkDefault, so a host overrides
+  # any single setting with a plain definition and does not need to
+  # restate the rest - which matters because a work machine may have
+  # lock-screen requirements the theme knows nothing about.
+  #
+  # stylix's hyprlock target is force-disabled, which is what frees
+  # these to be mkDefault rather than mkForce.
+  (lib.mkIf lk.enable {
+    stylix.targets.hyprlock.enable = lib.mkForce false;
+
+    programs.hyprlock = {
+      enable = lib.mkDefault true;
+
+      settings = {
+        general.hide_cursor = lib.mkDefault true;
+
+        background = {
+          monitor = lib.mkDefault "";
+          path = lib.mkDefault "${config.stylix.image}";
+          color = lib.mkDefault (rgba "bg");
+          # No blur, no vibrancy: the wallpaper is already a flat field
+          # and softening it would be ornament.
+          blur_passes = lib.mkDefault 0;
+          noise = lib.mkDefault 0;
+        };
+
+        input-field = {
+          monitor = lib.mkDefault "";
+          size = lib.mkDefault "280, 44";
+          rounding = lib.mkDefault k.radius;
+          outline_thickness = lib.mkDefault 1;
+          shadow_passes = lib.mkDefault 0;
+          dots_center = lib.mkDefault true;
+          dots_size = lib.mkDefault 0.2;
+          fade_on_empty = lib.mkDefault false;
+          placeholder_text = lib.mkDefault "";
+          outer_color = lib.mkDefault (rgba "border");
+          inner_color = lib.mkDefault (rgba "panel");
+          font_color = lib.mkDefault (rgba "fg");
+          check_color = lib.mkDefault (rgba "dim");
+          fail_color = lib.mkDefault (rgba "alert");
+          fail_text = lib.mkDefault "$FAIL ($ATTEMPTS)";
+          position = lib.mkDefault "0, -80";
+          halign = lib.mkDefault "center";
+          valign = lib.mkDefault "center";
+        };
+
+        label = lib.mkDefault [
+          {
+            monitor = "";
+            text = "cmd[update:1000] date +%H:%M";
+            color = (rgba "fg");
+            font_size = 64;
+            font_family = font.name;
+            position = "0, 40";
+            halign = "center";
+            valign = "center";
+            shadow_passes = 0;
+          }
+          {
+            monitor = "";
+            text = "cmd[update:60000] date +%Y-%m-%d";
+            color = (rgba "dim");
+            font_size = 12;
+            font_family = font.name;
+            position = "0, -8";
+            halign = "center";
+            valign = "center";
+            shadow_passes = 0;
+          }
+          # The host, in the tape accent the bar and prompt also use
+          # for it.
+          {
+            monitor = "";
+            text = "cmd[update:3600000] uname -n";
+            color = (rgba "tape");
+            font_size = 12;
+            font_family = font.name;
+            position = "20, -20";
+            halign = "left";
+            valign = "top";
+            shadow_passes = 0;
+          }
+        ];
+      };
+    };
+  })
+
+  (lib.mkIf (lk.enable && lk.bind != "") {
+    wayland.windowManager.hyprland.settings.bind = [
+      "${lk.bind}, exec, hyprlock"
+    ];
+  })
 
   (lib.mkIf browserRestart {
     home.activation.eraBrowserRestart = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
