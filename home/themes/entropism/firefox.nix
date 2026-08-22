@@ -10,14 +10,53 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 
 let
   cfg = config.themes.entropism;
   c = cfg.resolvedColors;
+
+  # Everything the chrome is generated from. Hashing the inputs rather
+  # than the stylesheet means the stamp changes exactly when the theme
+  # does -- a reworded comment in the CSS will not trigger a restart.
+  themeStamp = builtins.hashString "sha256" (
+    builtins.toJSON {
+      inherit (cfg) variant;
+      colors = c;
+      font = cfg.uiFont.name;
+    }
+  );
+
+  # Activation runs with an empty environment - no ambient PATH - so every
+  # tool it calls has to be named by store path.
+  hyprctl = "${config.wayland.windowManager.hyprland.package}/bin/hyprctl";
+  pgrep = "${pkgs.procps}/bin/pgrep";
+  sleep = "${pkgs.coreutils}/bin/sleep";
+  mkdir = "${pkgs.coreutils}/bin/mkdir";
+  cat = "${pkgs.coreutils}/bin/cat";
+  ls = "${pkgs.coreutils}/bin/ls";
+  id = "${pkgs.coreutils}/bin/id";
+  head = "${pkgs.coreutils}/bin/head";
+  env = "${pkgs.coreutils}/bin/env";
 in
 {
+  options.themes.entropism.firefox.restartOnActivation = lib.mkOption {
+    type = lib.types.bool;
+    default = true;
+    description = ''
+      Restart a running Firefox when the theme changes, since userChrome
+      is only read at startup and an already-open window keeps rendering
+      the previous theme.
+
+      The restart is deliberately conservative: it fires only when the
+      palette, variant or UI font actually changed, only when Firefox is
+      already running, and it sends SIGTERM and waits so Firefox writes
+      its session store and restores tabs on the way back up.
+    '';
+  };
+
   config = lib.mkIf cfg.enable {
     programs.firefox = {
       enable = true;
@@ -144,5 +183,67 @@ in
         '';
       };
     };
+
+    # userChrome is read once at startup, so switching themes leaves any
+    # open window rendering the old one. Restart it -- but only on a real
+    # change, and only if it is actually running, so an ordinary rebuild
+    # never costs anyone their tabs.
+    home.activation.entropismFirefoxRestart =
+      lib.mkIf cfg.firefox.restartOnActivation
+        (
+          lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            entropismStampDir="${config.xdg.stateHome}/entropism"
+            entropismStamp="$entropismStampDir/firefox-theme"
+            entropismWant="${themeStamp}"
+            entropismHave="$(${cat} "$entropismStamp" 2>/dev/null || true)"
+
+            if [ "$entropismHave" = "$entropismWant" ]; then
+              verboseEcho "entropism: browser theme unchanged, leaving Firefox alone"
+            else
+              # Match on the launcher's full command line: the kernel
+              # truncates comm to 15 characters, so the wrapped binary
+              # shows up as ".firefox-wrappe" and pkill -x misses it.
+              entropismPids="$(${pgrep} -f 'bin/firefox$' 2>/dev/null || true)"
+
+              if [ -n "$entropismPids" ]; then
+                verboseEcho "entropism: browser theme changed, restarting Firefox"
+
+                # SIGTERM, not SIGKILL: Firefox flushes its session store
+                # on the way out and restores the tabs when it comes back.
+                $DRY_RUN_CMD kill -TERM $entropismPids 2>/dev/null || true
+
+                entropismWaited=0
+                while [ "$entropismWaited" -lt 20 ] \
+                  && ${pgrep} -f 'bin/firefox$' >/dev/null 2>&1; do
+                  ${sleep} 0.5
+                  entropismWaited=$((entropismWaited + 1))
+                done
+
+                # Relaunch through the compositor, so the new process gets
+                # a real Wayland environment rather than activation's.
+                #
+                # The signature is read off the runtime directory instead
+                # of $HYPRLAND_INSTANCE_SIGNATURE: home-manager's unit runs
+                # with an empty Environment=, so the variable is not there
+                # to inherit even though the session is running.
+                entropismSig="$(
+                  ${ls} "/run/user/$(${id} -u)/hypr" 2>/dev/null | ${head} -1 || true
+                )"
+
+                if [ -n "$entropismSig" ]; then
+                  $DRY_RUN_CMD ${env} "HYPRLAND_INSTANCE_SIGNATURE=$entropismSig" \
+                    ${hyprctl} dispatch exec firefox >/dev/null 2>&1 || true
+                else
+                  verboseEcho "entropism: no hyprland session, not relaunching Firefox"
+                fi
+              else
+                verboseEcho "entropism: Firefox not running, nothing to restart"
+              fi
+
+              $DRY_RUN_CMD ${mkdir} -p "$entropismStampDir"
+              $DRY_RUN_CMD sh -c "printf '%s' '$entropismWant' > '$entropismStamp'"
+            fi
+          ''
+        );
   };
 }
