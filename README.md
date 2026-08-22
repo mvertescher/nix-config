@@ -78,6 +78,48 @@ Notes:
 - Nixpkgs and friends are pinned by this repo's `flake.lock`; wrappers
   inherit those pins through the input.
 
+## Themes
+
+Themes live in `home/themes/` and style the desktop beyond what stylix
+does on its own — the bar, launcher, notification daemon, lock screen
+and hyprland's own decoration.
+
+- **`cybr`** — Cyberpunk 2077 Neomilitarism: red and cyan on black,
+  slanted separators, glow. Selected by importing it; its palette is
+  the fixed base16 file in `colors/`.
+- **`entropism`** — the salvaged-hardware era: necessity over style.
+  Monochrome degraded displays, square corners, 1px lines, no glow.
+  Configurable, so it is selected by importing *and* enabling it.
+
+A wrapper picks `entropism` from a host's home-manager modules:
+
+```nix
+{
+  imports = [ ../../public/home/themes/entropism ];
+
+  themes.entropism = {
+    enable = true;
+
+    # burn-in (default) | dead-pixel | salvage-phosphor
+    variant = "dead-pixel";
+
+    # Override any semantic role; unset roles keep the variant's value.
+    colors.fg = "#c8d0c4";
+  };
+}
+```
+
+The theme's API is semantic roles rather than base16 slots — `bg`,
+`panel`, `border`, `dim`, `fg`, `alert` and the optional `tape` label
+accent (which follows `fg` unless the variant or the host sets it).
+Every module downstream reads the resolved roles, so overriding one
+role retints stylix, waybar, rofi, swaync and the hyprland borders
+together.
+
+The generated base16 scheme is deliberately monochrome: syntax
+highlighting collapses onto `fg`/`dim`/`alert` rather than a rainbow.
+That is the aesthetic, not a bug.
+
 ## Bootstrapping on non-NixOS
 
 For a machine that runs Nix on another distro (home-manager only):
