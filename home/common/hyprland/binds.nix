@@ -25,8 +25,13 @@ in {
     ];
 
     bind = let
+      # Hyprland's regular workspaces are 1-indexed: workspace 0 does not
+      # exist, and dispatching to it silently succeeds while doing
+      # nothing (`hyprctl dispatch workspace 0` returns ok and no
+      # workspace is created). Binding the 0 key to workspace 0 therefore
+      # made it a dead key. Keyboards run 1-9 then 0, so the 0 key is the
+      # tenth workspace.
       workspaces = [
-        "0"
         "1"
         "2"
         "3"
@@ -37,6 +42,8 @@ in {
         "8"
         "9"
       ];
+      tenthKey = "0";
+      tenth = "10";
       # Map keys (arrows and hjkl) to hyprland directions (l, r, u, d)
       directions = rec {
         left = "l";
@@ -75,9 +82,11 @@ in {
       ++
       # Change workspace
       (map (n: "SUPER,${n},workspace,${n}") workspaces)
+      ++ [ "SUPER,${tenthKey},workspace,${tenth}" ]
       ++
       # Move window to workspace
       (map (n: "SUPERSHIFT,${n},movetoworkspacesilent,${n}") workspaces)
+      ++ [ "SUPERSHIFT,${tenthKey},movetoworkspacesilent,${tenth}" ]
       ++
       # Move focus
       (lib.mapAttrsToList (key: direction: "SUPER,${key},movefocus,${direction}") directions)
