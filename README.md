@@ -129,6 +129,26 @@ The generated base16 scheme is deliberately monochrome: syntax
 highlighting collapses onto `fg`/`dim`/`alert` rather than a rainbow.
 That is the aesthetic, not a bug.
 
+### Two kinds of theme
+
+There are two shapes here, on purpose:
+
+- **Vendored** (`cybr`): ships upstream cybrcore assets — `config.jsonc`,
+  `.rasi` files, SVG separators, shell scripts — and a fixed 33-colour
+  palette. Selected by importing it. What it looks like is what upstream
+  drew.
+- **Generated** (`entropism`, and the other Cyberpunk 2077 style eras as
+  they land): no assets at all. Every stylesheet is produced from
+  semantic roles, so the theme is configurable and a colour override
+  reaches every surface. Selected by importing *and* enabling, since it
+  carries options.
+
+The generated eras share `home/themes/lib/roles.nix` — the role
+vocabulary, the preset-plus-override resolution, and the base16
+projection. A new era supplies `palettes.nix` plus a thin `scheme.nix`
+binding it to that library, and inherits the rest. `cybr` deliberately
+does not use it.
+
 ## Bootstrapping on non-NixOS
 
 For a machine that runs Nix on another distro (home-manager only):
