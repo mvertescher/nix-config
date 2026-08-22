@@ -1,6 +1,8 @@
 { pkgs, lib, config, ... }:
 
 let
+  shades = (import ../../lib/shades.nix { inherit lib; }).forColors config.lib.stylix.colors;
+
   # Lucid Color Palette dynamically derived from Stylix!
   no0 = config.lib.stylix.colors.base00; # Black
   no1 = config.lib.stylix.colors.base01;
@@ -9,9 +11,9 @@ let
   vi0 = config.lib.stylix.colors.base0E; # Violet
   cy0 = config.lib.stylix.colors.base0C; # Cyan
 
-  # Secondary dark accent shades
-  re1 = "631F21";
-  vi1 = "421666";
+  # Secondary dark accent shades, derived so they follow the active scheme
+  re1 = shades.mid "base08";
+  vi1 = shades.mid "base0E";
 
   # Transparency Levels (Alpha channel)
   tr0 = "00";

@@ -1,4 +1,9 @@
-{ pkgs, config, ... }:
+{ pkgs, lib, config, ... }:
+
+let
+  shades = import ../../../lib/shades.nix { inherit lib; };
+  inherit (shades.forColors config.lib.stylix.colors) mid dark;
+in
 
 {
   home.packages = [
@@ -24,7 +29,7 @@
       background-full:    #${config.lib.stylix.colors.base00}FF;
       foreground:         #${config.lib.stylix.colors.base08};
       accent:             #${config.lib.stylix.colors.base08};
-      background-tb:      #331215;
+      background-tb:      #${dark "base08"};
       border-tb:          #${config.lib.stylix.colors.base0B};
       background-none:    #${config.lib.stylix.colors.base0D};
       selected:           linear-gradient(to right, #${config.lib.stylix.colors.base08}30, #${config.lib.stylix.colors.base08}30);
@@ -32,7 +37,7 @@
       button-selected:    linear-gradient(#${config.lib.stylix.colors.base08}30);
       active:             linear-gradient(to right, #${config.lib.stylix.colors.base0C}FF, #${config.lib.stylix.colors.base0B}FF);
       urgent:             #${config.lib.stylix.colors.base09};
-      font:               "GeistMono Nerd Font 12";
+      font:               "${config.stylix.fonts.monospace.name} 12";
       gap:                8px;
       radius:             0px;
       no0:                #${config.lib.stylix.colors.base00};

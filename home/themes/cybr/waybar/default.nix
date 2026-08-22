@@ -1,6 +1,8 @@
 { pkgs, lib, config, ... }:
 
 let
+  shades = import ../../../lib/shades.nix { inherit lib; };
+
   # Configure preferred terminal here ("alacritty" or "kitty")
   terminal = "alacritty";
 
@@ -49,52 +51,45 @@ in
     enable = true;
   };
 
-  xdg.configFile."waybar/colors.css".text = ''
-    /* Generated dynamically from Stylix active palette */
-    @define-color no0 #${config.lib.stylix.colors.base00};
-    @define-color no1 #${config.lib.stylix.colors.base01};
-    @define-color no2 #${config.lib.stylix.colors.base02};
+  # Every family below is base16 accent + two derived shades. The mid and
+  # dark variants used to be literals lifted from cybr's 33-colour
+  # palette.nix, which meant they stayed cybr-red no matter which scheme
+  # stylix had loaded. Deriving them keeps the bar consistent with the
+  # active theme.
+  xdg.configFile."waybar/colors.css".text =
+    let
+      inherit (shades.forColors config.lib.stylix.colors) mid dark;
+      family = name: slot: ''
+        @define-color ${name}0 #${config.lib.stylix.colors.${slot}};
+        @define-color ${name}1 #${mid slot};
+        @define-color ${name}2 #${dark slot};
+      '';
+    in
+    ''
+      /* Generated dynamically from Stylix active palette */
+      @define-color no0 #${config.lib.stylix.colors.base00};
+      @define-color no1 #${config.lib.stylix.colors.base01};
+      @define-color no2 #${config.lib.stylix.colors.base02};
 
-    @define-color re0 #${config.lib.stylix.colors.base08};
-    @define-color re1 #631F21;
-    @define-color re2 #331215;
+      ${family "re" "base08"}
+      ${family "gr" "base0B"}
+      ${family "ye" "base0A"}
+      ${family "bl" "base0D"}
+      ${family "vi" "base0E"}
+      ${family "cy" "base0C"}
+      ${family "or" "base09"}
+      ${family "pi" "base0F"}
+      /* wh/me are foreground ramps rather than accents: base16 already
+         carries the mid step (base03/base04), so only the dark end is
+         derived. */
+      @define-color wh0 #${config.lib.stylix.colors.base05};
+      @define-color wh1 #${config.lib.stylix.colors.base03};
+      @define-color wh2 #${dark "base05"};
 
-    @define-color gr0 #${config.lib.stylix.colors.base0B};
-    @define-color gr1 #15633F;
-    @define-color gr2 #0C3423;
-
-    @define-color ye0 #${config.lib.stylix.colors.base0A};
-    @define-color ye1 #635618;
-    @define-color ye2 #332D10;
-
-    @define-color bl0 #${config.lib.stylix.colors.base0D};
-    @define-color bl1 #152966;
-    @define-color bl2 #0C1737;
-
-    @define-color vi0 #${config.lib.stylix.colors.base0E};
-    @define-color vi1 #421666;
-    @define-color vi2 #230D37;
-
-    @define-color cy0 #${config.lib.stylix.colors.base0C};
-    @define-color cy1 #124E56;
-    @define-color cy2 #0B292F;
-
-    @define-color wh0 #${config.lib.stylix.colors.base05};
-    @define-color wh1 #${config.lib.stylix.colors.base03};
-    @define-color wh2 #1E2025;
-
-    @define-color me0 #${config.lib.stylix.colors.base04};
-    @define-color me1 #212638;
-    @define-color me2 #0D1120;
-
-    @define-color or0 #${config.lib.stylix.colors.base09};
-    @define-color or1 #63290E;
-    @define-color or2 #33170B;
-
-    @define-color pi0 #${config.lib.stylix.colors.base0F};
-    @define-color pi1 #63164C;
-    @define-color pi2 #330D2A;
-  '';
+      @define-color me0 #${config.lib.stylix.colors.base04};
+      @define-color me1 #${mid "base04"};
+      @define-color me2 #${dark "base04"};
+    '';
 
   xdg.configFile."waybar/config.jsonc".source = ./cybr-waybar/config.jsonc;
   xdg.configFile."waybar/style.css".source = lib.mkForce ./cybr-waybar/style.css;

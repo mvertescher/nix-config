@@ -1,4 +1,9 @@
-{ pkgs, lib, ... }:
+{ pkgs, lib, config, ... }:
+
+let
+  c = config.lib.stylix.colors;
+  inherit ((import ../../lib/shades.nix { inherit lib; }).forColors c) mid dark;
+in
 
 {
   stylix.targets.swaync.enable = false;
@@ -79,35 +84,38 @@
               --border-size: 1px;
       }
 
-      /* Colors */
-      @define-color no0 #030408;
+      /* Colors - generated from the active Stylix palette. These used to
+         be literals, and some of them (gr0, ye0, cy0) did not even match
+         cybr's own palette, so the notification centre drifted from the
+         rest of the desktop. */
+      @define-color no0 #${c.base00};
 
-      @define-color re0 #F24848;
-      @define-color re1 #631F21;
-      @define-color re2 #331215;
+      @define-color re0 #${c.base08};
+      @define-color re1 #${mid "base08"};
+      @define-color re2 #${dark "base08"};
 
-      @define-color gr0 #1DED83;
-      @define-color gr2 #0C3423;
-      @define-color gr0tr #1DED8340;
+      @define-color gr0 #${c.base0B};
+      @define-color gr2 #${dark "base0B"};
+      @define-color gr0tr #${c.base0B}40;
 
-      @define-color ye0 #FB932E;
-      @define-color ye2 #332D10;
+      @define-color ye0 #${c.base0A};
+      @define-color ye2 #${dark "base0A"};
 
-      @define-color bl0 #3061F2;
-      @define-color bl2 #0C1737;
+      @define-color bl0 #${c.base0D};
+      @define-color bl2 #${dark "base0D"};
 
-      @define-color cy0 #5EF6FF;
-      @define-color cy2 #0B292F;
-      @define-color wh0 #898D99;
+      @define-color cy0 #${c.base0C};
+      @define-color cy2 #${dark "base0C"};
+      @define-color wh0 #${c.base05};
 
-      @define-color tr0 rgba(3, 4, 8, 0.05);
+      @define-color tr0 rgba(${c."base00-rgb-r"}, ${c."base00-rgb-g"}, ${c."base00-rgb-b"}, 0.05);
 
 
       /* === GLOBAL === */
       * {
               all: unset;
               font-size: 12px;
-              font-family: "GeistMono Nerd Font";
+              font-family: "${config.stylix.fonts.monospace.name}";
               transition: 0;
       }
 
@@ -123,7 +131,7 @@
               min-width: 35px;
               min-height: 15px;
               background: @re2;
-              color: #1DED83FF;
+              color: #${c.base0B}FF;
       }
 
       .widget-dnd switch slider {

@@ -19,7 +19,7 @@ let
 
   # Metrics & Typography
   border = 1;
-  font = "GeistMono Nerd Font";
+  font = config.stylix.fonts.monospace.name;
   fontXL = 64;
   fontM = 12;
 
