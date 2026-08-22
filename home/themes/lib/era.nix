@@ -561,6 +561,43 @@ lib.mkMerge [
       };
     };
 
+    # --- multiplexer ---------------------------------------------------
+    #
+    # home/common/cli/tmux.nix ships a powerline status bar by default:
+    # chevron glyphs between segments, centred window list, a green
+    # arrow on the active window. That is precisely the ornament these
+    # eras reject, so replace it rather than recolour it.
+    #
+    # Its default also shells out to `curl icanhazip.com` on every
+    # status refresh; this one does not, because a status bar should not
+    # depend on a third party being up.
+    programs.tmux.statusBarExtraConfig = ''
+      # ${header}
+      set -g status-justify left
+      set -g status-style "bg=${c.panel},fg=${c.fg}"
+
+      # Window list: plain labels, active inverted rather than lit.
+      set-window-option -g window-status-separator ""
+      set-window-option -g window-status-format "#[fg=${c.dim},bg=${c.panel}] #I:#W "
+      set-window-option -g window-status-current-format \
+        "#[fg=${if k.invertActive then c.bg else c.fg},bg=${
+          if k.invertActive then c.fg else c.panel
+        }] #I:#W "
+
+      # The host, in the same tape colour the bar uses for it.
+      set -g status-left-length 40
+      set -g status-left "#[bg=${c.tape},fg=${c.bg}] #h "
+
+      set -g status-right-length 40
+      set -g status-right "#[fg=${c.dim}] #S  %Y-%m-%d %H:%M "
+
+      # Borders are the same 1px hairline as everywhere else.
+      set -g pane-border-style "fg=${c.border}"
+      set -g pane-active-border-style "fg=${c.fg}"
+      set -g message-style "bg=${c.panel},fg=${c.fg}"
+      set -g mode-style "bg=${c.border},fg=${c.fg}"
+    '';
+
     # --- browser -------------------------------------------------------
     programs.firefox = {
       enable = true;
