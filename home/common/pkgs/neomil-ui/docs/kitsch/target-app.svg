@@ -1,0 +1,216 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" font-family="Rajdhani">
+  <!-- KITSCH OPS equivalent: "MAISON" - a realistic app composed purely
+       from the kitsch component sheet. The acceptance test: when this
+       screen can be built from library widgets, kitsch is done.
+
+       Deliberately the same *information* as a neomil screen (a list, a
+       detail panel, actions, a status strip) so the two can be compared
+       like for like. Everything that differs is decoration, which is the
+       whole argument: same widgets, different silhouette and ornament. -->
+  <defs>
+    <linearGradient id="gild" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffe9a8"/>
+      <stop offset="45%" stop-color="#d4a13c"/>
+      <stop offset="55%" stop-color="#8a5f18"/>
+      <stop offset="100%" stop-color="#e6c76a"/>
+    </linearGradient>
+    <linearGradient id="candy" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ff2f6d"/>
+      <stop offset="60%" stop-color="#c02fd0"/>
+      <stop offset="100%" stop-color="#45e0d2"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff3fb" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#fff3fb" stop-opacity="0.03"/>
+    </linearGradient>
+    <radialGradient id="bloom" cx="50%" cy="-10%" r="90%">
+      <stop offset="0%" stop-color="#6a2463" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#6a2463" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="damask" width="26" height="26" patternUnits="userSpaceOnUse">
+      <path d="M13 3 q6 6 0 10 q-6 -4 0 -10 Z" fill="#d4a13c" opacity="0.16"/>
+      <circle cx="13" cy="18" r="1.5" fill="#ffd75e" opacity="0.14"/>
+    </pattern>
+    <path id="fil"
+          d="M0 0 q12 0 17 -7 q4 -5 10 -5 q-5 3 -6 9 q-1 7 -8 9 q6 1 9 6
+             q-7 -3 -12 1 q-5 3 -11 2 q5 -4 5 -9 q0 -4 -5 -6 Z"
+          fill="url(#gild)"/>
+  </defs>
+
+  <rect width="1920" height="1080" fill="#17071a"/>
+  <rect width="1920" height="1080" fill="url(#bloom)"/>
+  <rect width="1920" height="1080" fill="url(#damask)"/>
+
+  <!-- ===== title bar ===== -->
+  <rect x="0" y="0" width="1920" height="64" fill="#2a0f2e"/>
+  <rect x="0" y="62" width="1920" height="3" fill="url(#gild)"/>
+  <text x="40" y="42" font-size="26" font-weight="700" letter-spacing="8" fill="#ffd75e">MAISON</text>
+  <text x="196" y="41" font-size="15" letter-spacing="4" fill="#a2739e">ATELIER &amp; SALON</text>
+  <use href="#fil" transform="translate(360 22)"/>
+
+  <g font-size="15" letter-spacing="3">
+    <path d="M980 16 h120 q12 0 12 12 v20 q0 12 -12 12 h-120 q-12 0 -12 -12 v-20 q0 -12 12 -12 Z" fill="url(#candy)"/>
+    <text x="1040" y="42" fill="#17071a" font-weight="700" text-anchor="middle">TODAY</text>
+    <text x="1160" y="42" fill="#a2739e">WEEK</text>
+    <text x="1250" y="42" fill="#a2739e">GUESTS</text>
+    <text x="1360" y="42" fill="#a2739e">CELLAR</text>
+  </g>
+  <circle cx="1840" cy="32" r="14" fill="url(#gild)"/>
+  <text x="1840" y="38" font-size="14" font-weight="700" fill="#17071a" text-anchor="middle">V</text>
+  <text x="1790" y="38" font-size="14" fill="#ffd2ee" text-anchor="end">v. laurent</text>
+
+  <!-- ===== left: nav rail ===== -->
+  <rect x="0" y="65" width="200" height="950" fill="#200a24"/>
+  <rect x="198" y="65" width="2" height="950" fill="#d4a13c" opacity="0.5"/>
+  <g font-size="15" letter-spacing="3" fill="#a2739e">
+    <path d="M12 96 h176 q10 0 10 10 v22 q0 10 -10 10 h-176 Z" fill="#2a0f2e" stroke="url(#gild)" stroke-width="1.5"/>
+    <text x="34" y="120" fill="#ffd75e">BOOKINGS</text>
+    <text x="34" y="176">ARTISTS</text>
+    <text x="34" y="224">ROOMS</text>
+    <text x="34" y="272">TARIFF</text>
+    <text x="34" y="320">SUPPLY</text>
+    <path d="M12 352 h176" stroke="#5b3a55" stroke-width="1"/>
+    <text x="34" y="392">ARCHIVE</text>
+    <text x="34" y="440">SETTINGS</text>
+  </g>
+
+  <!-- ===== centre: list ===== -->
+  <text x="240" y="112" font-size="16" letter-spacing="5" fill="#a2739e">THIS EVENING</text>
+  <path d="M240 122 h420" stroke="url(#gild)" stroke-width="2"/>
+
+  <g font-size="16">
+    <!-- selected row -->
+    <path d="M240 140 h880 q14 0 14 14 v46 q0 14 -14 14 h-880 q-14 0 -14 -14 v-46 q0 -14 14 -14 Z"
+          fill="#3a1440" stroke="url(#gild)" stroke-width="2"/>
+    <path d="M244 144 h872 q10 0 10 10 v14 h-892 v-14 q0 -10 10 -10 Z" fill="url(#gloss)"/>
+    <text x="268" y="172" fill="#ffd75e" font-weight="700">19:30</text>
+    <text x="360" y="172" fill="#ffd2ee">Mme. Okonkwo</text>
+    <text x="640" y="172" fill="#ffd2ee">Grand Salon</text>
+    <text x="880" y="172" fill="#a2739e">party of 6</text>
+    <path d="M1010 152 h84 q10 0 10 10 v12 q0 10 -10 10 h-84 q-10 0 -10 -10 v-12 q0 -10 10 -10 Z" fill="#45e0d2"/>
+    <text x="1052" y="175" font-size="13" font-weight="700" fill="#17071a" text-anchor="middle">SEATED</text>
+
+    <path d="M240 214 h880 q14 0 14 14 v46 q0 14 -14 14 h-880 q-14 0 -14 -14 v-46 q0 -14 14 -14 Z"
+          fill="#2a0f2e" stroke="#5b3a55" stroke-width="1.5"/>
+    <text x="268" y="246" fill="#ffd75e">20:00</text>
+    <text x="360" y="246" fill="#ffd2ee">Arasaka, T.</text>
+    <text x="640" y="246" fill="#ffd2ee">Alcove II</text>
+    <text x="880" y="246" fill="#a2739e">party of 2</text>
+    <path d="M1010 226 h84 q10 0 10 10 v12 q0 10 -10 10 h-84 q-10 0 -10 -10 v-12 q0 -10 10 -10 Z" fill="#ffd75e"/>
+    <text x="1052" y="249" font-size="13" font-weight="700" fill="#17071a" text-anchor="middle">HELD</text>
+
+    <path d="M240 288 h880 q14 0 14 14 v46 q0 14 -14 14 h-880 q-14 0 -14 -14 v-46 q0 -14 14 -14 Z"
+          fill="#2a0f2e" stroke="#5b3a55" stroke-width="1.5"/>
+    <text x="268" y="320" fill="#ffd75e">20:45</text>
+    <text x="360" y="320" fill="#ffd2ee">Silverhand</text>
+    <text x="640" y="320" fill="#ffd2ee">Grand Salon</text>
+    <text x="880" y="320" fill="#a2739e">party of 9</text>
+    <path d="M1010 300 h84 q10 0 10 10 v12 q0 10 -10 10 h-84 q-10 0 -10 -10 v-12 q0 -10 10 -10 Z" fill="#ff2f6d"/>
+    <text x="1052" y="323" font-size="13" font-weight="700" fill="#17071a" text-anchor="middle">LATE</text>
+
+    <path d="M240 362 h880 q14 0 14 14 v46 q0 14 -14 14 h-880 q-14 0 -14 -14 v-46 q0 -14 14 -14 Z"
+          fill="#2a0f2e" stroke="#5b3a55" stroke-width="1.5"/>
+    <text x="268" y="394" fill="#ffd75e">21:15</text>
+    <text x="360" y="394" fill="#ffd2ee">Ward, R.</text>
+    <text x="640" y="394" fill="#ffd2ee">Terrace</text>
+    <text x="880" y="394" fill="#a2739e">party of 4</text>
+  </g>
+
+  <!-- occupancy meters -->
+  <text x="240" y="480" font-size="16" letter-spacing="5" fill="#a2739e">OCCUPANCY</text>
+  <path d="M240 490 h420" stroke="url(#gild)" stroke-width="2"/>
+  <g font-size="15" fill="#ffd2ee">
+    <text x="240" y="530">Grand Salon</text>
+    <rect x="420" y="514" width="480" height="20" fill="#200a24" stroke="#5b3a55"/>
+    <rect x="422" y="516" width="400" height="16" fill="url(#candy)"/>
+    <text x="920" y="530" fill="#ffd75e">83%</text>
+
+    <text x="240" y="574">Alcoves</text>
+    <rect x="420" y="558" width="480" height="20" fill="#200a24" stroke="#5b3a55"/>
+    <rect x="422" y="560" width="230" height="16" fill="url(#candy)"/>
+    <text x="920" y="574" fill="#ffd75e">48%</text>
+
+    <text x="240" y="618">Terrace</text>
+    <rect x="420" y="602" width="480" height="20" fill="#200a24" stroke="#5b3a55"/>
+    <rect x="422" y="604" width="120" height="16" fill="url(#candy)"/>
+    <text x="920" y="618" fill="#ffd75e">25%</text>
+  </g>
+
+  <!-- actions -->
+  <g>
+    <path d="M240 676 h200 q14 0 14 14 v26 q0 14 -14 14 h-200 q-14 0 -14 -14 v-26 q0 -14 14 -14 Z"
+          fill="url(#candy)" stroke="url(#gild)" stroke-width="2"/>
+    <text x="340" y="707" font-size="16" font-weight="700" letter-spacing="3" fill="#17071a" text-anchor="middle">SEAT NOW</text>
+
+    <path d="M474 676 h200 q14 0 14 14 v26 q0 14 -14 14 h-200 q-14 0 -14 -14 v-26 q0 -14 14 -14 Z"
+          fill="#2a0f2e" stroke="url(#gild)" stroke-width="2"/>
+    <text x="574" y="707" font-size="16" letter-spacing="3" fill="#ffd2ee" text-anchor="middle">MESSAGE</text>
+
+    <path d="M708 676 h200 q14 0 14 14 v26 q0 14 -14 14 h-200 q-14 0 -14 -14 v-26 q0 -14 14 -14 Z"
+          fill="#2a0f2e" stroke="#5b3a55" stroke-width="2"/>
+    <text x="808" y="707" font-size="16" letter-spacing="3" fill="#5b3a55" text-anchor="middle">RELEASE</text>
+  </g>
+
+  <!-- ===== right: ornate detail panel ===== -->
+  <rect x="1180" y="140" width="700" height="580" fill="#2a0f2e" stroke="url(#gild)" stroke-width="4"/>
+  <rect x="1192" y="152" width="676" height="556" fill="none" stroke="#d4a13c" stroke-width="1.5" opacity="0.7"/>
+  <rect x="1200" y="160" width="660" height="540" fill="none" stroke="#ffd75e" stroke-width="0.7" opacity="0.45"/>
+  <rect x="1180" y="140" width="700" height="580" fill="url(#damask)"/>
+
+  <use href="#fil" transform="translate(1198 156)"/>
+  <use href="#fil" transform="translate(1862 156) scale(-1 1)"/>
+  <use href="#fil" transform="translate(1198 704) scale(1 -1)"/>
+  <use href="#fil" transform="translate(1862 704) scale(-1 -1)"/>
+
+  <text x="1530" y="212" font-size="30" font-weight="700" letter-spacing="6" fill="#ffd75e" text-anchor="middle">MME. OKONKWO</text>
+  <path d="M1330 228 h400" stroke="url(#gild)" stroke-width="2"/>
+  <path d="M1530 222 l11 6 l-11 6 l-11 -6 Z" fill="#ffd75e"/>
+  <text x="1530" y="262" font-size="16" letter-spacing="3" fill="#a2739e" text-anchor="middle">PATRON SINCE 2071 — TIER I</text>
+
+  <g font-size="16">
+    <text x="1240" y="320" fill="#a2739e">Table</text>
+    <text x="1830" y="320" fill="#ffd2ee" text-anchor="end">Grand Salon, window</text>
+    <path d="M1240 336 h590" stroke="#5b3a55" stroke-width="1"/>
+
+    <text x="1240" y="376" fill="#a2739e">Party</text>
+    <text x="1830" y="376" fill="#ffd2ee" text-anchor="end">6 — two under 12</text>
+    <path d="M1240 392 h590" stroke="#5b3a55" stroke-width="1"/>
+
+    <text x="1240" y="432" fill="#a2739e">Preference</text>
+    <text x="1830" y="432" fill="#ffd2ee" text-anchor="end">no shellfish, still water</text>
+    <path d="M1240 448 h590" stroke="#5b3a55" stroke-width="1"/>
+
+    <text x="1240" y="488" fill="#a2739e">Cellar</text>
+    <text x="1830" y="488" fill="#ffd75e" text-anchor="end">Reserve — bin 114 held</text>
+  </g>
+
+  <path d="M1240 528 h590 q14 0 14 14 v90 q0 14 -14 14 h-590 q-14 0 -14 -14 v-90 q0 -14 14 -14 Z"
+        fill="#200a24" stroke="#d4a13c" stroke-width="1.5"/>
+  <text x="1262" y="558" font-size="14" letter-spacing="3" fill="#a2739e">NOTE</text>
+  <text x="1262" y="588" font-size="16" fill="#ffd2ee">Anniversary. Candles at the table before</text>
+  <text x="1262" y="612" font-size="16" fill="#ffd2ee">they are seated, and the good glasses.</text>
+
+  <path d="M1240 656 h280 q14 0 14 14 v30 q0 14 -14 14 h-280 q-14 0 -14 -14 v-30 q0 -14 14 -14 Z"
+        fill="url(#candy)" stroke="url(#gild)" stroke-width="2"/>
+  <text x="1380" y="691" font-size="16" font-weight="700" letter-spacing="3" fill="#17071a" text-anchor="middle">AMEND BOOKING</text>
+
+  <!-- toast -->
+  <path d="M1180 760 h700 q14 0 14 14 v54 q0 14 -14 14 h-700 q-14 0 -14 -14 v-54 q0 -14 14 -14 Z"
+        fill="#3a1440" stroke="#ff2f6d" stroke-width="2"/>
+  <circle cx="1224" cy="801" r="12" fill="#ff2f6d"/>
+  <text x="1224" y="807" font-size="15" font-weight="700" fill="#17071a" text-anchor="middle">!</text>
+  <text x="1252" y="795" font-size="16" fill="#ffd2ee">Silverhand party is 30 minutes late.</text>
+  <text x="1252" y="818" font-size="15" fill="#a2739e">The Grand Salon holds until 21:15.</text>
+
+  <!-- ===== status strip ===== -->
+  <rect x="0" y="1015" width="1920" height="65" fill="#2a0f2e"/>
+  <rect x="0" y="1015" width="1920" height="3" fill="url(#gild)"/>
+  <g font-size="15" letter-spacing="3">
+    <path d="M28 1034 h150 q10 0 10 10 v18 q0 10 -10 10 h-150 q-10 0 -10 -10 v-18 q0 -10 10 -10 Z" fill="url(#gild)"/>
+    <text x="103" y="1058" font-weight="700" fill="#17071a" text-anchor="middle">MAISON</text>
+    <text x="220" y="1058" fill="#a2739e">4 seated</text>
+    <text x="360" y="1058" fill="#a2739e">2 held</text>
+    <text x="480" y="1058" fill="#ff2f6d">1 late</text>
+    <text x="1880" y="1058" fill="#ffd75e" text-anchor="end">19:42</text>
+  </g>
+</svg>

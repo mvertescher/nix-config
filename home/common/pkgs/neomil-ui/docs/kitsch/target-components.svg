@@ -1,0 +1,203 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" font-family="Rajdhani">
+  <!-- KITSCH component sheet.
+
+       Kitsch is the maximalist era: more is more. Where entropism strips
+       and neomil issues, kitsch decorates - gilding, sheen, scalloped
+       edges, pattern for its own sake.
+
+       Proposed roles (seven shared + three kitsch-only):
+         bg #17071a  panel #2a0f2e  border #d4a13c  dim #a2739e
+         fg #ffd2ee  alert #ff2f6d  tape #ffd75e
+         gild (gradient)  sheen #fff3fb  accent2 #45e0d2
+
+       This sheet exists to answer one question before any code is
+       written: is era-difference expressible as parameters, or is it a
+       codebase? Columns 2 and 3 are the two test cases. -->
+  <defs>
+    <linearGradient id="gild" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffe9a8"/>
+      <stop offset="45%" stop-color="#d4a13c"/>
+      <stop offset="55%" stop-color="#8a5f18"/>
+      <stop offset="100%" stop-color="#e6c76a"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff3fb" stop-opacity="0.55"/>
+      <stop offset="50%" stop-color="#fff3fb" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#ff2f6d" stop-opacity="0.18"/>
+    </linearGradient>
+    <linearGradient id="candy" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ff2f6d"/>
+      <stop offset="60%" stop-color="#c02fd0"/>
+      <stop offset="100%" stop-color="#45e0d2"/>
+    </linearGradient>
+    <radialGradient id="bloom" cx="50%" cy="0%" r="80%">
+      <stop offset="0%" stop-color="#5c1f57" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#5c1f57" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="damask" width="26" height="26" patternUnits="userSpaceOnUse">
+      <path d="M13 3 q6 6 0 10 q-6 -4 0 -10 Z" fill="#d4a13c" opacity="0.20"/>
+      <circle cx="13" cy="18" r="1.6" fill="#ffd75e" opacity="0.18"/>
+    </pattern>
+
+    <!-- One filigree corner, reused at four rotations. This is the
+         thing a silhouette parameter cannot express: it is not the
+         outline, it is extra geometry laid on top of it. -->
+    <path id="filigree"
+          d="M0 0 q14 0 20 -8 q4 -6 12 -6 q-6 4 -7 11 q-1 8 -9 10 q7 1 11 7
+             q-8 -3 -14 1 q-6 4 -13 2 q6 -4 6 -10 q0 -5 -6 -7 Z"
+          fill="url(#gild)"/>
+  </defs>
+
+  <rect width="1920" height="1080" fill="#17071a"/>
+  <rect width="1920" height="1080" fill="url(#bloom)"/>
+  <rect width="1920" height="1080" fill="url(#damask)"/>
+
+  <!-- header: gilded band, scalloped underside -->
+  <rect x="0" y="0" width="1920" height="46" fill="url(#gild)"/>
+  <path d="M0 46 q24 14 48 0 q24 -14 48 0 q24 14 48 0 q24 -14 48 0 q24 14 48 0
+           q24 -14 48 0 q24 14 48 0 q24 -14 48 0 q24 14 48 0 q24 -14 48 0
+           q24 14 48 0 q24 -14 48 0 q24 14 48 0 q24 -14 48 0 q24 14 48 0
+           q24 -14 48 0 q24 14 48 0 q24 -14 48 0 q24 14 48 0 q24 -14 48 0
+           q24 14 48 0 q24 -14 48 0 q24 14 48 0 q24 -14 48 0 q24 14 48 0
+           q24 -14 48 0 q24 14 48 0 q24 -14 48 0 q24 14 48 0 q24 -14 48 0
+           q24 14 48 0 q24 -14 48 0 q24 14 48 0 q24 -14 48 0 q24 14 48 0
+           q24 -14 48 0 q24 14 48 0 q24 -14 48 0 L1920 46 L1920 0 L0 0 Z"
+        fill="url(#gild)"/>
+  <text x="34" y="31" font-size="20" font-weight="bold" letter-spacing="6" fill="#17071a">KITSCH // COMPONENT SHEET</text>
+  <text x="1640" y="30" font-size="15" letter-spacing="3" fill="#3b2408">v0.1 PROPOSAL</text>
+
+  <!-- ============ COLUMN 1: ordinary widgets ============ -->
+  <text x="70" y="110" font-size="15" letter-spacing="4" fill="#a2739e">BUTTONS</text>
+
+  <path d="M70 126 h180 q14 0 14 14 v22 q0 14 -14 14 h-180 q-14 0 -14 -14 v-22 q0 -14 14 -14 Z"
+        fill="url(#candy)" stroke="url(#gild)" stroke-width="3"/>
+  <path d="M74 130 h172 q10 0 10 10 v10 h-192 v-10 q0 -10 10 -10 Z" fill="url(#gloss)"/>
+  <text x="120" y="159" font-size="17" font-weight="700" letter-spacing="3" fill="#17071a">INDULGE</text>
+
+  <path d="M70 190 h180 q14 0 14 14 v22 q0 14 -14 14 h-180 q-14 0 -14 -14 v-22 q0 -14 14 -14 Z"
+        fill="#2a0f2e" stroke="url(#gild)" stroke-width="2"/>
+  <text x="126" y="223" font-size="17" letter-spacing="3" fill="#ffd2ee">MAYBE</text>
+
+  <path d="M70 254 h180 q14 0 14 14 v22 q0 14 -14 14 h-180 q-14 0 -14 -14 v-22 q0 -14 14 -14 Z"
+        fill="#2a0f2e" stroke="#5b3a55" stroke-width="2"/>
+  <text x="118" y="287" font-size="17" letter-spacing="3" fill="#5b3a55">DENIED</text>
+
+  <text x="70" y="348" font-size="15" letter-spacing="4" fill="#a2739e">INPUT</text>
+  <path d="M70 364 h250 q16 0 16 16 v26 q0 16 -16 16 h-250 q-16 0 -16 -16 v-26 q0 -16 16 -16 Z"
+        fill="#200a24" stroke="url(#gild)" stroke-width="2"/>
+  <text x="88" y="392" font-size="16" fill="#a2739e">say something lovely</text>
+  <circle cx="316" cy="393" r="5" fill="#ffd75e"/>
+
+  <text x="70" y="452" font-size="15" letter-spacing="4" fill="#a2739e">TAGS</text>
+  <g>
+    <path d="M70 468 h96 q12 0 12 12 v14 q0 12 -12 12 h-96 q-12 0 -12 -12 v-14 q0 -12 12 -12 Z" fill="#ff2f6d"/>
+    <text x="88" y="491" font-size="14" font-weight="700" letter-spacing="2" fill="#17071a">LUXE</text>
+    <path d="M186 468 h96 q12 0 12 12 v14 q0 12 -12 12 h-96 q-12 0 -12 -12 v-14 q0 -12 12 -12 Z" fill="#45e0d2"/>
+    <text x="202" y="491" font-size="14" font-weight="700" letter-spacing="2" fill="#17071a">FRESH</text>
+  </g>
+
+  <!-- ============ COLUMN 2: THE SILHOUETTE TEST ============ -->
+  <g>
+    <rect x="430" y="86" width="480" height="2" fill="#45e0d2"/>
+    <text x="430" y="112" font-size="16" letter-spacing="4" fill="#45e0d2">TEST 1 — SILHOUETTE (parameterisable)</text>
+    <text x="430" y="136" font-size="14" fill="#a2739e">One widget, one path builder, one number changed.</text>
+    <text x="430" y="156" font-size="14" fill="#a2739e">chip.rs already does this: `cut` is a local.</text>
+
+    <!-- entropism: square -->
+    <text x="430" y="200" font-size="13" letter-spacing="3" fill="#a2739e">ENTROPISM — cut = 0</text>
+    <path d="M430 212 h180 v56 h-180 Z" fill="#2a0f2e" stroke="#d4a13c" stroke-width="2"/>
+    <text x="452" y="247" font-size="16" letter-spacing="2" fill="#ffd2ee">CHIP</text>
+
+    <!-- neomil: chamfer -->
+    <text x="430" y="304" font-size="13" letter-spacing="3" fill="#a2739e">NEOMIL — cut = 14, straight</text>
+    <path d="M430 316 h180 v42 l-14 14 h-166 Z" fill="#2a0f2e" stroke="#d4a13c" stroke-width="2"/>
+    <text x="452" y="351" font-size="16" letter-spacing="2" fill="#ffd2ee">CHIP</text>
+
+    <!-- kitsch: scallop -->
+    <text x="430" y="408" font-size="13" letter-spacing="3" fill="#a2739e">KITSCH — cut = 14, scalloped</text>
+    <path d="M430 420 h180 v28 q0 14 -14 14 q-14 0 -14 14 h-124 q-14 0 -14 -14 q0 -14 -14 -14 Z"
+          fill="#2a0f2e" stroke="#d4a13c" stroke-width="2"/>
+    <text x="452" y="455" font-size="16" letter-spacing="2" fill="#ffd2ee">CHIP</text>
+
+    <rect x="430" y="492" width="480" height="1" fill="#5b3a55"/>
+    <text x="430" y="516" font-size="14" fill="#ffd2ee">VERDICT: a `Silhouette` parameter covers all three.</text>
+    <text x="430" y="536" font-size="14" fill="#ffd2ee">No crate split needed for this axis.</text>
+  </g>
+
+  <!-- ============ COLUMN 3: THE ORNAMENT TEST ============ -->
+  <g>
+    <rect x="990" y="86" width="520" height="2" fill="#ff2f6d"/>
+    <text x="990" y="112" font-size="16" letter-spacing="4" fill="#ff2f6d">TEST 2 — ORNAMENT (additive)</text>
+    <text x="990" y="136" font-size="14" fill="#a2739e">Not an outline. Extra geometry laid over the base,</text>
+    <text x="990" y="156" font-size="14" fill="#a2739e">in counts and positions the base knows nothing about.</text>
+
+    <!-- gilded panel with filigree corners and nested strokes -->
+    <rect x="990" y="188" width="440" height="280" fill="#2a0f2e" stroke="url(#gild)" stroke-width="4"/>
+    <rect x="1000" y="198" width="420" height="260" fill="none" stroke="#d4a13c" stroke-width="1.5" opacity="0.75"/>
+    <rect x="1008" y="206" width="404" height="244" fill="none" stroke="#ffd75e" stroke-width="0.8" opacity="0.5"/>
+    <rect x="990" y="188" width="440" height="280" fill="url(#damask)"/>
+
+    <use href="#filigree" x="0" y="0" transform="translate(1004 202)"/>
+    <use href="#filigree" x="0" y="0" transform="translate(1416 202) scale(-1 1)"/>
+    <use href="#filigree" x="0" y="0" transform="translate(1004 454) scale(1 -1)"/>
+    <use href="#filigree" x="0" y="0" transform="translate(1416 454) scale(-1 -1)"/>
+
+    <text x="1210" y="268" font-size="26" font-weight="700" letter-spacing="4" fill="#ffd75e" text-anchor="middle">SALON</text>
+    <path d="M1090 284 h240" stroke="url(#gild)" stroke-width="2"/>
+    <path d="M1210 278 l10 6 l-10 6 l-10 -6 Z" fill="#ffd75e"/>
+    <text x="1210" y="322" font-size="15" fill="#ffd2ee" text-anchor="middle">every surface earns its keep</text>
+    <text x="1210" y="346" font-size="15" fill="#a2739e" text-anchor="middle">by being looked at</text>
+
+    <path d="M1090 380 h240 q12 0 12 12 v20 q0 12 -12 12 h-240 q-12 0 -12 -12 v-20 q0 -12 12 -12 Z"
+          fill="url(#candy)" stroke="url(#gild)" stroke-width="2"/>
+    <text x="1210" y="407" font-size="15" font-weight="700" letter-spacing="3" fill="#17071a" text-anchor="middle">RESERVE</text>
+
+    <rect x="990" y="492" width="520" height="1" fill="#5b3a55"/>
+    <text x="990" y="516" font-size="14" fill="#ffd2ee">VERDICT: a "give me the outline" trait cannot express</text>
+    <text x="990" y="536" font-size="14" fill="#ffd2ee">4 filigree + 3 nested strokes + a damask fill.</text>
+    <text x="990" y="556" font-size="14" fill="#ff2f6d">Needs a decoration layer — still not a fourth crate.</text>
+  </g>
+
+  <!-- ============ COLUMN 4: roles ============ -->
+  <g>
+    <text x="1570" y="110" font-size="15" letter-spacing="4" fill="#a2739e">ROLES</text>
+    <g font-size="13" fill="#ffd2ee">
+      <rect x="1570" y="126" width="40" height="26" fill="#17071a" stroke="#5b3a55"/><text x="1622" y="144">bg</text>
+      <rect x="1570" y="160" width="40" height="26" fill="#2a0f2e" stroke="#5b3a55"/><text x="1622" y="178">panel</text>
+      <rect x="1570" y="194" width="40" height="26" fill="#d4a13c"/><text x="1622" y="212">border</text>
+      <rect x="1570" y="228" width="40" height="26" fill="#a2739e"/><text x="1622" y="246">dim</text>
+      <rect x="1570" y="262" width="40" height="26" fill="#ffd2ee"/><text x="1622" y="280">fg</text>
+      <rect x="1570" y="296" width="40" height="26" fill="#ff2f6d"/><text x="1622" y="314">alert</text>
+      <rect x="1570" y="330" width="40" height="26" fill="#ffd75e"/><text x="1622" y="348">tape</text>
+    </g>
+
+    <text x="1570" y="396" font-size="15" letter-spacing="4" fill="#ff2f6d">KITSCH-ONLY</text>
+    <g font-size="13" fill="#ffd2ee">
+      <rect x="1570" y="412" width="40" height="26" fill="url(#gild)"/><text x="1622" y="430">gild</text>
+      <rect x="1570" y="446" width="40" height="26" fill="#fff3fb"/><text x="1622" y="464">sheen</text>
+      <rect x="1570" y="480" width="40" height="26" fill="#45e0d2"/><text x="1622" y="498">accent2</text>
+    </g>
+    <text x="1570" y="536" font-size="13" fill="#a2739e">The seven assume one</text>
+    <text x="1570" y="554" font-size="13" fill="#a2739e">working colour. Kitsch</text>
+    <text x="1570" y="572" font-size="13" fill="#a2739e">needs a gradient, a</text>
+    <text x="1570" y="590" font-size="13" fill="#a2739e">highlight and a second</text>
+    <text x="1570" y="608" font-size="13" fill="#a2739e">accent. Pass these via</text>
+    <text x="1570" y="626" font-size="13" fill="#a2739e">toBase16's `accents`.</text>
+  </g>
+
+  <!-- ============ bottom: the decision ============ -->
+  <rect x="70" y="640" width="1780" height="2" fill="url(#gild)"/>
+  <text x="70" y="676" font-size="18" letter-spacing="4" fill="#ffd75e">WHAT THIS SHEET IS FOR</text>
+  <text x="70" y="708" font-size="15" fill="#ffd2ee">Test 1 says outline geometry is a parameter: one chip serves entropism, neomil and kitsch.</text>
+  <text x="70" y="732" font-size="15" fill="#ffd2ee">Test 2 says ornament is not an outline — it is additive, and a silhouette trait cannot carry it.</text>
+  <text x="70" y="756" font-size="15" fill="#ffd2ee">Neither says "fourth crate". Both say: one toolkit, silhouette parameter plus a decoration layer,</text>
+  <text x="70" y="780" font-size="15" fill="#ffd2ee">and per-era widget modules where the interaction model genuinely differs.</text>
+  <text x="70" y="820" font-size="14" fill="#a2739e">Open risk: if the decoration layer starts needing to know widget internals — where the label sits,</text>
+  <text x="70" y="842" font-size="14" fill="#a2739e">how tall the row is — the abstraction is wrong and this conclusion should be revisited.</text>
+
+  <!-- footer -->
+  <rect x="0" y="1034" width="1920" height="46" fill="#2a0f2e"/>
+  <rect x="0" y="1034" width="1920" height="2" fill="url(#gild)"/>
+  <text x="34" y="1063" font-size="14" letter-spacing="3" fill="#a2739e">KITSCH — MORE IS MORE</text>
+  <text x="1886" y="1063" font-size="14" letter-spacing="3" fill="#ffd75e" text-anchor="end">PROPOSAL, NOT SAMPLED</text>
+</svg>
