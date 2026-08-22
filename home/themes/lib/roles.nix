@@ -46,6 +46,40 @@ rec {
     in
     base // { tape = base.tape or base.fg; };
 
+  # Hex parsing, because a light variant has to be recognised as such and
+  # nix has no builtin for it.
+  hexDigit =
+    c:
+    let
+      digits = {
+        "0" = 0; "1" = 1; "2" = 2; "3" = 3; "4" = 4;
+        "5" = 5; "6" = 6; "7" = 7; "8" = 8; "9" = 9;
+        a = 10; b = 11; c = 12; d = 13; e = 14; f = 15;
+        A = 10; B = 11; C = 12; D = 13; E = 14; F = 15;
+      };
+    in
+    digits.${c} or (throw "roles: '${c}' is not a hex digit");
+
+  channel =
+    hex: offset:
+    (hexDigit (builtins.substring offset 1 hex)) * 16
+    + (hexDigit (builtins.substring (offset + 1) 1 hex));
+
+  # Rec. 601 luma, which is close enough to decide light from dark and
+  # avoids a gamma-correct implementation nobody needs here.
+  luma =
+    color:
+    let
+      hex = builtins.replaceStrings [ "#" ] [ "" ] color;
+    in
+    (0.299 * (channel hex 0) + 0.587 * (channel hex 2) + 0.114 * (channel hex 4)) / 255.0;
+
+  # Stylix needs to know which way round a scheme runs: with polarity
+  # left at "either" it guesses, and picks the wrong GTK and icon
+  # variants for a light palette. Infer it from the background rather
+  # than making every palette restate it.
+  polarityOf = roles: if luma roles.bg < 0.5 then "dark" else "light";
+
   # Project roles onto base16. The mapping is deliberately lossy for the
   # monochrome eras: syntax highlighting collapses onto fg/dim/alert
   # rather than a rainbow, because a degraded display has one working

@@ -1,19 +1,19 @@
-# entropism -- the salvaged-hardware era.
+# neomil -- Neo-Militarism, the issued-equipment era.
 #
-# Where neomil is the issued equipment, entropism is what came before
-# it: necessity over style. Degraded monochrome displays, zero ornament,
-# 1px lines, square corners, no glow.
+# The default player UI of Cyberpunk 2077: hard edges, military
+# hierarchy, escalation by red brightness rather than by hue. The
+# `reference` palette is transcribed from the sampled values in
+# home/common/pkgs/neomil-ui, not eyeballed -- see ./palettes.nix.
 #
-# Only the palette, typeface and knobs live here; the desktop itself is
-# built by ../lib/era.nix, which the other generated eras share. Colours
-# are semantic *roles* rather than base16 slots, so a wrapper retints
-# everything by naming one:
+# Distinct from `cybr`, which is also Neomilitarism-flavoured: cybr is
+# the cybrcore community look with vendored assets, this is the
+# reference-sampled one and generates everything from roles.
 #
-#   imports = [ nix-config/home/themes/entropism ];
-#   themes.entropism = {
+#   imports = [ nix-config/home/themes/neomil ];
+#   themes.neomil = {
 #     enable = true;
-#     variant = "dead-pixel";
-#     colors.fg = "#c8d0c4";
+#     variant = "bleach";      # light grey/white
+#     colors.alert = "#ff0033";
 #   };
 {
   config,
@@ -23,13 +23,11 @@
 }:
 
 let
-  cfg = config.themes.entropism;
+  cfg = config.themes.neomil;
 
   scheme = import ./scheme.nix;
   roleLib = import ../lib/roles.nix;
 
-  # A null override means "keep the variant's value", so a host can set
-  # one role without restating six.
   overrides = lib.filterAttrs (_: v: v != null) cfg.colors;
 
   resolved = scheme.resolve {
@@ -38,13 +36,18 @@ let
   };
 in
 {
-  options.themes.entropism = {
-    enable = lib.mkEnableOption "entropism theme";
+  options.themes.neomil = {
+    enable = lib.mkEnableOption "neomil theme";
 
     variant = lib.mkOption {
       type = lib.types.enum (builtins.attrNames scheme.palettes);
-      default = "burn-in";
-      description = "Which preset display to emulate.";
+      default = "reference";
+      description = ''
+        reference -- sampled reds on near-black, the faithful read.
+        bleach    -- light mode: grey and paper white, reds kept for
+                     escalation and labels.
+        ash       -- dark but neutral, red reserved for what matters.
+      '';
     };
 
     colors = lib.mkOption {
@@ -54,7 +57,7 @@ in
           lib.mkOption {
             type = lib.types.nullOr lib.types.str;
             default = null;
-            example = "#d9a24a";
+            example = "#de2e2e";
             description = "Override the ${role} role (\"#rrggbb\").";
           }
         );
@@ -71,22 +74,19 @@ in
         options = {
           package = lib.mkOption {
             type = lib.types.package;
-            default = pkgs.departure-mono;
+            default = pkgs.callPackage ../../common/pkgs/rajdhani-fontshare { };
           };
           name = lib.mkOption {
             type = lib.types.str;
-            default = "Departure Mono";
+            default = "Rajdhani";
           };
         };
       };
       default = { };
       description = ''
-        Face for the bar, launcher and notifications. Departure Mono is
-        bitmap-adjacent, which suits a salvaged terminal; neomil uses
-        Rajdhani, the face Cyberpunk 2077 sets its own interface in.
-
-        Terminal content keeps stylix.fonts.monospace either way, so
-        code stays legible.
+        Rajdhani is the typeface Cyberpunk 2077 sets its own in-game
+        interface in, with Orbitron secondary; this repo already vendors
+        both. Terminal content keeps stylix.fonts.monospace.
       '';
     };
 
@@ -98,10 +98,8 @@ in
       ];
       default = "none";
       description = ''
-        Wallpaper treatment. "none" is a flat field of `bg`; the others
-        add a degraded-display artefact generated from the same colour.
-        Off by default -- an entropism display earns its texture from
-        age, not from decoration.
+        Wallpaper treatment generated from `bg`. Off by default; the
+        references are clean panels rather than degraded ones.
       '';
     };
 
@@ -110,13 +108,10 @@ in
       default = true;
       description = ''
         Restart a running Firefox when the theme changes, since
-        userChrome is only read at startup. Fires only on a real change
-        and only if Firefox is already running; shutdown is SIGTERM plus
-        a wait, so tabs are restored.
+        userChrome is only read at startup.
       '';
     };
 
-    # Read by nothing outside this theme; exposed for debugging.
     resolvedColors = lib.mkOption {
       internal = true;
       readOnly = true;
@@ -126,17 +121,21 @@ in
   };
 
   config = lib.mkMerge [
-    { themes.entropism.resolvedColors = resolved; }
+    { themes.neomil.resolvedColors = resolved; }
 
     (lib.mkIf cfg.enable (lib.mkMerge [
       {
         stylix.base16Scheme = scheme.toBase16 cfg.variant resolved;
+
+        # Inferred from the background rather than restated per palette,
+        # so `bleach` is correctly recognised as a light scheme and
+        # stylix stops guessing at GTK and icon variants.
         stylix.polarity = lib.mkDefault (roleLib.polarityOf resolved);
       }
 
       (import ../lib/era.nix {
         inherit lib pkgs config;
-        name = "Entropism";
+        name = "Neomil";
         inherit (cfg) variant texture;
         roles = resolved;
         font = cfg.uiFont;
