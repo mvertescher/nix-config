@@ -1,7 +1,7 @@
 { lib, rustPlatform }:
 
 rustPlatform.buildRustPackage {
-  pname = "cybr-media";
+  pname = "mpris-status";
   version = "0.1.0";
 
   # Filter out the cargo build directory: a local `cargo build` here would
@@ -28,7 +28,7 @@ rustPlatform.buildRustPackage {
       at runtime. Emits waybar's JSON custom-module format on stdout.
     '';
     license = lib.licenses.gpl3Only;
-    mainProgram = "cybr-media";
+    mainProgram = "mpris-status";
     platforms = lib.platforms.linux;
   };
 }

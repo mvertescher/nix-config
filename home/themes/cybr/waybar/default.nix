@@ -17,7 +17,7 @@ let
   # Rust replacement for upstream's mediaplayer.py, which needed python3 plus
   # PyGObject and the Playerctl GIR typelib. Talks D-Bus directly, so the
   # music module has no interpreter dependency at runtime.
-  cybr-media = pkgs.callPackage ./cybr-media { };
+  mpris-status = pkgs.callPackage ../../../common/pkgs/mpris-status { };
 
   modulesTemplate = builtins.readFile ./cybr-waybar/modules.jsonc;
 
@@ -32,7 +32,7 @@ let
       "'${mkScratchpadCmd "scratchpad-btop" "btop"}'"
       "'${mkScratchpadCmd "scratchpad-nvtop" "nvtop"}'"
       "'${mkScratchpadCmd "scratchpad-large" "nu -c upall"}'"
-      (lib.getExe cybr-media)
+      (lib.getExe mpris-status)
     ]
     modulesTemplate;
 in
@@ -101,7 +101,7 @@ in
   fonts.fontconfig.enable = true;
 
   home.packages = [
-    cybr-media
+    mpris-status
     pkgs.nerd-fonts.geist-mono
   ];
 }

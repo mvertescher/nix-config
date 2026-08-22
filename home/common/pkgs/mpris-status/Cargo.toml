@@ -1,5 +1,5 @@
 [package]
-name = "cybr-media"
+name = "mpris-status"
 version = "0.1.0"
 edition = "2021"
 description = "MPRIS media status line for waybar (part of cybr-waybar)"

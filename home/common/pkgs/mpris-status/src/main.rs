@@ -1,4 +1,4 @@
-//! cybr-media — MPRIS "now playing" line for waybar.
+//! mpris-status — MPRIS "now playing" line for waybar.
 //!
 //! A port of the upstream cybr-waybar `mediaplayer.py`, which needed python3
 //! plus PyGObject and the Playerctl GIR typelib. This talks D-Bus directly via
@@ -54,10 +54,10 @@ fn parse_args() -> Args {
             // port logs to stderr unconditionally and has no log levels.
             "-v" | "--verbose" | "--enable-logging" => {}
             "-h" | "--help" => {
-                println!("usage: cybr-media [--player NAME] [-x|--exclude A,B]");
+                println!("usage: mpris-status [--player NAME] [-x|--exclude A,B]");
                 std::process::exit(0);
             }
-            other => eprintln!("cybr-media: ignoring unknown argument {other:?}"),
+            other => eprintln!("mpris-status: ignoring unknown argument {other:?}"),
         }
     }
 
@@ -289,7 +289,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
 
 fn main() {
     if let Err(err) = zbus::block_on(run()) {
-        eprintln!("cybr-media: {err}");
+        eprintln!("mpris-status: {err}");
         std::process::exit(1);
     }
 }
