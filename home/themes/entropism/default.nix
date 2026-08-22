@@ -28,7 +28,9 @@
 let
   cfg = config.themes.entropism;
 
-  palettes = import ./palettes.nix;
+  # Shared with wrappers that need the same scheme at the NixOS level;
+  # see scheme.nix.
+  scheme = import ./scheme.nix;
 
   roles = [
     "bg"
@@ -40,15 +42,14 @@ let
     "tape"
   ];
 
-  # variant palette < per-role overrides. A null override means "keep the
-  # variant's value", so a host can set one role without restating six.
+  # A null override means "keep the variant's value", so a host can set
+  # one role without restating six.
   overrides = lib.filterAttrs (_: v: v != null) cfg.colors;
-  base = palettes.${cfg.variant} // overrides;
 
-  # `tape` is the only optional role: presets that want it to track the
-  # foreground leave it out entirely, so an override of `fg` carries the
-  # label accent with it instead of stranding it on the old colour.
-  resolved = base // { tape = base.tape or base.fg; };
+  resolved = scheme.resolve {
+    inherit (cfg) variant;
+    inherit overrides;
+  };
 
   # Bare six-digit hex, so callers can append an alpha suffix.
   hex = role: lib.removePrefix "#" resolved.${role};
@@ -144,31 +145,7 @@ in
         # base08/09/0F are the alert red, base0A carries the tape accent
         # so a marker-written label still reads as a label, and every
         # other slot is fg or dim. No rainbow.
-        base16Scheme = {
-          scheme = "Entropism ${cfg.variant}";
-          author = "generated from themes/entropism";
-
-          base00 = hex "bg";
-          base01 = hex "panel";
-          base02 = hex "border";
-          base03 = hex "dim";
-          base04 = hex "dim";
-          # No lighten helper exists in this repo and the spec is not
-          # worth a colour-maths dependency, so the light end of the ramp
-          # is simply fg.
-          base05 = hex "fg";
-          base06 = hex "fg";
-          base07 = hex "fg";
-
-          base08 = hex "alert";
-          base09 = hex "alert";
-          base0A = hex "tape";
-          base0B = hex "fg";
-          base0C = hex "dim";
-          base0D = hex "fg";
-          base0E = hex "dim";
-          base0F = hex "alert";
-        };
+        base16Scheme = scheme.toBase16 cfg.variant resolved;
 
         # A flat field of the background colour. mkDefault so a host can
         # still supply a real wallpaper, and so it loses to a system
