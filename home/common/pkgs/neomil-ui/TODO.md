@@ -14,7 +14,14 @@
 
 ## Toolkit infrastructure
 
-- [ ] **Visual regression as a nix checkPhase**: headless-compositor
+- [x] **Visual regression, landed 2026-08-22** as `tests.visual`
+  (`nix build -f . tests.visual`): weston headless + pixman inside the
+  build sandbox, weston-screenshooter capture, diffed against a
+  committed golden by scripts/check_similarity.py. Two independent runs
+  are byte-identical, so the threshold is strict. Original note kept
+  below for the reasoning.
+
+- [x] ~~Visual regression as a nix checkPhase~~: headless-compositor
   screenshot + pixel diff against reference images is genuinely mature
   practice for a UI toolkit — most hobby toolkits have nothing. But
   it's currently desktop-coupled shell scripts (hyprctl resolution
@@ -95,21 +102,28 @@ probed inside an actual nix build sandbox, not just on a headless box.
 
 Remaining for the checkPhase itself:
 
-- [ ] Capture with `weston-screenshooter` and compare. Note the
+- [x] Capture with `weston-screenshooter` and compare (done). Note the
   comparison target has to change: `images/` is **gitignored**, so the
   downloaded Behance references are not in the repo and cannot be in a
   hermetic build. Diff against the tracked `docs/target-*.svg`
   rasterised instead — which is also the cleaner answer, since those
   are our own design targets rather than someone else's copyrighted
   artwork.
-- [ ] Wire it as `passthru.tests` rather than a gating `checkPhase`
-  first: a GPU-less compositor is exactly the kind of thing that fails
+- [x] Wired as `passthru.tests` rather than a gating `checkPhase`: a GPU-less compositor is exactly the kind of thing that fails
   for environmental reasons, and it should not block every build of the
   toolkit until it has proven stable.
 
 ## Black window on the nvidia/Hyprland session (2026-08-22)
 
-- [ ] **The app renders headless but not on the real desktop.** Under
+- [x] **Fixed 2026-08-22: wgpu was choosing a non-presenting adapter.**
+  This machine exposes three Vulkan adapters (discrete nvidia, the
+  Ryzen's integrated RADV, llvmpipe) and wgpu picked one that cannot
+  present, so the app really was rendering - somewhere the compositor
+  never shows. `WGPU_POWER_PREF=high` alone fixes it (1 unique colour
+  in the window without, 815 with); set via --set-default in the
+  wrapper of both Iced crates. Original symptom description below.
+
+- [x] ~~The app renders headless but not on the real desktop.~~ Under
   weston headless with the llvmpipe Vulkan ICD it draws correctly (that
   is what tests.visual captures). Launched on terra's Hyprland session
   with the nvidia driver it starts, stays alive, logs *nothing* to
