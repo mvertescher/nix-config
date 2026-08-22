@@ -12,6 +12,11 @@ let
     else
       throw "Unsupported terminal: ${terminal}";
 
+  # Rust replacement for upstream's mediaplayer.py, which needed python3 plus
+  # PyGObject and the Playerctl GIR typelib. Talks D-Bus directly, so the
+  # music module has no interpreter dependency at runtime.
+  cybr-media = pkgs.callPackage ./cybr-media { };
+
   modulesTemplate = builtins.readFile ./cybr-waybar/modules.jsonc;
 
   templatedModules = builtins.replaceStrings
@@ -19,15 +24,27 @@ let
       "'kitty --class scratchpad-btop btop'"
       "'kitty --class scratchpad-nvtop nvtop'"
       "'kitty --class scratchpad-large nu -c upall'"
+      "~/.config/waybar/scripts/mediaplayer.py"
     ]
     [
       "'${mkScratchpadCmd "scratchpad-btop" "btop"}'"
       "'${mkScratchpadCmd "scratchpad-nvtop" "nvtop"}'"
       "'${mkScratchpadCmd "scratchpad-large" "nu -c upall"}'"
+      (lib.getExe cybr-media)
     ]
     modulesTemplate;
 in
 {
+  # Launch the bar alongside the theme's other components (see swaync.nix,
+  # hyprpaper.nix): programs.waybar only installs and configures it, and the
+  # packaged waybar.service is inert because hyprland runs with
+  # systemd.enable = false.
+  wayland.windowManager.hyprland.settings = {
+    exec-once = [
+      "waybar"
+    ];
+  };
+
   programs.waybar = {
     enable = true;
   };
@@ -88,7 +105,8 @@ in
 
   fonts.fontconfig.enable = true;
 
-  home.packages = with pkgs; [
-    nerd-fonts.geist-mono
+  home.packages = [
+    cybr-media
+    pkgs.nerd-fonts.geist-mono
   ];
 }

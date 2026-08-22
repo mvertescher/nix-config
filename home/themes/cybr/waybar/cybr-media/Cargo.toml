@@ -1,0 +1,19 @@
+[package]
+name = "cybr-media"
+version = "0.1.0"
+edition = "2021"
+description = "MPRIS media status line for waybar (part of cybr-waybar)"
+license = "GPL-3.0-only"
+
+[dependencies]
+# async-io rather than tokio: no extra runtime, and zbus is pure Rust so the
+# binary needs no libdbus/glib/gobject at runtime.
+zbus = { version = "5", default-features = false, features = ["async-io"] }
+futures-util = { version = "0.3", default-features = false, features = ["std"] }
+serde_json = "1"
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = true
