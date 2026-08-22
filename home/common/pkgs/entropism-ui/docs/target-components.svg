@@ -1,0 +1,302 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" font-family="Rajdhani">
+  <!-- ENTROPISM component sheet, SAMPLED from the Behance Part 1
+       entropism run (doc #24-32, the nine screens after the
+       "ENTROPISM - NECESSITY OVER STYLE" title card: logins, mailbox
+       tile menu, message view, 4ST store).
+
+       Sampled palette (pixel reads off the 1400px modules):
+         bg          #110c07 warm dark olive-brown (#160e0a upper,
+                     #0d0603 lower - a lit CRT in a dark room)
+         sage solid  #8ba685..#a3bc9e   selection fills, footer band
+         sage text   #94bb94            labels, titles
+         mid green   #728f76            top-bar text, secondary
+         outline     #5d7752            1px strokes
+         dim         #3d4d38            faint rules, captions
+         on-solid    #1f2a1c            dark text on sage fills
+
+       ONE hue. Everything square, 1px, no glow, no gradients in the
+       UI itself. Selection is a solid sage fill. Dense tiny captions,
+       build strings, segmented chrome: industrial terminal software
+       that somebody keeps repairing. -->
+  <defs>
+    <linearGradient id="crt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a140c"/>
+      <stop offset="45%" stop-color="#110c07"/>
+      <stop offset="100%" stop-color="#0d0603"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#crt)"/>
+
+  <!-- segmented top bar: the era's chrome -->
+  <g font-size="13" letter-spacing="1">
+    <rect x="40" y="34" width="380" height="24" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="52" y="51" fill="#728f76">ENTROPISM&#160;&#160;COMPONENTSV2</text>
+    <rect x="424" y="34" width="1100" height="24" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="900" y="51" fill="#728f76" text-anchor="middle">SAMPLED FROM BEHANCE PART 1, DOC #24–32</text>
+    <rect x="1528" y="34" width="352" height="24" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="1540" y="51" fill="#728f76">v0.2 TARGET</text>
+  </g>
+
+  <!-- ============ COLUMN 1: login + footer ============ -->
+  <g>
+    <text x="60" y="120" font-size="13" letter-spacing="3" fill="#3d4d38">LOGIN</text>
+    <text x="60" y="152" font-size="16" letter-spacing="1" fill="#94bb94">USERNAME:</text>
+    <rect x="60" y="162" width="260" height="26" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="70" y="181" font-size="14" letter-spacing="2" fill="#94bb94">**********</text>
+    <rect x="70" y="184" width="26" height="1.5" fill="#94bb94"/>
+    <rect x="332" y="162" width="76" height="26" fill="#9cb795"/>
+    <text x="344" y="181" font-size="15" fill="#1f2a1c">NEXT</text>
+
+    <text x="60" y="248" font-size="13" letter-spacing="3" fill="#3d4d38">FOOTER STRIPS</text>
+    <!-- thin build footer -->
+    <g font-size="11">
+      <path d="M60 262 h360" stroke="#5d7752" stroke-width="1"/>
+      <text x="60" y="282" fill="#728f76">INTERFACE LOADED</text>
+      <text x="240" y="282" fill="#728f76" text-anchor="middle">PROVIDED BY NEXUS NETWORK V10.8</text>
+      <text x="420" y="282" fill="#728f76" text-anchor="end">BUILD 6.47.48441.R15</text>
+    </g>
+    <!-- big solid band, login screens -->
+    <rect x="60" y="300" width="360" height="54" fill="#9cb795"/>
+    <g font-size="11" fill="#1f2a1c">
+      <text x="70" y="344">INTERFACE LOADED</text>
+      <text x="240" y="344" text-anchor="middle">PROVIDED BY NEXUS NETWORK V10.8</text>
+      <text x="410" y="344" text-anchor="end">BUILD 6.47.48441.R15</text>
+    </g>
+
+    <text x="60" y="416" font-size="13" letter-spacing="3" fill="#3d4d38">BOXED SECTION HEADERS</text>
+    <g font-size="15" letter-spacing="1">
+      <rect x="60" y="428" width="22" height="22" fill="none" stroke="#94bb94" stroke-width="1.2"/>
+      <text x="71" y="444" fill="#94bb94" text-anchor="middle">A</text>
+      <text x="92" y="444" fill="#94bb94">MAIL BOX</text>
+      <rect x="60" y="460" width="22" height="22" fill="none" stroke="#94bb94" stroke-width="1.2"/>
+      <text x="71" y="476" fill="#94bb94" text-anchor="middle">B</text>
+      <text x="92" y="476" fill="#94bb94">MESSAGE</text>
+      <rect x="60" y="492" width="22" height="22" fill="none" stroke="#94bb94" stroke-width="1.2"/>
+      <text x="71" y="508" fill="#94bb94" text-anchor="middle">C</text>
+      <text x="92" y="508" fill="#94bb94">SECURITY LEVEL</text>
+    </g>
+
+    <text x="60" y="572" font-size="13" letter-spacing="3" fill="#3d4d38">SECURITY LEVEL BOXES</text>
+    <g font-size="16" text-anchor="middle">
+      <rect x="60" y="586" width="40" height="34" fill="none" stroke="#5d7752" stroke-width="1"/>
+      <text x="80" y="609" fill="#94bb94">T1</text>
+      <rect x="108" y="586" width="40" height="34" fill="#9cb795"/>
+      <text x="128" y="609" fill="#1f2a1c" font-weight="600">T2</text>
+      <rect x="156" y="586" width="40" height="34" fill="none" stroke="#5d7752" stroke-width="1"/>
+      <text x="176" y="609" fill="#94bb94">T3</text>
+      <rect x="204" y="586" width="40" height="34" fill="none" stroke="#5d7752" stroke-width="1"/>
+      <text x="224" y="609" fill="#94bb94">T4</text>
+    </g>
+
+    <text x="60" y="684" font-size="13" letter-spacing="3" fill="#3d4d38">BUTTON SEGMENTS</text>
+    <g font-size="13" text-anchor="middle">
+      <rect x="60" y="698" width="90" height="28" fill="none" stroke="#5d7752" stroke-width="1"/>
+      <text x="105" y="717" fill="#94bb94">REPLY</text>
+      <rect x="150" y="698" width="90" height="28" fill="none" stroke="#5d7752" stroke-width="1"/>
+      <text x="195" y="717" fill="#94bb94">FORWARD</text>
+      <rect x="240" y="698" width="90" height="28" fill="none" stroke="#5d7752" stroke-width="1"/>
+      <text x="285" y="717" fill="#94bb94">DELETE</text>
+      <rect x="330" y="698" width="110" height="28" fill="#9cb795"/>
+      <text x="385" y="717" fill="#1f2a1c" font-weight="600">REPORT SPAM</text>
+    </g>
+  </g>
+
+  <!-- ============ COLUMN 2: menu tiles ============ -->
+  <g>
+    <text x="520" y="120" font-size="13" letter-spacing="3" fill="#3d4d38">MENU TILES (selected = solid; каждый carries a caption strip)</text>
+
+    <g font-size="14" text-anchor="middle">
+      <rect x="520" y="140" width="120" height="120" fill="none" stroke="#5d7752" stroke-width="1"/>
+      <text x="580" y="204" fill="#94bb94">EMAILS</text>
+      <path d="M520 268 h120" stroke="#3d4d38" stroke-width="1"/>
+      <text x="580" y="282" font-size="7" fill="#3d4d38">REPORT ERROR · V2.11 · CERTIFIED</text>
+
+      <rect x="660" y="140" width="120" height="120" fill="none" stroke="#5d7752" stroke-width="1"/>
+      <text x="720" y="204" fill="#94bb94">MATRIX</text>
+      <path d="M660 268 h120" stroke="#3d4d38" stroke-width="1"/>
+      <text x="720" y="282" font-size="7" fill="#3d4d38">REPORT ERROR · V2.11 · CERTIFIED</text>
+
+      <rect x="800" y="140" width="120" height="120" fill="#9cb795"/>
+      <text x="860" y="204" fill="#1f2a1c" font-weight="600">BRAINDANCE</text>
+      <path d="M800 268 h120" stroke="#3d4d38" stroke-width="1"/>
+      <text x="860" y="282" font-size="7" fill="#3d4d38">REPORT ERROR · V2.11 · CERTIFIED</text>
+
+      <rect x="520" y="310" width="120" height="120" fill="none" stroke="#5d7752" stroke-width="1"/>
+      <text x="580" y="368" fill="#94bb94">SECURITY</text>
+      <text x="580" y="386" fill="#94bb94">SYSTEMS</text>
+      <path d="M520 438 h120" stroke="#3d4d38" stroke-width="1"/>
+      <text x="580" y="452" font-size="7" fill="#3d4d38">REPORT ERROR · V2.11 · CERTIFIED</text>
+
+      <rect x="660" y="310" width="120" height="120" fill="none" stroke="#5d7752" stroke-width="1"/>
+      <text x="720" y="374" fill="#94bb94">PRIVATE</text>
+      <path d="M660 438 h120" stroke="#3d4d38" stroke-width="1"/>
+      <text x="720" y="452" font-size="7" fill="#3d4d38">REPORT ERROR · V2.11 · CERTIFIED</text>
+
+      <rect x="800" y="310" width="120" height="120" fill="none" stroke="#5d7752" stroke-width="1"/>
+      <text x="860" y="374" fill="#94bb94">DEVICES</text>
+      <path d="M800 438 h120" stroke="#3d4d38" stroke-width="1"/>
+      <text x="860" y="452" font-size="7" fill="#3d4d38">REPORT ERROR · V2.11 · CERTIFIED</text>
+    </g>
+
+    <text x="520" y="530" font-size="13" letter-spacing="3" fill="#3d4d38">MAIL LIST (selected = solid row)</text>
+    <g font-size="14">
+      <g fill="#94bb94">
+        <path d="M524 552 h14 v10 h-14 Z M524 552 l7 6 l7 -6" stroke="#94bb94" fill="none" stroke-width="1"/>
+        <text x="548" y="562">YOU'LL REGRET THAT</text>
+        <text x="548" y="576" font-size="9" fill="#3d4d38">FROM: JACKIE</text>
+      </g>
+      <rect x="516" y="590" width="330" height="34" fill="#9cb795"/>
+      <path d="M524 600 h14 v10 h-14 Z M524 600 l7 6 l7 -6" stroke="#1f2a1c" fill="none" stroke-width="1"/>
+      <text x="548" y="610" fill="#1f2a1c" font-weight="600">URGENT INFORMATION (!)</text>
+      <text x="548" y="622" font-size="9" fill="#425243">FROM: MOM</text>
+      <g fill="#94bb94">
+        <path d="M524 646 h14 v10 h-14 Z M524 646 l7 6 l7 -6" stroke="#94bb94" fill="none" stroke-width="1"/>
+        <text x="548" y="656">HEIST DATA SENT TO YOU</text>
+        <text x="548" y="670" font-size="9" fill="#3d4d38">FROM: 805000451</text>
+      </g>
+      <g fill="#94bb94">
+        <path d="M524 694 h14 v10 h-14 Z M524 694 l7 6 l7 -6" stroke="#94bb94" fill="none" stroke-width="1"/>
+        <text x="548" y="704">I'M WORRIED MAN</text>
+        <text x="548" y="718" font-size="9" fill="#3d4d38">FROM: RACHEL ROSS</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ============ COLUMN 3: message detail ============ -->
+  <g>
+    <text x="980" y="120" font-size="13" letter-spacing="3" fill="#3d4d38">MESSAGE DETAIL</text>
+    <rect x="980" y="134" width="360" height="330" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <rect x="988" y="142" width="344" height="30" fill="#9cb795"/>
+    <text x="998" y="163" font-size="14" font-weight="600" fill="#1f2a1c">URGENT INFORMATION (!)</text>
+    <text x="998" y="188" font-size="9" fill="#3d4d38">FROM: MOM</text>
+    <g font-size="13" fill="#94bb94">
+      <text x="998" y="214">Lorem ipsum dolor sit amet, consec-</text>
+      <text x="998" y="232">tetur adipisicing elit, sed do eiusmod</text>
+      <text x="998" y="250">tempor incididunt ut labore et dolore</text>
+      <text x="998" y="268">magna aliqua. Ut enim ad minim</text>
+      <text x="998" y="286">veniam, quis nostrud exercitation.</text>
+      <text x="998" y="312">Excepteur sint occaecat cupidatat</text>
+      <text x="998" y="330">non proident, sunt in culpa qui</text>
+      <text x="998" y="348">officia deserunt mollit anim id est.</text>
+    </g>
+    <g font-size="12" text-anchor="middle">
+      <rect x="988" y="418" width="80" height="26" fill="none" stroke="#5d7752" stroke-width="1"/>
+      <text x="1028" y="436" fill="#94bb94">REPLY</text>
+      <rect x="1068" y="418" width="86" height="26" fill="none" stroke="#5d7752" stroke-width="1"/>
+      <text x="1111" y="436" fill="#94bb94">FORWARD</text>
+      <rect x="1154" y="418" width="80" height="26" fill="none" stroke="#5d7752" stroke-width="1"/>
+      <text x="1194" y="436" fill="#94bb94">DELETE</text>
+      <rect x="1234" y="418" width="98" height="26" fill="#9cb795"/>
+      <text x="1283" y="436" fill="#1f2a1c" font-weight="600">REPORT SPAM</text>
+    </g>
+
+    <!-- product card, both states -->
+    <text x="980" y="510" font-size="13" letter-spacing="3" fill="#3d4d38">PRODUCT CARD ×2 STATES</text>
+    <g>
+      <rect x="980" y="524" width="170" height="230" fill="none" stroke="#5d7752" stroke-width="1"/>
+      <text x="992" y="548" font-size="14" fill="#94bb94">MAGNUM 650</text>
+      <text x="992" y="564" font-size="10" letter-spacing="1" fill="#3d4d38">HAND GUN</text>
+      <path d="M992 568 h146" stroke="#3d4d38" stroke-width="1"/>
+      <g stroke="#94bb94" stroke-width="1.6" fill="none">
+        <path d="M1006 604 h80 l10 7 h18 v11 h-22 l-7 8 h-48 l-6 -7 h-25 Z"/>
+      </g>
+      <g font-size="10" letter-spacing="1" fill="#728f76" text-anchor="middle">
+        <text x="1006" y="668">DPS</text><text x="1044" y="668">PNT</text>
+        <text x="1082" y="668">ACC</text><text x="1120" y="668">ROF</text>
+      </g>
+      <g font-size="14" font-weight="600" fill="#94bb94" text-anchor="middle">
+        <text x="1006" y="688">86</text><text x="1044" y="688">30</text>
+        <text x="1082" y="688">5</text><text x="1120" y="688">5</text>
+      </g>
+      <g>
+        <rect x="992" y="702" width="44" height="20" fill="none" stroke="#5d7752"/>
+        <rect x="1042" y="702" width="44" height="20" fill="none" stroke="#5d7752"/>
+        <rect x="1092" y="702" width="44" height="20" fill="none" stroke="#5d7752"/>
+        <g font-size="6.5" fill="#728f76" text-anchor="middle">
+          <text x="1014" y="715">EMPTY SOCKET</text><text x="1064" y="715">EMPTY SOCKET</text><text x="1114" y="715">EMPTY SOCKET</text>
+        </g>
+      </g>
+    </g>
+    <g>
+      <rect x="1170" y="524" width="170" height="300" fill="#9cb795"/>
+      <text x="1182" y="548" font-size="14" font-weight="600" fill="#1f2a1c">MAGNUM 650</text>
+      <text x="1182" y="564" font-size="10" letter-spacing="1" fill="#425243">HAND GUN</text>
+      <path d="M1182 568 h146" stroke="#425243" stroke-width="1"/>
+      <g stroke="#1f2a1c" stroke-width="1.6" fill="none">
+        <path d="M1196 604 h80 l10 7 h18 v11 h-22 l-7 8 h-48 l-6 -7 h-25 Z"/>
+      </g>
+      <g font-size="10" letter-spacing="1" fill="#425243" text-anchor="middle">
+        <text x="1196" y="668">DPS</text><text x="1234" y="668">PNT</text>
+        <text x="1272" y="668">ACC</text><text x="1310" y="668">ROF</text>
+      </g>
+      <g font-size="14" font-weight="700" fill="#1f2a1c" text-anchor="middle">
+        <text x="1196" y="688">86</text><text x="1234" y="688">30</text>
+        <text x="1272" y="688">5</text><text x="1310" y="688">5</text>
+      </g>
+      <g font-size="11" fill="#1f2a1c">
+        <text x="1182" y="714">20&#160;&#160;Recoil</text>
+        <text x="1182" y="730">22&#160;&#160;Spread</text>
+        <text x="1182" y="746">12&#160;&#160;Range</text>
+        <text x="1182" y="768" font-weight="700">Bonus</text>
+        <text x="1182" y="784">+9 Reflexes</text>
+        <text x="1182" y="800">+2 Modules Slots</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ============ COLUMN 4: palette + rules + TOOLKIT DIVERGENCE ============ -->
+  <g>
+    <text x="1420" y="120" font-size="13" letter-spacing="3" fill="#3d4d38">SAMPLED PALETTE</text>
+    <g font-size="12" fill="#94bb94">
+      <rect x="1420" y="134" width="34" height="20" fill="#110c07" stroke="#3d4d38"/><text x="1464" y="149">bg #110c07</text>
+      <rect x="1420" y="162" width="34" height="20" fill="#9cb795"/><text x="1464" y="177">sage solid #9cb795</text>
+      <rect x="1420" y="190" width="34" height="20" fill="#94bb94"/><text x="1464" y="205">sage text #94bb94</text>
+      <rect x="1420" y="218" width="34" height="20" fill="#728f76"/><text x="1464" y="233">mid #728f76</text>
+      <rect x="1420" y="246" width="34" height="20" fill="#5d7752"/><text x="1464" y="261">outline #5d7752</text>
+      <rect x="1420" y="274" width="34" height="20" fill="#3d4d38"/><text x="1464" y="289">dim #3d4d38</text>
+      <rect x="1420" y="302" width="34" height="20" fill="#1f2a1c"/><text x="1464" y="317">on-solid #1f2a1c</text>
+    </g>
+
+    <text x="1420" y="374" font-size="13" letter-spacing="3" fill="#3d4d38">ERA RULES (observed)</text>
+    <g font-size="13" fill="#94bb94">
+      <text x="1420" y="400">· ONE hue: sage green on warm dark</text>
+      <text x="1420" y="422">· square everything; 1px strokes</text>
+      <text x="1420" y="444">· no glow, no gradients, no rounding</text>
+      <text x="1420" y="466">· selection = solid sage fill</text>
+      <text x="1420" y="488">· segmented top bar, build-string</text>
+      <text x="1420" y="510">&#160;&#160;footer on every screen</text>
+      <text x="1420" y="532">· boxed-letter section headers</text>
+      <text x="1420" y="554">· menu tiles carry caption strips</text>
+      <text x="1420" y="576">· dense tiny maintenance captions</text>
+    </g>
+
+    <text x="1420" y="640" font-size="13" letter-spacing="3" fill="#94bb94">TOOLKIT DIVERGENCE (for the next agent)</text>
+    <g font-size="12" fill="#728f76">
+      <text x="1420" y="666">entropism-ui/src/colors.rs carries TWELVE</text>
+      <text x="1420" y="684">colours - cybr's red #F75049, cyan #5EF6FF,</text>
+      <text x="1420" y="702">mint #1DED83, violet, orange, gold - plus a</text>
+      <text x="1420" y="720">glow.rs module. None of that exists in the</text>
+      <text x="1420" y="738">reference: the era is ONE sage green, flat.</text>
+      <text x="1420" y="756">Its COLOR_GREEN_ACCENT #8CBC88 is close to</text>
+      <text x="1420" y="774">the sampled #94bb94 and is the only keeper.</text>
+      <text x="1420" y="796">The desktop theme diverges too: its default</text>
+      <text x="1420" y="814">burn-in variant is amber, an invention. Of</text>
+      <text x="1420" y="832">its three variants, salvage-phosphor is the</text>
+      <text x="1420" y="850">only one near the reference - and still</text>
+      <text x="1420" y="868">cooler and darker than the sampled sage.</text>
+      <text x="1420" y="890">Suggest: a reference-sampled variant named</text>
+      <text x="1420" y="908">"nexus" (after the build strings), and the</text>
+      <text x="1420" y="926">crate reduced to the one-hue system when it</text>
+      <text x="1420" y="944">folds into cyberpunk-ui.</text>
+    </g>
+  </g>
+
+  <!-- footer strip -->
+  <g font-size="11">
+    <path d="M40 1030 h1840" stroke="#5d7752" stroke-width="1"/>
+    <text x="40" y="1052" fill="#728f76">INTERFACE LOADED</text>
+    <text x="960" y="1052" fill="#728f76" text-anchor="middle">ENTROPISM — NECESSITY OVER STYLE</text>
+    <text x="1880" y="1052" fill="#728f76" text-anchor="end">BUILD 6.47.48441.R15</text>
+  </g>
+</svg>

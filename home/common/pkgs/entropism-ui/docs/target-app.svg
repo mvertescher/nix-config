@@ -1,0 +1,204 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" font-family="Rajdhani">
+  <!-- ENTROPISM acceptance-test screen: the 4ST STORE, tracking the
+       Behance reference (the store screen in the entropism run, p1-036)
+       closely enough to judge fidelity by eye: segmented top bar, sage
+       monochrome store with the nav list in a plain outlined box, four
+       square product cards with the selected one solid, boxed footnote
+       markers, and the build-string footer.
+
+       When this can be built from library widgets, entropism is
+       feature-complete. Palette is the sampled one from
+       target-components.svg. -->
+  <defs>
+    <linearGradient id="crt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a140c"/>
+      <stop offset="45%" stop-color="#110c07"/>
+      <stop offset="100%" stop-color="#0d0603"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#crt)"/>
+
+  <!-- ===== segmented top bar ===== -->
+  <g font-size="14" letter-spacing="1">
+    <rect x="60" y="50" width="430" height="26" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="74" y="68" fill="#728f76">DIGITAL DISTRIBUTION SOFTWAREV2</text>
+    <rect x="494" y="50" width="1000" height="26" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="994" y="68" fill="#728f76" text-anchor="middle">STORE ACCESS SCREEN</text>
+    <rect x="1498" y="50" width="360" height="26" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="1512" y="68" fill="#728f76">FLAIR TRS 5MMP</text>
+  </g>
+
+  <!-- ===== logotype + customer meta ===== -->
+  <text x="230" y="188" font-size="54" font-weight="700" letter-spacing="2" fill="#94bb94">4S<tspan font-weight="300" fill="#5d7752">T</tspan></text>
+  <text x="234" y="216" font-size="14" letter-spacing="12" fill="#728f76">S T O R E</text>
+
+  <g font-size="13">
+    <text x="230" y="252" fill="#3d4d38">CUSTOMER</text>
+    <text x="430" y="252" fill="#94bb94" text-anchor="end">#NC488402</text>
+    <text x="230" y="272" fill="#3d4d38">LOYALTY DISCOUNT</text>
+    <text x="430" y="272" fill="#94bb94" text-anchor="end">10%</text>
+    <text x="230" y="292" fill="#3d4d38">LAST UPDATE</text>
+    <text x="430" y="292" fill="#94bb94" text-anchor="end">10/05/2077</text>
+  </g>
+
+  <!-- ===== nav: one plain outlined box, rows separated by rules ===== -->
+  <g font-size="17" letter-spacing="1">
+    <rect x="230" y="320" width="200" height="240" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="248" y="352" fill="#94bb94">RIFLES</text>
+    <path d="M230 368 h200" stroke="#3d4d38" stroke-width="1"/>
+    <rect x="231" y="369" width="198" height="46" fill="#9cb795"/>
+    <text x="248" y="399" fill="#1f2a1c" font-weight="600">SMG</text>
+    <path d="M230 416 h200" stroke="#3d4d38" stroke-width="1"/>
+    <text x="248" y="447" fill="#94bb94">SNIPER</text>
+    <path d="M230 464 h200" stroke="#3d4d38" stroke-width="1"/>
+    <text x="248" y="495" fill="#94bb94">SHOTGUN</text>
+    <path d="M230 512 h200" stroke="#3d4d38" stroke-width="1"/>
+    <text x="248" y="543" fill="#94bb94">PISTOL</text>
+  </g>
+
+  <!-- footnote markers under the nav -->
+  <rect x="230" y="600" width="24" height="24" fill="none" stroke="#94bb94" stroke-width="1.2"/>
+  <text x="242" y="617" font-size="14" fill="#94bb94" text-anchor="middle">A</text>
+  <text x="266" y="609" font-size="9" fill="#3d4d38">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+  <text x="266" y="620" font-size="9" fill="#3d4d38">SERVING CUSTOMERS SINCE 2006.</text>
+  <rect x="230" y="644" width="24" height="24" fill="none" stroke="#94bb94" stroke-width="1.2"/>
+  <text x="242" y="661" font-size="14" fill="#94bb94" text-anchor="middle">B</text>
+  <text x="266" y="653" font-size="9" fill="#3d4d38">MAPS ARE PROVIDED BY SEOCHO. SATELLITE</text>
+  <text x="266" y="664" font-size="9" fill="#3d4d38">SERVICES SINCE 2006.</text>
+
+  <!-- ===== product cards ===== -->
+  <!-- card 1: default -->
+  <g>
+    <rect x="520" y="320" width="270" height="360" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="538" y="352" font-size="19" fill="#94bb94">MAGNUM 650</text>
+    <text x="538" y="372" font-size="12" letter-spacing="2" fill="#3d4d38">HAND GUN</text>
+    <path d="M538 382 h234" stroke="#3d4d38" stroke-width="1"/>
+    <g stroke="#94bb94" stroke-width="2" fill="none">
+      <path d="M560 424 h130 l16 10 h26 v16 h-32 l-10 12 h-76 l-9 -10 h-45 Z"/>
+      <path d="M596 462 v18 h16 v-18"/>
+    </g>
+    <g font-size="12" letter-spacing="1" fill="#728f76" text-anchor="middle">
+      <text x="560" y="528">DPS</text><text x="622" y="528">PNT</text>
+      <text x="684" y="528">ACC</text><text x="746" y="528">ROF</text>
+    </g>
+    <g font-size="18" font-weight="600" fill="#94bb94" text-anchor="middle">
+      <text x="560" y="552">86</text><text x="622" y="552">30</text>
+      <text x="684" y="552">5</text><text x="746" y="552">5</text>
+    </g>
+    <g>
+      <rect x="538" y="572" width="70" height="26" fill="none" stroke="#5d7752"/>
+      <rect x="616" y="572" width="70" height="26" fill="none" stroke="#5d7752"/>
+      <rect x="694" y="572" width="70" height="26" fill="none" stroke="#5d7752"/>
+      <g font-size="8" fill="#728f76" text-anchor="middle">
+        <text x="573" y="588">EMPTY SOCKET</text><text x="651" y="588">EMPTY SOCKET</text><text x="729" y="588">EMPTY SOCKET</text>
+      </g>
+    </g>
+    <text x="538" y="642" font-size="9" fill="#3d4d38">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE</text>
+    <text x="538" y="654" font-size="9" fill="#3d4d38">ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+  </g>
+
+  <!-- card 2: SELECTED, solid sage, grown details -->
+  <g>
+    <rect x="820" y="320" width="270" height="470" fill="#9cb795"/>
+    <text x="838" y="352" font-size="19" font-weight="600" fill="#1f2a1c">MAGNUM 650</text>
+    <text x="838" y="372" font-size="12" letter-spacing="2" fill="#425243">HAND GUN</text>
+    <path d="M838 382 h234" stroke="#425243" stroke-width="1"/>
+    <g stroke="#1f2a1c" stroke-width="2" fill="none">
+      <path d="M860 424 h130 l16 10 h26 v16 h-32 l-10 12 h-76 l-9 -10 h-45 Z"/>
+      <path d="M896 462 v18 h16 v-18"/>
+    </g>
+    <g font-size="12" letter-spacing="1" fill="#425243" text-anchor="middle">
+      <text x="860" y="528">DPS</text><text x="922" y="528">PNT</text>
+      <text x="984" y="528">ACC</text><text x="1046" y="528">ROF</text>
+    </g>
+    <g font-size="18" font-weight="700" fill="#1f2a1c" text-anchor="middle">
+      <text x="860" y="552">86</text><text x="922" y="552">30</text>
+      <text x="984" y="552">5</text><text x="1046" y="552">5</text>
+    </g>
+    <g font-size="14" fill="#1f2a1c">
+      <text x="838" y="590">20&#160;&#160;&#160;Recoil</text>
+      <text x="838" y="612">22&#160;&#160;&#160;Spread</text>
+      <text x="838" y="634">12&#160;&#160;&#160;Range</text>
+      <text x="838" y="662" font-weight="700">Bonus</text>
+      <text x="838" y="684">+9 Reflexes</text>
+      <text x="838" y="706">+2 Modules Slots</text>
+    </g>
+    <g>
+      <rect x="838" y="724" width="70" height="26" fill="none" stroke="#425243"/>
+      <rect x="916" y="724" width="70" height="26" fill="none" stroke="#425243"/>
+      <rect x="994" y="724" width="70" height="26" fill="none" stroke="#425243"/>
+      <g font-size="8" fill="#425243" text-anchor="middle">
+        <text x="873" y="740">EMPTY SOCKET</text><text x="951" y="740">EMPTY SOCKET</text><text x="1029" y="740">EMPTY SOCKET</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- card 3: default -->
+  <g>
+    <rect x="1120" y="320" width="270" height="360" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="1138" y="352" font-size="19" fill="#94bb94">MAGNUM 650</text>
+    <text x="1138" y="372" font-size="12" letter-spacing="2" fill="#3d4d38">HAND GUN</text>
+    <path d="M1138 382 h234" stroke="#3d4d38" stroke-width="1"/>
+    <g stroke="#94bb94" stroke-width="2" fill="none">
+      <path d="M1160 424 h130 l16 10 h26 v16 h-32 l-10 12 h-76 l-9 -10 h-45 Z"/>
+      <path d="M1196 462 v18 h16 v-18"/>
+    </g>
+    <g font-size="12" letter-spacing="1" fill="#728f76" text-anchor="middle">
+      <text x="1160" y="528">DPS</text><text x="1222" y="528">PNT</text>
+      <text x="1284" y="528">ACC</text><text x="1346" y="528">ROF</text>
+    </g>
+    <g font-size="18" font-weight="600" fill="#94bb94" text-anchor="middle">
+      <text x="1160" y="552">86</text><text x="1222" y="552">30</text>
+      <text x="1284" y="552">5</text><text x="1346" y="552">5</text>
+    </g>
+    <g>
+      <rect x="1138" y="572" width="70" height="26" fill="none" stroke="#5d7752"/>
+      <rect x="1216" y="572" width="70" height="26" fill="none" stroke="#5d7752"/>
+      <rect x="1294" y="572" width="70" height="26" fill="none" stroke="#5d7752"/>
+      <g font-size="8" fill="#728f76" text-anchor="middle">
+        <text x="1173" y="588">EMPTY SOCKET</text><text x="1251" y="588">EMPTY SOCKET</text><text x="1329" y="588">EMPTY SOCKET</text>
+      </g>
+    </g>
+    <text x="1138" y="642" font-size="9" fill="#3d4d38">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE</text>
+    <text x="1138" y="654" font-size="9" fill="#3d4d38">ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+  </g>
+
+  <!-- card 4: default -->
+  <g>
+    <rect x="1420" y="320" width="270" height="360" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="1438" y="352" font-size="19" fill="#94bb94">MAGNUM 650</text>
+    <text x="1438" y="372" font-size="12" letter-spacing="2" fill="#3d4d38">HAND GUN</text>
+    <path d="M1438 382 h234" stroke="#3d4d38" stroke-width="1"/>
+    <g stroke="#94bb94" stroke-width="2" fill="none">
+      <path d="M1460 424 h130 l16 10 h26 v16 h-32 l-10 12 h-76 l-9 -10 h-45 Z"/>
+      <path d="M1496 462 v18 h16 v-18"/>
+    </g>
+    <g font-size="12" letter-spacing="1" fill="#728f76" text-anchor="middle">
+      <text x="1460" y="528">DPS</text><text x="1522" y="528">PNT</text>
+      <text x="1584" y="528">ACC</text><text x="1646" y="528">ROF</text>
+    </g>
+    <g font-size="18" font-weight="600" fill="#94bb94" text-anchor="middle">
+      <text x="1460" y="552">86</text><text x="1522" y="552">30</text>
+      <text x="1584" y="552">5</text><text x="1646" y="552">5</text>
+    </g>
+    <g>
+      <rect x="1438" y="572" width="70" height="26" fill="none" stroke="#5d7752"/>
+      <rect x="1516" y="572" width="70" height="26" fill="none" stroke="#5d7752"/>
+      <rect x="1594" y="572" width="70" height="26" fill="none" stroke="#5d7752"/>
+      <g font-size="8" fill="#728f76" text-anchor="middle">
+        <text x="1473" y="588">EMPTY SOCKET</text><text x="1551" y="588">EMPTY SOCKET</text><text x="1629" y="588">EMPTY SOCKET</text>
+      </g>
+    </g>
+    <text x="1438" y="642" font-size="9" fill="#3d4d38">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE</text>
+    <text x="1438" y="654" font-size="9" fill="#3d4d38">ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+  </g>
+
+  <!-- ===== build-string footer ===== -->
+  <g font-size="13">
+    <path d="M60 1000 h1800" stroke="#5d7752" stroke-width="1"/>
+    <text x="60" y="1026" fill="#728f76">INTERFACE LOADED</text>
+    <text x="960" y="1026" fill="#728f76" text-anchor="middle">PROVIDED BY NEXUS NETWORK V10.8</text>
+    <text x="1860" y="1026" fill="#728f76" text-anchor="end">BUILD 6.47.48441.R15</text>
+  </g>
+</svg>
