@@ -36,6 +36,7 @@ pub fn palette() -> Palette {
         select: YELLOW,
         on_select: ON_YELLOW,
         emphasis: Some((MINT, ON_MINT)),
+        bloom: BLOOM,
     }
 }
 

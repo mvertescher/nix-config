@@ -15,6 +15,12 @@
 #     ICD alone is not enough: wgpu otherwise selects GLES and panics in
 #     wgpu-hal's gles/egl.rs on a missing EGL display.
 #
+# With `era` set the case also publishes a theme into the sandbox HOME,
+# so the render exercises the contract between the nix theme layer and
+# the toolkit rather than the crate's compiled fallback. That is the
+# interesting half: the fallback can only drift from itself, whereas the
+# published palette has two sides that can move apart.
+#
 # The golden is our own render, not the Behance reference art -- that
 # lives in the gitignored images/ directory, so it cannot be in a
 # hermetic build, and vendoring someone else's artwork to diff against
@@ -35,12 +41,39 @@
   threshold ? "99.9",
   # Seconds to let the app draw before capturing.
   settle ? 15,
+  # Publish a theme into the sandbox HOME. `era` is the name the toolkit
+  # matches on, `roles` the seven-role attrset -- normally taken straight
+  # from home/themes/<era>/scheme.nix, so this fails if either side of
+  # that contract moves. Leave `era` null to exercise the fallback.
+  era ? null,
+  variant ? "reference",
+  roles ? null,
+  uiFont ? "Rajdhani",
 }:
 
 let
   python = python3.withPackages (ps: [ ps.pillow ]);
+
+  roleNames = (import ../../../../themes/lib/roles.nix).names;
+
+  # The same shape lib/era.nix writes. Deliberately restated rather than
+  # imported: this test's job includes noticing if that format changes,
+  # and sharing the generator would hide exactly that.
+  themeToml = ''
+    era = "${era}"
+    variant = "${variant}"
+    polarity = "${(import ../../../../themes/lib/roles.nix).polarityOf roles}"
+
+    [font]
+    ui = "${uiFont}"
+
+    [colors]
+    ${lib.concatStringsSep "\n" (map (r: ''${r} = "${roles.${r}}"'') roleNames)}
+  '';
+
+  suffix = lib.optionalString (era != null) "-${era}";
 in
-runCommand "cyberpunk-ui-visual-test"
+runCommand "cyberpunk-ui-visual-test${suffix}"
   {
     nativeBuildInputs = [
       weston
@@ -49,7 +82,9 @@ runCommand "cyberpunk-ui-visual-test"
       python
     ];
     meta = {
-      description = "Headless render of ${example} diffed against a golden image";
+      description = "Headless render of ${example}${
+        lib.optionalString (era != null) " in ${era}"
+      } diffed against a golden image";
     };
   }
   ''
@@ -58,7 +93,24 @@ runCommand "cyberpunk-ui-visual-test"
     chmod 700 "$XDG_RUNTIME_DIR"
     export HOME="$TMPDIR/home"
     mkdir -p "$HOME"
-    export WAYLAND_DISPLAY=neomil-test
+
+    # The toolkit resolves its palette from XDG_CONFIG_HOME before
+    # HOME/.config. A build sandbox leaves it unset, but say so anyway:
+    # driving this harness by hand outside the sandbox otherwise picks up
+    # the developer's live desktop and renders the "reference" screen in
+    # whatever era they happen to be sitting in. That is not
+    # hypothetical -- it produced a light-mode neomil capture during the
+    # four-era bring-up.
+    unset XDG_CONFIG_HOME
+
+    ${lib.optionalString (era != null) ''
+      mkdir -p "$HOME/.config/theme"
+      cat > "$HOME/.config/theme/current.toml" <<'THEME_EOF'
+      ${themeToml}
+      THEME_EOF
+    ''}
+
+    export WAYLAND_DISPLAY=cpui-test
 
     icd=$(find ${mesa} -name 'lvp_icd*.json' | head -1)
     if [ -z "$icd" ]; then

@@ -39,7 +39,7 @@ let
   src = cleanSrc;
   inherit cargoArtifacts;
   pname = "cyberpunk-ui";
-  version = "0.1.0";
+  version = "0.0.0";
 
   nativeBuildInputs = [ pkg-config cmake makeWrapper ];
   buildInputs = [
@@ -109,11 +109,62 @@ in
 # compositor is exactly the kind of thing that fails for environmental
 # reasons, and it should not block every build of the toolkit until it
 # has proven stable.
+let
+  # Each era's own scheme, so a case renders the palette the desktop
+  # would actually publish rather than a copy of it. Editing a palette
+  # in home/themes therefore moves these goldens, which is the point:
+  # the two sides of that contract cannot drift silently.
+  eraCase =
+    { era, variant }:
+    import ./tests/visual.nix {
+      inherit
+        lib
+        runCommand
+        weston
+        mesa
+        python3
+        era
+        variant
+        ;
+      cyberpunk-ui = package;
+      example = "cyberpunk-ui-store";
+      width = 1600;
+      height = 900;
+      golden = ./tests/golden/store-${era}-1600x900.png;
+      roles = (import ../../../themes/${era}/scheme.nix).resolve { inherit variant; };
+    };
+in
 package.overrideAttrs (old: {
   passthru = (old.passthru or { }) // {
-    tests.visual = import ./tests/visual.nix {
-      inherit lib runCommand weston mesa python3;
-      cyberpunk-ui = package;
+    tests = {
+      # The original case: no published theme, so this is the crate's
+      # compiled fallback rendering the neomil dashboard.
+      visual = import ./tests/visual.nix {
+        inherit lib runCommand weston mesa python3;
+        cyberpunk-ui = package;
+      };
+
+      # The store screen in each era. One implementation, four dresses --
+      # so if the era abstraction ever collapses back into "the same
+      # screen four times", these four goldens are where it shows.
+      store = {
+        entropism = eraCase {
+          era = "entropism";
+          variant = "nexus";
+        };
+        kitsch = eraCase {
+          era = "kitsch";
+          variant = "reference";
+        };
+        neomil = eraCase {
+          era = "neomil";
+          variant = "reference";
+        };
+        neokitsch = eraCase {
+          era = "neokitsch";
+          variant = "reference";
+        };
+      };
     };
   };
 })

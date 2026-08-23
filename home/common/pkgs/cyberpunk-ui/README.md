@@ -105,18 +105,39 @@ cyberpunk-ui-store --era kitsch   # force one
 Comparing that against `docs/kitsch/target-app.svg` is the intended
 workflow.
 
+## Tests
+
+    nix build .#...cyberpunk-ui.tests.store.kitsch
+
+`tests.store.<era>` renders the store headless and diffs it against a
+golden, publishing that era's `theme/current.toml` into the sandbox
+HOME from `home/themes/<era>/scheme.nix` — so it exercises the contract
+between the theme layer and this crate, not the compiled fallback.
+`tests.visual` keeps the original fallback case.
+
+If you drive the harness by hand rather than through nix, `unset
+XDG_CONFIG_HOME` first, or you will render the "reference" screen in
+whatever era your desktop is currently sitting in.
+
 ## Status
 
+Version stays at 0.0.0: this is nowhere near release.
+
 Implemented: the era abstraction, the shared widget vocabulary, all four
-era tables, and the store screen in all four dresses.
+era tables, the store screen in all four dresses, and a four-era visual
+regression matrix. All four eras also have desktop themes under
+`home/themes/`, so `Style::from_desktop` has something real to follow.
 
 Not yet done:
 - `panels/`, `top_bar.rs`, `background.rs` and the neomil widget set
   predate the generalisation and still hardcode neomil colours; the
   dashboard and mail screens want rewriting against `screens`.
-- The visual regression test (`tests/visual.nix`) covers one era. It
-  wants a per-era matrix, writing `theme/current.toml` into the sandbox
-  HOME.
+- Card heights are explicit (`Metrics::card`), because a surface paints
+  the box it is handed and an unconstrained card stretches to the
+  window. Faithful to the design targets, which size cards too, but it
+  means content outgrowing the height clips rather than pushes. Worth
+  revisiting when the mail and dashboard screens land, since their
+  content is more variable than a weapon card's.
 - Kitsch's extruded fan menu and page-curl, neokitsch's card cascade,
   and entropism's menu tiles are in the design targets but not yet
   widgets.

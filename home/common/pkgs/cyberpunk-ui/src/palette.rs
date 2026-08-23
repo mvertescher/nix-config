@@ -29,8 +29,8 @@ use iced::Color;
 pub struct Palette {
     /// Page ground.
     pub bg: Color,
-    /// Raised or washed field: the bloom in kitsch and neokitsch, a
-    /// slightly lifted panel elsewhere.
+    /// Raised surface: bar, popup, titlebar. Published by the theme
+    /// layer, so it is whatever the desktop wants a panel to be.
     pub panel: Color,
     /// 1px structure.
     pub border: Color,
@@ -47,6 +47,11 @@ pub struct Palette {
     pub select: Color,
     /// Text and line-work drawn on top of `select`.
     pub on_select: Color,
+    /// The colour of the era's background bloom, where it has one.
+    /// Era-owned rather than a published role: `panel` has to stay a
+    /// usable bar background on the desktop, and the two want opposite
+    /// things -- a bloom is a saturated wash, a bar is not.
+    pub bloom: Color,
     /// Optional highlight band behind key figures, as `(fill, ink)`.
     /// Kitsch runs a mint band under the weapon stats; the ink is
     /// carried with it because the band is light in an otherwise dark

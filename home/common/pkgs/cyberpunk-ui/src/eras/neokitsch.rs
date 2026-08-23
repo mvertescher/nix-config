@@ -41,6 +41,7 @@ pub fn palette() -> Palette {
         select: VENEER,
         on_select: ON_VENEER,
         emphasis: None,
+        bloom: BLOOM,
     }
 }
 

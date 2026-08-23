@@ -1,19 +1,21 @@
-# entropism -- the salvaged-hardware era.
+# kitsch -- "style over substance", the consumer-catalogue era.
 #
-# Where neomil is the issued equipment, entropism is what came before
-# it: necessity over style. Degraded monochrome displays, zero ornament,
-# 1px lines, square corners, no glow.
+# Teal line-work and yellow selection over a rose bloom on warm black.
+# Everything rounded, no chamfers anywhere: this is the one era whose
+# house style is not hard edges, which is what the `radius` knob in
+# lib/era.nix exists for.
 #
-# Only the palette, typeface and knobs live here; the desktop itself is
-# built by ../lib/era.nix, which the other generated eras share. Colours
-# are semantic *roles* rather than base16 slots, so a wrapper retints
-# everything by naming one:
+# The `reference` palette is transcribed from the pixel reads in
+# home/common/pkgs/cyberpunk-ui/docs/kitsch/README.md, not eyeballed --
+# see ./palettes.nix, which also records why the era's name misleads.
 #
-#   imports = [ nix-config/home/themes/entropism ];
-#   themes.entropism = {
+# Note the role inversion: yellow is *selection* here, not alarm.
+#
+#   imports = [ nix-config/home/themes/kitsch ];
+#   themes.kitsch = {
 #     enable = true;
-#     variant = "dead-pixel";
-#     colors.fg = "#c8d0c4";
+#     variant = "bleach";      # light mode
+#     colors.fg = "#7ddec8";
 #   };
 {
   config,
@@ -23,13 +25,11 @@
 }:
 
 let
-  cfg = config.themes.entropism;
+  cfg = config.themes.kitsch;
 
   scheme = import ./scheme.nix;
   roleLib = import ../lib/roles.nix;
 
-  # A null override means "keep the variant's value", so a host can set
-  # one role without restating six.
   overrides = lib.filterAttrs (_: v: v != null) cfg.colors;
 
   resolved = scheme.resolve {
@@ -38,22 +38,17 @@ let
   };
 in
 {
-  options.themes.entropism = {
-    enable = lib.mkEnableOption "entropism theme";
+  options.themes.kitsch = {
+    enable = lib.mkEnableOption "kitsch theme";
 
     variant = lib.mkOption {
       type = lib.types.enum (builtins.attrNames scheme.palettes);
-      default = "nexus";
+      default = "reference";
       description = ''
-        Which preset display to emulate.
-
-        nexus            -- the sampled one: sage on warm dark, the era
-                            as published. Default since 2026-08-23; the
-                            other three predate the sampling pass and
-                            were designed to the era's description.
-        burn-in          -- amber phosphor with a menu burned into it.
-        dead-pixel       -- salvaged grey LCD, green-shifted and uneven.
-        salvage-phosphor -- desaturated green CRT.
+        reference -- sampled teal and yellow over the rose bloom.
+        bleach    -- light mode: warm paper, teal darkened to ink,
+                     yellow kept hot so selection still reads.
+        ash       -- dark but neutral, teal and yellow reserved.
       '';
     };
 
@@ -64,7 +59,7 @@ in
           lib.mkOption {
             type = lib.types.nullOr lib.types.str;
             default = null;
-            example = "#d9a24a";
+            example = "#7ddec8";
             description = "Override the ${role} role (\"#rrggbb\").";
           }
         );
@@ -81,22 +76,19 @@ in
         options = {
           package = lib.mkOption {
             type = lib.types.package;
-            default = pkgs.departure-mono;
+            default = pkgs.callPackage ../../common/pkgs/rajdhani-fontshare { };
           };
           name = lib.mkOption {
             type = lib.types.str;
-            default = "Departure Mono";
+            default = "Rajdhani";
           };
         };
       };
       default = { };
       description = ''
-        Face for the bar, launcher and notifications. Departure Mono is
-        bitmap-adjacent, which suits a salvaged terminal; neomil uses
-        Rajdhani, the face Cyberpunk 2077 sets its own interface in.
-
-        Terminal content keeps stylix.fonts.monospace either way, so
-        code stays legible.
+        Rajdhani is the typeface Cyberpunk 2077 sets its own in-game
+        interface in, with Orbitron secondary; this repo already vendors
+        both. Terminal content keeps stylix.fonts.monospace.
       '';
     };
 
@@ -108,10 +100,8 @@ in
       ];
       default = "none";
       description = ''
-        Wallpaper treatment. "none" is a flat field of `bg`; the others
-        add a degraded-display artefact generated from the same colour.
-        Off by default -- an entropism display earns its texture from
-        age, not from decoration.
+        Wallpaper treatment generated from `bg`. Off by default; the
+        references are clean panels rather than degraded ones.
       '';
     };
 
@@ -145,13 +135,10 @@ in
       default = true;
       description = ''
         Restart a running Firefox when the theme changes, since
-        userChrome is only read at startup. Fires only on a real change
-        and only if Firefox is already running; shutdown is SIGTERM plus
-        a wait, so tabs are restored.
+        userChrome is only read at startup.
       '';
     };
 
-    # Read by nothing outside this theme; exposed for debugging.
     resolvedColors = lib.mkOption {
       internal = true;
       readOnly = true;
@@ -161,17 +148,29 @@ in
   };
 
   config = lib.mkMerge [
-    { themes.entropism.resolvedColors = resolved; }
+    { themes.kitsch.resolvedColors = resolved; }
 
     (lib.mkIf cfg.enable (lib.mkMerge [
       {
         stylix.base16Scheme = scheme.toBase16 cfg.variant resolved;
+
+        # Inferred from the background rather than restated per palette,
+        # so `bleach` is correctly recognised as a light scheme and
+        # stylix stops guessing at GTK and icon variants.
         stylix.polarity = lib.mkDefault (roleLib.polarityOf resolved);
       }
 
       (import ../lib/era.nix {
         inherit lib pkgs config;
-        name = "Entropism";
+        name = "Kitsch";
+        # The one era that is not hard-edged. 12px matches the rounded
+        # pills and cards of the references at bar scale, and the
+        # separator goes: the references divide by spacing and colour
+        # rather than by rules.
+        knobs = {
+          radius = 12;
+          separator = "";
+        };
         inherit (cfg) variant texture;
         roles = resolved;
         font = cfg.uiFont;

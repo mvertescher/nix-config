@@ -21,7 +21,7 @@ impl Background {
         Background {
             base: style.palette.bg,
             ground: style.ground,
-            bloom: style.palette.panel,
+            bloom: style.palette.bloom,
         }
     }
 }

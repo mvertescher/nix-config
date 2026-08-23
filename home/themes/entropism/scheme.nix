@@ -18,7 +18,7 @@ rec {
 
   resolve =
     {
-      variant ? "burn-in",
+      variant ? "nexus",
       overrides ? { },
     }:
     roles.resolve { inherit palettes variant overrides; };
@@ -31,5 +31,5 @@ rec {
       roles = resolved;
     };
 
-  forVariant = args: toBase16 (args.variant or "burn-in") (resolve args);
+  forVariant = args: toBase16 (args.variant or "nexus") (resolve args);
 }
