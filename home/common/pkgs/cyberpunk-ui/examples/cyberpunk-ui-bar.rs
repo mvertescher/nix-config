@@ -11,8 +11,21 @@
 //! which GitHub reports as NOASSERTION -- no clear licence. The protocol
 //! is a line of text over a unix socket, so the dependency bought little
 //! and the licence question was not worth inheriting.
+//!
+//! Readings split by cost. The cheap ones -- clock, CPU, memory, and
+//! Hyprland's two IPC round trips over a local socket -- are taken
+//! inline on the tick. The two that can stall (a PulseAudio handshake,
+//! a wireless driver) live on their own threads in `bar/`, publish
+//! snapshots, and are read here without waiting. See `bar/sensor.rs`.
 
-use cyberpunk_ui::bar::{bar, Readings, Workspace};
+#[path = "bar/audio.rs"]
+mod audio;
+#[path = "bar/network.rs"]
+mod network;
+#[path = "bar/sensor.rs"]
+mod sensor;
+
+use cyberpunk_ui::bar::{bar, Audio, Network, Readings, Workspace};
 use cyberpunk_ui::{Era, Style};
 use iced::{Element, Task, Theme};
 use iced_layershell::reexport::{Anchor, KeyboardInteractivity, Layer};
@@ -25,6 +38,8 @@ struct BarApp {
     style: Style,
     readings: Readings,
     system: sysinfo::System,
+    audio: audio::Monitor,
+    network: network::Monitor,
 }
 
 // Adds the layer-shell control variants the runtime dispatches through
@@ -50,6 +65,8 @@ impl Application for BarApp {
                 ..Readings::default()
             },
             system: sysinfo::System::new(),
+            audio: audio::Monitor::spawn(),
+            network: network::Monitor::spawn(),
         };
         app.refresh();
         (app, Task::none())
@@ -94,6 +111,11 @@ impl BarApp {
         self.readings.cpu = self.system.global_cpu_usage().round().clamp(0.0, 100.0) as u8;
         let total = self.system.total_memory().max(1);
         self.readings.memory = ((self.system.used_memory() * 100) / total).min(100) as u8;
+
+        // Snapshots from the sensor threads: whatever they have as of
+        // now, never a wait for something newer.
+        self.readings.audio = self.audio.reading();
+        self.readings.network = self.network.reading();
 
         let now = chrono::Local::now();
         self.readings.clock = now.format("%H:%M").to_string();
@@ -208,6 +230,16 @@ fn sample() -> Readings {
         window: "~/nix-config-private - nvim src/bar.rs".to_string(),
         cpu: 12,
         memory: 47,
+        // Present rather than absent, so a golden covers the modules
+        // that only exist when their subsystem answered.
+        audio: Some(Audio {
+            volume: 62,
+            muted: false,
+        }),
+        network: Network::Wireless {
+            interface: "wlp13s0".to_string(),
+            ssid: "AFTERLIFE".to_string(),
+        },
         clock: "23:41".to_string(),
         date: "2026-08-23".to_string(),
     }

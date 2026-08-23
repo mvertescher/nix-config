@@ -28,6 +28,9 @@ pkgs.mkShell {
     xorg.libXrandr
     xorg.libXi
     wayland
+    # libpulse-binding links against the PulseAudio client library and
+    # finds it through pkg-config's `libpulse`.
+    libpulseaudio
     rajdhani-fontshare
     orbitron
     mesa

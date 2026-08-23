@@ -11,6 +11,7 @@
 , vulkan-loader
 , libGL
 , libxkbcommon
+, libpulseaudio
 , xorg
 , wayland
 , orbitron
@@ -33,6 +34,7 @@ let
       xorg.libXrandr
       xorg.libXi
       wayland
+      libpulseaudio
     ];
   };
   package = craneLib.buildPackage {
@@ -52,6 +54,7 @@ let
     xorg.libXrandr
     xorg.libXi
     wayland
+    libpulseaudio
   ];
 
   preBuild = ''
@@ -86,6 +89,7 @@ let
           vulkan-loader
           libGL
           libxkbcommon
+          libpulseaudio
           wayland
           xorg.libX11
           xorg.libXcursor

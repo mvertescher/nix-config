@@ -116,6 +116,19 @@ layer-shell dependency out of the library. Hyprland's IPC is spoken
 directly rather than through `hyprland-rs`, which GitHub reports as
 NOASSERTION -- no clear licence for a dependency that saves little.
 
+Modules: hostname tape, workspaces, focused window, network, audio,
+CPU, memory, date, clock. Every one of them is the same `cell`, so
+none of them knows which era it is in.
+
+The readings split by cost. Clock, CPU, memory and Hyprland's two
+socket round trips are taken inline on the tick; audio and network get
+a thread each under `examples/bar/`, publishing snapshots the bar reads
+without ever waiting (`bar/sensor.rs`). That split is the rule, not an
+optimisation: a PulseAudio handshake or a wireless driver can stall for
+seconds, and a status bar that stops repainting is worse than one
+missing a module. Both degrade to nothing -- no sound server means no
+audio module, not a volume of zero.
+
 ## Running it
 
 ```sh

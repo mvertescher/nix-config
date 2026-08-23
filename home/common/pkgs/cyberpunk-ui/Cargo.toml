@@ -9,6 +9,10 @@ autobins = false
 iced = { version = "0.13", features = ["canvas", "tokio"] }
 iced_layershell = "0.13"
 sysinfo = "0.33"
+# PulseAudio client bindings for the bar's audio module. Apache-2.0,
+# and the only Rust route to a sink volume that does not shell out to
+# pactl on every tick.
+libpulse-binding = "2.28"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 
 [[bin]]
