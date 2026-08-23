@@ -9,7 +9,27 @@ in
   home.packages = [
     # rofi-wayland was merged into rofi upstream.
     pkgs.rofi
+
+    # Runtime dependencies of the vendored scripts under cybr-rofi/scripts.
+    # Nothing else in the config calls them, so they are declared next to
+    # the scripts rather than in the shared Hyprland module. grimblast
+    # (scripts/screenshot) already comes from home/common/hyprland.
+    pkgs.libnotify    # notify-send: clipboard, screenshot_selection
+    pkgs.rofimoji     # scripts/emoji
+    pkgs.wl-clipboard # wl-copy: clipboard, screenshot_selection
+
+    # config.rasi runs with show-icons, and nothing else in the config
+    # installs an icon theme (stylix.icons is off, gtk.iconTheme unset), so
+    # drun had only fallback icons. See icon-theme in config.rasi.
+    pkgs.papirus-icon-theme
   ];
+
+  # scripts/clipboard only reads cliphist's history; without the watcher
+  # storing copies there is nothing to list. The systemd user services are
+  # bound to graphical-session.target, which uwsm activates, so they start
+  # even though Hyprland runs with systemd.enable = false - the same reason
+  # hosts/terra/home.nix can rely on services.hypridle.
+  services.cliphist.enable = true;
 
   # The rasi chain is config.rasi -> style.rasi -> theme/cybrcore.rasi, and
   # every file resolves the next by absolute ~/.config path, so all of them

@@ -1,11 +1,21 @@
 #!/usr/bin/env bash
 
+# Upstream shells out to ~/.config/hypr/scripts/hyprshot, which this config
+# does not ship. grimblast (home/common/hyprland) covers the same targets and
+# already comes wrapped with grim/slurp/wl-copy/notify-send.
 theme="$HOME/.config/rofi/scripts/screenshot/style.rasi"
-hyprshot="$HOME/.config/hypr/scripts/hyprshot"
 save_dir="$HOME/Pictures/Screenshots"
 filename="shot-$(date +%Y-%m-%d-%H%M%S).png"
 
-cmd="$hyprshot -o $save_dir -f $filename"
+mkdir -p "$save_dir"
+
+# copysave writes the file and puts it on the clipboard, which is what
+# hyprshot did by default. --wait 1 gives Hyprland a moment to hand focus
+# back to the window that was active before rofi opened, so the "window"
+# entry captures that window rather than rofi's own surface.
+shot() {
+  grimblast --notify --wait 1 copysave "$1" "$save_dir/$filename"
+}
 
 output=""
 window=""
@@ -14,10 +24,10 @@ folder=""
 selected="$(echo -e "$output\n$window\n$folder" | rofi -dmenu -theme "${theme}")"
 case $selected in
 $output)
-  $cmd -m output
+  shot output
   ;;
 $window)
-  $cmd -m window
+  shot active
   ;;
 $folder)
   ~/.config/rofi/scripts/screenshot/screenshot_selection

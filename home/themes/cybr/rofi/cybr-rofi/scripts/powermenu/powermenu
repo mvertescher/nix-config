@@ -57,7 +57,10 @@ run_cmd() {
     elif [[ $1 == '--reboot' ]]; then
       systemctl reboot
     elif [[ $1 == '--suspend' ]]; then
-      mpc -q pause
+      # Upstream pauses mpd here. There is no mpd in this config; playerctl
+      # (home/common/hyprland) pauses whatever MPRIS player is running, and
+      # is a no-op when there is none.
+      playerctl --all-players pause 2>/dev/null || true
       systemctl suspend
     elif [[ $1 == '--logout' ]]; then
       hyprctl dispatch exit

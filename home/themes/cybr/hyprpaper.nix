@@ -112,6 +112,12 @@ in
     stylix.targets.hyprpaper.enable = lib.mkForce false;
     services.hyprpaper.enable = lib.mkForce false;
 
+    # Expose the whole cybrpapers set under the path a wallpaper picker can
+    # discover at runtime. hyprpaper.conf only names the single image the
+    # session boots with, and the rotation helper has the linkFarm baked in
+    # at build time, so rofi/scripts/wallpaper had nothing to enumerate.
+    xdg.configFile."hypr/walls".source = wallpapersDir;
+
     xdg.configFile."hypr/hyprpaper.conf".text = let
       wallpaperBlocks = if cfg.monitors == [ ]
                         then ''

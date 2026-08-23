@@ -14,7 +14,11 @@ configuration {
   scroll-method: 0;
   normalize-match: true;
   show-icons: true;
-  icon-theme: "Catppuccin-SE";
+  // Upstream names a Catppuccin icon set. Nothing in this config installs
+  // any icon theme (stylix.icons is off, gtk.iconTheme unset), so with
+  // show-icons on, drun rendered fallbacks only. rofi/default.nix installs
+  // Papirus for this.
+  icon-theme: "Papirus-Dark";
   font: "GeistMono Nerd Font 12";
   steal-focus: true;
   hover-select: true;

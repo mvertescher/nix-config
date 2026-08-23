@@ -1,24 +1,39 @@
 #!/usr/bin/env bash
 
+# Upstream expected a hand-managed ~/.config/hypr/walls. Here the wallpaper
+# set is the Nix linkFarm built in home/themes/cybr/hyprpaper.nix, which is
+# now exposed at that path. It is read-only store content, so this only
+# talks to the running hyprpaper over IPC: no killall/restart, and monitors
+# come from hyprctl instead of the two names upstream hardcoded.
 WALLPAPERS_DIR="$HOME/.config/hypr/walls"
 STYLE="$HOME/.config/rofi/scripts/wallpaper/style.rasi"
 
+if [ ! -d "$WALLPAPERS_DIR" ]; then
+  notify-send "Wallpaper" "No wallpapers at $WALLPAPERS_DIR"
+  exit 1
+fi
+
 # Pick a wallpaper via rofi
 choice=$(
-	ls --escape "$WALLPAPERS_DIR" |
-		while read -r A; do
-		echo -en "$A\x00icon\x1f$WALLPAPERS_DIR/$A\n"
-		done |
-	rofi -dmenu -i -show-icons -p "Wallpaper" -theme "$STYLE"
+  for f in "$WALLPAPERS_DIR"/*; do
+    [ -e "$f" ] || continue
+    printf '%s\x00icon\x1f%s\n' "${f##*/}" "$f"
+  done |
+    rofi -dmenu -i -show-icons -p "Wallpaper" -theme "$STYLE"
 )
 
 [ -z "$choice" ] && exit 0
 
 wp="$WALLPAPERS_DIR/$choice"
 
-killall hyprpaper
-hyprpaper &
+# hyprpaper will not set a wallpaper it has not preloaded, and hyprpaper.conf
+# only preloads the one the theme booted with.
+hyprctl hyprpaper preload "$wp" >/dev/null
 
-sleep 0.2
-hyprctl hyprpaper wallpaper "DP-2,$wp"
-hyprctl hyprpaper wallpaper "HDMI-A-1,$wp"
+while read -r mon; do
+  [ -z "$mon" ] && continue
+  hyprctl hyprpaper wallpaper "$mon,$wp" >/dev/null
+done < <(hyprctl monitors -j | jq -r '.[].name')
+
+# Drop the previous image so the daemon does not keep every pick in memory.
+hyprctl hyprpaper unload unused >/dev/null
