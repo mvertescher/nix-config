@@ -847,56 +847,8 @@ lib.mkMerge [
     ];
   })
 
-  (lib.mkIf browserRestart {
-    home.activation.eraBrowserRestart = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      eraStampDir="${config.xdg.stateHome}/themes"
-      eraStamp="$eraStampDir/browser-theme"
-      eraWant="${themeStamp}"
-      eraHave="$(${coreutil "cat"} "$eraStamp" 2>/dev/null || true)"
-
-      if [ "$eraHave" = "$eraWant" ]; then
-        verboseEcho "${name}: browser theme unchanged, leaving Firefox alone"
-      else
-        # The kernel truncates comm to 15 characters, so the wrapped
-        # binary is ".firefox-wrappe" and pkill -x misses it; match the
-        # launcher's command line instead.
-        eraPids="$(${bin pkgs.procps "pgrep"} -f 'bin/firefox$' 2>/dev/null || true)"
-
-        if [ -n "$eraPids" ]; then
-          verboseEcho "${name}: browser theme changed, restarting Firefox"
-
-          # SIGTERM, so Firefox writes its session store and restores
-          # tabs on the way back up.
-          $DRY_RUN_CMD kill -TERM $eraPids 2>/dev/null || true
-
-          eraWaited=0
-          while [ "$eraWaited" -lt 20 ] \
-            && ${bin pkgs.procps "pgrep"} -f 'bin/firefox$' >/dev/null 2>&1; do
-            ${coreutil "sleep"} 0.5
-            eraWaited=$((eraWaited + 1))
-          done
-
-          # home-manager's unit runs with an empty Environment=, so the
-          # compositor signature is read off the runtime directory
-          # rather than inherited.
-          eraSig="$(
-            ${coreutil "ls"} "/run/user/$(${coreutil "id"} -u)/hypr" 2>/dev/null \
-              | ${coreutil "head"} -1 || true
-          )"
-
-          if [ -n "$eraSig" ]; then
-            $DRY_RUN_CMD ${coreutil "env"} "HYPRLAND_INSTANCE_SIGNATURE=$eraSig" \
-              ${hyprctl} dispatch exec firefox >/dev/null 2>&1 || true
-          else
-            verboseEcho "${name}: no hyprland session, not relaunching Firefox"
-          fi
-        else
-          verboseEcho "${name}: Firefox not running, nothing to restart"
-        fi
-
-        $DRY_RUN_CMD ${coreutil "mkdir"} -p "$eraStampDir"
-        $DRY_RUN_CMD sh -c "printf '%s' '$eraWant' > '$eraStamp'"
-      fi
-    '';
-  })
+  (lib.mkIf browserRestart (import ./browser-restart.nix {
+    inherit lib pkgs config name;
+    stamp = themeStamp;
+  }))
 ]

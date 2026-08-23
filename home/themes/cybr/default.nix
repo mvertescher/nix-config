@@ -8,6 +8,23 @@ let
 in
 {
   imports = [
+    # Same Firefox restart the generated eras get. cybr was the one
+    # theme still leaving stale chrome behind on a switch, purely
+    # because it does not go through lib/era.nix.
+    #
+    # The stamp hashes the palette and the two stylesheets the chrome is
+    # actually built from, so it moves when the browser's appearance
+    # does rather than on every rebuild.
+    (import ../lib/browser-restart.nix {
+      inherit lib pkgs config;
+      name = "Cybr";
+      stamp = builtins.hashString "sha256" (builtins.toJSON {
+        colors = theme;
+        userChrome = builtins.hashString "sha256" (builtins.readFile ./firefox/userChrome.css);
+        sidebery = builtins.hashString "sha256" (builtins.readFile ./firefox/sideberry.css);
+      });
+    })
+
     ./starship.nix
     ./firefox
     ./hyprlock.nix
