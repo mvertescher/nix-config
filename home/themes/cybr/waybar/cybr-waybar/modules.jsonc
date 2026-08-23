@@ -235,17 +235,26 @@
 		"escape": true
 	},
 	/* UPDATES */
+	/* Upstream ran `waybar-updates`, a pacman/AUR helper that is not in
+	   nixpkgs and would mean nothing on NixOS. The exec token below is
+	   replaced with a store path by ../default.nix. It flags a pending
+	   reboot (booted vs current system) and a config that has not been
+	   switched, or had its inputs relocked, in a while — all from
+	   local state, no network — and reports nothing when there is nothing
+	   to say, which hides the module. The old on-click is gone with it:
+	   it drove `nu -c upall`, another pacman-ism. */
 	"custom/updates": {
 		"format": "{icon}",
 		"return-type": "json",
 		"tooltip": true,
+		"escape": true,
 		"format-icons": {
 			"pending-updates": "󰋠",
 			"updated": ""
 		},
-		"exec-if": "which waybar-updates",
-		"exec": "waybar-updates",
-		"on-click": "~/.config/hypr/scripts/toggle_scratchpad.sh scratchpad-large 'kitty --class scratchpad-large nu -c upall'",
+		"exec": "@nix-updates@",
+		"interval": 300,
+		"signal": 9,
 		"hide-empty-text": true
 	},
 	/* RECORDER */

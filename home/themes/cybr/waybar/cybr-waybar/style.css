@@ -310,6 +310,13 @@ window#waybar.hidden {
 	background-color: @gr1;
 }
 
+/* A pending reboot is the one state worth colouring: the running kernel
+   is not the one the current generation ships. Plain staleness keeps the
+   default @wh0. */
+#custom-updates.reboot {
+	color: @ye0;
+}
+
 
 /* === MISC === */
 

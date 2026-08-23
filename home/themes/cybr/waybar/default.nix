@@ -19,20 +19,42 @@ let
   # music module has no interpreter dependency at runtime.
   mpris-status = pkgs.callPackage ../../../common/pkgs/mpris-status { };
 
+  # NixOS stand-in for upstream's `waybar-updates`, an Arch/AUR pacman
+  # helper that is not in nixpkgs. ./nix-updates.sh documents what it
+  # reports; writeShellApplication shellchecks it at build time.
+  #
+  # nix stays out of runtimeInputs on purpose: the script wants the
+  # client that matches the running daemon, which the session PATH
+  # already provides, and pinning nixpkgs' copy would pull a second nix
+  # into the home closure for one optional tooltip line.
+  nix-updates = pkgs.writeShellApplication {
+    name = "nix-updates";
+    runtimeInputs = [ pkgs.coreutils pkgs.gnused pkgs.jq ];
+    text = builtins.readFile ./nix-updates.sh;
+  };
+
+  # flake.lock whose input age the updates module should also report, or
+  # null to leave that signal off. Which repo built the system is a
+  # per-host fact this theme cannot know, so there is nothing sensible to
+  # default it to; set it to e.g.
+  # "${config.home.homeDirectory}/nix-config/flake.lock" to enable.
+  flakeLock = null;
+
   modulesTemplate = builtins.readFile ./cybr-waybar/modules.jsonc;
 
   templatedModules = builtins.replaceStrings
     [
       "'kitty --class scratchpad-btop btop'"
       "'kitty --class scratchpad-nvtop nvtop'"
-      "'kitty --class scratchpad-large nu -c upall'"
       "~/.config/waybar/scripts/mediaplayer.py"
+      "@nix-updates@"
     ]
     [
       "'${mkScratchpadCmd "scratchpad-btop" "btop"}'"
       "'${mkScratchpadCmd "scratchpad-nvtop" "nvtop"}'"
-      "'${mkScratchpadCmd "scratchpad-large" "nu -c upall"}'"
       (lib.getExe mpris-status)
+      ("${lib.getExe nix-updates}"
+        + lib.optionalString (flakeLock != null) " ${flakeLock}")
     ]
     modulesTemplate;
 in
