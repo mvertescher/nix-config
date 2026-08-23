@@ -1,7 +1,7 @@
 use iced::{Element, Subscription, Task, Event, keyboard};
-use neomil_ui::fonts;
-use neomil_ui::colors;
-use neomil_ui::panels::{mail_panel, Email, ThreadMessage, MailFocus};
+use cyberpunk_ui::fonts;
+use cyberpunk_ui::colors;
+use cyberpunk_ui::panels::{mail_panel, Email, ThreadMessage, MailFocus};
 
 pub fn main() -> iced::Result {
     iced::application("NEOMIL // MAIL SYSTEM", App::update, App::view)

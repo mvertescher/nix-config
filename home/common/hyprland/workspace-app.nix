@@ -34,7 +34,7 @@ in
 
     command = lib.mkOption {
       type = lib.types.str;
-      example = "neomil-ui-dashboard";
+      example = "cyberpunk-ui-dashboard";
       description = ''
         Command launched when the workspace is first visited while
         empty. Runs through the compositor, so it inherits a proper

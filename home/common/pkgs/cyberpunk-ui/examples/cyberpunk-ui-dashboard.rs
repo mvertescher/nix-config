@@ -1,6 +1,6 @@
 use iced::Element;
-use neomil_ui::fonts;
-use neomil_ui::panels::dashboard;
+use cyberpunk_ui::fonts;
+use cyberpunk_ui::panels::dashboard;
 
 pub fn main() -> iced::Result {
     iced::application("NEOMIL // UI TOOLKIT DEMO", App::update, App::view)

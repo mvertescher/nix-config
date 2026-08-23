@@ -25,8 +25,8 @@
   weston,
   mesa,
   python3,
-  neomil-ui,
-  example ? "neomil-ui-dashboard",
+  cyberpunk-ui,
+  example ? "cyberpunk-ui-dashboard",
   width ? 1280,
   height ? 800,
   golden ? ../tests/golden/dashboard-1280x800.png,
@@ -40,12 +40,12 @@
 let
   python = python3.withPackages (ps: [ ps.pillow ]);
 in
-runCommand "neomil-ui-visual-test"
+runCommand "cyberpunk-ui-visual-test"
   {
     nativeBuildInputs = [
       weston
       mesa
-      neomil-ui
+      cyberpunk-ui
       python
     ];
     meta = {

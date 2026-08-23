@@ -1,0 +1,25 @@
+[package]
+name = "cyberpunk-ui"
+version = "0.1.0"
+edition = "2021"
+autoexamples = false
+autobins = false
+
+[dependencies]
+iced = { version = "0.13", features = ["canvas", "tokio"] }
+
+[[bin]]
+name = "cyberpunk-ui-store"
+path = "examples/cyberpunk-ui-store.rs"
+
+[[bin]]
+name = "cyberpunk-ui-dashboard"
+path = "examples/cyberpunk-ui-dashboard.rs"
+
+[[bin]]
+name = "cyberpunk-ui-mail"
+path = "examples/cyberpunk-ui-mail.rs"
+
+[[bin]]
+name = "cyberpunk-ui-floppy"
+path = "examples/cyberpunk-ui-floppy.rs"

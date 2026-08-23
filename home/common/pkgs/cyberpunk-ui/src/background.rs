@@ -1,5 +1,5 @@
 use iced::widget::{canvas, container, stack};
-use iced::{mouse, Color, Element, Length, Point, Rectangle, Renderer, Theme, Size};
+use iced::{mouse, Color, Element, Length, Point, Rectangle, Renderer, Theme};
 
 struct BackgroundProgram {
     bg_color: Color,

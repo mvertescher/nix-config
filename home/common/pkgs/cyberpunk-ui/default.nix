@@ -38,7 +38,7 @@ let
   package = craneLib.buildPackage {
   src = cleanSrc;
   inherit cargoArtifacts;
-  pname = "neomil-ui";
+  pname = "cyberpunk-ui";
   version = "0.1.0";
 
   nativeBuildInputs = [ pkg-config cmake makeWrapper ];
@@ -73,7 +73,7 @@ let
   '';
 
   postFixup = ''
-    for bin in neomil-ui-dashboard neomil-ui-mail neomil-ui-floppy; do
+    for bin in cyberpunk-ui-store cyberpunk-ui-dashboard cyberpunk-ui-mail cyberpunk-ui-floppy; do
       # This machine class exposes several Vulkan adapters (discrete
       # nvidia, the CPU's integrated RADV, llvmpipe). wgpu otherwise
       # picks one that cannot present to the display and the app draws a
@@ -113,7 +113,7 @@ package.overrideAttrs (old: {
   passthru = (old.passthru or { }) // {
     tests.visual = import ./tests/visual.nix {
       inherit lib runCommand weston mesa python3;
-      neomil-ui = package;
+      cyberpunk-ui = package;
     };
   };
 })

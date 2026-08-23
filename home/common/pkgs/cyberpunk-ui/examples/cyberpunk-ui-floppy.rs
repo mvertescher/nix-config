@@ -1,8 +1,8 @@
 use iced::{Element, Length, Color, Task};
 use iced::widget::{column, row, container, text, Space, canvas};
-use neomil_ui::fonts;
-use neomil_ui::colors;
-use neomil_ui::widgets::{floppy_icon, FloppyIcon};
+use cyberpunk_ui::fonts;
+use cyberpunk_ui::colors;
+use cyberpunk_ui::widgets::{floppy_icon, FloppyIcon};
 
 pub fn main() -> iced::Result {
     // If in diff mode, we might want a smaller window, but we can also just let the

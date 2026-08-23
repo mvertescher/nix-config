@@ -1,5 +1,5 @@
 use iced::widget::canvas;
-use iced::{mouse, Color, Element, Length, Rectangle, Renderer, Theme, Vector};
+use iced::{mouse, Color, Element, Length, Rectangle, Renderer, Theme};
 
 #[derive(Debug, Clone, Copy)]
 pub struct FloppyIcon {
