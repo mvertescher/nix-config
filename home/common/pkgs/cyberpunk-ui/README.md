@@ -97,6 +97,25 @@ src/
   screens/        store — era-agnostic by construction
 ```
 
+## The bar
+
+`cyberpunk-ui-bar` is a wlr-layer-shell status bar built on
+`iced_layershell` 0.13, which targets the same iced generation this
+crate already pins -- no 0.14 migration needed.
+
+It exists because neither waybar nor ashell can draw the eras. waybar
+styles with CSS and ashell with a closed `Islands | Solid | Gradient`
+enum whose corner radius is hardcoded, so on the one surface that is
+always on screen, neomil's chamfer and neokitsch's clipped corner are
+unreachable -- and so is entropism's square-everything. Here a bar
+module is a `Surface`, so it wears whatever `Corner` the era declares.
+
+`bar.rs` is a pure function of `Style` and `Readings`; the binary owns
+the layer surface and gathering the readings, which keeps the
+layer-shell dependency out of the library. Hyprland's IPC is spoken
+directly rather than through `hyprland-rs`, which GitHub reports as
+NOASSERTION -- no clear licence for a dependency that saves little.
+
 ## Running it
 
 ```sh

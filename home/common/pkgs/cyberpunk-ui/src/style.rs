@@ -64,6 +64,27 @@ pub enum Ground {
     Bloom { x: f32, y: f32, radius: f32 },
 }
 
+/// Status-bar shape. Mirrors the `barHeight` and `hostTape` knobs the
+/// nix era builder already takes, so the bar and the generated waybar
+/// config cannot disagree about how tall the bar is -- which matters,
+/// because the height is also the exclusive zone the compositor
+/// reserves.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Bar {
+    pub height: u32,
+    /// Show the hostname as a tape-coloured label at the far left.
+    pub host_tape: bool,
+}
+
+impl Default for Bar {
+    fn default() -> Self {
+        Bar {
+            height: 26,
+            host_tape: true,
+        }
+    }
+}
+
 /// Where a card carries its name. Structural rather than decorative:
 /// three eras head their cards, neokitsch foots them.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -131,6 +152,7 @@ pub struct Style {
     pub ground: Ground,
     pub chrome: Chrome,
     pub nameplate: Nameplate,
+    pub bar: Bar,
     pub metrics: Metrics,
 }
 

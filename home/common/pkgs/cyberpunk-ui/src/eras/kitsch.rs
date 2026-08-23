@@ -10,7 +10,7 @@
 //! the only era where that is true.
 
 use crate::palette::{rgb, Palette};
-use crate::style::{Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style};
+use crate::style::{Bar, Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style};
 
 pub const BG: iced::Color = rgb(0x0b0b07);
 pub const BLOOM: iced::Color = rgb(0xa63355);
@@ -55,6 +55,7 @@ pub fn style() -> Style {
         },
         chrome: Chrome::Caption,
         nameplate: Nameplate::Header,
+        bar: Bar::default(),
         metrics: Metrics {
             stroke: 1.5,
             gap: 20.0,

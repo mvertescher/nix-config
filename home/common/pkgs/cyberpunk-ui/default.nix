@@ -73,7 +73,7 @@ let
   '';
 
   postFixup = ''
-    for bin in cyberpunk-ui-store cyberpunk-ui-login cyberpunk-ui-mailbox \
+    for bin in cyberpunk-ui-bar cyberpunk-ui-store cyberpunk-ui-login cyberpunk-ui-mailbox \
               cyberpunk-ui-dashboard cyberpunk-ui-mail cyberpunk-ui-floppy; do
       # This machine class exposes several Vulkan adapters (discrete
       # nvidia, the CPU's integrated RADV, llvmpipe). wgpu otherwise

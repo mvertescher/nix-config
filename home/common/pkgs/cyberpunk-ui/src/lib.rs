@@ -27,6 +27,7 @@ pub mod widgets;
 // use by the dashboard and mail examples; they will move under a
 // per-era namespace as those screens are rewritten against `screens`.
 pub mod background;
+pub mod bar;
 pub mod colors;
 pub mod fonts;
 pub mod panels;

@@ -11,7 +11,7 @@
 //! read alike.
 
 use crate::palette::{rgb, Palette};
-use crate::style::{Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style};
+use crate::style::{Bar, Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style};
 
 pub const BG: iced::Color = rgb(0x050304);
 pub const GLOW: iced::Color = rgb(0x001a33);
@@ -49,6 +49,7 @@ pub fn style() -> Style {
         ground: Ground::Flat,
         chrome: Chrome::Tape,
         nameplate: Nameplate::Header,
+        bar: Bar::default(),
         metrics: Metrics {
             stroke: 1.5,
             gap: 16.0,

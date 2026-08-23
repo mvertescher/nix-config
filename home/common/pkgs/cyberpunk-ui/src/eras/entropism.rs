@@ -10,7 +10,7 @@
 //! `docs/entropism/README.md`. This is the one-hue system.
 
 use crate::palette::{rgb, Palette};
-use crate::style::{Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style};
+use crate::style::{Bar, Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style};
 
 pub const BG: iced::Color = rgb(0x110c07);
 pub const SAGE_SOLID: iced::Color = rgb(0x9cb795);
@@ -51,6 +51,7 @@ pub fn style() -> Style {
         ground: Ground::Flat,
         chrome: Chrome::Segmented,
         nameplate: Nameplate::Header,
+        bar: Bar::default(),
         metrics: Metrics {
             stroke: 1.0,
             gap: 14.0,

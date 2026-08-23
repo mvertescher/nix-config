@@ -10,7 +10,7 @@
 //! synthesises the grain rather than shipping a raster asset.
 
 use crate::palette::{rgb, Palette};
-use crate::style::{Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style};
+use crate::style::{Bar, Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style};
 
 pub const BG: iced::Color = rgb(0x0a0a0a);
 pub const BLOOM: iced::Color = rgb(0x34344c);
@@ -60,6 +60,7 @@ pub fn style() -> Style {
         },
         chrome: Chrome::DeviceFrame,
         nameplate: Nameplate::Footer,
+        bar: Bar::default(),
         metrics: Metrics {
             stroke: 1.6,
             gap: 18.0,
