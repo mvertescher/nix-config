@@ -29,6 +29,11 @@
   # Restart a running Firefox when the theme changes. userChrome is only
   # read at startup, so an open window otherwise keeps the old look.
   browserRestart ? true,
+  # Which status bar to run. "waybar" is the long-standing default;
+  # "cyberpunk-ui" is our own layer-shell bar, which is the only one
+  # that can draw the era's actual corner treatment -- waybar styles
+  # with CSS, where a chamfer or a clipped corner cannot be expressed.
+  bar ? "waybar",
   # Per-era styling knobs. The defaults are the shared "hard edges"
   # house style; an ornamental era overrides them.
   knobs ? { },
@@ -41,6 +46,15 @@
 
 let
   c = roles;
+
+  # Built here rather than taken from home.packages so the era owns its
+  # bar the way it owns every other component skin.
+  cyberpunk-ui = pkgs.callPackage ../../common/pkgs/cyberpunk-ui {
+    orbitron = pkgs.callPackage ../../common/pkgs/orbitron { };
+    rajdhani-fontshare = pkgs.callPackage ../../common/pkgs/rajdhani-fontshare { };
+  };
+
+  useOwnBar = bar == "cyberpunk-ui";
 
   k = {
     # Corner radius across hyprland, bar, launcher and browser chrome.
@@ -148,7 +162,8 @@ lib.mkMerge [
     home.packages = [
       font.package
       pkgs.rofi
-    ];
+    ]
+    ++ lib.optional useOwnBar cyberpunk-ui;
     fonts.fontconfig.enable = true;
 
     stylix = {
@@ -162,7 +177,7 @@ lib.mkMerge [
     # --- window manager ------------------------------------------------
     wayland.windowManager.hyprland.settings = {
       exec-once = [
-        "waybar"
+        (if useOwnBar then lib.getExe' cyberpunk-ui "cyberpunk-ui-bar" else "waybar")
         "swaync"
         "hyprpaper"
       ];
@@ -209,9 +224,13 @@ lib.mkMerge [
     };
 
     # --- bar -----------------------------------------------------------
-    programs.waybar.enable = true;
+    programs.waybar.enable = !useOwnBar;
 
-    xdg.configFile."waybar/config.jsonc".text = builtins.toJSON {
+    # Only written when waybar is actually the bar; otherwise these are
+    # two generated files nobody reads, which is the sort of thing that
+    # later gets mistaken for the live configuration.
+    xdg.configFile."waybar/config.jsonc" = lib.mkIf (!useOwnBar) {
+      text = builtins.toJSON {
       layer = "top";
       position = "top";
       height = k.barHeight;
@@ -280,6 +299,7 @@ lib.mkMerge [
         tooltip = false;
       };
     };
+    };
 
     # An era owns the bar's look entirely, so stylix's waybar target is
     # turned off rather than overwritten. Same reasoning as the hyprlock
@@ -290,7 +310,8 @@ lib.mkMerge [
     # mkOverride with a number in it.
     stylix.targets.waybar.enable = lib.mkForce false;
 
-    xdg.configFile."waybar/style.css".source = (
+    xdg.configFile."waybar/style.css" = lib.mkIf (!useOwnBar) {
+      source = (
       builtins.toFile "${lib.toLower name}-waybar.css" ''
         /* ${header} */
         * {
@@ -357,6 +378,7 @@ lib.mkMerge [
         }
       ''
     );
+    };
 
     # --- launcher ------------------------------------------------------
     xdg.configFile."rofi/config.rasi".text = ''
