@@ -9,8 +9,10 @@
 //! the reference, so `alert` and `select` are the same colour here --
 //! the only era where that is true.
 
-use crate::palette::{rgb, Palette};
-use crate::style::{Bar, Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style};
+use crate::palette::{rgb, Ornaments, Palette};
+use crate::style::{
+    Banner, Bar, Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style,
+};
 
 pub const BG: iced::Color = rgb(0x0b0b07);
 pub const BLOOM: iced::Color = rgb(0xa63355);
@@ -23,6 +25,11 @@ pub const BEZEL: iced::Color = rgb(0xf08c1e);
 pub const TEAL_DIM: iced::Color = rgb(0x4d9484);
 /// Ink for figures sitting on the mint stat band.
 pub const ON_MINT: iced::Color = rgb(0x0b3b31);
+/// Lit face of an extruded fan-menu slab, and the darker teal its
+/// stacked outlines recede in. Sampled off the braindance screens; see
+/// `docs/kitsch/target-components.svg`, "EXTRUDED FAN MENU".
+pub const SLAB: iced::Color = rgb(0x2bc4ac);
+pub const SLAB_SHADE: iced::Color = rgb(0x177a6b);
 
 pub fn palette() -> Palette {
     Palette {
@@ -36,6 +43,19 @@ pub fn palette() -> Palette {
         select: YELLOW,
         on_select: ON_YELLOW,
         emphasis: Some((MINT, ON_MINT)),
+        ornaments: Ornaments {
+            // The shelf band on every product card: yellow, poking past
+            // the card's left edge, its glyphs and brand tag in the
+            // dark ink. Same fill as `select` here and a different one
+            // in neokitsch, which is why it is not an alias for it.
+            banner: Some((YELLOW, ON_YELLOW)),
+            relief: Some((SLAB, SLAB_SHADE)),
+            // The page-curl at the foot of the nav container -- one per
+            // screen -- plus the chip squares and PROTECTED bars.
+            ornament: Some(TEAL_SOLID),
+            // No wells in the era: kitsch cards are unfilled outlines.
+            inset: None,
+        },
         cta: YELLOW,
         bloom: BLOOM,
     }
@@ -56,6 +76,12 @@ pub fn style() -> Style {
         chrome: Chrome::Caption,
         nameplate: Nameplate::Header,
         bar: Bar::default(),
+        // The shelf band hangs 12px past the card and steps its
+        // trailing corner down 8; measured off target-app.svg.
+        banner: Banner {
+            overhang: 12.0,
+            notch: 8.0,
+        },
         metrics: Metrics {
             stroke: 1.5,
             gap: 20.0,

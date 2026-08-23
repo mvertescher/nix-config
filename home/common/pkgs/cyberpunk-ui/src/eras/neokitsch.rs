@@ -9,8 +9,10 @@
 //! see [`crate::style::Selection::Veneer`] and `widgets::surface`, which
 //! synthesises the grain rather than shipping a raster asset.
 
-use crate::palette::{rgb, Palette};
-use crate::style::{Bar, Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style};
+use crate::palette::{rgb, Ornaments, Palette};
+use crate::style::{
+    Banner, Bar, Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style,
+};
 
 pub const BG: iced::Color = rgb(0x0a0a0a);
 pub const BLOOM: iced::Color = rgb(0x34344c);
@@ -26,6 +28,11 @@ pub const AMBER: iced::Color = rgb(0xfcc474);
 pub const FIELD: iced::Color = rgb(0x2c1c14);
 pub const ON_VENEER: iced::Color = rgb(0x3a2410);
 pub const DIM: iced::Color = rgb(0x8a7048);
+/// Top stop of the device frame's outer stroke -- the lit side of the
+/// bevel, against `FRAME_INNER` as its shaded one.
+pub const FRAME_LIT: iced::Color = rgb(0xc69a55);
+/// The fine lines of a strata divider, bunching into a wedge.
+pub const STRATA: iced::Color = rgb(0x634427);
 
 pub fn palette() -> Palette {
     Palette {
@@ -40,7 +47,21 @@ pub fn palette() -> Palette {
         tape: VENEER,
         select: VENEER,
         on_select: ON_VENEER,
+        // No highlight band anywhere in the references; that is a
+        // kitsch device and this era does hierarchy by brightness.
         emphasis: None,
+        ornaments: Ornaments {
+            // The card's footer nameplate, and the BASKET panel at the
+            // top right of the store. Champagne, not veneer: selection
+            // is a material here and the nameplate is not selected.
+            banner: Some((CHAMPAGNE, ON_VENEER)),
+            // The device frame is a double stroke, lit outside and
+            // shaded in.
+            relief: Some((FRAME_LIT, FRAME_INNER)),
+            ornament: Some(STRATA),
+            // The login field, and the socket wells on a card.
+            inset: Some(FIELD),
+        },
         cta: AMBER,
         bloom: BLOOM,
     }
@@ -61,6 +82,7 @@ pub fn style() -> Style {
         chrome: Chrome::DeviceFrame,
         nameplate: Nameplate::Footer,
         bar: Bar::default(),
+        banner: Banner::default(),
         metrics: Metrics {
             stroke: 1.6,
             gap: 18.0,

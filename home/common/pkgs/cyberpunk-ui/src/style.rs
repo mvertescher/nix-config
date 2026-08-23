@@ -13,6 +13,7 @@
 //! why the parameter it needs is not already here.
 
 use crate::palette::Palette;
+use iced::Color;
 
 /// How a surface treats its corners. Sampled per era; this single
 /// parameter carries most of the visual difference between them.
@@ -93,6 +94,24 @@ pub enum Nameplate {
     Footer,
 }
 
+/// The shape of an accent band, alongside the colours in
+/// [`crate::palette::Ornaments::banner`].
+///
+/// Two numbers, both measured off the design targets rather than
+/// guessed. Kitsch's shelf band is
+/// `M360 228 h242 v20 h-230 l-12 8 Z` against a card whose left edge is
+/// at 372: it hangs 12px past the surface and its trailing corner steps
+/// down 8. Neokitsch's footer nameplate is a plain `rect` flush with
+/// the card, and the minimalist eras have no banner at all -- all three
+/// are the default, which draws a rectangle.
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct Banner {
+    /// How far the band hangs past the leading edge of its surface.
+    pub overhang: f32,
+    /// Depth of the step cut into the trailing corner.
+    pub notch: f32,
+}
+
 /// Chrome conventions: what an era puts at the top and bottom of every
 /// screen. All four have something; they disagree on what.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -154,6 +173,9 @@ pub struct Style {
     pub nameplate: Nameplate,
     pub bar: Bar,
     pub metrics: Metrics,
+    /// Geometry for the accent band; its colours live on the palette.
+    /// Default (a flush rectangle) for every era but kitsch.
+    pub banner: Banner,
 }
 
 /// The four UI eras of the reference material.
@@ -207,6 +229,39 @@ impl Era {
 }
 
 impl Style {
+    /// Colours for an accent band, as `(fill, ink)`.
+    ///
+    /// Total, like every accessor in this group: an era that declares
+    /// no ornament gets a documented degradation rather than an
+    /// `Option`, so a banner widget is written once and worn by four
+    /// eras the way every other widget here is. Pair it with
+    /// [`Style::banner`] for the shape.
+    pub fn banner_colors(&self) -> (Color, Color) {
+        self.palette.banner()
+    }
+
+    /// The highlight band behind key figures, as `(fill, ink)`.
+    pub fn emphasis(&self) -> (Color, Color) {
+        self.palette.emphasis_band()
+    }
+
+    /// The lit and shaded edges of a raised surface, as
+    /// `(bevel, shade)`. Equal in an era with no relief, which draws
+    /// the flat box the minimalist eras already use.
+    pub fn relief(&self) -> (Color, Color) {
+        self.palette.relief()
+    }
+
+    /// Colour for non-structural decoration -- curls, strata, flags.
+    pub fn ornament(&self) -> Color {
+        self.palette.ornament()
+    }
+
+    /// Fill for a recessed well: input fields, sockets.
+    pub fn inset(&self) -> Color {
+        self.palette.inset()
+    }
+
     /// The style for whatever era the desktop is currently in, with the
     /// published roles overlaid. This is what an app should call: it
     /// follows `switch` without a rebuild.

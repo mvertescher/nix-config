@@ -47,6 +47,8 @@
 let
   c = roles;
 
+  rolesLib = import ./roles.nix;
+
   # Built here rather than taken from home.packages so the era owns its
   # bar the way it owns every other component skin.
   cyberpunk-ui = pkgs.callPackage ../../common/pkgs/cyberpunk-ui {
@@ -131,19 +133,27 @@ let
   # authoritative copy: a Rust crate keeping its own hardcoded palette
   # is a second source of truth that drifts silently (neomil-ui's
   # colors.rs was transcribed by hand and is exactly that risk).
+  #
+  # The base seven are always present; the optional roles a maximalist
+  # era declares follow them in the same block, in `extraNames` order.
+  # An era that declares none emits the file it emitted before the
+  # vocabulary was extended, byte for byte -- `extrasOf` filters on what
+  # is actually in the resolved palette, not on what could be.
   themeToml = ''
     # ${header}
     # Read this rather than compiling a palette in; fall back to your own
     # defaults if the file is absent, so the crate still runs standalone.
     era = "${lib.toLower name}"
     variant = "${variant}"
-    polarity = "${(import ./roles.nix).polarityOf roles}"
+    polarity = "${rolesLib.polarityOf roles}"
 
     [font]
     ui = "${font.name}"
 
     [colors]
-    ${lib.concatStringsSep "\n" (map (role: ''${role} = "${c.${role}}"'') (import ./roles.nix).names)}
+    ${lib.concatStringsSep "\n" (
+      map (role: ''${role} = "${c.${role}}"'') (rolesLib.names ++ rolesLib.extrasOf c)
+    )}
   '';
 
   # Everything the browser chrome is generated from. Hashing the inputs

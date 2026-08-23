@@ -16,6 +16,14 @@
 # synthesises it (cyberpunk-ui `Selection::Veneer`) rather than naming a
 # colour -- so `tape` carries its mid-tone for the desktop's sake and
 # the app does the rest.
+#
+# Each variant also declares the optional roles from ../lib/roles.nix
+# that this era's references use: the footer nameplate band and its
+# ink, the two strokes of the device frame's bevel, the strata lines,
+# and the login field's well. `emphasis` is deliberately absent --
+# neokitsch has no highlight band anywhere, that is a kitsch device --
+# so a widget that wants one has to fall back rather than find a colour
+# invented for the sake of a full table.
 {
   # Sampled. `panel` is derived, not measured, for the same reason as
   # kitsch's: the violet haze is a background wash and painting a status
@@ -28,6 +36,14 @@
     fg = "#e7c686"; # sampled gold text
     alert = "#fcc474"; # sampled amber -- the only strong CTA colour
     tape = "#e3af5f"; # veneer mid-tone
+
+    # Sampled alongside the seven, off the same modules.
+    banner = "#d3b279"; # champagne footer nameplate, BASKET panel
+    onBanner = "#3a2410"; # the name printed on it
+    bevel = "#c69a55"; # outer, lit stroke of the device frame
+    shade = "#5e3414"; # its inner stroke
+    ornament = "#634427"; # strata dividers, the fine-line wedge
+    inset = "#2c1c14"; # login field, socket wells
   };
 
   # Light mode: the catalogue on paper. Warm off-white, the gold
@@ -40,6 +56,15 @@
     fg = "#2a2318";
     alert = "#9c6b12";
     tape = "#8a6a2c";
+
+    # On paper the bevel inverts: the lit stroke is the darker of the
+    # two, because the highlight is now the page behind it.
+    banner = "#c9ab74";
+    onBanner = "#2a2318";
+    bevel = "#8a6a2c";
+    shade = "#c2b18d";
+    ornament = "#b09a6c";
+    inset = "#e0d7c4";
   };
 
   # Dark and neutral: greys structural, gold reserved for what matters.
@@ -51,5 +76,14 @@
     fg = "#cfcabd";
     alert = "#fcc474";
     tape = "#e3af5f";
+
+    # Greys structural here too: the nameplate keeps a trace of gold so
+    # it still reads as the era's, the frame and strata go neutral.
+    banner = "#b8b2a4";
+    onBanner = "#1a1a1b";
+    bevel = "#3f3d38";
+    shade = "#1c1b1a";
+    ornament = "#3a3833";
+    inset = "#161617";
   };
 }

@@ -10,8 +10,10 @@
 //! values here are the same reds, restated in the era table so all four
 //! read alike.
 
-use crate::palette::{rgb, Palette};
-use crate::style::{Bar, Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style};
+use crate::palette::{rgb, Ornaments, Palette};
+use crate::style::{
+    Banner, Bar, Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style,
+};
 
 pub const BG: iced::Color = rgb(0x050304);
 pub const GLOW: iced::Color = rgb(0x001a33);
@@ -35,6 +37,9 @@ pub fn palette() -> Palette {
         select: RED_FILL,
         on_select: rgb(0x1a0405),
         emphasis: None,
+        // A minimalist era declares no ornament: the vocabulary is
+        // additive and nothing here wants it.
+        ornaments: Ornaments::default(),
         cta: RED_FILL,
         bloom: GLOW,
     }
@@ -50,6 +55,7 @@ pub fn style() -> Style {
         chrome: Chrome::Tape,
         nameplate: Nameplate::Header,
         bar: Bar::default(),
+        banner: Banner::default(),
         metrics: Metrics {
             stroke: 1.5,
             gap: 16.0,

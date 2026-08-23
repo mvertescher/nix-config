@@ -9,8 +9,10 @@
 //! radial glow module. None of that is in the reference; see
 //! `docs/entropism/README.md`. This is the one-hue system.
 
-use crate::palette::{rgb, Palette};
-use crate::style::{Bar, Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style};
+use crate::palette::{rgb, Ornaments, Palette};
+use crate::style::{
+    Banner, Bar, Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style,
+};
 
 pub const BG: iced::Color = rgb(0x110c07);
 pub const SAGE_SOLID: iced::Color = rgb(0x9cb795);
@@ -37,6 +39,9 @@ pub fn palette() -> Palette {
         select: SAGE_SOLID,
         on_select: ON_SOLID,
         emphasis: None,
+        // A minimalist era declares no ornament: the vocabulary is
+        // additive and nothing here wants it.
+        ornaments: Ornaments::default(),
         cta: SAGE_SOLID,
         bloom: BG,
     }
@@ -52,6 +57,7 @@ pub fn style() -> Style {
         chrome: Chrome::Segmented,
         nameplate: Nameplate::Header,
         bar: Bar::default(),
+        banner: Banner::default(),
         metrics: Metrics {
             stroke: 1.0,
             gap: 14.0,
