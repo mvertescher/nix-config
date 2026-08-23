@@ -33,10 +33,12 @@ pub struct Style {
 }
 ```
 
-and screens are written once against it. `screens::store` is the
-acceptance test for that claim: **one implementation, four dresses.** If
-a fifth era cannot wear it without adding `if era ==` to that file, the
-abstraction is wrong — which is exactly what we want to find out.
+and screens are written once against it. `screens/` is the acceptance
+test for that claim: **one implementation, four dresses.** There are
+three so far — `store`, `login`, `mailbox` — and none of them contains
+the word `Era`. If a fifth era cannot wear one without adding
+`if era ==`, the abstraction is wrong, and those files are where it
+shows.
 
 The alternative, a crate per era, was rejected once the sampling showed
 how much the eras share. The genuinely era-specific things left are
@@ -108,11 +110,13 @@ workflow.
 ## Tests
 
     nix build .#...cyberpunk-ui.tests.store.kitsch
+    nix build .#...cyberpunk-ui.tests.mailbox.neokitsch
 
-`tests.store.<era>` renders the store headless and diffs it against a
-golden, publishing that era's `theme/current.toml` into the sandbox
-HOME from `home/themes/<era>/scheme.nix` — so it exercises the contract
-between the theme layer and this crate, not the compiled fallback.
+`tests.<screen>.<era>` is a matrix over both: three screens times four
+eras, each rendered headless and diffed against a golden. Every case
+publishes that era's `theme/current.toml` into the sandbox HOME from
+`home/themes/<era>/scheme.nix`, so it exercises the contract between
+the theme layer and this crate rather than the compiled fallback.
 `tests.visual` keeps the original fallback case.
 
 If you drive the harness by hand rather than through nix, `unset
@@ -124,9 +128,10 @@ whatever era your desktop is currently sitting in.
 Version stays at 0.0.0: this is nowhere near release.
 
 Implemented: the era abstraction, the shared widget vocabulary, all four
-era tables, the store screen in all four dresses, and a four-era visual
-regression matrix. All four eras also have desktop themes under
-`home/themes/`, so `Style::from_desktop` has something real to follow.
+era tables, three screens (store, login, mailbox) in all four dresses,
+and a screen-by-era visual regression matrix. All four eras also have
+desktop themes under `home/themes/`, so `Style::from_desktop` has
+something real to follow.
 
 Not yet done:
 - `panels/`, `top_bar.rs`, `background.rs` and the neomil widget set
@@ -141,3 +146,12 @@ Not yet done:
 - Kitsch's extruded fan menu and page-curl, neokitsch's card cascade,
   and entropism's menu tiles are in the design targets but not yet
   widgets.
+- `entropism-ui` is superseded but not yet removed: its login, mail and
+  store screens have replacements here, its `matrix` screen does not.
+  Matrix looks like a per-era *interaction model* rather than a shared
+  screen — closer to neomil's diamond menu than to the mailbox — so it
+  probably wants to be a widget, not a `screens/` entry. Worth deciding
+  before deleting the crate.
+- Fields are display-only. `widgets::input::field` draws the box and the
+  value but takes no input; the screens it serves are design targets,
+  and a real `text_input` needs per-era styling before it earns a place.

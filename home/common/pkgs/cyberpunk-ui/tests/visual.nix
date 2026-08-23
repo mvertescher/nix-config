@@ -71,7 +71,14 @@ let
     ${lib.concatStringsSep "\n" (map (r: ''${r} = "${roles.${r}}"'') roleNames)}
   '';
 
-  suffix = lib.optionalString (era != null) "-${era}";
+  # The screen belongs in the name as much as the era does: with only
+  # the era, store/kitsch and mailbox/kitsch both build as
+  # "cyberpunk-ui-visual-test-kitsch", and there is no telling their
+  # store paths or `nix log` output apart.
+  suffix =
+    lib.optionalString (example != "cyberpunk-ui-dashboard")
+      "-${lib.removePrefix "cyberpunk-ui-" example}"
+    + lib.optionalString (era != null) "-${era}";
 in
 runCommand "cyberpunk-ui-visual-test${suffix}"
   {

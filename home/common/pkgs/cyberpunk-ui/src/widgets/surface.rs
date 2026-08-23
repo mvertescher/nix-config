@@ -262,7 +262,22 @@ impl<Message> canvas::Program<Message> for Surface {
             return vec![frame.into_geometry()];
         }
 
-        let path = outline(self.corner, self.corners, w, h);
+        // A stroke straddles its path, so a shape built flush to the
+        // canvas bounds loses the outer half of its outline to
+        // clipping -- visible as a box missing its right and bottom
+        // edges. Inset the path by half the stroke so the whole line
+        // lands inside.
+        let inset = match self.stroke {
+            Some(_) => self.stroke_width / 2.0,
+            None => 0.0,
+        };
+        let (pw, ph) = (w - inset * 2.0, h - inset * 2.0);
+        if pw <= 0.0 || ph <= 0.0 {
+            return vec![frame.into_geometry()];
+        }
+        frame.translate(iced::Vector::new(inset, inset));
+
+        let path = outline(self.corner, self.corners, pw, ph);
 
         match self.fill {
             Fill::None => {}
@@ -280,10 +295,10 @@ impl<Message> canvas::Program<Message> for Surface {
                 let bands = 7;
                 for i in 0..bands {
                     let t = i as f32 / bands as f32;
-                    let y0 = t * h;
-                    let band_h = h / bands as f32;
+                    let y0 = t * ph;
+                    let band_h = ph / bands as f32;
                     let tone = if i % 2 == 0 { light } else { dark };
-                    let (x0, x1) = span_at(self.corner, self.corners, w, h, y0 + band_h / 2.0);
+                    let (x0, x1) = span_at(self.corner, self.corners, pw, ph, y0 + band_h / 2.0);
                     if x1 <= x0 {
                         continue;
                     }
@@ -304,8 +319,8 @@ impl<Message> canvas::Program<Message> for Surface {
                 // shape by span rather than by renderer clipping.
                 let mut y = 3.0;
                 let mut n = 0;
-                while y < h {
-                    let (x0, x1) = span_at(self.corner, self.corners, w, h, y);
+                while y < ph {
+                    let (x0, x1) = span_at(self.corner, self.corners, pw, ph, y);
                     if x1 > x0 {
                         let line = canvas::Path::new(|b| {
                             b.move_to(Point::new(x0 + 1.0, y));

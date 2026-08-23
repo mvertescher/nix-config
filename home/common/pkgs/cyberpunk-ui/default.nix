@@ -73,7 +73,8 @@ let
   '';
 
   postFixup = ''
-    for bin in cyberpunk-ui-store cyberpunk-ui-dashboard cyberpunk-ui-mail cyberpunk-ui-floppy; do
+    for bin in cyberpunk-ui-store cyberpunk-ui-login cyberpunk-ui-mailbox \
+              cyberpunk-ui-dashboard cyberpunk-ui-mail cyberpunk-ui-floppy; do
       # This machine class exposes several Vulkan adapters (discrete
       # nvidia, the CPU's integrated RADV, llvmpipe). wgpu otherwise
       # picks one that cannot present to the display and the app draws a
@@ -115,7 +116,7 @@ let
   # in home/themes therefore moves these goldens, which is the point:
   # the two sides of that contract cannot drift silently.
   eraCase =
-    { era, variant }:
+    { screen, era, variant }:
     import ./tests/visual.nix {
       inherit
         lib
@@ -127,12 +128,36 @@ let
         variant
         ;
       cyberpunk-ui = package;
-      example = "cyberpunk-ui-store";
+      example = "cyberpunk-ui-${screen}";
       width = 1600;
       height = 900;
-      golden = ./tests/golden/store-${era}-1600x900.png;
+      golden = ./tests/golden/${screen}-${era}-1600x900.png;
       roles = (import ../../../themes/${era}/scheme.nix).resolve { inherit variant; };
     };
+
+  # Entropism's sampled palette is `nexus`; the rest call theirs
+  # `reference`.
+  variantOf = era: if era == "entropism" then "nexus" else "reference";
+
+  eras = [
+    "entropism"
+    "kitsch"
+    "neomil"
+    "neokitsch"
+  ];
+
+  # One case per (screen, era). Every screen here is written once and
+  # worn by all four eras, so the matrix is the standing evidence for
+  # that claim rather than a promise in a comment.
+  matrix =
+    screen:
+    lib.genAttrs eras (
+      era:
+      eraCase {
+        inherit screen era;
+        variant = variantOf era;
+      }
+    );
 in
 package.overrideAttrs (old: {
   passthru = (old.passthru or { }) // {
@@ -144,27 +169,9 @@ package.overrideAttrs (old: {
         cyberpunk-ui = package;
       };
 
-      # The store screen in each era. One implementation, four dresses --
-      # so if the era abstraction ever collapses back into "the same
-      # screen four times", these four goldens are where it shows.
-      store = {
-        entropism = eraCase {
-          era = "entropism";
-          variant = "nexus";
-        };
-        kitsch = eraCase {
-          era = "kitsch";
-          variant = "reference";
-        };
-        neomil = eraCase {
-          era = "neomil";
-          variant = "reference";
-        };
-        neokitsch = eraCase {
-          era = "neokitsch";
-          variant = "reference";
-        };
-      };
+      store = matrix "store";
+      login = matrix "login";
+      mailbox = matrix "mailbox";
     };
   };
 })

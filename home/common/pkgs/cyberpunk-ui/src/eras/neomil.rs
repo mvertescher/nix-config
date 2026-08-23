@@ -35,6 +35,7 @@ pub fn palette() -> Palette {
         select: RED_FILL,
         on_select: rgb(0x1a0405),
         emphasis: None,
+        cta: RED_FILL,
         bloom: GLOW,
     }
 }

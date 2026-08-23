@@ -37,6 +37,7 @@ pub fn palette() -> Palette {
         select: SAGE_SOLID,
         on_select: ON_SOLID,
         emphasis: None,
+        cta: SAGE_SOLID,
         bloom: BG,
     }
 }

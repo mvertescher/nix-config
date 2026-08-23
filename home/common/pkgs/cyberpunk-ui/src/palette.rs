@@ -47,6 +47,14 @@ pub struct Palette {
     pub select: Color,
     /// Text and line-work drawn on top of `select`.
     pub on_select: Color,
+    /// Fill for the one affirmative control on a screen -- ENTER,
+    /// NEXT, LOGIN. Era-owned, and not merely an alias for `select`:
+    /// three eras do use their selection colour here, but neokitsch's
+    /// references reserve amber for exactly this and fill selection
+    /// with veneer instead. Collapsing the two would have made its
+    /// login button a plank of wood.
+    pub cta: Color,
+
     /// The colour of the era's background bloom, where it has one.
     /// Era-owned rather than a published role: `panel` has to stay a
     /// usable bar background on the desktop, and the two want opposite

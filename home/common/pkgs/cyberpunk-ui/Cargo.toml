@@ -9,6 +9,14 @@ autobins = false
 iced = { version = "0.13", features = ["canvas", "tokio"] }
 
 [[bin]]
+name = "cyberpunk-ui-login"
+path = "examples/cyberpunk-ui-login.rs"
+
+[[bin]]
+name = "cyberpunk-ui-mailbox"
+path = "examples/cyberpunk-ui-mailbox.rs"
+
+[[bin]]
 name = "cyberpunk-ui-store"
 path = "examples/cyberpunk-ui-store.rs"
 

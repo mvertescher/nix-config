@@ -2,7 +2,9 @@ pub mod card;
 pub mod chrome;
 pub mod ground;
 pub mod marker;
+pub mod input;
 pub mod pill;
+pub mod row;
 pub mod surface;
 pub mod text;
 
@@ -24,6 +26,7 @@ pub use chrome::{footer, top_bar};
 pub use ground::ground;
 pub use marker::marker;
 pub use pill::{badge, pill};
+pub use row::{mail_row, Mail};
 pub use surface::{surface, Corners, Fill, Surface};
 
 pub use chip::{chip_type_1, info_panel};
