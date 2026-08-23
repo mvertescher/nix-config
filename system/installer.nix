@@ -5,7 +5,7 @@
 # Used by scripts/provision-server.sh, which uploads it to Vultr once and
 # attaches it to instances via the API.
 
-{ pkgs, lib, modulesPath, ... }:
+{ modulesPath, ... }:
 
 let
   sshKeys = import ../lib/ssh-keys.nix;
@@ -13,6 +13,7 @@ in
 {
   imports = [
     (modulesPath + "/installer/cd-dvd/installation-cd-minimal.nix")
+    ./github-authorized-keys.nix
   ];
 
   users.users.root.openssh.authorizedKeys.keys = sshKeys;
@@ -20,11 +21,12 @@ in
 
   # Also accept any key on the GitHub account, so a machine added later
   # via `gh ssh-key add` can use this ISO without rebuilding/reuploading.
-  services.openssh = {
-    authorizedKeysCommand = "${pkgs.writeShellScript "github-authorized-keys" ''
-      exec ${pkgs.curl}/bin/curl -sf --max-time 5 https://github.com/mvertescher.keys
-    ''} %u";
-    authorizedKeysCommandUser = "nobody";
+  # localUsers is deliberately left empty: nixos-anywhere logs in as
+  # root, the console user is nixos, and this image has no other
+  # accounts worth protecting from a key we already trust.
+  custom.githubAuthorizedKeys = {
+    enable = true;
+    githubUsers = [ "mvertescher" ];
   };
 
   # Faster build at slightly larger image size.
