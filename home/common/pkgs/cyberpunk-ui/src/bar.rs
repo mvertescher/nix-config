@@ -14,7 +14,6 @@
 use crate::style::Style;
 use crate::widgets::surface::{surface, Surface};
 use crate::widgets::text;
-use iced::widget::text::IntoFragment;
 use iced::widget::{container, row, Space};
 use iced::{Element, Length, Padding};
 
@@ -38,12 +37,27 @@ pub struct Readings {
     pub date: String,
 }
 
+/// Width a label needs, in pixels.
+///
+/// A [`Surface`] paints the box it is handed and its canvas fills
+/// whatever space it is given, so in a shrink-width row the cells
+/// collapse and clip their own text -- "terra" came out as "ter".
+/// Sizing from the label is also the better behaviour for a bar: cells
+/// stop reflowing every time CPU% ticks from 9 to 10.
+fn width_for(style: &Style, label: &str) -> f32 {
+    let per_char = style.metrics.text_body as f32 * 0.58;
+    (label.chars().count() as f32 * per_char).ceil() + 26.0
+}
+
 /// A bar module: outlined, in the era's own silhouette.
 fn cell<'a, Message: 'static>(
     style: &Style,
-    label: impl IntoFragment<'a>,
+    label: impl Into<String>,
     filled: bool,
 ) -> Element<'a, Message> {
+    let label: String = label.into();
+    let width = width_for(style, &label);
+
     let bg = if filled {
         Surface::selected(style)
     } else {
@@ -55,6 +69,7 @@ fn cell<'a, Message: 'static>(
         text::body(style, label)
     };
     container(surface(bg, Padding::from([2, 10]), content))
+        .width(Length::Fixed(width))
         .height(Length::Fill)
         .into()
 }
@@ -67,6 +82,7 @@ fn host_tape<'a, Message: 'static>(style: &Style, host: &'a str) -> Element<'a, 
         Padding::from([2, 12]),
         text::body(style, host).color(style.palette.bg),
     ))
+    .width(Length::Fixed(width_for(style, host) + 4.0))
     .height(Length::Fill)
     .into()
 }

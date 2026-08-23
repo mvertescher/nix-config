@@ -193,8 +193,100 @@ fn active_window() -> String {
         .unwrap_or_default()
 }
 
+/// Fixed readings for the windowed mode. Deliberately static: this
+/// exists to be screenshotted and diffed, and a clock that ticks would
+/// make every golden differ from the last.
+fn sample() -> Readings {
+    Readings {
+        host: "terra".to_string(),
+        workspaces: (1..=6)
+            .map(|id| Workspace {
+                id,
+                active: id == 3,
+            })
+            .collect(),
+        window: "~/nix-config-private - nvim src/bar.rs".to_string(),
+        cpu: 12,
+        memory: 47,
+        clock: "23:41".to_string(),
+        date: "2026-08-23".to_string(),
+    }
+}
+
+/// The bar in an ordinary window rather than a layer surface.
+///
+/// weston's headless backend has no wlr-layer-shell, so the visual
+/// harness in tests/visual.nix cannot drive the real bar. This renders
+/// the same `bar()` view through a plain iced window, which is enough
+/// to catch the thing goldens are for -- that the era's geometry and
+/// palette still come out right.
+struct WindowedBar {
+    style: Style,
+    readings: Readings,
+}
+
+#[derive(Debug, Clone)]
+enum WindowedMessage {}
+
+impl WindowedBar {
+    fn title(&self) -> String {
+        format!("cyberpunk-ui-bar - {}", self.style.era.name())
+    }
+
+    fn update(&mut self, _m: WindowedMessage) {}
+
+    fn view(&self) -> Element<'_, WindowedMessage> {
+        use iced::widget::{column, container};
+        use iced::Length;
+
+        column![
+            container(bar(&self.style, &self.readings))
+                .height(Length::Fixed(self.style.bar.height as f32)),
+            // The bar alone is a 26px strip; the empty ground below it
+            // is what makes a screenshot legible as a desktop edge.
+            container(iced::widget::Space::new(Length::Fill, Length::Fill))
+                .height(Length::Fill),
+        ]
+        .into()
+    }
+}
+
+fn run_windowed(style: Style) -> iced::Result {
+    let bg = style.palette.bg;
+    let fg = style.palette.fg;
+    let state = WindowedBar {
+        style,
+        readings: sample(),
+    };
+
+    iced::application(WindowedBar::title, WindowedBar::update, WindowedBar::view)
+        .font(cyberpunk_ui::fonts::RAJDHANI_REGULAR)
+        .font(cyberpunk_ui::fonts::RAJDHANI_MEDIUM)
+        .font(cyberpunk_ui::fonts::RAJDHANI_BOLD)
+        .default_font(cyberpunk_ui::fonts::FONT_RAJDHANI_REGULAR)
+        .style(move |_state, _theme| iced::application::Appearance {
+            background_color: bg,
+            text_color: fg,
+        })
+        .window_size((1600.0, 220.0))
+        .antialiasing(true)
+        .run_with(move || (state, iced::Task::none()))
+}
+
 fn main() -> Result<(), iced_layershell::Error> {
     let style = resolve_style();
+
+    if std::env::args().any(|a| a == "--windowed") {
+        // Windowed mode is a different runtime with a different error
+        // type, so it exits here rather than being forced into
+        // iced_layershell::Error just to satisfy one return signature.
+        if let Err(e) = run_windowed(style) {
+            eprintln!("windowed mode failed: {e}");
+            std::process::exit(1);
+        }
+        return Ok(());
+    }
+
     let height = style.bar.height;
 
     BarApp::run(Settings {
