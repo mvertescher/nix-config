@@ -389,14 +389,25 @@ pub fn backdrop<'a, Message: 'static>(
     padding: impl Into<iced::Padding>,
     content: impl Into<Element<'a, Message>>,
 ) -> Element<'a, Message> {
+    layered(
+        canvas(surface).width(Length::Fill).height(Length::Fill),
+        container(content.into()).padding(padding).width(Length::Fill),
+    )
+}
+
+/// Two arbitrary layers, sized by the second.
+///
+/// [`backdrop`] with the background left open. A card whose accent band
+/// hangs past its own edge needs the shape inset while the content runs
+/// the full width, and a panel whose outline encloses only its first
+/// row needs a background that is not a plain [`Surface`] at all --
+/// both are this, with a `container` or a `canvas` handed in.
+pub fn layered<'a, Message: 'static>(
+    background: impl Into<Element<'a, Message>>,
+    content: impl Into<Element<'a, Message>>,
+) -> Element<'a, Message> {
     Backdrop {
-        children: vec![
-            canvas(surface).width(Length::Fill).height(Length::Fill).into(),
-            container(content.into())
-                .padding(padding)
-                .width(Length::Fill)
-                .into(),
-        ],
+        children: vec![background.into(), content.into()],
     }
     .into()
 }

@@ -1,16 +1,19 @@
 //! The 4ST store: the toolkit's acceptance test.
 //!
-//! Every era's design target renders this same screen (`docs/<era>/
-//! target-app.svg`), which makes it the honest measure of whether the
-//! shared vocabulary is real. There is one implementation here. If a
-//! future era cannot wear it without adding an `if era ==` to this file,
-//! the abstraction is wrong and that is worth knowing.
+//! Three of the four eras' design targets render this same screen
+//! (`docs/<era>/target-app.svg`; neomil's is an ops dashboard instead),
+//! which makes it the honest measure of whether the shared vocabulary is
+//! real. There is one implementation here. If a future era cannot wear
+//! it without adding an `if era ==` to this file, the abstraction is
+//! wrong and that is worth knowing.
 //!
 //! Run it with `cyberpunk-ui-store --era <name>`; with no flag it
 //! follows the desktop theme.
 
-use crate::style::{Chrome, Style};
-use crate::widgets::{footer, ground, marker, pill, product_card, text, top_bar, Product};
+use crate::style::{Chrome, Footnotes, Style};
+use crate::widgets::{
+    bracket_panel, footer, ground, marker, page_curl, pill, product_card, text, top_bar, Product,
+};
 use iced::widget::{column, container, row, stack, Space};
 use iced::{Element, Length, Padding};
 
@@ -18,6 +21,15 @@ const CATEGORIES: [&str; 5] = ["RIFLES", "SMG", "SNIPER", "SHOTGUN", "PISTOL"];
 const SELECTED_CATEGORY: usize = 1;
 const SELECTED_CARD: usize = 1;
 const CARDS: usize = 4;
+
+const NOTE_A: [&str; 2] = [
+    "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.",
+    "SERVING CUSTOMERS SINCE 2006.",
+];
+const NOTE_B: [&str; 2] = [
+    "MAPS ARE PROVIDED BY SEOCHO. SATELLITE",
+    "SERVICES SINCE 2006.",
+];
 
 pub struct Store {
     pub style: Style,
@@ -57,6 +69,27 @@ impl Store {
             ],
         ));
 
+        // Neokitsch runs its footnotes along the strata rail above the
+        // content rather than down the nav column.
+        if s.footnotes == Footnotes::TopRail {
+            page = page.push(
+                container(
+                    row![
+                        marker(s, "A", &NOTE_A),
+                        Space::new(Length::Fill, 0.0),
+                        marker(s, "C", &NOTE_B),
+                    ]
+                    .align_y(iced::Alignment::Center),
+                )
+                .padding(Padding {
+                    top: 0.0,
+                    right: 200.0,
+                    bottom: 0.0,
+                    left: 300.0,
+                }),
+            );
+        }
+
         page = page.push(
             row![
                 container(self.sidebar()).width(Length::Fixed(260.0)),
@@ -93,43 +126,57 @@ impl Store {
             ]
         };
 
-        column![
+        // Kitsch is the era with no top bar to hang the meta block
+        // under, and it encloses the head of it instead.
+        let customer: Element<'_, Message> = if s.chrome == Chrome::Caption {
+            bracket_panel(
+                s,
+                meta("customer", "#NC488402").into(),
+                column![
+                    meta("loyalty discount", "10%"),
+                    meta("last update", "10/05/2077"),
+                ]
+                .into(),
+            )
+        } else {
+            column![
+                meta("CUSTOMER", "#NC488402"),
+                meta("LOYALTY DISCOUNT", "10%"),
+                meta("LAST UPDATE", "10/05/2077"),
+            ]
+            .into()
+        };
+
+        let mut side = column![
             text::title(s, "4ST").size(52),
             text::label(s, "S T O R E"),
             Space::new(0.0, s.metrics.gap),
-            meta("CUSTOMER", "#NC488402"),
-            meta("LOYALTY DISCOUNT", "10%"),
-            meta("LAST UPDATE", "10/05/2077"),
+            customer,
             Space::new(0.0, s.metrics.gap * 1.5),
             nav,
-            // A fixed gap, deliberately: sinking these to the foot of the
-            // column fills the window but matches no target -- entropism
-            // keeps them under the nav and accepts a dead lower third,
-            // kitsch sets A mid-column under a swoosh, neokitsch uses a
-            // top rail. The bottom is empty because the cards are missing
-            // their art, banner and socket block, so they stop 200px short
-            // of the targets' height. Fix that, not this.
-            Space::new(0.0, s.metrics.gap * 2.0),
-            marker(
-                s,
-                "A",
-                &[
-                    "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.",
-                    "SERVING CUSTOMERS SINCE 2006.",
-                ],
-            ),
-            Space::new(0.0, 10.0),
-            marker(
-                s,
-                "B",
-                &[
-                    "MAPS ARE PROVIDED BY SEOCHO. SATELLITE",
-                    "SERVICES SINCE 2006.",
-                ],
-            ),
         ]
-        .spacing(4)
-        .into()
+        .spacing(4);
+
+        // Where the markers go is era-owned: an earlier pass had one
+        // rule for all four and matched none of them.
+        match s.footnotes {
+            Footnotes::UnderNav => {
+                side = side.push(Space::new(0.0, s.metrics.gap * 2.0));
+                side = side.push(marker(s, "A", &NOTE_A));
+                side = side.push(Space::new(0.0, 10.0));
+                side = side.push(marker(s, "B", &NOTE_B));
+            }
+            Footnotes::MidColumn => {
+                side = side.push(Space::new(0.0, s.metrics.gap));
+                side = side.push(page_curl(s, 76.0));
+                side = side.push(Space::new(0.0, s.metrics.gap));
+                side = side.push(marker(s, "A", &NOTE_A));
+            }
+            // The markers are on the rail; the column ends at the nav.
+            Footnotes::TopRail => {}
+        }
+
+        side.into()
     }
 
     /// The row of product cards, one of them selected and grown.
@@ -154,24 +201,24 @@ impl Store {
             );
         }
 
-        // Neokitsch alone footnotes the shelf rather than the sidebar.
-        if s.chrome == Chrome::DeviceFrame {
-            column![
+        match s.footnotes {
+            Footnotes::UnderNav => shelf.into(),
+            // Kitsch's second marker sits under the right of the shelf,
+            // opposite the one under the page-curl.
+            Footnotes::MidColumn => column![
                 shelf,
                 Space::new(0.0, s.metrics.gap),
-                container(marker(
-                    s,
-                    "C",
-                    &[
-                        "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.",
-                        "SERVING CUSTOMERS SINCE 2006.",
-                    ],
-                ))
-                .padding(Padding::from([0, 0])),
+                container(marker(s, "C", &NOTE_B))
+                    .width(Length::Fill)
+                    .align_x(iced::alignment::Horizontal::Right),
             ]
-            .into()
-        } else {
-            shelf.into()
+            .into(),
+            Footnotes::TopRail => column![
+                shelf,
+                Space::new(0.0, s.metrics.gap),
+                marker(s, "B", &NOTE_A),
+            ]
+            .into(),
         }
     }
 }

@@ -11,7 +11,8 @@
 
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
-    Banner, Bar, Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style,
+    Banner, Bar, Chrome, Corner, Era, Footnotes, Ground, Metrics, Nameplate, Selection,
+    Style,
 };
 
 pub const BG: iced::Color = rgb(0x0a0a0a);
@@ -82,15 +83,20 @@ pub fn style() -> Style {
         chrome: Chrome::DeviceFrame,
         nameplate: Nameplate::Footer,
         bar: Bar::default(),
-        banner: Banner::default(),
+        // The footer nameplate hangs past the card by the same 12 as
+        // kitsch, but does not step: `rect x=340 w=188` against a card
+        // at `x=352 w=176` in target-components.svg.
+        banner: Banner {
+            overhang: 12.0,
+            notch: 0.0,
+        },
+        // A and C along the top strata rail, B under the cards.
+        footnotes: Footnotes::TopRail,
+        glyphs: false,
         metrics: Metrics {
             stroke: 1.6,
             gap: 18.0,
             pad: 18.0,
-            // The footer nameplate wants a band the other eras spend
-            // on their header.
-            card: 330.0,
-            card_selected: 470.0,
             ..Metrics::default()
         },
     }

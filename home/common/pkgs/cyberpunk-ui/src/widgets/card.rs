@@ -5,13 +5,23 @@
 //! silhouette, four stats, three empty sockets -- and the selected one
 //! grows a detail block. What differs is the corner treatment, the fill
 //! that means "selected", whether the name sits at the head or the foot,
-//! and whether the stats get a highlight band. All four are parameters.
+//! whether the stats get a highlight band, and whether the card wears an
+//! accent band at all. All five are parameters.
 
-use super::surface::{backdrop, surface, Surface};
+use super::banner::{band_height, banner, banner_colors, blank};
+use super::glyph::{glyph, Glyph};
+use super::silhouette::silhouette;
+use super::surface::{layered, Surface};
 use super::text;
 use crate::style::{Nameplate, Style};
-use iced::widget::{column, container, row, Space};
-use iced::{Element, Length, Padding};
+use iced::widget::{canvas, column, container, row, Space};
+use iced::{Color, Element, Length, Padding};
+
+/// How tall the product art is drawn. The three store targets set it at
+/// 56, 67 and 56 in their own 1920 space against cards 350-470 tall; we
+/// draw at 1600 into cards of much the same height, so this is the
+/// middle of that band rather than a scaled figure.
+const ART: f32 = 62.0;
 
 /// One weapon, as the store shows it.
 pub struct Product<'a> {
@@ -38,6 +48,16 @@ impl<'a> Product<'a> {
     }
 }
 
+/// The card's ink: line-work and text take the same colour, whichever
+/// side of the selection fill they are on.
+fn ink(style: &Style, selected: bool) -> Color {
+    if selected {
+        style.palette.on_select
+    } else {
+        style.palette.fg
+    }
+}
+
 fn nameplate<'a, Message: 'static>(
     style: &Style,
     product: &Product<'a>,
@@ -55,6 +75,23 @@ fn nameplate<'a, Message: 'static>(
         )
     };
     column![name, class].spacing(2).into()
+}
+
+/// The three compliance marks that head a banded card's accent band.
+fn glyph_strip<'a, Message: 'static>(
+    style: &Style,
+    selected: bool,
+    size: f32,
+) -> Element<'a, Message> {
+    let (_, mark) = banner_colors(style, selected);
+    row![
+        glyph(Glyph::Matrix, mark, 1.0, size),
+        glyph(Glyph::Square, mark, 1.0, size),
+        glyph(Glyph::Triangle, mark, 1.0, size),
+    ]
+    .spacing(5)
+    .align_y(iced::Alignment::Center)
+    .into()
 }
 
 fn stats_row<'a, Message: 'static>(
@@ -90,7 +127,7 @@ fn stats_row<'a, Message: 'static>(
     // Expressed as an optional palette slot so an era opts in rather
     // than the widget testing which era it is in.
     let values: Element<'a, Message> = match (style.palette.emphasis, selected) {
-        (Some((band, _)), false) => container(surface(
+        (Some((band, _)), false) => container(super::surface::surface(
             Surface::filled(style, band).no_stroke(),
             Padding::from([2, 0]),
             values,
@@ -108,7 +145,21 @@ fn sockets_row<'a, Message: 'static>(
     product: &Product<'a>,
     selected: bool,
 ) -> Element<'a, Message> {
-    let mut r = row![].spacing(8);
+    let mut r = row![].spacing(6).align_y(iced::Alignment::Center);
+
+    // Kitsch leads the row with a dotted matrix block about as tall as
+    // the row; the eras with no glyph vocabulary start straight in on
+    // the sockets.
+    if style.glyphs {
+        r = r.push(glyph(Glyph::Matrix, ink(style, selected), 1.0, 24.0));
+    }
+
+    // A point below the card's other captions, as all three targets set
+    // it: entropism 8 against 9, kitsch 9 against 10, neokitsch 8. The
+    // label is the widest thing in the narrowest cell on the card and
+    // the references already made this trade.
+    let size = style.metrics.text_caption.saturating_sub(1);
+
     for _ in 0..product.sockets {
         // Outlined in both states; on a selected card the outline and
         // its label simply switch to the on-select ink.
@@ -118,14 +169,20 @@ fn sockets_row<'a, Message: 'static>(
             Surface::outlined(style)
         };
         let label = if selected {
-            text::caption(style, "EMPTY SOCKET").color(style.palette.on_select)
-        } else {
             text::caption(style, "EMPTY SOCKET")
+                .size(size)
+                .color(style.palette.on_select)
+        } else {
+            text::caption(style, "EMPTY SOCKET").size(size)
         };
         r = r.push(
-            container(surface(cell, Padding::from([4, 6]), label))
-                .width(Length::Fill)
-                .height(Length::Fixed(26.0)),
+            container(super::surface::surface(
+                cell,
+                Padding::from([4, 4]),
+                label,
+            ))
+            .width(Length::Fill)
+            .height(Length::Fixed(26.0)),
         );
     }
     r.into()
@@ -144,23 +201,66 @@ pub fn product_card<'a, Message: 'static>(
         Surface::outlined(style)
     };
 
-    let brand = if selected {
-        text::on_select(style, product.brand).size(style.metrics.text_caption)
+    let pad = style.metrics.pad;
+    // The accent band runs wider than the shape behind it, so the card
+    // is built the other way up from the usual `backdrop`: content at
+    // full width, background inset by the overhang. Every row but the
+    // band then pays that inset back on its leading edge.
+    let overhang = if style.banded() {
+        style.banner.overhang
     } else {
-        text::caption(style, product.brand)
+        0.0
+    };
+    let inset = Padding {
+        top: 0.0,
+        right: pad,
+        bottom: 0.0,
+        left: pad + overhang,
+    };
+    let inner = |el: Element<'a, Message>| -> Element<'a, Message> {
+        container(el).padding(inset).width(Length::Fill).into()
+    };
+
+    let brand: Element<'a, Message> = if selected {
+        text::on_select(style, product.brand)
+            .size(style.metrics.text_caption)
+            .into()
+    } else {
+        text::caption(style, product.brand).into()
     };
 
     let mut body = column![].spacing(10);
 
     if style.nameplate == Nameplate::Header {
-        body = body.push(nameplate(style, product, selected));
+        body = body.push(inner(nameplate(style, product, selected)));
+        if style.banded() {
+            // Kitsch's shelf band: marks at the head, brand tag at the
+            // foot, in the band's own ink.
+            let h = band_height(style.metrics.text_caption);
+            body = body.push(banner(
+                style,
+                selected,
+                h,
+                glyph_strip(style, selected, h * 0.5),
+                super::banner::tag(style, selected, product.brand, style.metrics.text_caption),
+            ));
+        } else {
+            body = body.push(inner(brand));
+        }
+    } else {
+        body = body.push(inner(brand));
     }
-    body = body.push(brand);
-    body = body.push(Space::new(0.0, 12.0));
-    body = body.push(stats_row(style, product, selected));
-    body = body.push(sockets_row(style, product, selected));
+
+    body = body.push(inner(silhouette(
+        ink(style, selected),
+        style.metrics.stroke + 1.0,
+        ART,
+    )));
+    body = body.push(inner(stats_row(style, product, selected)));
 
     if selected {
+        // Detail sits between the stats and the sockets in all three
+        // store targets, not after them.
         let mut detail = column![].spacing(3);
         for (value, name) in product.detail {
             detail = detail.push(
@@ -176,24 +276,81 @@ pub fn product_card<'a, Message: 'static>(
         for line in product.bonus {
             detail = detail.push(text::on_select(style, *line));
         }
-        body = body.push(Space::new(0.0, 6.0));
-        body = body.push(detail);
+        body = body.push(inner(detail.into()));
     }
 
+    body = body.push(inner(sockets_row(style, product, selected)));
+
     if style.nameplate == Nameplate::Footer {
-        body = body.push(Space::new(0.0, 10.0));
-        body = body.push(nameplate(style, product, selected));
+        let plate: Element<'a, Message> = if style.banded() {
+            // Neokitsch's nameplate *is* its banner: name and class run
+            // together along the band rather than stacking.
+            let h = band_height(style.metrics.text_body);
+            let (_, mark) = banner_colors(style, selected);
+            banner(
+                style,
+                selected,
+                h,
+                row![
+                    text::body(style, product.name).color(mark),
+                    text::body(style, product.class)
+                        .size(style.metrics.text_caption + 2)
+                        .color(mark),
+                ]
+                .spacing(8)
+                .align_y(iced::Alignment::Center)
+                .into(),
+                blank(),
+            )
+        } else {
+            inner(nameplate(style, product, selected))
+        };
+        body = body.push(plate);
     }
 
     // Sized by the body rather than by the shelf. A surface's canvas
     // fills whatever space it is handed, so a card built with `surface`
     // took the height of the row it sat in -- a fixed `metrics.card` was
     // the only thing keeping it off the bottom of the window, and it
-    // bought that with a dead gap under the content. `backdrop` lays the
+    // bought that with a dead gap under the content. `layered` lays the
     // body out first and fits the shape to it, so the selected card is
     // taller for the reason the references say it is: it carries the
     // detail block.
-    container(backdrop(bg, style.metrics.pad, body))
-        .width(Length::Fill)
-        .into()
+    let shape: Element<'a, Message> = {
+        let face = canvas(bg).width(Length::Fill).height(Length::Fill);
+        if overhang > 0.0 {
+            container(face)
+                .padding(Padding {
+                    left: overhang,
+                    ..Padding::ZERO
+                })
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .into()
+        } else {
+            face.into()
+        }
+    };
+
+    container(layered(
+        shape,
+        container(body)
+            .padding(Padding {
+                top: pad,
+                right: 0.0,
+                // A footer band is the card's last edge in the
+                // reference -- `rect y=694 h=26` against a card ending
+                // at 724 -- so it keeps a hairline rather than a full
+                // pad under it.
+                bottom: if style.nameplate == Nameplate::Footer && style.banded() {
+                    4.0
+                } else {
+                    pad
+                },
+                left: 0.0,
+            })
+            .width(Length::Fill),
+    ))
+    .width(Length::Fill)
+    .into()
 }

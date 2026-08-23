@@ -11,7 +11,8 @@
 
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
-    Banner, Bar, Chrome, Corner, Era, Ground, Metrics, Nameplate, Selection, Style,
+    Banner, Bar, Chrome, Corner, Era, Footnotes, Ground, Metrics, Nameplate, Selection,
+    Style,
 };
 
 pub const BG: iced::Color = rgb(0x110c07);
@@ -58,6 +59,10 @@ pub fn style() -> Style {
         nameplate: Nameplate::Header,
         bar: Bar::default(),
         banner: Banner::default(),
+        // A and B under the nav, and a dead lower third the reference
+        // is content with.
+        footnotes: Footnotes::UnderNav,
+        glyphs: false,
         metrics: Metrics {
             stroke: 1.0,
             gap: 14.0,

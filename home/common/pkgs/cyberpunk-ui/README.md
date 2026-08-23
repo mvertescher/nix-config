@@ -89,11 +89,13 @@ is why they are separate roles.
 
 ```
 src/
-  style.rs        Era, Style, Corner, Selection, Ground, Chrome, Metrics
+  style.rs        Era, Style, Corner, Selection, Ground, Chrome,
+                  Nameplate, Banner, Footnotes, Metrics
   palette.rs      Palette; rgb() for compile-time #rrggbb
   theme.rs        runtime palette published by the nix theme layer
   eras/           one table per era, sampled figures
-  widgets/        surface, pill, card, chrome, marker, ground, text
+  widgets/        surface, pill, card, banner, silhouette, glyph,
+                  bracket, ornament, chrome, marker, ground, text
   screens/        store — era-agnostic by construction
 ```
 
@@ -169,15 +171,12 @@ Not yet done:
 - `panels/`, `top_bar.rs`, `background.rs` and the neomil widget set
   predate the generalisation and still hardcode neomil colours; the
   dashboard and mail screens want rewriting against `screens`.
-- `Metrics::card` and `Metrics::card_selected` are dead. Cards used to
-  be sized by them because a surface paints the box it is handed and an
-  unconstrained card stretched to the window; they now size to their
-  content through `surface::backdrop`, which lays the body out first and
-  fits the shape to it. The two fields want removing from `Metrics` and
-  from the four era tables.
-- Kitsch's extruded fan menu and page-curl, neokitsch's card cascade,
-  and entropism's menu tiles are in the design targets but not yet
-  widgets.
+- Kitsch's extruded fan menu and ticket-notched nav pills, neokitsch's
+  card cascade and BASKET panel, and entropism's menu tiles are in the
+  design targets but not yet widgets. So is the two-line compliance
+  caption the kitsch and entropism targets set under every card, and
+  the outline that encloses kitsch's nav column and runs into the
+  page-curl.
 - `entropism-ui` is superseded but not yet removed: its login, mail and
   store screens have replacements here, its `matrix` screen does not.
   Matrix looks like a per-era *interaction model* rather than a shared

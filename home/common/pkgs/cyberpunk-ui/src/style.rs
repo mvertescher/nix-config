@@ -101,15 +101,40 @@ pub enum Nameplate {
 /// guessed. Kitsch's shelf band is
 /// `M360 228 h242 v20 h-230 l-12 8 Z` against a card whose left edge is
 /// at 372: it hangs 12px past the surface and its trailing corner steps
-/// down 8. Neokitsch's footer nameplate is a plain `rect` flush with
-/// the card, and the minimalist eras have no banner at all -- all three
-/// are the default, which draws a rectangle.
+/// down 8. Neokitsch's footer nameplate is a plain `rect` -- no step --
+/// but it hangs by the same 12: `x=340 w=188` against a card at
+/// `x=352 w=176`, in `docs/neokitsch/target-components.svg`, and
+/// `x=506 w=244` against a card at `x=520 w=230` in its `target-app`.
+/// (An earlier reading of this called it flush with the card. It is
+/// not.) The minimalist eras have no banner at all and take the
+/// default, which draws a rectangle.
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Banner {
     /// How far the band hangs past the leading edge of its surface.
     pub overhang: f32,
     /// Depth of the step cut into the trailing corner.
     pub notch: f32,
+}
+
+/// Where a screen puts its footnote markers.
+///
+/// Not decoration and not one rule with four dresses: the three store
+/// targets disagree about it structurally, and an earlier pass that
+/// sank the markers to the foot of the window with `Length::Fill`
+/// matched none of them. Entropism stacks A and B directly under the
+/// nav and lets the lower third of the column stay empty; kitsch sets a
+/// single A halfway down, beneath the page-curl, and puts C under the
+/// right of the shelf; neokitsch runs A and C along the top strata rail
+/// and drops B under the cards.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Footnotes {
+    /// Entropism, neomil: stacked under the nav.
+    UnderNav,
+    /// Kitsch: one marker mid-column under the ornament, one under the
+    /// shelf.
+    MidColumn,
+    /// Neokitsch: a rail above the content, plus one under the shelf.
+    TopRail,
 }
 
 /// Chrome conventions: what an era puts at the top and bottom of every
@@ -138,12 +163,6 @@ pub struct Metrics {
     pub pad: f32,
     pub text_body: u16,
     pub text_caption: u16,
-    /// Card heights. A surface paints the box it is handed, so these
-    /// are load-bearing rather than cosmetic: without them a card
-    /// stretches to the window. The references size them explicitly
-    /// too, the selected one taller to fit its detail block.
-    pub card: f32,
-    pub card_selected: f32,
     pub text_title: u16,
 }
 
@@ -156,8 +175,6 @@ impl Default for Metrics {
             text_body: 14,
             text_caption: 9,
             text_title: 19,
-            card: 300.0,
-            card_selected: 430.0,
         }
     }
 }
@@ -174,8 +191,19 @@ pub struct Style {
     pub bar: Bar,
     pub metrics: Metrics,
     /// Geometry for the accent band; its colours live on the palette.
-    /// Default (a flush rectangle) for every era but kitsch.
+    /// Default (a flush rectangle) for the two minimalist eras, which
+    /// declare no banner colours either and so never draw one.
     pub banner: Banner,
+    /// Where the footnote markers go.
+    pub footnotes: Footnotes,
+    /// Whether the era stamps compliance glyphs -- dotted matrix,
+    /// hollow square, hollow triangle -- on its bands and rows.
+    ///
+    /// A parameter rather than a widget-side era test because it is a
+    /// fact about the era and not about any one widget: the same three
+    /// marks head kitsch's shelf band and lead its EMPTY SOCKET row,
+    /// and no other era's references carry them anywhere.
+    pub glyphs: bool,
 }
 
 /// The four UI eras of the reference material.
@@ -238,6 +266,18 @@ impl Style {
     /// [`Style::banner`] for the shape.
     pub fn banner_colors(&self) -> (Color, Color) {
         self.palette.banner()
+    }
+
+    /// Whether this era declares an accent band at all.
+    ///
+    /// [`Style::banner_colors`] is total so that a banner widget needs
+    /// no era branch. Whether a card *wears* one is a different
+    /// question, and it is exactly the information the absence carries:
+    /// entropism and neomil head their cards with a hairline and a
+    /// caption, and a tape-coloured band across them would be an
+    /// invention rather than a degradation.
+    pub fn banded(&self) -> bool {
+        self.palette.ornaments.banner.is_some()
     }
 
     /// The highlight band behind key figures, as `(fill, ink)`.
