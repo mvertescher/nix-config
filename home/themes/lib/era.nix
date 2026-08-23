@@ -281,9 +281,16 @@ lib.mkMerge [
       };
     };
 
-    # stylix writes its own waybar stylesheet; an era owns the look
-    # entirely, so replace it rather than layering over it.
-    xdg.configFile."waybar/style.css".source = lib.mkForce (
+    # An era owns the bar's look entirely, so stylix's waybar target is
+    # turned off rather than overwritten. Same reasoning as the hyprlock
+    # target below, and it buys the same thing: with stylix no longer
+    # writing a competing stylesheet, this can be a plain definition
+    # instead of mkForce, which leaves a host free to override the bar
+    # with an ordinary one of its own. mkForce here made that need
+    # mkOverride with a number in it.
+    stylix.targets.waybar.enable = lib.mkForce false;
+
+    xdg.configFile."waybar/style.css".source = (
       builtins.toFile "${lib.toLower name}-waybar.css" ''
         /* ${header} */
         * {
