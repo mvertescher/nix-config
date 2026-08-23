@@ -5,8 +5,17 @@
 #root.root {--tabs-discarded-title-opacity: 0.7;}
 #root.root {--tabs-lvl-opacity: 1;}
 
+/* Both blocks below target Sidebery's <div id="root" class="root">, but
+   `#root.root` (id + class) outranks the plain `:root` block, so anything
+   declared here wins. Keep single-source declarations in this block; the
+   `:root` block below is only for vars this one does not set.
+
+   `--tabs-font` is consumed upstream as `font: var(--tabs-font)` -- the
+   CSS `font` shorthand -- so the value has to carry a size as well as a
+   family. A bare family list is an invalid shorthand and gets dropped.
+   The family is stylix.fonts.monospace (see home/common/home.nix). */
 #root.root {
-  --tabs-font: 0.85rem CommitMono;
+  --tabs-font: 0.85rem "GeistMono Nerd Font", monospace;
   --tabs-normal-bg: transparent;
   --frame-fg: #F75049;
   --frame-bg: transparent !important;
@@ -33,8 +42,6 @@
   background-color: transparent !important;
 
   --notchXs: 6px;
-  --tabs-font: "GeistMono Nerd Font", monospace;
-  --tabs-height: 32px;
   --tabs-padding: 4px;
 }
 
@@ -58,8 +65,13 @@
   }
 }
 
+/* Hovering a tab swaps in the black background above, which would leave
+   the selected tab's --tabs-activated-fg (also black) unreadable. Restore
+   the theme red -- the same literal .Tab rests on, which default.nix
+   substitutes to base08 -- instead of the CSS `red` keyword. */
 .Tab:active{
   &:hover {
-    color: red !important;
+    color: #F75049 !important;
   }
 }
+
