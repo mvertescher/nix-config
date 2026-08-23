@@ -760,6 +760,13 @@ lib.mkMerge [
   #
   # stylix's hyprlock target is force-disabled, which is what frees
   # these to be mkDefault rather than mkForce.
+  #
+  # NOTE: this generates hyprlock's *configuration* only. hyprlock also
+  # needs a PAM service, which is a system-level option a home-manager
+  # module cannot set -- see security.pam.services.hyprlock in
+  # system/wm/hyprland.nix. Without it the lock takes the session and
+  # then exits, which looks exactly like a working lock screen right up
+  # until you try to unlock it.
   (lib.mkIf lk.enable {
     stylix.targets.hyprlock.enable = lib.mkForce false;
 
