@@ -169,12 +169,12 @@ Not yet done:
 - `panels/`, `top_bar.rs`, `background.rs` and the neomil widget set
   predate the generalisation and still hardcode neomil colours; the
   dashboard and mail screens want rewriting against `screens`.
-- Card heights are explicit (`Metrics::card`), because a surface paints
-  the box it is handed and an unconstrained card stretches to the
-  window. Faithful to the design targets, which size cards too, but it
-  means content outgrowing the height clips rather than pushes. Worth
-  revisiting when the mail and dashboard screens land, since their
-  content is more variable than a weapon card's.
+- `Metrics::card` and `Metrics::card_selected` are dead. Cards used to
+  be sized by them because a surface paints the box it is handed and an
+  unconstrained card stretched to the window; they now size to their
+  content through `surface::backdrop`, which lays the body out first and
+  fits the shape to it. The two fields want removing from `Metrics` and
+  from the four era tables.
 - Kitsch's extruded fan menu and page-curl, neokitsch's card cascade,
   and entropism's menu tiles are in the design targets but not yet
   widgets.

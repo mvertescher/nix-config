@@ -6,7 +6,7 @@ autoexamples = false
 autobins = false
 
 [dependencies]
-iced = { version = "0.13", features = ["canvas", "tokio"] }
+iced = { version = "0.13", features = ["advanced", "canvas", "tokio"] }
 iced_layershell = "0.13"
 sysinfo = "0.33"
 # PulseAudio client bindings for the bar's audio module. Apache-2.0,

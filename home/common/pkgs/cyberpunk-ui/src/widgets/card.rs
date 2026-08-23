@@ -7,7 +7,7 @@
 //! that means "selected", whether the name sits at the head or the foot,
 //! and whether the stats get a highlight band. All four are parameters.
 
-use super::surface::{surface, Surface};
+use super::surface::{backdrop, surface, Surface};
 use super::text;
 use crate::style::{Nameplate, Style};
 use iced::widget::{column, container, row, Space};
@@ -185,14 +185,15 @@ pub fn product_card<'a, Message: 'static>(
         body = body.push(nameplate(style, product, selected));
     }
 
-    let height = if selected {
-        style.metrics.card_selected
-    } else {
-        style.metrics.card
-    };
-
-    container(surface(bg, style.metrics.pad, body))
+    // Sized by the body rather than by the shelf. A surface's canvas
+    // fills whatever space it is handed, so a card built with `surface`
+    // took the height of the row it sat in -- a fixed `metrics.card` was
+    // the only thing keeping it off the bottom of the window, and it
+    // bought that with a dead gap under the content. `backdrop` lays the
+    // body out first and fits the shape to it, so the selected card is
+    // taller for the reason the references say it is: it carries the
+    // detail block.
+    container(backdrop(bg, style.metrics.pad, body))
         .width(Length::Fill)
-        .height(Length::Fixed(height))
         .into()
 }

@@ -102,6 +102,13 @@ impl Store {
             meta("LAST UPDATE", "10/05/2077"),
             Space::new(0.0, s.metrics.gap * 1.5),
             nav,
+            // A fixed gap, deliberately: sinking these to the foot of the
+            // column fills the window but matches no target -- entropism
+            // keeps them under the nav and accepts a dead lower third,
+            // kitsch sets A mid-column under a swoosh, neokitsch uses a
+            // top rail. The bottom is empty because the cards are missing
+            // their art, banner and socket block, so they stop 200px short
+            // of the targets' height. Fix that, not this.
             Space::new(0.0, s.metrics.gap * 2.0),
             marker(
                 s,
@@ -130,15 +137,21 @@ impl Store {
         let s = &self.style;
         let product = Product::magnum();
 
-        let mut shelf = row![].spacing(s.metrics.gap).width(Length::Fill);
+        // `align_y(Top)` on the row rather than on each card: the row is
+        // what would otherwise stretch its children to the tallest of
+        // them, which would put the unselected cards' dead space back
+        // the moment the selected one grew its detail block.
+        let mut shelf = row![]
+            .spacing(s.metrics.gap)
+            .width(Length::Fill)
+            .align_y(iced::alignment::Vertical::Top);
         for i in 0..CARDS {
             let selected = i == SELECTED_CARD;
             // The selected card is taller in every reference: it grows
             // the detail block rather than overlaying a popover.
-            let card = container(product_card(s, &product, selected))
-                .width(Length::FillPortion(1))
-                .align_y(iced::alignment::Vertical::Top);
-            shelf = shelf.push(card);
+            shelf = shelf.push(
+                container(product_card(s, &product, selected)).width(Length::FillPortion(1)),
+            );
         }
 
         // Neokitsch alone footnotes the shelf rather than the sidebar.

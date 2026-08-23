@@ -7,8 +7,10 @@
 //! single implementation across four eras.
 
 use crate::style::{Corner, Selection, Style};
+use iced::advanced::widget::{Operation, Tree};
+use iced::advanced::{layout, overlay, renderer, Clipboard, Layout, Shell, Widget};
 use iced::widget::{canvas, container, stack};
-use iced::{mouse, Color, Element, Length, Point, Rectangle, Renderer, Theme};
+use iced::{event, mouse, Color, Element, Event, Length, Point, Rectangle, Renderer, Size, Theme};
 
 /// Which corners a chamfer applies to. Neo-militarism cuts different
 /// corners on different widgets, so the shape is a parameter rather
@@ -367,4 +369,200 @@ pub fn surface<'a, Message: 'static>(
         container(content.into()).padding(padding).width(Length::Fill)
     ]
     .into()
+}
+
+/// Wrap `content` in a surface that takes its size from the content.
+///
+/// [`surface`] paints the box it is handed, which is what a caller who
+/// knows the box wants -- a bar cell, a nav pill, a list row. It is the
+/// wrong way round when the content is what should decide. The canvas
+/// is the first layer of a `stack` and a `stack` takes its size from its
+/// first layer, so a surface whose caller does not pin a height grows to
+/// whatever space it is offered: the same failure that made bar cells
+/// clip their own labels, seen from the other side.
+///
+/// A [`Backdrop`] inverts that. The content lays out first, against the
+/// limits the parent gave, and the surface is then laid out to exactly
+/// the size that came back.
+pub fn backdrop<'a, Message: 'static>(
+    surface: Surface,
+    padding: impl Into<iced::Padding>,
+    content: impl Into<Element<'a, Message>>,
+) -> Element<'a, Message> {
+    Backdrop {
+        children: vec![
+            canvas(surface).width(Length::Fill).height(Length::Fill).into(),
+            container(content.into())
+                .padding(padding)
+                .width(Length::Fill)
+                .into(),
+        ],
+    }
+    .into()
+}
+
+/// Two layers, sized by the second.
+///
+/// Deliberately not a `stack` with the arguments swapped: the layer that
+/// decides the size has to be drawn *last*, or the fill covers the text.
+/// `stack` ties those two together -- its first child both sizes the
+/// widget and sits at the bottom -- and this is the one place that needs
+/// them apart.
+struct Backdrop<'a, Message> {
+    /// `[background, content]`, in draw order. `content` is the sizer.
+    children: Vec<Element<'a, Message>>,
+}
+
+impl<'a, Message> Backdrop<'a, Message> {
+    const CONTENT: usize = 1;
+}
+
+impl<Message> Widget<Message, Theme, Renderer> for Backdrop<'_, Message> {
+    fn children(&self) -> Vec<Tree> {
+        self.children.iter().map(Tree::new).collect()
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&self.children);
+    }
+
+    fn size(&self) -> Size<Length> {
+        self.children[Self::CONTENT].as_widget().size()
+    }
+
+    fn layout(
+        &self,
+        tree: &mut Tree,
+        renderer: &Renderer,
+        limits: &layout::Limits,
+    ) -> layout::Node {
+        let content = self.children[Self::CONTENT].as_widget().layout(
+            &mut tree.children[Self::CONTENT],
+            renderer,
+            limits,
+        );
+        let size = content.size();
+
+        // Min and max are the same, so the background's `Length::Fill`
+        // resolves to the content's size rather than to the parent's.
+        let background = self.children[0].as_widget().layout(
+            &mut tree.children[0],
+            renderer,
+            &layout::Limits::new(size, size),
+        );
+
+        layout::Node::with_children(size, vec![background, content])
+    }
+
+    fn draw(
+        &self,
+        tree: &Tree,
+        renderer: &mut Renderer,
+        theme: &Theme,
+        style: &renderer::Style,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        viewport: &Rectangle,
+    ) {
+        for ((child, state), layout) in self
+            .children
+            .iter()
+            .zip(&tree.children)
+            .zip(layout.children())
+        {
+            child
+                .as_widget()
+                .draw(state, renderer, theme, style, layout, cursor, viewport);
+        }
+    }
+
+    fn operate(
+        &self,
+        tree: &mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation,
+    ) {
+        operation.container(None, layout.bounds(), &mut |operation| {
+            for ((child, state), layout) in self
+                .children
+                .iter()
+                .zip(&mut tree.children)
+                .zip(layout.children())
+            {
+                child.as_widget().operate(state, layout, renderer, operation);
+            }
+        });
+    }
+
+    fn on_event(
+        &mut self,
+        tree: &mut Tree,
+        event: Event,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        renderer: &Renderer,
+        clipboard: &mut dyn Clipboard,
+        shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
+    ) -> event::Status {
+        // Topmost layer first, as `stack` does: the content is in front.
+        self.children
+            .iter_mut()
+            .rev()
+            .zip(tree.children.iter_mut().rev())
+            .zip(layout.children().rev())
+            .map(|((child, state), layout)| {
+                child.as_widget_mut().on_event(
+                    state,
+                    event.clone(),
+                    layout,
+                    cursor,
+                    renderer,
+                    clipboard,
+                    shell,
+                    viewport,
+                )
+            })
+            .find(|&status| status == event::Status::Captured)
+            .unwrap_or(event::Status::Ignored)
+    }
+
+    fn mouse_interaction(
+        &self,
+        tree: &Tree,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        viewport: &Rectangle,
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        self.children
+            .iter()
+            .rev()
+            .zip(tree.children.iter().rev())
+            .zip(layout.children().rev())
+            .map(|((child, state), layout)| {
+                child
+                    .as_widget()
+                    .mouse_interaction(state, layout, cursor, viewport, renderer)
+            })
+            .find(|&interaction| interaction != mouse::Interaction::None)
+            .unwrap_or_default()
+    }
+
+    fn overlay<'b>(
+        &'b mut self,
+        tree: &'b mut Tree,
+        layout: Layout<'_>,
+        renderer: &Renderer,
+        translation: iced::Vector,
+    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
+        overlay::from_children(&mut self.children, tree, layout, renderer, translation)
+    }
+}
+
+impl<'a, Message: 'a> From<Backdrop<'a, Message>> for Element<'a, Message> {
+    fn from(backdrop: Backdrop<'a, Message>) -> Self {
+        Element::new(backdrop)
+    }
 }
