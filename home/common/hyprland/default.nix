@@ -160,11 +160,15 @@ in {
       dim_special = 0.0;
     };
 
+    # Vendor-neutral only. The GPU vendor variables that used to sit here
+    # -- LIBVA_DRIVER_NAME, GBM_BACKEND, __GLX_VENDOR_LIBRARY_NAME -- were
+    # hardcoded to nvidia for every host importing this module, which is
+    # not a cosmetic wrong default on an AMD or Intel machine: it points
+    # the VA-API, GBM and GLX loaders at a driver that is not installed and
+    # can take the session down. They now live in a GPU profile the host
+    # imports alongside this one, e.g. ../../profiles/gpu/nvidia.nix.
     env = [
-      "LIBVA_DRIVER_NAME,nvidia"
       "XDG_SESSION_TYPE,wayland"
-      "GBM_BACKEND,nvidia-drm"
-      "__GLX_VENDOR_LIBRARY_NAME,nvidia"
     ];
 
     animations = {
