@@ -28,7 +28,7 @@ in
   # storing copies there is nothing to list. The systemd user services are
   # bound to graphical-session.target, which uwsm activates, so they start
   # even though Hyprland runs with systemd.enable = false - the same reason
-  # hosts/terra/home.nix can rely on services.hypridle.
+  # a host module can rely on services.hypridle.
   services.cliphist.enable = true;
 
   # The rasi chain is config.rasi -> style.rasi -> theme/cybrcore.rasi, and

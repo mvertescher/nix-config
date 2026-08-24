@@ -3,17 +3,6 @@
 let
   shades = import ../../../lib/shades.nix { inherit lib; };
 
-  # Configure preferred terminal here ("alacritty" or "kitty")
-  terminal = "alacritty";
-
-  mkScratchpadCmd = class: cmd:
-    if terminal == "kitty" then
-      "kitty --class ${class} ${cmd}"
-    else if terminal == "alacritty" then
-      "alacritty --class ${class} -e ${cmd}"
-    else
-      throw "Unsupported terminal: ${terminal}";
-
   # Rust replacement for upstream's mediaplayer.py, which needed python3 plus
   # PyGObject and the Playerctl GIR typelib. Talks D-Bus directly, so the
   # music module has no interpreter dependency at runtime.
@@ -39,14 +28,10 @@ let
 
   templatedModules = builtins.replaceStrings
     [
-      "'kitty --class scratchpad-btop btop'"
-      "'kitty --class scratchpad-nvtop nvtop'"
       "~/.config/waybar/scripts/mediaplayer.py"
       "@nix-updates@"
     ]
     [
-      "'${mkScratchpadCmd "scratchpad-btop" "btop"}'"
-      "'${mkScratchpadCmd "scratchpad-nvtop" "nvtop"}'"
       (lib.getExe mpris-status)
       ("${lib.getExe nix-updates}"
         + lib.optionalString (cfg.flakeLock != null) " ${cfg.flakeLock}")

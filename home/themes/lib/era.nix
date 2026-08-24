@@ -190,10 +190,10 @@ lib.mkMerge [
     # hyprland's `exec-once`.
     #
     # exec-once fires exactly once, when the compositor starts. That is
-    # fine at login and wrong for every other way a theme changes: a
-    # `./switch` from one theme to another stops the outgoing theme's units
-    # and starts nothing, so the desktop is left with no bar, no
-    # notifications and no wallpaper until the next logout. Terra sat in
+    # fine at login and wrong for every other way a theme changes:
+    # activating a generation that switches theme stops the outgoing
+    # theme's units and starts nothing, so the desktop is left with no bar,
+    # no notifications and no wallpaper until the next logout. A host sat in
     # that state from 2026-08-23 22:45 until it was noticed the next day,
     # and it also means a switch cannot verify anything about these three.
     #
