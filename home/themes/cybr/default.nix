@@ -38,6 +38,20 @@ in
     enable = true;
     base16Scheme = theme;
     image = lib.mkDefault staticPixel;
+
+    # cybr is unambiguously dark -- near-black grounds, red and cyan
+    # accents -- and has no light variant. Left unset, the home-manager
+    # side saw the option's own default, `either`, and stylix was
+    # guessing at everything keyed on polarity.
+    #
+    # `hosts/terra/theme.nix` does set `polarity = "dark"`, but that
+    # reaches *system* stylix only, via the host's default.nix. The host
+    # also sets `stylix.homeManagerIntegration.followSystem = false` --
+    # the fix for an unrelated `stylix.image` collision -- so nothing
+    # carries the value across and it has to be stated here. Every
+    # generated era already sets it from its resolved roles (see
+    # ../lib/era.nix); cybr was the only theme that did not.
+    polarity = lib.mkDefault "dark";
   };
 
   # Nothing else on this desktop named an icon theme. `stylix.icons` is
@@ -54,10 +68,10 @@ in
   # that bothers to look -- ours included -- go for the answer, and it
   # carries the package into home.packages so the name resolves.
   #
-  # Named rather than derived from `config.stylix.polarity`, which is
-  # `either` here because cybr never sets it: this palette is a fixed
-  # dark one with no light variant, and the literal keeps it visibly in
-  # step with the `icon-theme` line in rofi/cybr-rofi/config.rasi. The
+  # Named rather than derived from `config.stylix.polarity`: this
+  # palette is a fixed dark one with no light variant, so the literal
+  # says exactly what the derivation would and keeps it visibly in step
+  # with the `icon-theme` line in rofi/cybr-rofi/config.rasi. The
   # generated eras do derive it -- see ../lib/era.nix -- because they
   # have light variants and a bar that draws tray icons.
   gtk.iconTheme = lib.mkDefault {
