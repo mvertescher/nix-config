@@ -1,0 +1,48 @@
+# The builder API, checked on every push.
+#
+# This repo exports a library and defines no hosts, so `lib.mkNixos` and
+# `lib.mkHome` have no in-repo consumer -- every real one is a private
+# wrapper whose call sites cannot be updated from here. An API break
+# would therefore surface at someone else's next pin bump rather than in
+# this repo. `checks.builder-api` is the in-repo consumer; this runs it.
+#
+# Deliberately narrow. It does **not** build a host configuration (there
+# are none), the installer ISO (a GitHub runner's ~14 GB disk cannot hold
+# the closure) or the cyberpunk-ui golden matrix (worth adding, but it
+# needs the disk freed and probably a binary cache first -- see the
+# wrapper's TODO). Everything here is evaluation plus one trivial
+# derivation, so it stays inside the free tier for public repositories
+# without a cache.
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A second push supersedes the first: nothing here is worth queueing.
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  builder-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v27
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
+
+      # Named explicitly rather than `nix flake check`, which would also
+      # evaluate `packages.installer-iso` -- a whole nixosSystem eval for
+      # an artefact this job has no intention of building.
+      - name: builder API accepts a minimal host set
+        run: nix build --print-build-logs .#checks.x86_64-linux.builder-api
+
+      - name: flake metadata is well-formed
+        run: nix flake metadata --json > /dev/null

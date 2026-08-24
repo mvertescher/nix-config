@@ -71,6 +71,14 @@
         mkHome = import ./lib/mkHome.nix { inherit inputs overlays; };
       };
 
+      # The builders' only consumer inside this repo. Every real consumer
+      # is a private wrapper whose call sites cannot be updated from
+      # here, so `lib` has no in-repo user and nothing would notice an
+      # API break until someone else's pin bump. See the file's header.
+      checks.${system}.builder-api = pkgs.callPackage ./lib/tests/builder-api.nix {
+        inherit (self.lib) mkNixos mkHome;
+      };
+
       # Installer ISO with SSH keys baked in, for unattended provisioning
       # via scripts/provision-server.sh. Plain nixpkgs, no overlays needed.
       packages.${system}.installer-iso =
