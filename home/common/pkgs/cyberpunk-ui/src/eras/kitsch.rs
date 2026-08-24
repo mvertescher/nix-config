@@ -12,7 +12,7 @@
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
     Banner, Bar, Chrome, Compliance, Corner, Era, Footnotes, Ground, Metrics, Nameplate,
-    Selection, Style,
+    Menu, Selection, Style, Ticket,
 };
 
 pub const BG: iced::Color = rgb(0x0b0b07);
@@ -31,6 +31,13 @@ pub const ON_MINT: iced::Color = rgb(0x0b3b31);
 /// `docs/kitsch/target-components.svg`, "EXTRUDED FAN MENU".
 pub const SLAB: iced::Color = rgb(0x2bc4ac);
 pub const SLAB_SHADE: iced::Color = rgb(0x177a6b);
+/// The yellow one stop down: the shelf band on the *selected* card
+/// (`docs/kitsch/target-app.svg`, `M830 308 ... fill="#f0a80a"` against
+/// `#fcc428` on the other three) and the folded corner of the callout
+/// panel. Not reachable by mixing `YELLOW` towards `ON_YELLOW` -- it is
+/// darker *and* more saturated, and its blue channel sits below both
+/// endpoints.
+pub const YELLOW_SHADE: iced::Color = rgb(0xf0a80a);
 
 pub fn palette() -> Palette {
     Palette {
@@ -44,6 +51,10 @@ pub fn palette() -> Palette {
         select: YELLOW,
         on_select: ON_YELLOW,
         emphasis: Some((MINT, ON_MINT)),
+        // On the selected card the band darkens and keeps its ink: the
+        // era shades the band rather than inverting it, because the
+        // card underneath is already yellow.
+        banner_selected: Some((YELLOW_SHADE, ON_YELLOW)),
         ornaments: Ornaments {
             // The shelf band on every product card: yellow, poking past
             // the card's left edge, its glyphs and brand tag in the
@@ -89,6 +100,16 @@ pub fn style() -> Style {
         // Below the card rather than inside it, and on the selected
         // one too.
         compliance: Compliance::Below,
+        // The nav pill's top-right juts out 18 and drops 15, on a body
+        // that is otherwise the era's `radius: 16` pill. Sampled off
+        // `M172 340 h158 l18 15 ...` in target-app.svg.
+        ticket: Ticket {
+            reach: 18.0,
+            drop: 15.0,
+        },
+        // The extruded fan: slabs radiating from a pivot, each with
+        // stacked outline copies receding up-right.
+        menu: Menu::Fan,
         // The dotted matrix, hollow square and hollow triangle that
         // head every shelf band and lead every socket row.
         glyphs: true,

@@ -1,7 +1,30 @@
+//! The mail-list card, from the neo-militarism app that predates the
+//! era generalisation.
+//!
+//! It took its ink from `crate::colors`, the crate's original
+//! neomil-only colour table, and was the last thing in the crate that
+//! did. It takes a [`Style`] now and `colors.rs` is gone, so no widget
+//! is pinned to one era's palette any more.
+//!
+//! Two caveats worth stating rather than leaving to be discovered:
+//!
+//! * **Nothing calls this.** [`crate::screens::mail`] and
+//!   [`crate::panels::mail`] both draw their rows with
+//!   [`crate::widgets::row::mail_row`], so no golden covers this file.
+//!   The palette wiring below is therefore correct by construction and
+//!   not by render.
+//! * The *geometry* is still neomil's: a fixed 8px double chamfer, cut
+//!   at the top right and bottom left. That is why this stays in the
+//!   era-specific half of `widgets`. Generalising it is not a matter of
+//!   reading `style.corner` here -- [`crate::widgets::surface`] already
+//!   draws all four corner treatments, and the honest fix is for this
+//!   card to become a `Surface` the way `mail_row` is, or to be deleted
+//!   in its favour.
+
 use iced::widget::{canvas, column, container, row, text, Space, stack, mouse_area};
 use iced::{Alignment, Color, Element, Length, Point, Rectangle, Renderer, Theme, mouse};
 use crate::fonts::{FONT_RAJDHANI_REGULAR, FONT_RAJDHANI_BOLD, FONT_ORBITRON_BOLD};
-use crate::colors;
+use crate::style::Style;
 
 #[derive(Debug, Clone, Copy)]
 pub struct MessageCardBackground {
@@ -65,34 +88,49 @@ impl<Message> canvas::Program<Message> for MessageCardBackground {
 /// A message card widget for the mail panel list.
 /// Displays a title, sender, and an optional "NEW" tag.
 /// It is interactive and triggers `on_press` when clicked.
+///
+/// The era supplies every colour. A selected card is filled with
+/// `palette.select` and inked with `palette.on_select` -- the pair
+/// [`crate::widgets::row::mail_row`] already uses -- so kitsch gets
+/// dark ink on yellow and neokitsch dark ink on veneer, instead of the
+/// page ground the neomil-only table handed back for all four.
 pub fn message_card<'a, Message: 'static + Clone>(
+    style: &Style,
     title: &'a str,
     sender: &'a str,
     is_new: bool,
     is_selected: bool,
     on_press: Message,
-    color_accent: Color,
 ) -> Element<'a, Message> {
+    // One accent drives the card: the era's selection fill when the row
+    // is chosen, its body colour for the wash and hairline when it is
+    // not. That is what the caller used to pass in by hand.
+    let accent = if is_selected {
+        style.palette.select
+    } else {
+        style.palette.fg
+    };
+
     let bg_program = MessageCardBackground {
-        color: color_accent,
+        color: accent,
         is_selected,
         cut_size: 8.0,
     };
 
-    // Text colors based on selection state
+    // Ink follows the fill it sits on.
     let text_color = if is_selected {
-        *colors::COLOR_BG // Dark text on solid accent background
+        style.palette.on_select
     } else {
-        color_accent
+        style.palette.fg
     };
 
-    // "NEW" tag styling
+    // "NEW" tag styling. Both the label and its outline take the same
+    // ink as the rest of the card; the selected case used to be a flat
+    // `Color::BLACK`, which is legible only for as long as every era
+    // selects with a light fill. `on_select` is the role that actually
+    // promises that.
     let new_tag = if is_new {
-        let (tag_text_color, tag_border_color) = if is_selected {
-            (Color::BLACK, Color::BLACK)
-        } else {
-            (color_accent, color_accent)
-        };
+        let (tag_text_color, tag_border_color) = (text_color, text_color);
 
         Some(
             container(

@@ -13,7 +13,7 @@
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
     Banner, Bar, Chrome, Compliance, Corner, Era, Footnotes, Ground, Metrics, Nameplate,
-    Selection, Style,
+    Menu, Selection, Style, Ticket,
 };
 
 pub const BG: iced::Color = rgb(0x050304);
@@ -38,6 +38,10 @@ pub fn palette() -> Palette {
         select: RED_FILL,
         on_select: rgb(0x1a0405),
         emphasis: None,
+        // No band anywhere, so nothing to restate for the selected
+        // state either; `banner()` degrades to a tape label and
+        // `banner_on_select()` swaps it.
+        banner_selected: None,
         // A minimalist era declares no ornament: the vocabulary is
         // additive and nothing here wants it.
         ornaments: Ornaments::default(),
@@ -63,6 +67,14 @@ pub fn style() -> Style {
         // No store target for this era, and the notice is a
         // maximalist-adjacent flourish; it stays unclaimed.
         compliance: Compliance::None,
+        // Neomil chamfers its containers; it does not cut a wedge into
+        // a nav pill.
+        ticket: Ticket::default(),
+        // The cut-diamond hub. The one entry in this table with no
+        // `docs/` citation -- see [`crate::style::Menu`] -- because
+        // this era's own target is an ops screen and neither of its
+        // sheets draws a diamond anywhere.
+        menu: Menu::Diamonds,
         glyphs: false,
         metrics: Metrics {
             stroke: 1.5,

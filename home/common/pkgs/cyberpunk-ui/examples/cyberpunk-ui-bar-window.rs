@@ -26,8 +26,33 @@ mod style;
 
 use cyberpunk_ui::bar::{bar, Audio, Network, Readings, TrayItem, Workspace};
 use cyberpunk_ui::Style;
-use iced::widget::{column, container, Space};
+use iced::widget::{column, container, image, Space};
 use iced::{Element, Length};
+
+/// A tray icon, drawn here rather than read from anywhere.
+///
+/// The golden has to hold the *icon* path still, not just the label
+/// fallback, and it cannot do that with a real icon: the sandbox has no
+/// icon theme, and even on a desktop the file behind `IconName` belongs
+/// to whatever version of whatever package is installed. So the sample
+/// synthesises one -- a diamond, because it is four comparisons and it
+/// is obvious in a diff which way round it went.
+///
+/// 28 square is what the tray decodes at for a 26px bar: twice the
+/// 14px the cell draws, so the capture shows the same downsampling the
+/// live bar does.
+fn sample_icon(rgb: [u8; 3]) -> image::Handle {
+    const SIDE: i32 = 28;
+    let mut data = Vec::with_capacity((SIDE * SIDE * 4) as usize);
+    for y in 0..SIDE {
+        for x in 0..SIDE {
+            let distance = (x * 2 - SIDE + 1).abs() + (y * 2 - SIDE + 1).abs();
+            let inside = distance <= SIDE - 2;
+            data.extend_from_slice(&[rgb[0], rgb[1], rgb[2], if inside { 255 } else { 0 }]);
+        }
+    }
+    image::Handle::from_rgba(SIDE as u32, SIDE as u32, data)
+}
 
 /// Fixed readings. Every optional module is present, because a module
 /// that is absent from the sample is a module the golden says nothing
@@ -48,15 +73,31 @@ fn sample() -> Readings {
             volume: 62,
             muted: false,
         }),
-        // Two items, one of them shouting, so the golden covers both
-        // inks a tray cell can take.
+        // All four shapes a tray cell can take: an icon, an icon from
+        // an item that is shouting, and the label fallback in both of
+        // its inks. A cell that is not in the sample is a cell the
+        // golden says nothing about, and the fallback is not a
+        // deprecated path -- it is what an item whose icon no installed
+        // theme has actually gets.
         tray: vec![
             TrayItem {
+                label: "FLAM".to_string(),
+                icon: Some(sample_icon([0x88, 0x00, 0xaa])),
+                attention: false,
+            },
+            TrayItem {
+                label: "ELEM".to_string(),
+                icon: Some(sample_icon([0xff, 0x66, 0x00])),
+                attention: true,
+            },
+            TrayItem {
                 label: "BLUE".to_string(),
+                icon: None,
                 attention: false,
             },
             TrayItem {
                 label: "SYNC".to_string(),
+                icon: None,
                 attention: true,
             },
         ],
@@ -87,7 +128,10 @@ impl BarWindow {
 
     fn view(&self) -> Element<'_, Message> {
         column![
-            container(bar(&self.style, &self.readings))
+            // `None`: the golden is a still life, and hit-testing it
+            // could never exercise would only be a claim the capture
+            // cannot check.
+            container(bar(&self.style, &self.readings, None))
                 .height(Length::Fixed(self.style.bar.height as f32)),
             // The bar alone is a 26px strip. The empty ground under it
             // is what makes a capture legible as a desktop edge, and it

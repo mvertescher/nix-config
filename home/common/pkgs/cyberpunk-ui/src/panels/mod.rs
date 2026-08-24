@@ -2,18 +2,20 @@
 //!
 //! Same contract as [`crate::screens`] -- a screen takes a
 //! [`crate::style::Style`] and never asks which era it is -- and the
-//! same shape (`new`/`title`/`update`/`view`). The split is temporary:
-//! `dashboard` belongs beside `store`, `login` and `mailbox` and moves
-//! there once `tests.dashboard.<era>` is wired, and `mail` is the
-//! interactive counterpart to the display-only [`crate::screens::mail`]
-//! rather than a second copy of it.
+//! same shape (`new`/`title`/`update`/`view`).
 //!
-//! Everything here used to hardcode the neo-militarism palette. What is
-//! left of that is noted where it survives -- `widgets::message_card`
-//! still resolves its selected-row ink through `crate::colors`.
+//! Only `mail` is left here, and it is not waiting to move: it is the
+//! interactive counterpart to the display-only [`crate::screens::mail`]
+//! -- selection, focus, scrolling and deletion wired up -- rather than
+//! a second copy of it. `dashboard` was the one that was merely in the
+//! wrong place, and it now sits in [`crate::screens`] beside `store`,
+//! `login` and `mailbox`, where `tests.dashboard.<era>` covers it.
+//!
+//! Everything here used to hardcode the neo-militarism palette. None of
+//! it does now: `crate::colors` is gone, and the last reader of it,
+//! `widgets::message_card`, takes a [`crate::style::Style`] like the
+//! rest of the vocabulary.
 
-pub mod dashboard;
 pub mod mail;
 
-pub use dashboard::Dashboard;
 pub use mail::{mail_panel, Email, MailFocus, ThreadMessage};

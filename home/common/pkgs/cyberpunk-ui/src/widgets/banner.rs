@@ -15,50 +15,30 @@
 //! without any widget having to paint beyond its bounds.
 
 use super::text;
-use crate::style::{Selection, Style};
+use crate::style::Style;
 use iced::widget::{canvas, container, row, stack, Space};
 use iced::{mouse, Color, Element, Length, Padding, Point, Rectangle, Renderer, Theme};
 
 /// The band's fill and ink for the given card state.
 ///
-/// A band in the selection fill, on a card in the selection fill, is
-/// invisible -- so both maximalist eras move it, and they move it in
-/// opposite directions. Which one an era wants follows from what its
-/// selected card is *made of*, which is already a parameter:
+/// This used to key off [`crate::style::Selection`] and *infer* the
+/// selected pair -- pull kitsch's fill 15% towards its own ink, swap
+/// neokitsch's outright -- on the reasoning that what a band does when
+/// selected follows from what the card it sits on is made of. The
+/// reasoning was sound and the arithmetic was not: a 15% mix lands on
+/// `#deab24` where the target draws `#f0a80a`, and no mix towards the
+/// ink can reach it at all.
 ///
-/// * [`Selection::Solid`] -- kitsch. The band on the yellow card is the
-///   bottom stop of the same gradient the card is filled with, a shade
-///   of itself (`fill="#f0a80a"` against `#fcc428`). Rendering selection
-///   flat, the equivalent move is to pull the fill towards its own ink.
-/// * [`Selection::Veneer`] -- neokitsch. You cannot shade a *material*:
-///   a slightly darker champagne band on a grained plank reads as a
-///   knot, so the target inverts instead -- `rect fill="#3a2410"` with
-///   `#e7c686` text where the unselected cards have `#d3b279` with
-///   `#3a2410`. That is a straight swap of the pair.
-///
-/// This is a derivation, not a role, and it is the weaker of the two:
-/// a published `banner`-on-selected pair would say what each era wants
-/// rather than inferring it. It is here because the vocabulary in
-/// `home/themes/lib/roles.nix` has no slot for it yet.
+/// So the pair is now sampled per era and asked for by name. Both the
+/// values and the argument for keeping them era-owned rather than
+/// publishing them as a role live on
+/// [`crate::palette::Palette::banner_on_select`]; this is the two-line
+/// consequence.
 pub fn banner_colors(style: &Style, selected: bool) -> (Color, Color) {
-    let (fill, ink) = style.banner_colors();
-    if !selected {
-        return (fill, ink);
-    }
-    match style.selection {
-        Selection::Veneer => (ink, fill),
-        Selection::Solid => {
-            let mix = |a: f32, b: f32| a * 0.85 + b * 0.15;
-            (
-                Color {
-                    r: mix(fill.r, ink.r),
-                    g: mix(fill.g, ink.g),
-                    b: mix(fill.b, ink.b),
-                    a: fill.a,
-                },
-                ink,
-            )
-        }
+    if selected {
+        style.banner_on_select()
+    } else {
+        style.banner_colors()
     }
 }
 

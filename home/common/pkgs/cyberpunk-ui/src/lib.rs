@@ -23,18 +23,14 @@ pub mod style;
 pub mod theme;
 pub mod widgets;
 
-// Era-agnostic screens that are not yet in the golden matrix; see the
-// module doc. `background` and `top_bar` used to live beside these and
-// are gone: `widgets::ground` and `widgets::chrome::top_bar` do the
-// same jobs for four eras rather than one.
+// The interactive half of the mail screen -- same era-agnostic
+// contract, but wired for selection and focus rather than posed for a
+// golden. `background` and `top_bar` used to live beside it and are
+// gone: `widgets::ground` and `widgets::chrome::top_bar` do the same
+// jobs for four eras rather than one.
 pub mod panels;
 
 pub mod bar;
 pub mod fonts;
-
-// The neo-militarism palette, from before an era was data. Only
-// `widgets::message_card` still reads it; nothing else in the crate
-// does, and it goes when that widget takes a `Style`.
-pub mod colors;
 
 pub use style::{Era, Style};

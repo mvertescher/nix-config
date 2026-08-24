@@ -61,6 +61,7 @@ impl<Message> canvas::Program<Message> for Bracket {
         let box_ = outline(
             self.corner,
             default_corners(self.corner),
+            crate::style::Ticket::default(),
             (panel_w - self.stroke).max(0.0),
             (self.head - self.stroke).max(0.0),
         );

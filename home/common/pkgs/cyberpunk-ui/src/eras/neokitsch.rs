@@ -12,7 +12,7 @@
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
     Banner, Bar, Chrome, Compliance, Corner, Era, Footnotes, Ground, Metrics, Nameplate,
-    Selection, Style,
+    Menu, Selection, Style, Ticket,
 };
 
 pub const BG: iced::Color = rgb(0x0a0a0a);
@@ -51,6 +51,13 @@ pub fn palette() -> Palette {
         // No highlight band anywhere in the references; that is a
         // kitsch device and this era does hierarchy by brightness.
         emphasis: None,
+        // You cannot shade a *material*: a slightly darker champagne
+        // band on a grained plank reads as a knot, so the era inverts
+        // instead. `target-components.svg` fills the selected card's
+        // footer nameplate `#3a2410` and prints the name on it in
+        // `#e7c686` -- the era's `fg`, a stop brighter than the
+        // champagne the unselected band is filled with.
+        banner_selected: Some((ON_VENEER, GOLD_TEXT)),
         ornaments: Ornaments {
             // The card's footer nameplate, and the BASKET panel at the
             // top right of the store. Champagne, not veneer: selection
@@ -95,6 +102,12 @@ pub fn style() -> Style {
         // The footer nameplate is the card's last edge; the target
         // prints no notice under it.
         compliance: Compliance::None,
+        // The era has a step-notch shape but spends it on the mailbox
+        // footer; its nav pills are plain `rx="4"` rects.
+        ticket: Ticket::default(),
+        // "CARD CASCADE (device software)": tall clipped-corner cards,
+        // staggered, the active one filled with veneer.
+        menu: Menu::Cascade,
         glyphs: false,
         metrics: Metrics {
             stroke: 1.6,

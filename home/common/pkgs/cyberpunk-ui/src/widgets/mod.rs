@@ -5,6 +5,7 @@ pub mod chrome;
 pub mod glyph;
 pub mod ground;
 pub mod marker;
+pub mod menu;
 pub mod input;
 pub mod ornament;
 pub mod pill;
@@ -17,6 +18,10 @@ pub mod text;
 // generalised. These are era-specific by nature -- the diamond menu is
 // an interaction model, not a dressed rectangle -- and stay as their own
 // modules rather than being forced into the shared vocabulary.
+//
+// `diamond_menu` is no longer unreachable: it is the `Menu::Diamonds`
+// arm of `menu`, which is how an era-specific interaction model gets a
+// screen without a screen ever naming the era.
 pub mod chip;
 pub mod diamond_menu;
 pub mod floppy_icon;
@@ -33,6 +38,7 @@ pub use chrome::{footer, top_bar};
 pub use glyph::{glyph, Glyph};
 pub use ground::ground;
 pub use marker::marker;
+pub use menu::{menu, MenuItem};
 pub use ornament::{column_rule, page_curl};
 pub use pill::{badge, pill};
 pub use row::{mail_row, Mail};

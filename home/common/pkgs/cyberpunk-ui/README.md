@@ -99,10 +99,10 @@ src/
   theme.rs        runtime palette published by the nix theme layer
   eras/           one table per era, sampled figures
   widgets/        surface, pill, card, banner, silhouette, glyph,
-                  bracket, ornament, chrome, marker, ground, text
-  screens/        store, login, mailbox — era-agnostic by construction
-  panels/         dashboard, mail — same contract, not yet in the
-                  golden matrix
+                  bracket, ornament, chrome, marker, ground, menu, text
+  screens/        store, login, mailbox, dashboard — era-agnostic by
+                  construction
+  panels/         mail — the interactive counterpart to screens::mail
 ```
 
 ## The bar
@@ -125,8 +125,21 @@ directly rather than through `hyprland-rs`, which GitHub reports as
 NOASSERTION -- no clear licence for a dependency that saves little.
 
 Modules: hostname tape, workspaces, focused window, network, audio,
-CPU, memory, date, clock. Every one of them is the same `cell`, so
-none of them knows which era it is in.
+CPU, memory, date, clock, and a StatusNotifierItem tray. Every one of
+them is the same `cell`, so none of them knows which era it is in.
+
+The tray is both watcher and host, and lets the bus decide which is
+live: it never asks for the name with `ReplaceExisting`, so it will not
+take the tray from a waybar already serving one, and it reads the item
+list back off the name rather than its own registry, so one code path
+covers both cases. Icons come from a full freedesktop theme lookup, and
+fall back to a short label when no theme has one. Two known gaps, both
+in `iced_layershell` 0.13.7 rather than here: middle click arrives as
+`Activate`, because every button but right maps to `Button::Left`; and
+the scroll sign is unverified, since the raw `wl_pointer` axis runs
+opposite to iced's own convention and nothing tested acts on it. Note
+that a host setting no icon theme gets `hicolor` plus whatever items
+ship themselves -- `--icon-theme` picks another.
 
 The readings split by cost. Clock, CPU, memory and Hyprland's two
 socket round trips are taken inline on the tick; audio and network get
@@ -192,28 +205,24 @@ also have desktop themes under `home/themes/`, so `Style::from_desktop`
 has something real to follow.
 
 Not yet done:
-- The **menu shape** is the one thing the dashboard cannot express.
-  Neomil's hub is a diamond menu, kitsch's an extruded fan, entropism's
-  flat tiles — genuine per-era *interaction models*, and a screen
-  cannot pick between them without the `if era ==` this crate exists to
-  avoid. It wants a `Menu` variant in `style.rs` beside `Chrome` and
-  `Footnotes`; until then `panels::dashboard` draws its modules from
-  the shared `Surface` vocabulary and `widgets::diamond_menu` is
-  unreachable from any screen.
-- `panels::dashboard` and `panels::mail` now take a `Style` like
-  everything else, but they are not in `screens/` yet. `tests.dashboard.<era>`
-  is wired, so the dashboard is only waiting on a `git mv`;
-  `panels::mail` stays where it is on purpose — it is the interactive
-  counterpart to the display-only `screens::mail`, not a second copy.
-- `widgets::message_card` is the last thing in the crate reading
-  `crate::colors`, for the ink on a selected row. It wants a `Style`,
-  and `colors.rs` goes with it.
-- Kitsch's extruded fan menu and ticket-notched nav pills, neokitsch's
-  card cascade and BASKET panel, and entropism's menu tiles are in the
-  design targets but not yet widgets. So is the two-line compliance
-  caption the kitsch and entropism targets set under every card, and
-  the outline that encloses kitsch's nav column and runs into the
-  page-curl.
+- **The menu is on no screen.** `Menu { Tiles | Fan | Diamonds |
+  Cascade }` is in `style.rs`, every era declares one, and
+  `widgets::menu` draws all four — but nothing calls it, so no golden
+  covers it. Wiring it is a one-function change in
+  `screens::dashboard`'s module grid. Note the diamond hub is inherited
+  rather than sampled: neither of neomil's design sheets draws one,
+  despite this file having called it that era's interaction model.
+- `widgets::message_card` is unreachable — nothing has called it since
+  the entropism-ui retirement replaced its last caller with the shared
+  vocabulary. It now takes a `Style` and `colors.rs` is gone, but its
+  geometry is still a hardcoded 8px neomil double chamfer while
+  `widgets::surface` draws all four corner treatments. Fold it into
+  `mail_row`/`Surface`, or drop it.
+- Neokitsch's BASKET panel and its step-notch pill on the mailbox
+  footer are in the design targets but not yet widgets. The fan, the
+  cascade, the tiles, the ticket notch, the compliance caption and the
+  nav-column outline that runs into the page-curl have all since
+  landed.
 - A **data table** widget. `entropism-ui`'s `matrix` screen was the
   reason to want one, and it was dropped rather than ported: it was
   never the node graph it had been described as — a 25x60 grid of

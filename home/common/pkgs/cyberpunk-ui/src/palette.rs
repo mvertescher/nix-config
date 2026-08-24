@@ -112,6 +112,13 @@ pub struct Palette {
     /// published under the same rules -- it is flat here only because
     /// it predates the rest and widgets already read it by this path.
     pub emphasis: Option<(Color, Color)>,
+    /// The accent band's `(fill, ink)` when it sits on a *selected*
+    /// element, where the era sampled one.
+    ///
+    /// Era-owned rather than a published role, for the same kind of
+    /// reason `bloom` is -- see [`Palette::banner_on_select`], which
+    /// records the argument and the fallback.
+    pub banner_selected: Option<(Color, Color)>,
 
     /// Everything else a maximalist era declares. Default-empty, so an
     /// era that says nothing is spelled `Ornaments::default()`.
@@ -172,6 +179,64 @@ impl Palette {
     /// label. Never `None`, so a banner widget has no era branch in it.
     pub fn banner(&self) -> (Color, Color) {
         self.ornaments.banner.unwrap_or((self.tape, self.bg))
+    }
+
+    /// The accent banner as `(fill, ink)` on a selected element.
+    ///
+    /// ## Why this is a colour and not a role
+    ///
+    /// A band in the selection fill, on a card in the selection fill,
+    /// is invisible, so both maximalist eras move it -- and they move
+    /// it in opposite directions:
+    ///
+    /// * kitsch darkens. `docs/kitsch/target-app.svg` fills the
+    ///   selected card's shelf band `#f0a80a` against `#fcc428` on the
+    ///   other three, ink unchanged at `#37220f`; the same `#f0a80a`
+    ///   is the folded corner of the callout panel in
+    ///   `target-components.svg`. It is the yellow one stop down.
+    /// * neokitsch inverts. `target-components.svg` draws the
+    ///   unselected footer nameplate `#d3b279` with `#3a2410` text and
+    ///   the selected one `#3a2410` with `#e7c686` -- the ink is the
+    ///   era's `fg`, not its band fill.
+    ///
+    /// This used to be inferred from [`crate::style::Selection`], and
+    /// the inference was wrong twice over: a 15% mix towards the ink
+    /// lands on `#deab24`, which is muddier and *less* saturated than
+    /// the sampled `#f0a80a` (no mix can reach it -- the target's blue
+    /// channel is 10 and both endpoints are above it), and a straight
+    /// swap of the pair gives neokitsch champagne ink where the target
+    /// has gold. Two sampled pairs are shorter than the derivation
+    /// they replace and land on the reference exactly.
+    ///
+    /// It is not a published role, and the reasoning matters more than
+    /// the outcome because the vocabulary in
+    /// `home/themes/lib/roles.nix` would now accept one cheaply --
+    /// `extraNames` is additive and an era that does not declare a
+    /// name is unaffected by it. The case against is that only one
+    /// era has anything to publish. Neokitsch's pair is `(onBanner,
+    /// fg)`, both already published, so a role there would restate two
+    /// values it already has; that leaves kitsch's single `#f0a80a`,
+    /// and a role with one era's value and one era's tautology is a
+    /// constant with a long name. The precedent is the repo TODO's
+    /// "Roles for maximalist eras": a role it is not, a colour the era
+    /// needs it is.
+    ///
+    /// The live cost of that call is that a *variant* cannot retint
+    /// it: kitsch's `bleach` publishes `banner = "#e8a80f"` and would
+    /// still get the dark-theme `#f0a80a` selected. That is tolerable
+    /// because the two are within a stop of each other and because the
+    /// variant's own note says the band "stays hot -- it is what
+    /// 'selected' looks like". If it ever stops being tolerable, the
+    /// additive path is one `extraNames` entry and one `ExtraRoles`
+    /// field, and it touches no era that stays quiet.
+    ///
+    /// Total, like every accessor here. An era that sampled no pair
+    /// falls back to swapping fill and ink, which is a legible band in
+    /// any palette and is what the two minimalist eras' tape-label
+    /// degradation reduces to.
+    pub fn banner_on_select(&self) -> (Color, Color) {
+        let (fill, ink) = self.banner();
+        self.banner_selected.unwrap_or((ink, fill))
     }
 
     /// The highlight band as `(fill, ink)`, falling back to a quiet

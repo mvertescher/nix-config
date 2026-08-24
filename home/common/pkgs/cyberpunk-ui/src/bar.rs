@@ -14,8 +14,9 @@
 use crate::style::Style;
 use crate::widgets::surface::{surface, Surface};
 use crate::widgets::text;
-use iced::widget::{container, row, Space};
-use iced::{Element, Length, Padding};
+use iced::widget::image;
+use iced::widget::{container, mouse_area, row, Space};
+use iced::{mouse, Element, Length, Padding};
 
 /// One workspace as the compositor reports it.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -59,22 +60,82 @@ pub enum Network {
 
 /// One tray icon, as StatusNotifierItem describes it.
 ///
-/// Deliberately not the protocol's own shape. The bar needs a thing to
-/// draw and a reason to draw it loudly; `IconName`, `IconPixmap`,
-/// `AttentionIconName`, the menu path and the rest are the binary's
-/// problem, and putting them here would drag an icon-theme lookup into
-/// a module that is meant to stay a pure function.
+/// Deliberately not the protocol's own shape. `IconName`,
+/// `IconPixmap`, `AttentionIconName`, `OverlayIconName` and
+/// `IconThemePath` are five ways of saying one thing -- *these pixels*
+/// -- and resolving between them means an icon-theme lookup, a PNG
+/// decoder and an SVG rasteriser. All of that is the binary's problem
+/// (`examples/bar/tray.rs`, `examples/bar/icon.rs`); what arrives here
+/// is already decoded, already composited with its overlay, and
+/// already the right size, so `bar()` stays a pure function of what it
+/// is handed.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TrayItem {
-    /// What to draw. Presently a short label standing in for the icon,
-    /// because the bar has no image pipeline yet -- see
-    /// `examples/bar/tray.rs`.
+    /// Four characters of the item's own name, drawn when no icon
+    /// could be resolved. Not a placeholder for one that is coming:
+    /// plenty of items name an icon no installed theme has, and a cell
+    /// that says `SYNC` is worth more than a blank one.
     pub label: String,
-    /// The item is asking to be looked at (`Status = NeedsAttention`),
-    /// which is the one distinction the protocol makes that a bar can
-    /// honour without drawing icons.
+    /// The resolved icon, RGBA, or `None` to fall back to [`label`].
+    ///
+    /// [`label`]: TrayItem::label
+    pub icon: Option<image::Handle>,
+    /// The item is asking to be looked at (`Status = NeedsAttention`).
+    /// The host has already swapped in `AttentionIcon*` where the item
+    /// offered one; this is what makes the *cell* shout as well.
     pub attention: bool,
 }
+
+/// What a pointer did to a tray cell.
+///
+/// Named for the protocol methods rather than for the buttons, because
+/// the mapping from button to method is the host's convention and the
+/// method names are the fixed part.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TrayAction {
+    /// `Activate`. Left button, the usual "open this application".
+    Activate,
+    /// `SecondaryActivate`. Middle button.
+    ///
+    /// Wired, and unreachable on a layer surface today:
+    /// `iced_layershell` 0.13.7 maps every Wayland button code except
+    /// `BTN_RIGHT` to `mouse::Button::Left` (`src/event.rs`), so a
+    /// middle click on `cyberpunk-ui-bar` arrives as
+    /// [`Activate`](TrayAction::Activate). Left wired rather than
+    /// removed because `bar()` is not a layer-shell function -- it is
+    /// correct in an ordinary window today, and correct everywhere once
+    /// that map grows a third arm.
+    Secondary,
+    /// `ContextMenu`. Right button.
+    Context,
+    /// `Scroll` along the vertical axis, in whole wheel detents, never
+    /// zero.
+    ///
+    /// The sign is whatever the host's scroll event carried, passed
+    /// through rather than normalised, and it is the one thing here
+    /// that has *not* been checked against a running item: no
+    /// StatusNotifierItem on this desktop acts on `Scroll`, and the
+    /// virtual-pointer tools available for driving one produce the same
+    /// sign in both directions. Worth noting that the two hosts of
+    /// `bar()` will not agree until upstream does: `iced_layershell`
+    /// 0.13.7 forwards the raw `wl_pointer` axis, whose positive is
+    /// *toward* the user, while iced's own `ScrollDelta` documents
+    /// positive as away from it.
+    Scroll(i32),
+}
+
+/// How the bar reports a pointer event on a tray cell to its host.
+///
+/// `usize` indexes [`Readings::tray`]. `None` at the call site means
+/// the bar draws tray cells but does not listen -- which is what
+/// `cyberpunk-ui-bar-window` wants, since a golden of a still life
+/// should not carry hit-testing it never exercises.
+///
+/// A bare function pointer rather than a closure: the caller is a
+/// message constructor and has nothing to capture, and a `&dyn Fn`
+/// would have to outlive the `Element`, which in an iced `view` means
+/// finding somewhere `'static` to keep a closure that does nothing.
+pub type OnTray<Message> = fn(usize, TrayAction) -> Message;
 
 /// Everything the bar draws, already gathered.
 #[derive(Debug, Clone, Default)]
@@ -184,18 +245,117 @@ fn audio_cell<'a, Message: 'static>(style: &Style, audio: &Audio) -> Element<'a,
     }
 }
 
-/// One tray item. Same silhouette as any other module, because that is
-/// the whole argument for having built this bar: a tray icon is a cell,
-/// so it wears the era's corner for free.
-fn tray_cell<'a, Message: 'static>(style: &Style, item: &TrayItem) -> Element<'a, Message> {
-    // Clipped for the same reason the SSID is: a label is whatever the
-    // application chose to call itself, and one long one must not push
-    // the clock off the screen.
-    let label = clip(&item.label, 6);
-    if item.attention {
-        alert_cell(style, label)
+/// How large a tray icon is drawn, in pixels.
+///
+/// Derived from the bar's own height rather than fixed, so an era that
+/// declares a taller bar gets larger icons instead of a small one
+/// floating in a big cell. The margin is the cell's stroke, its 2px of
+/// vertical padding and the bar's own 3px, doubled.
+///
+/// Public because whoever gathers the readings has to decode icons at
+/// the size they will be drawn, and the alternative is two constants
+/// that agree until one of them is edited.
+pub fn icon_size(style: &Style) -> f32 {
+    (style.bar.height as f32 - 12.0).clamp(10.0, 24.0)
+}
+
+/// One tray item drawn as its icon.
+///
+/// The icon is handed over already decoded and composited, so all this
+/// decides is the box around it -- which is the whole argument for
+/// having built this bar: a tray icon is a [`cell`], so it wears the
+/// era's corner for free.
+fn icon_cell<'a, Message: 'static>(
+    style: &Style,
+    icon: &image::Handle,
+    attention: bool,
+) -> Element<'a, Message> {
+    let size = icon_size(style);
+
+    // An item shouting has usually swapped its own icon for
+    // `AttentionIcon*` already, but many define none -- so the cell
+    // says it too, in the era's published `alert` role, the same ink
+    // `alert_cell` moves for a muted sink.
+    let bg = if attention {
+        Surface::outlined(style).stroke(style.palette.alert)
     } else {
-        cell(style, label, false)
+        Surface::outlined(style)
+    };
+
+    container(surface(
+        bg,
+        Padding::from([2, 6]),
+        container(
+            image(icon.clone())
+                .width(Length::Fixed(size))
+                .height(Length::Fixed(size))
+                // Nearest would alias a 22px item icon scaled to 14;
+                // these are photographs as far as the bar is concerned.
+                .filter_method(image::FilterMethod::Linear),
+        )
+        .center_x(Length::Fill)
+        .center_y(Length::Fill),
+    ))
+    .width(Length::Fixed(size + 18.0))
+    .height(Length::Fill)
+    .into()
+}
+
+/// One tray item, and the pointer events it answers to.
+fn tray_cell<'a, Message: Clone + 'static>(
+    style: &Style,
+    item: &TrayItem,
+    index: usize,
+    on_tray: Option<OnTray<Message>>,
+) -> Element<'a, Message> {
+    let face = match &item.icon {
+        Some(icon) => icon_cell(style, icon, item.attention),
+        // Clipped for the same reason the SSID is: a label is whatever
+        // the application chose to call itself, and one long one must
+        // not push the clock off the screen.
+        None => {
+            let label = clip(&item.label, 6);
+            if item.attention {
+                alert_cell(style, label)
+            } else {
+                cell(style, label, false)
+            }
+        }
+    };
+
+    let Some(on_tray) = on_tray else {
+        return face;
+    };
+
+    mouse_area(face)
+        .on_press(on_tray(index, TrayAction::Activate))
+        .on_middle_press(on_tray(index, TrayAction::Secondary))
+        .on_right_press(on_tray(index, TrayAction::Context))
+        .on_scroll(move |delta| on_tray(index, TrayAction::Scroll(detents(delta))))
+        // The one cell on the bar that does anything, so it is the one
+        // cell that should look like it does.
+        .interaction(mouse::Interaction::Pointer)
+        .into()
+}
+
+/// A wheel movement as whole detents, keeping the delta's own sign.
+///
+/// Both of iced's deltas are folded into one number because the
+/// protocol's `Scroll` takes an integer and an axis, not a pixel
+/// count. A pixel delta comes from a touchpad, where 15px is the
+/// conventional detent; rounding away from zero means a small flick
+/// still counts as one, which is what the item is waiting to be told.
+/// Zero stays zero, and the host is expected to drop it rather than
+/// tell an application that nothing happened.
+fn detents(delta: mouse::ScrollDelta) -> i32 {
+    let lines = match delta {
+        mouse::ScrollDelta::Lines { y, .. } => y,
+        mouse::ScrollDelta::Pixels { y, .. } => y / 15.0,
+    };
+    if lines == 0.0 {
+        0
+    } else {
+        lines.abs().ceil().copysign(lines) as i32
     }
 }
 
@@ -232,7 +392,17 @@ fn host_tape<'a, Message: 'static>(style: &Style, host: &'a str) -> Element<'a, 
 
 /// The whole bar. `height` should match `Metrics::bar`, which is also
 /// what the layer surface reserves as its exclusive zone.
-pub fn bar<'a, Message: 'static>(style: &Style, r: &'a Readings) -> Element<'a, Message> {
+///
+/// `on_tray` is how a clicked tray cell gets back to whoever can talk
+/// to the item; `None` draws the same bar with no hit-testing at all.
+/// It is a parameter rather than a field on [`Readings`] because it is
+/// the one thing here that is not a *reading* -- the readings are what
+/// the machine is doing, and this is what the bar should do about it.
+pub fn bar<'a, Message: Clone + 'static>(
+    style: &Style,
+    r: &'a Readings,
+    on_tray: Option<OnTray<Message>>,
+) -> Element<'a, Message> {
     let gap = style.metrics.gap * 0.4;
 
     let mut left = row![].spacing(gap).height(Length::Fill);
@@ -258,8 +428,8 @@ pub fn bar<'a, Message: 'static>(style: &Style, r: &'a Readings) -> Element<'a, 
     // Tray first, so the modules that are always present keep a fixed
     // distance from the right edge; an application starting up should
     // not move the clock.
-    for item in &r.tray {
-        right = right.push(tray_cell(style, item));
+    for (index, item) in r.tray.iter().enumerate() {
+        right = right.push(tray_cell(style, item, index, on_tray));
     }
     if let Some(network) = network_cell(style, &r.network) {
         right = right.push(network);

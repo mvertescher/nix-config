@@ -116,6 +116,92 @@ pub struct Banner {
     pub notch: f32,
 }
 
+/// The outward wedge kitsch cuts into the top-right of a nav pill.
+///
+/// Pill-specific rather than era-wide, and the targets are explicit
+/// about it: `docs/kitsch/target-app.svg` draws every category as
+/// `M172 340 h158 l18 15 v13 q0 12 -12 12 h-164 q-12 0 -12 -12 v-16
+/// q0 -12 12 -12 Z` -- a `radius: 16` pill whose top-right corner is
+/// not rounded at all but juts *out* by 18 and *down* by 15 -- while
+/// the product cards beside it are plain `rx="16"` and the socket cells
+/// plain `rect`s. So this is not [`Corner`]: a corner treatment applies
+/// to the whole era's containers, and this applies to one widget and
+/// *adds* width rather than eating it.
+///
+/// The other three eras leave it at the default. Neokitsch is the near
+/// miss worth recording: it does own a step-notch shape
+/// (`M60 658 h150 v20 l-8 8 h-142 Z`, `target-components.svg`), but its
+/// nav pills are plain `rx="4"` rects and the notch belongs to the
+/// mailbox footer, so wiring it here would put it on the wrong widget.
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct Ticket {
+    /// How far the wedge reaches past the pill's body, to the right.
+    pub reach: f32,
+    /// How far the wedge's outer point drops below the top edge.
+    pub drop: f32,
+}
+
+impl Ticket {
+    /// Whether the era cuts one at all. Zero draws nothing, so the
+    /// shape code degrades to the plain corner walk.
+    pub fn is_cut(self) -> bool {
+        self.reach > 0.0 && self.drop > 0.0
+    }
+}
+
+/// How an era lays out a *menu* -- the one thing four dressed
+/// rectangles could not express.
+///
+/// Every other knob here dresses a shape the four eras agree on. This
+/// one does not: they reach for four different objects when they offer
+/// a choice of modules, and no amount of corner radius turns one into
+/// another. That is what makes it a variant beside [`Chrome`] and
+/// [`Footnotes`] rather than a widget-side era test -- a screen says
+/// "put a menu here", and the era says what a menu is.
+///
+/// The evidence, in the same document order as the rest of the table:
+///
+/// * **Entropism** -- `target-components.svg` "MENU TILES": a grid of
+///   `120x120` squares three to a row, the selected one a solid sage
+///   fill, each with a hairline and a tiny caption strip under it
+///   ("REPORT ERROR · V2.11 · CERTIFIED"). Square, flat, repeated: the
+///   era doing the least it can.
+/// * **Kitsch** -- `target-components.svg` "EXTRUDED FAN MENU": slabs
+///   fanned about a pivot at `-15`, `+7` and `+27` degrees, each with
+///   two stacked outline copies receding up-right by `(6,-8)` at half
+///   opacity, labels rotated to the slab. The active slab is yellow,
+///   the rest the era's lit teal.
+/// * **Neomil** -- the cut-diamond hub, and the one arm whose evidence
+///   is *not* in `docs/`: `neomil/target-app.svg` is an ops screen with
+///   a services table, and neither of that era's two sheets draws a
+///   diamond anywhere. The shape comes from `widgets::diamond_menu`,
+///   written before the toolkit was generalised. Recorded rather than
+///   quietly asserted, because every other row here cites a file.
+/// * **Neokitsch** -- `target-components.svg` "CARD CASCADE (device
+///   software)": tall clipped-corner cards `68x134` at an `88` pitch,
+///   staggered vertically (`0, -30, -34, -30`), the active one filled
+///   with veneer, each carrying its name at its own foot.
+///
+/// Deliberately not carrying the fine geometry. [`Chrome`],
+/// [`Footnotes`], [`Compliance`] and [`Nameplate`] are all bare choices
+/// whose figures live in the widget that draws them, and a menu is the
+/// same kind of thing: the numbers above are constants of one drawing,
+/// not values a host or a variant would retune. The one exception is
+/// `Tiles::columns`, which is a *layout* fact -- a caller sizing the
+/// column the menu sits in needs it, and the reference sheet and the
+/// dashboard disagree about it (three against two).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Menu {
+    /// Entropism: a grid of square tiles under caption strips.
+    Tiles { columns: usize },
+    /// Kitsch: extruded slabs fanned about a pivot.
+    Fan,
+    /// Neomil: hex-packed cut diamonds.
+    Diamonds,
+    /// Neokitsch: staggered clipped-corner cards.
+    Cascade,
+}
+
 /// Where a screen puts its footnote markers.
 ///
 /// Not decoration and not one rule with four dresses: the three store
@@ -224,6 +310,11 @@ pub struct Style {
     /// Whether a product card carries the compliance notice, and on
     /// which side of its outline.
     pub compliance: Compliance,
+    /// The wedge a nav pill cuts into its top-right corner. Zero in
+    /// every era but kitsch.
+    pub ticket: Ticket,
+    /// What this era means by a menu.
+    pub menu: Menu,
     /// Whether the era stamps compliance glyphs -- dotted matrix,
     /// hollow square, hollow triangle -- on its bands and rows.
     ///
@@ -294,6 +385,17 @@ impl Style {
     /// [`Style::banner`] for the shape.
     pub fn banner_colors(&self) -> (Color, Color) {
         self.palette.banner()
+    }
+
+    /// The same band, on a *selected* element, as `(fill, ink)`.
+    ///
+    /// A band in the selection fill, on a card in the selection fill,
+    /// is invisible -- so both maximalist eras move it, and they move
+    /// it in opposite directions. See
+    /// [`crate::palette::Palette::banner_on_select`] for why that is a
+    /// sampled pair rather than a derivation or a published role.
+    pub fn banner_on_select(&self) -> (Color, Color) {
+        self.palette.banner_on_select()
     }
 
     /// Whether this era declares an accent band at all.

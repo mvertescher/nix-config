@@ -12,7 +12,7 @@
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
     Banner, Bar, Chrome, Compliance, Corner, Era, Footnotes, Ground, Metrics, Nameplate,
-    Selection, Style,
+    Menu, Selection, Style, Ticket,
 };
 
 pub const BG: iced::Color = rgb(0x110c07);
@@ -40,6 +40,10 @@ pub fn palette() -> Palette {
         select: SAGE_SOLID,
         on_select: ON_SOLID,
         emphasis: None,
+        // No band anywhere, so nothing to restate for the selected
+        // state either; `banner()` degrades to a tape label and
+        // `banner_on_select()` swaps it.
+        banner_selected: None,
         // A minimalist era declares no ornament: the vocabulary is
         // additive and nothing here wants it.
         ornaments: Ornaments::default(),
@@ -65,6 +69,11 @@ pub fn style() -> Style {
         // The reference sets it inside the outline, under the sockets
         // of every unselected card.
         compliance: Compliance::Inside,
+        // No wedge: entropism cuts nothing, anywhere.
+        ticket: Ticket::default(),
+        // "MENU TILES" on the components sheet: 120x120 squares, three
+        // to a row, each under a hairline and a caption strip.
+        menu: Menu::Tiles { columns: 3 },
         glyphs: false,
         metrics: Metrics {
             stroke: 1.0,

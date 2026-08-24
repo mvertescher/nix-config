@@ -35,9 +35,15 @@
   example ? "cyberpunk-ui-dashboard",
   # The matrix geometry. The defaults are the no-theme fallback case,
   # which used to be a 1280x800 render of a neo-militarism-only
-  # dashboard; that screen no longer exists -- `panels::dashboard` is
+  # dashboard; that screen no longer exists -- `screens::dashboard` is
   # written against `Style` like the rest -- so the case moved onto the
   # matrix's geometry rather than keeping a size nothing else uses.
+  #
+  # Known gap: this writes only `roles.names` into the sandbox theme
+  # file, while `home/themes/lib/era.nix` writes `names ++ extrasOf c`.
+  # So every ornamental colour in every golden comes from the compiled
+  # era table rather than the theme layer, and the matrix proves less
+  # about that contract than the README claims.
   width ? 1600,
   height ? 900,
   golden ? ../tests/golden/dashboard-fallback-1600x900.png,

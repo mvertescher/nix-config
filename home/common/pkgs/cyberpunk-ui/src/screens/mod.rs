@@ -5,10 +5,12 @@
 //! -- it is what makes "four eras, one toolkit" a testable claim rather
 //! than an aspiration.
 
+pub mod dashboard;
 pub mod login;
 pub mod mail;
 pub mod store;
 
+pub use dashboard::Dashboard;
 pub use login::Login;
 pub use mail::MailBox;
 pub use store::Store;

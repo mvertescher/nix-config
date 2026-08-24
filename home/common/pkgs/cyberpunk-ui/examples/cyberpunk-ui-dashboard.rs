@@ -6,7 +6,7 @@
 //! See examples/cyberpunk-ui-store.rs for the reasoning behind the
 //! --era handling; it is the same here.
 
-use cyberpunk_ui::panels::dashboard::{Dashboard, Message};
+use cyberpunk_ui::screens::dashboard::{Dashboard, Message};
 use cyberpunk_ui::{Era, Style};
 
 fn main() -> iced::Result {

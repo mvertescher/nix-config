@@ -6,7 +6,7 @@
 //! different sizes and fills, which is what lets the store screen have a
 //! single implementation across four eras.
 
-use crate::style::{Corner, Selection, Style};
+use crate::style::{Corner, Selection, Style, Ticket};
 use iced::advanced::widget::{Operation, Tree};
 use iced::advanced::{layout, overlay, renderer, Clipboard, Layout, Shell, Widget};
 use iced::widget::{canvas, container, stack};
@@ -74,6 +74,10 @@ pub struct Surface {
     pub fill: Fill,
     pub stroke: Option<Color>,
     pub stroke_width: f32,
+    /// The outward wedge on the top-right, for the one widget that
+    /// wears one. Default-zero, so every existing caller is unchanged
+    /// and the shape falls through to the plain corner walk.
+    pub ticket: Ticket,
 }
 
 impl Surface {
@@ -85,6 +89,7 @@ impl Surface {
             fill: Fill::None,
             stroke: Some(style.palette.border),
             stroke_width: style.metrics.stroke,
+            ticket: Ticket::default(),
         }
     }
 
@@ -96,6 +101,7 @@ impl Surface {
             fill: Fill::Solid(color),
             stroke: None,
             stroke_width: style.metrics.stroke,
+            ticket: Ticket::default(),
         }
     }
 
@@ -118,6 +124,7 @@ impl Surface {
             fill,
             stroke: None,
             stroke_width: style.metrics.stroke,
+            ticket: Ticket::default(),
         }
     }
 
@@ -133,6 +140,17 @@ impl Surface {
 
     pub fn no_stroke(mut self) -> Self {
         self.stroke = None;
+        self
+    }
+
+    /// Cut the era's ticket wedge into the top-right.
+    ///
+    /// A builder rather than a field on the three constructors,
+    /// because the wedge belongs to *one widget* and not to the era:
+    /// kitsch cuts it into its nav pills and into nothing else it
+    /// draws. See [`crate::style::Ticket`].
+    pub fn ticket(mut self, ticket: Ticket) -> Self {
+        self.ticket = ticket;
         self
     }
 
@@ -198,10 +216,77 @@ pub fn visible(start: f32, len: f32) -> f32 {
 }
 
 /// The outline of a surface, as a canvas path.
-pub fn outline(corner: Corner, corners: Corners, w: f32, h: f32) -> canvas::Path {
+///
+/// `ticket` replaces the top-right corner with an outward wedge; pass
+/// [`Ticket::default`] for the ordinary shape. The wedge is *inside*
+/// `w`, not added to it -- a widget that wants the body at its natural
+/// size asks for `body + reach` and lets this cut the difference, the
+/// same convention `Banner::overhang` uses.
+pub fn outline(corner: Corner, corners: Corners, ticket: Ticket, w: f32, h: f32) -> canvas::Path {
     let amount = corner.inset().min(w / 2.0).min(h / 2.0);
+    // The wedge cannot eat more than the box has, and it cannot reach
+    // below the bottom edge.
+    let cut = ticket.is_cut() && ticket.reach < w && ticket.drop < h;
+    let (reach, drop) = if cut {
+        // The wedge's point must stay above whatever the bottom-right
+        // corner eats, or the outline doubles back on itself. The
+        // sampled figures clear it comfortably (drop 15 against a
+        // 34-high pill with a 16 radius); this is for the small box
+        // some future caller hands it.
+        (ticket.reach, ticket.drop.min((h - amount).max(0.0)))
+    } else {
+        (0.0, 0.0)
+    };
+    // The body the wedge grows out of.
+    let bw = w - reach;
 
     canvas::Path::new(|b| {
+        if cut {
+            // The kitsch nav pill, exactly: the top edge runs the body's
+            // full width with *no* top-right radius, the wedge carries
+            // the outline out and down, and the remaining three corners
+            // take the era's treatment.
+            //
+            //   M172 340 h158 l18 15 v13 q0 12 -12 12 h-164 ...
+            //
+            // Only kitsch declares a ticket and kitsch is `Round`, but
+            // the walk is written for any corner amount so that an era
+            // adding one later is a table entry rather than a rewrite.
+            let round = matches!(corner, Corner::Round { .. });
+            let c = if matches!(corner, Corner::Square) {
+                0.0
+            } else {
+                amount
+            };
+            let bl = if corners.bottom_left { c } else { 0.0 };
+            let br = if corners.bottom_right { c } else { 0.0 };
+            let tl = if corners.top_left { c } else { 0.0 };
+
+            b.move_to(Point::new(tl, 0.0));
+            b.line_to(Point::new(bw, 0.0));
+            b.line_to(Point::new(w, drop));
+            b.line_to(Point::new(w, h - br));
+            if br > 0.0 && round {
+                b.quadratic_curve_to(Point::new(w, h), Point::new(w - br, h));
+            } else if br > 0.0 {
+                b.line_to(Point::new(w - br, h));
+            }
+            b.line_to(Point::new(bl, h));
+            if bl > 0.0 && round {
+                b.quadratic_curve_to(Point::new(0.0, h), Point::new(0.0, h - bl));
+            } else if bl > 0.0 {
+                b.line_to(Point::new(0.0, h - bl));
+            }
+            b.line_to(Point::new(0.0, tl));
+            if tl > 0.0 && round {
+                b.quadratic_curve_to(Point::new(0.0, 0.0), Point::new(tl, 0.0));
+            } else if tl > 0.0 {
+                b.line_to(Point::new(tl, 0.0));
+            }
+            b.close();
+            return;
+        }
+
         match corner {
             Corner::Round { .. } => {
                 let r = amount;
@@ -257,14 +342,32 @@ pub fn outline(corner: Corner, corners: Corners, w: f32, h: f32) -> canvas::Path
 /// to a surface without needing path clipping in the renderer.
 ///
 /// All four corner treatments are convex and axis-aligned apart from a
-/// single corner, so this is exact rather than an approximation.
-pub fn span_at(corner: Corner, corners: Corners, w: f32, h: f32, y: f32) -> (f32, f32) {
+/// single corner, so this is exact rather than an approximation. A
+/// ticket wedge is convex too, and replaces the top-right corner's
+/// contribution rather than adding to it.
+pub fn span_at(
+    corner: Corner,
+    corners: Corners,
+    ticket: Ticket,
+    w: f32,
+    h: f32,
+    y: f32,
+) -> (f32, f32) {
     let amount = corner.inset().min(w / 2.0).min(h / 2.0);
-    if amount <= 0.0 || y < 0.0 || y > h {
+    let cut = ticket.is_cut() && ticket.reach < w && ticket.drop < h;
+    if (amount <= 0.0 && !cut) || y < 0.0 || y > h {
         return (0.0, w);
     }
 
     let (mut x0, mut x1) = (0.0f32, w);
+
+    // The wedge's hypotenuse: the right edge runs from the body's width
+    // at the top edge out to the full width at `drop`, and is flush
+    // below that.
+    if cut {
+        let bw = w - ticket.reach;
+        x1 = x1.min(bw + ticket.reach * (y / ticket.drop).clamp(0.0, 1.0));
+    }
 
     // How far in the edge is drawn at `y`, for a corner of the given
     // treatment sitting `d` away from the shape's end.
@@ -287,7 +390,9 @@ pub fn span_at(corner: Corner, corners: Corners, w: f32, h: f32, y: f32) -> (f32
     if corners.bottom_left {
         x0 = x0.max(inward(h - y));
     }
-    if corners.top_right {
+    // A ticket replaces the top-right treatment; applying both would
+    // clip the wedge back off again.
+    if corners.top_right && !cut {
         x1 = x1.min(w - inward(y));
     }
     if corners.bottom_right {
@@ -334,7 +439,7 @@ impl<Message> canvas::Program<Message> for Surface {
         }
         frame.translate(iced::Vector::new(inset, inset));
 
-        let path = outline(self.corner, self.corners, pw, ph);
+        let path = outline(self.corner, self.corners, self.ticket, pw, ph);
 
         match self.fill {
             Fill::None => {}
@@ -355,7 +460,7 @@ impl<Message> canvas::Program<Message> for Surface {
                     let y0 = t * ph;
                     let band_h = ph / bands as f32;
                     let tone = if i % 2 == 0 { light } else { dark };
-                    let (x0, x1) = span_at(self.corner, self.corners, pw, ph, y0 + band_h / 2.0);
+                    let (x0, x1) = span_at(self.corner, self.corners, self.ticket, pw, ph, y0 + band_h / 2.0);
                     if x1 <= x0 {
                         continue;
                     }
@@ -377,7 +482,7 @@ impl<Message> canvas::Program<Message> for Surface {
                 let mut y = 3.0;
                 let mut n = 0;
                 while y < ph {
-                    let (x0, x1) = span_at(self.corner, self.corners, pw, ph, y);
+                    let (x0, x1) = span_at(self.corner, self.corners, self.ticket, pw, ph, y);
                     if x1 > x0 {
                         let line = canvas::Path::new(|b| {
                             b.move_to(Point::new(x0 + 1.0, y));

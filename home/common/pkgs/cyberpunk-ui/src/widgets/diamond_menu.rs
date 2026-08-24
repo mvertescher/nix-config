@@ -1,6 +1,25 @@
-use iced::widget::canvas;
-use iced::{mouse, Color, Element, Length, Point, Rectangle, Renderer, Theme, Size, Vector};
+//! Neo-militarism's cut-diamond hub.
+//!
+//! This is the oldest widget in the crate and the one that started the
+//! argument the rest of it settles: a menu that is not a dressed
+//! rectangle. It is now the [`crate::style::Menu::Diamonds`] arm of
+//! [`super::menu`], which is what finally makes it reachable from a
+//! screen -- until that variant existed the crate compiled this and
+//! nothing could ask for it.
+//!
+//! Worth recording, because every other era feature in this crate cites
+//! a file: **the diamond hub is not in `docs/`.** Neomil's
+//! `target-app.svg` is an ops screen with a services table and its
+//! `target-components.svg` is a widget sheet; neither draws a diamond.
+//! The shape comes from the pre-generalisation `neomil-ui`, so it is
+//! era-specific by inheritance rather than by sampling. Anyone
+//! re-deriving the era from the references should expect to find no
+//! support for it there.
+
 use crate::fonts::FONT_ORBITRON_BOLD;
+use crate::style::Style;
+use iced::widget::canvas;
+use iced::{mouse, Color, Element, Length, Point, Rectangle, Renderer, Size, Theme, Vector};
 
 const DIAMOND_DIAGONAL: f32 = 220.0;
 const GAP: f32 = 20.0;
@@ -10,7 +29,12 @@ const LABEL_GAP: f32 = 20.0;
 pub struct DiamondMenuItem<Message> {
     pub label: String,
     pub subtext: String,
-    pub on_press: Message,
+    /// `None` for a display-only hub. The screens in this crate are
+    /// design targets and emit nothing; the variant is kept because
+    /// this widget is the only interaction model here that was written
+    /// to hit-test, and throwing that away to satisfy a menu API would
+    /// be the wrong trade.
+    pub on_press: Option<Message>,
 }
 
 #[allow(dead_code)]
@@ -38,60 +62,55 @@ struct ButtonGeometry {
     tab_edge: TabEdge,
 }
 
-fn get_geometry(index: usize) -> ButtonGeometry {
-    match index {
-        // Row 1 (Top)
-        0 => ButtonGeometry {
-            cut_top: true,
-            cut_bottom: false,
-            cut_left: false,
-            cut_right: true,
-            tab_edge: TabEdge::BottomRight,
+/// How many diamonds sit in the top row of an `n`-diamond hub. The
+/// reference layout is six in two rows of three, and the general rule
+/// that reproduces it is "half, rounded up".
+fn top_row(n: usize) -> usize {
+    n.div_ceil(2)
+}
+
+/// Which sides diamond `index` cuts.
+///
+/// Was a six-armed table with a `panic!` past the end, which is what
+/// pinned the hub at exactly six items. The table was regular all
+/// along: a diamond cuts the side it shares with the other row, and
+/// each side it shares with a neighbour in its own row. Written out,
+/// it reproduces the old six entries exactly and stops being a
+/// crash for any other count.
+fn get_geometry(index: usize, n: usize) -> ButtonGeometry {
+    let top = top_row(n);
+    let is_top = index < top;
+    let (first, last) = if is_top {
+        (0, top.saturating_sub(1))
+    } else {
+        (top, n.saturating_sub(1))
+    };
+
+    ButtonGeometry {
+        cut_top: is_top,
+        cut_bottom: !is_top,
+        cut_left: index > first,
+        cut_right: index < last,
+        tab_edge: if is_top {
+            TabEdge::BottomRight
+        } else {
+            TabEdge::TopRight
         },
-        1 => ButtonGeometry {
-            cut_top: true,
-            cut_bottom: false,
-            cut_left: true,
-            cut_right: true,
-            tab_edge: TabEdge::BottomRight,
-        },
-        2 => ButtonGeometry {
-            cut_top: true,
-            cut_bottom: false,
-            cut_left: true,
-            cut_right: false,
-            tab_edge: TabEdge::BottomRight,
-        },
-        // Row 2 (Bottom)
-        3 => ButtonGeometry {
-            cut_top: false,
-            cut_bottom: true,
-            cut_left: false,
-            cut_right: true,
-            tab_edge: TabEdge::TopRight,
-        },
-        4 => ButtonGeometry {
-            cut_top: false,
-            cut_bottom: true,
-            cut_left: true,
-            cut_right: true,
-            tab_edge: TabEdge::TopRight,
-        },
-        5 => ButtonGeometry {
-            cut_top: false,
-            cut_bottom: true,
-            cut_left: true,
-            cut_right: false,
-            tab_edge: TabEdge::TopRight,
-        },
-        _ => panic!("Invalid button index"),
     }
 }
 
 pub struct DiamondMenuProgram<Message> {
     items: Vec<DiamondMenuItem<Message>>,
-    color_accent: Color,
-    color_bg: Color,
+    /// Line-work and the diamond's own fill.
+    accent: Color,
+    /// What sits inside it: glyph, subtext, inner outline.
+    inside: Color,
+    /// The selected diamond's fill and ink, which in three of the four
+    /// eras is a flat `select` and in neokitsch would be a material --
+    /// the hub is neomil's, so this stays a pair of colours.
+    select: Color,
+    on_select: Color,
+    selected: Option<usize>,
 }
 
 pub struct MenuState {
@@ -116,29 +135,52 @@ fn hash_str(s: &str) -> u32 {
     hash
 }
 
-fn get_centers(size: Size) -> [Point; 6] {
-    let d = DIAMOND_DIAGONAL;
-    let gap = GAP;
-    let dx = d + gap;
-    // Vertical offset for hexagonal packing
-    let dy = d / 2.0 + gap * (2.0f32.sqrt() - 0.5);
+/// The diagonal that fits `n` diamonds into `size`, and their centres.
+///
+/// The packing is the reference's: two rows, the lower one offset by
+/// half a pitch so the diamonds interlock. What is new is that the
+/// diagonal shrinks to fit rather than being a constant -- a hub in a
+/// dashboard column has nothing like the 1500px the sampled `220`
+/// assumes, and at the old fixed size the outer diamonds simply left
+/// the canvas.
+fn get_centers(size: Size, n: usize) -> (f32, Vec<Point>) {
+    let top = top_row(n);
+    let bottom = n - top;
+    let wide = top.max(bottom).max(1);
+
+    // In units of the diagonal `d`, before scaling.
+    let unit_dx = 1.0 + GAP / DIAMOND_DIAGONAL;
+    let unit_dy = 0.5 + GAP * (2.0f32.sqrt() - 0.5) / DIAMOND_DIAGONAL;
+    // Widest row, plus the half-pitch the other row is offset by.
+    let span_x = (wide as f32 - 1.0) * unit_dx + if bottom > 0 { 0.5 } else { 0.0 } + 1.0;
+    let span_y = if bottom > 0 { unit_dy + 1.0 } else { 1.0 };
+    // Room for the labels, which sit outside the diamonds.
+    let pad = LABEL_GAP * 2.0 + 24.0;
+
+    let d = DIAMOND_DIAGONAL
+        .min((size.width - pad).max(1.0) / span_x)
+        .min((size.height - pad).max(1.0) / span_y);
+    let (dx, dy) = (d * unit_dx, d * unit_dy);
 
     let x_center = size.width / 2.0;
     let y_center = size.height / 2.0;
+    // The two rows straddle the centre; a single row sits on it.
+    let y0 = y_center - if bottom > 0 { dy / 2.0 } else { 0.0 };
 
-    let x0 = x_center - 1.25 * dx;
-    let y0 = y_center - dy / 2.0;
+    let row_x = |count: usize, offset: f32| {
+        x_center - (count as f32 - 1.0) * dx / 2.0 + offset
+    };
 
-    [
-        // Row 1 (Top)
-        Point::new(x0, y0),
-        Point::new(x0 + dx, y0),
-        Point::new(x0 + 2.0 * dx, y0),
-        // Row 2 (Bottom)
-        Point::new(x0 + dx / 2.0, y0 + dy),
-        Point::new(x0 + 3.0 * dx / 2.0, y0 + dy),
-        Point::new(x0 + 5.0 * dx / 2.0, y0 + dy),
-    ]
+    let mut centers = Vec::with_capacity(n);
+    let top_x = row_x(top, if bottom > 0 { -dx / 4.0 } else { 0.0 });
+    for i in 0..top {
+        centers.push(Point::new(top_x + i as f32 * dx, y0));
+    }
+    let bottom_x = row_x(bottom, dx / 4.0);
+    for i in 0..bottom {
+        centers.push(Point::new(bottom_x + i as f32 * dx, y0 + dy));
+    }
+    (d, centers)
 }
 
 impl<Message: Clone> canvas::Program<Message> for DiamondMenuProgram<Message> {
@@ -153,14 +195,17 @@ impl<Message: Clone> canvas::Program<Message> for DiamondMenuProgram<Message> {
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
         let geometry = state.cache.draw(renderer, bounds.size(), |frame| {
-            let centers = get_centers(bounds.size());
-            let d = DIAMOND_DIAGONAL;
+            let n = self.items.len();
+            if n == 0 {
+                return;
+            }
+            let (d, centers) = get_centers(bounds.size(), n);
 
             for (i, item) in self.items.iter().enumerate() {
                 let center = centers[i];
                 let is_hovered = state.hovered_index == Some(i);
-                
-                self.draw_button(frame, center, d, item, is_hovered, i);
+
+                self.draw_button(frame, center, d, item, is_hovered, i, n);
             }
         });
 
@@ -174,14 +219,14 @@ impl<Message: Clone> canvas::Program<Message> for DiamondMenuProgram<Message> {
         bounds: Rectangle,
         cursor: mouse::Cursor,
     ) -> (canvas::event::Status, Option<Message>) {
+        let n = self.items.len();
         let mut new_hovered_index = None;
         if let Some(local_pos) = cursor.position_in(bounds) {
-            let centers = get_centers(bounds.size());
-            let d = DIAMOND_DIAGONAL;
+            let (d, centers) = get_centers(bounds.size(), n);
             let cut_val = d * 0.10;
 
             for (i, center) in centers.iter().enumerate() {
-                let geom = get_geometry(i);
+                let geom = get_geometry(i, n);
                 let dx = (local_pos.x - center.x).abs();
                 let dy = (local_pos.y - center.y).abs();
 
@@ -221,7 +266,7 @@ impl<Message: Clone> canvas::Program<Message> for DiamondMenuProgram<Message> {
         let mut message = None;
         if let canvas::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event {
             if let Some(idx) = state.hovered_index {
-                message = Some(self.items[idx].on_press.clone());
+                message = self.items[idx].on_press.clone();
             }
         }
 
@@ -236,6 +281,7 @@ impl<Message: Clone> canvas::Program<Message> for DiamondMenuProgram<Message> {
 }
 
 impl<Message> DiamondMenuProgram<Message> {
+    #[allow(clippy::too_many_arguments)]
     fn draw_button(
         &self,
         frame: &mut canvas::Frame,
@@ -244,17 +290,39 @@ impl<Message> DiamondMenuProgram<Message> {
         item: &DiamondMenuItem<Message>,
         is_hovered: bool,
         index: usize,
+        count: usize,
     ) {
-        let geom = get_geometry(index);
-        let is_top_row = index < 3;
-        
-        // Inverted Style: Solid red background, dark text/glyphs inside
-        let bg_alpha = if is_hovered { 1.0 } else { 0.90 };
-        let bg_color = Color { a: bg_alpha, ..self.color_accent };
-        let border_color = self.color_accent;
+        let geom = get_geometry(index, count);
+        let is_top_row = index < top_row(count);
+        let is_selected = self.selected == Some(index);
+
+        // Selected fills, unselected outlines.
+        //
+        // Every diamond used to be filled solid in `accent` and the
+        // selected one had nothing to distinguish it -- which in neomil
+        // is not "subtle", it is invisible: that era's `fg` and
+        // `select` are the same `#de2e2e`, so a hub with one module
+        // chosen rendered as six identical red diamonds. The render
+        // said so; the code could not.
+        //
+        // Filled-against-outlined is the era's own convention anyway.
+        // `docs/neomil/target-app.svg` draws its action buttons as
+        // `fill="#FF3B45"` for the primary and
+        // `fill="none" stroke="#FF3B45"` for the ghost, and it is what
+        // `Surface::selected` against `Surface::outlined` does
+        // everywhere else in this crate.
+        // The unselected fill is the page ground rather than nothing,
+        // because the diamonds interlock: a transparent one would show
+        // its neighbour's corner through its own body.
+        let (bg_color, border_color, inside_color) = if is_selected {
+            (self.select, self.select, self.on_select)
+        } else if is_hovered {
+            (self.accent, self.accent, self.inside)
+        } else {
+            (self.inside, self.accent, self.accent)
+        };
         let border_width = if is_hovered { 2.5 } else { 1.5 };
-        
-        let inside_color = self.color_bg;
+
         let cut_val = d * 0.10; // 10% of diagonal (22px for 220px)
 
         // Calculate outer vertices based on custom cuts
@@ -272,49 +340,49 @@ impl<Message> DiamondMenuProgram<Message> {
             // Start at top-left of top corner if cut, else start at top point
             let start_pt = if geom.cut_top { p_tl_top } else { Point::new(center.x, center.y - d / 2.0) };
             builder.move_to(start_pt);
-            
+
             // 1. Top edge (horizontal)
             if geom.cut_top {
                 builder.line_to(p_tr_top);
             }
-            
+
             // 2. TR edge (slanted) - Bottom row has TR tab anchored at Top corner (Start)
             let tr_start = if geom.cut_top { p_tr_top } else { Point::new(center.x, center.y - d / 2.0) };
             let tr_end = if geom.cut_right { p_tr_right } else { Point::new(center.x + d / 2.0, center.y) };
             let tr_anchor = if geom.tab_edge == TabEdge::TopRight { TabAnchor::Start } else { TabAnchor::None };
-            self.draw_edge(builder, tr_start, tr_end, tr_anchor);
-            
+            self.draw_edge(builder, tr_start, tr_end, tr_anchor, d);
+
             // 3. Right edge (vertical)
             if geom.cut_right {
                 builder.line_to(p_br_right);
             }
-            
+
             // 4. BR edge (slanted) - Top row has BR tab anchored at Bottom corner (End)
             let br_start = if geom.cut_right { p_br_right } else { Point::new(center.x + d / 2.0, center.y) };
             let br_end = if geom.cut_bottom { p_br_bottom } else { Point::new(center.x, center.y + d / 2.0) };
             let br_anchor = if geom.tab_edge == TabEdge::BottomRight { TabAnchor::End } else { TabAnchor::None };
-            self.draw_edge(builder, br_start, br_end, br_anchor);
-            
+            self.draw_edge(builder, br_start, br_end, br_anchor, d);
+
             // 5. Bottom edge (horizontal)
             if geom.cut_bottom {
                 builder.line_to(p_bl_bottom);
             }
-            
+
             // 6. BL edge (slanted) - never has tab
             let bl_start = if geom.cut_bottom { p_bl_bottom } else { Point::new(center.x, center.y + d / 2.0) };
             let bl_end = if geom.cut_left { p_bl_left } else { Point::new(center.x - d / 2.0, center.y) };
-            self.draw_edge(builder, bl_start, bl_end, TabAnchor::None);
-            
+            self.draw_edge(builder, bl_start, bl_end, TabAnchor::None, d);
+
             // 7. Left edge (vertical)
             if geom.cut_left {
                 builder.line_to(p_tl_left);
             }
-            
+
             // 8. TL edge (slanted) - never has tab
             let tl_start = if geom.cut_left { p_tl_left } else { Point::new(center.x - d / 2.0, center.y) };
             let tl_end = if geom.cut_top { p_tl_top } else { Point::new(center.x, center.y - d / 2.0) };
-            self.draw_edge(builder, tl_start, tl_end, TabAnchor::None);
-            
+            self.draw_edge(builder, tl_start, tl_end, TabAnchor::None, d);
+
             builder.close();
         });
 
@@ -330,7 +398,7 @@ impl<Message> DiamondMenuProgram<Message> {
         // Draw inner path (always clean, matches outer cuts but scaled)
         let d_inner = d * 0.85;
         let cut_val_inner = cut_val * 0.85;
-        
+
         let pi_tl_top = Point::new(center.x - cut_val_inner, center.y - d_inner / 2.0 + cut_val_inner);
         let pi_tr_top = Point::new(center.x + cut_val_inner, center.y - d_inner / 2.0 + cut_val_inner);
         let pi_tr_right = Point::new(center.x + d_inner / 2.0 - cut_val_inner, center.y - cut_val_inner);
@@ -343,35 +411,35 @@ impl<Message> DiamondMenuProgram<Message> {
         let inner_path = canvas::Path::new(|builder| {
             let start_pt = if geom.cut_top { pi_tl_top } else { Point::new(center.x, center.y - d_inner / 2.0) };
             builder.move_to(start_pt);
-            
+
             if geom.cut_top {
                 builder.line_to(pi_tr_top);
             }
-            
+
             let tr_end = if geom.cut_right { pi_tr_right } else { Point::new(center.x + d_inner / 2.0, center.y) };
             builder.line_to(tr_end);
-            
+
             if geom.cut_right {
                 builder.line_to(pi_br_right);
             }
-            
+
             let br_end = if geom.cut_bottom { pi_br_bottom } else { Point::new(center.x, center.y + d_inner / 2.0) };
             builder.line_to(br_end);
-            
+
             if geom.cut_bottom {
                 builder.line_to(pi_bl_bottom);
             }
-            
+
             let bl_end = if geom.cut_left { pi_bl_left } else { Point::new(center.x - d_inner / 2.0, center.y) };
             builder.line_to(bl_end);
-            
+
             if geom.cut_left {
                 builder.line_to(pi_tl_left);
             }
-            
+
             let tl_end = if geom.cut_top { pi_tl_top } else { Point::new(center.x, center.y - d_inner / 2.0) };
             builder.line_to(tl_end);
-            
+
             builder.close();
         });
 
@@ -382,12 +450,14 @@ impl<Message> DiamondMenuProgram<Message> {
                 .with_width(1.0),
         );
 
-        // Draw procedural glyph (5x5 symmetric grid)
-        let cell_size = 6.0;
-        let cell_gap = 1.0;
+        // Draw procedural glyph (5x5 symmetric grid), scaled with the
+        // diamond so a small hub does not wear a full-size stamp.
+        let s = d / DIAMOND_DIAGONAL;
+        let cell_size = 6.0 * s;
+        let cell_gap = 1.0 * s;
         let grid_width = 5.0 * cell_size + 4.0 * cell_gap;
         let grid_left = center.x - grid_width / 2.0;
-        let grid_top = center.y - grid_width / 2.0 - 16.0;
+        let grid_top = center.y - grid_width / 2.0 - 16.0 * s;
 
         let hash = hash_str(&item.label);
         for r in 0..5 {
@@ -414,9 +484,9 @@ impl<Message> DiamondMenuProgram<Message> {
         // Draw subtext (inside, below glyph)
         let subtext = canvas::Text {
             content: item.subtext.clone(),
-            position: Point::new(center.x, center.y + 24.0),
+            position: Point::new(center.x, center.y + 24.0 * s),
             color: inside_color,
-            size: 13.0.into(),
+            size: (13.0 * s).into(),
             font: FONT_ORBITRON_BOLD,
             horizontal_alignment: iced::alignment::Horizontal::Center,
             vertical_alignment: iced::alignment::Vertical::Center,
@@ -434,7 +504,7 @@ impl<Message> DiamondMenuProgram<Message> {
             content: item.label.clone(),
             position: label_pos,
             color: border_color,
-            size: 16.0.into(),
+            size: (16.0 * s).max(9.0).into(),
             font: FONT_ORBITRON_BOLD,
             horizontal_alignment: iced::alignment::Horizontal::Center,
             vertical_alignment: if is_top_row {
@@ -453,10 +523,12 @@ impl<Message> DiamondMenuProgram<Message> {
         p1: Point,
         p2: Point,
         anchor: TabAnchor,
+        d: f32,
     ) {
-        let depth = 10.0;
-        let transition = 10.0;
-        let tab_width: f32 = 95.0; // Constant physical width in pixels
+        let s = d / DIAMOND_DIAGONAL;
+        let depth = 10.0 * s;
+        let transition = 10.0 * s;
+        let tab_width: f32 = 95.0 * s;
 
         if anchor == TabAnchor::None {
             builder.line_to(p2);
@@ -493,19 +565,112 @@ impl<Message> DiamondMenuProgram<Message> {
     }
 }
 
+/// The hub as a menu: display-only, dressed from the era's palette.
+///
+/// The [`crate::style::Menu::Diamonds`] arm of [`super::menu`]. It
+/// takes the shared [`super::menu::MenuItem`] rather than this module's
+/// own item type, which is what stops the vocabulary from having two
+/// ideas of what a module is.
+pub fn hub<'a, Message: Clone + 'static>(
+    style: &Style,
+    items: &'a [super::menu::MenuItem<'a>],
+    selected: usize,
+) -> Element<'a, Message> {
+    let program = DiamondMenuProgram {
+        items: items
+            .iter()
+            .map(|item| DiamondMenuItem {
+                label: item.label.to_string(),
+                subtext: item.code.to_string(),
+                on_press: None,
+            })
+            .collect(),
+        accent: style.palette.fg,
+        inside: style.palette.bg,
+        select: style.palette.select,
+        on_select: style.palette.on_select,
+        selected: (selected < items.len()).then_some(selected),
+    };
+
+    canvas(program)
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .into()
+}
+
+/// The interactive hub, in arbitrary colours.
+///
+/// Kept beside [`hub`] rather than replaced by it: this is the only
+/// widget in the crate that hit-tests, and the screens that would use
+/// it are display-only design targets today.
 pub fn diamond_menu<'a, Message: 'static + Clone>(
     items: Vec<DiamondMenuItem<Message>>,
     color_accent: Color,
     color_bg: Color,
 ) -> Element<'a, Message> {
-    assert_eq!(items.len(), 6, "DiamondMenu requires exactly 6 items");
-
     canvas(DiamondMenuProgram {
         items,
-        color_accent,
-        color_bg,
+        accent: color_accent,
+        inside: color_bg,
+        select: color_accent,
+        on_select: color_bg,
+        selected: None,
     })
     .width(Length::Fill)
     .height(Length::Fill)
     .into()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The generalised cut table reproduces the six-item one it
+    /// replaced, entry for entry.
+    #[test]
+    fn six_diamonds_cut_where_the_old_table_said() {
+        // (cut_top, cut_bottom, cut_left, cut_right) for indices 0..6.
+        let want = [
+            (true, false, false, true),
+            (true, false, true, true),
+            (true, false, true, false),
+            (false, true, false, true),
+            (false, true, true, true),
+            (false, true, true, false),
+        ];
+        for (i, w) in want.iter().enumerate() {
+            let g = get_geometry(i, 6);
+            assert_eq!(
+                (g.cut_top, g.cut_bottom, g.cut_left, g.cut_right),
+                *w,
+                "diamond {i}"
+            );
+        }
+    }
+
+    /// Counts other than six used to panic. They lay out instead.
+    #[test]
+    fn other_counts_lay_out_rather_than_panicking() {
+        for n in 1..=9usize {
+            let (d, centers) = get_centers(Size::new(900.0, 500.0), n);
+            assert_eq!(centers.len(), n, "n={n}");
+            assert!(d > 0.0, "n={n} diagonal {d}");
+            for i in 0..n {
+                let _ = get_geometry(i, n);
+            }
+        }
+    }
+
+    /// The hub shrinks to whatever box it is handed, which is what
+    /// makes it usable in a dashboard column rather than only on a
+    /// full-screen canvas.
+    #[test]
+    fn the_diagonal_shrinks_to_fit() {
+        let (big, _) = get_centers(Size::new(1600.0, 900.0), 6);
+        let (small, centers) = get_centers(Size::new(600.0, 400.0), 6);
+        assert!(small < big, "{small} should be under {big}");
+        for c in centers {
+            assert!(c.x - small / 2.0 > -1.0 && c.x + small / 2.0 < 601.0, "{c:?}");
+        }
+    }
 }
