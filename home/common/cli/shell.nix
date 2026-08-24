@@ -14,7 +14,6 @@ let
     gsu = "git submodule update --init --recursive";
 
     # Nix aliases
-    # hms = "home-manager switch --flake ~/nix-config/#mvertescher@linux";
     hm = "home-manager";
     ndc = "nix develop -c";
     ns = "nix-search";

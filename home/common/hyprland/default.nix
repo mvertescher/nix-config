@@ -115,13 +115,13 @@ in {
       # dies, so a crashed lock screen is recoverable in place instead
       # of stranding the session behind a surface nothing owns.
       #
-      # Off by default, which is how terra ended up on Hyprland's
-      # "lockscreen app died" recovery page on 2026-08-23 with the
-      # documented fix unavailable: the page tells you to set this
-      # keyword, but by then the compositor is already wedged and even
-      # a known-good lock client takes the lock and immediately loses
-      # its surface. Set it *before* it is needed, or it is not a
-      # recovery path.
+      # Off by default, which is how a host running this config ended
+      # up on Hyprland's "lockscreen app died" recovery page on
+      # 2026-08-23 with the documented fix unavailable: the page tells
+      # you to set this keyword, but by then the compositor is already
+      # wedged and even a known-good lock client takes the lock and
+      # immediately loses its surface. Set it *before* it is needed, or
+      # it is not a recovery path.
       allow_session_lock_restore = true;
       disable_hyprland_logo = true;
       disable_splash_rendering = true;

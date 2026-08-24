@@ -31,10 +31,10 @@ in
       bazel # google build tool
       ccache
       clang
-      # claude-code is deliberately not here. It is installed per host
-      # from the private repo instead, because hosts want different
-      # things from it: server runs it as a plain CLI, terra also runs
-      # always-on Remote Control sessions and may want the
+      # claude-code is deliberately not here. Wrapper flakes install it
+      # per host instead, because hosts want different things from it: a
+      # headless host runs it as a plain CLI, while a workstation may
+      # also run always-on Remote Control sessions and want the
       # programs.claude-code module, whose wrapper derivation ships its
       # own bin/claude and collides with a package listed here.
       cmatrix
