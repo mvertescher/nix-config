@@ -40,6 +40,31 @@ in
     image = lib.mkDefault staticPixel;
   };
 
+  # Nothing else on this desktop named an icon theme. `stylix.icons` is
+  # off, `gtk.iconTheme` was unset, and the only mention of Papirus lived
+  # inside rofi's config.rasi -- which meant rofi found it and nothing
+  # else did. Anything doing a freedesktop lookup fell through to
+  # `hicolor` plus whatever an application ships for itself, and a
+  # tray-style consumer had to be told the theme by hand on its command
+  # line to see anything at all.
+  #
+  # `gtk.iconTheme` is the durable form: home-manager writes
+  # `gtk-icon-theme-name` into both gtk-3.0/settings.ini and
+  # gtk-4.0/settings.ini, which is where GTK and every non-GTK client
+  # that bothers to look -- ours included -- go for the answer, and it
+  # carries the package into home.packages so the name resolves.
+  #
+  # Named rather than derived from `config.stylix.polarity`, which is
+  # `either` here because cybr never sets it: this palette is a fixed
+  # dark one with no light variant, and the literal keeps it visibly in
+  # step with the `icon-theme` line in rofi/cybr-rofi/config.rasi. The
+  # generated eras do derive it -- see ../lib/era.nix -- because they
+  # have light variants and a bar that draws tray icons.
+  gtk.iconTheme = lib.mkDefault {
+    name = "Papirus-Dark";
+    package = pkgs.papirus-icon-theme;
+  };
+
   programs.alacritty.settings.window.opacity = lib.mkForce 0.10;
 
   programs.alacritty.settings.colors.selection = {

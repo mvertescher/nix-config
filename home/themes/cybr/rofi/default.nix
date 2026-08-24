@@ -17,12 +17,15 @@ in
     pkgs.libnotify    # notify-send: clipboard, screenshot_selection
     pkgs.rofimoji     # scripts/emoji
     pkgs.wl-clipboard # wl-copy: clipboard, screenshot_selection
-
-    # config.rasi runs with show-icons, and nothing else in the config
-    # installs an icon theme (stylix.icons is off, gtk.iconTheme unset), so
-    # drun had only fallback icons. See icon-theme in config.rasi.
-    pkgs.papirus-icon-theme
   ];
+
+  # papirus-icon-theme used to be listed above, because config.rasi runs
+  # with show-icons and nothing installed an icon theme. It is no longer
+  # rofi's to install: ../default.nix sets gtk.iconTheme, which names
+  # Papirus-Dark for the whole desktop and pulls the package in with it.
+  # The `icon-theme` line in cybr-rofi/config.rasi stays and has to keep
+  # naming the same theme -- rofi takes its own option ahead of the GTK
+  # setting.
 
   # scripts/clipboard only reads cliphist's history; without the watcher
   # storing copies there is nothing to list. The systemd user services are

@@ -70,6 +70,13 @@
 		}
 	},
 	/* BLUETHOOTH */
+	/* Upstream's on-click opened blueman-manager through
+	   `~/.config/hypr/scripts/toggle_scratchpad.sh`, a script upstream
+	   ships and this repo does not write, so the click did nothing at
+	   all. Dropped rather than repaired: `hardware.bluetooth.enable` is
+	   false here, so there is no stack for a manager to talk to, blueman
+	   is not installed, and no bar in config.jsonc lists this module
+	   anyway. Same call as `custom/updates` further down. */
 	"bluetooth": {
 		"format": "",
 		"format-disabled": "",
@@ -91,8 +98,7 @@
 		"tooltip-format": "{controller_alias}\n{num_connections} connected",
 		"tooltip-format-connected": "{controller_alias}\n{num_connections} connected\n\n{device_enumerate}",
 		"tooltip-format-enumerate-connected": "{device_alias}",
-		"tooltip-format-enumerate-connected-battery": "{device_alias}\t{icon} {device_battery_percentage}%",
-		"on-click": "~/.config/hypr/scripts/toggle_scratchpad.sh blueman-manager blueman-manager"
+		"tooltip-format-enumerate-connected-battery": "{device_alias}\t{icon} {device_battery_percentage}%"
 	},
 	/* CLOCKS */
 	"clock#time": {
@@ -138,9 +144,41 @@
 		"tooltip-format": "CPU",
 		"interval": 2
 	},
+	/* The three sensor modules below used to name `/sys/class/hwmon/hwmonN`
+	   paths. That numbering is handed out in driver probe order and is
+	   not stable across boots, so an index only ever describes the
+	   machine it was written on, on the day it was written. On this one
+	   they had already drifted onto the wrong devices entirely: hwmon4 is
+	   the mt7921 wifi radio, so "CPU" reported the wireless card's
+	   temperature, and hwmon2 is k10temp, which has no temp2_input, so
+	   "GPU" threw in its constructor and never rendered at all.
+
+	   `hwmon-path-abs` plus `input-filename` resolves by device instead:
+	   waybar takes the one `hwmon*` directory under the path it is given
+	   and appends the filename, so the node is reached through the
+	   driver's PCI address rather than a global counter. Both options
+	   accept an array and the first entry that resolves wins, which is
+	   how the AMD and Intel spellings sit side by side.
+
+	   A PCI address is still a hardware fact, but a stable one:
+	   `0000:00:18.3` is the AMD data-fabric function, fixed by the
+	   architecture on every single-socket Zen part, and a GPU's slot
+	   address does not move unless the card does. On new hardware check
+	   `grep . /sys/class/hwmon/*/name` and
+	   `readlink -f /sys/class/hwmon/hwmonN`. Getting it wrong costs the
+	   module and not the bar -- waybar logs the constructor's throw and
+	   carries on without it.
+
+	   Nothing here can read an NVIDIA card: the proprietary driver
+	   exposes no hwmon node, so on a hybrid machine the GPU readings are
+	   the AMD part's. */
 	"temperature#cpu": {
 		"critical-threshold": 90,
-		"hwmon-path": "/sys/class/hwmon/hwmon4/temp1_input",
+		"hwmon-path-abs": [
+			"/sys/bus/pci/drivers/k10temp/0000:00:18.3/hwmon",
+			"/sys/devices/platform/coretemp.0/hwmon"
+		],
+		"input-filename": "temp1_input",
 		"format-critical": "{icon} {temperatureC}°C",
 		"format": "{icon} {temperatureC}°C",
 		"format-icons": [
@@ -153,14 +191,25 @@
 	},
 	/* GPU USAGE */
 	"custom/gpu-usage": {
-		"exec": "cat /sys/class/hwmon/hwmon4/device/gpu_busy_percent",
+		/* `gpu_busy_percent` is an amdgpu attribute on the PCI device
+		   itself, not something under hwmon; the old path looked for it
+		   beneath a hwmon directory belonging to the wifi radio, where it
+		   has never existed. A `custom` module runs its command through
+		   `/bin/sh -c`, so unlike `temperature` it can glob and does not
+		   have to name an address at all. exec-if keeps it hidden on a
+		   machine with no AMD GPU rather than printing cat's error. */
+		"exec": "cat /sys/bus/pci/drivers/amdgpu/*/gpu_busy_percent",
+		"exec-if": "ls /sys/bus/pci/drivers/amdgpu/*/gpu_busy_percent >/dev/null 2>&1",
 		"format": "GPU: {}%",
 		"return-type": "",
 		"interval": 2
 	},
 	"temperature#gpu": {
 		"critical-threshold": 90,
-		"hwmon-path": "/sys/class/hwmon/hwmon2/temp2_input",
+		"hwmon-path-abs": [
+			"/sys/bus/pci/drivers/amdgpu/0000:11:00.0/hwmon"
+		],
+		"input-filename": "temp1_input",
 		"format-critical": "{icon} {temperatureC}°C",
 		"format": "{icon} {temperatureC}°C",
 		"format-icons": [
@@ -178,10 +227,21 @@
 		"interval": 2
 	},
 	/* NETWORK */
+	/* This module *is* in the live bar, which made its dead on-click
+	   worse than the ones above rather than better. It called upstream's
+	   missing `toggle_scratchpad.sh` to open nm-connection-editor, and
+	   neither the script nor the editor is here.
+
+	   Dropped rather than installed, which is the opposite call from
+	   `pulseaudio` below and for a concrete reason: this config sets
+	   `networking.networkmanager.enable = false` and leaves the
+	   interfaces to `networking.useDHCP`, so nm-connection-editor would
+	   open onto a daemon that is not running and be able to do nothing.
+	   The module itself is unaffected either way -- it reads the kernel's
+	   interface state directly and never needed NetworkManager. */
 	"network": {
 		"format-wifi": "",
 		"format-ethernet": "",
-		"on-click": "~/.config/hypr/scripts/toggle_scratchpad.sh nm-connection-editor 'nm-connection-editor' scratchpad-large",
 		"tooltip-format-wifi": "Network: <b>{essid}</b>\nSignal strength: <b>{signaldBm}dBm ({signalStrength}%)</b>\nFrequency: <b>{frequency}MHz</b>\nInterface: <b>{ifname}</b>\nIP: <b>{ipaddr}/{cidr}</b>\nGateway: <b>{gwaddr}</b>\nNetmask: <b>{netmask}</b>\n<span foreground='#eed49f'> {bandwidthDownBytes}</span> <span foreground='#b7bdf8'> {bandwidthUpBytes}</span>",
 		"tooltip-format-ethernet": "Network: <b>{essid}</b>\nInterface: <b>{ifname}</b>\nIP: <b>{ipaddr}/{cidr}</b>\nGateway: <b>{gwaddr}</b>\nNetmask: <b>{netmask}</b>\n<span foreground='#eed49f'> {bandwidthDownBytes}</span> <span foreground='#b7bdf8'> {bandwidthUpBytes}</span>",
 		"format-linked": "󰈀 {ifname} (No IP)",
@@ -195,7 +255,13 @@
 		"format-muted": "  MUTE",
 		"interval": 1,
 		"tooltip-format": "{desc}, {volume}%",
-		"on-click": "~/.config/hypr/scripts/toggle_scratchpad.sh org.pulseaudio.pavucontrol 'pavucontrol' scratchpad-large",
+		/* Invoked directly, not through upstream's `toggle_scratchpad.sh`,
+		   which this repo does not write -- so as shipped the click did
+		   nothing. Kept rather than dropped, unlike `network` above: a
+		   volume mixer is worth having on a workstation, pipewire's pulse
+		   server is enabled so pavucontrol has something to talk to, and
+		   installing it is one line in ../default.nix, which does. */
+		"on-click": "pavucontrol",
 		"on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
 		"on-click-middle": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
 		"on-scroll-up": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+",
@@ -218,9 +284,16 @@
 		"exec": "~/.config/waybar/scripts/mediaplayer.py",
 		"on-click": "playerctl play-pause",
 		"on-scroll-up": "playerctl next",
-		"on-scroll-down": "playerctl previous",
-		/* "on-click-right": "~/.config/waybar/scripts/switch-media-player.sh",*/
-		"on-click-right": "~/.config/waybar/scripts/switch-to-spotify.sh"
+		/* Upstream's right-click chose which MPRIS player the module
+		   follows, through one of two scripts -- `switch-to-spotify.sh`
+		   and the commented-out `switch-media-player.sh` -- neither of
+		   which is in ./scripts. Both dropped. This is not a matter of
+		   installing something: the exec is mpris-status, which takes its
+		   player as a `--player` argument read once at startup, so
+		   switching at runtime needs somewhere to persist the choice and a
+		   signal to make the module reread it. That is a feature to build,
+		   not a path to correct. */
+		"on-scroll-down": "playerctl previous"
 	},
 	/* NOTIFICATIONS */
 	"custom/notifications": {
@@ -273,7 +346,11 @@
 		"exec": "echo ''",
 		"tooltip": false,
 		"exec-if": "pgrep 'wf-recorder'",
-		"on-click": "exec $HOME/.config/hypr/scripts/rofi/recording",
+		/* on-click ran `$HOME/.config/hypr/scripts/rofi/recording`, one
+		   more upstream path this repo does not write. Dropped for the
+		   same reason as the bluetooth handler above; wf-recorder is not
+		   installed either, so exec-if never passes and the module never
+		   appears in the first place. */
 		"signal": 8
 	},
 	/* LANG */

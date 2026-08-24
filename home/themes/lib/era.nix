@@ -171,6 +171,19 @@ lib.mkMerge [
   {
     home.packages = [
       font.package
+
+      # services.hyprpaper installs no package of its own; the unit runs a
+      # store path, so without this the binary is absent from PATH.
+      #
+      # Listed here and not next to `services.hyprpaper` further down,
+      # where it reads more naturally, because one attrset cannot define
+      # `home.packages` twice -- and a second definition down there is
+      # precisely what d269e43 added. Every generated era has failed to
+      # evaluate since, with "attribute 'home.packages' already defined";
+      # cybr was the live theme the whole time, so no build ever touched
+      # this file and nothing said so.
+      pkgs.hyprpaper
+
       pkgs.rofi
     ]
     ++ lib.optional useOwnBar cyberpunk-ui;
@@ -180,6 +193,30 @@ lib.mkMerge [
       enable = true;
       image = lib.mkDefault wallpaper;
       fonts.sansSerif = lib.mkDefault { inherit (font) package name; };
+    };
+
+    # An icon theme, for the first time. `stylix.icons` is off and
+    # `gtk.iconTheme` was unset everywhere, so a freedesktop lookup on
+    # this desktop found `hicolor` and whatever an application shipped
+    # for itself -- which is exactly what cyberpunk-ui's tray falls back
+    # to, since it reads `gtk-icon-theme-name` out of gtk-4.0 or gtk-3.0
+    # settings.ini when it is not told a theme on the command line.
+    # Setting it here is what makes those icons appear without passing
+    # `--icon-theme`; home-manager writes both settings.ini files and
+    # carries the package into home.packages, so the name resolves.
+    #
+    # This is the theme layer's call rather than the shared GUI module's,
+    # because the right variant is a function of the palette: `bleach` is
+    # a light scheme and wants Papirus-Light where the rest want
+    # Papirus-Dark. Polarity is set by each era from its resolved roles
+    # (see ./roles.nix), so it is already known here. `either` -- the
+    # option's own default, which no era leaves in place -- is treated as
+    # dark, matching the house style. cybr answers differently: it has
+    # one fixed dark palette and names the variant literally.
+    gtk.iconTheme = lib.mkDefault {
+      name =
+        if config.stylix.polarity == "light" then "Papirus-Light" else "Papirus-Dark";
+      package = pkgs.papirus-icon-theme;
     };
 
     xdg.configFile."theme/current.toml".text = themeToml;
@@ -263,9 +300,8 @@ lib.mkMerge [
       };
     };
 
-    # services.hyprpaper installs no package of its own; the unit runs a
-    # store path. Without this the binary is absent from PATH.
-    home.packages = [ pkgs.hyprpaper ];
+    # hyprpaper the package is in `home.packages` at the top of this
+    # block; it cannot be declared here as well.
 
     # --- bar -----------------------------------------------------------
     programs.waybar = lib.mkIf (!useOwnBar) {

@@ -139,6 +139,12 @@ in
     home.packages = [
       mpris-status
       pkgs.nerd-fonts.geist-mono
+
+      # The pulseaudio module's on-click. Declared here rather than in the
+      # shared GUI module for the same reason rofi/default.nix declares
+      # its scripts' dependencies next to the scripts: nothing else in the
+      # config calls it, and if the handler goes so should the package.
+      pkgs.pavucontrol
     ];
   };
 }
