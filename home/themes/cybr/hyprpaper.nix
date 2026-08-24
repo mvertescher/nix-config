@@ -60,8 +60,13 @@ let
         "minato" "samurai" "taito" "yoyogi"
       )
 
-      # Query active wallpaper path via hyprctl IPC
-      ACTIVE_PATH=$(hyprctl hyprpaper "listactive" | head -n 1 | awk -F ': ' '{print $2}')
+      # Query active wallpaper path via hyprctl IPC.
+      #
+      # `|| true` because writeShellApplication turns on errexit and
+      # pipefail: with hyprpaper not running, hyprctl exits 1 and the whole
+      # script died here, which made the "nothing active yet, start at
+      # shibuya" branch below unreachable.
+      ACTIVE_PATH=$(hyprctl hyprpaper "listactive" 2>/dev/null | head -n 1 | awk -F ': ' '{print $2}' || true)
 
       if [[ -z "$ACTIVE_PATH" ]]; then
         NEXT_WALLPAPER="shibuya"
@@ -90,7 +95,19 @@ let
       # Query all active monitors dynamically
       MONITORS=$(hyprctl monitors | grep "Monitor" | awk '{print $2}')
 
-      # Instantly reload the wallpaper for each active monitor using the quoted direct wallpaper command
+      # Do NOT add a `hyprctl hyprpaper preload` in front of this, however
+      # much the pre-0.8 hyprpaper documentation suggests it. hyprpaper
+      # 0.8.0 (2025-12-29) was rewritten onto hyprtoolkit/hyprwire and the
+      # whole preload/unload/listloaded vocabulary went with it: hyprctl
+      # 0.55 accepts exactly two hyprpaper requests, `wallpaper mon,path`
+      # and `listactive`, and answers anything else with "invalid
+      # hyprpaper request" and exit 1. Under errexit that would abort the
+      # script before it ever set a wallpaper. `wallpaper` loads the image
+      # itself now, so there is nothing to preload and nothing to unload.
+      #
+      # hyprctl reports errors on stdout, not stderr, so this stays
+      # unredirected: from a keybind it lands in the hyprland log, which is
+      # the only place anyone would go looking.
       for mon in $MONITORS; do
         hyprctl hyprpaper "wallpaper $mon,$WALLPAPERS_DIR/$NEXT_WALLPAPER.jpg"
       done
@@ -118,6 +135,11 @@ in
     # at build time, so rofi/scripts/wallpaper had nothing to enumerate.
     xdg.configFile."hypr/walls".source = wallpapersDir;
 
+    # No `preload =` line: hyprpaper 0.8 dropped the keyword along with the
+    # rest of the preload machinery, and a `wallpaper` block loads its own
+    # path. hyprlang ignores the stale key rather than erroring, so the one
+    # that used to sit here was invisible dead config -- and it is what made
+    # the rotation helper look like it was missing a preload step.
     xdg.configFile."hypr/hyprpaper.conf".text = let
       wallpaperBlocks = if cfg.monitors == [ ]
                         then ''
@@ -133,7 +155,6 @@ in
                           }
                         '') cfg.monitors;
     in ''
-      preload = ${wallpaperFile}
       ${wallpaperBlocks}
       ipc = true
       splash = false
