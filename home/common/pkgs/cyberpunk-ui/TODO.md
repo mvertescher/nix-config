@@ -143,3 +143,14 @@ Remaining for the checkPhase itself:
   `nixGL`/`nixglhost`, checking whether the wrapper's LD_LIBRARY_PATH
   shadows the driver's libvulkan, and whether the compositor reporting
   `explicit sync: no` matters for wgpu presentation on nvidia.
+
+## Goldens and git history (watch item, 2026-08-24)
+
+- Every verification round that re-renders the 21-case matrix writes
+  ~1.5 MB of PNGs into permanent git history. Fine today (repo `.git` is
+  ~6.6 MB, and the byte-identical policy means a golden only changes
+  when pixels genuinely do), but the escape hatches — git-lfs, or
+  splitting this crate into its own repo — both fight the nix fetchers
+  and the wrapper's pin, so the cheap moment to act is early. Notice
+  this at 100 MB, not at 1 GB. The wrapper's TODO carries the design
+  context under *Design review (2026-08-24)*.
