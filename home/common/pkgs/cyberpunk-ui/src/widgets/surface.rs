@@ -12,9 +12,21 @@ use iced::advanced::{layout, overlay, renderer, Clipboard, Layout, Shell, Widget
 use iced::widget::{canvas, container, stack};
 use iced::{event, mouse, Color, Element, Event, Length, Point, Rectangle, Renderer, Size, Theme};
 
-/// Which corners a chamfer applies to. Neo-militarism cuts different
-/// corners on different widgets, so the shape is a parameter rather
-/// than a constant.
+/// Which corners a corner treatment applies to.
+///
+/// A parameter rather than a constant because the amount and the choice
+/// come from different places: the era table says *how much* to cut and
+/// the widget says *where*. In practice every caller today takes
+/// [`default_corners`] -- one era-wide answer -- and the four named
+/// constants below exist to serve it. The `Surface::corners` builder
+/// that let a widget override it was deleted in the dead-code audit
+/// along with `Corners::OPPOSED`: nothing had ever called either, and
+/// `OPPOSED`'s own doc claimed it was "the neomil info panel", which
+/// the sheet contradicts -- `M 1080 132 h 700 l 24 24 v 560 l -24 24
+/// h -700 Z` cuts both *right* corners, not two diagonally opposite
+/// ones. The field is still public, so a widget that genuinely needs
+/// its own corners sets it; it just does not get a builder and a
+/// wrong constant for free.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Corners {
     pub top_left: bool,
@@ -43,12 +55,6 @@ impl Corners {
     };
     pub const TOP_RIGHT: Corners = Corners {
         top_right: true,
-        ..Corners::NONE
-    };
-    /// Diagonally opposite cuts, as on the neomil info panel.
-    pub const OPPOSED: Corners = Corners {
-        top_right: true,
-        bottom_left: true,
         ..Corners::NONE
     };
 }
@@ -126,11 +132,6 @@ impl Surface {
             stroke_width: style.metrics.stroke,
             ticket: Ticket::default(),
         }
-    }
-
-    pub fn corners(mut self, corners: Corners) -> Self {
-        self.corners = corners;
-        self
     }
 
     pub fn stroke(mut self, color: Color) -> Self {
@@ -401,6 +402,68 @@ pub fn span_at(
     (x0, x1)
 }
 
+/// The part of the shape lying between `y0` and `y1`, as a path.
+///
+/// [`span_at`] gives the shape's width at one height; a band spans a
+/// range of heights, and in the corner regions that width is different
+/// at every one of them. Taking a single reading and drawing a
+/// rectangle with it is wrong in both directions at once, and it was
+/// wrong visibly: neokitsch's veneer put a flat brown wedge *outside*
+/// the clipped top-right corner of every selected card, mail row and
+/// bar cell, and left a strip of untinted base inside the same corner's
+/// lower half. On the store screen that wedge was some 25 by 30 pixels
+/// of `(109,88,62)` sitting where the ground should be -- the light
+/// warp tone at its own 16% over the page, the arithmetic confirming
+/// what the crop showed.
+///
+/// It read, if you were feeling generous, as a folded flap: the veneer
+/// showing its underside where the corner is cut. It is not one.
+/// `docs/neokitsch/target-app.svg` draws the selected card as a single
+/// path -- `M800 340 h190 l30 30 v410 ...` -- filled with veneer and
+/// grain and *nothing else*; the cut corner is empty ground. And a
+/// deliberate flap would not stop 4px short of the card's own right
+/// edge, which is where `band_h / 2` happened to put it.
+///
+/// So the band is built from the shape instead, sampled about once a
+/// pixel down its height: exact for the three straight corner
+/// treatments and close enough for the rounded one, which is the same
+/// standard `span_at` already holds the grain lines to.
+fn band_path(
+    corner: Corner,
+    corners: Corners,
+    ticket: Ticket,
+    w: f32,
+    h: f32,
+    y0: f32,
+    y1: f32,
+) -> Option<canvas::Path> {
+    let steps = (y1 - y0).ceil().max(1.0) as usize;
+    let mut edges = Vec::with_capacity(steps + 1);
+    for k in 0..=steps {
+        let y = y0 + (y1 - y0) * k as f32 / steps as f32;
+        let (x0, x1) = span_at(corner, corners, ticket, w, h, y);
+        // A band can start or end outside the shape -- a corner may eat
+        // the whole width at the very top -- and the shapes here are
+        // convex, so the empty slices are only ever at the ends.
+        if x1 > x0 {
+            edges.push((x0, x1, y));
+        }
+    }
+    if edges.len() < 2 {
+        return None;
+    }
+    Some(canvas::Path::new(|b| {
+        b.move_to(Point::new(edges[0].0, edges[0].2));
+        for &(x0, _, y) in &edges[1..] {
+            b.line_to(Point::new(x0, y));
+        }
+        for &(_, x1, y) in edges.iter().rev() {
+            b.line_to(Point::new(x1, y));
+        }
+        b.close();
+    }))
+}
+
 impl<Message> canvas::Program<Message> for Surface {
     type State = ();
 
@@ -454,27 +517,30 @@ impl<Message> canvas::Program<Message> for Surface {
 
                 // Warp: broad bands across the grain direction, alpha-
                 // blended so the plank reads as figured rather than flat.
+                //
+                // Each band follows the shape rather than being a
+                // rectangle placed inside it. That is not fussiness:
+                // one reading of `span_at` at the band's own middle,
+                // stretched over its whole height, is wrong wherever
+                // the shape is not a rectangle -- and the top band
+                // always lands on one of those places. See
+                // [`band_path`].
                 let bands = 7;
                 for i in 0..bands {
-                    let t = i as f32 / bands as f32;
-                    let y0 = t * ph;
-                    let band_h = ph / bands as f32;
+                    let y0 = i as f32 / bands as f32 * ph;
+                    let y1 = (i + 1) as f32 / bands as f32 * ph;
                     let tone = if i % 2 == 0 { light } else { dark };
-                    let (x0, x1) = span_at(self.corner, self.corners, self.ticket, pw, ph, y0 + band_h / 2.0);
-                    if x1 <= x0 {
-                        continue;
+                    if let Some(band) =
+                        band_path(self.corner, self.corners, self.ticket, pw, ph, y0, y1)
+                    {
+                        frame.fill(
+                            &band,
+                            Color {
+                                a: 0.16,
+                                ..tone
+                            },
+                        );
                     }
-                    let band = canvas::Path::rectangle(
-                        Point::new(x0, y0),
-                        iced::Size::new(x1 - x0, band_h),
-                    );
-                    frame.fill(
-                        &band,
-                        Color {
-                            a: 0.16,
-                            ..tone
-                        },
-                    );
                 }
 
                 // Grain: fine lines along the plank, clipped to the

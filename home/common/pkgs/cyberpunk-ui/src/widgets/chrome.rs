@@ -15,7 +15,7 @@ use iced::{mouse, Color, Element, Length, Padding, Point, Rectangle, Renderer, T
 /// The layered fine lines neokitsch closes every screen with, bunching
 /// into a wedge at one end.
 #[derive(Debug, Clone, Copy)]
-pub struct Strata {
+struct Strata {
     pub color: Color,
     pub lines: usize,
 }

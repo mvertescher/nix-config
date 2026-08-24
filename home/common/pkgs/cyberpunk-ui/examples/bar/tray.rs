@@ -73,19 +73,28 @@
 //!
 //! The menu itself is `com.canonical.dbusmenu` -- a numbered tree,
 //! fetched with `GetLayout` and clicked with `Event`. What leaves this
-//! module is a flat [`TrayMenu`], for the same reason [`TrayItem`] is
-//! not the protocol's own shape: the thirty optional properties of a
-//! dbusmenu row describe four things a bar draws.
+//! module is a [`TrayMenu`] of the same shape, for the same reason
+//! [`TrayItem`] is not the protocol's own: the thirty optional
+//! properties of a dbusmenu row describe six things a bar draws.
 //!
-//! Two protocol courtesies are kept because applications do act on
+//! `GetLayout` is asked for the whole tree ([`MENU_DEPTH`]), so a
+//! submenu is drawn from the reply that drew its parent and opening
+//! one costs no round trip. The bar draws it inside the surface it
+//! already has -- see `cyberpunk_ui::bar::tray_menu` for why that is
+//! the only option here that dismisses.
+//!
+//! Three protocol courtesies are kept because applications do act on
 //! them: `AboutToShow` before the layout is read, which is how an
-//! application with a dynamic menu is told to populate it, and
-//! `Event(0, "closed")` when the bar puts the menu away.
+//! application with a dynamic menu is told to populate it; the same
+//! call again on a *submenu* when the bar opens one, followed by a
+//! re-read ([`Command::Expand`]), which is the only way a submenu
+//! built on demand ever has anything in it; and `Event(0, "closed")`
+//! when the bar puts the menu away.
 //!
-//! What is *not* here is submenus. `GetLayout` is asked for one level,
-//! a row with children is drawn with a marker and does nothing, and
-//! opening one would mean a second surface stacked on the first plus a
-//! pointer grab. See `cyberpunk_ui::bar::TrayMenu`.
+//! Menu-row icons go through `icon.rs` like every other icon here.
+//! Note the one place the two protocols riding this bus disagree:
+//! dbusmenu's `icon-data` is a PNG file, where the item interface's
+//! `IconPixmap` is raw ARGB32.
 
 use crate::icon;
 use crate::sensor::{Latest, Snapshot};
@@ -125,11 +134,24 @@ const ITEM_INTERFACES: [&str; 2] = [
 /// one two ways.
 const MENU_INTERFACE: &str = "com.canonical.dbusmenu";
 
-/// How deep `GetLayout` is asked to go. One: the top level and enough
-/// of each row to know whether it has children.
-const MENU_DEPTH: i32 = 1;
+/// How deep `GetLayout` is asked to go. `-1` is the whole tree.
+///
+/// One level was enough while a submenu was drawn as a marker and
+/// nothing else. Now that the bar opens them, asking for everything at
+/// once is what makes opening one instant: the reply that draws a menu
+/// already contains its submenus, so a click has nothing to wait for.
+/// The depth is the *item's* choice, though, so the recursion on this
+/// side is bounded by [`MENU_LEVELS`] rather than by trust.
+const MENU_DEPTH: i32 = -1;
 
-/// Rows drawn before the menu is cut short.
+/// Levels of submenu kept, counting the top level as one.
+///
+/// Nothing sane nests a tray menu five deep, and the chain is drawn
+/// across the screen rather than down it -- so this is the bound that
+/// keeps a pathological item from walking a menu off the left edge.
+const MENU_LEVELS: usize = 5;
+
+/// Rows drawn before a menu -- or one of its submenus -- is cut short.
 ///
 /// A menu is another application's data and the panel is placed
 /// against the pointer, so an item with a thousand-row menu would
@@ -177,6 +199,11 @@ pub struct Config {
     /// The size icons are drawn at, from `cyberpunk_ui::bar::icon_size`,
     /// so that what is decoded matches what is drawn.
     pub icon_size: u32,
+    /// The same for a menu row's icon, from
+    /// `cyberpunk_ui::bar::menu_icon_size`. A separate number because a
+    /// tray cell is sized by the bar's height and a menu row by its own
+    /// line of text, and on a tall bar those are not close.
+    pub menu_icon_size: u32,
 }
 
 impl Default for Config {
@@ -185,6 +212,7 @@ impl Default for Config {
             show_passive: false,
             icon_theme: None,
             icon_size: 16,
+            menu_icon_size: 16,
         }
     }
 }
@@ -223,12 +251,22 @@ enum Command {
     Pointer { key: String, action: TrayAction },
     /// A row of the item's own menu was clicked.
     Entry { key: String, entry: i32 },
+    /// A submenu was opened. `AboutToShow` on that row's id, then a
+    /// re-read of the whole layout -- which is what an application
+    /// that builds a submenu on demand is waiting for, and which
+    /// reaches the bar down the same channel the first menu did.
+    Expand { key: String, entry: i32 },
     /// The bar has put the menu away. Sent so an application that
     /// tracks its own menu state is not left thinking it is still up.
     Closed { key: String },
 }
 
-/// A menu on its way back, in answer to a right click.
+/// A menu on its way back: in answer to a right click, or as the
+/// re-read that follows a submenu being opened.
+///
+/// One type for both because they are the same thing -- an item's menu
+/// as of now. Whether the bar has one on screen already is what tells
+/// the two apart, and that is the bar's own state to consult.
 #[derive(Debug, Clone)]
 pub struct Opened {
     /// The item it belongs to, which is also what a click on one of
@@ -303,6 +341,21 @@ impl Monitor {
     /// Click one row of an item's menu.
     pub fn activate(&self, key: &str, entry: i32) {
         let _ = self.commands.try_send(Command::Entry {
+            key: key.to_string(),
+            entry,
+        });
+    }
+
+    /// Tell the item one of its submenus is being opened.
+    ///
+    /// The bar has usually drawn that submenu already, from the tree it
+    /// is holding; this is the protocol courtesy that gives an
+    /// application which fills a submenu on demand its chance to. The
+    /// answer arrives as another [`Opened`] for the same key, and it is
+    /// what makes a submenu that was *empty* in the first layout open
+    /// at all.
+    pub fn expand(&self, key: &str, entry: i32) {
+        let _ = self.commands.try_send(Command::Expand {
             key: key.to_string(),
             entry,
         });
@@ -663,7 +716,7 @@ async fn serve(
     while let Some(wake) = events.next().await {
         match wake {
             Wake::Click(command) => {
-                dispatch(&session, &command, menus).await;
+                dispatch(&mut session, &command, menus).await;
                 continue;
             }
             Wake::Owner(name) => {
@@ -1003,8 +1056,15 @@ fn label(title: &str, id: &str) -> String {
 /// caller is a bar that must keep repainting, and the usual reason a
 /// call fails is that the application exited between the click and the
 /// bus.
-async fn dispatch(session: &Session, command: &Command, menus: &async_channel::Sender<Opened>) {
-    let conn = &session.conn;
+///
+/// Takes the session by `&mut` for one reason: resolving a menu row's
+/// icon fills the same memo a tray cell's does, and the memo lives on
+/// the session.
+async fn dispatch(session: &mut Session, command: &Command, menus: &async_channel::Sender<Opened>) {
+    // Cloned rather than borrowed so the arms below can hold `&mut
+    // session.icons` at the same time. A `Connection` is a handle.
+    let conn = session.conn.clone();
+    let conn = &conn;
     match command {
         Command::Entry { key, entry } => {
             let Some(menu) = session.menus.get(key) else {
@@ -1028,6 +1088,39 @@ async fn dispatch(session: &Session, command: &Command, menus: &async_channel::S
                     ),
                 )
                 .await;
+        }
+        Command::Expand { key, entry } => {
+            let Some(path) = session
+                .menus
+                .get(key)
+                .map(|menu| menu.path.clone())
+                .filter(|path| !path.is_empty())
+            else {
+                return;
+            };
+            // The re-read is unconditional. `AboutToShow` answers
+            // whether the layout changed, and an application that
+            // built the submenu just now says `true` -- but one that
+            // had it all along says `false` and we would still have
+            // drawn from a tree fetched before the click. Reading
+            // either way costs one round trip on this thread and
+            // nothing at all on the drawing one, which already has a
+            // panel up.
+            if let Some(menu) = layout(
+                conn,
+                key,
+                &path,
+                *entry,
+                &mut session.icons,
+                &session.config,
+            )
+            .await
+            {
+                let _ = menus.try_send(Opened {
+                    key: key.clone(),
+                    menu,
+                });
+            }
         }
         Command::Closed { key } => {
             let Some(menu) = session.menus.get(key) else {
@@ -1054,15 +1147,26 @@ async fn dispatch(session: &Session, command: &Command, menus: &async_channel::S
             // request to draw *that* menu; `ContextMenu` is what the
             // spec offers an item which has none. `ItemIsMenu` says
             // the same about the left button.
-            let menu = session.menus.get(key);
+            let menu = session.menus.get(key).cloned();
             let wants_menu = match action {
                 TrayAction::Context => true,
-                TrayAction::Activate => menu.is_some_and(|menu| menu.is_menu),
+                TrayAction::Activate => menu.as_ref().is_some_and(|menu| menu.is_menu),
                 _ => false,
             };
             if wants_menu {
                 if let Some(menu) = menu.filter(|menu| !menu.path.is_empty()) {
-                    if let Some(open) = layout(conn, key, &menu.path).await {
+                    // Zero: the root, which is what the protocol calls
+                    // the menu as a whole.
+                    if let Some(open) = layout(
+                        conn,
+                        key,
+                        &menu.path,
+                        0,
+                        &mut session.icons,
+                        &session.config,
+                    )
+                    .await
+                    {
                         // Dropped rather than awaited: the queue only
                         // fills if the drawing thread has stopped
                         // reading it, and a bar that is not drawing is
@@ -1092,14 +1196,23 @@ fn timestamp() -> u32 {
         .as_millis() as u32
 }
 
-/// Read one item's menu, flattened to the rows a bar draws.
+/// Read one item's menu as the tree a bar draws.
 ///
 /// `AboutToShow` first, because an application with a menu it builds
-/// on demand has nothing in `GetLayout` until it is asked. Its answer
-/// -- whether the layout changed -- is ignored: we read the layout
-/// either way, so the only thing knowing would save is the read we are
-/// about to do anyway.
-async fn layout(conn: &Connection, key: &str, path: &str) -> Option<TrayMenu> {
+/// on demand has nothing in `GetLayout` until it is asked. `about` is
+/// the row being shown -- `0` for the menu as a whole, a submenu's own
+/// id when the bar opens that submenu. Its answer -- whether the
+/// layout changed -- is ignored: we read the layout either way, so the
+/// only thing knowing would save is the read we are about to do
+/// anyway.
+async fn layout(
+    conn: &Connection,
+    key: &str,
+    path: &str,
+    about: i32,
+    icons: &mut icon::Icons,
+    config: &Config,
+) -> Option<TrayMenu> {
     let (service, _) = split_key(key);
 
     let _ = conn
@@ -1108,10 +1221,14 @@ async fn layout(conn: &Connection, key: &str, path: &str) -> Option<TrayMenu> {
             path,
             Some(MENU_INTERFACE),
             "AboutToShow",
-            &0i32,
+            &about,
         )
         .await;
 
+    // Always from the root, whichever row was announced. `GetLayout`
+    // takes a parent id and could be asked for the subtree alone, but
+    // then the caller would have to splice a reply into a tree it is
+    // holding by index -- and the whole menu is a few kilobytes.
     let reply = conn
         .call_method(
             Some(service),
@@ -1128,13 +1245,7 @@ async fn layout(conn: &Connection, key: &str, path: &str) -> Option<TrayMenu> {
     // and D-Bus has no way to say so.
     let (_revision, root): (u32, Node) = reply.body().deserialize().ok()?;
 
-    let entries: Vec<MenuEntry> = root
-        .2
-        .into_iter()
-        .filter_map(|child| Node::try_from(child).ok())
-        .filter_map(|node| entry_from(&node))
-        .take(MENU_ROWS)
-        .collect();
+    let entries = rows(&root.2, 1, icons, config);
 
     // An item whose menu is empty -- or whose every row is hidden --
     // has not given us a menu to draw, and an empty panel under the
@@ -1145,10 +1256,37 @@ async fn layout(conn: &Connection, key: &str, path: &str) -> Option<TrayMenu> {
 /// One `com.canonical.dbusmenu` node: id, properties, children.
 type Node = (i32, HashMap<String, OwnedValue>, Vec<OwnedValue>);
 
+/// One level of the tree, as the rows a bar draws.
+///
+/// `level` counts from one at the top, and a node whose level is
+/// already [`MENU_LEVELS`] keeps its marker and loses its children --
+/// the same shape a submenu the application has not filled in yet
+/// comes out as. The bar draws both the same way: marked, and clicking
+/// one asks the application for its contents rather than opening a
+/// panel with nothing in it.
+fn rows(
+    children: &[OwnedValue],
+    level: usize,
+    icons: &mut icon::Icons,
+    config: &Config,
+) -> Vec<MenuEntry> {
+    children
+        .iter()
+        .filter_map(|child| Node::try_from(child.clone()).ok())
+        .filter_map(|node| entry_from(&node, level, icons, config))
+        .take(MENU_ROWS)
+        .collect()
+}
+
 /// One node as a row, or `None` when the item asked for it not to be
 /// drawn.
-fn entry_from(node: &Node) -> Option<MenuEntry> {
-    let (id, props, _) = node;
+fn entry_from(
+    node: &Node,
+    level: usize,
+    icons: &mut icon::Icons,
+    config: &Config,
+) -> Option<MenuEntry> {
+    let (id, props, children) = node;
 
     // `visible` is the item saying "not now"; the spec defaults it to
     // true, and most rows never mention it.
@@ -1177,12 +1315,42 @@ fn entry_from(node: &Node) -> Option<MenuEntry> {
         return None;
     }
 
+    // Only a submenu's children are read. Plenty of applications hang
+    // nodes off a row that is not one -- a radio group's members are a
+    // common case -- and `children-display` is the property that says
+    // which of them the user is meant to be shown.
+    let children = if matches!(kind, MenuKind::Submenu) && level < MENU_LEVELS {
+        rows(children, level + 1, icons, config)
+    } else {
+        Vec::new()
+    };
+
     Some(MenuEntry {
         id: *id,
         label,
         enabled: menu_flag(props, "enabled", true),
         kind,
+        // A separator is a rule; an icon on one would be an icon on a
+        // row that is not drawn as a row.
+        icon: match kind {
+            MenuKind::Separator => None,
+            _ => icons.menu(
+                &menu_string(props, "icon-name"),
+                &menu_bytes(props, "icon-data"),
+                config.menu_icon_size,
+            ),
+        },
+        children,
     })
+}
+
+/// A property the protocol types as `ay`. dbusmenu's `icon-data` is
+/// the only one, and it is a PNG file rather than raw pixels.
+fn menu_bytes(props: &HashMap<String, OwnedValue>, key: &str) -> Vec<u8> {
+    props
+        .get(key)
+        .and_then(|value| Vec::<u8>::try_from(value.clone()).ok())
+        .unwrap_or_default()
 }
 
 fn menu_string(props: &HashMap<String, OwnedValue>, key: &str) -> String {
@@ -1443,6 +1611,15 @@ mod tests {
 
     /// A dbusmenu node, as `GetLayout` would hand one over.
     fn node(id: i32, pairs: &[(&str, zbus::zvariant::Value<'static>)]) -> Node {
+        nest(id, pairs, Vec::new())
+    }
+
+    /// The same, with children hung off it.
+    fn nest(
+        id: i32,
+        pairs: &[(&str, zbus::zvariant::Value<'static>)],
+        children: Vec<Node>,
+    ) -> Node {
         let props = pairs
             .iter()
             .map(|(key, value)| {
@@ -1452,38 +1629,53 @@ mod tests {
                 )
             })
             .collect();
-        (id, props, Vec::new())
+        let children = children
+            .into_iter()
+            .map(|child| OwnedValue::try_from(zbus::zvariant::Value::from(child)).expect("a node"))
+            .collect();
+        (id, props, children)
     }
 
     fn string(value: &str) -> zbus::zvariant::Value<'static> {
         zbus::zvariant::Value::from(value.to_string())
     }
 
+    /// One node as the row it becomes, at the top level.
+    fn row(node: &Node) -> Option<MenuEntry> {
+        entry_from(node, 1, &mut icons(), &Config::default())
+    }
+
+    /// A row marked as having a submenu, with `children` under it.
+    fn submenu(id: i32, label: &str, children: Vec<Node>) -> Node {
+        nest(
+            id,
+            &[
+                ("label", string(label)),
+                ("children-display", string("submenu")),
+            ],
+            children,
+        )
+    }
+
     #[test]
     fn a_plain_row_keeps_its_id_and_loses_its_mnemonic() {
-        let entry = entry_from(&node(7, &[("label", string("_Quit"))])).expect("a row");
+        let entry = row(&node(7, &[("label", string("_Quit"))])).expect("a row");
         assert_eq!(entry.id, 7);
         assert_eq!(entry.label, "Quit");
         assert!(entry.enabled);
         assert_eq!(entry.kind, MenuKind::Command);
+        assert!(entry.children.is_empty());
     }
 
     #[test]
     fn the_four_row_shapes_come_out_of_four_different_properties() {
-        let separator = entry_from(&node(1, &[("type", string("separator"))])).expect("a rule");
+        let separator = row(&node(1, &[("type", string("separator"))])).expect("a rule");
         assert_eq!(separator.kind, MenuKind::Separator);
 
-        let submenu = entry_from(&node(
-            2,
-            &[
-                ("label", string("Networks")),
-                ("children-display", string("submenu")),
-            ],
-        ))
-        .expect("a submenu");
-        assert_eq!(submenu.kind, MenuKind::Submenu);
+        let entry = row(&submenu(2, "Networks", Vec::new())).expect("a submenu");
+        assert_eq!(entry.kind, MenuKind::Submenu);
 
-        let on = entry_from(&node(
+        let on = row(&node(
             3,
             &[
                 ("label", string("Enable")),
@@ -1496,7 +1688,7 @@ mod tests {
 
         // Indeterminate is drawn as off: the era vocabulary has two
         // states and inventing a third here would be a widget.
-        let unknown = entry_from(&node(
+        let unknown = row(&node(
             4,
             &[
                 ("label", string("Enable")),
@@ -1509,8 +1701,130 @@ mod tests {
     }
 
     #[test]
+    fn a_submenus_children_come_back_with_it() {
+        let entry = row(&submenu(
+            2,
+            "Default S_ink",
+            vec![
+                node(
+                    3,
+                    &[
+                        ("label", string("Dummy Output")),
+                        ("toggle-type", string("radio")),
+                        ("toggle-state", zbus::zvariant::Value::from(1i32)),
+                    ],
+                ),
+                node(4, &[("label", string("_Headphones"))]),
+            ],
+        ))
+        .expect("a submenu");
+
+        assert_eq!(entry.kind, MenuKind::Submenu);
+        assert_eq!(entry.children.len(), 2);
+        assert_eq!(entry.children[0].kind, MenuKind::Toggle(true));
+        // The whole row treatment applies at every level, not just the
+        // top one: this child's mnemonic is gone too.
+        assert_eq!(entry.children[1].label, "Headphones");
+        assert_eq!(entry.children[1].id, 4);
+    }
+
+    #[test]
+    fn only_a_row_that_says_submenu_keeps_its_children() {
+        // Applications hang nodes off rows that are not submenus --
+        // the members of a radio group are the common case -- and
+        // `children-display` is the property that says which of them
+        // the user is meant to be shown.
+        let entry = row(&nest(
+            2,
+            &[("label", string("Volume"))],
+            vec![node(3, &[("label", string("Hidden"))])],
+        ))
+        .expect("a row");
+        assert_eq!(entry.kind, MenuKind::Command);
+        assert!(entry.children.is_empty());
+    }
+
+    #[test]
+    fn nesting_stops_at_menu_levels() {
+        // A chain one level deeper than the bound, built from the
+        // bottom up.
+        let mut deepest = submenu(100, "bottom", vec![node(101, &[("label", string("leaf"))])]);
+        for id in (1..=MENU_LEVELS as i32).rev() {
+            deepest = submenu(id, "down", vec![deepest]);
+        }
+
+        // Walk what came back and count the panels a bar could open.
+        let mut entry = row(&deepest).expect("a submenu");
+        let mut levels = 1;
+        while let Some(child) = entry.children.first() {
+            entry = child.clone();
+            levels += 1;
+        }
+        assert_eq!(levels, MENU_LEVELS);
+        // The deepest row kept its marker; it is the children that
+        // were dropped, which the bar draws as marked-and-inert.
+        assert_eq!(entry.kind, MenuKind::Submenu);
+        assert!(entry.children.is_empty());
+    }
+
+    #[test]
+    fn a_rows_icon_comes_from_its_own_png_when_no_theme_has_the_name() {
+        // `icon-data` is a PNG file, not the raw ARGB32 the item
+        // interface sends -- the one place the two protocols on this
+        // bus disagree about what a picture is.
+        let png = one_pixel_png();
+        let entry = row(&node(
+            9,
+            &[
+                ("label", string("Preferences")),
+                ("icon-name", string("no-such-icon-anywhere")),
+                ("icon-data", zbus::zvariant::Value::from(png)),
+            ],
+        ))
+        .expect("a row");
+        assert!(entry.icon.is_some(), "the icon-data should have decoded");
+    }
+
+    #[test]
+    fn a_row_with_neither_icon_property_has_no_icon() {
+        let entry = row(&node(9, &[("label", string("Quit"))])).expect("a row");
+        assert!(entry.icon.is_none());
+    }
+
+    #[test]
+    fn a_separator_never_carries_an_icon() {
+        let entry = row(&nest(
+            9,
+            &[
+                ("type", string("separator")),
+                ("icon-data", zbus::zvariant::Value::from(one_pixel_png())),
+            ],
+            Vec::new(),
+        ))
+        .expect("a rule");
+        assert!(entry.icon.is_none());
+    }
+
+    /// One opaque pixel as a PNG file, which is the shape dbusmenu
+    /// asks for. Encoded rather than kept as a fixture: `png` is
+    /// already a dependency for the decoding half, and a literal blob
+    /// in a test file is a thing nobody can check by reading.
+    fn one_pixel_png() -> Vec<u8> {
+        let mut out = Vec::new();
+        let mut encoder = png::Encoder::new(&mut out, 1, 1);
+        encoder.set_color(png::ColorType::Rgba);
+        encoder.set_depth(png::BitDepth::Eight);
+        encoder
+            .write_header()
+            .expect("a header")
+            .write_image_data(&[0xff, 0x00, 0x88, 0xff])
+            .expect("a pixel");
+        out
+    }
+
+    #[test]
     fn a_hidden_or_unlabelled_row_is_not_drawn() {
-        assert!(entry_from(&node(
+        assert!(row(&node(
             5,
             &[
                 ("label", string("Secret")),
@@ -1519,14 +1833,14 @@ mod tests {
         ))
         .is_none());
         // A command with nothing to say is a blank row.
-        assert!(entry_from(&node(6, &[])).is_none());
+        assert!(row(&node(6, &[])).is_none());
         // A separator has no label and is still a rule.
-        assert!(entry_from(&node(7, &[("type", string("separator"))])).is_some());
+        assert!(row(&node(7, &[("type", string("separator"))])).is_some());
     }
 
     #[test]
     fn a_disabled_row_is_drawn_and_does_not_answer() {
-        let entry = entry_from(&node(
+        let entry = row(&node(
             8,
             &[
                 ("label", string("Disconnect")),

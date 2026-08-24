@@ -57,6 +57,26 @@
 //! of the screen; hanging it to the left needs no knowledge of how wide
 //! the output is.
 //!
+//! ## Submenus need no third surface
+//!
+//! A submenu opens *inside* that overlay, as another panel in the same
+//! row -- see `cyberpunk_ui::bar::tray_menu`, which does the placement.
+//! There is no `layershell_open` for it and no second window id here.
+//!
+//! That is not a shortcut, it is the same argument one step further on.
+//! A second output-sized overlay would cover the panel underneath it,
+//! so every row of the parent menu would stop answering until the child
+//! was drawn with a hole cut in it; a menu-sized layer surface is the
+//! option already rejected above, for the grab. The overlay is the
+//! whole output and the chain is a few hundred pixels of it, so the
+//! only thing another surface would buy is a second thing to dismiss.
+//!
+//! Dismissal therefore does not change at all. One click anywhere else
+//! destroys the one surface and takes the whole chain with it, rather
+//! than unwinding a stack; `Message::Submenu` is the only thing that
+//! moves within it, and clicking the row that is already open walks
+//! back up one level.
+//!
 //! Two flags beyond `--era`, both about the tray:
 //!
 //!     --icon-theme <name>   the icon theme tray icons are looked up
@@ -80,7 +100,9 @@ mod style;
 #[path = "bar/tray.rs"]
 mod tray;
 
-use cyberpunk_ui::bar::{bar, tray_menu, Readings, TrayAction, TrayMenu, Workspace};
+use cyberpunk_ui::bar::{
+    bar, tray_menu, MenuEntry, MenuPath, Readings, TrayAction, TrayMenu, Workspace,
+};
 use cyberpunk_ui::Style;
 use iced::widget::{column, container, mouse_area, row, Space};
 use iced::{Element, Length, Task, Theme};
@@ -110,8 +132,26 @@ struct Open {
     window: iced::window::Id,
     key: String,
     menu: TrayMenu,
-    /// Where the menu's right edge sits, in output pixels.
+    /// Which chain of submenus is open, empty for the root panel
+    /// alone. State of the panel and not of the item, which is why it
+    /// lives here rather than on the [`TrayMenu`].
+    path: MenuPath,
+    /// Where the chain's right edge sits, in output pixels.
     x: f32,
+}
+
+/// The entry a path names, if it still names one.
+///
+/// `None` for a path that has outrun the tree, which a re-read can
+/// arrange -- see `Message::Opened`.
+fn entry_at<'a>(menu: &'a TrayMenu, path: &[usize]) -> Option<&'a MenuEntry> {
+    let mut entries = &menu.entries;
+    let mut found = None;
+    for &index in path {
+        found = entries.get(index);
+        entries = &found?.children;
+    }
+    found
 }
 
 struct BarApp {
@@ -146,6 +186,9 @@ enum Message {
     Opened(tray::Opened),
     /// A row of the open menu was clicked.
     Entry(i32),
+    /// A submenu row was clicked: open the chain it names, or close it
+    /// again when it is the one already open.
+    Submenu(MenuPath),
     /// Anywhere else on the screen was clicked.
     Dismiss,
 }
@@ -158,6 +201,7 @@ impl BarApp {
             // Decode at the size the cell will draw, so the icon is
             // resampled once rather than twice.
             icon_size: cyberpunk_ui::bar::icon_size(&style).round() as u32,
+            menu_icon_size: cyberpunk_ui::bar::menu_icon_size(&style).round() as u32,
         };
         let mut app = BarApp {
             style,
@@ -212,14 +256,37 @@ impl BarApp {
                 return close;
             }
             Message::Opened(opened) => {
-                // Only the menu this bar last asked for, and only when
-                // nothing is already up: an item is free to answer late
-                // and twice.
+                // A menu arriving for the item already on screen is
+                // the re-read that follows opening a submenu. Spliced
+                // in place rather than reopened: the surface, its
+                // placement and the open chain are all still good, and
+                // destroying the surface to draw the same menu one row
+                // deeper would flash.
+                if let Some(open) = &mut self.open {
+                    if open.key == opened.key {
+                        // A dbusmenu id is the protocol's own notion
+                        // of row identity and is stable across a
+                        // re-read; a path that no longer lands on the
+                        // row it was opened for means the application
+                        // rearranged its menu underneath us, and the
+                        // honest answer to that is the root.
+                        let was = entry_at(&open.menu, &open.path).map(|entry| entry.id);
+                        let now = entry_at(&opened.menu, &open.path).map(|entry| entry.id);
+                        if was != now {
+                            open.path.clear();
+                        }
+                        open.menu = opened.menu;
+                    }
+                    return Task::none();
+                }
+
+                // Only the menu this bar last asked for: an item is
+                // free to answer late and twice.
                 let asked = self
                     .pending
                     .as_ref()
                     .is_some_and(|pending| pending.key == opened.key);
-                if !asked || self.open.is_some() {
+                if !asked {
                     return Task::none();
                 }
                 let Some(pending) = self.pending.take() else {
@@ -253,6 +320,7 @@ impl BarApp {
                     window,
                     key: opened.key.clone(),
                     menu: opened.menu.clone(),
+                    path: MenuPath::new(),
                     x: pending.x,
                 });
                 return Task::done(message);
@@ -262,6 +330,30 @@ impl BarApp {
                     self.tray.activate(&open.key, entry);
                 }
                 return self.dismiss();
+            }
+            Message::Submenu(path) => {
+                let Some(open) = &mut self.open else {
+                    return Task::none();
+                };
+                // Clicking the row that is already open closes it,
+                // which on a surface that reads no keys is the only
+                // way back up the chain that is not "start again".
+                // Nothing is sent for that: dbusmenu has an event for
+                // closing the *menu*, which `dismiss` sends, and none
+                // for closing one branch of it.
+                if open.path == path {
+                    open.path.pop();
+                    return Task::none();
+                }
+                open.path = path;
+                // The panel is already drawn, from the tree that came
+                // with the menu. This is the protocol courtesy that
+                // gives an application filling a submenu on demand its
+                // chance to; its answer arrives as another `Opened`
+                // and is spliced in above.
+                if let Some(entry) = entry_at(&open.menu, &open.path) {
+                    self.tray.expand(&open.key, entry.id);
+                }
             }
             Message::Dismiss => return self.dismiss(),
             _ => {}
@@ -315,9 +407,20 @@ impl BarApp {
 
     /// The menu, and the rest of the screen it is listening to.
     fn menu<'a>(&'a self, open: &'a Open) -> Element<'a, Message, Theme, iced::Renderer> {
-        let width = cyberpunk_ui::bar::menu_width(&self.style, &open.menu);
+        // The *chain's* width, not the root panel's: submenus open
+        // leftwards, so opening one widens the element to the left and
+        // leaves the root panel exactly where it was.
+        let width = cyberpunk_ui::bar::menu_chain_width(&self.style, &open.menu, &open.path);
         // Right edge on the pointer, clamped at the left edge of the
         // output. See the module header for why this way round.
+        //
+        // The clamp is the one case where opening a submenu does move
+        // the root panel: a chain longer than the pointer's distance
+        // from the left edge has nowhere further left to go, so the
+        // whole thing slides right. Sliding is better than the
+        // alternative, which is drawing off the screen, and it takes a
+        // deep chain under a pointer near the left edge -- where the
+        // tray never is.
         let left = (open.x - width).max(0.0);
 
         // No offset from the top: the surface already begins where the
@@ -325,7 +428,13 @@ impl BarApp {
         mouse_area(
             column![row![
                 Space::new(Length::Fixed(left), Length::Shrink),
-                tray_menu(&self.style, &open.menu, Message::Entry),
+                tray_menu(
+                    &self.style,
+                    &open.menu,
+                    &open.path,
+                    Message::Entry,
+                    Message::Submenu,
+                ),
             ]
             .height(Length::Shrink)]
             .width(Length::Fill)

@@ -22,7 +22,7 @@ const PANEL_W: f32 = 250.0;
 const REACH: f32 = 320.0;
 
 #[derive(Debug, Clone, Copy)]
-pub struct Bracket {
+struct Bracket {
     pub color: Color,
     pub stroke: f32,
     pub corner: Corner,

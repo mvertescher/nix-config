@@ -23,7 +23,7 @@ pub enum Glyph {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct GlyphShape {
+struct GlyphShape {
     pub glyph: Glyph,
     pub color: Color,
     pub stroke: f32,

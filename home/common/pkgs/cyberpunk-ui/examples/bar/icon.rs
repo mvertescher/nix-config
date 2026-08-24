@@ -382,6 +382,53 @@ impl Icons {
         self.cache.clear();
     }
 
+    /// The icon for one row of a `com.canonical.dbusmenu`.
+    ///
+    /// A menu row says the same thing as a tray item in two of the same
+    /// five ways -- a themed name, or its own pixels -- so this is the
+    /// search and the decoder that already exist, entered at a
+    /// different door. The one real difference is the format: dbusmenu's
+    /// `icon-data` is a **PNG file**, where the item interface's
+    /// `IconPixmap` is raw ARGB32. Both land in [`decode_png`] and
+    /// [`from_pixmaps`] respectively and come out as the same [`Rgba`].
+    ///
+    /// Name before data, for the reason [`Icons::render`] gives: a row
+    /// that offers both is offering a themed icon that will match the
+    /// rest of the desktop and a bitmap of whatever its toolkit
+    /// happened to render.
+    ///
+    /// Only the *named* half is memoised. That is the half that costs a
+    /// directory walk; keying a cache on a blob means either hashing it
+    /// or trusting its length, and a menu is read once when it opens
+    /// rather than on every poll.
+    pub fn menu(&mut self, name: &str, data: &[u8], size: u32) -> Option<image::Handle> {
+        let decoded = size.saturating_mul(OVERSAMPLE).min(MAX_SIDE);
+
+        if !name.is_empty() {
+            // `menu` cannot collide with a `Request::key`, which always
+            // starts with a size.
+            let key = format!("menu\u{1}{size}\u{1}{name}");
+            if let Some(hit) = self.cache.get(&key) {
+                if hit.is_some() {
+                    return hit.clone();
+                }
+            } else {
+                // The row names no `IconThemePath` of its own: a
+                // dbusmenu carries no equivalent, and the item's is a
+                // property of the item and not of its menu.
+                let found = self.named(name, "", decoded).map(Rgba::into_handle);
+                self.cache.insert(key, found.clone());
+                if found.is_some() {
+                    return found;
+                }
+            }
+        }
+
+        decode_png(data)
+            .and_then(|rgba| fit(rgba, decoded))
+            .map(Rgba::into_handle)
+    }
+
     fn render(&mut self, request: &Request, size: u32) -> Option<Rgba> {
         let decoded = size.saturating_mul(OVERSAMPLE).min(MAX_SIDE);
 

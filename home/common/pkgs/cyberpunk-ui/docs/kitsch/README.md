@@ -68,8 +68,8 @@ repo TODO. Real kitsch is not additive filigree — it is rounded
 silhouettes, solid fills, one curl motif, and a bloom background. All
 of that is parameterisable: corner radius, a curl decoration, a
 background treatment. The genuinely new widget is the extruded fan
-menu, which is an interaction-model difference (like neomil's diamond
-menu) — a per-era widget module, not a crate boundary.
+menu, which is an interaction-model difference (like neomil's services
+table) — a per-era widget module, not a crate boundary.
 
 The heavy-ornament question does not disappear; it moves to
 **neokitsch**, whose selected cards are filled with a wood-veneer

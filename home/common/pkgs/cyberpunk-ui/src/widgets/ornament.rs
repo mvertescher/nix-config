@@ -20,7 +20,7 @@ const CURL_H: f32 = 112.0;
 const SHOULDER: f32 = 88.0;
 
 #[derive(Debug, Clone, Copy)]
-pub struct PageCurl {
+struct PageCurl {
     pub fill: Color,
     pub rule: Color,
     pub stroke: f32,
@@ -88,7 +88,7 @@ impl<Message> canvas::Program<Message> for PageCurl {
 /// This is the first: a hairline at `x = 140` from just under the
 /// customer block to where the curl takes over.
 #[derive(Debug, Clone, Copy)]
-pub struct ColumnRule {
+struct ColumnRule {
     pub color: Color,
     pub stroke: f32,
 }

@@ -20,7 +20,7 @@ const ART_W: f32 = 172.0;
 const ART_H: f32 = 56.0;
 
 #[derive(Debug, Clone, Copy)]
-pub struct Silhouette {
+struct Silhouette {
     pub color: Color,
     pub stroke: f32,
 }

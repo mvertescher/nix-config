@@ -16,13 +16,18 @@
 //! The hub itself is [`crate::widgets::menu`], and this screen is why
 //! that widget exists. The four eras do not merely dress a module
 //! chooser differently, they reach for four different *objects* --
-//! tiles, an extruded fan, a diamond hub, a card cascade -- and this
+//! tiles, an extruded fan, a services table, a card cascade -- and this
 //! file cannot pick between them without an era branch. So it names
 //! none of them: it hands `menu` six [`MenuItem`]s and a selected
 //! index, and [`crate::style::Menu`] on the era table says what a menu
 //! is. Until that variant existed the hub drew a hardcoded two-column
 //! grid of `Surface`s, which was the right stopgap and the wrong screen
 //! for three eras out of four.
+//!
+//! Neomil's arm is a services table now rather than the cut-diamond hub
+//! it inherited, which is the sampled answer for this slot and the
+//! reason [`crate::widgets::table`] exists -- see
+//! [`crate::style::Menu::Table`].
 //!
 //! Note the column count moved with it. The grid here was two wide;
 //! entropism's sheet draws its tiles three to a row and the era table
@@ -46,10 +51,10 @@ use iced::{Element, Length, Padding};
 /// the menu borrows, rather than a fresh temporary per call that only
 /// lives long enough because of rvalue promotion.
 ///
-/// All three fields are handed over even though no era draws all
+/// All three fields are handed over even though only one era draws all
 /// three, and that is deliberate: the fan has no room for a blurb and
-/// the diamonds none for either, so each arm takes what its object has
-/// room for instead of this screen deciding on its behalf.
+/// only the table has room for all three, so each arm takes what its
+/// object has room for instead of this screen deciding on its behalf.
 static MODULES: [MenuItem<'static>; 6] = [
     MenuItem {
         label: "VEHICLES",
@@ -209,11 +214,11 @@ impl Dashboard {
     ///
     /// The menu is given the whole remaining column rather than its
     /// natural height, and that is load-bearing for two of the four
-    /// arms. `Menu::Fan` and `Menu::Diamonds` are canvases that fit
-    /// themselves to the box they are handed; in a `Shrink` column they
-    /// are handed nothing and draw nothing. The two layout arms are
-    /// indifferent to it -- tiles and the cascade keep their sampled
-    /// heights and leave the slack below.
+    /// arms. `Menu::Fan` is a canvas that fits itself to the box it is
+    /// handed; in a `Shrink` column it is handed nothing and draws
+    /// nothing. The three layout arms are indifferent to it -- tiles,
+    /// the cascade and the table keep their sampled heights and leave
+    /// the slack below, which is what the sheets do under their own.
     fn modules(&self) -> Element<'_, Message> {
         let s = &self.style;
 

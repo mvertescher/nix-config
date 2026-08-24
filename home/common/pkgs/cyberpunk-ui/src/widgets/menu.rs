@@ -3,14 +3,14 @@
 //! Every other widget here is a rectangle four eras dress differently.
 //! This is the exception the crate's own README records: offered a
 //! choice of modules, the four references reach for four different
-//! *objects*, and no corner radius turns a diamond into a fan. So the
+//! *objects*, and no corner radius turns a table into a fan. So the
 //! choice is a value on [`Style`] -- [`crate::style::Menu`], beside
 //! `Chrome` and `Footnotes` -- and this module is the four-armed
 //! `match` that value exists to permit. One `match`, in one file, on a
 //! parameter the era table declares: that is the shape the abstraction
 //! allows, and it is why `screens/` still contains no `if era ==`.
 //!
-//! Three arms are built out of the shared vocabulary and one is not:
+//! Three arms are laid out and one is painted:
 //!
 //! * [`Menu::Tiles`] is `Surface` in a grid, so entropism's selection
 //!   fill and square corners arrive without this file naming them.
@@ -18,11 +18,11 @@
 //!   gets neokitsch's clipped corner *and* its veneer for free -- the
 //!   cascade's active card is filled with a material, and nothing here
 //!   had to know that.
-//! * [`Menu::Diamonds`] hands off to [`super::diamond_menu`], the
-//!   era-specific module that predates the generalisation. It is the
-//!   one arm here that no sheet draws; that was re-examined against
-//!   both neomil sheets rather than inherited again, and the reasoning
-//!   for keeping it is in that module and on [`Menu`].
+//! * [`Menu::Table`] hands off to [`super::table`], which is the same
+//!   deal one level up: a header band, ruled rows and a selected row,
+//!   all of it the shared vocabulary. It replaced the cut-diamond hub,
+//!   the one arm here that had ever cited no sheet -- see
+//!   [`crate::style::Menu::Table`] for that whole argument.
 //! * [`Menu::Fan`] is the one genuinely new drawing: rotated slabs
 //!   cannot be laid out, only painted.
 
@@ -37,7 +37,7 @@ use iced::{mouse, Color, Element, Length, Padding, Point, Rectangle, Renderer, T
 /// against a module: its name, the catalogue code beneath it, and the
 /// one-line blurb the entropism set puts inside the block. An era that
 /// has no room for a field simply does not draw it -- the fan has no
-/// room for a blurb and the diamonds none for either.
+/// room for a blurb and only the table has room for all three.
 #[derive(Debug, Clone, Copy)]
 pub struct MenuItem<'a> {
     pub label: &'a str,
@@ -48,11 +48,12 @@ pub struct MenuItem<'a> {
 /// A menu of `items` with one of them selected, in the era's own idea
 /// of what a menu is.
 ///
-/// `Message: Clone` because the diamond arm is the one interaction
-/// model here that was written to emit one. Every screen in this crate
-/// declares an uninhabited `Message` that derives `Clone`, so the bound
-/// costs nothing today and keeps the door open.
-pub fn menu<'a, Message: Clone + 'static>(
+/// The `Message: Clone` bound is gone with the diamond hub, which was
+/// the one arm that emitted a message of its own. Every arm here is
+/// posed rather than wired now; a screen that wants a menu to be
+/// clickable wraps its items in `mouse_area`, the way `panels::mail`
+/// and `bar` already do, rather than asking a canvas to hit-test.
+pub fn menu<'a, Message: 'static>(
     style: &Style,
     items: &'a [MenuItem<'a>],
     selected: usize,
@@ -61,8 +62,44 @@ pub fn menu<'a, Message: Clone + 'static>(
         Menu::Tiles { columns } => tiles(style, items, selected, columns),
         Menu::Cascade => cascade(style, items, selected),
         Menu::Fan => fan(style, items, selected),
-        Menu::Diamonds => super::diamond_menu::hub(style, items, selected),
+        Menu::Table => table_menu(style, items, selected),
     }
+}
+
+// ---------------------------------------------------------------- table
+
+/// The columns neomil's services table is drawn with, restated against
+/// what a [`MenuItem`] actually carries.
+///
+/// `docs/neomil/target-app.svg` runs `UNIT | MEM | UPTIME | STATE` --
+/// a name and then facts about it -- at widths of roughly `356 | 120 |
+/// 208 | 216` out of 900. A module has a name, a catalogue code and a
+/// blurb, so it is three columns in the same shape: the name wide, the
+/// code narrow, the sentence taking the rest.
+///
+/// This is also the one arm that draws all three fields. The screen
+/// hands over label, code and blurb without knowing which era will use
+/// which, precisely so that each object can take what it has room for;
+/// the fan has room for a name, the tiles for a name and a code, and a
+/// table row for the lot.
+const TABLE_COLUMNS: [super::table::Column<'static>; 3] = [
+    super::table::Column::new("MODULE", 5),
+    super::table::Column::new("CODE", 2),
+    super::table::Column::new("DESCRIPTION", 12),
+];
+
+/// Neomil: the services table its own sheet puts in this slot.
+fn table_menu<'a, Message: 'static>(
+    style: &Style,
+    items: &'a [MenuItem<'a>],
+    selected: usize,
+) -> Element<'a, Message> {
+    let rows: Vec<super::table::Row<'a>> = items
+        .iter()
+        .map(|item| super::table::Row::new([item.label, item.code, item.blurb]))
+        .collect();
+
+    super::table::table(style, &TABLE_COLUMNS, &rows, Some(selected))
 }
 
 // ---------------------------------------------------------------- tiles
@@ -228,17 +265,73 @@ fn cascade<'a, Message: 'static>(
 // ------------------------------------------------------------------ fan
 
 /// Sampled from `docs/kitsch/target-components.svg`, "EXTRUDED FAN
-/// MENU". The three slabs run at `-15`, `+7` and `+27` degrees -- so
-/// `21` apart about a `+6` centre -- and each is about `99` long by
-/// `25` thick. Solving the three inner ends against their own
-/// directions puts a common pivot at roughly `140` behind them, which
-/// is the figure that regularises a hand-drawn fan into one that works
-/// for any number of slabs.
+/// MENU". The three slabs run at `-15.14`, `+6.98` and `+26.57`
+/// degrees -- so `21` apart about a `+6` centre -- and each is about
+/// `99` long by `25` thick. Solving the three inner ends against their
+/// own directions puts a common pivot at roughly `140` behind them,
+/// which is the figure that regularises a hand-drawn fan into one that
+/// works for any number of slabs.
 const FAN_SPREAD: f32 = 21.0;
 const FAN_CENTRE: f32 = 6.0;
 const FAN_INNER: f32 = 140.0;
 const FAN_LENGTH: f32 = 99.0;
 const FAN_THICK: f32 = 25.0;
+
+/// How far the *whole* fan may open, first slab's axis to last.
+///
+/// The sampled `21` is a step between neighbours, and a step is the
+/// wrong thing to hold fixed: six modules at `21` span `105` degrees,
+/// which is not a fan, it is most of a quarter turn -- and that is what
+/// the kitsch dashboard was rendering, the top slab pointing up-left
+/// and the bottom one down-left with the labels running vertically.
+///
+/// The sheet is the measure of how far a fan opens. Its three slabs
+/// span `41.7` degrees axis to axis, and about `52` from the first
+/// slab's leading edge to the last one's trailing edge, since a `25`
+/// thick slab standing off a `140` pivot is itself some `10` degrees
+/// wide. `60` is the round figure just past that silhouette: a sixth of
+/// a turn, still unmistakably a fan, and comfortably clear of the
+/// sampled case so that three slabs land exactly where the sheet puts
+/// them and six still open wider than three.
+///
+/// Capping the total rather than shrinking [`FAN_SPREAD`] is the point.
+/// The step is a sampled figure and the reference fan must keep it; the
+/// cap only ever binds on counts the sheet never drew.
+const FAN_MAX_SPREAD: f32 = 60.0;
+
+/// The angle between neighbouring slabs in a fan of `n`.
+fn slab_step(n: usize) -> f32 {
+    if n < 2 {
+        return FAN_SPREAD;
+    }
+    FAN_SPREAD.min(FAN_MAX_SPREAD / (n - 1) as f32)
+}
+
+/// The axis of slab `i` of `n`, in degrees, measured clockwise from the
+/// x axis the way canvas coordinates run.
+fn slab_angle(i: usize, n: usize) -> f32 {
+    let mid = (n as f32 - 1.0) / 2.0;
+    FAN_CENTRE + (i as f32 - mid) * slab_step(n)
+}
+
+/// How far behind the slabs the pivot sits, for a fan of `n`.
+///
+/// The sampled `140` for as long as it works, and further back when it
+/// does not. Two slabs `t` thick whose axes are `step` apart clear each
+/// other at the inner end only while the pivot is at least
+/// `t / tan(step)` away, so a fan that keeps opening but is capped --
+/// and therefore packs its slabs closer as it grows -- would eventually
+/// draw them through one another. At the sampled three that bound is
+/// `65` and at six it is `118`, both well inside `140`, so this changes
+/// nothing any screen draws today; it is what stops the eighth module
+/// from being a wedge of overlapping slabs.
+fn fan_inner(n: usize) -> f32 {
+    let step = slab_step(n).to_radians();
+    if step <= 0.0 {
+        return FAN_INNER;
+    }
+    FAN_INNER.max(FAN_THICK / step.tan())
+}
 /// The extrusion: two stacked outline copies receding up-right at half
 /// opacity, `transform="translate(6 -8)"` and `translate(12 -16)`.
 const FAN_STEP: (f32, f32) = (6.0, -8.0);
@@ -298,16 +391,15 @@ struct Fan<'a> {
 /// Pulled out of the drawing so the geometry can be reasoned about --
 /// and tested -- without a renderer.
 fn slab_quad(i: usize, n: usize, thick: f32) -> [Point; 4] {
-    let mid = (n as f32 - 1.0) / 2.0;
-    let deg = FAN_CENTRE + (i as f32 - mid) * FAN_SPREAD;
-    let rad = deg.to_radians();
+    let rad = slab_angle(i, n).to_radians();
     let (sin, cos) = rad.sin_cos();
     // Along the slab, and across it.
     let along = |r: f32| Point::new(r * cos, r * sin);
     let across = (-sin * thick, cos * thick);
 
-    let a = along(FAN_INNER);
-    let b = along(FAN_INNER + FAN_LENGTH);
+    let inner = fan_inner(n);
+    let a = along(inner);
+    let b = along(inner + FAN_LENGTH);
     [
         a,
         b,
@@ -337,9 +429,10 @@ impl<Message> canvas::Program<Message> for Fan<'_> {
         let quads: Vec<[Point; 4]> = (0..n).map(|i| slab_quad(i, n, FAN_THICK)).collect();
 
         // Fit the whole fan, extrusion included, into the box it was
-        // handed. A fan of six slabs spans 105 degrees where the
-        // reference's three span 42, so a fixed placement would run off
-        // the edge the first time a screen offered more modules.
+        // handed. Even capped at `FAN_MAX_SPREAD` a six-slab fan is
+        // half again the reference's sweep, so a fixed placement would
+        // run off the edge the first time a screen offered more
+        // modules.
         let step_x = FAN_STEP.0 * FAN_LAYERS as f32;
         let step_y = FAN_STEP.1 * FAN_LAYERS as f32;
         let (mut x0, mut y0, mut x1, mut y1) = (f32::MAX, f32::MAX, f32::MIN, f32::MIN);
@@ -411,8 +504,7 @@ impl<Message> canvas::Program<Message> for Fan<'_> {
             // cached-glyph path and is filled as outlines instead,
             // which is exactly what is wanted here and the reason the
             // fan is a canvas at all.
-            let mid = (n as f32 - 1.0) / 2.0;
-            let angle = (FAN_CENTRE + (i as f32 - mid) * FAN_SPREAD).to_radians();
+            let angle = slab_angle(i, n).to_radians();
             // A third of the way along the slab and halfway across it:
             // the reference sets its labels off the inner end rather
             // than centred, so a long name runs outwards.
@@ -486,5 +578,47 @@ mod tests {
             }
         }
         assert!((angle(0, 6) - angle(5, 6)).abs() > (angle(0, 3) - angle(2, 3)).abs());
+    }
+
+    /// However many modules a screen offers, the fan stays a fan: the
+    /// whole sweep is capped, so it never opens past `FAN_MAX_SPREAD`.
+    /// Six slabs at the sampled step would have spanned 105 degrees.
+    #[test]
+    fn the_fan_never_opens_past_the_cap() {
+        for n in 1..=12usize {
+            let span = (slab_angle(n - 1, n) - slab_angle(0, n)).abs();
+            assert!(
+                span <= FAN_MAX_SPREAD + 0.01,
+                "n={n} spans {span} degrees"
+            );
+        }
+    }
+
+    /// Packing more slabs into a capped sweep pushes them together, so
+    /// the pivot goes back far enough that they never draw through one
+    /// another at the inner end.
+    #[test]
+    fn slabs_never_overlap_at_the_pivot() {
+        for n in 2..=12usize {
+            // The inner corner of slab `i`'s far edge must not reach
+            // past the inner corner of slab `i+1`'s near edge.
+            for i in 0..n - 1 {
+                let a = slab_quad(i, n, FAN_THICK);
+                let b = slab_quad(i + 1, n, FAN_THICK);
+                let angle = |p: Point| p.y.atan2(p.x).to_degrees();
+                assert!(
+                    angle(a[3]) <= angle(b[0]) + 0.01,
+                    "n={n} slab {i} overlaps its neighbour"
+                );
+            }
+        }
+    }
+
+    /// The sampled fan is untouched by the cap: three slabs still stand
+    /// off the sheet's own 140 pivot.
+    #[test]
+    fn the_sampled_fan_keeps_its_pivot() {
+        assert!((fan_inner(3) - FAN_INNER).abs() < 0.01);
+        assert!((fan_inner(6) - FAN_INNER).abs() < 0.01);
     }
 }

@@ -45,7 +45,7 @@ pub fn banner_colors(style: &Style, selected: bool) -> (Color, Color) {
 /// The band's shape: a filled rectangle whose leading `overhang` steps
 /// down by `notch`.
 #[derive(Debug, Clone, Copy)]
-pub struct Band {
+struct Band {
     pub fill: Color,
     pub height: f32,
     pub overhang: f32,

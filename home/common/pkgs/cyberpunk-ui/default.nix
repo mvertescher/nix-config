@@ -114,6 +114,12 @@ in
 # compositor is exactly the kind of thing that fails for environmental
 # reasons, and it should not block every build of the toolkit until it
 # has proven stable.
+#
+# To run them: `./scripts/run_test_matrix.sh`. Nothing else reaches
+# these -- the package takes callPackage arguments and this repo exports
+# no configurations -- so before that script existed everyone wrote
+# their own instantiation under /tmp, and one of those filled a 1.8 TB
+# disk. tests/matrix.nix is the door; it explains why.
 let
   # Each era's own scheme, so a case renders the palette the desktop
   # would actually publish rather than a copy of it. Editing a palette

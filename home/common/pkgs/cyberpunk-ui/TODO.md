@@ -9,7 +9,9 @@
 - [ ] Reproduce dashboard image (`img-07-dashboard.png`) in demo app:
   - [ ] Implement custom background (gradient/glow)
   - [ ] Implement `InfoPanel` widget (chamfered top-right/bottom-left)
-  - [ ] Implement `DiamondMenu` widget (interlocking interactive diamonds)
+  - [x] ~~Implement `DiamondMenu` widget~~ — built, then deleted 2026-08-24
+    when `widgets::table` landed: no neomil sheet draws a diamond, and
+    the sheet puts a services table where the dashboard puts its menu.
   - [ ] Update demo app layout, colors, and text to match image
 
 ## Toolkit infrastructure
@@ -79,7 +81,8 @@ when that screen assembles from library widgets. Priority order:
   `icon(Icon::..., color, size)` entry point; retire the pixel-blob
   placeholders.
 - [ ] **Motion**: hover flicker + panel boot-in as canned animations
-  (the diamond_menu Cache-invalidation pattern is the plumbing).
+  (the Cache-invalidation pattern the deleted diamond_menu used is the
+  plumbing; see git history).
 
 ## Headless check: feasibility settled (2026-08-22)
 

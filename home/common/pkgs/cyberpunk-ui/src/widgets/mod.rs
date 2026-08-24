@@ -12,37 +12,44 @@ pub mod pill;
 pub mod row;
 pub mod silhouette;
 pub mod surface;
+pub mod table;
 pub mod text;
 
-// The neo-militarism widget set, from before the toolkit was
-// generalised. These are era-specific by nature -- an interaction model
-// rather than a dressed rectangle -- and stay as their own modules
-// rather than being forced into the shared vocabulary.
+// What is left of the neo-militarism widget set, from before the
+// toolkit was generalised.
 //
-// One caveat, recorded in `menu.rs` and `style.rs` too: the diamond hub
-// is a *stand-in*, not sampled. No neomil sheet draws a diamond; the
-// sampled answer for that slot is a data table this crate has not grown.
+// It used to be seven modules and is now two, and the rule that emptied
+// it is worth keeping: a widget that draws *one era's* geometry and has
+// no caller is not a spare part, it is a trap. The next person to want
+// a chip or a badge finds it, calls it, and gets neomil's chamfer in
+// all four eras. So each one was either wired into the shared
+// vocabulary or deleted.
 //
-// `diamond_menu` is no longer unreachable: it is the `Menu::Diamonds`
-// arm of `menu`, which is how an era-specific interaction model gets a
-// screen without a screen ever naming the era.
+//   * `message_card` -- a mail row with a hardcoded 8px double
+//     chamfer, unreachable since the entropism-ui retirement. Deleted;
+//     `row::mail_row` poses the row and `panels::mail`'s `message_row`
+//     is the clickable one. 213 lines, and not one golden pixel moved.
+//   * `diamond_menu` -- neomil's cut-diamond hub, the `Menu::Diamonds`
+//     arm. Deleted with that variant. It was the crate's own recorded
+//     stand-in for a data table -- no neomil sheet draws a diamond
+//     anywhere, and where `screens::dashboard` puts its menu the sheet
+//     puts a services table -- and `widgets::table` is now that table.
+//     Its own header said it was "the first thing to reconsider when
+//     the table lands". Nothing was lost with it: the hit-testing it
+//     was credited with is `mouse_area` in `panels::mail` and `bar`,
+//     and canvas-level hit-testing is not needed by a table built out
+//     of layout.
+//   * `chip`, `level_badge`, `text_box`, `vertical_text` -- four
+//     dressed rectangles with neomil's cut sizes baked in, no caller
+//     between them since the retirement. Deleted; `pill::badge` and
+//     `surface::Surface` draw all four of those shapes in four eras.
 //
-// `message_card` was the opposite case and is gone. It was a dressed
-// rectangle, not an interaction model: a mail row with a hardcoded 8px
-// double chamfer, unreachable since the entropism-ui retirement. Every
-// part of it is already in the shared vocabulary -- `row::mail_row` for
-// the posed row, `panels::mail`'s `message_row` for the clickable one,
-// and `Surface` for the shape, which draws all four eras' corners and
-// carries `Corners::OPPOSED` for the diagonal cut it was named after.
-// Left in place it was a trap: the next caller would have got neomil's
-// chamfer in all four eras.
-pub mod chip;
-pub mod diamond_menu;
+// `floppy_icon` and `floppy_vector` stay, and they are the one honest
+// exception: they are *art*, not a dressed rectangle -- a traced
+// vector with no era in it at all -- and `cyberpunk-ui-floppy` is a
+// built binary that draws them. Reachable, so not a trap.
 pub mod floppy_icon;
 pub mod floppy_vector;
-pub mod level_badge;
-pub mod text_box;
-pub mod vertical_text;
 
 pub use banner::banner;
 pub use bracket::bracket_panel;
@@ -57,10 +64,6 @@ pub use pill::{badge, pill};
 pub use row::{mail_row, Mail};
 pub use silhouette::silhouette;
 pub use surface::{layered, surface, Corners, Fill, Surface};
+pub use table::{table, Column, Row};
 
-pub use chip::{chip_type_1, info_panel};
-pub use diamond_menu::{diamond_menu, DiamondMenuItem};
 pub use floppy_icon::{floppy_icon, FloppyIcon};
-pub use level_badge::{level_badge, LevelBadgeStyle};
-pub use text_box::text_box;
-pub use vertical_text::VerticalText;

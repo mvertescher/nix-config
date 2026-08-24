@@ -70,11 +70,13 @@ pub fn style() -> Style {
         // Neomil chamfers its containers; it does not cut a wedge into
         // a nav pill.
         ticket: Ticket::default(),
-        // The cut-diamond hub. The one entry in this table with no
-        // `docs/` citation -- see [`crate::style::Menu`] -- because
-        // this era's own target is an ops screen and neither of its
-        // sheets draws a diamond anywhere.
-        menu: Menu::Diamonds,
+        // The services table. This era's own target *is* an ops
+        // screen, and where the dashboard puts a menu it puts
+        // `UNIT | MEM | UPTIME | STATE` with one row picked out. The
+        // cut-diamond hub that used to sit here was the one entry in
+        // this table with no `docs/` citation; see
+        // [`crate::style::Menu::Table`].
+        menu: Menu::Table,
         glyphs: false,
         metrics: Metrics {
             stroke: 1.5,

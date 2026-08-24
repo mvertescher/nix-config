@@ -39,25 +39,28 @@ pub struct Style {
 
 and screens are written once against it. `screens/` is the acceptance
 test for that claim: **one implementation, four dresses.** There are
-three so far — `store`, `login`, `mailbox` — and none of them contains
-the word `Era`. If a fifth era cannot wear one without adding
+four — `store`, `login`, `mailbox`, `dashboard` — and none of them
+contains the word `Era`. If a fifth era cannot wear one without adding
 `if era ==`, the abstraction is wrong, and those files are where it
 shows.
 
 The alternative, a crate per era, was rejected once the sampling showed
 how much the eras share. The genuinely era-specific things left are
 *interaction models*, not dressed rectangles: kitsch's extruded fan
-menu, neokitsch's card cascade, entropism's tiles, and the diamond hub
-neomil wears. Those live behind one `Menu` choice in `style.rs`, so a
-screen picks a menu without naming an era.
+menu, neokitsch's card cascade, entropism's tiles, and neomil's services
+table. Those live behind one `Menu` choice in `style.rs`, so a screen
+picks a menu without naming an era.
 
-The diamond hub is the odd one: it is a **stand-in**, not sampled.
-Neither neomil sheet draws a diamond -- `target-app.svg` puts a services
-table where the dashboard puts its menu, and `target-components.svg`
-shows a four-tab bar. It is kept because the sampled answer is a data
-table this crate has not grown, and stretching a four-tab switcher to six
-modules would be exactly as unsampled while costing the only hit-testing
-widget here.
+Neomil's arm was a **cut-diamond hub** until the table landed, and the
+story is worth keeping because it is the shape this crate's mistakes
+take. The hub was inherited from the pre-generalisation crate and was in
+*neither* neomil sheet -- `target-app.svg` puts a services table where
+the dashboard puts its menu -- so it was kept as an admitted stand-in,
+with both `style.rs` and the widget's own header saying it was the first
+thing to reconsider when the table arrived. It arrived; the hub is
+deleted. Nothing was lost with it: the hit-testing it was credited with
+is `mouse_area` in `panels::mail` and `bar`, and a table built out of
+layout needs none.
 
 ## Where the eras actually differ
 
@@ -108,7 +111,8 @@ src/
   theme.rs        runtime palette published by the nix theme layer
   eras/           one table per era, sampled figures
   widgets/        surface, pill, card, banner, silhouette, glyph,
-                  bracket, ornament, chrome, marker, ground, menu, text
+                  bracket, ornament, chrome, marker, ground, menu, table,
+                  text
   screens/        store, login, mailbox, dashboard — era-agnostic by
                   construction
   panels/         mail — the interactive counterpart to screens::mail
@@ -141,14 +145,33 @@ The tray is both watcher and host, and lets the bus decide which is
 live: it never asks for the name with `ReplaceExisting`, so it will not
 take the tray from a waybar already serving one, and it reads the item
 list back off the name rather than its own registry, so one code path
-covers both cases. Icons come from a full freedesktop theme lookup, and
-fall back to a short label when no theme has one. Two known gaps, both
-in `iced_layershell` 0.13.7 rather than here: middle click arrives as
-`Activate`, because every button but right maps to `Button::Left`; and
-the scroll sign is unverified, since the raw `wl_pointer` axis runs
-opposite to iced's own convention and nothing tested acts on it. Note
-that a host setting no icon theme gets `hicolor` plus whatever items
-ship themselves -- `--icon-theme` picks another.
+covers both cases. Icons come from a full freedesktop theme lookup
+(PNG, SVG, ARGB32 pixmaps and XPM), and fall back to a short label when
+no theme has one. Note that a host setting no icon theme gets `hicolor`
+plus whatever items ship themselves -- `--icon-theme` picks another.
+
+Right-click draws the item's `com.canonical.dbusmenu`, submenus and row
+icons included, on a **second `Overlay` layer surface anchored to all
+four edges** with `exclusive_zone: Some(0)`. That shape is forced:
+`layershellev` 0.13.7 never calls `xdg_popup.grab()` and the bar takes
+no keyboard focus, so a popup or a menu-sized surface could only ever be
+dismissed by being clicked. Output-sized gives real click-outside
+dismissal *and* placement below every bar without this code asking where
+any bar is. A submenu chain is drawn *inline in that same surface*
+rather than stacking another -- a second overlay would cover the parent
+and stop its rows answering -- and it opens leftwards, because the tray
+is the last group on the right. Childless `Submenu` rows still answer a
+click, since for a lazily-populated menu that click is what sends
+`AboutToShow`.
+
+Two known gaps are upstream in `iced_layershell` 0.13.7 rather than
+here: middle click arrives as `Activate`, because every button but right
+maps to `Button::Left`; and the scroll *sign* is unverified -- not
+because the axis is forwarded raw, which an earlier version of this file
+claimed and which is wrong (0.13.7 negates on all four paths and already
+matches iced's convention), but because nothing on this desktop acts on
+`Scroll` at all. There is no hover-to-open and no keyboard navigation,
+both deliberate on a surface with no grab.
 
 The readings split by cost. Clock, CPU, memory and Hyprland's two
 socket round trips are taken inline on the tick; audio and network get
@@ -171,8 +194,24 @@ workflow.
 
 ## Tests
 
-    nix build .#...cyberpunk-ui.tests.store.kitsch
-    nix build .#...cyberpunk-ui.tests.mailbox.neokitsch
+    ./scripts/run_test_matrix.sh              # all 21 cases
+    ./scripts/run_test_matrix.sh store        # only cases matching /store/
+
+That is the whole invocation. The script fetches this repo, takes
+`pkgs` from the flake's `out` escape hatch, walks `passthru.tests` and
+prints a pass/fail table. It retries a case once before calling it
+failed: the harness gives each render a fixed 15s to settle and that is
+not always enough under load. `tests/matrix.nix` is the door it goes
+through, and takes `pkgs` if you want the cases in an expression of
+your own.
+
+This section used to show a `nix build .#...` line that was never a
+real command — the package takes `callPackage` arguments and this repo
+exports no configurations to hang them off — so anyone who needed a
+golden wrote a throwaway instantiation under /tmp. If you write one
+anyway: fetch this repo with `git+file:`, **never** `path:`. The reason
+is at the top of `scripts/run_test_matrix.sh`, it cost 1.8 TB of disk,
+and the script now refuses to build if its source path is too big.
 
 `tests.<screen>.<era>` is a matrix over both: four screens (`store`,
 `login`, `mailbox`, `dashboard`) times four eras, each rendered headless
@@ -214,30 +253,16 @@ visual regression matrix. All four eras also have desktop themes under
 `home/themes/`, so `Style::from_desktop` has something real to follow.
 
 Not yet done:
-- A **data table** widget is what neomil's dashboard actually wants; the
-  diamond hub stands in for it. See the note above.
-- Several widgets are exported and uncalled: `level_badge` has no
-  reference anywhere outside its own `mod`/`use` lines, and
-  `chip::{chip_type_1, info_panel}`, `text_box`, `floppy_vector` and
-  `Corners::OPPOSED` are close behind. `message_card` was the same and
-  was deleted rather than folded in — deleting 213 lines of drawing code
-  moved not one pixel of any golden, which is what "unreachable" is
-  supposed to mean. The rest want the same audit.
+- **`widgets::table` has no scroll rail**, which both neomil sheets draw.
+  Left out on purpose: a rail asserts rows exist off-screen, this widget
+  shows every row it is handed, and its one caller sits in a column with
+  slack below it. Shipping it now would be unreachable decoration —
+  which is the trap the audit below exists to close.
 - Neokitsch's BASKET panel and its step-notch pill on the mailbox
   footer are in the design targets but not yet widgets. The fan, the
-  cascade, the tiles, the ticket notch, the compliance caption and the
-  nav-column outline that runs into the page-curl have all since
-  landed.
-- A **data table** widget. `entropism-ui`'s `matrix` screen was the
-  reason to want one, and it was dropped rather than ported: it was
-  never the node graph it had been described as — a 25x60 grid of
-  generated status strings behind a fixed 12x22 viewport, scrolled with
-  hjkl, with no hit-testing anywhere and exactly one clickable control
-  — and no era's design target contains such a screen, so there was
-  nothing to dress it against.
-  `docs/neomil/target-components.svg` does list "table with selection +
-  scrollbar", "log view" and "key-value rows", which is where the
-  reusable part belongs; `panels::mail`'s markdown table is the seed.
+  cascade, the tiles, the table, the ticket notch, the compliance
+  caption and the nav-column outline that runs into the page-curl have
+  all since landed.
 - Fields are display-only. `widgets::input::field` draws the box and the
   value but takes no input; the screens it serves are design targets,
   and a real `text_input` needs per-era styling before it earns a place.

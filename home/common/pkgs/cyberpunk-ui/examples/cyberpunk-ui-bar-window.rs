@@ -24,9 +24,12 @@
 #[path = "bar/style.rs"]
 mod style;
 
-use cyberpunk_ui::bar::{bar, Audio, Network, Readings, TrayItem, Workspace};
+use cyberpunk_ui::bar::{
+    bar, tray_menu, Audio, MenuEntry, MenuKind, MenuPath, Network, Readings, TrayItem, TrayMenu,
+    Workspace,
+};
 use cyberpunk_ui::Style;
-use iced::widget::{column, container, image, Space};
+use iced::widget::{column, container, image, row, Space};
 use iced::{Element, Length};
 
 /// A tray icon, drawn here rather than read from anywhere.
@@ -110,14 +113,87 @@ fn sample() -> Readings {
     }
 }
 
+/// A tray item's context menu, drawn beside the bar with one submenu
+/// open.
+///
+/// The live bar draws this on a second surface that only a compositor
+/// with `wlr-layer-shell` can create, which is exactly the thing this
+/// harness has not got -- but the *panel* is `bar::tray_menu`, a pure
+/// function of `Style` like the rest, and every era dresses it
+/// differently. Without this the four bar goldens said nothing about
+/// menus at all, and the only era anyone had ever looked at one in was
+/// neomil.
+///
+/// One row of each kind the vocabulary has, because a kind that is not
+/// in the sample is a kind the golden says nothing about: a submenu
+/// (open, so its parent wears the era's selection and its child panel
+/// lands beside it), a set toggle, a disabled row, a separator, rows
+/// with icons and rows without in the same panel -- which is what
+/// pins the reserved icon gutter.
+fn sample_menu() -> TrayMenu {
+    fn entry(id: i32, label: &str, kind: MenuKind, icon: bool) -> MenuEntry {
+        MenuEntry {
+            id,
+            label: label.to_string(),
+            enabled: true,
+            kind,
+            icon: icon.then(|| sample_icon([0x88, 0x00, 0xaa])),
+            children: Vec::new(),
+        }
+    }
+
+    TrayMenu {
+        entries: vec![
+            MenuEntry {
+                children: vec![
+                    entry(21, "Mount", MenuKind::Command, true),
+                    entry(22, "Eject", MenuKind::Command, false),
+                ],
+                ..entry(20, "Devices", MenuKind::Submenu, true)
+            },
+            MenuEntry {
+                enabled: false,
+                ..entry(3, "Disconnect", MenuKind::Command, false)
+            },
+            entry(4, "", MenuKind::Separator, false),
+            // Below the rule rather than above it, so the era's
+            // selection is not drawn twice running: an open submenu's
+            // parent and a set toggle are the same fill, and two of
+            // them touching read as one block rather than two rows.
+            entry(5, "Enable networking", MenuKind::Toggle(true), false),
+            entry(6, "Quit", MenuKind::Command, true),
+        ],
+    }
+}
+
+/// Which submenu the sample has open: the first row's.
+const SAMPLE_OPEN: [usize; 1] = [0];
+
 struct BarWindow {
     style: Style,
     readings: Readings,
+    menu: TrayMenu,
 }
 
-/// The window is a still life; there is nothing to send it.
+/// The window is a still life; nothing sends these and `update` drops
+/// them.
+///
+/// They exist because `tray_menu` takes the constructors its rows
+/// answer with, and unlike `bar()` there is no `None` to hand it: a
+/// menu row that could not be clicked would be a different widget,
+/// where a tray cell that is not listening is the same one. A
+/// `mouse_area` nobody clicks draws identically either way, which is
+/// all a capture can see.
+///
+/// `dead_code` because the payloads really are never read, and that is
+/// the point rather than an oversight: the variants exist to be
+/// *constructed*, by the message constructors `tray_menu` asks for.
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
-enum Message {}
+enum Message {
+    Entry(i32),
+    Submenu(MenuPath),
+}
 
 impl BarWindow {
     fn title(&self) -> String {
@@ -133,14 +209,35 @@ impl BarWindow {
             // cannot check.
             container(bar(&self.style, &self.readings, None))
                 .height(Length::Fixed(self.style.bar.height as f32)),
-            // The bar alone is a 26px strip. The empty ground under it
-            // is what makes a capture legible as a desktop edge, and it
-            // also puts the era's background role in the diff.
+            // Flush under the bar, and right-aligned with a margin,
+            // which is where the live bar puts it: the overlay surface
+            // begins exactly where the bars end, and the chain hangs
+            // leftwards off the pointer because the tray is the last
+            // group on the right. `Fill` rather than a computed offset
+            // so this holds at whatever width the harness renders.
+            row![
+                Space::new(Length::Fill, Length::Shrink),
+                tray_menu(
+                    &self.style,
+                    &self.menu,
+                    &SAMPLE_OPEN,
+                    Message::Entry,
+                    Message::Submenu,
+                ),
+                Space::new(Length::Fixed(MENU_MARGIN), Length::Shrink),
+            ],
+            // The bar and its menu do not fill 220px. The empty ground
+            // under them is what makes a capture legible as a desktop
+            // edge, and it also puts the era's background role in the
+            // diff.
             container(Space::new(Length::Fill, Length::Fill)).height(Length::Fill),
         ]
         .into()
     }
 }
+
+/// How far the menu's right edge sits from the right of the capture.
+const MENU_MARGIN: f32 = 120.0;
 
 fn main() -> iced::Result {
     let style = style::resolve();
@@ -149,6 +246,7 @@ fn main() -> iced::Result {
     let state = BarWindow {
         style,
         readings: sample(),
+        menu: sample_menu(),
     };
 
     iced::application(BarWindow::title, BarWindow::update, BarWindow::view)
