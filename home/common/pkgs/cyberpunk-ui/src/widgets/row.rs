@@ -72,6 +72,13 @@ pub struct Mail<'a> {
 
 /// A single mail row. `selected` swaps in the era's selection fill and
 /// flips the ink, exactly as the product card does.
+///
+/// It is posed, not wired: no press handler, because
+/// [`crate::screens::mail`] is a design target. Interaction is a
+/// `mouse_area` around it -- [`crate::panels::mail`] does exactly that
+/// with its own row, which carries a timestamp and a NEW flag as well.
+/// A press handler and a NEW flag were all the deleted `message_card`
+/// had over this, and both live there already.
 pub fn mail_row<'a, Message: 'static>(
     style: &Style,
     mail: &Mail<'a>,

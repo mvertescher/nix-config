@@ -48,6 +48,11 @@ use std::path::{Path, PathBuf};
 /// distance. SVG first because it is the one that will not be resampled
 /// twice, and because on a desktop carrying Papirus it is the only one
 /// there is.
+///
+/// All three are decoded; a search path that finds a file it cannot
+/// read is worse than one that never looks, because the caller cannot
+/// tell "this item has no icon" from "this item has an icon in a format
+/// I declined". XPM earns its place in [`load`], not here.
 const EXTENSIONS: [&str; 3] = ["svg", "png", "xpm"];
 
 /// The theme every icon theme is required to fall back to, and the only
@@ -673,9 +678,7 @@ fn load(path: &Path, size: u32) -> Option<Rgba> {
     match extension.as_str() {
         "svg" | "svgz" => rasterise(&bytes, size),
         "png" => decode_png(&bytes).and_then(|rgba| fit(rgba, size)),
-        // XPM is in the spec's list and nothing has shipped one in
-        // twenty years. Skipping it is a miss, which the caller already
-        // handles by drawing the item's label.
+        "xpm" => decode_xpm(&bytes).and_then(|rgba| fit(rgba, size)),
         _ => None,
     }
 }
@@ -758,6 +761,217 @@ fn decode_png(bytes: &[u8]) -> Option<Rgba> {
     Some(out)
 }
 
+/// Decode an XPM to straight RGBA8.
+///
+/// XPM is a C source file: a `static char *name[]` whose entries are a
+/// values line, one line per colour, and then one line per row of
+/// pixels. Nothing but the string literals matters, so the parse is a
+/// scan for double-quoted runs and then three fixed sections of them --
+/// which is also why a truncated or reordered file falls out as `None`
+/// rather than as a wrong image.
+///
+/// Hand-rolled for the same reason [`Rgba::resample`] is: the format is
+/// this function long, and the crates that read it are either
+/// unmaintained or arrive with a rendering stack attached. A tray icon
+/// is 22 pixels square.
+///
+/// The freedesktop icon theme spec lists XPM beside PNG and SVG, and
+/// libappindicator applications from the GNOME 2 era still ship them,
+/// so the alternative to decoding it is taking it out of
+/// [`EXTENSIONS`] -- a search that finds `<name>.xpm`, stops, and then
+/// draws the four-character label anyway.
+fn decode_xpm(bytes: &[u8]) -> Option<Rgba> {
+    let text = std::str::from_utf8(bytes).ok()?;
+    let mut lines = quoted_strings(text);
+
+    // The values line: width, height, colours, characters per pixel.
+    // Hotspot and `XPMEXT` may follow and are none of our business.
+    let values = lines.next()?;
+    let mut fields = values.split_whitespace();
+    let width: u32 = fields.next()?.parse().ok()?;
+    let height: u32 = fields.next()?.parse().ok()?;
+    let colours: usize = fields.next()?.parse().ok()?;
+    let per_pixel: usize = fields.next()?.parse().ok()?;
+
+    if width == 0 || height == 0 || width > MAX_SIDE || height > MAX_SIDE {
+        return None;
+    }
+    // One byte per pixel is the overwhelming case and two is the rest;
+    // the cap is a bound on the palette walk below, not a judgement.
+    if per_pixel == 0 || per_pixel > 4 || colours == 0 || colours > 1 << 16 {
+        return None;
+    }
+
+    // Keyed by the pixel's own characters rather than by an index: the
+    // file chooses them and they need not be contiguous or ordered.
+    let mut palette: HashMap<&str, [u8; 4]> = HashMap::with_capacity(colours);
+    for _ in 0..colours {
+        let entry = lines.next()?;
+        // Byte slicing rather than `chars`: the key is measured in
+        // characters by the format, but a non-ASCII XPM is not a thing
+        // that exists, and a multi-byte character here would make the
+        // pixel rows unindexable anyway.
+        if !entry.is_char_boundary(per_pixel) {
+            return None;
+        }
+        let (key, rest) = entry.split_at(per_pixel);
+        palette.insert(key, xpm_colour(rest)?);
+    }
+
+    let mut out = Rgba::new(width, height)?;
+    for y in 0..height {
+        let row = lines.next()?;
+        // A row that is short would otherwise be padded with whatever
+        // the last colour was, which reads as a corrupt icon rather
+        // than as a refusal.
+        if row.len() < width as usize * per_pixel {
+            return None;
+        }
+        for x in 0..width {
+            let at = x as usize * per_pixel;
+            let key = row.get(at..at + per_pixel)?;
+            let colour = palette.get(key)?;
+            let offset = ((y * width + x) * 4) as usize;
+            out.data[offset..offset + 4].copy_from_slice(colour);
+        }
+    }
+    Some(out)
+}
+
+/// Every double-quoted run in the file, in order.
+///
+/// The C around them -- the comment, the declaration, the commas -- is
+/// not parsed at all, which is deliberate: the only thing an XPM says
+/// that a decoder needs is the sequence of its string literals.
+fn quoted_strings(text: &str) -> impl Iterator<Item = &str> {
+    // `\"` cannot appear: the format reserves `"` and `\` out of the
+    // pixel alphabet precisely so this scan is unambiguous, and no
+    // colour name contains either.
+    text.split('"').skip(1).step_by(2)
+}
+
+/// One colour-table entry's worth of `{key colour}+`.
+///
+/// The keys are the visual classes: `c` colour, `g` greyscale, `g4`
+/// four-level greyscale, `m` monochrome, `s` symbolic. Preferred in
+/// that order, because a file that defines both is describing the same
+/// icon for screens of different depth and ours is the deep one.
+/// `s` is skipped rather than read: it names a colour the toolkit is
+/// supposed to supply, and this is not a toolkit.
+fn xpm_colour(entry: &str) -> Option<[u8; 4]> {
+    const KEYS: [&str; 5] = ["c", "g4", "g", "m", "s"];
+
+    // Values may be several words long ("light blue"), so the split is
+    // on the keys rather than on whitespace.
+    let mut found: HashMap<&str, String> = HashMap::new();
+    let mut key: Option<&str> = None;
+    let mut value = String::new();
+    for token in entry.split_whitespace() {
+        if KEYS.contains(&token) {
+            if let Some(key) = key.take() {
+                found.insert(key, std::mem::take(&mut value));
+            }
+            key = Some(token);
+            continue;
+        }
+        if key.is_some() {
+            if !value.is_empty() {
+                value.push(' ');
+            }
+            value.push_str(token);
+        }
+    }
+    if let Some(key) = key {
+        found.insert(key, value);
+    }
+
+    for key in KEYS {
+        if key == "s" {
+            continue;
+        }
+        if let Some(value) = found.get(key) {
+            return parse_colour(value);
+        }
+    }
+    None
+}
+
+/// An XPM colour value: `None`, `#rrggbb` at any of four depths, or one
+/// of the handful of X11 names that turn up in icon files.
+///
+/// Anything else -- `%hhssvv`, the other nine hundred names in
+/// `rgb.txt` -- fails the whole decode rather than guessing, so an
+/// unreadable icon draws the item's label instead of a plausible wrong
+/// colour. Shipping `rgb.txt` to read a 22-pixel icon is the trade this
+/// declines.
+fn parse_colour(value: &str) -> Option<[u8; 4]> {
+    let value = value.trim();
+    if value.eq_ignore_ascii_case("none") {
+        return Some([0, 0, 0, 0]);
+    }
+    if let Some(hex) = value.strip_prefix('#') {
+        return parse_hex(hex);
+    }
+    named_colour(&value.to_ascii_lowercase())
+}
+
+/// `#rgb`, `#rrggbb`, `#rrrgggbbb` and `#rrrrggggbbbb`, all of which
+/// XPM allows. The wider forms keep their most significant byte, which
+/// is what every other reader does with them.
+fn parse_hex(hex: &str) -> Option<[u8; 4]> {
+    let per_channel = match hex.len() {
+        3 | 6 | 9 | 12 => hex.len() / 3,
+        _ => return None,
+    };
+    let mut out = [0u8, 0, 0, 255];
+    for (channel, slot) in out.iter_mut().take(3).enumerate() {
+        let at = channel * per_channel;
+        let digits = hex.get(at..at + per_channel)?;
+        let scaled = u32::from_str_radix(digits, 16).ok()?;
+        *slot = match per_channel {
+            1 => (scaled * 17) as u8,
+            2 => scaled as u8,
+            3 => (scaled >> 4) as u8,
+            _ => (scaled >> 8) as u8,
+        };
+    }
+    Some(out)
+}
+
+/// The X11 names an icon file plausibly uses, and `gray<n>`.
+fn named_colour(name: &str) -> Option<[u8; 4]> {
+    let level = |v: u8| Some([v, v, v, 255]);
+    if let Some(percent) = name
+        .strip_prefix("gray")
+        .or_else(|| name.strip_prefix("grey"))
+    {
+        if percent.is_empty() {
+            return level(0xbe);
+        }
+        let percent: u32 = percent.parse().ok()?;
+        if percent > 100 {
+            return None;
+        }
+        return level(((percent * 255 + 50) / 100) as u8);
+    }
+    let rgb = match name {
+        "black" => [0x00, 0x00, 0x00],
+        "white" => [0xff, 0xff, 0xff],
+        "red" => [0xff, 0x00, 0x00],
+        "green" => [0x00, 0xff, 0x00],
+        "blue" => [0x00, 0x00, 0xff],
+        "cyan" => [0x00, 0xff, 0xff],
+        "magenta" => [0xff, 0x00, 0xff],
+        "yellow" => [0xff, 0xff, 0x00],
+        "orange" => [0xff, 0xa5, 0x00],
+        "brown" => [0xa5, 0x2a, 0x2a],
+        "pink" => [0xff, 0xc0, 0xcb],
+        "purple" => [0xa0, 0x20, 0xf0],
+        _ => return None,
+    };
+    Some([rgb[0], rgb[1], rgb[2], 255])
+}
+
 /// Scale a decoded raster down to `size` if it is larger.
 ///
 /// Only down. An icon smaller than asked for is left alone and iced
@@ -783,6 +997,87 @@ mod tests {
             pixel.copy_from_slice(&colour);
         }
         rgba
+    }
+
+    /// The shape gdk-pixbuf writes and libappindicator applications
+    /// still ship: a transparent ground, one hex colour, one name.
+    const SAMPLE_XPM: &str = r#"/* XPM */
+static char * sample_xpm[] = {
+"4 2 3 1",
+" 	c None",
+".	c #FF8800",
+"+	c black",
+" ..+",
+"+.. "};
+"#;
+
+    #[test]
+    fn an_xpm_decodes_to_the_pixels_it_names() {
+        let out = decode_xpm(SAMPLE_XPM.as_bytes()).expect("a well-formed xpm");
+        assert_eq!((out.width, out.height), (4, 2));
+
+        let at = |x: usize, y: usize| &out.data[(y * 4 + x) * 4..(y * 4 + x) * 4 + 4];
+        // `None` is transparent, not black-with-alpha.
+        assert_eq!(at(0, 0), [0, 0, 0, 0]);
+        assert_eq!(at(1, 0), [0xff, 0x88, 0x00, 0xff]);
+        assert_eq!(at(3, 0), [0x00, 0x00, 0x00, 0xff]);
+        assert_eq!(at(0, 1), [0x00, 0x00, 0x00, 0xff]);
+        assert_eq!(at(3, 1), [0, 0, 0, 0]);
+    }
+
+    #[test]
+    fn the_wide_hex_forms_keep_their_leading_byte() {
+        assert_eq!(parse_hex("f80"), Some([0xff, 0x88, 0x00, 0xff]));
+        assert_eq!(parse_hex("ff8800"), Some([0xff, 0x88, 0x00, 0xff]));
+        assert_eq!(parse_hex("fff888000"), Some([0xff, 0x88, 0x00, 0xff]));
+        assert_eq!(parse_hex("ffff88880000"), Some([0xff, 0x88, 0x00, 0xff]));
+        // Not a channel count XPM defines.
+        assert_eq!(parse_hex("ff88"), None);
+    }
+
+    #[test]
+    fn a_colour_line_prefers_the_deepest_visual_it_offers() {
+        // The same entry for a colour screen, a grey one and a mono
+        // one. A tray is drawn on the first.
+        assert_eq!(
+            xpm_colour(" c #ff0000 g #808080 m white"),
+            Some([0xff, 0x00, 0x00, 0xff])
+        );
+        // Values can be several words, and `s` names a colour we are
+        // not the one supplying.
+        assert_eq!(
+            xpm_colour(" s icon_background c white"),
+            Some([0xff, 0xff, 0xff, 0xff])
+        );
+        // A greyscale-only file still draws.
+        assert_eq!(xpm_colour(" g gray50"), Some([0x80, 0x80, 0x80, 0xff]));
+    }
+
+    #[test]
+    fn an_xpm_naming_a_colour_we_cannot_resolve_is_a_miss_not_a_guess() {
+        // `%` is HSV, and `rgb.txt` is not shipped for a 22px icon --
+        // both have to fail the file rather than pick something.
+        assert!(xpm_colour(" c %ff8000").is_none());
+        assert!(xpm_colour(" c lightgoldenrodyellow").is_none());
+
+        let broken = SAMPLE_XPM.replace("#FF8800", "%FF8800");
+        assert!(decode_xpm(broken.as_bytes()).is_none());
+    }
+
+    #[test]
+    fn a_truncated_xpm_is_refused_rather_than_padded() {
+        // One pixel row short of what the values line promised.
+        let short = SAMPLE_XPM.replace("\" ..+\",\n", "");
+        assert!(decode_xpm(short.as_bytes()).is_none());
+        // A row shorter than the declared width.
+        let clipped = SAMPLE_XPM.replace("\" ..+\"", "\" ..\"");
+        assert!(decode_xpm(clipped.as_bytes()).is_none());
+    }
+
+    #[test]
+    fn an_xpm_larger_than_the_bar_will_ever_draw_is_refused() {
+        let huge = SAMPLE_XPM.replace("\"4 2 3 1\"", "\"4096 4096 3 1\"");
+        assert!(decode_xpm(huge.as_bytes()).is_none());
     }
 
     #[test]

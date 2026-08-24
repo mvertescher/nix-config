@@ -62,18 +62,34 @@
 //! bar already decoded. See that module for why all five of the
 //! protocol's ways of describing an icon collapse into one.
 //!
-//! ## Still missing
+//! ## The context menu
 //!
-//! `com.canonical.dbusmenu`. Right-clicking calls the item's own
-//! `ContextMenu`, which is what the spec says to do and what an item
-//! with `ItemIsMenu = false` expects -- but an item that instead
-//! exports a `Menu` object wants the host to *draw* that menu, and
-//! drawing it means a second layer surface and a menu widget this
-//! crate does not have yet.
+//! An item that exports a `Menu` object wants the host to *draw* its
+//! menu rather than to call `ContextMenu` and let it draw its own. So
+//! a right click resolves in that order: `Menu` if there is one, the
+//! `ContextMenu` method if there is not. `ItemIsMenu` moves the left
+//! button onto the same path, which is what an application that has
+//! only ever had a menu means by it.
+//!
+//! The menu itself is `com.canonical.dbusmenu` -- a numbered tree,
+//! fetched with `GetLayout` and clicked with `Event`. What leaves this
+//! module is a flat [`TrayMenu`], for the same reason [`TrayItem`] is
+//! not the protocol's own shape: the thirty optional properties of a
+//! dbusmenu row describe four things a bar draws.
+//!
+//! Two protocol courtesies are kept because applications do act on
+//! them: `AboutToShow` before the layout is read, which is how an
+//! application with a dynamic menu is told to populate it, and
+//! `Event(0, "closed")` when the bar puts the menu away.
+//!
+//! What is *not* here is submenus. `GetLayout` is asked for one level,
+//! a row with children is drawn with a marker and does nothing, and
+//! opening one would mean a second surface stacked on the first plus a
+//! pointer grab. See `cyberpunk_ui::bar::TrayMenu`.
 
 use crate::icon;
 use crate::sensor::{Latest, Snapshot};
-use cyberpunk_ui::bar::{TrayAction, TrayItem};
+use cyberpunk_ui::bar::{MenuEntry, MenuKind, TrayAction, TrayItem, TrayMenu};
 use futures_lite::stream::{or, StreamExt};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -103,6 +119,23 @@ const ITEM_INTERFACES: [&str; 2] = [
     "org.kde.StatusNotifierItem",
     "org.freedesktop.StatusNotifierItem",
 ];
+
+/// The menu interface an item points at with its `Menu` property.
+/// One name, unlike the item interface: nothing has ever spelled this
+/// one two ways.
+const MENU_INTERFACE: &str = "com.canonical.dbusmenu";
+
+/// How deep `GetLayout` is asked to go. One: the top level and enough
+/// of each row to know whether it has children.
+const MENU_DEPTH: i32 = 1;
+
+/// Rows drawn before the menu is cut short.
+///
+/// A menu is another application's data and the panel is placed
+/// against the pointer, so an item with a thousand-row menu would
+/// otherwise draw a thousand-row panel down through the screen and out
+/// the bottom.
+const MENU_ROWS: usize = 40;
 
 /// Signals that mean an item's *pixels* moved, as opposed to its title
 /// or its status. These are the ones that have to invalidate the icon
@@ -165,12 +198,43 @@ impl Default for Config {
 struct Entry {
     key: String,
     item: TrayItem,
+    menu: MenuRef,
 }
 
-/// A click on its way from the drawing thread to the bus.
-struct Command {
-    key: String,
-    action: TrayAction,
+/// Where an item keeps its menu, if it keeps one.
+///
+/// Read off the item alongside everything else rather than asked for
+/// when a click arrives: the click is the moment a person is waiting,
+/// and the answer has not changed since the last `GetAll`.
+#[derive(Clone, Default)]
+struct MenuRef {
+    /// The `Menu` property: an object path on the item's own bus name.
+    /// Empty when the item exports none, which is the case
+    /// `ContextMenu` exists for.
+    path: String,
+    /// `ItemIsMenu`. The item is saying it has no primary action and
+    /// that a plain click should open the menu too.
+    is_menu: bool,
+}
+
+/// Something on its way from the drawing thread to the bus.
+enum Command {
+    /// A pointer event on the cell.
+    Pointer { key: String, action: TrayAction },
+    /// A row of the item's own menu was clicked.
+    Entry { key: String, entry: i32 },
+    /// The bar has put the menu away. Sent so an application that
+    /// tracks its own menu state is not left thinking it is still up.
+    Closed { key: String },
+}
+
+/// A menu on its way back, in answer to a right click.
+#[derive(Debug, Clone)]
+pub struct Opened {
+    /// The item it belongs to, which is also what a click on one of
+    /// its rows has to be sent back with. Opaque to the bar.
+    pub key: String,
+    pub menu: TrayMenu,
 }
 
 /// The bar's handle on the tray.
@@ -180,6 +244,7 @@ pub struct Monitor {
     /// what was drawn resolves to the item that was drawn there.
     keys: Vec<String>,
     commands: async_channel::Sender<Command>,
+    opened: async_channel::Receiver<Opened>,
 }
 
 impl Monitor {
@@ -193,16 +258,61 @@ impl Monitor {
         // Bounded: a click that cannot be delivered within a hundred
         // queued clicks is a click nobody is waiting for any more.
         let (sender, receiver) = async_channel::bounded(100);
+        // A channel rather than a snapshot, because a menu is an
+        // *event* and not a reading: the bar wants the one that
+        // answers the click it just made, not the latest one to exist.
+        // Small, for the same reason -- a queue of menus is a queue of
+        // stale menus.
+        let (menus, opened) = async_channel::bounded(4);
 
         let _ = thread::Builder::new()
             .name("cyberpunk-bar-tray".to_string())
-            .spawn(move || run(&config, &writer, &receiver));
+            .spawn(move || run(&config, &writer, &receiver, &menus));
 
         Monitor {
             latest: Latest::new(shared, Vec::new()),
             keys: Vec::new(),
             commands: sender,
+            opened,
         }
+    }
+
+    /// Menus as they are fetched, for the bar to subscribe to.
+    ///
+    /// Cloned rather than borrowed: an iced `Subscription` is built
+    /// afresh on every `view` and wants a stream by value, and an
+    /// `async_channel` receiver is a handle on the one queue however
+    /// many times it is cloned.
+    pub fn opened(&self) -> async_channel::Receiver<Opened> {
+        self.opened.clone()
+    }
+
+    /// The key of the item drawn at `index`, so the bar can tell
+    /// whether an arriving menu is still the one it asked for.
+    pub fn key(&self, index: usize) -> Option<String> {
+        self.keys.get(index).cloned()
+    }
+
+    /// Whether the last reading still contains this item. An
+    /// application that exits with its menu on screen leaves a panel
+    /// answering to nobody.
+    pub fn holds(&self, key: &str) -> bool {
+        self.keys.iter().any(|held| held == key)
+    }
+
+    /// Click one row of an item's menu.
+    pub fn activate(&self, key: &str, entry: i32) {
+        let _ = self.commands.try_send(Command::Entry {
+            key: key.to_string(),
+            entry,
+        });
+    }
+
+    /// Tell the item its menu is no longer on screen.
+    pub fn closed(&self, key: &str) {
+        let _ = self.commands.try_send(Command::Closed {
+            key: key.to_string(),
+        });
     }
 
     /// The tray as of the last completed read, without blocking.
@@ -229,7 +339,7 @@ impl Monitor {
         let Some(key) = self.keys.get(index).cloned() else {
             return;
         };
-        let _ = self.commands.try_send(Command { key, action });
+        let _ = self.commands.try_send(Command::Pointer { key, action });
     }
 }
 
@@ -237,10 +347,11 @@ fn run(
     config: &Config,
     shared: &Snapshot<Vec<Entry>>,
     commands: &async_channel::Receiver<Command>,
+    menus: &async_channel::Sender<Opened>,
 ) {
     loop {
         // `serve` only returns when the connection itself is gone.
-        let _ = zbus::block_on(serve(config, shared, commands));
+        let _ = zbus::block_on(serve(config, shared, commands, menus));
         // No bus, or the bus went away. Either way the honest reading
         // is that this machine has no tray, which draws nothing.
         shared.set(Vec::new());
@@ -423,6 +534,10 @@ struct Session {
     /// Keys as of the last read, so a `NameOwnerChanged` for a name we
     /// do not care about can be dropped without a bus round trip.
     keys: Vec<String>,
+    /// Where each of those items keeps its menu. Held apart from the
+    /// snapshot the bar reads because it is the *host* half of an
+    /// item: the bar never sees a menu object path.
+    menus: HashMap<String, MenuRef>,
     icons: icon::Icons,
     config: Config,
 }
@@ -490,6 +605,7 @@ async fn connect(config: &Config) -> zbus::Result<Session> {
         host_name,
         known_owner: String::new(),
         keys: Vec::new(),
+        menus: HashMap::new(),
         icons: icon::Icons::new(config.icon_theme.clone()),
         config: config.clone(),
     })
@@ -500,6 +616,7 @@ async fn serve(
     config: &Config,
     shared: &Snapshot<Vec<Entry>>,
     commands: &async_channel::Receiver<Command>,
+    menus: &async_channel::Sender<Opened>,
 ) -> zbus::Result<()> {
     let mut session = connect(config).await?;
 
@@ -546,7 +663,7 @@ async fn serve(
     while let Some(wake) = events.next().await {
         match wake {
             Wake::Click(command) => {
-                dispatch(&session.conn, &command).await;
+                dispatch(&session, &command, menus).await;
                 continue;
             }
             Wake::Owner(name) => {
@@ -658,16 +775,22 @@ async fn refresh(session: &mut Session, shared: &Snapshot<Vec<Entry>>) -> zbus::
 
     let mut entries = Vec::new();
     for key in &keys {
-        if let Some(item) = describe(&session.conn, key, &mut session.icons, &session.config).await
+        if let Some((item, menu)) =
+            describe(&session.conn, key, &mut session.icons, &session.config).await
         {
             entries.push(Entry {
                 key: key.clone(),
                 item,
+                menu,
             });
         }
     }
 
     session.keys = entries.iter().map(|entry| entry.key.clone()).collect();
+    session.menus = entries
+        .iter()
+        .map(|entry| (entry.key.clone(), entry.menu.clone()))
+        .collect();
     shared.set(entries);
     Ok(())
 }
@@ -729,7 +852,7 @@ async fn describe(
     key: &str,
     icons: &mut icon::Icons,
     config: &Config,
-) -> Option<TrayItem> {
+) -> Option<(TrayItem, MenuRef)> {
     let (service, path) = split_key(key);
 
     let props = PropertiesProxy::builder(conn)
@@ -761,7 +884,7 @@ fn item_from(
     all: &HashMap<String, OwnedValue>,
     icons: &mut icon::Icons,
     config: &Config,
-) -> Option<TrayItem> {
+) -> Option<(TrayItem, MenuRef)> {
     let status = text(all, "Status");
     // The spec's own reading of `Passive` is that the host should hide
     // the item; applications that never set a status at all report
@@ -794,17 +917,44 @@ fn item_from(
     let title = text(all, "Title");
     let id = text(all, "Id");
 
-    Some(TrayItem {
-        label: label(&title, &id),
-        icon: icons.resolve(&request, config.icon_size),
-        attention,
-    })
+    let menu = MenuRef {
+        path: object_path(all, "Menu"),
+        is_menu: all
+            .get("ItemIsMenu")
+            .and_then(|value| value.downcast_ref::<bool>().ok())
+            .unwrap_or(false),
+    };
+
+    Some((
+        TrayItem {
+            label: label(&title, &id),
+            icon: icons.resolve(&request, config.icon_size),
+            attention,
+        },
+        menu,
+    ))
 }
 
 fn text(all: &HashMap<String, OwnedValue>, key: &str) -> String {
     all.get(key)
         .and_then(|value| value.downcast_ref::<String>().ok())
         .unwrap_or_default()
+}
+
+/// A property the spec types as `o`.
+///
+/// Falls back to reading it as a string, because an item that got the
+/// type wrong still knows where its own menu is, and a menu that does
+/// not open is indistinguishable to a person from one that is not
+/// there.
+fn object_path(all: &HashMap<String, OwnedValue>, key: &str) -> String {
+    let Some(value) = all.get(key) else {
+        return String::new();
+    };
+    if let Ok(path) = value.downcast_ref::<zbus::zvariant::ObjectPath<'_>>() {
+        return path.to_string();
+    }
+    text(all, key)
 }
 
 /// One of the protocol's `a(iiay)` properties.
@@ -847,6 +997,238 @@ fn label(title: &str, id: &str) -> String {
     }
 }
 
+/// Act on one thing the drawing thread asked for.
+///
+/// Every arm is best-effort and none of them reports failure: the
+/// caller is a bar that must keep repainting, and the usual reason a
+/// call fails is that the application exited between the click and the
+/// bus.
+async fn dispatch(session: &Session, command: &Command, menus: &async_channel::Sender<Opened>) {
+    let conn = &session.conn;
+    match command {
+        Command::Entry { key, entry } => {
+            let Some(menu) = session.menus.get(key) else {
+                return;
+            };
+            let (service, _) = split_key(key);
+            // `clicked` with a zero data variant: the protocol carries
+            // one for the events that have a payload, and this is not
+            // one of them.
+            let _ = conn
+                .call_method(
+                    Some(service),
+                    menu.path.as_str(),
+                    Some(MENU_INTERFACE),
+                    "Event",
+                    &(
+                        *entry,
+                        "clicked",
+                        zbus::zvariant::Value::from(0i32),
+                        timestamp(),
+                    ),
+                )
+                .await;
+        }
+        Command::Closed { key } => {
+            let Some(menu) = session.menus.get(key) else {
+                return;
+            };
+            let (service, _) = split_key(key);
+            let _ = conn
+                .call_method(
+                    Some(service),
+                    menu.path.as_str(),
+                    Some(MENU_INTERFACE),
+                    "Event",
+                    &(
+                        0i32,
+                        "closed",
+                        zbus::zvariant::Value::from(0i32),
+                        timestamp(),
+                    ),
+                )
+                .await;
+        }
+        Command::Pointer { key, action } => {
+            // A right click on an item that exports a menu is a
+            // request to draw *that* menu; `ContextMenu` is what the
+            // spec offers an item which has none. `ItemIsMenu` says
+            // the same about the left button.
+            let menu = session.menus.get(key);
+            let wants_menu = match action {
+                TrayAction::Context => true,
+                TrayAction::Activate => menu.is_some_and(|menu| menu.is_menu),
+                _ => false,
+            };
+            if wants_menu {
+                if let Some(menu) = menu.filter(|menu| !menu.path.is_empty()) {
+                    if let Some(open) = layout(conn, key, &menu.path).await {
+                        // Dropped rather than awaited: the queue only
+                        // fills if the drawing thread has stopped
+                        // reading it, and a bar that is not drawing is
+                        // not one to block the bus for.
+                        let _ = menus.try_send(Opened {
+                            key: key.clone(),
+                            menu: open,
+                        });
+                        return;
+                    }
+                }
+            }
+            pointer(conn, key, *action).await;
+        }
+    }
+}
+
+/// Milliseconds since the process started, which is all the protocol's
+/// `timestamp` is used for: applications compare two of ours to each
+/// other and never to a clock of their own.
+fn timestamp() -> u32 {
+    use std::sync::OnceLock;
+    static START: OnceLock<std::time::Instant> = OnceLock::new();
+    START
+        .get_or_init(std::time::Instant::now)
+        .elapsed()
+        .as_millis() as u32
+}
+
+/// Read one item's menu, flattened to the rows a bar draws.
+///
+/// `AboutToShow` first, because an application with a menu it builds
+/// on demand has nothing in `GetLayout` until it is asked. Its answer
+/// -- whether the layout changed -- is ignored: we read the layout
+/// either way, so the only thing knowing would save is the read we are
+/// about to do anyway.
+async fn layout(conn: &Connection, key: &str, path: &str) -> Option<TrayMenu> {
+    let (service, _) = split_key(key);
+
+    let _ = conn
+        .call_method(
+            Some(service),
+            path,
+            Some(MENU_INTERFACE),
+            "AboutToShow",
+            &0i32,
+        )
+        .await;
+
+    let reply = conn
+        .call_method(
+            Some(service),
+            path,
+            Some(MENU_INTERFACE),
+            "GetLayout",
+            &(0i32, MENU_DEPTH, Vec::<String>::new()),
+        )
+        .await
+        .ok()?;
+
+    // `(u(ia{sv}av))`: a revision nobody here tracks, and the root
+    // node. The children are variants because the type is recursive
+    // and D-Bus has no way to say so.
+    let (_revision, root): (u32, Node) = reply.body().deserialize().ok()?;
+
+    let entries: Vec<MenuEntry> = root
+        .2
+        .into_iter()
+        .filter_map(|child| Node::try_from(child).ok())
+        .filter_map(|node| entry_from(&node))
+        .take(MENU_ROWS)
+        .collect();
+
+    // An item whose menu is empty -- or whose every row is hidden --
+    // has not given us a menu to draw, and an empty panel under the
+    // pointer says less than nothing.
+    (!entries.is_empty()).then_some(TrayMenu { entries })
+}
+
+/// One `com.canonical.dbusmenu` node: id, properties, children.
+type Node = (i32, HashMap<String, OwnedValue>, Vec<OwnedValue>);
+
+/// One node as a row, or `None` when the item asked for it not to be
+/// drawn.
+fn entry_from(node: &Node) -> Option<MenuEntry> {
+    let (id, props, _) = node;
+
+    // `visible` is the item saying "not now"; the spec defaults it to
+    // true, and most rows never mention it.
+    if !menu_flag(props, "visible", true) {
+        return None;
+    }
+
+    let kind = if menu_string(props, "type") == "separator" {
+        MenuKind::Separator
+    } else if menu_string(props, "children-display") == "submenu" {
+        MenuKind::Submenu
+    } else if !menu_string(props, "toggle-type").is_empty() {
+        // `toggle-state` is 1 on, 0 off, -1 indeterminate. A row that
+        // does not know is drawn as off rather than as a third thing:
+        // the era vocabulary has selected and not-selected and no
+        // third state, and inventing one here would be a widget.
+        MenuKind::Toggle(menu_int(props, "toggle-state") == 1)
+    } else {
+        MenuKind::Command
+    };
+
+    let label = mnemonic(&menu_string(props, "label"));
+    // A separator's label is never drawn, so an unlabelled command is
+    // the only case left -- and a blank row is not a row.
+    if label.is_empty() && !matches!(kind, MenuKind::Separator) {
+        return None;
+    }
+
+    Some(MenuEntry {
+        id: *id,
+        label,
+        enabled: menu_flag(props, "enabled", true),
+        kind,
+    })
+}
+
+fn menu_string(props: &HashMap<String, OwnedValue>, key: &str) -> String {
+    props
+        .get(key)
+        .and_then(|value| value.downcast_ref::<String>().ok())
+        .unwrap_or_default()
+}
+
+fn menu_flag(props: &HashMap<String, OwnedValue>, key: &str, default: bool) -> bool {
+    props
+        .get(key)
+        .and_then(|value| value.downcast_ref::<bool>().ok())
+        .unwrap_or(default)
+}
+
+fn menu_int(props: &HashMap<String, OwnedValue>, key: &str) -> i32 {
+    props
+        .get(key)
+        .and_then(|value| value.downcast_ref::<i32>().ok())
+        .unwrap_or_default()
+}
+
+/// Strip a label's keyboard mnemonics.
+///
+/// GTK's convention, which dbusmenu inherited: one underscore marks the
+/// next character, two are a literal underscore. The bar takes no
+/// keyboard input, so a marker it cannot act on is just a typo on
+/// screen.
+fn mnemonic(label: &str) -> String {
+    let mut out = String::with_capacity(label.len());
+    let mut chars = label.chars();
+    while let Some(c) = chars.next() {
+        if c != '_' {
+            out.push(c);
+            continue;
+        }
+        match chars.next() {
+            Some('_') => out.push('_'),
+            Some(next) => out.push(next),
+            None => {}
+        }
+    }
+    out
+}
+
 /// Send one pointer event to one item.
 ///
 /// The coordinates are zero. The protocol asks for the pointer's
@@ -860,12 +1242,12 @@ fn label(title: &str, id: &str) -> String {
 /// The first interface that answers wins, and an item that answers
 /// neither is an item that has exited, which is not an error worth
 /// reporting to a bar.
-async fn dispatch(conn: &Connection, command: &Command) {
-    let (service, path) = split_key(&command.key);
+async fn pointer(conn: &Connection, key: &str, action: TrayAction) {
+    let (service, path) = split_key(key);
     for interface in ITEM_INTERFACES {
         let at =
             |method| conn.call_method(Some(service), path, Some(interface), method, &(0i32, 0i32));
-        let sent = match command.action {
+        let sent = match action {
             TrayAction::Activate => at("Activate").await.is_ok(),
             TrayAction::Secondary => at("SecondaryActivate").await.is_ok(),
             TrayAction::Context => at("ContextMenu").await.is_ok(),
@@ -993,7 +1375,7 @@ mod tests {
             show_passive: true,
             ..Config::default()
         };
-        let item = item_from(&all, &mut icons(), &config).expect("shown on request");
+        let (item, _) = item_from(&all, &mut icons(), &config).expect("shown on request");
         assert_eq!(item.label, "SYNC");
         assert!(!item.attention);
     }
@@ -1001,7 +1383,7 @@ mod tests {
     #[test]
     fn needs_attention_reaches_the_cell() {
         let all = props(&[("Status", "NeedsAttention"), ("Title", "Element")]);
-        let item = item_from(&all, &mut icons(), &Config::default()).expect("active");
+        let (item, _) = item_from(&all, &mut icons(), &Config::default()).expect("active");
         assert!(item.attention);
         assert_eq!(item.label, "ELEM");
     }
@@ -1011,7 +1393,7 @@ mod tests {
         // `IconName` names something no theme has, which is the case
         // that must not produce an empty cell.
         let all = props(&[("IconName", "no-such-icon-anywhere"), ("Id", "flameshot")]);
-        let item = item_from(&all, &mut icons(), &Config::default()).expect("active");
+        let (item, _) = item_from(&all, &mut icons(), &Config::default()).expect("active");
         assert!(item.icon.is_none());
         assert_eq!(item.label, "FLAM");
     }
@@ -1026,7 +1408,141 @@ mod tests {
             OwnedValue::try_from(zbus::zvariant::Value::from(pixmap)).expect("a(iiay)"),
         );
 
-        let item = item_from(&all, &mut icons(), &Config::default()).expect("active");
+        let (item, _) = item_from(&all, &mut icons(), &Config::default()).expect("active");
         assert!(item.icon.is_some(), "the pixmap should have been decoded");
+    }
+
+    #[test]
+    fn an_item_that_exports_a_menu_says_where_it_is() {
+        let mut all = props(&[("Title", "nm-applet")]);
+        all.insert(
+            "Menu".to_string(),
+            OwnedValue::try_from(zbus::zvariant::Value::from(
+                zbus::zvariant::ObjectPath::try_from("/org/ayatana/NotificationItem/nm/Menu")
+                    .expect("a path"),
+            ))
+            .expect("o"),
+        );
+        all.insert(
+            "ItemIsMenu".to_string(),
+            OwnedValue::try_from(zbus::zvariant::Value::from(true)).expect("b"),
+        );
+
+        let (_, menu) = item_from(&all, &mut icons(), &Config::default()).expect("active");
+        assert_eq!(menu.path, "/org/ayatana/NotificationItem/nm/Menu");
+        assert!(menu.is_menu);
+    }
+
+    #[test]
+    fn an_item_with_no_menu_property_is_a_context_menu_call() {
+        let all = props(&[("Title", "flameshot")]);
+        let (_, menu) = item_from(&all, &mut icons(), &Config::default()).expect("active");
+        assert!(menu.path.is_empty());
+        assert!(!menu.is_menu);
+    }
+
+    /// A dbusmenu node, as `GetLayout` would hand one over.
+    fn node(id: i32, pairs: &[(&str, zbus::zvariant::Value<'static>)]) -> Node {
+        let props = pairs
+            .iter()
+            .map(|(key, value)| {
+                (
+                    key.to_string(),
+                    OwnedValue::try_from(value.try_clone().expect("cloneable")).expect("a value"),
+                )
+            })
+            .collect();
+        (id, props, Vec::new())
+    }
+
+    fn string(value: &str) -> zbus::zvariant::Value<'static> {
+        zbus::zvariant::Value::from(value.to_string())
+    }
+
+    #[test]
+    fn a_plain_row_keeps_its_id_and_loses_its_mnemonic() {
+        let entry = entry_from(&node(7, &[("label", string("_Quit"))])).expect("a row");
+        assert_eq!(entry.id, 7);
+        assert_eq!(entry.label, "Quit");
+        assert!(entry.enabled);
+        assert_eq!(entry.kind, MenuKind::Command);
+    }
+
+    #[test]
+    fn the_four_row_shapes_come_out_of_four_different_properties() {
+        let separator = entry_from(&node(1, &[("type", string("separator"))])).expect("a rule");
+        assert_eq!(separator.kind, MenuKind::Separator);
+
+        let submenu = entry_from(&node(
+            2,
+            &[
+                ("label", string("Networks")),
+                ("children-display", string("submenu")),
+            ],
+        ))
+        .expect("a submenu");
+        assert_eq!(submenu.kind, MenuKind::Submenu);
+
+        let on = entry_from(&node(
+            3,
+            &[
+                ("label", string("Enable")),
+                ("toggle-type", string("checkmark")),
+                ("toggle-state", zbus::zvariant::Value::from(1i32)),
+            ],
+        ))
+        .expect("a toggle");
+        assert_eq!(on.kind, MenuKind::Toggle(true));
+
+        // Indeterminate is drawn as off: the era vocabulary has two
+        // states and inventing a third here would be a widget.
+        let unknown = entry_from(&node(
+            4,
+            &[
+                ("label", string("Enable")),
+                ("toggle-type", string("checkmark")),
+                ("toggle-state", zbus::zvariant::Value::from(-1i32)),
+            ],
+        ))
+        .expect("a toggle");
+        assert_eq!(unknown.kind, MenuKind::Toggle(false));
+    }
+
+    #[test]
+    fn a_hidden_or_unlabelled_row_is_not_drawn() {
+        assert!(entry_from(&node(
+            5,
+            &[
+                ("label", string("Secret")),
+                ("visible", zbus::zvariant::Value::from(false)),
+            ],
+        ))
+        .is_none());
+        // A command with nothing to say is a blank row.
+        assert!(entry_from(&node(6, &[])).is_none());
+        // A separator has no label and is still a rule.
+        assert!(entry_from(&node(7, &[("type", string("separator"))])).is_some());
+    }
+
+    #[test]
+    fn a_disabled_row_is_drawn_and_does_not_answer() {
+        let entry = entry_from(&node(
+            8,
+            &[
+                ("label", string("Disconnect")),
+                ("enabled", zbus::zvariant::Value::from(false)),
+            ],
+        ))
+        .expect("a row");
+        assert!(!entry.enabled);
+    }
+
+    #[test]
+    fn a_doubled_underscore_is_a_literal_one() {
+        assert_eq!(mnemonic("_File"), "File");
+        assert_eq!(mnemonic("Save __as"), "Save _as");
+        assert_eq!(mnemonic("no marks here"), "no marks here");
+        // A trailing marker marks nothing and is dropped.
+        assert_eq!(mnemonic("Quit_"), "Quit");
     }
 }

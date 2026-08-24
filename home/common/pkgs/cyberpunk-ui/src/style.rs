@@ -171,12 +171,32 @@ impl Ticket {
 ///   two stacked outline copies receding up-right by `(6,-8)` at half
 ///   opacity, labels rotated to the slab. The active slab is yellow,
 ///   the rest the era's lit teal.
-/// * **Neomil** -- the cut-diamond hub, and the one arm whose evidence
-///   is *not* in `docs/`: `neomil/target-app.svg` is an ops screen with
-///   a services table, and neither of that era's two sheets draws a
-///   diamond anywhere. The shape comes from `widgets::diamond_menu`,
-///   written before the toolkit was generalised. Recorded rather than
-///   quietly asserted, because every other row here cites a file.
+/// * **Neomil** -- the cut-diamond hub, and the one arm that cites no
+///   file. Both of that era's sheets were re-read to settle this and
+///   neither draws a diamond anywhere. What they *do* draw, twice, is
+///   neomil choosing between things at two other scales:
+///   `target-app.svg` has a ~60px vertical nav rail of five 16px
+///   glyphs with one filled, and `target-components.svg` has a "TAB
+///   BAR" -- `SYS | NET | GEAR | LOG`, four chamfered pills in a row,
+///   the active one solid red on dark ink and the rest outlined --
+///   plus a vertical context menu with one row highlighted.
+///
+///   Neither is this. A 16px global rail and a four-tab in-panel
+///   switcher are not a six-module hub filling a screen's centre
+///   column with a code and a glyph apiece, and at the slot
+///   `screens::dashboard` puts a menu in, `target-app.svg` puts a
+///   *services table*. So the sampled answer for that slot is the data
+///   table this crate has not grown yet, and a six-tall rail of tabs
+///   would be no more sampled than the diamonds are -- it would just
+///   be unsampled in a duller way, at the cost of the only widget here
+///   that hit-tests.
+///
+///   The hub therefore stays, as a stand-in for the table rather than
+///   as this era's interaction model. It is inherited from the
+///   pre-generalisation `neomil-ui`, it is the one row in this table
+///   that would not survive a re-derivation from the references, and
+///   it is the row to revisit the day `docs/neomil`'s "table with
+///   selection + scrollbar" becomes a widget.
 /// * **Neokitsch** -- `target-components.svg` "CARD CASCADE (device
 ///   software)": tall clipped-corner cards `68x134` at an `88` pitch,
 ///   staggered vertically (`0, -30, -34, -30`), the active one filled

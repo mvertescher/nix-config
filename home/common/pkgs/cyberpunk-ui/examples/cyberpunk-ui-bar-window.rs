@@ -59,14 +59,14 @@ fn sample_icon(rgb: [u8; 3]) -> image::Handle {
 /// about.
 fn sample() -> Readings {
     Readings {
-        host: "terra".to_string(),
+        host: "nomad".to_string(),
         workspaces: (1..=6)
             .map(|id| Workspace {
                 id,
                 active: id == 3,
             })
             .collect(),
-        window: "~/nix-config-private - nvim src/bar.rs".to_string(),
+        window: "~/src/cyberpunk-ui - nvim src/bar.rs".to_string(),
         cpu: 12,
         memory: 47,
         audio: Some(Audio {

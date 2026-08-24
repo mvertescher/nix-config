@@ -15,6 +15,26 @@
 //! era-specific by inheritance rather than by sampling. Anyone
 //! re-deriving the era from the references should expect to find no
 //! support for it there.
+//!
+//! That was checked rather than inherited a second time, by rendering
+//! both sheets and looking. They are not silent about neomil choosing
+//! between things -- `target-app.svg` runs a vertical rail of five
+//! 16px glyphs down its left edge with one filled, and
+//! `target-components.svg` draws a four-tab bar (`SYS | NET | GEAR |
+//! LOG`, active tab solid, the rest outlined) and a vertical context
+//! menu. Both are real neomil idioms and neither is a diamond.
+//!
+//! They are also neither of them *this*: a rail of 16px icons and a
+//! strip of four tabs are not a six-module hub with a code and a glyph
+//! apiece, and where `screens::dashboard` puts its menu the sheet puts
+//! a services table. The sampled replacement is therefore the data
+//! table the crate has not grown yet -- see `docs/neomil/README.md`,
+//! "table with selection + scrollbar" -- and stretching the tab bar to
+//! six would be exactly as unsampled as the diamonds while throwing
+//! away the only widget in this crate that hit-tests. So the hub
+//! stays, understood as a stand-in for that table rather than as the
+//! era's interaction model, and it is the first thing to reconsider
+//! when the table lands.
 
 use crate::fonts::FONT_ORBITRON_BOLD;
 use crate::style::Style;

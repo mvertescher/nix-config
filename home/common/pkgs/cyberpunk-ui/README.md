@@ -46,9 +46,18 @@ shows.
 
 The alternative, a crate per era, was rejected once the sampling showed
 how much the eras share. The genuinely era-specific things left are
-*interaction models*, not dressed rectangles: neomil's diamond menu,
-kitsch's extruded fan menu. Those stay per-era widget modules inside the
-one crate.
+*interaction models*, not dressed rectangles: kitsch's extruded fan
+menu, neokitsch's card cascade, entropism's tiles, and the diamond hub
+neomil wears. Those live behind one `Menu` choice in `style.rs`, so a
+screen picks a menu without naming an era.
+
+The diamond hub is the odd one: it is a **stand-in**, not sampled.
+Neither neomil sheet draws a diamond -- `target-app.svg` puts a services
+table where the dashboard puts its menu, and `target-components.svg`
+shows a four-tab bar. It is kept because the sampled answer is a data
+table this crate has not grown, and stretching a four-tab switcher to six
+modules would be exactly as unsampled while costing the only hit-testing
+widget here.
 
 ## Where the eras actually differ
 
@@ -200,24 +209,20 @@ Version stays at 0.0.0: this is nowhere near release.
 
 Implemented: the era abstraction, the shared widget vocabulary, all four
 era tables, four screens (store, login, mailbox, dashboard) in all four
-dresses, and a screen-by-era visual regression matrix. All four eras
-also have desktop themes under `home/themes/`, so `Style::from_desktop`
-has something real to follow.
+dresses, each era's own menu on the dashboard, and a screen-by-era
+visual regression matrix. All four eras also have desktop themes under
+`home/themes/`, so `Style::from_desktop` has something real to follow.
 
 Not yet done:
-- **The menu is on no screen.** `Menu { Tiles | Fan | Diamonds |
-  Cascade }` is in `style.rs`, every era declares one, and
-  `widgets::menu` draws all four — but nothing calls it, so no golden
-  covers it. Wiring it is a one-function change in
-  `screens::dashboard`'s module grid. Note the diamond hub is inherited
-  rather than sampled: neither of neomil's design sheets draws one,
-  despite this file having called it that era's interaction model.
-- `widgets::message_card` is unreachable — nothing has called it since
-  the entropism-ui retirement replaced its last caller with the shared
-  vocabulary. It now takes a `Style` and `colors.rs` is gone, but its
-  geometry is still a hardcoded 8px neomil double chamfer while
-  `widgets::surface` draws all four corner treatments. Fold it into
-  `mail_row`/`Surface`, or drop it.
+- A **data table** widget is what neomil's dashboard actually wants; the
+  diamond hub stands in for it. See the note above.
+- Several widgets are exported and uncalled: `level_badge` has no
+  reference anywhere outside its own `mod`/`use` lines, and
+  `chip::{chip_type_1, info_panel}`, `text_box`, `floppy_vector` and
+  `Corners::OPPOSED` are close behind. `message_card` was the same and
+  was deleted rather than folded in — deleting 213 lines of drawing code
+  moved not one pixel of any golden, which is what "unreachable" is
+  supposed to mean. The rest want the same audit.
 - Neokitsch's BASKET panel and its step-notch pill on the mailbox
   footer are in the design targets but not yet widgets. The fan, the
   cascade, the tiles, the ticket notch, the compliance caption and the

@@ -13,66 +13,76 @@
 //! one's description, and the era's chrome. Nothing in this file asks
 //! which era it is -- and that is the standing test, not a comment.
 //!
-//! What deliberately is *not* here is the diamond menu. That is
-//! neomil's interaction model, kitsch's is an extruded fan and
-//! entropism's is flat tiles, and a screen cannot choose between them
-//! without an era branch. The choice belongs in `style.rs` beside
-//! `Chrome` and `Footnotes`; until it is there the hub draws its
-//! modules from the shared `Surface` vocabulary, which already carries
-//! each era's corner treatment and selection idiom.
+//! The hub itself is [`crate::widgets::menu`], and this screen is why
+//! that widget exists. The four eras do not merely dress a module
+//! chooser differently, they reach for four different *objects* --
+//! tiles, an extruded fan, a diamond hub, a card cascade -- and this
+//! file cannot pick between them without an era branch. So it names
+//! none of them: it hands `menu` six [`MenuItem`]s and a selected
+//! index, and [`crate::style::Menu`] on the era table says what a menu
+//! is. Until that variant existed the hub drew a hardcoded two-column
+//! grid of `Surface`s, which was the right stopgap and the wrong screen
+//! for three eras out of four.
+//!
+//! Note the column count moved with it. The grid here was two wide;
+//! entropism's sheet draws its tiles three to a row and the era table
+//! says so, so wiring the menu up is also what stopped this screen
+//! overriding the reference from the outside.
 //!
 //! Run it with `cyberpunk-ui-dashboard --era <name>`; with no flag it
 //! follows the desktop theme.
 
 use crate::style::Style;
 use crate::widgets::surface::{layered, surface, Surface};
-use crate::widgets::{badge, footer, ground, marker, text, top_bar};
+use crate::widgets::{badge, footer, ground, marker, menu, text, top_bar, MenuItem};
 use iced::widget::{canvas, column, container, row, stack, Space};
 use iced::{Element, Length, Padding};
 
 /// The modules the hub offers: label, the catalogue code the references
 /// print under it, and the one-line blurb the entropism set puts inside
 /// each block.
-const MODULES: [(&str, &str, &str); 6] = [
-    (
-        "VEHICLES",
-        "161-9A",
-        "Registered chassis, plates and transit permits.",
-    ),
-    (
-        "LOCATIONS",
-        "161-9B",
-        "Districts, checkpoints and mapped access routes.",
-    ),
-    (
-        "FACTIONS",
-        "161-9C",
-        "Standing, known contacts and open contracts.",
-    ),
-    (
-        "WEAPONS",
-        "161-9D",
-        "Licensed hardware and surplus combat inventory.",
-    ),
-    (
-        "PRODUCTS",
-        "161-9E",
-        "Catalogue, stock levels and delivery windows.",
-    ),
-    (
-        "CORPORATIONS",
-        "161-9F",
-        "Charters, subsidiaries and trade agreements.",
-    ),
+///
+/// `static` rather than `const` so `&MODULES` is one `'static` slice
+/// the menu borrows, rather than a fresh temporary per call that only
+/// lives long enough because of rvalue promotion.
+///
+/// All three fields are handed over even though no era draws all
+/// three, and that is deliberate: the fan has no room for a blurb and
+/// the diamonds none for either, so each arm takes what its object has
+/// room for instead of this screen deciding on its behalf.
+static MODULES: [MenuItem<'static>; 6] = [
+    MenuItem {
+        label: "VEHICLES",
+        code: "161-9A",
+        blurb: "Registered chassis, plates and transit permits.",
+    },
+    MenuItem {
+        label: "LOCATIONS",
+        code: "161-9B",
+        blurb: "Districts, checkpoints and mapped access routes.",
+    },
+    MenuItem {
+        label: "FACTIONS",
+        code: "161-9C",
+        blurb: "Standing, known contacts and open contracts.",
+    },
+    MenuItem {
+        label: "WEAPONS",
+        code: "161-9D",
+        blurb: "Licensed hardware and surplus combat inventory.",
+    },
+    MenuItem {
+        label: "PRODUCTS",
+        code: "161-9E",
+        blurb: "Catalogue, stock levels and delivery windows.",
+    },
+    MenuItem {
+        label: "CORPORATIONS",
+        code: "161-9F",
+        blurb: "Charters, subsidiaries and trade agreements.",
+    },
 ];
 const SELECTED_MODULE: usize = 3;
-
-/// Fixed rather than `Length::Fill`, and the difference is visible.
-/// Three `Fill` rows divide the column into thirds that are not whole
-/// pixels, and a 1px outline whose bottom edge lands on a fractional
-/// boundary renders dim on the second row and not at all on the third
-/// -- the box loses its floor. Confirmed by rendering it both ways.
-const TILE_HEIGHT: f32 = 220.0;
 
 const LEVELS: [&str; 4] = ["T1", "T2", "T3", "T4"];
 const LEVEL_SELECTED: usize = 1;
@@ -136,7 +146,9 @@ impl Dashboard {
             row![
                 container(self.sidebar()).width(Length::Fixed(260.0)),
                 Space::new(s.metrics.gap * 2.0, 0.0),
-                container(self.modules()).width(Length::FillPortion(6)),
+                container(self.modules())
+                    .width(Length::FillPortion(6))
+                    .height(Length::Fill),
                 Space::new(s.metrics.gap * 2.0, 0.0),
                 container(self.detail()).width(Length::FillPortion(5)),
             ]
@@ -192,67 +204,25 @@ impl Dashboard {
         .into()
     }
 
-    /// The module hub: six tiles, one of them selected.
+    /// The module hub: six modules, one of them selected, in whatever
+    /// the era means by a menu.
+    ///
+    /// The menu is given the whole remaining column rather than its
+    /// natural height, and that is load-bearing for two of the four
+    /// arms. `Menu::Fan` and `Menu::Diamonds` are canvases that fit
+    /// themselves to the box they are handed; in a `Shrink` column they
+    /// are handed nothing and draw nothing. The two layout arms are
+    /// indifferent to it -- tiles and the cascade keep their sampled
+    /// heights and leave the slack below.
     fn modules(&self) -> Element<'_, Message> {
         let s = &self.style;
-
-        let mut grid = column![].spacing(s.metrics.gap * 0.5);
-        let mut pair = row![].spacing(s.metrics.gap * 0.5);
-        for (i, (name, code, blurb)) in MODULES.iter().enumerate() {
-            pair = pair.push(self.tile(name, code, blurb, i == SELECTED_MODULE));
-            if i % 2 == 1 {
-                grid = grid.push(pair);
-                pair = row![].spacing(s.metrics.gap * 0.5);
-            }
-        }
 
         column![
             self.heading("C", "COMPUTER SYSTEMS"),
             Space::new(0.0, s.metrics.gap),
-            grid,
+            container(menu(s, &MODULES, SELECTED_MODULE)).height(Length::Fill),
         ]
-        .into()
-    }
-
-    /// One module. `Surface::selected` is what carries the era here:
-    /// solid fill in three of them, veneer in neokitsch, and the corner
-    /// treatment comes along with it.
-    fn tile<'a>(
-        &'a self,
-        name: &'a str,
-        code: &'a str,
-        blurb: &'a str,
-        selected: bool,
-    ) -> Element<'a, Message> {
-        let s = &self.style;
-
-        let bg = if selected {
-            Surface::selected(s)
-        } else {
-            Surface::outlined(s)
-        };
-
-        let (label, sub, note) = if selected {
-            (
-                text::on_select(s, name),
-                text::on_select(s, code).size(s.metrics.text_caption),
-                text::on_select(s, blurb).size(s.metrics.text_caption + 2),
-            )
-        } else {
-            (
-                text::body(s, name),
-                text::caption(s, code),
-                text::caption(s, blurb).size(s.metrics.text_caption + 2),
-            )
-        };
-
-        container(surface(
-            bg,
-            Padding::from([10, 12]),
-            column![label, sub, Space::new(0.0, 8.0), note].spacing(1),
-        ))
-        .width(Length::Fill)
-        .height(Length::Fixed(TILE_HEIGHT))
+        .height(Length::Fill)
         .into()
     }
 
@@ -260,11 +230,11 @@ impl Dashboard {
     /// licensed from.
     fn detail(&self) -> Element<'_, Message> {
         let s = &self.style;
-        let (name, code, _) = MODULES[SELECTED_MODULE];
+        let module = &MODULES[SELECTED_MODULE];
 
         let mut body = column![
-            text::title(s, name).size(s.metrics.text_title - 3),
-            text::caption(s, code),
+            text::title(s, module.label).size(s.metrics.text_title - 3),
+            text::caption(s, module.code),
             Space::new(0.0, s.metrics.gap),
         ]
         .spacing(2);

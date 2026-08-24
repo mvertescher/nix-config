@@ -12,7 +12,7 @@
 //! testable and keeps the layer-shell dependency out of the library.
 
 use crate::style::Style;
-use crate::widgets::surface::{surface, Surface};
+use crate::widgets::surface::{backdrop, surface, Surface};
 use crate::widgets::text;
 use iced::widget::image;
 use iced::widget::{container, mouse_area, row, Space};
@@ -116,12 +116,200 @@ pub enum TrayAction {
     /// that has *not* been checked against a running item: no
     /// StatusNotifierItem on this desktop acts on `Scroll`, and the
     /// virtual-pointer tools available for driving one produce the same
-    /// sign in both directions. Worth noting that the two hosts of
-    /// `bar()` will not agree until upstream does: `iced_layershell`
-    /// 0.13.7 forwards the raw `wl_pointer` axis, whose positive is
-    /// *toward* the user, while iced's own `ScrollDelta` documents
-    /// positive as away from it.
+    /// sign in both directions.
+    ///
+    /// An earlier version of this comment claimed the two hosts of
+    /// `bar()` disagree, on the grounds that `iced_layershell` forwards
+    /// the raw `wl_pointer` axis. **That is wrong.** 0.13.7's
+    /// `src/event.rs` negates on all four paths -- `-vertical.discrete`,
+    /// `-vertical.absolute` and the horizontal pair -- so it already
+    /// matches iced's own `ScrollDelta` convention, positive away from
+    /// the user. What remains unverified is only whether a real item
+    /// interprets a detent the way we send it.
     Scroll(i32),
+}
+
+/// One row of an item's `com.canonical.dbusmenu`.
+///
+/// Deliberately not the protocol's own shape, for the same reason
+/// [`TrayItem`] is not: a menu row over that interface is a numeric id
+/// and a bag of thirty optional properties, of which a bar draws four.
+/// Reading them is the host's problem (`examples/bar/tray.rs`); what
+/// arrives here is already a row.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MenuEntry {
+    /// The dbusmenu id, sent back with `Event` when the row is
+    /// clicked. Meaningless to the bar and never displayed.
+    pub id: i32,
+    pub label: String,
+    /// `enabled = false`. Drawn in the quiet ink and not clickable,
+    /// rather than hidden: an application greys a row to say the
+    /// command exists and is not available now, and dropping it would
+    /// say something else.
+    pub enabled: bool,
+    pub kind: MenuKind,
+}
+
+/// What kind of row it is. The protocol's `type`, `toggle-type`,
+/// `toggle-state` and `children-display` collapse to this, because
+/// those are four ways of describing one thing: what the row does when
+/// it is clicked and what it looks like before it is.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MenuKind {
+    /// A plain command.
+    Command,
+    /// A rule between groups. Carries no id worth dispatching.
+    Separator,
+    /// A checkmark or a radio, and whether it is set. Drawn as the
+    /// era's own *selection* rather than as a tick glyph: selection is
+    /// the thing the era vocabulary already has four opinions about,
+    /// and a `[x]` would be the same box in all four.
+    Toggle(bool),
+    /// A row with children. Marked and inert -- see [`TrayMenu`].
+    Submenu,
+}
+
+/// An item's context menu, as far as this bar draws one.
+///
+/// Flat on purpose. `GetLayout` will return the whole tree, and a row
+/// whose `children-display` is `submenu` is drawn with a marker and
+/// does nothing when clicked, because opening it means a second
+/// surface stacked on the first one and a grab this crate has no way
+/// to take. Marked-and-inert rather than hidden: an item whose entire
+/// menu is one submenu should look like a menu that will not open, not
+/// like an empty one.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct TrayMenu {
+    pub entries: Vec<MenuEntry>,
+}
+
+/// Characters of a menu label drawn before it is clipped.
+///
+/// An application chooses its own labels and some of them are
+/// sentences; the panel is placed against the pointer, so one long row
+/// would push the whole menu off the side of the screen rather than
+/// just looking untidy.
+const MENU_LABEL_CHARS: usize = 40;
+
+/// How wide the menu panel is drawn, in pixels.
+///
+/// Public for the same reason [`icon_size`] is: whoever places the
+/// panel has to know how wide it will be, and the alternative is two
+/// constants that agree until one of them is edited. Measured from the
+/// labels rather than filled to the content, because a menu that
+/// resizes itself per era's `Corner` is one that lands somewhere
+/// different per era.
+pub fn menu_width(style: &Style, menu: &TrayMenu) -> f32 {
+    let per_char = style.metrics.text_body as f32 * 0.58;
+    let widest = menu
+        .entries
+        .iter()
+        .map(|entry| entry.label.chars().count().min(MENU_LABEL_CHARS))
+        .max()
+        .unwrap_or(0);
+    // The floor is what keeps a menu of `OK` from being a stamp; the
+    // ceiling is `MENU_LABEL_CHARS` worth of the largest era's body
+    // text, so the clip above is what bounds this and not the clamp.
+    ((widest as f32 * per_char).ceil() + 24.0).clamp(140.0, 460.0)
+}
+
+/// One menu row.
+fn menu_row<'a, Message: Clone + 'static>(
+    style: &Style,
+    entry: &MenuEntry,
+    on_entry: fn(i32) -> Message,
+) -> Element<'a, Message> {
+    if let MenuKind::Separator = entry.kind {
+        // A rule, not a row: the era's border colour at the stroke
+        // width it declares, with air either side.
+        let border = style.palette.border;
+        return container(
+            container(Space::new(
+                Length::Fill,
+                Length::Fixed(style.metrics.stroke),
+            ))
+            .style(move |_: &iced::Theme| container::Style {
+                background: Some(border.into()),
+                ..container::Style::default()
+            })
+            .width(Length::Fill),
+        )
+        .padding(Padding::from([4, 6]))
+        .width(Length::Fill)
+        .into();
+    }
+
+    let label = clip(&entry.label, MENU_LABEL_CHARS);
+    let selected = matches!(entry.kind, MenuKind::Toggle(true));
+
+    let text = if selected {
+        text::on_select(style, label)
+    } else if entry.enabled {
+        text::body(style, label)
+    } else {
+        text::body(style, label).color(style.palette.dim)
+    };
+
+    // The marker is the one place a row says something the label does
+    // not: that clicking it would have opened something this bar
+    // cannot open.
+    let trailing: Element<'a, Message> = match entry.kind {
+        MenuKind::Submenu => text::mid(style, ">").into(),
+        _ => Space::new(Length::Shrink, Length::Shrink).into(),
+    };
+
+    let inner = row![text, Space::new(Length::Fill, Length::Shrink), trailing]
+        .align_y(iced::Alignment::Center)
+        .width(Length::Fill);
+
+    // `backdrop` rather than `surface`: a bar cell pins its own height
+    // and a menu row does not, and a `surface` whose caller does not
+    // pin one grows to whatever the column offers it.
+    let face: Element<'a, Message> = if selected {
+        backdrop(Surface::selected(style), Padding::from([3, 8]), inner)
+    } else {
+        container(inner).padding(Padding::from([3, 8])).into()
+    };
+
+    // A disabled row and a submenu row are both drawn and neither
+    // answers: sending `clicked` to a row an application has greyed is
+    // asking it to do something it just said it would not do, and
+    // sending it to a submenu parent is asking for a menu we have
+    // nowhere to put.
+    if !entry.enabled || matches!(entry.kind, MenuKind::Submenu) {
+        return face;
+    }
+
+    mouse_area(face)
+        .on_press(on_entry(entry.id))
+        .interaction(mouse::Interaction::Pointer)
+        .into()
+}
+
+/// An item's context menu, in the era's own dress.
+///
+/// Filled rather than outlined, unlike every other surface on the bar:
+/// this is the one thing the bar draws that floats over other
+/// applications, and an unfilled panel would show a terminal through
+/// its own rows.
+pub fn tray_menu<'a, Message: Clone + 'static>(
+    style: &Style,
+    menu: &TrayMenu,
+    on_entry: fn(i32) -> Message,
+) -> Element<'a, Message> {
+    let mut rows = iced::widget::column![].width(Length::Fill);
+    for entry in &menu.entries {
+        rows = rows.push(menu_row(style, entry, on_entry));
+    }
+
+    container(backdrop(
+        Surface::filled(style, style.palette.bg).stroke(style.palette.border),
+        Padding::from([6, 4]),
+        rows,
+    ))
+    .width(Length::Fixed(menu_width(style, menu)))
+    .height(Length::Shrink)
+    .into()
 }
 
 /// How the bar reports a pointer event on a tray cell to its host.
@@ -164,7 +352,8 @@ pub struct Readings {
 ///
 /// A [`Surface`] paints the box it is handed and its canvas fills
 /// whatever space it is given, so in a shrink-width row the cells
-/// collapse and clip their own text -- "terra" came out as "ter".
+/// collapse and clip their own text -- a five-character hostname came
+/// out as three.
 /// Sizing from the label is also the better behaviour for a bar: cells
 /// stop reflowing every time CPU% ticks from 9 to 10.
 fn width_for(style: &Style, label: &str) -> f32 {

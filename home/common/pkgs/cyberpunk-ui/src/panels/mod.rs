@@ -12,9 +12,11 @@
 //! `login` and `mailbox`, where `tests.dashboard.<era>` covers it.
 //!
 //! Everything here used to hardcode the neo-militarism palette. None of
-//! it does now: `crate::colors` is gone, and the last reader of it,
-//! `widgets::message_card`, takes a [`crate::style::Style`] like the
-//! rest of the vocabulary.
+//! it does now: `crate::colors` is gone, and so is its last reader,
+//! `widgets::message_card` -- an unreachable mail card whose geometry
+//! predated the era generalisation. `mail`'s own `message_row` draws
+//! that row from [`crate::widgets::surface::Surface`], so it wears each
+//! era's corner and selection idiom rather than neomil's chamfer.
 
 pub mod mail;
 

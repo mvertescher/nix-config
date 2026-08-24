@@ -19,7 +19,10 @@
 //!   cascade's active card is filled with a material, and nothing here
 //!   had to know that.
 //! * [`Menu::Diamonds`] hands off to [`super::diamond_menu`], the
-//!   era-specific module that predates the generalisation.
+//!   era-specific module that predates the generalisation. It is the
+//!   one arm here that no sheet draws; that was re-examined against
+//!   both neomil sheets rather than inherited again, and the reasoning
+//!   for keeping it is in that module and on [`Menu`].
 //! * [`Menu::Fan`] is the one genuinely new drawing: rotated slabs
 //!   cannot be laid out, only painted.
 

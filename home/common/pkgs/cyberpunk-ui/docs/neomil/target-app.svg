@@ -17,7 +17,7 @@
   <rect x="0" y="0" width="1920" height="2" fill="#FF3B45"/>
   <path d="M 0 2 h 360 l -20 42 H 0 Z" fill="#FF3B45"/>
   <text x="28" y="32" font-family="Orbitron" font-weight="bold" font-size="20" letter-spacing="5" fill="#050308">NEOMIL OPS</text>
-  <text x="392" y="30" font-size="15" letter-spacing="3" fill="#DE2E2E">server.mverte.dev</text>
+  <text x="392" y="30" font-size="15" letter-spacing="3" fill="#DE2E2E">node.example.net</text>
   <g font-family="Orbitron" font-size="12" font-weight="bold">
     <path d="M 1560 8 h 74 v 26 l -8 8 h -66 Z" fill="none" stroke="#FF3B45" stroke-width="1.5"/>
     <text x="1572" y="30" fill="#FF3B45">CPU 12</text>
@@ -54,12 +54,12 @@
   <g font-size="17">
     <rect x="116" y="170" width="900" height="34" fill="#FF3B45" fill-opacity="0.18"/>
     <rect x="116" y="170" width="4" height="34" fill="#FF3B45"/>
-    <text x="132" y="194" fill="#FF3B45">wotr-server.service</text><text x="472" y="194" fill="#DEDEDE">2.1M</text><text x="592" y="194" fill="#DEDEDE">4D 07:12</text><text x="800" y="194" fill="#DE2E2E">RUNNING</text>
+    <text x="132" y="194" fill="#FF3B45">sessiond.service</text><text x="472" y="194" fill="#DEDEDE">2.1M</text><text x="592" y="194" fill="#DEDEDE">4D 07:12</text><text x="800" y="194" fill="#DE2E2E">RUNNING</text>
     <text x="132" y="232" fill="#DEDEDE">pocket-id.service</text><text x="472" y="232" fill="#DE2E2E">48M</text><text x="592" y="232" fill="#DE2E2E">1D 22:40</text><text x="800" y="232" fill="#DE2E2E">RUNNING</text>
     <line x1="116" y1="244" x2="1016" y2="244" stroke="#5E1112" stroke-opacity="0.4" stroke-width="1"/>
     <text x="132" y="270" fill="#DEDEDE">nginx.service</text><text x="472" y="270" fill="#DE2E2E">12M</text><text x="592" y="270" fill="#DE2E2E">4D 07:11</text><text x="800" y="270" fill="#DE2E2E">RUNNING</text>
     <line x1="116" y1="282" x2="1016" y2="282" stroke="#5E1112" stroke-opacity="0.4" stroke-width="1"/>
-    <text x="132" y="308" fill="#DEDEDE">acme-wotrcg.timer</text><text x="472" y="308" fill="#DE2E2E">--</text><text x="592" y="308" fill="#DE2E2E">--</text><text x="800" y="308" fill="#DE2E2E">WAITING</text>
+    <text x="132" y="308" fill="#DEDEDE">acme-renew.timer</text><text x="472" y="308" fill="#DE2E2E">--</text><text x="592" y="308" fill="#DE2E2E">--</text><text x="800" y="308" fill="#DE2E2E">WAITING</text>
   </g>
   <rect x="1022" y="132" width="6" height="210" fill="#0a0509"/>
   <rect x="1022" y="140" width="6" height="80" fill="#FF3B45"/>
@@ -79,14 +79,14 @@
   <text x="896" y="392" font-size="14" fill="#DEDEDE">69%</text>
 
   <!-- log pane -->
-  <text x="116" y="446" font-size="14" letter-spacing="3" fill="#DE2E2E">LIVE LOG // wotr-server</text>
+  <text x="116" y="446" font-size="14" letter-spacing="3" fill="#DE2E2E">LIVE LOG // sessiond</text>
   <rect x="116" y="458" width="912" height="300" fill="#000000" fill-opacity="0.45" stroke="#5E1112" stroke-opacity="0.6" stroke-width="1"/>
   <g font-size="14" letter-spacing="1">
-    <text x="132" y="486" fill="#5E1112">06:31:02 ws connect 84.112.9.20 OK (jeremyjsg)</text>
+    <text x="132" y="486" fill="#5E1112">06:31:02 ws connect 10.42.9.20 OK (kestrel24)</text>
     <text x="132" y="512" fill="#5E1112">06:31:14 session S-107 resumed table T-4</text>
     <text x="132" y="538" fill="#5E1112">06:31:40 card FELLOWSHIP played S-107</text>
     <text x="132" y="564" fill="#DE2E2E">06:32:41 slow tick 212ms (gc pause)</text>
-    <text x="132" y="590" fill="#5E1112">06:32:59 oidc verify OK sub=ahargreaves524</text>
+    <text x="132" y="590" fill="#5E1112">06:32:59 oidc verify OK sub=wraith_alpha92</text>
     <text x="132" y="616" fill="#FF3B45">06:33:07 ws drop S-102 timeout 30s</text>
     <text x="132" y="642" fill="#5E1112">06:33:09 bot fallback engaged S-102</text>
     <text x="132" y="668" fill="#5E1112">06:33:30 checkpoint save 41ms</text>
@@ -98,8 +98,8 @@
   <!-- right info panel -->
   <path d="M 1080 132 h 700 l 24 24 v 560 l -24 24 h -700 Z" fill="#0e0407" fill-opacity="0.9" stroke="#FF3B45" stroke-width="2"/>
   <path d="M 1780 300 h 26 v 120 l -26 -14 Z" fill="#FF3B45" fill-opacity="0.6"/>
-  <text x="1112" y="180" font-family="Orbitron" font-weight="bold" font-size="20" letter-spacing="4" fill="#FF3B45">WOTR-SERVER</text>
-  <text x="1112" y="208" font-size="15" fill="#DE2E2E">WAR OF THE RING GAME DAEMON // LOOPBACK:3000</text>
+  <text x="1112" y="180" font-family="Orbitron" font-weight="bold" font-size="20" letter-spacing="4" fill="#FF3B45">SESSIOND</text>
+  <text x="1112" y="208" font-size="15" fill="#DE2E2E">TABLETOP SESSION DAEMON // LOOPBACK:3000</text>
 
   <g font-size="15">
     <text x="1112" y="252" fill="#DE2E2E">SESSIONS</text><text x="1360" y="252" fill="#DEDEDE">3 ACTIVE</text>
@@ -113,11 +113,11 @@
 
   <text x="1112" y="416" font-size="14" letter-spacing="3" fill="#DE2E2E">PLAYERS ONLINE</text>
   <rect x="1112" y="428" width="628" height="30" fill="#FF3B45" fill-opacity="0.10"/>
-  <text x="1126" y="449" font-size="15" fill="#DEDEDE">mvertescher</text><text x="1560" y="449" font-size="14" fill="#DE2E2E">TABLE T-4</text>
+  <text x="1126" y="449" font-size="15" fill="#DEDEDE">nomad_delta</text><text x="1560" y="449" font-size="14" fill="#DE2E2E">TABLE T-4</text>
   <rect x="1112" y="462" width="628" height="30" fill="none"/>
-  <text x="1126" y="483" font-size="15" fill="#DEDEDE">jeremyjsg</text><text x="1560" y="483" font-size="14" fill="#DE2E2E">TABLE T-4</text>
+  <text x="1126" y="483" font-size="15" fill="#DEDEDE">kestrel24</text><text x="1560" y="483" font-size="14" fill="#DE2E2E">TABLE T-4</text>
   <rect x="1112" y="496" width="628" height="30" fill="#FF3B45" fill-opacity="0.10"/>
-  <text x="1126" y="517" font-size="15" fill="#DE2E2E">ahargreaves524</text><text x="1560" y="517" font-size="14" fill="#FF3B45">BOT-HELD</text>
+  <text x="1126" y="517" font-size="15" fill="#DE2E2E">wraith_alpha92</text><text x="1560" y="517" font-size="14" fill="#FF3B45">BOT-HELD</text>
 
   <!-- action buttons -->
   <path d="M 1112 580 h 170 v 34 l -12 12 h -158 Z" fill="#FF3B45"/>

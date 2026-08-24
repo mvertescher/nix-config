@@ -125,7 +125,7 @@ Remaining for the checkPhase itself:
 
 - [x] ~~The app renders headless but not on the real desktop.~~ Under
   weston headless with the llvmpipe Vulkan ICD it draws correctly (that
-  is what tests.visual captures). Launched on terra's Hyprland session
+  is what tests.visual captures). Launched on a live Hyprland session
   with the nvidia driver it starts, stays alive, logs *nothing* to
   stderr, and presents a solid black window. Forcing
   `WGPU_BACKEND=vulkan` does not change it, and `nvidia_icd.json` is
