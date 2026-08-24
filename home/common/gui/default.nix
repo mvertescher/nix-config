@@ -13,6 +13,7 @@ in
 {
   imports = [
     ./alacritty.nix
+    ./firefox.nix
     # ./neovim-ide.nix
     ./vscode.nix
   ];

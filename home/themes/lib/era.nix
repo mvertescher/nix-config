@@ -780,16 +780,16 @@ lib.mkMerge [
     '';
 
     # --- browser -------------------------------------------------------
+    # `enable`, `profiles.default.id`, the extension policies and the
+    # preferences that are not a matter of taste live in
+    # `home/common/gui/firefox.nix`. An era contributes chrome and the
+    # prefs its look depends on, nothing else -- the split exists because
+    # this block and cybr's used to declare the same three things twice,
+    # and only cybr declared extensions, so Sidebery vanished under every
+    # generated era.
     programs.firefox = {
-      enable = true;
-
       profiles.default = {
-        id = 0;
-
         settings = {
-          "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
-          "browser.startup.homepage" = "https://github.com";
-          "signon.rememberSignons" = false;
           "browser.uidensity" = 1;
           "toolkit.cosmeticAnimations.enabled" = false;
         };

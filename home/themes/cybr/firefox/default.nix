@@ -17,28 +17,16 @@ in
 {
   stylix.targets.firefox.profileNames = [ "default" ];
 
+  # `enable`, `profiles.default.id`, the extension policies and the
+  # not-a-matter-of-taste preferences live in
+  # `home/common/gui/firefox.nix`. This file is the theme's half: chrome,
+  # palette-derived prefs, and Sidebery's stylesheet. Sidebery itself is
+  # installed there, so it survives a switch to a generated era -- it did
+  # not before, because only this file declared the policy.
   programs.firefox = {
-    enable = true;
-
-    policies = {
-      ExtensionSettings = {
-        ${sideberyId} = {
-          installation_mode = "normal_installed";
-          install_url = "https://addons.mozilla.org/firefox/downloads/latest/sidebery/latest.xpi";
-        };
-      };
-    };
-
     profiles = {
       default = {
-        id = 0;
         settings = {
-          "browser.startup.homepage" = "https://github.com";
-          "signon.rememberSignons" = false;
-
-          # Required for cybr-firefox (lucid theme)
-          "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
-
           # Both prefs still exist in Firefox 152 (checked against the
           # store copy of the browser, not just docs).
           #
