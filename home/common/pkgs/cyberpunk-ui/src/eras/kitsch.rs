@@ -11,8 +11,8 @@
 
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
-    Banner, Bar, Chrome, Corner, Era, Footnotes, Ground, Metrics, Nameplate, Selection,
-    Style,
+    Banner, Bar, Chrome, Compliance, Corner, Era, Footnotes, Ground, Metrics, Nameplate,
+    Selection, Style,
 };
 
 pub const BG: iced::Color = rgb(0x0b0b07);
@@ -86,6 +86,9 @@ pub fn style() -> Style {
         // A halfway down the column under the page-curl, C under the
         // right of the shelf.
         footnotes: Footnotes::MidColumn,
+        // Below the card rather than inside it, and on the selected
+        // one too.
+        compliance: Compliance::Below,
         // The dotted matrix, hollow square and hollow triangle that
         // head every shelf band and lead every socket row.
         glyphs: true,

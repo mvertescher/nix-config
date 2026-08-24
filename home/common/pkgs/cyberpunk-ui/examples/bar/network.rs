@@ -14,6 +14,23 @@
 //! Without them the module shows the interface name, which is still the
 //! useful half of the reading.
 //!
+//! **Neither tool is a dependency of this package, and that is
+//! deliberate.** The only host that runs this bar today is a wired
+//! desktop, where `SsidSource` is never consulted at all -- the wireless
+//! branch is unreachable, so shipping `iw` would put a wireless
+//! configuration tool in the closure of every machine that installs a UI
+//! toolkit, to change nothing. The fallback is also not a failure mode:
+//! `wlp13s0` is a true and complete answer to "how is this machine
+//! reaching the network", just a less friendly one than a network name.
+//!
+//! The trigger is the first host that can reach the wireless branch at
+//! all -- the laptop profile that the battery and backlight modules are
+//! also waiting on. When it lands, the change is two lines in
+//! `default.nix`: take `iw` as an argument and add
+//! `--prefix PATH : ${lib.makeBinPath [ iw ]}` to the bar's
+//! `wrapProgram`. `PATH` rather than `home.packages`, so the tool is
+//! scoped to the process that needs it instead of the user's shell.
+//!
 //! Like the audio module this owns a thread and publishes snapshots;
 //! the file reads are microseconds, but the SSID probe is a process,
 //! and a process must never happen on the way to a frame.

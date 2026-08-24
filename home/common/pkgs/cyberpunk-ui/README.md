@@ -5,7 +5,11 @@ interface eras: **entropism**, **kitsch**, **neo-militarism** and
 **neokitsch**.
 
 Formerly `neomil-ui`, which implemented one era. The rename came with the
-generalisation described below; `entropism-ui` folds in here too.
+generalisation described below. `entropism-ui`, the one-era crate beside
+it, folded in here and has been deleted: its login, mail, store and
+dashboard screens are `screens/` and `panels/` entries now, worn by all
+four eras. Its `matrix` screen was dropped rather than ported — see
+Status.
 
 ## Why this shape
 
@@ -96,7 +100,9 @@ src/
   eras/           one table per era, sampled figures
   widgets/        surface, pill, card, banner, silhouette, glyph,
                   bracket, ornament, chrome, marker, ground, text
-  screens/        store — era-agnostic by construction
+  screens/        store, login, mailbox — era-agnostic by construction
+  panels/         dashboard, mail — same contract, not yet in the
+                  golden matrix
 ```
 
 ## The bar
@@ -146,12 +152,30 @@ workflow.
     nix build .#...cyberpunk-ui.tests.store.kitsch
     nix build .#...cyberpunk-ui.tests.mailbox.neokitsch
 
-`tests.<screen>.<era>` is a matrix over both: three screens times four
-eras, each rendered headless and diffed against a golden. Every case
-publishes that era's `theme/current.toml` into the sandbox HOME from
+`tests.<screen>.<era>` is a matrix over both: four screens (`store`,
+`login`, `mailbox`, `dashboard`) times four eras, each rendered headless
+and diffed against a golden. Every case publishes that era's
+`theme/current.toml` into the sandbox HOME from
 `home/themes/<era>/scheme.nix`, so it exercises the contract between
 the theme layer and this crate rather than the compiled fallback.
-`tests.visual` keeps the original fallback case.
+
+`tests.bar.<era>` is the same idea for the status bar, at 1600x220 via
+`tests/bar.nix`. It renders `examples/cyberpunk-ui-bar-window.rs`, a
+plain iced window sharing the live bar's era resolution through
+`examples/bar/style.rs` — weston has no `wlr-layer-shell`, so the real
+binary cannot be rendered by this harness at all. It holds `bar()` still;
+it says nothing about mapping a layer surface, the exclusive zone, or any
+sensor producing a reading.
+
+`tests.visual` keeps the fallback case: the dashboard with *no*
+`theme/current.toml` in the sandbox, so it renders `Style::from_desktop`
+falling back to neo-militarism's sampled table. It used to be a
+1280x800 render of a neomil-only dashboard; that screen no longer
+exists, so the case moved onto the matrix's 1600x900 geometry and its
+own golden. It is worth keeping beside `dashboard.neomil` even though
+the two renders are byte-identical today: that equality is the claim
+that `home/themes/neomil/scheme.nix` and `eras/neomil.rs` still agree,
+and only having both cases can catch it breaking.
 
 If you drive the harness by hand rather than through nix, `unset
 XDG_CONFIG_HOME` first, or you will render the "reference" screen in
@@ -162,27 +186,44 @@ whatever era your desktop is currently sitting in.
 Version stays at 0.0.0: this is nowhere near release.
 
 Implemented: the era abstraction, the shared widget vocabulary, all four
-era tables, three screens (store, login, mailbox) in all four dresses,
-and a screen-by-era visual regression matrix. All four eras also have
-desktop themes under `home/themes/`, so `Style::from_desktop` has
-something real to follow.
+era tables, four screens (store, login, mailbox, dashboard) in all four
+dresses, and a screen-by-era visual regression matrix. All four eras
+also have desktop themes under `home/themes/`, so `Style::from_desktop`
+has something real to follow.
 
 Not yet done:
-- `panels/`, `top_bar.rs`, `background.rs` and the neomil widget set
-  predate the generalisation and still hardcode neomil colours; the
-  dashboard and mail screens want rewriting against `screens`.
+- The **menu shape** is the one thing the dashboard cannot express.
+  Neomil's hub is a diamond menu, kitsch's an extruded fan, entropism's
+  flat tiles — genuine per-era *interaction models*, and a screen
+  cannot pick between them without the `if era ==` this crate exists to
+  avoid. It wants a `Menu` variant in `style.rs` beside `Chrome` and
+  `Footnotes`; until then `panels::dashboard` draws its modules from
+  the shared `Surface` vocabulary and `widgets::diamond_menu` is
+  unreachable from any screen.
+- `panels::dashboard` and `panels::mail` now take a `Style` like
+  everything else, but they are not in `screens/` yet. `tests.dashboard.<era>`
+  is wired, so the dashboard is only waiting on a `git mv`;
+  `panels::mail` stays where it is on purpose — it is the interactive
+  counterpart to the display-only `screens::mail`, not a second copy.
+- `widgets::message_card` is the last thing in the crate reading
+  `crate::colors`, for the ink on a selected row. It wants a `Style`,
+  and `colors.rs` goes with it.
 - Kitsch's extruded fan menu and ticket-notched nav pills, neokitsch's
   card cascade and BASKET panel, and entropism's menu tiles are in the
   design targets but not yet widgets. So is the two-line compliance
   caption the kitsch and entropism targets set under every card, and
   the outline that encloses kitsch's nav column and runs into the
   page-curl.
-- `entropism-ui` is superseded but not yet removed: its login, mail and
-  store screens have replacements here, its `matrix` screen does not.
-  Matrix looks like a per-era *interaction model* rather than a shared
-  screen — closer to neomil's diamond menu than to the mailbox — so it
-  probably wants to be a widget, not a `screens/` entry. Worth deciding
-  before deleting the crate.
+- A **data table** widget. `entropism-ui`'s `matrix` screen was the
+  reason to want one, and it was dropped rather than ported: it was
+  never the node graph it had been described as — a 25x60 grid of
+  generated status strings behind a fixed 12x22 viewport, scrolled with
+  hjkl, with no hit-testing anywhere and exactly one clickable control
+  — and no era's design target contains such a screen, so there was
+  nothing to dress it against.
+  `docs/neomil/target-components.svg` does list "table with selection +
+  scrollbar", "log view" and "key-value rows", which is where the
+  reusable part belongs; `panels::mail`'s markdown table is the seed.
 - Fields are display-only. `widgets::input::field` draws the box and the
   value but takes no input; the screens it serves are design targets,
   and a real `text_input` needs per-era styling before it earns a place.

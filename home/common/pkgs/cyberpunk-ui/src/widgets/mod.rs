@@ -28,12 +28,12 @@ pub mod vertical_text;
 
 pub use banner::banner;
 pub use bracket::bracket_panel;
-pub use card::{product_card, Product};
+pub use card::{notice as card_notice, product_card, Product};
 pub use chrome::{footer, top_bar};
 pub use glyph::{glyph, Glyph};
 pub use ground::ground;
 pub use marker::marker;
-pub use ornament::page_curl;
+pub use ornament::{column_rule, page_curl};
 pub use pill::{badge, pill};
 pub use row::{mail_row, Mail};
 pub use silhouette::silhouette;

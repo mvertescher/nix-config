@@ -72,13 +72,17 @@ pub fn top_bar<'a, Message: 'static>(
 ) -> Element<'a, Message> {
     match style.chrome {
         Chrome::Segmented => {
+            // `fill="#728f76"` in the entropism target -- the ink
+            // between `dim` and `fg`, not `dim` itself. At 14pt on that
+            // ground `dim` measures 2.1:1, which is what made the
+            // segmented bar read as three empty boxes.
             let boxed = |label: &'a str, width: Length, center: bool| {
                 let inner: Element<'a, Message> = if center {
-                    container(text::label(style, label))
+                    container(text::mid(style, label))
                         .center_x(Length::Fill)
                         .into()
                 } else {
-                    text::label(style, label).into()
+                    text::mid(style, label).into()
                 };
                 container(surface(
                     Surface::outlined(style),
@@ -131,12 +135,15 @@ pub fn footer<'a, Message: 'static>(
     // Copied out so the container-style closure does not borrow `style`.
     let border = style.palette.border;
 
+    // The build-string footer is `fill="#728f76"` in the entropism
+    // target, same as the segmented bar above it: small print, but not
+    // the tertiary ink the footnote bodies are set in.
     let line = row![
-        text::caption(style, left).size(style.metrics.text_caption + 2),
+        text::mid(style, left).size(style.metrics.text_caption + 2),
         Space::new(Length::Fill, Length::Shrink),
-        text::caption(style, middle).size(style.metrics.text_caption + 2),
+        text::mid(style, middle).size(style.metrics.text_caption + 2),
         Space::new(Length::Fill, Length::Shrink),
-        text::caption(style, right).size(style.metrics.text_caption + 2),
+        text::mid(style, right).size(style.metrics.text_caption + 2),
     ];
 
     match style.chrome {

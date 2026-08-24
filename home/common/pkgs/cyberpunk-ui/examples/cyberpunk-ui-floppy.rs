@@ -1,7 +1,7 @@
 use iced::{Element, Length, Color, Task};
 use iced::widget::{column, row, container, text, Space, canvas};
 use cyberpunk_ui::fonts;
-use cyberpunk_ui::colors;
+use cyberpunk_ui::Era;
 use cyberpunk_ui::widgets::{floppy_icon, FloppyIcon};
 
 pub fn main() -> iced::Result {
@@ -28,8 +28,12 @@ pub fn main() -> iced::Result {
             style: iced::font::Style::Normal,
         })
         .window(window_settings)
+        // The floppy is a neo-militarism widget -- it is a per-era
+        // interaction ornament, not part of the shared vocabulary -- so
+        // its bench is deliberately dressed in that one era rather than
+        // following the desktop.
         .style(|_state, _theme| iced::application::Appearance {
-            background_color: *colors::COLOR_BG, // Use dark background (0x080808)
+            background_color: Era::Neomil.style().palette.bg,
             text_color: Color::WHITE,
         })
         .run()
@@ -46,7 +50,7 @@ impl App {
         Task::none()
     }
 
-    fn view(&self) -> Element<Message> {
+    fn view(&self) -> Element<'_, Message> {
         let color_accent = Color::from_rgb8(0xFF, 0x4B, 0x4B); // Bright red
 
         // --- DIFF MODE (Visual Regression) ---

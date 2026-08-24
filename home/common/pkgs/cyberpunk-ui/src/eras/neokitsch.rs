@@ -11,8 +11,8 @@
 
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
-    Banner, Bar, Chrome, Corner, Era, Footnotes, Ground, Metrics, Nameplate, Selection,
-    Style,
+    Banner, Bar, Chrome, Compliance, Corner, Era, Footnotes, Ground, Metrics, Nameplate,
+    Selection, Style,
 };
 
 pub const BG: iced::Color = rgb(0x0a0a0a);
@@ -92,6 +92,9 @@ pub fn style() -> Style {
         },
         // A and C along the top strata rail, B under the cards.
         footnotes: Footnotes::TopRail,
+        // The footer nameplate is the card's last edge; the target
+        // prints no notice under it.
+        compliance: Compliance::None,
         glyphs: false,
         metrics: Metrics {
             stroke: 1.6,

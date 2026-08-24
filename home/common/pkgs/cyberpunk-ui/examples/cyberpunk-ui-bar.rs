@@ -5,7 +5,9 @@
 //!
 //! The library half lives in `cyberpunk_ui::bar` and is a pure function
 //! of Style and Readings. This binary is the two things that cannot be:
-//! the layer-shell surface, and gathering the readings.
+//! the layer-shell surface, and gathering the readings. Its companion
+//! `cyberpunk-ui-bar-window` draws the same view in an ordinary window,
+//! which is what the golden tests capture.
 //!
 //! Hyprland's IPC is spoken directly rather than through hyprland-rs,
 //! which GitHub reports as NOASSERTION -- no clear licence. The protocol
@@ -14,9 +16,10 @@
 //!
 //! Readings split by cost. The cheap ones -- clock, CPU, memory, and
 //! Hyprland's two IPC round trips over a local socket -- are taken
-//! inline on the tick. The two that can stall (a PulseAudio handshake,
-//! a wireless driver) live on their own threads in `bar/`, publish
-//! snapshots, and are read here without waiting. See `bar/sensor.rs`.
+//! inline on the tick. The three that can stall (a PulseAudio
+//! handshake, a wireless driver, another process answering a D-Bus
+//! call) live on their own threads in `bar/`, publish snapshots, and
+//! are read here without waiting. See `bar/sensor.rs`.
 
 #[path = "bar/audio.rs"]
 mod audio;
@@ -24,9 +27,13 @@ mod audio;
 mod network;
 #[path = "bar/sensor.rs"]
 mod sensor;
+#[path = "bar/style.rs"]
+mod style;
+#[path = "bar/tray.rs"]
+mod tray;
 
-use cyberpunk_ui::bar::{bar, Audio, Network, Readings, Workspace};
-use cyberpunk_ui::{Era, Style};
+use cyberpunk_ui::bar::{bar, Readings, Workspace};
+use cyberpunk_ui::Style;
 use iced::{Element, Task, Theme};
 use iced_layershell::reexport::{Anchor, KeyboardInteractivity, Layer};
 use iced_layershell::settings::{LayerShellSettings, Settings};
@@ -40,6 +47,7 @@ struct BarApp {
     system: sysinfo::System,
     audio: audio::Monitor,
     network: network::Monitor,
+    tray: tray::Monitor,
 }
 
 // Adds the layer-shell control variants the runtime dispatches through
@@ -67,6 +75,7 @@ impl Application for BarApp {
             system: sysinfo::System::new(),
             audio: audio::Monitor::spawn(),
             network: network::Monitor::spawn(),
+            tray: tray::Monitor::spawn(),
         };
         app.refresh();
         (app, Task::none())
@@ -91,8 +100,8 @@ impl Application for BarApp {
         // The bar paints its own ground; anything the runtime puts
         // behind it would show through the era's corner cuts.
         iced_layershell::Appearance {
-            background_color: self.style.palette.bg.into(),
-            text_color: self.style.palette.fg.into(),
+            background_color: self.style.palette.bg,
+            text_color: self.style.palette.fg,
         }
     }
 
@@ -116,6 +125,7 @@ impl BarApp {
         // now, never a wait for something newer.
         self.readings.audio = self.audio.reading();
         self.readings.network = self.network.reading();
+        self.readings.tray = self.tray.reading();
 
         let now = chrono::Local::now();
         self.readings.clock = now.format("%H:%M").to_string();
@@ -215,110 +225,8 @@ fn active_window() -> String {
         .unwrap_or_default()
 }
 
-/// Fixed readings for the windowed mode. Deliberately static: this
-/// exists to be screenshotted and diffed, and a clock that ticks would
-/// make every golden differ from the last.
-fn sample() -> Readings {
-    Readings {
-        host: "terra".to_string(),
-        workspaces: (1..=6)
-            .map(|id| Workspace {
-                id,
-                active: id == 3,
-            })
-            .collect(),
-        window: "~/nix-config-private - nvim src/bar.rs".to_string(),
-        cpu: 12,
-        memory: 47,
-        // Present rather than absent, so a golden covers the modules
-        // that only exist when their subsystem answered.
-        audio: Some(Audio {
-            volume: 62,
-            muted: false,
-        }),
-        network: Network::Wireless {
-            interface: "wlp13s0".to_string(),
-            ssid: "AFTERLIFE".to_string(),
-        },
-        clock: "23:41".to_string(),
-        date: "2026-08-23".to_string(),
-    }
-}
-
-/// The bar in an ordinary window rather than a layer surface.
-///
-/// weston's headless backend has no wlr-layer-shell, so the visual
-/// harness in tests/visual.nix cannot drive the real bar. This renders
-/// the same `bar()` view through a plain iced window, which is enough
-/// to catch the thing goldens are for -- that the era's geometry and
-/// palette still come out right.
-struct WindowedBar {
-    style: Style,
-    readings: Readings,
-}
-
-#[derive(Debug, Clone)]
-enum WindowedMessage {}
-
-impl WindowedBar {
-    fn title(&self) -> String {
-        format!("cyberpunk-ui-bar - {}", self.style.era.name())
-    }
-
-    fn update(&mut self, _m: WindowedMessage) {}
-
-    fn view(&self) -> Element<'_, WindowedMessage> {
-        use iced::widget::{column, container};
-        use iced::Length;
-
-        column![
-            container(bar(&self.style, &self.readings))
-                .height(Length::Fixed(self.style.bar.height as f32)),
-            // The bar alone is a 26px strip; the empty ground below it
-            // is what makes a screenshot legible as a desktop edge.
-            container(iced::widget::Space::new(Length::Fill, Length::Fill))
-                .height(Length::Fill),
-        ]
-        .into()
-    }
-}
-
-fn run_windowed(style: Style) -> iced::Result {
-    let bg = style.palette.bg;
-    let fg = style.palette.fg;
-    let state = WindowedBar {
-        style,
-        readings: sample(),
-    };
-
-    iced::application(WindowedBar::title, WindowedBar::update, WindowedBar::view)
-        .font(cyberpunk_ui::fonts::RAJDHANI_REGULAR)
-        .font(cyberpunk_ui::fonts::RAJDHANI_MEDIUM)
-        .font(cyberpunk_ui::fonts::RAJDHANI_BOLD)
-        .default_font(cyberpunk_ui::fonts::FONT_RAJDHANI_REGULAR)
-        .style(move |_state, _theme| iced::application::Appearance {
-            background_color: bg,
-            text_color: fg,
-        })
-        .window_size((1600.0, 220.0))
-        .antialiasing(true)
-        .run_with(move || (state, iced::Task::none()))
-}
-
 fn main() -> Result<(), iced_layershell::Error> {
-    let style = resolve_style();
-
-    if std::env::args().any(|a| a == "--windowed") {
-        // Windowed mode is a different runtime with a different error
-        // type, so it exits here rather than being forced into
-        // iced_layershell::Error just to satisfy one return signature.
-        if let Err(e) = run_windowed(style) {
-            eprintln!("windowed mode failed: {e}");
-            std::process::exit(1);
-        }
-        return Ok(());
-    }
-
+    let style = style::resolve();
     let height = style.bar.height;
 
     BarApp::run(Settings {
@@ -346,31 +254,4 @@ fn main() -> Result<(), iced_layershell::Error> {
         id: Some("cyberpunk-ui-bar".to_string()),
         virtual_keyboard_support: None,
     })
-}
-
-fn resolve_style() -> Style {
-    match era_from_args() {
-        Some(era) => {
-            let mut style = era.style();
-            let theme = cyberpunk_ui::theme::Theme::load();
-            if Era::parse(&theme.era) == Some(era) {
-                style.palette = style.palette.with_theme(&theme);
-            }
-            style
-        }
-        None => Style::from_desktop(),
-    }
-}
-
-fn era_from_args() -> Option<Era> {
-    let mut args = std::env::args().skip(1);
-    while let Some(arg) = args.next() {
-        if let Some(name) = arg.strip_prefix("--era=") {
-            return Era::parse(name);
-        }
-        if arg == "--era" {
-            return args.next().as_deref().and_then(Era::parse);
-        }
-    }
-    None
 }

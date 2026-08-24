@@ -33,9 +33,14 @@
   python3,
   cyberpunk-ui,
   example ? "cyberpunk-ui-dashboard",
-  width ? 1280,
-  height ? 800,
-  golden ? ../tests/golden/dashboard-1280x800.png,
+  # The matrix geometry. The defaults are the no-theme fallback case,
+  # which used to be a 1280x800 render of a neo-militarism-only
+  # dashboard; that screen no longer exists -- `panels::dashboard` is
+  # written against `Style` like the rest -- so the case moved onto the
+  # matrix's geometry rather than keeping a size nothing else uses.
+  width ? 1600,
+  height ? 900,
+  golden ? ../tests/golden/dashboard-fallback-1600x900.png,
   # Captures are byte-identical run to run, so anything below this is a
   # real change rather than noise.
   threshold ? "99.9",
@@ -74,11 +79,13 @@ let
   # The screen belongs in the name as much as the era does: with only
   # the era, store/kitsch and mailbox/kitsch both build as
   # "cyberpunk-ui-visual-test-kitsch", and there is no telling their
-  # store paths or `nix log` output apart.
+  # store paths or `nix log` output apart. The dashboard used to be
+  # exempt because it was the only screen; it is not any more, and
+  # leaving it unnamed made `dashboard/neomil` and a bare `neomil`
+  # indistinguishable in exactly the same way.
   suffix =
-    lib.optionalString (example != "cyberpunk-ui-dashboard")
-      "-${lib.removePrefix "cyberpunk-ui-" example}"
-    + lib.optionalString (era != null) "-${era}";
+    "-${lib.removePrefix "cyberpunk-ui-" example}"
+    + (if era == null then "-fallback" else "-${era}");
 in
 runCommand "cyberpunk-ui-visual-test${suffix}"
   {

@@ -77,6 +77,64 @@ impl<Message> canvas::Program<Message> for PageCurl {
     }
 }
 
+/// The rule down the leading edge of a column, which the page-curl at
+/// its foot then becomes.
+///
+/// In `docs/kitsch/target-app.svg` the curl is not a sticker sitting
+/// under the nav; it is the end of the nav container's outline. The two
+/// are one gesture drawn as two paths -- `M140 306 v396 q0 34 34 34
+/// h120` for the container and `M142 736 q2 -88 88 -88 h28 ...` for the
+/// solid -- and drawing only the second is what left the curl floating.
+/// This is the first: a hairline at `x = 140` from just under the
+/// customer block to where the curl takes over.
+#[derive(Debug, Clone, Copy)]
+pub struct ColumnRule {
+    pub color: Color,
+    pub stroke: f32,
+}
+
+impl<Message> canvas::Program<Message> for ColumnRule {
+    type State = ();
+
+    fn draw(
+        &self,
+        _state: &Self::State,
+        renderer: &Renderer,
+        _theme: &Theme,
+        bounds: Rectangle,
+        _cursor: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        let mut frame = canvas::Frame::new(renderer, bounds.size());
+        let h = super::surface::visible(bounds.y, bounds.height);
+        if h <= 0.0 {
+            return vec![frame.into_geometry()];
+        }
+        let x = self.stroke / 2.0;
+        let rule = canvas::Path::new(|b| {
+            b.move_to(Point::new(x, 0.0));
+            b.line_to(Point::new(x, h));
+        });
+        frame.stroke(
+            &rule,
+            canvas::Stroke::default()
+                .with_color(self.color)
+                .with_width(self.stroke),
+        );
+        vec![frame.into_geometry()]
+    }
+}
+
+/// The column rule, filling whatever height it is handed.
+pub fn column_rule<'a, Message: 'static>(style: &Style) -> Element<'a, Message> {
+    canvas(ColumnRule {
+        color: style.palette.border,
+        stroke: style.metrics.stroke,
+    })
+    .width(Length::Fill)
+    .height(Length::Fill)
+    .into()
+}
+
 /// The page-curl, `height` tall, with its rule running to the right
 /// edge of whatever width it is offered.
 pub fn page_curl<'a, Message: 'static>(

@@ -1,10 +1,35 @@
-use iced::{Element, Subscription, Task, Event, keyboard};
+//! The working mail client, in any era.
+//!
+//!     cyberpunk-ui-mail                # follow the desktop theme
+//!     cyberpunk-ui-mail --era kitsch   # force one
+//!
+//! `cyberpunk-ui-mailbox` is the display-only design target for the
+//! same screen; this one has selection, focus, scrolling and deletion
+//! wired up. hjkl move and switch panes, `a` adds a message, `d`
+//! deletes the selected one, ctrl-f/ctrl-b page the thread.
+//!
+//! See examples/cyberpunk-ui-store.rs for the reasoning behind the
+//! --era handling; it is the same here.
+
 use cyberpunk_ui::fonts;
-use cyberpunk_ui::colors;
-use cyberpunk_ui::panels::{mail_panel, Email, ThreadMessage, MailFocus};
+use cyberpunk_ui::panels::{mail_panel, Email, MailFocus, ThreadMessage};
+use cyberpunk_ui::{Era, Style};
+use iced::{keyboard, Element, Event, Subscription, Task};
 
 pub fn main() -> iced::Result {
-    iced::application("NEOMIL // MAIL SYSTEM", App::update, App::view)
+    let style = match era_from_args() {
+        Some(era) => {
+            let mut style = era.style();
+            let theme = cyberpunk_ui::theme::Theme::load();
+            if Era::parse(&theme.era) == Some(era) {
+                style.palette = style.palette.with_theme(&theme);
+            }
+            style
+        }
+        None => Style::from_desktop(),
+    };
+
+    iced::application(App::title, App::update, App::view)
         .font(fonts::ORBITRON_REGULAR)
         .font(fonts::ORBITRON_MEDIUM)
         .font(fonts::ORBITRON_SEMIBOLD)
@@ -14,30 +39,46 @@ pub fn main() -> iced::Result {
         .font(fonts::RAJDHANI_MEDIUM)
         .font(fonts::RAJDHANI_SEMIBOLD)
         .font(fonts::RAJDHANI_BOLD)
-        .default_font(iced::Font {
-            family: iced::font::Family::Name("Rajdhani"),
-            weight: iced::font::Weight::Medium,
-            stretch: iced::font::Stretch::Normal,
-            style: iced::font::Style::Normal,
-        })
-        .window(iced::window::Settings {
-            transparent: true,
-            ..Default::default()
-        })
-        .style(|_state, _theme| iced::application::Appearance {
-            background_color: iced::Color::TRANSPARENT,
-            text_color: iced::Color::WHITE,
-        })
+        .default_font(fonts::FONT_RAJDHANI_REGULAR)
+        .window_size((1600.0, 900.0))
+        .antialiasing(true)
         .subscription(App::subscription)
-        .run()
+        .run_with(move || (App::new(style), Task::none()))
+}
+
+fn era_from_args() -> Option<Era> {
+    let mut args = std::env::args().skip(1);
+    while let Some(arg) = args.next() {
+        if let Some(name) = arg.strip_prefix("--era=") {
+            return Era::parse(name);
+        }
+        if arg == "--era" {
+            return args.next().as_deref().and_then(Era::parse);
+        }
+    }
+    None
 }
 
 struct App {
+    style: Style,
     emails: Vec<Email>,
     selected_id: Option<usize>,
     list_scrollable_id: iced::widget::scrollable::Id,
     content_scrollable_id: iced::widget::scrollable::Id,
     focus: MailFocus,
+}
+
+impl App {
+    fn new(style: Style) -> Self {
+        App {
+            style,
+            ..App::default()
+        }
+    }
+
+    fn title(&self) -> String {
+        format!("MAIL SYSTEM — {}", self.style.era.name())
+    }
 }
 
 impl Default for App {
@@ -249,6 +290,7 @@ impl Default for App {
         ];
 
         App {
+            style: Style::from_desktop(),
             emails,
             selected_id: Some(1),
             list_scrollable_id: iced::widget::scrollable::Id::unique(),
@@ -277,7 +319,7 @@ impl App {
                 let item_height = 70.0; // 60px card + 10px spacing
                 let viewport_height = 600.0; // Estimated viewport height
                 let total_items = self.emails.len();
-                
+
                 let target_y = (index as f32) * item_height;
                 let total_height = (total_items as f32) * item_height;
                 let max_scroll = (total_height - viewport_height).max(0.0);
@@ -340,16 +382,16 @@ impl App {
 
         let next_id = self.emails.iter().map(|e| e.id).max().unwrap_or(0) + 1;
         let index = next_id;
-        
+
         // Pseudo-random length between 5 and 20
         let thread_len = 5 + (index * 7 + 3) % 16; // 5 + [0..15] = 5..20
-        
+
         let mut thread = Vec::new();
         for i in 0..thread_len {
             let sender_index = (index + i * 3 + 1) % SENDERS.len();
             let body_index = (index + i * 7 + 2) % BODIES.len();
             let timestamp = format!("{}m ago", (thread_len - i) * 2);
-            
+
             thread.push(ThreadMessage {
                 sender: SENDERS[sender_index].to_string(),
                 body: BODIES[body_index].to_string(),
@@ -368,7 +410,7 @@ impl App {
             timestamp: root_timestamp,
             thread,
         };
-        
+
         self.emails.push(new_email);
     }
 
@@ -505,6 +547,7 @@ impl App {
 
     fn view(&self) -> Element<'_, Message> {
         mail_panel(
+            &self.style,
             &self.emails,
             self.selected_id,
             Message::SelectEmail,
@@ -512,7 +555,6 @@ impl App {
             self.list_scrollable_id.clone(),
             self.content_scrollable_id.clone(),
             self.focus,
-            *colors::COLOR_PRIMARY_RED,
         )
     }
 }

@@ -3,9 +3,9 @@
 let
   orbitron = pkgs.callPackage ../pkgs/orbitron {};
   rajdhani-fontshare = pkgs.callPackage ../pkgs/rajdhani-fontshare {};
-  entropism-ui-demo = pkgs.callPackage ../pkgs/entropism-ui {
-    inherit rajdhani-fontshare;
-  };
+  # `entropism-ui` was the one-era predecessor and is gone: cyberpunk-ui
+  # wears entropism as one of four, and its login, mailbox, store and
+  # dashboard screens replace that crate's.
   cyberpunk-ui = pkgs.callPackage ../pkgs/cyberpunk-ui {
     inherit orbitron rajdhani-fontshare;
   };
@@ -27,7 +27,6 @@ in
     # slack
     # zoom-us
   ] ++ lib.optionals (stdenv.isLinux) [
-    entropism-ui-demo
     # google-chrome
     libreoffice
     cyberpunk-ui

@@ -137,6 +137,31 @@ pub enum Footnotes {
     TopRail,
 }
 
+/// Whether an era stamps the two-line compliance notice on a product
+/// card, and where.
+///
+/// Three values rather than a bool because the two eras that draw it
+/// disagree about which side of the card outline it belongs on, and
+/// reading the targets settled a question an earlier note had backwards:
+///
+/// * entropism (`docs/entropism/target-app.svg`) sets it *inside* the
+///   card -- `text x=538 y=642` against `rect x=520 y=320 w=270 h=360`,
+///   so 38px above the card's own bottom edge -- and omits it from the
+///   selected card, which spends that room on its detail block.
+/// * kitsch sets it *outside*: `text x=520 y=608` against a card ending
+///   at `y=586`, flush with the card's leading edge rather than its
+///   padding, and on all four cards including the selected one.
+/// * neokitsch's cards end in a footer nameplate and carry no notice at
+///   all; neomil's target is an ops dashboard with no store screen.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Compliance {
+    None,
+    /// Inside the outline, under the sockets, on unselected cards only.
+    Inside,
+    /// Below the card, aligned to its leading edge, on every card.
+    Below,
+}
+
 /// Chrome conventions: what an era puts at the top and bottom of every
 /// screen. All four have something; they disagree on what.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -196,6 +221,9 @@ pub struct Style {
     pub banner: Banner,
     /// Where the footnote markers go.
     pub footnotes: Footnotes,
+    /// Whether a product card carries the compliance notice, and on
+    /// which side of its outline.
+    pub compliance: Compliance,
     /// Whether the era stamps compliance glyphs -- dotted matrix,
     /// hollow square, hollow triangle -- on its bands and rows.
     ///

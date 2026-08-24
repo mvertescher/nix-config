@@ -76,8 +76,8 @@ let
   '';
 
   postFixup = ''
-    for bin in cyberpunk-ui-bar cyberpunk-ui-store cyberpunk-ui-login cyberpunk-ui-mailbox \
-              cyberpunk-ui-dashboard cyberpunk-ui-mail cyberpunk-ui-floppy; do
+    for bin in cyberpunk-ui-bar cyberpunk-ui-bar-window cyberpunk-ui-store cyberpunk-ui-login \
+              cyberpunk-ui-mailbox cyberpunk-ui-dashboard cyberpunk-ui-mail cyberpunk-ui-floppy; do
       # This machine class exposes several Vulkan adapters (discrete
       # nvidia, the CPU's integrated RADV, llvmpipe). wgpu otherwise
       # picks one that cannot present to the display and the app draws a
@@ -139,6 +139,25 @@ let
       roles = (import ../../../themes/${era}/scheme.nix).resolve { inherit variant; };
     };
 
+  # The bar gets its own case file rather than another `eraCase`: it is
+  # a different binary at a different size, and the reasoning for why it
+  # cannot be the real bar wants somewhere to live. See tests/bar.nix.
+  barCase =
+    { era, variant }:
+    import ./tests/bar.nix {
+      inherit
+        lib
+        runCommand
+        weston
+        mesa
+        python3
+        era
+        variant
+        ;
+      cyberpunk-ui = package;
+      roles = (import ../../../themes/${era}/scheme.nix).resolve { inherit variant; };
+    };
+
   # Entropism's sampled palette is `nexus`; the rest call theirs
   # `reference`.
   variantOf = era: if era == "entropism" then "nexus" else "reference";
@@ -176,6 +195,9 @@ package.overrideAttrs (old: {
       store = matrix "store";
       login = matrix "login";
       mailbox = matrix "mailbox";
+      dashboard = matrix "dashboard";
+
+      bar = lib.genAttrs eras (era: barCase { inherit era; variant = variantOf era; });
     };
   };
 })

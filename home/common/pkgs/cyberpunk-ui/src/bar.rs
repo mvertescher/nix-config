@@ -57,6 +57,25 @@ pub enum Network {
     },
 }
 
+/// One tray icon, as StatusNotifierItem describes it.
+///
+/// Deliberately not the protocol's own shape. The bar needs a thing to
+/// draw and a reason to draw it loudly; `IconName`, `IconPixmap`,
+/// `AttentionIconName`, the menu path and the rest are the binary's
+/// problem, and putting them here would drag an icon-theme lookup into
+/// a module that is meant to stay a pure function.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TrayItem {
+    /// What to draw. Presently a short label standing in for the icon,
+    /// because the bar has no image pipeline yet -- see
+    /// `examples/bar/tray.rs`.
+    pub label: String,
+    /// The item is asking to be looked at (`Status = NeedsAttention`),
+    /// which is the one distinction the protocol makes that a bar can
+    /// honour without drawing icons.
+    pub attention: bool,
+}
+
 /// Everything the bar draws, already gathered.
 #[derive(Debug, Clone, Default)]
 pub struct Readings {
@@ -70,6 +89,11 @@ pub struct Readings {
     /// normal state rather than a failure, so the module leaves the row
     /// instead of showing a zero it cannot vouch for.
     pub audio: Option<Audio>,
+    /// Empty when there is no tray, no session bus, or nothing has
+    /// registered an icon. All three are ordinary states and all three
+    /// draw nothing, so `Vec` rather than `Option<Vec>`: there is no
+    /// fourth case for the bar to tell apart.
+    pub tray: Vec<TrayItem>,
     pub network: Network,
     pub clock: String,
     pub date: String,
@@ -160,6 +184,21 @@ fn audio_cell<'a, Message: 'static>(style: &Style, audio: &Audio) -> Element<'a,
     }
 }
 
+/// One tray item. Same silhouette as any other module, because that is
+/// the whole argument for having built this bar: a tray icon is a cell,
+/// so it wears the era's corner for free.
+fn tray_cell<'a, Message: 'static>(style: &Style, item: &TrayItem) -> Element<'a, Message> {
+    // Clipped for the same reason the SSID is: a label is whatever the
+    // application chose to call itself, and one long one must not push
+    // the clock off the screen.
+    let label = clip(&item.label, 6);
+    if item.attention {
+        alert_cell(style, label)
+    } else {
+        cell(style, label, false)
+    }
+}
+
 /// The route out, or nothing at all while it is still unknown.
 fn network_cell<'a, Message: 'static>(
     style: &Style,
@@ -216,6 +255,12 @@ pub fn bar<'a, Message: 'static>(style: &Style, r: &'a Readings) -> Element<'a, 
     // network modules are absent -- not blank -- when their subsystem
     // has nothing to say.
     let mut right = row![].spacing(gap).height(Length::Fill);
+    // Tray first, so the modules that are always present keep a fixed
+    // distance from the right edge; an application starting up should
+    // not move the clock.
+    for item in &r.tray {
+        right = right.push(tray_cell(style, item));
+    }
     if let Some(network) = network_cell(style, &r.network) {
         right = right.push(network);
     }

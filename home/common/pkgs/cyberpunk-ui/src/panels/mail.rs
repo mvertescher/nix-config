@@ -1,26 +1,34 @@
-use iced::widget::{canvas, column, container, row, text, Space, scrollable, mouse_area, stack};
-use iced::{Alignment, Color, Element, Length, Point, Rectangle, Renderer, Theme, mouse};
-use crate::colors;
-use crate::background::background;
-use crate::widgets::{floppy_icon, message_card, text_box, VerticalText};
-use crate::top_bar::top_bar;
-use crate::fonts::{
-    FONT_ORBITRON_REGULAR, FONT_ORBITRON_MEDIUM, FONT_ORBITRON_BOLD,
-    FONT_RAJDHANI_REGULAR,
-};
+//! The working mail client, in any era.
+//!
+//! [`crate::screens::mail`] is the *design target*: the mailbox exactly
+//! as the four reference sets draw it, display-only, and golden-tested
+//! in every era. This is the other half -- the same screen with
+//! selection, focus, scrolling and deletion wired up, which is what the
+//! `cyberpunk-ui-mail` binary runs.
+//!
+//! It predates the era generalisation and used to be a neo-militarism
+//! app: `crate::colors` at every call site, the hardcoded `top_bar`,
+//! the glow `background`, and the chamfered `text_box`. It now takes a
+//! [`Style`] like everything else and draws from the shared vocabulary,
+//! so `--era` re-dresses it and a desktop `switch` is enough to move it.
+//! Nothing below branches on era.
 
-const FONT_MEDIUM: iced::Font = FONT_ORBITRON_MEDIUM;
-const FONT_BOLD: iced::Font = FONT_ORBITRON_BOLD;
+use crate::palette::Palette;
+use crate::style::Style;
+use crate::widgets::surface::{backdrop, surface, Surface};
+use crate::widgets::{footer, ground, text, top_bar};
+use iced::widget::{column, container, mouse_area, row, scrollable, stack, Space};
+use iced::{Alignment, Color, Element, Length, Padding};
 
-/// Data structure representing a single message in a thread.
+/// One reply in a thread.
 #[derive(Debug, Clone)]
 pub struct ThreadMessage {
     pub sender: String,
     pub body: String,
-    pub timestamp: String, // New!
+    pub timestamp: String,
 }
 
-/// Data structure representing an email/message.
+/// A message, with the replies hanging off it.
 #[derive(Debug, Clone)]
 pub struct Email {
     pub id: usize,
@@ -28,433 +36,346 @@ pub struct Email {
     pub sender: String,
     pub body: String,
     pub is_new: bool,
-    pub timestamp: String, // New!
-    pub thread: Vec<ThreadMessage>, // Thread of replies
+    pub timestamp: String,
+    pub thread: Vec<ThreadMessage>,
 }
 
+/// Which pane has the keyboard. The unfocused one recedes rather than
+/// disappearing, which is the treatment every era's references use for
+/// an inactive panel.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MailFocus {
     List,
     Content,
 }
 
-/// The mail panel view.
-/// Assembles the message list on the left and the selected message detail on the right.
+/// How far an unfocused pane fades.
+const UNFOCUSED: f32 = 0.35;
+
+const ACTIONS: [&str; 3] = ["REPLY", "ARCHIVE", "CLOSE"];
+
+/// The mail panel: list on the left, thread on the right.
 pub fn mail_panel<'a, Message: 'static + Clone>(
+    style: &Style,
     emails: &'a [Email],
     selected_id: Option<usize>,
     on_select: impl Fn(usize) -> Message + Clone + 'static,
     on_delete: impl Fn(usize) -> Message + Clone + 'static,
-    list_scrollable_id: iced::widget::scrollable::Id,
-    content_scrollable_id: iced::widget::scrollable::Id,
+    list_scrollable_id: scrollable::Id,
+    content_scrollable_id: scrollable::Id,
     focus: MailFocus,
-    color_accent: Color,
 ) -> Element<'a, Message> {
-    let list_color = if focus == MailFocus::List { color_accent } else { Color { a: 0.3, ..color_accent } };
-    let content_color = if focus == MailFocus::Content { color_accent } else { Color { a: 0.3, ..color_accent } };
-    
-    // --- 1. LEFT COLUMN: Message List ---
-    let left_header = row![
-        container(
-            text("MESSAGES")
-                .size(12)
-                .font(FONT_MEDIUM)
-                .style(move |_| text::Style { color: Some(list_color) })
-        )
-        .padding([5, 15])
-        .style(move |_| container::Style {
-            border: iced::Border {
-                color: list_color,
-                width: 1.0,
-                radius: 0.0.into(),
-            },
-            ..Default::default()
-        }),
-    ]
-    .align_y(Alignment::Center)
-    .width(Length::Fill);
+    let s = style;
+    let fade = |c: Color, focused: bool| {
+        if focused {
+            c
+        } else {
+            Palette::faded(c, UNFOCUSED)
+        }
+    };
+    let list_ink = fade(s.palette.fg, focus == MailFocus::List);
+    let list_line = fade(s.palette.border, focus == MailFocus::List);
+    let content_ink = fade(s.palette.fg, focus == MailFocus::Content);
+    let content_line = fade(s.palette.border, focus == MailFocus::Content);
 
-    // Build the list of message rows
-    let mut list_column = column![]
-        .spacing(10)
-        .width(Length::Fill)
-        .padding(iced::Padding {
-            top: 0.0,
-            right: 20.0,
-            bottom: 0.0,
-            left: 0.0,
-        });
+    // --- Left: the message list ---
+    let mut list = column![].spacing(s.metrics.gap * 0.5).width(Length::Fill);
     for email in emails {
-        let is_selected = Some(email.id) == selected_id;
-        let row_item = row![
-            floppy_icon(list_color, is_selected, 1.0),
-            Space::with_width(10),
-            message_card(
-                &email.title,
-                &email.sender,
-                email.is_new,
-                is_selected,
-                (on_select.clone())(email.id),
-                list_color,
-            )
-        ]
-        .align_y(Alignment::Center)
-        .width(Length::Fill);
-        
-        list_column = list_column.push(row_item);
+        list = list.push(message_row(
+            s,
+            email,
+            Some(email.id) == selected_id,
+            (on_select.clone())(email.id),
+            list_ink,
+            list_line,
+        ));
     }
 
-    let left_col = column![
-        left_header,
-        Space::with_height(20),
-        scrollable(list_column)
-            .id(list_scrollable_id)
-            .direction(iced::widget::scrollable::Direction::Vertical(
-                iced::widget::scrollable::Scrollbar::new()
-                    .width(4.0)
-                    .scroller_width(4.0)
-                    .margin(5.0)
-            ))
-            .height(Length::Fill)
-            .width(Length::Fill)
-            .style(move |_, _| {
-                use iced::widget::scrollable::{Style, Rail, Scroller};
-                Style {
-                    container: iced::widget::container::Style::default(),
-                    vertical_rail: Rail {
-                        background: Some(Color { a: 0.02, ..list_color }.into()),
-                        border: iced::Border {
-                            color: Color::TRANSPARENT,
-                            width: 0.0,
-                            radius: 0.0.into(),
-                        },
-                        scroller: Scroller {
-                            color: Color { a: 0.3, ..list_color },
-                            border: iced::Border {
-                                color: Color::TRANSPARENT,
-                                width: 0.0,
-                                radius: 4.0.into(),
-                            },
-                        },
-                    },
-                    horizontal_rail: Rail {
-                        background: None,
-                        border: iced::Border::default(),
-                        scroller: Scroller {
-                            color: Color::TRANSPARENT,
-                            border: iced::Border::default(),
-                        },
-                    },
-                    gap: None,
-                }
-            })
+    let left = column![
+        pane_heading(s, "MESSAGES", list_ink, list_line),
+        Space::new(0.0, s.metrics.gap),
+        scrollable(container(list).padding(Padding {
+            top: 0.0,
+            right: 14.0,
+            bottom: 0.0,
+            left: 0.0,
+        }))
+        .id(list_scrollable_id)
+        .direction(scrollable::Direction::Vertical(
+            scrollable::Scrollbar::new()
+                .width(4.0)
+                .scroller_width(4.0)
+                .margin(5.0),
+        ))
+        .style(rail(list_line))
+        .height(Length::Fill)
+        .width(Length::Fill),
     ]
-    .width(Length::FillPortion(3))
+    .width(Length::FillPortion(4))
     .height(Length::Fill);
 
-    // --- 2. RIGHT COLUMN: Message Detail ---
-    let selected_email = selected_id
-        .and_then(|id| emails.iter().find(|e| e.id == id));
+    // --- Right: the selected thread ---
+    let selected = selected_id.and_then(|id| emails.iter().find(|e| e.id == id));
 
-    let right_col = if let Some(email) = selected_email {
-
-
-        // Detail Buttons (Footer)
-        let footer_buttons = row![
-            cut_button("DELETE", Some((on_delete.clone())(email.id)), content_color, true, 30.0),
-            cut_button("REPLY", None, content_color, false, 0.0),
-            cut_button("ARCHIVE", None, content_color, false, 0.0),
-            cut_button("CLOSE", None, content_color, false, 0.0),
+    let body: Element<'a, Message> = match selected {
+        Some(email) => column![
+            container(surface(
+                Surface::outlined(s).stroke(content_line),
+                s.metrics.pad,
+                scrollable(thread(s, email, content_ink))
+                    .id(content_scrollable_id)
+                    .direction(scrollable::Direction::Vertical(
+                        scrollable::Scrollbar::new()
+                            .width(4.0)
+                            .scroller_width(4.0)
+                            .margin(5.0),
+                    ))
+                    .style(rail(content_line))
+                    .height(Length::Fill),
+            ))
+            .height(Length::Fill),
+            Space::new(0.0, s.metrics.gap),
+            actions(s, (on_delete.clone())(email.id)),
         ]
-        .spacing(10)
-        .width(Length::Fill)
-        .height(Length::Fixed(38.0));
-
-        column![
+        .into(),
+        // The empty state is a well, not a panel: nothing is loaded, so
+        // nothing is raised.
+        None => container(surface(
+            Surface::outlined(s).stroke(Palette::faded(content_line, 0.4)),
+            s.metrics.pad,
             container(
-                text("CONTENT")
-                    .size(12)
-                    .font(FONT_MEDIUM)
-                    .style(move |_| text::Style { color: Some(content_color) })
+                text::body(s, "SELECT A MESSAGE TO VIEW CONTENT")
+                    .color(Palette::faded(content_ink, 0.5)),
             )
-            .padding([5, 15])
-            .style(move |_| container::Style {
-                border: iced::Border {
-                    color: content_color,
-                    width: 1.0,
-                    radius: 0.0.into(),
-                },
-                ..Default::default()
-            }),
-            Space::with_height(20),
-            text_box(
-                &email.title,
-                Some(&email.timestamp),
-                render_thread(email, color_accent),
-                Some(content_scrollable_id.clone()),
-                &["PETROCHEM", "BETTERLIFE TEC"],
-                "", // No logo
-                "",
-                "",
-                Some(footer_buttons.into()),
-                content_color,
-            ),
-        ]
-        .width(Length::FillPortion(4))
+            .center_x(Length::Fill)
+            .center_y(Length::Fill),
+        ))
         .height(Length::Fill)
-        .align_x(Alignment::Start)
-    } else {
-        // Empty state when no email is selected
-        column![
-            container(
-                text("CONTENT")
-                    .size(12)
-                    .font(FONT_MEDIUM)
-                    .style(move |_| text::Style { color: Some(content_color) })
-            )
-            .padding([5, 15])
-            .style(move |_| container::Style {
-                border: iced::Border {
-                    color: content_color,
-                    width: 1.0,
-                    radius: 0.0.into(),
-                },
-                ..Default::default()
-            }),
-            Space::with_height(20),
-            container(
-                text("SELECT A MESSAGE TO VIEW CONTENT")
-                    .font(FONT_MEDIUM)
-                    .size(14)
-                    .style(move |_| text::Style { color: Some(Color { a: 0.3, ..content_color }) })
-            )
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .align_x(Alignment::Center)
-            .align_y(Alignment::Center)
-            .style(move |_| container::Style {
-                border: iced::Border {
-                    color: Color { a: 0.1, ..content_color },
-                    width: 1.0,
-                    radius: 0.0.into(),
-                },
-                ..Default::default()
-            })
-        ]
-        .width(Length::FillPortion(4))
-        .height(Length::Fill)
-        .align_x(Alignment::Start)
+        .into(),
     };
 
-    // --- 3. ASSEMBLE MAIN AREA ---
-    let main_area = row![
-        left_col,
-        Space::with_width(40),
-        right_col,
+    let right = column![
+        pane_heading(s, "CONTENT", content_ink, content_line),
+        Space::new(0.0, s.metrics.gap),
+        body,
     ]
-    .width(Length::Fill)
-    .height(Length::Fill)
-    .padding(40);
-
-    // --- 4. BOTTOM BAR ---
-    let bottom_bar = row![
-        Space::with_width(Length::Fill),
-        container(
-            row![
-                text("68SD1D1100D15")
-                    .size(10)
-                    .font(FONT_BOLD)
-                    .style(|_| text::Style { color: Some(*colors::COLOR_BG) }),
-                Space::with_width(15),
-                text("COMBAT COLONIZATION\nDEFENCE PROGRAM")
-                    .size(8)
-                    .font(FONT_MEDIUM)
-                    .style(|_| text::Style { color: Some(*colors::COLOR_BG) }),
-            ]
-            .align_y(Alignment::Center)
-        )
-        .padding([8, 15])
-        .style(move |_| container::Style {
-            background: Some(iced::Background::Color(color_accent)),
-            ..Default::default()
-        })
-    ]
-    .padding([10, 20]);
-
-    // --- 5. ASSEMBLE LAYOUT WITH EDGE DECORATIONS ---
-    let main_dashboard = column![
-        top_bar(),
-        main_area,
-        bottom_bar,
-    ]
-    .width(Length::Fill)
+    .width(Length::FillPortion(6))
     .height(Length::Fill);
 
-    // Far left vertical text
-    let left_edge = canvas(VerticalText {
-        text: "JHN 102 CKC 151 CC10 S111".to_string(),
-        color: color_accent,
-        size: 8.0,
-        font: FONT_ORBITRON_REGULAR,
-    })
-    .width(Length::Fixed(20.0))
-    .height(Length::Fill);
-
-    // Far right vertical texts (stack)
-    let right_edge = column![
-        Space::with_height(Length::FillPortion(1)),
-        container(
-            canvas(VerticalText {
-                text: "JHN 102 CKC 151 CC10 S111".to_string(),
-                color: color_accent,
-                size: 8.0,
-                font: FONT_ORBITRON_REGULAR,
-            })
-            .width(Length::Fill)
-            .height(Length::Fill)
-        )
-        .width(Length::Fill)
-        .height(Length::Fixed(200.0)),
-        Space::with_height(20),
-        container(
-            canvas(VerticalText {
-                text: "KIROSHI".to_string(),
-                color: color_accent,
-                size: 10.0,
-                font: FONT_BOLD,
-            })
-            .width(Length::Fill)
-            .height(Length::Fill)
-        )
-        .width(Length::Fill)
-        .height(Length::Fixed(100.0)),
-        Space::with_height(Length::FillPortion(1)),
+    let screen = column![
+        top_bar(
+            s,
+            ["PERSONAL LINK SOFTWAREV2", "MAIL BOX", "FLAIR TRS 5MMP"],
+        ),
+        row![
+            left,
+            Space::new(s.metrics.gap * 2.0, 0.0),
+            right,
+        ]
+        .height(Length::Fill),
+        footer(
+            s,
+            "INTERFACE LOADED",
+            "PROVIDED BY NEXUS NETWORK V10.8",
+            "BUILD 6.47.48441.R15",
+        ),
     ]
-    .width(Length::Fixed(20.0))
-    .height(Length::Fill);
+    .spacing(s.metrics.gap);
 
-    let screen_layout = row![
-        left_edge,
-        main_dashboard,
-        right_edge,
-    ]
-    .width(Length::Fill)
-    .height(Length::Fill)
-    .padding([0, 10]);
-
-    background(
-        screen_layout,
-        *colors::COLOR_BG_VERY_TRANSPARENT,
-        *colors::COLOR_GLOW,
-        true,
-    )
+    stack![ground(s), container(screen).padding(40)].into()
 }
 
-/// Helper to render the email thread (main message + replies)
-fn render_thread<'a, Message: 'static>(email: &'a Email, color_accent: Color) -> Element<'a, Message> {
-    let mut col = column![].spacing(20).width(Length::Fill);
+/// The boxed caption that heads each pane.
+fn pane_heading<'a, Message: 'static>(
+    style: &Style,
+    label: &'a str,
+    ink: Color,
+    line: Color,
+) -> Element<'a, Message> {
+    row![backdrop(
+        Surface::outlined(style).stroke(line),
+        Padding::from([5, 15]),
+        text::body(style, label).color(ink),
+    )]
+    .into()
+}
 
-    // 1. Root Message (The original email)
-    let root_msg = column![
+/// One row of the list. Selection is the era's own idiom, so a
+/// neokitsch row is veneered and a kitsch one is yellow without this
+/// function knowing either.
+fn message_row<'a, Message: 'static + Clone>(
+    style: &Style,
+    email: &'a Email,
+    selected: bool,
+    on_press: Message,
+    ink: Color,
+    line: Color,
+) -> Element<'a, Message> {
+    let s = style;
+
+    let bg = if selected {
+        Surface::selected(s)
+    } else {
+        Surface::outlined(s).stroke(line)
+    };
+
+    let (title_ink, meta_ink) = if selected {
+        (s.palette.on_select, s.palette.on_select)
+    } else {
+        (ink, Palette::faded(ink, 0.6))
+    };
+
+    let flag: Element<'a, Message> = if email.is_new {
+        text::caption(s, "NEW").color(title_ink).into()
+    } else {
+        Space::new(0.0, 0.0).into()
+    };
+
+    let content = row![
+        column![
+            text::body(s, email.title.as_str()).color(title_ink),
+            row![
+                text::caption(s, email.sender.as_str()).color(meta_ink),
+                Space::new(Length::Fill, Length::Shrink),
+                text::caption(s, email.timestamp.as_str()).color(meta_ink),
+            ]
+            .width(Length::Fill),
+        ]
+        .spacing(2)
+        .width(Length::Fill),
+        Space::new(8.0, 0.0),
+        flag,
+    ]
+    .align_y(Alignment::Center);
+
+    mouse_area(
+        container(surface(bg, Padding::from([6, 10]), content))
+            .width(Length::Fill)
+            .height(Length::Fixed(52.0)),
+    )
+    .on_press(on_press)
+    .into()
+}
+
+/// The action row. The destructive one is the only filled control, in
+/// the era's alert colour rather than its selection colour -- the same
+/// distinction `screens::mail` draws, and the reason `alert` and
+/// `select` are separate roles.
+fn actions<'a, Message: 'static + Clone>(
+    style: &Style,
+    on_delete: Message,
+) -> Element<'a, Message> {
+    let s = style;
+    let mut bar = row![].spacing(s.metrics.gap * 0.5).height(Length::Fixed(34.0));
+
+    bar = bar.push(
+        mouse_area(
+            container(surface(
+                Surface::filled(s, s.palette.alert).no_stroke(),
+                Padding::from([5, 8]),
+                container(text::on_select(s, "DELETE")).center_x(Length::Fill),
+            ))
+            .width(Length::Fill)
+            .height(Length::Fill),
+        )
+        .on_press(on_delete),
+    );
+
+    for label in ACTIONS {
+        bar = bar.push(
+            container(surface(
+                Surface::outlined(s),
+                Padding::from([5, 8]),
+                container(text::body(s, label)).center_x(Length::Fill),
+            ))
+            .width(Length::Fill)
+            .height(Length::Fill),
+        );
+    }
+
+    bar.into()
+}
+
+/// The root message and its replies.
+fn thread<'a, Message: 'static>(
+    style: &Style,
+    email: &'a Email,
+    ink: Color,
+) -> Element<'a, Message> {
+    let s = style;
+    let quiet = Palette::faded(ink, 0.55);
+
+    let head = |sender: &'a str, stamp: &'a str| {
         row![
-            text("From: ")
-                .font(FONT_BOLD)
-                .size(11)
-                .style(move |_| text::Style { color: Some(color_accent) }),
-            text(&email.sender)
-                .font(FONT_MEDIUM)
-                .size(11)
-                .style(move |_| text::Style { color: Some(color_accent) }),
-            Space::with_width(Length::Fill),
-            text(&email.timestamp)
-                .font(FONT_RAJDHANI_REGULAR)
-                .size(10)
-                .style(move |_| text::Style { color: Some(Color { a: 0.4, ..color_accent }) }),
+            text::body(s, "FROM: ").color(ink),
+            text::body(s, sender).color(ink),
+            Space::new(Length::Fill, Length::Shrink),
+            text::caption(s, stamp).color(quiet),
         ]
         .align_y(Alignment::Center)
+        .width(Length::Fill)
+    };
+
+    let mut col = column![].spacing(s.metrics.gap).width(Length::Fill);
+
+    col = col.push(
+        column![
+            text::title(s, email.title.as_str())
+                .size(s.metrics.text_title - 3)
+                .color(ink),
+            head(email.sender.as_str(), email.timestamp.as_str()),
+            Space::new(0.0, 8.0),
+            markdown(s, email.body.as_str(), ink),
+        ]
         .width(Length::Fill),
-        Space::with_height(8),
-        parse_markdown(&email.body, color_accent),
-    ]
-    .width(Length::Fill);
-    
-    col = col.push(root_msg);
+    );
 
-    // 2. Thread Replies (Nested cards)
     for reply in &email.thread {
-        let reply_content = column![
-            row![
-                text("From: ")
-                    .font(FONT_BOLD)
-                    .size(11)
-                    .style(move |_| text::Style { color: Some(color_accent) }),
-                text(&reply.sender)
-                    .font(FONT_MEDIUM)
-                    .size(11)
-                    .style(move |_| text::Style { color: Some(color_accent) }),
-                Space::with_width(Length::Fill),
-                text(&reply.timestamp)
-                    .font(FONT_RAJDHANI_REGULAR)
-                    .size(10)
-                    .style(move |_| text::Style { color: Some(Color { a: 0.4, ..color_accent }) }),
+        let card = container(surface(
+            Surface::outlined(s).stroke(Palette::faded(ink, 0.25)),
+            s.metrics.pad * 0.75,
+            column![
+                head(reply.sender.as_str(), reply.timestamp.as_str()),
+                Space::new(0.0, 8.0),
+                markdown(s, reply.body.as_str(), ink),
             ]
-            .align_y(Alignment::Center)
             .width(Length::Fill),
-            Space::with_height(8),
-            parse_markdown(&reply.body, color_accent),
-        ]
+        ))
         .width(Length::Fill);
 
-        let reply_card = container(reply_content)
-            .padding(12)
-            .style(move |_| container::Style {
-                background: Some(Color { a: 0.02, ..color_accent }.into()),
-                border: iced::Border {
-                    color: Color { a: 0.1, ..color_accent },
-                    width: 1.0,
-                    radius: 0.0.into(),
-                },
-                ..Default::default()
-            })
-            .width(Length::Fill);
-
-        let quote_block = row![
-            Space::with_width(15),
-            reply_card
-        ]
-        .width(Length::Fill);
-
-        col = col.push(quote_block);
+        // Replies are indented, the way a quoted chain is in every
+        // reference set.
+        col = col.push(row![Space::new(s.metrics.gap, 0.0), card].width(Length::Fill));
     }
 
     col.into()
 }
 
-// --- Simple Markdown Parser for Cyberpunk Terminal ---
+// --- A very small markdown subset ---
+//
+// The reference mail bodies are plain paragraphs, bullet lists and
+// pipe tables. Nothing else is recognised, and anything unrecognised
+// falls through as a paragraph rather than erroring.
 
-fn parse_markdown<'a, Message: 'static>(markdown_text: &'a str, color_accent: Color) -> Element<'a, Message> {
+fn markdown<'a, Message: 'static>(
+    style: &Style,
+    source: &'a str,
+    ink: Color,
+) -> Element<'a, Message> {
     let mut col = column![].spacing(12).width(Length::Fill);
 
-    // Split by double newline to get blocks
-    let blocks = markdown_text.split("\n\n");
-
-    for block in blocks {
+    for block in source.split("\n\n") {
         let block = block.trim();
         if block.is_empty() {
             continue;
         }
 
         if is_table(block) {
-            col = col.push(render_table(block, color_accent));
+            col = col.push(table(style, block, ink));
         } else if is_list(block) {
-            col = col.push(render_list(block, color_accent));
+            col = col.push(list(style, block, ink));
         } else {
-            col = col.push(
-                text(block)
-                    .size(12)
-                    .font(FONT_RAJDHANI_REGULAR)
-                    .style(move |_| text::Style { color: Some(color_accent) })
-            );
+            col = col.push(text::body(style, block).color(ink));
         }
     }
 
@@ -462,15 +383,16 @@ fn parse_markdown<'a, Message: 'static>(markdown_text: &'a str, color_accent: Co
 }
 
 fn is_table(block: &str) -> bool {
-    let lines: Vec<&str> = block.lines().map(|l| l.trim()).collect();
+    let lines: Vec<&str> = block.lines().map(str::trim).collect();
     if lines.len() < 2 {
         return false;
     }
-    let second_line = lines[1];
-    let has_separator = second_line.contains('|') && 
-        second_line.chars().all(|c| c == '|' || c == '-' || c == ':' || c.is_whitespace() || c == '+');
-    let has_pipes = lines[0].contains('|');
-    has_pipes && has_separator
+    let sep = lines[1];
+    let has_separator = sep.contains('|')
+        && sep
+            .chars()
+            .all(|c| c == '|' || c == '-' || c == ':' || c == '+' || c.is_whitespace());
+    lines[0].contains('|') && has_separator
 }
 
 fn is_list(block: &str) -> bool {
@@ -480,230 +402,140 @@ fn is_list(block: &str) -> bool {
     })
 }
 
-fn render_table<'a, Message: 'static>(block: &'a str, color_accent: Color) -> Element<'a, Message> {
-    let mut table_col = column![].spacing(0).width(Length::Fill);
-    let lines: Vec<&str> = block.lines().map(|l| l.trim()).collect();
-    
-    if lines.is_empty() {
-        return table_col.into();
-    }
-
-    // Parse headers (ignore empty outer elements from splitting |col1|col2|)
-    let headers: Vec<&str> = lines[0]
-        .split('|')
-        .map(|s| s.trim())
+fn cells(line: &str) -> Vec<&str> {
+    line.split('|')
+        .map(str::trim)
         .filter(|s| !s.is_empty())
-        .collect();
-        
-    let col_count = headers.len();
-    if col_count == 0 {
-        return table_col.into();
-    }
-
-    // Render Header Row
-    let mut header_row = row![].width(Length::Fill);
-    for header in headers {
-        header_row = header_row.push(
-            container(
-                text(header)
-                    .size(11)
-                    .font(FONT_BOLD)
-                    .style(move |_| text::Style { color: Some(color_accent) })
-            )
-            .padding(6)
-            .style(move |_| container::Style {
-                background: Some(Color { a: 0.1, ..color_accent }.into()),
-                border: iced::Border {
-                    color: Color { a: 0.2, ..color_accent },
-                    width: 1.0,
-                    radius: 0.0.into(),
-                },
-                ..Default::default()
-            })
-            .width(Length::FillPortion(1))
-        );
-    }
-    table_col = table_col.push(header_row);
-
-    // Render Data Rows
-    for line in lines.iter().skip(2) {
-        let cells: Vec<&str> = line
-            .split('|')
-            .map(|s| s.trim())
-            .filter(|s| !s.is_empty())
-            .collect();
-            
-        if cells.is_empty() {
-            continue;
-        }
-
-        let mut data_row = row![].width(Length::Fill);
-        for i in 0..col_count {
-            let cell_text = cells.get(i).cloned().unwrap_or("");
-            data_row = data_row.push(
-                container(
-                    text(cell_text)
-                        .size(11)
-                        .font(FONT_RAJDHANI_REGULAR)
-                        .style(move |_| text::Style { color: Some(color_accent) })
-                )
-                .padding(6)
-                .style(move |_| container::Style {
-                    background: Some(Color { a: 0.02, ..color_accent }.into()),
-                    border: iced::Border {
-                        color: Color { a: 0.1, ..color_accent },
-                        width: 1.0,
-                        radius: 0.0.into(),
-                    },
-                    ..Default::default()
-                })
-                .width(Length::FillPortion(1))
-            );
-        }
-        table_col = table_col.push(data_row);
-    }
-
-    table_col.into()
+        .collect()
 }
 
-fn render_list<'a, Message: 'static>(block: &'a str, color_accent: Color) -> Element<'a, Message> {
-    let mut list_col = column![].spacing(6).width(Length::Fill);
-    
+fn table<'a, Message: 'static>(
+    style: &Style,
+    block: &'a str,
+    ink: Color,
+) -> Element<'a, Message> {
+    let s = style;
+    let mut grid = column![].width(Length::Fill);
+    let lines: Vec<&str> = block.lines().map(str::trim).collect();
+
+    let headers = match lines.first() {
+        Some(first) => cells(first),
+        None => return grid.into(),
+    };
+    let columns = headers.len();
+    if columns == 0 {
+        return grid.into();
+    }
+
+    // A wash of the era's own ink, not `Style::emphasis()`. That band
+    // is kitsch's mint stat strip and degrades to `panel` -- which is
+    // the desktop's *bar* colour, and lands a blue-grey header row in
+    // the middle of a three-red era. Seen in a neomil render.
+    let band = Palette::faded(ink, 0.14);
+    let mut head = row![].width(Length::Fill);
+    for header in headers {
+        head = head.push(
+            container(surface(
+                Surface::filled(s, band).stroke(Palette::faded(ink, 0.35)),
+                Padding::from([5, 6]),
+                text::caption(s, header)
+                    .size(s.metrics.text_caption + 2)
+                    .color(ink),
+            ))
+            .width(Length::FillPortion(1))
+            .height(Length::Fixed(26.0)),
+        );
+    }
+    grid = grid.push(head);
+
+    for line in lines.iter().skip(2) {
+        let values = cells(line);
+        if values.is_empty() {
+            continue;
+        }
+        let mut data = row![].width(Length::Fill);
+        for i in 0..columns {
+            data = data.push(
+                container(surface(
+                    Surface::outlined(s).stroke(Palette::faded(ink, 0.15)),
+                    Padding::from([5, 6]),
+                    text::caption(s, values.get(i).copied().unwrap_or(""))
+                        .size(s.metrics.text_caption + 2)
+                        .color(ink),
+                ))
+                .width(Length::FillPortion(1))
+                .height(Length::Fixed(26.0)),
+            );
+        }
+        grid = grid.push(data);
+    }
+
+    grid.into()
+}
+
+fn list<'a, Message: 'static>(
+    style: &Style,
+    block: &'a str,
+    ink: Color,
+) -> Element<'a, Message> {
+    let mut col = column![].spacing(6).width(Length::Fill);
+
     for line in block.lines() {
         let trimmed = line.trim_start();
         if trimmed.is_empty() {
             continue;
         }
-        let content = if trimmed.starts_with("* ") || trimmed.starts_with("- ") {
-            &trimmed[2..]
-        } else if trimmed.starts_with("• ") {
-            &trimmed[3..]
-        } else {
-            trimmed
-        };
+        let content = trimmed
+            .strip_prefix("* ")
+            .or_else(|| trimmed.strip_prefix("- "))
+            .or_else(|| trimmed.strip_prefix("• "))
+            .unwrap_or(trimmed);
 
-        list_col = list_col.push(
+        col = col.push(
             row![
-                text("•")
-                    .size(12)
-                    .font(FONT_BOLD)
-                    .style(move |_| text::Style { color: Some(color_accent) }),
-                Space::with_width(8),
-                text(content)
-                    .size(12)
-                    .font(FONT_RAJDHANI_REGULAR)
-                    .style(move |_| text::Style { color: Some(color_accent) }),
+                text::body(style, "•").color(ink),
+                Space::new(8.0, 0.0),
+                text::body(style, content).color(ink),
             ]
-            .align_y(Alignment::Center)
+            .align_y(Alignment::Center),
         );
     }
 
-    list_col.into()
+    col.into()
 }
 
-// --- Custom Cut Button Widget ---
-
-#[derive(Debug, Clone, Copy)]
-struct CutButtonBackground {
-    bg_color: Color,
-    border_color: Color,
-    border_width: f32,
-    cut_bottom_left: f32,
-}
-
-impl<Message> canvas::Program<Message> for CutButtonBackground {
-    type State = ();
-
-    fn draw(
-        &self,
-        _state: &Self::State,
-        renderer: &Renderer,
-        _theme: &Theme,
-        bounds: Rectangle,
-        _cursor: mouse::Cursor,
-    ) -> Vec<canvas::Geometry> {
-        let mut frame = canvas::Frame::new(renderer, bounds.size());
-        let w = bounds.width;
-        let h = bounds.height;
-        let cut = self.cut_bottom_left;
-        let inset = self.border_width / 2.0;
-
-        let path = canvas::Path::new(|builder| {
-            builder.move_to(Point::new(inset, inset));
-            builder.line_to(Point::new(w - inset, inset));
-            builder.line_to(Point::new(w - inset, h - inset));
-            if cut > 0.0 {
-                builder.line_to(Point::new(cut + inset, h - inset));
-                builder.line_to(Point::new(inset, h - cut - inset));
-            } else {
-                builder.line_to(Point::new(inset, h - inset));
-            }
-            builder.close();
-        });
-
-        frame.fill(&path, self.bg_color);
-        if self.border_width > 0.0 {
-            frame.stroke(
-                &path,
-                canvas::Stroke::default()
-                    .with_color(self.border_color)
-                    .with_width(self.border_width),
-            );
-        }
-
-        vec![frame.into_geometry()]
-    }
-}
-
-fn cut_button<'a, Message: 'static + Clone>(
-    label: &'static str,
-    on_press: Option<Message>,
-    color_accent: Color,
-    is_solid: bool,
-    cut_bottom_left: f32,
-) -> Element<'a, Message> {
-    let bg_color = if is_solid {
-        color_accent
-    } else {
-        Color { a: 0.05, ..color_accent }
-    };
-    
-    let text_color = if is_solid {
-        *colors::COLOR_BG
-    } else {
-        color_accent
-    };
-
-    let bg_program = CutButtonBackground {
-        bg_color,
-        border_color: color_accent,
-        border_width: 1.0,
-        cut_bottom_left,
-    };
-
-    let content = stack![
-        canvas(bg_program)
-            .width(Length::Fill)
-            .height(Length::Fill),
-        container(
-            text(label)
-                .font(FONT_BOLD)
-                .size(12)
-                .style(move |_| text::Style { color: Some(text_color) })
-        )
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .center_x(Length::Fill)
-        .center_y(Length::Fill)
-    ]
-    .width(Length::Fill)
-    .height(Length::Fill);
-
-    if let Some(msg) = on_press {
-        mouse_area(content)
-            .on_press(msg)
-            .into()
-    } else {
-        content.into()
+/// Scrollbar styling in the era's line colour. A closure factory rather
+/// than a widget: `scrollable`'s style takes an `Fn`, and the colour has
+/// to be copied out before it crosses into one.
+fn rail(
+    line: Color,
+) -> impl Fn(&iced::Theme, scrollable::Status) -> scrollable::Style {
+    move |_, _| scrollable::Style {
+        container: container::Style::default(),
+        vertical_rail: scrollable::Rail {
+            background: Some(Palette::faded(line, 0.05).into()),
+            border: iced::Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: 0.0.into(),
+            },
+            scroller: scrollable::Scroller {
+                color: Palette::faded(line, 0.5),
+                border: iced::Border {
+                    color: Color::TRANSPARENT,
+                    width: 0.0,
+                    radius: 2.0.into(),
+                },
+            },
+        },
+        horizontal_rail: scrollable::Rail {
+            background: None,
+            border: iced::Border::default(),
+            scroller: scrollable::Scroller {
+                color: Color::TRANSPARENT,
+                border: iced::Border::default(),
+            },
+        },
+        gap: None,
     }
 }

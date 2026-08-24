@@ -13,7 +13,7 @@ use super::glyph::{glyph, Glyph};
 use super::silhouette::silhouette;
 use super::surface::{layered, Surface};
 use super::text;
-use crate::style::{Nameplate, Style};
+use crate::style::{Compliance, Nameplate, Style};
 use iced::widget::{canvas, column, container, row, Space};
 use iced::{Color, Element, Length, Padding};
 
@@ -32,6 +32,10 @@ pub struct Product<'a> {
     pub detail: &'a [(&'a str, &'a str)],
     pub bonus: &'a [&'a str],
     pub sockets: usize,
+    /// The two-line compliance notice the eras that declare one stamp
+    /// on the card. Copy rather than style: where it goes is
+    /// [`Compliance`]'s business, what it says is the store's.
+    pub notice: [&'a str; 2],
 }
 
 impl<'a> Product<'a> {
@@ -44,8 +48,26 @@ impl<'a> Product<'a> {
             detail: &[("20", "Recoil"), ("22", "Spread"), ("12", "Range")],
             bonus: &["+9 Reflexes", "+2 Modules Slots"],
             sockets: 3,
+            notice: [
+                "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE",
+                "ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.",
+            ],
         }
     }
+}
+
+/// The compliance notice, in the tertiary ink both targets set it in
+/// (`#3d4d38` in entropism, `#4d9484` in kitsch -- `dim` in each).
+///
+/// Public because only one of the two placements is the card's to draw:
+/// [`Compliance::Below`] puts it outside the outline, which is the
+/// shelf's business, not this widget's.
+pub fn notice<'a, Message: 'static>(style: &Style, product: &Product<'a>) -> Element<'a, Message> {
+    let mut lines = column![].spacing(2);
+    for line in product.notice {
+        lines = lines.push(text::caption(style, line));
+    }
+    lines.into()
 }
 
 /// The card's ink: line-work and text take the same colour, whichever
@@ -111,10 +133,15 @@ fn stats_row<'a, Message: 'static>(
     };
 
     for (head, value) in product.stats {
+        // The heads are `mid`, not `dim`: all three store targets draw
+        // them a stop brighter than their tertiary print (`#728f76`,
+        // `#7ddec8`, `#d3b279`), and in entropism the difference is
+        // 2.1:1 against 5.5:1 -- the difference between a label and a
+        // smudge.
         let h = if selected {
             text::on_select(style, head).size(style.metrics.text_caption + 3)
         } else {
-            text::label(style, head).size(style.metrics.text_caption + 3)
+            text::mid(style, head).size(style.metrics.text_caption + 3)
         };
         let v = text::body(style, value)
             .size(style.metrics.text_title - 2)
@@ -128,7 +155,10 @@ fn stats_row<'a, Message: 'static>(
     // than the widget testing which era it is in.
     let values: Element<'a, Message> = match (style.palette.emphasis, selected) {
         (Some((band, _)), false) => container(super::surface::surface(
-            Surface::filled(style, band).no_stroke(),
+            // `rect x=536 y=510 width=258 height=26` with no `rx`: the
+            // band is a plain rectangle even in the era that rounds
+            // everything else. See [`Surface::square`].
+            Surface::filled(style, band).no_stroke().square(),
             Padding::from([2, 0]),
             values,
         ))
@@ -162,18 +192,24 @@ fn sockets_row<'a, Message: 'static>(
 
     for _ in 0..product.sockets {
         // Outlined in both states; on a selected card the outline and
-        // its label simply switch to the on-select ink.
+        // its label simply switch to the on-select ink. Square in both,
+        // too -- a cell is not a container, every target draws these as
+        // bare `rect`s, and the era radius on a 26px box is a pill.
         let cell = if selected {
-            Surface::outlined(style).stroke(style.palette.on_select)
-        } else {
             Surface::outlined(style)
+                .stroke(style.palette.on_select)
+                .square()
+        } else {
+            Surface::outlined(style).square()
         };
         let label = if selected {
             text::caption(style, "EMPTY SOCKET")
                 .size(size)
                 .color(style.palette.on_select)
         } else {
-            text::caption(style, "EMPTY SOCKET").size(size)
+            // `#728f76` in entropism, `fg` in the other two: the label
+            // is small, not quiet.
+            text::mid(style, "EMPTY SOCKET").size(size)
         };
         r = r.push(
             container(super::surface::surface(
@@ -280,6 +316,15 @@ pub fn product_card<'a, Message: 'static>(
     }
 
     body = body.push(inner(sockets_row(style, product, selected)));
+
+    // Entropism's notice lives inside the outline, and only on a card
+    // that has not grown its detail block: `text x=538 y=642` sits 38px
+    // clear of a card ending at 680, and the selected card in the same
+    // target carries none.
+    if style.compliance == Compliance::Inside && !selected {
+        body = body.push(Space::new(0.0, 10.0));
+        body = body.push(inner(notice(style, product)));
+    }
 
     if style.nameplate == Nameplate::Footer {
         let plate: Element<'a, Message> = if style.banded() {

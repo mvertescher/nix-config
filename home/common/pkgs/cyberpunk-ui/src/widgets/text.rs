@@ -20,9 +20,46 @@ pub fn body<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a> {
     base(content, style.metrics.text_body, style.palette.fg)
 }
 
-/// Secondary text: present but deliberately receding.
+/// Tertiary text: present but deliberately receding. Meta labels, a
+/// card's class line, the internal rules of a list.
 pub fn label<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a> {
     base(content, style.metrics.text_body, style.palette.dim)
+}
+
+/// The ink between `dim` and `fg`.
+///
+/// The published role vocabulary has one quiet colour; the reference
+/// screens use two, and collapsing them is what made entropism's store
+/// screen unreadable. In `docs/entropism/target-app.svg` the tertiary
+/// strings -- meta labels, footnote bodies, the compliance caption --
+/// are `#3d4d38`, which is `dim`; but the *structural* small text --
+/// segmented bar labels, `S T O R E`, the DPS/PNT/ACC/ROF heads and
+/// every `EMPTY SOCKET` -- is `#728f76`, a full stop brighter. On that
+/// era's ground `dim` measures 2.1:1 and `#728f76` measures 5.5:1, so
+/// drawing the second set in the first colour is not a shade of wrong,
+/// it is illegible.
+///
+/// Derived rather than published, because the eras disagree about where
+/// it sits and none of them treats it as a colour of its own: kitsch and
+/// neokitsch draw both of those sets at `fg`, and entropism at 60% of
+/// the way from `dim` to `fg` -- which is `#718f6f` against a sampled
+/// `#728f76`. So 0.6 is the entropism reading, and it lands the
+/// maximalist eras a little under theirs, which is the safe direction.
+pub fn mid_ink(style: &Style) -> Color {
+    let mix = |a: f32, b: f32| a * 0.4 + b * 0.6;
+    let (d, f) = (style.palette.dim, style.palette.fg);
+    Color {
+        r: mix(d.r, f.r),
+        g: mix(d.g, f.g),
+        b: mix(d.b, f.b),
+        a: f.a,
+    }
+}
+
+/// Secondary text, in [`mid_ink`]: small, structural, and still meant
+/// to be read.
+pub fn mid<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a> {
+    base(content, style.metrics.text_body, mid_ink(style))
 }
 
 /// The tiny maintenance strings the references are covered in --

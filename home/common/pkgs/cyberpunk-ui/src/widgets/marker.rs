@@ -4,56 +4,27 @@
 //! references, always in the same shape, which makes it a good check
 //! that the shared vocabulary is really shared: nothing here branches.
 
-use super::surface::{outline, Corners};
+use super::surface::Surface;
 use super::text;
-use crate::style::{Corner, Style};
+use crate::style::Style;
 use iced::widget::{canvas, column, container, row, stack, Space};
-use iced::{mouse, Color, Element, Length, Rectangle, Renderer, Theme};
-
-#[derive(Debug, Clone, Copy)]
-struct Box {
-    color: Color,
-    width: f32,
-}
-
-impl<Message> canvas::Program<Message> for Box {
-    type State = ();
-
-    fn draw(
-        &self,
-        _state: &Self::State,
-        renderer: &Renderer,
-        _theme: &Theme,
-        bounds: Rectangle,
-        _cursor: mouse::Cursor,
-    ) -> Vec<canvas::Geometry> {
-        let mut frame = canvas::Frame::new(renderer, bounds.size());
-        let path = outline(
-            Corner::Square,
-            Corners::NONE,
-            bounds.width,
-            bounds.height,
-        );
-        frame.stroke(
-            &path,
-            canvas::Stroke::default()
-                .with_color(self.color)
-                .with_width(self.width),
-        );
-        vec![frame.into_geometry()]
-    }
-}
+use iced::{Element, Length};
 
 pub fn marker<'a, Message: 'static>(
     style: &Style,
     letter: &'a str,
     lines: &[&'a str],
 ) -> Element<'a, Message> {
+    // Square in every era's references -- `rect x=380 y=796 width=26
+    // height=26` even in kitsch, which rounds its containers -- and in
+    // the marker's own ink rather than the border's. It was its own
+    // canvas program until [`Surface::square`] made that sayable.
     let boxed = container(stack![
-        canvas(Box {
-            color: style.palette.fg,
-            width: style.metrics.stroke,
-        })
+        canvas(
+            Surface::outlined(style)
+                .square()
+                .stroke(style.palette.fg)
+        )
         .width(Length::Fill)
         .height(Length::Fill),
         container(text::body(style, letter))

@@ -10,9 +10,10 @@
 //! Run it with `cyberpunk-ui-store --era <name>`; with no flag it
 //! follows the desktop theme.
 
-use crate::style::{Chrome, Footnotes, Style};
+use crate::style::{Chrome, Compliance, Footnotes, Style};
 use crate::widgets::{
-    bracket_panel, footer, ground, marker, page_curl, pill, product_card, text, top_bar, Product,
+    bracket_panel, card_notice, column_rule, footer, ground, layered, marker, page_curl, pill,
+    product_card, text, top_bar, Product,
 };
 use iced::widget::{column, container, row, stack, Space};
 use iced::{Element, Length, Padding};
@@ -21,6 +22,9 @@ const CATEGORIES: [&str; 5] = ["RIFLES", "SMG", "SNIPER", "SHOTGUN", "PISTOL"];
 const SELECTED_CATEGORY: usize = 1;
 const SELECTED_CARD: usize = 1;
 const CARDS: usize = 4;
+/// Width of the left column. The masthead sits in the same one so the
+/// logotype and the nav share an edge.
+const SIDEBAR: f32 = 260.0;
 
 const NOTE_A: [&str; 2] = [
     "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.",
@@ -90,9 +94,22 @@ impl Store {
             );
         }
 
+        // The logotype is its own row above the content rather than the
+        // head of the left column. It has to be, for the shelf to start
+        // where the targets start it: all three set the first card level
+        // with the customer block -- kitsch at `y=236` against a
+        // customer pill at 212, neokitsch at 380 against meta ending at
+        // 386, entropism at 320 against a nav box at 320 -- and none of
+        // them at the top of the page, which is where a shelf that is a
+        // sibling of the whole left column necessarily lands. Hoisting
+        // the masthead out gets that alignment from the layout instead
+        // of from a hand-measured spacer that would go stale the first
+        // time the logotype changed size.
+        page = page.push(container(self.masthead()).width(Length::Fixed(SIDEBAR)));
+
         page = page.push(
             row![
-                container(self.sidebar()).width(Length::Fixed(260.0)),
+                container(self.sidebar()).width(Length::Fixed(SIDEBAR)),
                 Space::new(s.metrics.gap * 2.0, 0.0),
                 self.shelf(),
             ]
@@ -109,7 +126,16 @@ impl Store {
         page.into()
     }
 
-    /// Logotype, customer meta, category nav, footnote markers.
+    /// The logotype, on its own row so the shelf can start level with
+    /// what follows it.
+    fn masthead(&self) -> Element<'_, Message> {
+        let s = &self.style;
+        column![text::title(s, "4ST").size(52), text::mid(s, "S T O R E")]
+            .spacing(4)
+            .into()
+    }
+
+    /// Customer meta, category nav, footnote markers.
     fn sidebar(&self) -> Element<'_, Message> {
         let s = &self.style;
 
@@ -147,33 +173,43 @@ impl Store {
             .into()
         };
 
-        let mut side = column![
-            text::title(s, "4ST").size(52),
-            text::label(s, "S T O R E"),
-            Space::new(0.0, s.metrics.gap),
-            customer,
-            Space::new(0.0, s.metrics.gap * 1.5),
-            nav,
-        ]
-        .spacing(4);
+        let mut side = column![customer, Space::new(0.0, s.metrics.gap * 1.5)].spacing(4);
 
         // Where the markers go is era-owned: an earlier pass had one
         // rule for all four and matched none of them.
         match s.footnotes {
             Footnotes::UnderNav => {
+                side = side.push(nav);
                 side = side.push(Space::new(0.0, s.metrics.gap * 2.0));
                 side = side.push(marker(s, "A", &NOTE_A));
                 side = side.push(Space::new(0.0, 10.0));
                 side = side.push(marker(s, "B", &NOTE_B));
             }
             Footnotes::MidColumn => {
-                side = side.push(Space::new(0.0, s.metrics.gap));
-                side = side.push(page_curl(s, 76.0));
+                // The rule down the column's leading edge and the curl
+                // at its foot are one gesture: `M140 306 v396 q0 34 34
+                // 34 h120` runs to the curl's own baseline and the
+                // solid is drawn over it. So the nav is indented off
+                // the rule, the rule runs the height of both, and the
+                // curl -- which starts at the same x -- covers its end.
+                side = side.push(layered(
+                    column_rule(s),
+                    column![
+                        container(nav).padding(Padding {
+                            left: s.metrics.gap + 4.0,
+                            ..Padding::ZERO
+                        }),
+                        Space::new(0.0, s.metrics.gap),
+                        page_curl(s, 76.0),
+                    ],
+                ));
                 side = side.push(Space::new(0.0, s.metrics.gap));
                 side = side.push(marker(s, "A", &NOTE_A));
             }
             // The markers are on the rail; the column ends at the nav.
-            Footnotes::TopRail => {}
+            Footnotes::TopRail => {
+                side = side.push(nav);
+            }
         }
 
         side.into()
@@ -196,9 +232,24 @@ impl Store {
             let selected = i == SELECTED_CARD;
             // The selected card is taller in every reference: it grows
             // the detail block rather than overlaying a popover.
-            shelf = shelf.push(
-                container(product_card(s, &product, selected)).width(Length::FillPortion(1)),
-            );
+            let card: Element<'_, Message> = if s.compliance == Compliance::Below {
+                // Outside the outline, and flush with the card's own
+                // leading edge rather than the banner tab that hangs
+                // past it: `text x=520` against a card at `x=520` whose
+                // band starts at 506.
+                column![
+                    product_card(s, &product, selected),
+                    Space::new(0.0, s.metrics.gap * 0.6),
+                    container(card_notice(s, &product)).padding(Padding {
+                        left: if s.banded() { s.banner.overhang } else { 0.0 },
+                        ..Padding::ZERO
+                    }),
+                ]
+                .into()
+            } else {
+                product_card(s, &product, selected)
+            };
+            shelf = shelf.push(container(card).width(Length::FillPortion(1)));
         }
 
         match s.footnotes {

@@ -135,6 +135,29 @@ impl Surface {
         self.stroke = None;
         self
     }
+
+    /// Drop the era's corner treatment and draw a plain rectangle.
+    ///
+    /// Corner treatment is a property of an era's *containers*, not of
+    /// every box it draws, and the references are unanimous about it:
+    /// kitsch rounds its cards `rx="16"`, its customer panel `rx="15"`
+    /// and its nav pills `q0 12` -- and then draws the stat band
+    /// (`rect x=536 y=510 width=258 height=26`), the three socket cells
+    /// (`width=70 height=28`) and the footnote marker box (`width=26
+    /// height=26`) as bare `rect`s with no `rx` at all. Neokitsch clips
+    /// its cards' top-right corner and its socket cells likewise have
+    /// none. `marker` already hardcoded [`Corner::Square`] for exactly
+    /// this reason; this is that decision made sayable.
+    ///
+    /// It matters more than it sounds because [`outline`] clamps the
+    /// corner amount to half the box, so kitsch's `radius: 16` on a
+    /// 26px-high cell is not a rounded rectangle -- it is a full pill,
+    /// which is what the stat band and the sockets had become.
+    pub fn square(mut self) -> Self {
+        self.corner = Corner::Square;
+        self.corners = Corners::NONE;
+        self
+    }
 }
 
 /// Which corners an era treats by default. Only neo-militarism varies
@@ -146,6 +169,32 @@ pub fn default_corners(corner: Corner) -> Corners {
         Corner::Round { .. } => Corners::ALL,
         Corner::ClipTopRight { .. } => Corners::TOP_RIGHT,
     }
+}
+
+/// The part of a canvas's box that its own geometry clip will keep.
+///
+/// A `canvas` hands its geometry a clip rectangle of exactly the widget
+/// bounds, and `iced_wgpu` turns that into a scissor rect with
+/// `Rectangle::snap`, which *truncates*: `x` and `width` both lose their
+/// fraction. A surface laid out at `x = 1262.5` with `width = 297.5` is
+/// therefore scissored to `[1262, 1559)`, and a 1px outline whose right
+/// edge sits at 1559.5 is not dimmed by the loss -- it disappears
+/// entirely.
+///
+/// That is the whole of "the fourth card has no right border". The card
+/// does not overflow anything: it ends exactly on the content edge, and
+/// four `FillPortion(1)` cards divide the shelf into a fractional width
+/// that puts the last one's stroke in the truncated half-pixel. Cards
+/// one and three land on whole pixels and keep half their stroke, which
+/// is why only the fourth looks broken. The top bar's third segment
+/// fails the same way for the same reason.
+///
+/// So a stroked shape is built inside the rectangle the scissor will
+/// actually keep. It costs at most one pixel of width and makes the
+/// outline unconditional instead of a function of where the layout
+/// happened to land.
+pub fn visible(start: f32, len: f32) -> f32 {
+    (len.floor() - (start - start.floor())).clamp(0.0, len)
 }
 
 /// The outline of a surface, as a canvas path.
@@ -259,7 +308,13 @@ impl<Message> canvas::Program<Message> for Surface {
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
         let mut frame = canvas::Frame::new(renderer, bounds.size());
-        let (w, h) = (bounds.width, bounds.height);
+        // Not `bounds.width`/`bounds.height`: the trailing fraction of
+        // both is scissored away before it reaches the screen. See
+        // [`visible`].
+        let (w, h) = (
+            visible(bounds.x, bounds.width),
+            visible(bounds.y, bounds.height),
+        );
         if w <= 0.0 || h <= 0.0 {
             return vec![frame.into_geometry()];
         }
