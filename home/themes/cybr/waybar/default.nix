@@ -75,18 +75,31 @@ in
   };
 
   config = {
-    # Launch the bar alongside the theme's other components (see swaync.nix,
-    # hyprpaper.nix): programs.waybar only installs and configures it, and the
-    # packaged waybar.service is inert because hyprland runs with
-    # systemd.enable = false.
-    wayland.windowManager.hyprland.settings = {
-      exec-once = [
-        "waybar"
-      ];
-    };
-
+    # Launched by waybar's own systemd user unit rather than hyprland's
+    # exec-once. See ../../lib/era.nix for the reasoning; the short version
+    # is that exec-once only fires when the compositor starts, so switching
+    # into this theme on a live session left the desktop with no bar.
+    #
+    # home-manager drops its `pkill -USR2 waybar` onChange hooks as soon as
+    # systemd.enable is set, so the files this theme generates have to be
+    # named here or a palette change would never reach a running bar.
+    #
+    # Split by what waybar can absorb: it rereads its stylesheet on SIGUSR2,
+    # which home-manager already wires as an ExecReload plus a reload
+    # trigger on style.css, so colors.css joins that rather than forcing a
+    # restart for a colour change. The module list is only read at startup,
+    # so config.jsonc and modules.jsonc are restart triggers.
     programs.waybar = {
       enable = true;
+      systemd.enable = true;
+    };
+
+    systemd.user.services.waybar.Unit = {
+      X-Reload-Triggers = [ "${config.xdg.configFile."waybar/colors.css".source}" ];
+      X-Restart-Triggers = [
+        "${config.xdg.configFile."waybar/config.jsonc".source}"
+        "${config.xdg.configFile."waybar/modules.jsonc".source}"
+      ];
     };
 
     # Every family below is base16 accent + two derived shades. The mid and

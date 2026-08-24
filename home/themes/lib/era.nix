@@ -184,14 +184,31 @@ lib.mkMerge [
 
     xdg.configFile."theme/current.toml".text = themeToml;
 
+    # --- daemons -------------------------------------------------------
+    # The bar, the notification daemon and the wallpaper daemon are started
+    # by systemd user units bound to graphical-session.target, not by
+    # hyprland's `exec-once`.
+    #
+    # exec-once fires exactly once, when the compositor starts. That is
+    # fine at login and wrong for every other way a theme changes: a
+    # `./switch` from one theme to another stops the outgoing theme's units
+    # and starts nothing, so the desktop is left with no bar, no
+    # notifications and no wallpaper until the next logout. Terra sat in
+    # that state from 2026-08-23 22:45 until it was noticed the next day,
+    # and it also means a switch cannot verify anything about these three.
+    #
+    # Units fix both halves. sd-switch starts them when they appear and
+    # restarts them when their definition changes, and home-manager already
+    # wires X-Restart-Triggers on swaync's and hyprpaper's generated config,
+    # so a palette change reaches a running daemon. waybar needs its
+    # triggers named by hand, below.
+    #
+    # This works even though `wayland.windowManager.hyprland.systemd.enable`
+    # is false in the shared hyprland module: the session comes up under
+    # uwsm, which activates graphical-session.target itself. hypridle has
+    # been proving that all along.
     # --- window manager ------------------------------------------------
     wayland.windowManager.hyprland.settings = {
-      exec-once = [
-        (if useOwnBar then lib.getExe' cyberpunk-ui "cyberpunk-ui-bar" else "waybar")
-        "swaync"
-        "hyprpaper"
-      ];
-
       general = {
         border_size = eraOverride 1;
         "col.active_border" = eraOverride (rgba "fg");
@@ -223,18 +240,67 @@ lib.mkMerge [
     # --- wallpaper -----------------------------------------------------
     stylix.targets.hyprpaper.enable = lib.mkForce false;
 
+    # Two corrections here, both found on 2026-08-24 by watching the daemon
+    # start rather than by reading the config.
+    #
+    # No `preload` key: hyprpaper 0.8 removed the keyword with the rest of
+    # the preload machinery, and a `wallpaper` entry loads its own path.
+    # hyprlang ignores the stale key rather than erroring, so the one that
+    # used to sit here changed nothing either way.
+    #
+    # And the wallpaper is an attrset, which home-manager renders as a
+    # `wallpaper { }` block. The string form that used to be here rendered
+    # a flat `wallpaper=,path` line, which 0.8's config parser rejects with
+    # "Monitor <name> has no target: no wp will be created" -- so the eras
+    # have been starting a wallpaper daemon that painted nothing. The flat
+    # form still works over IPC, which is how it stayed hidden.
     services.hyprpaper = {
       enable = true;
       settings = {
-        preload = [ "${config.stylix.image}" ];
-        wallpaper = [ ",${config.stylix.image}" ];
+        wallpaper = [ { monitor = "*"; path = "${config.stylix.image}"; } ];
         ipc = false;
         splash = false;
       };
     };
 
+    # services.hyprpaper installs no package of its own; the unit runs a
+    # store path. Without this the binary is absent from PATH.
+    home.packages = [ pkgs.hyprpaper ];
+
     # --- bar -----------------------------------------------------------
-    programs.waybar.enable = !useOwnBar;
+    programs.waybar = lib.mkIf (!useOwnBar) {
+      enable = true;
+      systemd.enable = true;
+    };
+
+    # home-manager drops its `pkill -USR2 waybar` onChange hooks the moment
+    # systemd.enable is set, so without this an era change would repaint the
+    # stylesheet under a bar that never rereads it. style.css needs nothing
+    # from us -- home-manager already gives it a reload trigger against
+    # waybar's SIGUSR2 ExecReload -- but the module list is read only at
+    # startup, so config.jsonc has to restart.
+    systemd.user.services.waybar.Unit.X-Restart-Triggers = lib.mkIf (!useOwnBar) [
+      "${config.xdg.configFile."waybar/config.jsonc".source}"
+    ];
+
+    # The native bar has no home-manager module, so its unit is written
+    # here. It re-reads theme/current.toml at startup, which is what makes
+    # a restart the whole of "wear the new era".
+    systemd.user.services.cyberpunk-ui-bar = lib.mkIf useOwnBar {
+      Unit = {
+        Description = "cyberpunk-ui status bar (${name})";
+        PartOf = [ "graphical-session.target" ];
+        After = [ "graphical-session.target" ];
+        X-Restart-Triggers = [ "${config.xdg.configFile."theme/current.toml".source}" ];
+      };
+      Service = {
+        Type = "simple";
+        ExecStart = lib.getExe' cyberpunk-ui "cyberpunk-ui-bar";
+        Restart = "on-failure";
+        RestartSec = 3;
+      };
+      Install.WantedBy = [ "graphical-session.target" ];
+    };
 
     # Only written when waybar is actually the bar; otherwise these are
     # two generated files nobody reads, which is the sort of thing that
@@ -473,8 +539,10 @@ lib.mkMerge [
     '';
 
     # --- notifications -------------------------------------------------
+    # The WantedBy that used to be mkForce'd empty here is restored: the
+    # unit is now how swaync starts, rather than a dormant duplicate of an
+    # exec-once line.
     stylix.targets.swaync.enable = false;
-    systemd.user.services.swaync.Install.WantedBy = lib.mkForce [ ];
 
     services.swaync = {
       enable = true;

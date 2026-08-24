@@ -120,14 +120,15 @@ in
   config = lib.mkIf cfg.enable {
     custom.wallpaper.file = wallpaperFile;
 
-    # Install both hyprpaper and our rotation script helper
+    # home-manager's services.hyprpaper adds no package of its own -- the
+    # unit runs a store path directly -- so the binary still has to be
+    # installed here or `hyprpaper -c` is unavailable for debugging.
     home.packages = [
       pkgs.hyprpaper
       rotateWallpaperScript
     ];
 
     stylix.targets.hyprpaper.enable = lib.mkForce false;
-    services.hyprpaper.enable = lib.mkForce false;
 
     # Expose the whole cybrpapers set under the path a wallpaper picker can
     # discover at runtime. hyprpaper.conf only names the single image the
@@ -135,35 +136,40 @@ in
     # at build time, so rofi/scripts/wallpaper had nothing to enumerate.
     xdg.configFile."hypr/walls".source = wallpapersDir;
 
-    # No `preload =` line: hyprpaper 0.8 dropped the keyword along with the
-    # rest of the preload machinery, and a `wallpaper` block loads its own
-    # path. hyprlang ignores the stale key rather than erroring, so the one
-    # that used to sit here was invisible dead config -- and it is what made
-    # the rotation helper look like it was missing a preload step.
-    xdg.configFile."hypr/hyprpaper.conf".text = let
-      wallpaperBlocks = if cfg.monitors == [ ]
-                        then ''
-                          wallpaper {
-                              monitor = *
-                              path = ${wallpaperFile}
-                          }
-                        ''
-                        else lib.concatMapStringsSep "\n" (mon: ''
-                          wallpaper {
-                              monitor = ${mon}
-                              path = ${wallpaperFile}
-                          }
-                        '') cfg.monitors;
-    in ''
-      ${wallpaperBlocks}
-      ipc = true
-      splash = false
-    '';
-
-    wayland.windowManager.hyprland.settings = {
-      exec-once = [
-        "hyprpaper"
-      ];
+    # Launched by its systemd user unit rather than hyprland's exec-once,
+    # and configured through home-manager's `settings` rather than a
+    # hand-written hyprpaper.conf. See ../lib/era.nix for the reasoning.
+    # The practical gain beyond surviving a live theme switch is that
+    # home-manager puts the rendered config in the unit's
+    # X-Restart-Triggers, so changing the wallpaper restarts the daemon
+    # instead of leaving it showing the old image.
+    #
+    # No `preload` key: hyprpaper 0.8 dropped the keyword along with the
+    # rest of the preload machinery, and a `wallpaper` entry loads its own
+    # path. hyprlang ignores the stale key rather than erroring, which is
+    # what made the rotation helper look like it was missing a step.
+    #
+    # `ipc = true`, unlike the generated eras: the rotation helper drives
+    # `hyprctl hyprpaper wallpaper`, and that needs the socket.
+    # Each wallpaper is an attrset, which home-manager renders as a
+    # `wallpaper { }` block. The string form -- `wallpaper = ",path"` --
+    # renders as a flat `wallpaper=,path` line, which hyprpaper 0.8's
+    # config parser does not accept: it logs "Monitor DP-3 has no target:
+    # no wp will be created" and paints nothing. Confirmed by running
+    # `hyprpaper -c` against both shapes; the flat form still works over
+    # IPC, which is why the rotation helper is unaffected and why this is
+    # easy to miss.
+    services.hyprpaper = {
+      enable = true;
+      settings = {
+        wallpaper =
+          if cfg.monitors == [ ] then
+            [ { monitor = "*"; path = "${wallpaperFile}"; } ]
+          else
+            map (mon: { monitor = mon; path = "${wallpaperFile}"; }) cfg.monitors;
+        ipc = true;
+        splash = false;
+      };
     };
   };
 }
