@@ -12,18 +12,21 @@
 # the crate. A palette edit with no Rust change can legitimately move a
 # golden.
 #
-# Two things about this job are unverified until it has run a few times,
-# and are worth watching rather than trusting:
+# Both of this job's unknowns were answered by its first run
+# (2026-08-24), and one of them corrected a premise this workflow was
+# designed around:
 #
-#   * **Software rendering.** The renders need weston plus a working
-#     software GL adapter. It works on terra, which has a GPU; a runner
-#     has llvmpipe and nothing else. If wgpu cannot find an adapter the
-#     symptom is all 21 failing at once, not one flaky case.
-#   * **Time.** There is no binary cache, so crane rebuilds the crate and
-#     its dependency tree from source on every run; only nixpkgs itself
-#     substitutes. If this settles above ~30 minutes it has earned a
-#     cache -- see the wrapper's TODO, where public CI for this matrix is
-#     recorded as one of the two triggers for adopting one.
+#   * **Software rendering works.** 21/21 on llvmpipe, no GPU. wgpu finds
+#     a software adapter; the feared symptom was all 21 failing at once.
+#   * **18m15s with no binary cache**, crane rebuilding the crate and its
+#     dependency tree from source. Under the ~30 minute mark that would
+#     have justified a cache, so there is deliberately none.
+#   * **The disk panic was misplaced.** This job originally began by
+#     deleting the preinstalled toolchains, on the belief that a runner
+#     has ~14 GB free. It has **87 GB** free of 145 GB, and the whole run
+#     peaks around 6 GB. That figure is the old standard-runner spec and
+#     is simply stale. The reclaim step recovered 21 GB nobody needed and
+#     cost 80 seconds, so it is gone. Measure before optimising.
 name: goldens
 
 on:
@@ -49,20 +52,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
-      # A standard runner has ~14 GB free, and this closure does not fit
-      # in it: a Rust toolchain, mesa, weston and iced's C dependencies,
-      # plus the crate's own build. Deleting the preinstalled toolchains
-      # recovers roughly 25-30 GB and costs under a minute. Done inline
-      # rather than through a third-party action -- it is four `rm`s, and
-      # this is a public repo where a compromised action would be a
-      # supply-chain problem rather than an inconvenience.
-      - name: Reclaim runner disk
-        run: |
-          echo "before:"; df -h / | tail -1
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
-                      /usr/local/share/boost "$AGENT_TOOLSDIRECTORY" || true
-          echo "after:"; df -h / | tail -1
-
       # Full history, not the default shallow clone: the matrix runner
       # fetches this tree through `git+file:` (never `path:`, which would
       # copy an untracked cargo target/ into the store), and nix's git
