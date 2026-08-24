@@ -1,0 +1,90 @@
+# The cyberpunk-ui golden render matrix: 21 cases, four eras.
+#
+# Separate from check.yml because it is a different kind of job. That one
+# is thirty seconds of evaluation; this one builds a Rust/iced crate and
+# renders it headless under weston, and it only needs to run when the
+# crate or the themes that feed it change -- hence the path filter, which
+# `on:` applies per workflow rather than per job.
+#
+# The themes are in the filter on purpose: a case publishes that era's
+# `theme/current.toml` into the sandbox HOME and renders against it, so
+# the matrix is testing the *contract* between the nix theme layer and
+# the crate. A palette edit with no Rust change can legitimately move a
+# golden.
+#
+# Two things about this job are unverified until it has run a few times,
+# and are worth watching rather than trusting:
+#
+#   * **Software rendering.** The renders need weston plus a working
+#     software GL adapter. It works on terra, which has a GPU; a runner
+#     has llvmpipe and nothing else. If wgpu cannot find an adapter the
+#     symptom is all 21 failing at once, not one flaky case.
+#   * **Time.** There is no binary cache, so crane rebuilds the crate and
+#     its dependency tree from source on every run; only nixpkgs itself
+#     substitutes. If this settles above ~30 minutes it has earned a
+#     cache -- see the wrapper's TODO, where public CI for this matrix is
+#     recorded as one of the two triggers for adopting one.
+name: goldens
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "home/common/pkgs/cyberpunk-ui/**"
+      - "home/themes/**"
+      - ".github/workflows/goldens.yml"
+  pull_request:
+    paths:
+      - "home/common/pkgs/cyberpunk-ui/**"
+      - "home/themes/**"
+      - ".github/workflows/goldens.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: goldens-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      # A standard runner has ~14 GB free, and this closure does not fit
+      # in it: a Rust toolchain, mesa, weston and iced's C dependencies,
+      # plus the crate's own build. Deleting the preinstalled toolchains
+      # recovers roughly 25-30 GB and costs under a minute. Done inline
+      # rather than through a third-party action -- it is four `rm`s, and
+      # this is a public repo where a compromised action would be a
+      # supply-chain problem rather than an inconvenience.
+      - name: Reclaim runner disk
+        run: |
+          echo "before:"; df -h / | tail -1
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+                      /usr/local/share/boost "$AGENT_TOOLSDIRECTORY" || true
+          echo "after:"; df -h / | tail -1
+
+      # Full history, not the default shallow clone: the matrix runner
+      # fetches this tree through `git+file:` (never `path:`, which would
+      # copy an untracked cargo target/ into the store), and nix's git
+      # fetcher wants a complete repository.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
+
+      # Delegated to the crate's own runner rather than reimplemented,
+      # exactly as the wrapper's ./check does. That keeps one definition
+      # of what the matrix is, and keeps the source-size guard that
+      # catches a whole-directory copy sneaking back in.
+      - name: Golden matrix
+        working-directory: home/common/pkgs/cyberpunk-ui
+        run: ./scripts/run_test_matrix.sh
+
+      - name: Disk after
+        if: always()
+        run: df -h / | tail -1
