@@ -30,7 +30,7 @@
   # read at startup, so an open window otherwise keeps the old look.
   browserRestart ? true,
   # Which status bar to run. "waybar" is the long-standing default;
-  # "cyberpunk-ui" is our own layer-shell bar, which is the only one
+  # "cp-eras-ui" is our own layer-shell bar, which is the only one
   # that can draw the era's actual corner treatment -- waybar styles
   # with CSS, where a chamfer or a clipped corner cannot be expressed.
   bar ? "waybar",
@@ -49,7 +49,7 @@ let
 
   rolesLib = import ./roles.nix;
 
-  useOwnBar = bar == "cyberpunk-ui";
+  useOwnBar = bar == "cp-eras-ui";
 
   k = {
     # Corner radius across hyprland, bar, launcher and browser chrome.
@@ -182,11 +182,11 @@ lib.mkMerge [
     # The era still puts its own bar into its own home.packages rather
     # than relying on `home/common/gui` being imported: it owns its bar
     # the way it owns every other component skin. What it no longer does
-    # is *build* one. `pkgs.cyberpunk-ui` comes from `lib/overlays.nix`
+    # is *build* one. `pkgs.cp-eras-ui` comes from `lib/overlays.nix`
     # and is the same derivation the GUI module and the golden matrix
     # use, so "the era owns its bar" no longer also means "the era has a
     # second copy of it, free to drift from the other one".
-    ++ lib.optional useOwnBar pkgs.cyberpunk-ui;
+    ++ lib.optional useOwnBar pkgs.cp-eras-ui;
     fonts.fontconfig.enable = true;
 
     stylix = {
@@ -198,7 +198,7 @@ lib.mkMerge [
     # An icon theme, for the first time. `stylix.icons` is off and
     # `gtk.iconTheme` was unset everywhere, so a freedesktop lookup on
     # this desktop found `hicolor` and whatever an application shipped
-    # for itself -- which is exactly what cyberpunk-ui's tray falls back
+    # for itself -- which is exactly what cp-eras-ui's tray falls back
     # to, since it reads `gtk-icon-theme-name` out of gtk-4.0 or gtk-3.0
     # settings.ini when it is not told a theme on the command line.
     # Setting it here is what makes those icons appear without passing
@@ -322,16 +322,16 @@ lib.mkMerge [
     # The native bar has no home-manager module, so its unit is written
     # here. It re-reads theme/current.toml at startup, which is what makes
     # a restart the whole of "wear the new era".
-    systemd.user.services.cyberpunk-ui-bar = lib.mkIf useOwnBar {
+    systemd.user.services.cp-eras-ui-bar = lib.mkIf useOwnBar {
       Unit = {
-        Description = "cyberpunk-ui status bar (${name})";
+        Description = "cp-eras-ui status bar (${name})";
         PartOf = [ "graphical-session.target" ];
         After = [ "graphical-session.target" ];
         X-Restart-Triggers = [ "${config.xdg.configFile."theme/current.toml".source}" ];
       };
       Service = {
         Type = "simple";
-        ExecStart = lib.getExe' pkgs.cyberpunk-ui "cyberpunk-ui-bar";
+        ExecStart = lib.getExe' pkgs.cp-eras-ui "cp-eras-ui-bar";
         Restart = "on-failure";
         RestartSec = 3;
       };

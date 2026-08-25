@@ -103,11 +103,11 @@ in
     bar = lib.mkOption {
       type = lib.types.enum [
         "waybar"
-        "cyberpunk-ui"
+        "cp-eras-ui"
       ];
       default = "waybar";
       description = ''
-        Which status bar to run. cyberpunk-ui is our own layer-shell
+        Which status bar to run. cp-eras-ui is our own layer-shell
         bar; it is the only one that can draw this era's corner
         treatment, since waybar styles with CSS and a chamfer or a
         clipped corner cannot be expressed there.

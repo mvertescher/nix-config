@@ -1,4 +1,4 @@
-# The cyberpunk-ui golden render matrix: 21 cases, four eras.
+# The cp-eras-ui golden render matrix: 21 cases, four eras.
 #
 # Separate from check.yml because it is a different kind of job. That one
 # is thirty seconds of evaluation; this one builds a Rust/iced crate and
@@ -33,12 +33,12 @@ on:
   push:
     branches: [main]
     paths:
-      - "home/common/pkgs/cyberpunk-ui/**"
+      - "home/common/pkgs/cp-eras-ui/**"
       - "home/themes/**"
       - ".github/workflows/goldens.yml"
   pull_request:
     paths:
-      - "home/common/pkgs/cyberpunk-ui/**"
+      - "home/common/pkgs/cp-eras-ui/**"
       - "home/themes/**"
       - ".github/workflows/goldens.yml"
   workflow_dispatch:
@@ -71,7 +71,7 @@ jobs:
       # of what the matrix is, and keeps the source-size guard that
       # catches a whole-directory copy sneaking back in.
       - name: Golden matrix
-        working-directory: home/common/pkgs/cyberpunk-ui
+        working-directory: home/common/pkgs/cp-eras-ui
         run: ./scripts/run_test_matrix.sh
 
       - name: Disk after

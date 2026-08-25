@@ -14,7 +14,7 @@ let
 
     # This repo's own packages, so there is exactly one instance of each.
     #
-    # They used to be `callPackage`d at each use site: cyberpunk-ui in
+    # They used to be `callPackage`d at each use site: cp-eras-ui in
     # both `home/common/gui/default.nix` and `home/themes/lib/era.nix`,
     # the fonts in those two plus `themes/neomil`. Two definitions free
     # to drift apart is the shape of the Firefox duplication that left
@@ -35,7 +35,7 @@ let
     inTreePkgs = final: prev: {
         orbitron-vf = final.callPackage ../home/common/pkgs/orbitron { };
         rajdhani-fontshare = final.callPackage ../home/common/pkgs/rajdhani-fontshare { };
-        cyberpunk-ui = final.callPackage ../home/common/pkgs/cyberpunk-ui {
+        cp-eras-ui = final.callPackage ../home/common/pkgs/cp-eras-ui {
             orbitron = final.orbitron-vf;
         };
     };

@@ -6,7 +6,7 @@
 # lib/era.nix exists for.
 #
 # The `reference` palette is transcribed from the pixel reads in
-# home/common/pkgs/cyberpunk-ui/docs/kitsch/README.md, not eyeballed --
+# home/common/pkgs/cp-eras-ui/docs/kitsch/README.md, not eyeballed --
 # see ./palettes.nix, which also records why the era's name misleads.
 #
 # Note the role inversion: yellow is *selection* here, not alarm.
@@ -95,11 +95,11 @@ in
     bar = lib.mkOption {
       type = lib.types.enum [
         "waybar"
-        "cyberpunk-ui"
+        "cp-eras-ui"
       ];
       default = "waybar";
       description = ''
-        Which status bar to run. cyberpunk-ui is our own layer-shell
+        Which status bar to run. cp-eras-ui is our own layer-shell
         bar; it is the only one that can draw this era's corner
         treatment, since waybar styles with CSS and a chamfer or a
         clipped corner cannot be expressed there.

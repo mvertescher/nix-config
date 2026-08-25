@@ -5,7 +5,7 @@
 # shelf bands, far fewer captions.
 #
 # The `reference` palette is transcribed from the pixel reads recorded
-# in home/common/pkgs/cyberpunk-ui/docs/neokitsch/README.md, taken off
+# in home/common/pkgs/cp-eras-ui/docs/neokitsch/README.md, taken off
 # the 1400px Behance modules rather than eyeballed.
 #
 # This is the era the word "kitsch" makes people picture: gilded, and
@@ -13,7 +13,7 @@
 # other half of that mix-up.
 #
 # The veneer itself is not a role. It is a *material* -- the toolkit
-# synthesises it (cyberpunk-ui `Selection::Veneer`) rather than naming a
+# synthesises it (cp-eras-ui `Selection::Veneer`) rather than naming a
 # colour -- so `tape` carries its mid-tone for the desktop's sake and
 # the app does the rest.
 #

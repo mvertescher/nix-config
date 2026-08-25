@@ -1,0 +1,96 @@
+[package]
+name = "cp-eras-ui"
+version = "0.0.0"
+edition = "2021"
+autoexamples = false
+autobins = false
+
+[dependencies]
+# `image-without-codecs` rather than `image`: the tray hands the bar
+# icons it has already decoded to RGBA, so the only thing wanted from
+# iced is the widget and `Handle::from_rgba`. The full feature would
+# pull the `image` crate's whole codec set -- jpeg, gif, webp, tiff --
+# to decode files nothing here ever asks it to open.
+iced = { version = "0.13", features = [
+  "advanced",
+  "canvas",
+  "tokio",
+  "image-without-codecs",
+] }
+iced_layershell = "0.13"
+sysinfo = "0.33"
+# PulseAudio client bindings for the bar's audio module. Apache-2.0,
+# and the only Rust route to a sink volume that does not shell out to
+# pactl on every tick.
+libpulse-binding = "2.28"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+# StatusNotifierItem tray, over the session bus. MIT, pure Rust, and
+# already the D-Bus stack this repo uses elsewhere (`mpris-status`), so
+# the tray adds no second one. `async-io` rather than the tokio feature:
+# the tray owns a plain thread like the other sensors, outside iced's
+# runtime, and zbus::block_on wants an executor it brought itself.
+zbus = { version = "5", default-features = false, features = ["async-io"] }
+# The tray's plumbing, all three already in the tree underneath zbus and
+# iced, so none of them adds a crate to the build:
+#   * async-channel -- clicks travel from the iced thread to the tray
+#     thread as a stream, so they merge into the same select as the bus
+#     signals instead of wanting a second loop. MIT OR Apache-2.0.
+#   * async-io -- `Timer` as the slow safety-net poll behind the
+#     signals. MIT OR Apache-2.0.
+#   * futures-lite -- `StreamExt` and `stream::or`, the two things
+#     needed to merge those streams. zbus exports `futures_core` only.
+#     MIT OR Apache-2.0.
+async-channel = "2"
+async-io = "2"
+futures-lite = "2"
+# Decoding tray icons. Both are icon-file readers rather than a
+# rendering stack: they produce RGBA that `bar/icon.rs` composites and
+# hands to iced, so nothing about the era vocabulary goes through them.
+#   * png -- the format hicolor ships. MIT OR Apache-2.0, and already in
+#     the tree under tiny-skia, so it costs nothing. 0.17 rather than
+#     0.18 to stay on the copy that is already there.
+#   * resvg -- the format Papirus ships, which is *only* SVG, so without
+#     it an icon-theme lookup on this desktop finds almost nothing.
+#     Apache-2.0 OR MIT: it was MPL-2.0 until 0.45 and is not any more,
+#     which is worth writing down because the old licence is what search
+#     results still say. 0.46 rather than the current 0.48 because 0.47
+#     moved to tiny-skia 0.12 and would put a second copy of tiny-skia
+#     and of png in the build beside the ones iced already pins.
+#     `default-features = false` keeps `text` off: a tray icon has no
+#     text in it, and the feature drags in fontdb and a shaper.
+png = "0.17"
+resvg = { version = "0.46", default-features = false }
+
+[[bin]]
+name = "cp-eras-ui-bar"
+path = "examples/cp-eras-ui-bar.rs"
+
+# The same view in an ordinary window, for the golden tests.
+# See the head of its source for why it is not a flag on the bar.
+[[bin]]
+name = "cp-eras-ui-bar-window"
+path = "examples/cp-eras-ui-bar-window.rs"
+
+[[bin]]
+name = "cp-eras-ui-login"
+path = "examples/cp-eras-ui-login.rs"
+
+[[bin]]
+name = "cp-eras-ui-mailbox"
+path = "examples/cp-eras-ui-mailbox.rs"
+
+[[bin]]
+name = "cp-eras-ui-store"
+path = "examples/cp-eras-ui-store.rs"
+
+[[bin]]
+name = "cp-eras-ui-dashboard"
+path = "examples/cp-eras-ui-dashboard.rs"
+
+[[bin]]
+name = "cp-eras-ui-mail"
+path = "examples/cp-eras-ui-mail.rs"
+
+[[bin]]
+name = "cp-eras-ui-floppy"
+path = "examples/cp-eras-ui-floppy.rs"

@@ -34,7 +34,7 @@ in
 
     command = lib.mkOption {
       type = lib.types.str;
-      example = "cyberpunk-ui-dashboard";
+      example = "cp-eras-ui-dashboard";
       description = ''
         Command launched when the workspace is first visited while
         empty. Runs through the compositor, so it inherits a proper

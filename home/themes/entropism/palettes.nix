@@ -10,7 +10,7 @@
 # (the improvised gaffer-tape yellow you write on with a marker).
 #
 # One of these is sampled and three are not. `nexus` is transcribed from
-# the pixel reads in home/common/pkgs/cyberpunk-ui/docs/entropism, taken
+# the pixel reads in home/common/pkgs/cp-eras-ui/docs/entropism, taken
 # off the Behance modules; the other three predate that pass and were
 # designed to the era's *description*. They are good schemes and stay,
 # but if you want the era as published, that is `nexus`.

@@ -12,7 +12,7 @@
 #
 # The two heavier things this repo can check each got their own
 # path-filtered workflow instead, because `on:` applies a path filter per
-# workflow rather than per job: goldens.yml for the cyberpunk-ui matrix,
+# workflow rather than per job: goldens.yml for the cp-eras-ui matrix,
 # installer-iso.yml for the ISO. Both were once written off here as too
 # big for a runner, on a "~14 GB disk" figure that turned out to be the
 # old standard-runner spec -- a current `ubuntu-latest` has 145 GB with

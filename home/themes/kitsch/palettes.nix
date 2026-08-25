@@ -4,7 +4,7 @@
 # over a rose bloom on warm black. Everything rounded, no chamfers.
 #
 # The `reference` palette is transcribed from the pixel reads recorded
-# in home/common/pkgs/cyberpunk-ui/docs/kitsch/README.md, taken off the
+# in home/common/pkgs/cp-eras-ui/docs/kitsch/README.md, taken off the
 # 1400px Behance modules rather than eyeballed.
 #
 # Worth knowing before editing: the era's name invites the wrong guess.

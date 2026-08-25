@@ -36,7 +36,7 @@ rec {
   # and the base16 projection untouched.
   #
   # These are not guesses at what an ornamental era might like. Each one
-  # is a fill or an ink that appears in `home/common/pkgs/cyberpunk-ui/
+  # is a fill or an ink that appears in `home/common/pkgs/cp-eras-ui/
   # docs/{kitsch,neokitsch}/target-{app,components}.svg` and that the
   # base seven cannot name:
   #
