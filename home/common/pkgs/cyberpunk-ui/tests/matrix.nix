@@ -1,12 +1,22 @@
 # The door to the golden matrix.
 #
 # `passthru.tests` in ../default.nix *defines* the cases, but nothing
-# could reach them: the package takes `callPackage` arguments (craneLib,
-# orbitron, rajdhani-fontshare) and this repo's flake deliberately
-# exports no configurations to hang them off. So every agent and every
-# session that needed to run a golden wrote its own throwaway
-# instantiation somewhere under /tmp. Three variants of the same twelve
-# lines were written in one night. This is that file, committed.
+# could reach them: this repo's flake deliberately exports no
+# configurations to hang them off, and the package used to be reachable
+# only through `callPackage` with three arguments supplied by hand. So
+# every agent and every session that needed to run a golden wrote its own
+# throwaway instantiation somewhere under /tmp. Three variants of the
+# same twelve lines were written in one night. This is that file,
+# committed.
+#
+# The package is now `pkgs.cyberpunk-ui`, from this repo's overlay
+# (../../../../lib/overlays.nix), so this file no longer instantiates
+# anything -- which is the point. A matrix rendering its *own* build of
+# the crate would be a second instance free to drift from the one the
+# desktop ships, and the whole value of the goldens is that they are
+# evidence about the shipped thing. Same overlay list, same pkgs
+# constructor, therefore the same derivation as `home/common/gui` and
+# `home/themes/lib/era.nix` name.
 #
 # Takes this repo's overlaid `pkgs` -- `(getFlake ...).out.pkgs`, the
 # escape hatch the flake documents for exactly this -- and returns:
@@ -16,9 +26,9 @@
 #   cases   the same derivations flattened to "store.kitsch" = <drv>,
 #           so a runner can iterate without knowing the shape
 #
-# `pkgs` has no default on purpose. `import <nixpkgs> {}` would evaluate
-# and then fail deep inside crane with a missing `craneLib`, which is a
-# worse error than being told the argument is required. Use
+# `pkgs` has no default on purpose. `import <nixpkgs> {}` has no
+# `cyberpunk-ui` and no `craneLib`, so it would evaluate and then fail
+# on a missing attribute somewhere less obvious than here. Use
 # ../scripts/run_test_matrix.sh; it wires this up correctly and is the
 # supported entry point.
 #
@@ -44,12 +54,7 @@
 let
   inherit (pkgs) lib;
 
-  pkgsDir = ../..;
-
-  orbitron = pkgs.callPackage (pkgsDir + "/orbitron") { };
-  rajdhani-fontshare = pkgs.callPackage (pkgsDir + "/rajdhani-fontshare") { };
-
-  crate = pkgs.callPackage ../. { inherit orbitron rajdhani-fontshare; };
+  crate = pkgs.cyberpunk-ui;
 
   # Flatten by walking rather than by restating the era and screen
   # lists. Those live in ../default.nix; a copy here would be a second

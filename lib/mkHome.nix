@@ -23,23 +23,15 @@
 { hosts, extraOverlays ? [ ] }:
 
 let
-  mkPkgs = import ./pkgs.nix {
-    inherit inputs;
-    overlays = overlays ++ extraOverlays;
-  };
+  hostPkgs = import ./host-pkgs.nix { inherit inputs overlays extraOverlays; };
 
   make = name: host:
     let
-      hostOverlays = host.extraOverlays or [ ];
-      pkgs =
-        if hostOverlays != [ ] then
-          (import ./pkgs.nix {
-            inherit inputs;
-            overlays = overlays ++ extraOverlays ++ hostOverlays;
-          }) (host.system or "x86_64-linux")
-        else
-          mkPkgs (host.system or "x86_64-linux");
+      pkgs = hostPkgs host;
       lib = pkgs.lib;
+      # `mkNixos` defaults this to "mverte" instead. Not an oversight and
+      # not to be unified: both are frozen by consumers whose call sites
+      # cannot be updated from here.
       user = host.user or "mvertescher";
     in
     inputs.home-manager.lib.homeManagerConfiguration {

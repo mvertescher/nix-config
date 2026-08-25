@@ -1,3 +1,15 @@
+# The cyberpunk-ui toolkit and its screens.
+#
+# Do not `callPackage` this at a use site: `lib/overlays.nix` does it
+# once, and `pkgs.cyberpunk-ui` is the canonical instance that the GUI
+# module, the era builder and the golden matrix all name. Two
+# instantiations of one package are two things free to drift, and the
+# passthru tests below would then be evidence about the wrong one.
+#
+# `orbitron` is expected to be the overlay's `orbitron-vf` (this repo's
+# googlefonts/orbitron-vf build). nixpkgs' own `orbitron` is a much
+# older release with differently named files; preBuild tolerates it, but
+# it is not what the goldens were rendered against.
 { lib
 , runCommand
 , weston
@@ -116,10 +128,10 @@ in
 # has proven stable.
 #
 # To run them: `./scripts/run_test_matrix.sh`. Nothing else reaches
-# these -- the package takes callPackage arguments and this repo exports
-# no configurations -- so before that script existed everyone wrote
-# their own instantiation under /tmp, and one of those filled a 1.8 TB
-# disk. tests/matrix.nix is the door; it explains why.
+# these -- this repo exports no configurations, and a passthru is only
+# reachable through an overlaid `pkgs` -- so before that script existed
+# everyone wrote their own instantiation under /tmp, and one of those
+# filled a 1.8 TB disk. tests/matrix.nix is the door; it explains why.
 let
   # Each era's own scheme, so a case renders the palette the desktop
   # would actually publish rather than a copy of it. Editing a palette

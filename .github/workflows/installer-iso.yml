@@ -1,0 +1,116 @@
+# The installer ISO, built on the changes that can break it.
+#
+# This is the only real `nixosSystem` in this repo. check.yml deliberately
+# builds no host configuration -- there are none to build -- so until this
+# workflow existed, nothing in CI ever evaluated a NixOS module tree here.
+# `system/github-authorized-keys.nix` is shared with a wrapper's server
+# host and is exercised by this ISO and nothing else; an option rename in
+# a nixpkgs bump would have surfaced during a provisioning run, from a
+# console, at the worst possible moment.
+#
+# **This job exists because a number was wrong.** The ISO was written off
+# as un-buildable in CI on the belief that a runner has ~14 GB of disk.
+# That is the old standard-runner spec. Measured on a live `ubuntu-latest`
+# run on 2026-08-24: **145 GB total, 87 GB free.** The same stale figure
+# had put a 21 GB disk-reclaim step at the top of goldens.yml; that step
+# is gone too.
+#
+# Measured on terra (32 vCPU, empty chroot store via `nix build --store`,
+# pristine `git archive` of HEAD, so nothing was warm):
+#
+#     cold build            2m12s wall
+#     downloaded            1.40 GiB over 1401 paths from cache.nixos.org;
+#                           41 paths of the closure are ours and are built
+#     peak store            5.2 GB
+#     ISO image             1.38 GiB (1,480,048,640 bytes)
+#     system closure        2.3 GiB NAR, 781 paths
+#
+# 5.2 GB against 87 GB free is not close. The runner is 4 vCPU against
+# terra's 32 and mksquashfs is the parallel part, so expect this job to
+# take appreciably longer than 2m12s -- the "Report" step below prints
+# the real numbers so the first run replaces this estimate with a fact,
+# the way goldens.yml's header was written after its first run.
+#
+# Path-filtered, because the inputs move rarely: two commits have ever
+# touched `system/installer.nix`, `system/github-authorized-keys.nix` or
+# `lib/ssh-keys.nix`. The filter is `system/**` rather than those two
+# files, so a new module under `system/` cannot be added to the ISO
+# without this job noticing; `lib/ssh-keys.nix` is named individually
+# because `lib/**` is where the builder work happens and almost none of
+# it reaches this image -- installer.nix uses plain nixpkgs with no
+# overlays. That narrow entry cannot go stale silently: importing another
+# `lib/` file means editing `system/installer.nix`, which triggers the
+# run that would catch it.
+#
+# `flake.lock` is in the filter and is the point of the whole exercise. A
+# nixpkgs bump replaces the entire closure and is far more likely to
+# break this than any edit here; 18 of this repo's commits are lock
+# bumps.
+#
+# The ISO is **not** uploaded as an artefact. It has no consumer there:
+# a wrapper's provision-server.sh builds the image itself and serves it
+# over plain HTTP from a throwaway box, because Vultr silently refuses to
+# fetch an ISO from a GitHub URL. Uploading 1.38 GiB per run to be
+# downloaded by nobody is pure cost. This job answers "does it still
+# build", which is the question that was going unanswered.
+name: installer-iso
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "system/**"
+      - "lib/ssh-keys.nix"
+      - "flake.nix"
+      - "flake.lock"
+      - ".github/workflows/installer-iso.yml"
+  pull_request:
+    paths:
+      - "system/**"
+      - "lib/ssh-keys.nix"
+      - "flake.nix"
+      - "flake.lock"
+      - ".github/workflows/installer-iso.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: installer-iso-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  iso:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
+
+      - name: Disk before
+        run: df -h / | tail -1
+
+      # `.#` and not `path:.`: on a fresh checkout the two are equivalent,
+      # but `path:` copies untracked files, and on a working checkout that
+      # includes a cargo target/ -- 20 GB of it on terra, which is the
+      # same trap the crate's matrix runner guards against.
+      - name: Build the ISO
+        run: nix build --print-build-logs .#packages.x86_64-linux.installer-iso
+
+      # Numbers, not worries. Whatever this prints on the first run
+      # belongs in the header above, replacing the terra measurements.
+      - name: Report
+        run: |
+          echo "iso image:"
+          ls -l --block-size=M result/iso/*.iso
+          echo "closure of the iso derivation:"
+          nix path-info -Sh ./result
+          echo "store size:"
+          du -sh /nix/store
+
+      - name: Disk after
+        if: always()
+        run: df -h / | tail -1

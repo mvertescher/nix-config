@@ -6,13 +6,18 @@
 # would therefore surface at someone else's next pin bump rather than in
 # this repo. `checks.builder-api` is the in-repo consumer; this runs it.
 #
-# Deliberately narrow. It does **not** build a host configuration (there
-# are none), the installer ISO (a GitHub runner's ~14 GB disk cannot hold
-# the closure) or the cyberpunk-ui golden matrix (worth adding, but it
-# needs the disk freed and probably a binary cache first -- see the
-# wrapper's TODO). Everything here is evaluation plus one trivial
-# derivation, so it stays inside the free tier for public repositories
-# without a cache.
+# Deliberately narrow, and narrow on purpose rather than by necessity:
+# everything here is evaluation plus one trivial derivation, so it runs
+# in about thirty seconds on every push without a binary cache.
+#
+# The two heavier things this repo can check each got their own
+# path-filtered workflow instead, because `on:` applies a path filter per
+# workflow rather than per job: goldens.yml for the cyberpunk-ui matrix,
+# installer-iso.yml for the ISO. Both were once written off here as too
+# big for a runner, on a "~14 GB disk" figure that turned out to be the
+# old standard-runner spec -- a current `ubuntu-latest` has 145 GB with
+# 87 GB free, the matrix peaks near 6 GB and the ISO near 5 GB. That
+# sentence used to live in this comment; it was wrong.
 name: check
 
 on:

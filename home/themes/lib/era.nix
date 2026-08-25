@@ -49,13 +49,6 @@ let
 
   rolesLib = import ./roles.nix;
 
-  # Built here rather than taken from home.packages so the era owns its
-  # bar the way it owns every other component skin.
-  cyberpunk-ui = pkgs.callPackage ../../common/pkgs/cyberpunk-ui {
-    orbitron = pkgs.callPackage ../../common/pkgs/orbitron { };
-    rajdhani-fontshare = pkgs.callPackage ../../common/pkgs/rajdhani-fontshare { };
-  };
-
   useOwnBar = bar == "cyberpunk-ui";
 
   k = {
@@ -186,7 +179,14 @@ lib.mkMerge [
 
       pkgs.rofi
     ]
-    ++ lib.optional useOwnBar cyberpunk-ui;
+    # The era still puts its own bar into its own home.packages rather
+    # than relying on `home/common/gui` being imported: it owns its bar
+    # the way it owns every other component skin. What it no longer does
+    # is *build* one. `pkgs.cyberpunk-ui` comes from `lib/overlays.nix`
+    # and is the same derivation the GUI module and the golden matrix
+    # use, so "the era owns its bar" no longer also means "the era has a
+    # second copy of it, free to drift from the other one".
+    ++ lib.optional useOwnBar pkgs.cyberpunk-ui;
     fonts.fontconfig.enable = true;
 
     stylix = {
@@ -331,7 +331,7 @@ lib.mkMerge [
       };
       Service = {
         Type = "simple";
-        ExecStart = lib.getExe' cyberpunk-ui "cyberpunk-ui-bar";
+        ExecStart = lib.getExe' pkgs.cyberpunk-ui "cyberpunk-ui-bar";
         Restart = "on-failure";
         RestartSec = 3;
       };

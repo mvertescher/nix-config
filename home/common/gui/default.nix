@@ -1,15 +1,5 @@
 { pkgs, ... }:
 
-let
-  orbitron = pkgs.callPackage ../pkgs/orbitron {};
-  rajdhani-fontshare = pkgs.callPackage ../pkgs/rajdhani-fontshare {};
-  # `entropism-ui` was the one-era predecessor and is gone: cyberpunk-ui
-  # wears entropism as one of four, and its login, mailbox, store and
-  # dashboard screens replace that crate's.
-  cyberpunk-ui = pkgs.callPackage ../pkgs/cyberpunk-ui {
-    inherit orbitron rajdhani-fontshare;
-  };
-in
 {
   imports = [
     ./alacritty.nix
@@ -18,9 +8,13 @@ in
     ./vscode.nix
   ];
 
+  # All three come from this repo's overlay (see `lib/overlays.nix`), not
+  # from a `callPackage` here: `home/themes/lib/era.nix` needs the same
+  # cyberpunk-ui for its bar unit, and two instantiations of one package
+  # are two things free to drift.
   home.packages = with pkgs; [
     # etcher
-    orbitron
+    orbitron-vf
     rajdhani-fontshare
     wireshark
 
@@ -30,6 +24,9 @@ in
   ] ++ lib.optionals (stdenv.isLinux) [
     # google-chrome
     libreoffice
+    # `entropism-ui` was the one-era predecessor and is gone: cyberpunk-ui
+    # wears entropism as one of four, and its login, mailbox, store and
+    # dashboard screens replace that crate's.
     cyberpunk-ui
     obs-studio
     qutebrowser
