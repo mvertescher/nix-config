@@ -300,6 +300,7 @@ fi
 log "attaching ISO (instance will reboot into it)"
 vcurl -X POST "$API/instances/$instance_id/iso/attach" \
   -H 'Content-Type: application/json' -d "{\"iso_id\": \"$iso_id\"}" >/dev/null
+vcurl -X POST "$API/instances/$instance_id/reboot" >/dev/null 2>&1 || true
 sleep 15 # let the reboot begin so we don't hit the old system's sshd
 
 # --- 4. Install ---
