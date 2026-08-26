@@ -10,6 +10,7 @@ let
 
     llmAgentsOverlay = final: prev: {
         claude-code = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}.claude-code;
+        antigravity-cli = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}.antigravity-cli;
     };
 
     # This repo's own packages, so there is exactly one instance of each.

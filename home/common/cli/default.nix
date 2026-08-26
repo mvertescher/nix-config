@@ -27,6 +27,7 @@ in
       # gcc-arm-embedded
       # puncover
       android-tools
+      antigravity-cli
       asciinema
       bazel # google build tool
       ccache
@@ -78,11 +79,14 @@ in
       rclone # cloud storage sync (Google Drive, S3, etc.)
       ripgrep # better grep
       socat
+      sops
+      ssh-to-age
       sqlite
       tokei
       tree
       uhubctl
       unzip
+      vultr-cli
       whois
       writedisk
     ]
