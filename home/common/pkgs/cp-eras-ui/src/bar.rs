@@ -864,8 +864,8 @@ fn host_tape<'a, Message: 'static>(style: &Style, host: &'a str) -> Element<'a, 
     .into()
 }
 
-/// The whole bar. `height` should match `Metrics::bar`, which is also
-/// what the layer surface reserves as its exclusive zone.
+/// The whole bar. `height` should match `Style::bar.height`, which is
+/// also what the layer surface reserves as its exclusive zone.
 ///
 /// `on_tray` is how a clicked tray cell gets back to whoever can talk
 /// to the item; `None` draws the same bar with no hit-testing at all.

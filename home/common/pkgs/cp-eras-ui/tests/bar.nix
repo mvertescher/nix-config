@@ -25,7 +25,7 @@
 # both binaries use to resolve their era. If they resolved it separately
 # the goldens would be evidence about a style the live bar never wears.
 #
-# 220px tall rather than the bar's own 26: `weston --width/--height`
+# 220px tall rather than the bar's own 31: `weston --width/--height`
 # sets the output, the kiosk shell fullscreens the window into it, and a
 # 26px strip is unreadable as a screenshot. The extra ground under the
 # bar also puts the era's background role into the diff.

@@ -80,7 +80,7 @@ pub struct Bar {
 impl Default for Bar {
     fn default() -> Self {
         Bar {
-            height: 26,
+            height: 31,
             host_tape: true,
         }
     }
@@ -432,11 +432,6 @@ impl Style {
         self.palette.ornaments.banner.is_some()
     }
 
-    /// The highlight band behind key figures, as `(fill, ink)`.
-    pub fn emphasis(&self) -> (Color, Color) {
-        self.palette.emphasis_band()
-    }
-
     /// The lit and shaded edges of a raised surface, as
     /// `(bevel, shade)`. Equal in an era with no relief, which draws
     /// the flat box the minimalist eras already use.
@@ -447,11 +442,6 @@ impl Style {
     /// Colour for non-structural decoration -- curls, strata, flags.
     pub fn ornament(&self) -> Color {
         self.palette.ornament()
-    }
-
-    /// Fill for a recessed well: input fields, sockets.
-    pub fn inset(&self) -> Color {
-        self.palette.inset()
     }
 
     /// The style for whatever era the desktop is currently in, with the

@@ -239,13 +239,6 @@ impl Palette {
         self.banner_selected.unwrap_or((ink, fill))
     }
 
-    /// The highlight band as `(fill, ink)`, falling back to a quiet
-    /// panel with ordinary body text -- an era with no band still gets
-    /// a legible one.
-    pub fn emphasis_band(&self) -> (Color, Color) {
-        self.emphasis.unwrap_or((self.panel, self.fg))
-    }
-
     /// The two edges of a raised surface as `(bevel, shade)`. With no
     /// relief declared both are `border`, which draws the flat 1px box
     /// the minimalist eras already use.
@@ -257,13 +250,6 @@ impl Palette {
     /// draws its flourishes in line-work, or draws none.
     pub fn ornament(&self) -> Color {
         self.ornaments.ornament.unwrap_or(self.fg)
-    }
-
-    /// Recessed fill, falling back to `bg` -- a well that reads as a
-    /// hole cut through to the page, which is what entropism's and
-    /// neomil's input boxes are.
-    pub fn inset(&self) -> Color {
-        self.ornaments.inset.unwrap_or(self.bg)
     }
 
     /// Same, but driven by a loaded [`Theme`].
