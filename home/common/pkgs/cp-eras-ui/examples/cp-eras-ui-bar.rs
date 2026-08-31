@@ -14,12 +14,12 @@
 //! is a line of text over a unix socket, so the dependency bought little
 //! and the licence question was not worth inheriting.
 //!
-//! Readings split by cost. The cheap ones -- clock, CPU, memory, and
-//! Hyprland's two IPC round trips over a local socket -- are taken
-//! inline on the tick. The three that can stall (a PulseAudio
-//! handshake, a wireless driver, another process answering a D-Bus
-//! call) live on their own threads in `bar/`, publish snapshots, and
-//! are read here without waiting. See `bar/sensor.rs`.
+//! Readings split by cost. The cheap ones -- clock, CPU, and memory --
+//! are taken inline on the tick. The four that can stall (Hyprland's
+//! IPC socket under load, a PulseAudio handshake, a wireless driver,
+//! another process answering a D-Bus call) live on their own threads
+//! in `bar/`, publish snapshots, and are read here without waiting.
+//! See `bar/sensor.rs`.
 //!
 //! ## Two surfaces, and why the second one is the whole screen
 //!
@@ -89,6 +89,8 @@
 
 #[path = "bar/audio.rs"]
 mod audio;
+#[path = "bar/hypr.rs"]
+mod hypr;
 #[path = "bar/icon.rs"]
 mod icon;
 #[path = "bar/network.rs"]
@@ -101,7 +103,7 @@ mod style;
 mod tray;
 
 use cp_eras_ui::bar::{
-    bar, tray_menu, MenuEntry, MenuPath, Readings, TrayAction, TrayMenu, Workspace,
+    bar, tray_menu, MenuEntry, MenuPath, Readings, TrayAction, TrayMenu,
 };
 use cp_eras_ui::Style;
 use iced::widget::{column, container, mouse_area, row, Space};
@@ -110,7 +112,6 @@ use iced_layershell::build_pattern::{daemon, MainSettings};
 use iced_layershell::reexport::{Anchor, KeyboardInteractivity, Layer, NewLayerShellSettings};
 use iced_layershell::settings::LayerShellSettings;
 use iced_layershell::to_layer_message;
-use std::io::{Read, Write};
 use std::time::Duration;
 
 /// A menu that has been asked for and not yet arrived.
@@ -160,6 +161,7 @@ struct BarApp {
     system: sysinfo::System,
     audio: audio::Monitor,
     network: network::Monitor,
+    hypr: hypr::Monitor,
     tray: tray::Monitor,
     /// Last pointer position, in surface pixels. Both surfaces span the
     /// output's width, so this is an output x either way.
@@ -212,6 +214,7 @@ impl BarApp {
             system: sysinfo::System::new(),
             audio: audio::Monitor::spawn(),
             network: network::Monitor::spawn(),
+            hypr: hypr::Monitor::spawn(),
             tray: tray::Monitor::spawn(tray),
             pointer: 0.0,
             pending: None,
@@ -494,17 +497,20 @@ impl BarApp {
         self.readings.memory = ((self.system.used_memory() * 100) / total).min(100) as u8;
 
         // Snapshots from the sensor threads: whatever they have as of
-        // now, never a wait for something newer.
+        // now, never a wait for something newer. Hyprland's socket is
+        // one of them for the same reason the tray is -- a busy
+        // compositor can take half a second to answer, and a frame
+        // must not wait on it.
         self.readings.audio = self.audio.reading();
         self.readings.network = self.network.reading();
+        let hypr = self.hypr.reading();
+        self.readings.workspaces = hypr.workspaces;
+        self.readings.window = hypr.window;
         self.readings.tray = self.tray.reading();
 
         let now = chrono::Local::now();
         self.readings.clock = now.format("%H:%M").to_string();
         self.readings.date = now.format("%Y-%m-%d").to_string();
-
-        self.readings.workspaces = workspaces();
-        self.readings.window = active_window();
     }
 }
 
@@ -534,90 +540,6 @@ fn option(name: &str) -> Option<String> {
 fn hostname() -> String {
     std::fs::read_to_string("/etc/hostname")
         .map(|s| s.trim().to_string())
-        .unwrap_or_default()
-}
-
-/// One request/response over Hyprland's IPC socket.
-///
-/// Returns None rather than propagating: a bar that vanishes because the
-/// compositor socket hiccuped is worse than one showing a stale
-/// workspace, and every caller here has a reasonable empty case.
-fn hypr(command: &str) -> Option<String> {
-    let sig = std::env::var("HYPRLAND_INSTANCE_SIGNATURE").ok()?;
-    let runtime = std::env::var("XDG_RUNTIME_DIR").ok()?;
-    let path = format!("{runtime}/hypr/{sig}/.socket.sock");
-
-    let mut sock = std::os::unix::net::UnixStream::connect(path).ok()?;
-    sock.set_read_timeout(Some(Duration::from_millis(200)))
-        .ok()?;
-    sock.write_all(command.as_bytes()).ok()?;
-
-    let mut out = String::new();
-    sock.read_to_string(&mut out).ok()?;
-    Some(out)
-}
-
-/// Parsed from the plain-text form rather than `j/`, to avoid taking a
-/// JSON dependency for two fields.
-///
-/// `workspaces` lists every workspace as "workspace ID <n> (<name>) on
-/// monitor <m>:", and `activeworkspace` names the current one.
-fn workspaces() -> Vec<Workspace> {
-    let active = hypr("activeworkspace")
-        .and_then(|s| parse_workspace_id(&s))
-        .unwrap_or(-1);
-
-    let mut ids: Vec<i32> = hypr("workspaces")
-        .map(|s| s.lines().filter_map(parse_workspace_line).collect())
-        .unwrap_or_default();
-
-    // The compositor lists them in creation order, which jumps around as
-    // workspaces come and go; the bar wants them stable.
-    ids.sort_unstable();
-    ids.dedup();
-
-    if ids.is_empty() && active >= 0 {
-        ids.push(active);
-    }
-
-    ids.into_iter()
-        .map(|id| Workspace {
-            id,
-            active: id == active,
-        })
-        .collect()
-}
-
-fn parse_workspace_line(line: &str) -> Option<i32> {
-    let rest = line.trim().strip_prefix("workspace ID ")?;
-    rest.split_whitespace().next()?.parse().ok()
-}
-
-fn parse_workspace_id(reply: &str) -> Option<i32> {
-    reply.lines().find_map(parse_workspace_line)
-}
-
-/// `activewindow` returns a block of "key: value" lines; the title is
-/// the one worth showing. Empty when nothing is focused, which is a
-/// normal state rather than a failure.
-fn active_window() -> String {
-    let Some(reply) = hypr("activewindow") else {
-        return String::new();
-    };
-    reply
-        .lines()
-        .find_map(|l| l.trim().strip_prefix("title: "))
-        .map(|t| {
-            let t = t.trim();
-            // Long titles push the right-hand modules off a narrow
-            // screen, so clip rather than let the layout fight back.
-            if t.chars().count() > 90 {
-                let clipped: String = t.chars().take(89).collect();
-                format!("{clipped}…")
-            } else {
-                t.to_string()
-            }
-        })
         .unwrap_or_default()
 }
 

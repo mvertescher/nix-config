@@ -1,10 +1,21 @@
+//! The traced floppy -- the neomil-only ornament that survived the
+//! toolkit generalisation (see `widgets/mod.rs`). The vector itself is
+//! era-free art, but the no-literal rule applies to it like anything
+//! else: the two colours it layers are read from the neomil era table
+//! ([`crate::eras::neomil`]) rather than restated. The hot red covers
+//! the washes; the ambient glow blue covers the body -- the closest
+//! sampled role to the literal dark blue (#0E0E17) this used to carry,
+//! which is not a neomil colour.
+
 use iced::widget::canvas;
 use iced::Color;
 
+use crate::eras::neomil::{GLOW, RED_HOT};
+
 /// Draw the vectorized floppy (selected)
 pub fn draw_selected(frame: &mut canvas::Frame) {
-    let red = Color::new(0.953, 0.204, 0.204, 1.0);
-    let darkest_blue = Color::new(0.055, 0.055, 0.090, 1.0);
+    let red = RED_HOT;
+    let darkest_blue = GLOW;
 
     let path = canvas::Path::new(|builder| {
         builder.move_to(iced::Point::new(20.00, 134.00));
@@ -186,8 +197,8 @@ pub fn draw_selected(frame: &mut canvas::Frame) {
 
 /// Draw the vectorized floppy (unselected)
 pub fn draw_unselected(frame: &mut canvas::Frame) {
-    let red = Color::new(0.953, 0.204, 0.204, 1.0);
-    let darkest_blue = Color::new(0.055, 0.055, 0.090, 1.0);
+    let red = RED_HOT;
+    let darkest_blue = GLOW;
 
     let path = canvas::Path::new(|builder| {
         builder.move_to(iced::Point::new(20.00, 134.00));

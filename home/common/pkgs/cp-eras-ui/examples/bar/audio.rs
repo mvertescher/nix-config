@@ -37,6 +37,25 @@ const HANDSHAKE_TIMEOUT: Duration = Duration::from_secs(5);
 const RETRY_MIN: Duration = Duration::from_secs(1);
 const RETRY_MAX: Duration = Duration::from_secs(30);
 
+/// How often to ask a quiet server to confirm it is still alive. A
+/// healthy PulseAudio server sends nothing while the volume is
+/// untouched, so without a standing request the watchdog could not
+/// tell a working server from a hung one that keeps the connection
+/// open.
+const PROBE_INTERVAL: Duration = Duration::from_secs(5);
+
+/// How much silence is allowed before the connection is declared
+/// stalled. Three probe windows: a server that is alive answers one of
+/// the standing requests in that time, and a hung one answers none.
+/// Generous enough not to punish a server that is merely busy, short
+/// enough that a dead volume reading cannot outlive its welcome.
+const STALL_TIMEOUT: Duration = Duration::from_secs(15);
+
+/// Pacing for the non-blocking mainloop loop. Ten wakeups a second is
+/// nothing measurable, while keeping a probe reply -- and therefore a
+/// stalled-server verdict -- within a tenth of a second of the truth.
+const PUMP_SLEEP: Duration = Duration::from_millis(100);
+
 /// The bar's handle on the sink.
 pub struct Monitor {
     latest: Latest<Option<Audio>>,
@@ -151,7 +170,7 @@ fn session(shared: &Snapshot<Option<Audio>>) -> bool {
         .borrow_mut()
         .subscribe(InterestMaskSet::SINK | InterestMaskSet::SERVER, |_| {});
 
-    pump(&mainloop, &context);
+    pump(&mainloop, &context, shared);
 
     // The subscribe callback holds an `Rc` to the context and the
     // context owns the callback: a cycle that would strand one
@@ -161,19 +180,61 @@ fn session(shared: &Snapshot<Option<Audio>>) -> bool {
     true
 }
 
-/// Run the mainloop until the connection stops being usable.
+/// Run the mainloop until the server stops being believable.
 ///
-/// `iterate(true)` blocks until the server has something to say, so a
-/// machine whose volume nobody is touching costs no CPU at all.
-fn pump(mainloop: &Rc<RefCell<Mainloop>>, context: &Rc<RefCell<Context>>) {
+/// The loop must not block on `iterate(true)`: a server that hangs
+/// *without* dropping the connection would leave a blocked iterate --
+/// and the last volume -- on screen forever. So the loop iterates
+/// without blocking and sleeps briefly instead. `iterate` reports how
+/// many sources it dispatched, and a count above zero is exactly "the
+/// server said something", which is the heartbeat the watchdog needs.
+/// Real events are dispatched on the next iterate, at most one sleep
+/// later, so a volume key still lands well inside a bar frame.
+fn pump(
+    mainloop: &Rc<RefCell<Mainloop>>,
+    context: &Rc<RefCell<Context>>,
+    shared: &Snapshot<Option<Audio>>,
+) {
+    // The last moment the server actually spoke: a subscription event,
+    // or a reply to one of the probe requests sent below. Seeded to
+    // "now" so a server that never answers even the first request is
+    // only given the stall window, not a head start.
+    let mut last_talk = Instant::now();
+    let mut last_probe = Instant::now();
+
     loop {
-        match mainloop.borrow_mut().iterate(true) {
-            IterateResult::Success(_) => {}
+        match mainloop.borrow_mut().iterate(false) {
+            IterateResult::Success(dispatched) => {
+                // Zero is a normal quiet iteration; anything above
+                // zero is the server answering us.
+                if dispatched > 0 {
+                    last_talk = Instant::now();
+                }
+            }
             IterateResult::Quit(_) | IterateResult::Err(_) => return,
         }
         if !matches!(context.borrow().get_state(), State::Ready) {
+            // Dropped, failed, or never got here: the connection is
+            // over either way.
             return;
         }
+
+        let now = Instant::now();
+        if now.duration_since(last_talk) >= STALL_TIMEOUT {
+            // The whole stall window with nothing back: the server is
+            // hung but still holding the connection. Believe it no
+            // longer -- the caller drops the reading and reconnects,
+            // so the module is absent rather than stale.
+            return;
+        }
+        if now.duration_since(last_probe) >= PROBE_INTERVAL {
+            // Ask for the sink list again. An idle-but-alive server
+            // answers, which keeps `last_talk` fresh; a hung one does
+            // not, which is what the stall check above is waiting for.
+            last_probe = now;
+            request(context, shared);
+        }
+        thread::sleep(PUMP_SLEEP);
     }
 }
 

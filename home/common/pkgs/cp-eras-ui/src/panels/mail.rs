@@ -14,7 +14,7 @@
 //! Nothing below branches on era.
 
 use crate::palette::Palette;
-use crate::style::Style;
+use crate::style::{Chrome, Metrics, Style};
 use crate::widgets::surface::{backdrop, surface, Surface};
 use crate::widgets::{footer, ground, text, top_bar};
 use iced::widget::{column, container, mouse_area, row, scrollable, stack, Space};
@@ -79,7 +79,7 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
     let content_line = fade(s.palette.border, focus == MailFocus::Content);
 
     // --- Left: the message list ---
-    let mut list = column![].spacing(s.metrics.gap * 0.5).width(Length::Fill);
+    let mut list = column![].spacing(s.metrics.gap * LIST_GAP_FACTOR).width(Length::Fill);
     for email in emails {
         list = list.push(message_row(
             s,
@@ -185,6 +185,41 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
     stack![ground(s), container(screen).padding(40)].into()
 }
 
+/// The height the message-list scrollable is laid out at inside a window
+/// of `window_height`, reconstructed from this panel's own chrome.
+///
+/// The list scrollable is `Length::Fill` (above), so iced gives it exactly
+/// what the fixed chrome leaves: the 40px screen padding top and bottom,
+/// the era's top bar and footer (fixed heights from
+/// [`crate::widgets::top_bar`] / [`crate::widgets::footer`], both in
+/// `widgets/chrome.rs`), the MESSAGES pane heading ([`pane_heading`]), and
+/// the three `metrics.gap` steps between them. Text lines count as
+/// `size * 1.3`, iced's default relative line height.
+///
+/// Single source for the `cp-eras-ui-mail` example's `scroll_to_selected`
+/// clamp, so it lives next to the layout it summarises: if the chrome
+/// above or below the list changes, this function is the number that must
+/// move with it. [`message_row_pitch`] is the matching single source for
+/// the row pitch.
+pub fn mail_list_viewport_height(style: &Style, window_height: f32) -> f32 {
+    let m = &style.metrics;
+    let line = |size: u16| f32::from(size) * 1.3;
+    let top_bar = match style.chrome {
+        Chrome::Segmented => 28.0,
+        Chrome::Tape => 24.0,
+        Chrome::Caption | Chrome::DeviceFrame => line(m.text_caption),
+    };
+    let footer = match style.chrome {
+        Chrome::Segmented => 1.0 + 16.0 + line(m.text_body),
+        Chrome::Tape => 16.0 + line(m.text_body),
+        Chrome::Caption => line(m.text_caption + 2),
+        Chrome::DeviceFrame => 30.0 + 8.0 + line(m.text_body),
+    };
+    // `pane_heading`: its 5px vertical padding twice, plus a body line.
+    let heading = 10.0 + line(m.text_body);
+    window_height - 80.0 - top_bar - footer - heading - 3.0 * m.gap
+}
+
 /// The boxed caption that heads each pane.
 fn pane_heading<'a, Message: 'static>(
     style: &Style,
@@ -198,6 +233,23 @@ fn pane_heading<'a, Message: 'static>(
         text::body(style, label).color(ink),
     )]
     .into()
+}
+
+/// One message row is a fixed-height card ([`message_row`] pins it) and
+/// the list column spaces sibling rows by half the era's gap. Both
+/// builders read these same numbers, so anything that maps a message
+/// index to a y-offset cannot drift from the panel.
+pub const MESSAGE_ROW_HEIGHT: f32 = 52.0;
+
+/// Fraction of the era's gap that sits between two message rows.
+const LIST_GAP_FACTOR: f32 = 0.5;
+
+/// Vertical pitch of the message list: one fixed-height row plus the
+/// half-gap below it. Single source for scroll geometry -- the mail
+/// example's `scroll_to_selected` -- alongside
+/// [`mail_list_viewport_height`].
+pub fn message_row_pitch(metrics: &Metrics) -> f32 {
+    MESSAGE_ROW_HEIGHT + metrics.gap * LIST_GAP_FACTOR
 }
 
 /// One row of the list. Selection is the era's own idiom, so a
@@ -251,7 +303,7 @@ fn message_row<'a, Message: 'static + Clone>(
     mouse_area(
         container(surface(bg, Padding::from([6, 10]), content))
             .width(Length::Fill)
-            .height(Length::Fixed(52.0)),
+            .height(Length::Fixed(MESSAGE_ROW_HEIGHT)),
     )
     .on_press(on_press)
     .into()
@@ -427,7 +479,8 @@ fn table<'a, Message: 'static>(
         return grid.into();
     }
 
-    // A wash of the era's own ink, not `Style::emphasis()`. That band
+    // A wash of the era's own ink, not `palette.emphasis` (the whole
+    // band). That band
     // is kitsch's mint stat strip and degrades to `panel` -- which is
     // the desktop's *bar* colour, and lands a blue-grey header row in
     // the middle of a three-red era. Seen in a neomil render.

@@ -1,4 +1,4 @@
-use iced::{Element, Length, Color, Task};
+use iced::{Element, Length, Task};
 use iced::widget::{column, row, container, text, Space, canvas};
 use cp_eras_ui::fonts;
 use cp_eras_ui::Era;
@@ -32,9 +32,13 @@ pub fn main() -> iced::Result {
         // interaction ornament, not part of the shared vocabulary -- so
         // its bench is deliberately dressed in that one era rather than
         // following the desktop.
-        .style(|_state, _theme| iced::application::Appearance {
-            background_color: Era::Neomil.style().palette.bg,
-            text_color: Color::WHITE,
+        .style(|_state, _theme| {
+            let palette = Era::Neomil.style().palette;
+            iced::application::Appearance {
+                background_color: palette.bg,
+                // The sampled off-white, not a literal white.
+                text_color: palette.tape,
+            }
         })
         .run()
 }
@@ -51,7 +55,12 @@ impl App {
     }
 
     fn view(&self) -> Element<'_, Message> {
-        let color_accent = Color::from_rgb8(0xFF, 0x4B, 0x4B); // Bright red
+        // The bench is dressed in neomil, so every colour here is read
+        // from the era palette rather than written as a literal: the
+        // hot red (`alert`) for the floppy and its labels, and the
+        // sampled off-white (`tape`) for the heading.
+        let palette = Era::Neomil.style().palette;
+        let color_accent = palette.alert;
 
         // --- DIFF MODE (Visual Regression) ---
         // Renders ONLY the floppy icon filling the entire window for pixel-perfect diffing.
@@ -165,7 +174,7 @@ impl App {
             text("NEOMIL // FLOPPY ICON COMPARISON")
                 .font(fonts::FONT_ORBITRON_BOLD)
                 .size(20)
-                .color(Color::WHITE),
+                .color(palette.tape),
             Space::with_height(30),
             row_1x,
             Space::with_height(30),

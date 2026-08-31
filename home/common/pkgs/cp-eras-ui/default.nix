@@ -88,14 +88,18 @@ let
   '';
 
   postFixup = ''
-    for bin in cp-eras-ui-bar cp-eras-ui-bar-window cp-eras-ui-store cp-eras-ui-login \
-              cp-eras-ui-mailbox cp-eras-ui-dashboard cp-eras-ui-mail cp-eras-ui-floppy; do
+    # Wrap every binary that landed in $out/bin: this covers any current
+    # or future [[bin]] in Cargo.toml, so a new binary can never ship
+    # unwrapped (no WGPU_POWER_PREF high, no LD_LIBRARY_PATH -> silent
+    # black window). Guard against non-files just in case.
+    for bin in $out/bin/*; do
+      [ -f "$bin" ] || continue
       # This machine class exposes several Vulkan adapters (discrete
       # nvidia, the CPU's integrated RADV, llvmpipe). wgpu otherwise
       # picks one that cannot present to the display and the app draws a
       # solid black window - alive, silent, no error. set-default so it
       # can still be overridden.
-      wrapProgram $out/bin/$bin \
+      wrapProgram "$bin" \
         --set-default WGPU_POWER_PREF high \
         --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [
           vulkan-loader

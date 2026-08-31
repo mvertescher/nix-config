@@ -12,9 +12,16 @@
 //! --era handling; it is the same here.
 
 use cp_eras_ui::fonts;
-use cp_eras_ui::panels::{mail_panel, Email, MailFocus, ThreadMessage};
+use cp_eras_ui::panels::{
+    mail::{mail_list_viewport_height, message_row_pitch},
+    mail_panel, Email, MailFocus, ThreadMessage,
+};
 use cp_eras_ui::{Era, Style};
 use iced::{keyboard, Element, Event, Subscription, Task};
+
+/// Launch size. `scroll_to_selected` derives the message-list viewport
+/// from the height, so both must share this one number.
+const WINDOW_SIZE: (f32, f32) = (1600.0, 900.0);
 
 pub fn main() -> iced::Result {
     let style = match era_from_args() {
@@ -40,7 +47,7 @@ pub fn main() -> iced::Result {
         .font(fonts::RAJDHANI_SEMIBOLD)
         .font(fonts::RAJDHANI_BOLD)
         .default_font(fonts::FONT_RAJDHANI_REGULAR)
-        .window_size((1600.0, 900.0))
+        .window_size(WINDOW_SIZE)
         .antialiasing(true)
         .subscription(App::subscription)
         .run_with(move || (App::new(style), Task::none()))
@@ -316,8 +323,10 @@ impl App {
     fn scroll_to_selected(&self) -> Task<Message> {
         if let Some(selected_id) = self.selected_id {
             if let Some(index) = self.emails.iter().position(|e| e.id == selected_id) {
-                let item_height = 70.0; // 60px card + 10px spacing
-                let viewport_height = 600.0; // Estimated viewport height
+                // Derived from the panel's own geometry (panels/mail.rs):
+                // row pitch and list viewport, not estimates.
+                let item_height = message_row_pitch(&self.style.metrics);
+                let viewport_height = mail_list_viewport_height(&self.style, WINDOW_SIZE.1);
                 let total_items = self.emails.len();
 
                 let target_y = (index as f32) * item_height;
@@ -424,44 +433,35 @@ impl App {
                 return self.delete_email(id);
             }
             Message::Event(event) => {
-                if let Event::Keyboard(ref kevent) = event {
-                    println!("DEBUG: Keyboard event: {:?}", kevent);
-                }
                 if let Event::Keyboard(keyboard::Event::KeyPressed { key, modifiers, .. }) = event {
                     match key {
                         keyboard::Key::Character(c) => {
                             let ctrl = modifiers.control();
                             match c.as_str() {
                                 "f" if ctrl => {
-                                    println!("DEBUG: Ctrl-F pressed, scrolling page down");
                                     return iced::widget::scrollable::scroll_by(
                                         self.content_scrollable_id.clone(),
                                         iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: 400.0 },
                                     );
                                 }
                                 "b" if ctrl => {
-                                    println!("DEBUG: Ctrl-B pressed, scrolling page up");
                                     return iced::widget::scrollable::scroll_by(
                                         self.content_scrollable_id.clone(),
                                         iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: -400.0 },
                                     );
                                 }
                                 "a" => {
-                                    println!("DEBUG: 'a' pressed, adding email");
                                     self.add_random_email();
                                 }
                                 "d" => {
-                                    println!("DEBUG: 'd' pressed, deleting email");
                                     if let Some(id) = self.selected_id {
                                         return self.delete_email(id);
                                     }
                                 }
                                 "h" => {
-                                    println!("DEBUG: 'h' pressed, focusing List");
                                     self.focus = MailFocus::List;
                                 }
                                 "l" => {
-                                    println!("DEBUG: 'l' pressed, focusing Content");
                                     if self.selected_id.is_some() {
                                         self.focus = MailFocus::Content;
                                     } else if let Some(first) = self.emails.first() {
@@ -473,7 +473,6 @@ impl App {
                                 "j" => {
                                     match self.focus {
                                         MailFocus::List => {
-                                            println!("DEBUG: 'j' pressed in List focus, navigating down");
                                             let next_id = if let Some(selected_id) = self.selected_id {
                                                 if let Some(index) = self.emails.iter().position(|e| e.id == selected_id) {
                                                     if index < self.emails.len() - 1 {
@@ -492,7 +491,6 @@ impl App {
                                             }
                                         }
                                         MailFocus::Content => {
-                                            println!("DEBUG: 'j' pressed in Content focus, scrolling down");
                                             return iced::widget::scrollable::scroll_by(
                                                 self.content_scrollable_id.clone(),
                                                 iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: 30.0 },
@@ -503,7 +501,6 @@ impl App {
                                 "k" => {
                                     match self.focus {
                                         MailFocus::List => {
-                                            println!("DEBUG: 'k' pressed in List focus, navigating up");
                                             let prev_id = if let Some(selected_id) = self.selected_id {
                                                 if let Some(index) = self.emails.iter().position(|e| e.id == selected_id) {
                                                     if index > 0 {
@@ -522,7 +519,6 @@ impl App {
                                             }
                                         }
                                         MailFocus::Content => {
-                                            println!("DEBUG: 'k' pressed in Content focus, scrolling up");
                                             return iced::widget::scrollable::scroll_by(
                                                 self.content_scrollable_id.clone(),
                                                 iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: -30.0 },
