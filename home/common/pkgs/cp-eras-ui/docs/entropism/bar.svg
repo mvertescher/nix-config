@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="220" viewBox="0 0 1600 220" font-family="Rajdhani">
+  <!-- ENTROPISM BAR reference.
+       "Necessity over style": one sage hue, square everything, 1px strokes.
+       Sampled palette (docs/entropism/README.md): bg #110c07, sage solid #9cb795,
+       sage text #94bb94, mid #728f76, outline #5d7752, dim #3d4d38, on-solid #1f2a1c.
+       Golden geometry: 1600x220; bar strip 31px at top, tray menu beneath, right edge
+       at x=1480 (120px margin). Layout mirrors src/bar.rs + examples/cp-eras-ui-bar-window.rs
+       (sample readings): host tape, six workspaces (3 active), centred window label
+       (dim), tray (FLAM icon, ELEM icon w/ alert stroke, BLUE, SYNC alert),
+       WIFI AFTERLIFE, VOL 62%, CPU 12%, MEM 47%, date, clock (filled sage). -->
+  <rect width="1600" height="220" fill="#110c07"/>
+
+  <!-- ============ BAR STRIP (cells y 3..28, 25px tall, square corners) ============ -->
+  <g font-size="14">
+
+    <!-- host tape: filled mid, bg ink -->
+    <rect x="6" y="3" width="71" height="25" fill="#728f76"/>
+    <text x="18" y="20" fill="#110c07">nomad</text>
+
+    <!-- workspaces 1..6; 3 active = solid sage fill, dark ink -->
+    <rect x="82.6" y="3" width="35" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="100.1" y="20" text-anchor="middle" fill="#94bb94">1</text>
+    <rect x="123.2" y="3" width="35" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="140.7" y="20" text-anchor="middle" fill="#94bb94">2</text>
+    <rect x="163.8" y="3" width="35" height="25" fill="#9cb795"/>
+    <text x="181.3" y="20" text-anchor="middle" fill="#1f2a1c">3</text>
+    <rect x="204.4" y="3" width="35" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="221.9" y="20" text-anchor="middle" fill="#94bb94">4</text>
+    <rect x="245.0" y="3" width="35" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="262.5" y="20" text-anchor="middle" fill="#94bb94">5</text>
+    <rect x="285.6" y="3" width="35" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="303.1" y="20" text-anchor="middle" fill="#94bb94">6</text>
+
+    <!-- centred window label: dim -->
+    <text x="550.1" y="20" text-anchor="middle" fill="#3d4d38">~/src/cp-eras-ui - nvim src/bar.rs</text>
+
+    <!-- tray: FLAM icon, ELEM icon (attention -> alert stroke), BLUE label, SYNC alert -->
+    <rect x="779.6" y="3" width="37" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <path d="M 788.6 15.5 L 798.1 6 L 807.6 15.5 L 798.1 25 Z" fill="#8800aa"/>
+    <rect x="822.2" y="3" width="37" height="25" fill="none" stroke="#728f76" stroke-width="1"/>
+    <path d="M 831.2 15.5 L 840.7 6 L 850.2 15.5 L 840.7 25 Z" fill="#ff6600"/>
+    <rect x="864.8" y="3" width="59" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="894.3" y="20" text-anchor="middle" fill="#94bb94">BLUE</text>
+    <rect x="929.4" y="3" width="59" height="25" fill="none" stroke="#728f76" stroke-width="1"/>
+    <text x="958.9" y="20" text-anchor="middle" fill="#728f76">SYNC</text>
+
+    <rect x="994" y="3" width="140" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="1064" y="20" text-anchor="middle" fill="#94bb94">WIFI AFTERLIFE</text>
+    <rect x="1139.6" y="3" width="91" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="1185.1" y="20" text-anchor="middle" fill="#94bb94">VOL  62%</text>
+    <rect x="1236.2" y="3" width="83" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="1277.7" y="20" text-anchor="middle" fill="#94bb94">CPU 12%</text>
+    <rect x="1324.8" y="3" width="83" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="1366.3" y="20" text-anchor="middle" fill="#94bb94">MEM 47%</text>
+    <rect x="1413.4" y="3" width="108" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="1467.4" y="20" text-anchor="middle" fill="#94bb94">2026-08-23</text>
+    <rect x="1527" y="3" width="67" height="25" fill="#9cb795"/>
+    <text x="1560.5" y="20" text-anchor="middle" fill="#1f2a1c">23:41</text>
+  </g>
+
+  <!-- ============ TRAY MENU ============
+       root panel filled bg, outlined; selected rows solid sage.
+       open chain: row 0 (Devices) submenu -> panel to its LEFT (chain grows left). -->
+  <!-- Devices submenu: Mount / Eject -->
+  <rect x="1141" y="31" width="140" height="63.2" fill="#110c07" stroke="#5d7752" stroke-width="1"/>
+  <g font-size="14">
+    <path d="M 1161 49.8 L 1169 41.8 L 1177 49.8 L 1169 57.8 Z" fill="#8800aa"/>
+    <text x="1175" y="55" fill="#94bb94">Mount</text>
+    <text x="1175" y="80.6" fill="#94bb94">Eject</text>
+  </g>
+
+  <!-- root menu: Devices (open, selected) / Disconnect (dim) / rule / Enable networking (selected) / Quit -->
+  <rect x="1281" y="31" width="199" height="124" fill="#110c07" stroke="#5d7752" stroke-width="1"/>
+  <g font-size="14">
+    <rect x="1281" y="37" width="199" height="25.6" fill="#9cb795"/>
+    <path d="M 1300 49.8 L 1308 41.8 L 1316 49.8 L 1308 57.8 Z" fill="#1f2a1c"/>
+    <text x="1315" y="55" fill="#1f2a1c">Devices</text>
+    <text x="1468" y="55" text-anchor="end" fill="#1f2a1c">&lt;</text>
+    <text x="1293" y="80.6" fill="#3d4d38">Disconnect</text>
+    <line x1="1291" y1="93" x2="1470" y2="93" stroke="#5d7752" stroke-width="1"/>
+    <rect x="1281" y="97.7" width="199" height="25.6" fill="#9cb795"/>
+    <text x="1293" y="115.7" fill="#1f2a1c">Enable networking</text>
+    <path d="M 1300 141.3 L 1308 133.3 L 1316 141.3 L 1308 149.3 Z" fill="#94bb94"/>
+    <text x="1315" y="147.3" fill="#94bb94">Quit</text>
+  </g>
+</svg>

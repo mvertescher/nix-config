@@ -40,16 +40,23 @@ pub struct Style {
 and screens are written once against it. `screens/` is the acceptance
 test for that claim: **one implementation, four dresses.** There are
 four — `store`, `login`, `mailbox`, `dashboard` — and none of them
-contains the word `Era`. If a fifth era cannot wear one without adding
+branches on era. If a fifth era cannot wear one without adding
 `if era ==`, the abstraction is wrong, and those files are where it
 shows.
 
 The alternative, a crate per era, was rejected once the sampling showed
 how much the eras share. The genuinely era-specific things left are
-*interaction models*, not dressed rectangles: kitsch's extruded fan
-menu, neokitsch's card cascade, entropism's tiles, and neomil's services
-table. Those live behind one `Menu` choice in `style.rs`, so a screen
-picks a menu without naming an era.
+*interaction models* and one *layout*, not dressed rectangles: kitsch's
+extruded fan menu, neokitsch's card cascade, entropism's tiles, and
+neomil's dashboard. Both kinds live behind a choice on `Style` rather
+than an era test in a screen — the `Menu` enum for what a menu is, and
+the `Layout` enum for what a dashboard *is* (`Layout::ModuleHub`, the
+six-module hub the three hub eras wear; `Layout::OpsCharts`, neomil's
+ops-charts screen straight off `docs/neomil/dashboard-trace.svg`, which
+is what the material's `img-07` actually shows). So a screen picks a
+menu and a dashboard without naming an era, and a fifth era cannot wear
+either without adding data — which is the same discipline that forbids
+`if era ==` in `screens/`.
 
 Neomil's arm was a **cut-diamond hub** until the table landed, and the
 story is worth keeping because it is the shape this crate's mistakes
@@ -81,7 +88,11 @@ Two entries carry most of the risk:
   shipping a raster asset, and clips the grain with `span_at` instead of
   relying on renderer path clipping.
 - **`Chrome::DeviceFrame`** — neokitsch's frame is part of the UI, not a
-  window decoration.
+  window decoration. The top and bottom rails are the stepped
+  double-gold-stroke device frame from `docs/neokitsch/target-app.svg`
+  — lit outer stroke at the top, flat frame gold at the foot, the
+  shaded `FRAME_INNER` line inside both — with a strata wedge at the
+  foot; the meta line and the screens' contents sit inside it.
 
 ## Palette resolution
 
@@ -93,9 +104,11 @@ sight.
 
 `Style::from_desktop()` reads the published era *and* overlays its
 palette, so apps re-dress themselves when the desktop switches era —
-no rebuild. `select`, `on_select` and `emphasis` are era-owned and never
-come from the theme file, because across the four eras selection is not
-one colour with four values but four different ideas.
+no rebuild. `select`/`on_select` are era-owned and never come from the
+theme file, because across the four eras selection is not one colour
+with four values but four different ideas; `emphasis` is instead
+theme-sourced, overlaid from the optional roles when the theme declares
+them.
 
 Note kitsch's inversion: yellow is *selection*, not alarm. `alert` and
 `select` are the same colour there and different everywhere else, which
@@ -140,6 +153,22 @@ NOASSERTION -- no clear licence for a dependency that saves little.
 Modules: hostname tape, workspaces, focused window, network, audio,
 CPU, memory, date, clock, and a StatusNotifierItem tray. Every one of
 them is the same `cell`, so none of them knows which era it is in.
+
+A per-era SVG reference at the golden geometry lives in
+`docs/<era>/bar.svg` — the same 1600x220 frame the `tests.bar.<era>`
+goldens render into, so a capture sits directly beneath the drawing
+for a by-eye fidelity check. Render it with the same `rsvg-convert`
+invocation the era READMEs document:
+
+```sh
+cd docs/<era>
+nix shell nixpkgs#librsvg --command \
+  rsvg-convert -w 1600 -h 220 bar.svg -o /tmp/bar.png
+```
+
+The dashboard gets the same treatment: `docs/<era>/dashboard.svg`
+sits at the 1600x900 frame the `dashboard.<era>` goldens render, and
+each era's README lists both alongside `target-app.svg`.
 
 The tray is both watcher and host, and lets the bus decide which is
 live: it never asks for the name with `ReplaceExisting`, so it will not
@@ -206,8 +235,9 @@ through, and takes `pkgs` if you want the cases in an expression of
 your own.
 
 This section used to show a `nix build .#...` line that was never a
-real command — the package takes `callPackage` arguments and this repo
-exports no configurations to hang them off — so anyone who needed a
+real command — the package is created once in `lib/overlays.nix` and
+exposed as `pkgs.cp-eras-ui`, and this repo still exports no
+configurations to hang one off — so anyone who needed a
 golden wrote a throwaway instantiation under /tmp. If you write one
 anyway: fetch this repo with `git+file:`, **never** `path:`. The reason
 is at the top of `scripts/run_test_matrix.sh`, it cost 1.8 TB of disk,
@@ -248,16 +278,26 @@ Version stays at 0.0.0: this is nowhere near release.
 
 Implemented: the era abstraction, the shared widget vocabulary, all four
 era tables, four screens (store, login, mailbox, dashboard) in all four
-dresses, each era's own menu on the dashboard, and a screen-by-era
+dresses, each hub era's own menu on the dashboard, and a screen-by-era
 visual regression matrix. All four eras also have desktop themes under
 `home/themes/`, so `Style::from_desktop` has something real to follow.
+
+Since 2026-08-31 neomil's dashboard follows its own material rather
+than the hub: `Layout::OpsCharts` draws the ops-charts screen from
+`docs/neomil/dashboard-trace.svg` (the cold band, the three chart
+cards, the right rail) on the `screens::dashboard` OpsCharts arm, with
+the new `widgets::charts` chart-card behind each cell. Neomil keeps
+`menu: Menu::Table` — the services-table hub arm is **retained
+dormant** for any era or host that wants a table in the menu slot; the
+`OpsCharts` arm simply never consults the menu.
 
 Not yet done:
 - **`widgets::table` has no scroll rail**, which both neomil sheets draw.
   Left out on purpose: a rail asserts rows exist off-screen, this widget
-  shows every row it is handed, and its one caller sits in a column with
-  slack below it. Shipping it now would be unreachable decoration —
-  which is the trap the audit below exists to close.
+  shows every row it is handed, and its one caller sat in a column with
+  slack below it. That caller went dormant with the ops-charts layout,
+  and the rail stays a no-caller decoration until a table hub has a
+  caller again — which is the trap the audit below exists to close.
 - Neokitsch's BASKET panel and its step-notch pill on the mailbox
   footer are in the design targets but not yet widgets. The fan, the
   cascade, the tiles, the table, the ticket notch, the compliance

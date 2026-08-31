@@ -55,8 +55,20 @@ Role mapping: `bg`=bg, `panel`=bloom field, `border`=frame gold,
   frame, tracking `p1-061`'s right-hand screen. Acceptance test: when
   this can be built from library widgets, neokitsch is
   feature-complete.
+- `bar.svg` — the status bar exactly as `bar()` composes it: host
+  tape, workspaces, tray, the wired/audio/CPU/MEM modules and the
+  clock, at the 1600x220 geometry the bar golden tests render.
+- `dashboard.svg` — the ops dashboard exactly as `screens::dashboard`
+  assembles it: top bar, sidebar (logotype, security-level badges),
+  the era's menu over the six modules with one selected, the detail
+  panel and the footer, at the 1600x900 geometry the dashboard
+  golden tests render.
 
 ```sh
+nix shell nixpkgs#librsvg --command \
+  rsvg-convert -w 1600 -h 220 bar.svg -o /tmp/nk-bar.png
+nix shell nixpkgs#librsvg --command \
+  rsvg-convert -w 1600 -h 900 dashboard.svg -o /tmp/nk-dash.png
 nix shell nixpkgs#librsvg --command \
   rsvg-convert -w 1600 target-app.svg -o /tmp/nk-app.png
 ```

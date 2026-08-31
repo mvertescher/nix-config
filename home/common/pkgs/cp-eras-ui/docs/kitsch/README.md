@@ -86,6 +86,21 @@ the thing the toolkit abstraction should be tested against.
   closely enough to judge fidelity by eye against `p1-072`. The
   acceptance test: when this can be built from library widgets,
   kitsch is feature-complete.
+- `bar.svg` — the status bar exactly as `bar()` composes it: host
+  tape, workspaces, tray, the wired/audio/CPU/MEM modules and the
+  clock, at the 1600x220 geometry the bar golden tests render.
+- `dashboard.svg` — the ops dashboard exactly as `screens::dashboard`
+  assembles it: top bar, sidebar (logotype, security-level badges),
+  the era's menu over the six modules with one selected, the detail
+  panel and the footer, at the 1600x900 geometry the dashboard
+  golden tests render.
+
+```sh
+nix shell nixpkgs#librsvg --command \
+  rsvg-convert -w 1600 -h 220 bar.svg -o /tmp/kitsch-bar.png
+nix shell nixpkgs#librsvg --command \
+  rsvg-convert -w 1600 -h 900 dashboard.svg -o /tmp/kitsch-dash.png
+```
 
 Render with Rajdhani on fontconfig:
 

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="220" viewBox="0 0 1600 220" font-family="Rajdhani">
+  <!-- NEOMIL BAR reference.
+       "Substance over style": three reds on near-black, chamfered surfaces (bottom-right
+       cut), stencil labelling. Sampled palette (docs/neomil/README.md): bg #050304, glow
+       #001a33, red deep #5e1112, red mid #a32226, red fill #de2e2e, red hot #ff3b45,
+       off-white #dedede. Chamfer 15 clamped to 12.5 on 25px cells.
+       Golden geometry: 1600x220; bar strip 31px at top, tray menu beneath, right edge
+       at x=1480. -->
+  <rect width="1600" height="220" fill="#050304"/>
+
+  <!-- ============ BAR STRIP (cells y 3..28, 25px tall, chamfer bottom-right) ============ -->
+  <g font-size="14">
+
+    <!-- host tape: filled off-white, bg ink -->
+    <path d="M 6 3 H 77 V 15.5 L 71 28 H 6 Z" fill="#dedede"/>
+    <text x="18" y="20" fill="#050304">nomad</text>
+
+    <!-- workspaces 1..6; 3 active = solid red fill, dark ink -->
+    <path d="M 83.4 3 H 118.4 V 15.5 L 112.9 28 H 83.4 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
+    <text x="100.9" y="20" text-anchor="middle" fill="#de2e2e">1</text>
+    <path d="M 124.8 3 H 159.8 V 15.5 L 154.3 28 H 124.8 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
+    <text x="142.3" y="20" text-anchor="middle" fill="#de2e2e">2</text>
+    <path d="M 166.2 3 H 201.2 V 15.5 L 195.7 28 H 166.2 Z" fill="#de2e2e"/>
+    <text x="183.7" y="20" text-anchor="middle" fill="#1a0405">3</text>
+    <path d="M 207.6 3 H 242.6 V 15.5 L 237.1 28 H 207.6 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
+    <text x="225.1" y="20" text-anchor="middle" fill="#de2e2e">4</text>
+    <path d="M 249 3 H 284 V 15.5 L 278.5 28 H 249 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
+    <text x="266.5" y="20" text-anchor="middle" fill="#de2e2e">5</text>
+    <path d="M 290.4 3 H 325.4 V 15.5 L 319.9 28 H 290.4 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
+    <text x="307.9" y="20" text-anchor="middle" fill="#de2e2e">6</text>
+
+    <!-- centred window label: dim = red mid -->
+    <text x="548.9" y="20" text-anchor="middle" fill="#a32226">~/src/cp-eras-ui - nvim src/bar.rs</text>
+
+    <!-- tray: FLAM icon, ELEM icon (attention -> alert stroke = red hot), BLUE label, SYNC alert -->
+    <path d="M 772.4 3 H 809.4 V 15.5 L 803.9 28 H 772.4 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
+    <path d="M 781.4 15.5 L 790.9 6 L 800.4 15.5 L 790.9 25 Z" fill="#8800aa"/>
+    <path d="M 815.8 3 H 852.8 V 15.5 L 847.3 28 H 815.8 Z" fill="none" stroke="#ff3b45" stroke-width="1.5"/>
+    <path d="M 824.8 15.5 L 834.3 6 L 843.8 15.5 L 834.3 25 Z" fill="#ff6600"/>
+    <path d="M 859.2 3 H 918.2 V 15.5 L 912.7 28 H 859.2 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
+    <text x="888.7" y="20" text-anchor="middle" fill="#de2e2e">BLUE</text>
+    <path d="M 924.6 3 H 983.6 V 15.5 L 978.1 28 H 924.6 Z" fill="none" stroke="#ff3b45" stroke-width="1.5"/>
+    <text x="954.1" y="20" text-anchor="middle" fill="#ff3b45">SYNC</text>
+
+    <path d="M 990 3 H 1130 V 15.5 L 1124.5 28 H 990 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
+    <text x="1060" y="20" text-anchor="middle" fill="#de2e2e">WIFI AFTERLIFE</text>
+    <path d="M 1136.4 3 H 1227.4 V 15.5 L 1221.9 28 H 1136.4 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
+    <text x="1181.9" y="20" text-anchor="middle" fill="#de2e2e">VOL  62%</text>
+    <path d="M 1233.8 3 H 1316.8 V 15.5 L 1311.3 28 H 1233.8 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
+    <text x="1275.3" y="20" text-anchor="middle" fill="#de2e2e">CPU 12%</text>
+    <path d="M 1323.2 3 H 1406.2 V 15.5 L 1400.7 28 H 1323.2 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
+    <text x="1364.7" y="20" text-anchor="middle" fill="#de2e2e">MEM 47%</text>
+    <path d="M 1412.6 3 H 1520.6 V 15.5 L 1515.1 28 H 1412.6 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
+    <text x="1466.6" y="20" text-anchor="middle" fill="#de2e2e">2026-08-23</text>
+    <path d="M 1527 3 H 1594 V 15.5 L 1588.5 28 H 1527 Z" fill="#de2e2e"/>
+    <text x="1560.5" y="20" text-anchor="middle" fill="#1a0405">23:41</text>
+  </g>
+
+  <!-- ============ TRAY MENU ============
+       root panel + open Devices submenu to its LEFT; panels chamfered bottom-right. -->
+  <!-- Devices submenu: Mount / Eject -->
+  <path d="M 1141 31 H 1281 V 84.2 L 1275.5 94.2 H 1141 Z" fill="#050304" stroke="#5e1112" stroke-width="1.5"/>
+  <g font-size="14">
+    <path d="M 1161 49.8 L 1169 41.8 L 1177 49.8 L 1169 57.8 Z" fill="#8800aa"/>
+    <text x="1175" y="55" fill="#de2e2e">Mount</text>
+    <text x="1175" y="80.6" fill="#de2e2e">Eject</text>
+  </g>
+
+  <!-- root menu: Devices (open, selected) / Disconnect (dim) / rule / Enable networking (selected) / Quit -->
+  <path d="M 1281 31 H 1480 V 145 L 1474.5 155 H 1281 Z" fill="#050304" stroke="#5e1112" stroke-width="1.5"/>
+  <g font-size="14">
+    <rect x="1281" y="37" width="199" height="25.6" fill="#de2e2e"/>
+    <path d="M 1300 49.8 L 1308 41.8 L 1316 49.8 L 1308 57.8 Z" fill="#1a0405"/>
+    <text x="1315" y="55" fill="#1a0405">Devices</text>
+    <text x="1468" y="55" text-anchor="end" fill="#1a0405">&lt;</text>
+    <text x="1293" y="80.6" fill="#a32226">Disconnect</text>
+    <line x1="1291" y1="93" x2="1470" y2="93" stroke="#5e1112" stroke-width="1.5"/>
+    <rect x="1281" y="97.7" width="199" height="25.6" fill="#de2e2e"/>
+    <text x="1293" y="115.7" fill="#1a0405">Enable networking</text>
+    <path d="M 1300 141.3 L 1308 133.3 L 1316 141.3 L 1308 149.3 Z" fill="#de2e2e"/>
+    <text x="1315" y="147.3" fill="#de2e2e">Quit</text>
+  </g>
+</svg>

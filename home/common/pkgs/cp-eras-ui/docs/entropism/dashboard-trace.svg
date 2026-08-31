@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <!-- ENTROPISM dashboard-trace: schematic of images/entropism-dashboard.png
+       (Behance 360994118663901.60901b1b6119b, 3840x2160 photo, gallery doc
+       #42 = the entropism run's tile menu / module hub).
+       The source shows a row of four menu tiles on a warm dark field; the
+       second-from-left tile is filled solid sage (the selection), the others
+       are dark olive-sage; tiny caption strips sit under each tile and a
+       small boxed-letter header sits top-left. No sidebar column, no detail
+       panel, no footer band: the app's dashboard chrome is not in this frame.
+       Palette sampled from the photo: bg #140d07, top field #2a2c1e,
+       mid sage #6f8f68, selected sage #a2ca9b, dim olive #4a5340,
+       caption #23271b, outline #5d7752. -->
+  <rect width="1600" height="900" fill="#0d0803"/>
+
+  <!-- top field (photo rows 0-5, y 0..~26%): dim olive -->
+  <rect x="0" y="0" width="1600" height="230" fill="#272a1c"/>
+
+  <!-- boxed-letter header top-left ([A] ...) -->
+  <rect x="100" y="120" width="46" height="46" fill="none" stroke="#5d7752" stroke-width="2"/>
+  <rect x="160" y="120" width="330" height="46" fill="none" stroke="#5d7752" stroke-width="2"/>
+  <text x="123" y="152" text-anchor="middle" font-family="Rajdhani" font-size="26" fill="#94bb94">A</text>
+  <text x="240" y="152" font-family="Rajdhani" font-size="22" letter-spacing="3" fill="#94bb94">TILE MENU</text>
+
+  <!-- four menu tiles in a row (photo y 25..60%) -->
+  <g>
+    <!-- T1: mid sage, outlined -->
+    <rect x="96" y="270" width="178" height="290" fill="#5d7752" fill-opacity="0.25"/>
+    <rect x="96" y="270" width="178" height="290" fill="none" stroke="#6f8f68" stroke-width="2"/>
+    <rect x="104" y="286" width="162" height="120" fill="#6f8f68"/>
+
+    <!-- T2: SELECTED, solid bright sage -->
+    <rect x="368" y="270" width="496" height="290" fill="#a2ca9b"/>
+    <rect x="368" y="270" width="496" height="34" fill="#8eb888"/>
+    <rect x="380" y="330" width="472" height="64" fill="#94bb94"/>
+    <rect x="380" y="410" width="472" height="120" fill="#a2ca9b"/>
+
+    <!-- T3: dim olive -->
+    <rect x="896" y="270" width="400" height="290" fill="#4a5340"/>
+    <rect x="896" y="270" width="400" height="290" fill="none" stroke="#5d7752" stroke-width="2"/>
+    <rect x="908" y="286" width="376" height="120" fill="#56614a"/>
+
+    <!-- T4: dim olive -->
+    <rect x="1328" y="270" width="208" height="290" fill="#454d3a"/>
+    <rect x="1328" y="270" width="208" height="290" fill="none" stroke="#5d7752" stroke-width="2"/>
+    <rect x="1336" y="286" width="192" height="120" fill="#525c44"/>
+  </g>
+
+  <!-- caption strips under each tile -->
+  <g fill="#23271b">
+    <rect x="104" y="596" width="178" height="34"/>
+    <rect x="376" y="596" width="200" height="34"/>
+    <rect x="904" y="596" width="240" height="34"/>
+    <rect x="1336" y="596" width="200" height="34"/>
+  </g>
+
+  <!-- thin rule under the captions (the build-string footer area) -->
+  <rect x="0" y="860" width="1600" height="2" fill="#3d4d38"/>
+</svg>

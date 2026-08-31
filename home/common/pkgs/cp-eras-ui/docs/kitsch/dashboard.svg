@@ -1,0 +1,178 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" font-family="Rajdhani">
+  <defs>
+    <!-- Kitsch bloom: measured falloff from tests/golden/dashboard-kitsch-1600x900.png
+         (centre (0.82w,0) r=0.75*max, colour #a63355 over #0b0b07). Stops = sampled alpha(s). -->
+    <radialGradient id="bloom" gradientUnits="userSpaceOnUse" cx="1312" cy="0" r="1200">
+      <stop offset="0.000" stop-color="#76203a"/>
+      <stop offset="0.025" stop-color="#76203a"/>
+      <stop offset="0.050" stop-color="#721f38"/>
+      <stop offset="0.075" stop-color="#6e1e36"/>
+      <stop offset="0.100" stop-color="#6e1e36"/>
+      <stop offset="0.125" stop-color="#6a1d34"/>
+      <stop offset="0.150" stop-color="#661c32"/>
+      <stop offset="0.175" stop-color="#661c32"/>
+      <stop offset="0.200" stop-color="#621b30"/>
+      <stop offset="0.225" stop-color="#621b30"/>
+      <stop offset="0.250" stop-color="#5e1a2e"/>
+      <stop offset="0.275" stop-color="#5a192c"/>
+      <stop offset="0.300" stop-color="#55182a"/>
+      <stop offset="0.325" stop-color="#55182a"/>
+      <stop offset="0.350" stop-color="#511728"/>
+      <stop offset="0.375" stop-color="#511728"/>
+      <stop offset="0.400" stop-color="#4c1626"/>
+      <stop offset="0.425" stop-color="#471524"/>
+      <stop offset="0.450" stop-color="#471524"/>
+      <stop offset="0.475" stop-color="#431422"/>
+      <stop offset="0.500" stop-color="#431422"/>
+      <stop offset="0.525" stop-color="#3f1320"/>
+      <stop offset="0.550" stop-color="#3b121e"/>
+      <stop offset="0.575" stop-color="#37111c"/>
+      <stop offset="0.600" stop-color="#37111c"/>
+      <stop offset="0.625" stop-color="#33101a"/>
+      <stop offset="0.650" stop-color="#2f0f18"/>
+      <stop offset="0.675" stop-color="#2d0f17"/>
+      <stop offset="0.700" stop-color="#2b0f16"/>
+      <stop offset="0.725" stop-color="#2b0f16"/>
+      <stop offset="0.775" stop-color="#240e12"/>
+      <stop offset="0.800" stop-color="#210e10"/>
+      <stop offset="0.825" stop-color="#210e10"/>
+      <stop offset="0.850" stop-color="#1e0d0f"/>
+      <stop offset="0.875" stop-color="#1e0d0f"/>
+      <stop offset="0.900" stop-color="#1a0d0d"/>
+      <stop offset="0.925" stop-color="#160d0b"/>
+      <stop offset="0.950" stop-color="#160d0b"/>
+      <stop offset="0.975" stop-color="#110c09"/>
+      <stop offset="1.000" stop-color="#110c09"/>
+      <stop offset="1.0" stop-color="#0b0b07"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="#0b0b07"/>
+  <rect width="1600" height="900" fill="url(#bloom)"/>
+
+  <!-- ======== TOP BAR (Caption chrome: two dim captions, no boxes) ======== -->
+  <g font-size="9" fill="#4d9484">
+    <text x="40" y="52">COMPUTER SYSTEMS SOFTWAREV2</text>
+    <text x="1560" y="52" text-anchor="end">FLAIR TRS 5MMP</text>
+  </g>
+
+  <!-- ======== SIDEBAR (x 40..300) ======== -->
+  <g>
+    <text x="40" y="116" font-size="52" fill="#7ddec8">next</text>
+    <text x="42" y="152" font-size="14" fill="#4d9484">T E C H N O L O G Y</text>
+
+    <g font-size="14">
+      <text x="42" y="198" fill="#4d9484">CUSTOMER</text>
+      <text x="292" y="198" text-anchor="end" fill="#7ddec8">#NC488402</text>
+      <text x="42" y="220" fill="#4d9484">CLEARANCE</text>
+      <text x="292" y="220" text-anchor="end" fill="#7ddec8">T2</text>
+      <text x="42" y="242" fill="#4d9484">LAST UPDATE</text>
+      <text x="292" y="242" text-anchor="end" fill="#7ddec8">10/05/2077</text>
+    </g>
+
+    <!-- heading A: marker box + text -->
+    <g font-size="14">
+      <rect x="40" y="290" width="24" height="24" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+      <text x="52" y="304" text-anchor="middle" fill="#7ddec8">A</text>
+      <text x="74" y="304" fill="#7ddec8">SECURITY LEVEL</text>
+    </g>
+
+    <!-- badges 2x2 (rounded pills), T2 = yellow -->
+    <g font-size="14">
+      <rect x="40" y="342" width="57" height="30" rx="14" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+      <text x="68" y="358" text-anchor="middle" fill="#7ddec8">T1</text>
+      <rect x="103" y="342" width="57" height="30" rx="14" fill="#fcc428"/>
+      <text x="131" y="358" text-anchor="middle" fill="#37220f">T2</text>
+      <rect x="40" y="382" width="57" height="30" rx="14" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+      <text x="68" y="398" text-anchor="middle" fill="#7ddec8">T3</text>
+      <rect x="103" y="382" width="57" height="30" rx="14" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+      <text x="131" y="398" text-anchor="middle" fill="#7ddec8">T4</text>
+    </g>
+
+    <!-- marker B + notes -->
+    <g>
+      <rect x="40" y="460" width="24" height="24" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+      <text x="52" y="474" text-anchor="middle" font-size="14" fill="#7ddec8">B</text>
+      <g font-size="9" fill="#4d9484">
+        <text x="74" y="468">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+        <text x="74" y="482">SERVING CUSTOMERS SINCE 2006.</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ======== MODULES: heading C + FAN ======== -->
+  <g font-size="14">
+    <rect x="340" y="72" width="24" height="24" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <text x="352" y="86" text-anchor="middle" fill="#7ddec8">C</text>
+    <text x="372" y="86" fill="#7ddec8">COMPUTER SYSTEMS</text>
+  </g>
+
+  <g transform="translate(340,116)">
+    <!-- extrusion outlines (2 layers) -->
+    <path d="M 215.8 125.1 L 450.2 20.7 L 476.6 79.9 L 242.2 184.3 Z" fill="none" stroke="#177a6b" stroke-opacity="0.5" stroke-width="1.5"/>
+    <path d="M 239.3 197.3 L 490.3 143.9 L 503.7 207.3 L 252.7 260.6 Z" fill="none" stroke="#177a6b" stroke-opacity="0.5" stroke-width="1.5"/>
+    <path d="M 247.2 272.7 L 503.8 272.7 L 503.8 337.5 L 247.2 337.5 Z" fill="none" stroke="#177a6b" stroke-opacity="0.5" stroke-width="1.5"/>
+    <path d="M 239.3 348.2 L 490.3 401.5 L 476.8 464.9 L 225.8 411.5 Z" fill="none" stroke="#177a6b" stroke-opacity="0.5" stroke-width="1.5"/>
+    <path d="M 215.8 420.3 L 450.2 524.7 L 423.9 583.9 L 189.5 479.5 Z" fill="none" stroke="#177a6b" stroke-opacity="0.5" stroke-width="1.5"/>
+    <path d="M 177.9 486.0 L 385.5 636.8 L 347.4 689.3 L 139.8 538.4 Z" fill="none" stroke="#177a6b" stroke-opacity="0.5" stroke-width="1.5"/>
+    <path d="M 231.4 104.4 L 465.8 0.0 L 492.2 59.2 L 257.7 163.6 Z" fill="none" stroke="#177a6b" stroke-opacity="0.5" stroke-width="1.5"/>
+    <path d="M 254.8 176.5 L 505.8 123.2 L 519.3 186.6 L 268.3 239.9 Z" fill="none" stroke="#177a6b" stroke-opacity="0.5" stroke-width="1.5"/>
+    <path d="M 262.7 252.0 L 519.4 252.0 L 519.4 316.8 L 262.7 316.8 Z" fill="none" stroke="#177a6b" stroke-opacity="0.5" stroke-width="1.5"/>
+    <path d="M 254.8 327.4 L 505.8 380.8 L 492.3 444.2 L 241.3 390.8 Z" fill="none" stroke="#177a6b" stroke-opacity="0.5" stroke-width="1.5"/>
+    <path d="M 231.4 399.6 L 465.8 503.9 L 439.4 563.1 L 205.0 458.8 Z" fill="none" stroke="#177a6b" stroke-opacity="0.5" stroke-width="1.5"/>
+    <path d="M 193.4 465.3 L 401.0 616.1 L 363.0 668.5 L 155.3 517.7 Z" fill="none" stroke="#177a6b" stroke-opacity="0.5" stroke-width="1.5"/>
+    <!-- slabs -->
+    <path d="M 200.3 145.8 L 434.7 41.5 L 461.0 100.7 L 226.6 205.0 Z" fill="#2bc4ac"/>
+    <path d="M 223.7 218.0 L 474.7 164.6 L 488.2 228.0 L 237.2 281.4 Z" fill="#2bc4ac"/>
+    <path d="M 231.6 293.4 L 488.3 293.4 L 488.3 358.2 L 231.6 358.2 Z" fill="#2bc4ac"/>
+    <path d="M 223.7 368.9 L 474.7 422.2 L 461.2 485.6 L 210.2 432.3 Z" fill="#fcc428"/>
+    <path d="M 200.3 441.0 L 434.7 545.4 L 408.3 604.6 L 173.9 500.2 Z" fill="#2bc4ac"/>
+    <path d="M 162.3 506.7 L 369.9 657.6 L 331.8 710.0 L 124.2 559.2 Z" fill="#2bc4ac"/>
+    <!-- labels along the slabs -->
+    <text transform="translate(330.7 123.3) rotate(-24.00)" text-anchor="middle" font-weight="bold" font-size="36.29" fill="#0b0b07">VEHICLES</text>
+    <text transform="translate(355.9 223.0) rotate(-12.00)" text-anchor="middle" font-weight="bold" font-size="36.29" fill="#0b0b07">LOCATIONS</text>
+    <text transform="translate(359.9 325.8) rotate(0.00)" text-anchor="middle" font-weight="bold" font-size="36.29" fill="#0b0b07">FACTIONS</text>
+    <text transform="translate(342.5 427.3) rotate(12.00)" text-anchor="middle" font-weight="bold" font-size="36.29" fill="#37220f">WEAPONS</text>
+    <text transform="translate(304.3 522.8) rotate(24.00)" text-anchor="middle" font-weight="bold" font-size="36.29" fill="#0b0b07">PRODUCTS</text>
+    <text transform="translate(247.1 608.4) rotate(36.00)" text-anchor="middle" font-weight="bold" font-size="36.29" fill="#0b0b07">CORPORATIONS</text>
+  </g>
+
+  <!-- ======== DETAIL (x 1024..1560, panel y116..780) ======== -->
+  <g font-size="14">
+    <rect x="1024" y="72" width="24" height="24" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <text x="1036" y="86" text-anchor="middle" fill="#7ddec8">D</text>
+    <text x="1056" y="86" fill="#7ddec8">DESCRIPTION</text>
+  </g>
+  <rect x="1024" y="116" width="534" height="664" rx="16" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+  <g>
+    <text x="1042" y="150" font-size="16" fill="#7ddec8">WEAPONS</text>
+    <text x="1043" y="166" font-size="9" fill="#4d9484">161-9D</text>
+
+    <g font-size="14">
+      <text x="1042" y="204" fill="#7ddec8">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do</text>
+      <text x="1042" y="224" fill="#7ddec8">eiusmod tempor incididunt ut labore et dolore magna aliqua.</text>
+      <text x="1042" y="254" fill="#7ddec8">Quis ipsum suspendisse ultrices gravida. Risus commodo viverra</text>
+      <text x="1042" y="274" fill="#7ddec8">maecenas accumsan lacus vel facilisis.</text>
+    </g>
+
+    <g font-size="14">
+      <text x="1042" y="334" fill="#4d9484">RECORDS</text>
+      <text x="1539" y="334" text-anchor="end" fill="#7ddec8">1 842</text>
+      <text x="1042" y="358" fill="#4d9484">CLEARANCE REQUIRED</text>
+      <text x="1539" y="358" text-anchor="end" fill="#7ddec8">T2</text>
+      <text x="1042" y="382" fill="#4d9484">LAST SYNC</text>
+      <text x="1539" y="382" text-anchor="end" fill="#7ddec8">10/05/2077 04:12</text>
+      <text x="1042" y="410" fill="#4d9484">SOURCE</text>
+      <text x="1539" y="410" text-anchor="end" fill="#7ddec8">NEXUS NETWORK V10.8</text>
+    </g>
+  </g>
+  <!-- vendor chips (rounded) -->
+  <g font-size="9" fill="#4d9484">
+    <rect x="1024" y="800" width="66" height="20" rx="10" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <text x="1035" y="813">PETROCHEM</text>
+    <rect x="1097" y="800" width="74" height="20" rx="10" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <text x="1108" y="813">BETTERLIFE TEC</text>
+  </g>
+
+  <!-- ======== FOOTER (Caption chrome: centred fg caption) ======== -->
+  <text x="800" y="856" font-size="11" fill="#7ddec8" text-anchor="middle">PROVIDED BY NEXUS NETWORK V10.8</text>
+</svg>

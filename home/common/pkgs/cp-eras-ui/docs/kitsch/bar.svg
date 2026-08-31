@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="220" viewBox="0 0 1600 220" font-family="Rajdhani">
+  <!-- KITSCH BAR reference.
+       "Style over substance": teal line-work, yellow selection, rose bloom, everything
+       rounded into pills. Sampled palette (docs/kitsch/README.md): bg #0b0b07, bloom
+       #a63355, teal #7ddec8, teal dim #4d9484, bezel #f08c1e, yellow #fcc428, on-yellow
+       #37220f. Note the inversion: yellow is selection, not alarm.
+       Golden geometry: 1600x220; bar strip 31px at top, tray menu beneath, right edge
+       at x=1480. Cells are full pills (radius clamped to half the 25px cell height). -->
+  <rect width="1600" height="220" fill="#0b0b07"/>
+
+  <!-- ============ BAR STRIP (cells y 3..28, 25px tall, full pills rx 12.5) ============ -->
+  <g font-size="14">
+
+    <!-- host tape: filled bezel orange, bg ink -->
+    <rect x="6" y="3" width="71" height="25" rx="12.5" fill="#f08c1e"/>
+    <text x="18" y="20" fill="#0b0b07">nomad</text>
+
+    <!-- workspaces 1..6; 3 active = solid yellow, dark ink -->
+    <rect x="85" y="3" width="35" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <text x="102.5" y="20" text-anchor="middle" fill="#7ddec8">1</text>
+    <rect x="128" y="3" width="35" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <text x="145.5" y="20" text-anchor="middle" fill="#7ddec8">2</text>
+    <rect x="171" y="3" width="35" height="25" rx="12.5" fill="#fcc428"/>
+    <text x="188.5" y="20" text-anchor="middle" fill="#37220f">3</text>
+    <rect x="214" y="3" width="35" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <text x="231.5" y="20" text-anchor="middle" fill="#7ddec8">4</text>
+    <rect x="257" y="3" width="35" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <text x="274.5" y="20" text-anchor="middle" fill="#7ddec8">5</text>
+    <rect x="300" y="3" width="35" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <text x="317.5" y="20" text-anchor="middle" fill="#7ddec8">6</text>
+
+    <!-- centred window label: dim teal -->
+    <text x="546.5" y="20" text-anchor="middle" fill="#4d9484">~/src/cp-eras-ui - nvim src/bar.rs</text>
+
+    <!-- tray: FLAM icon, ELEM icon (attention -> alert stroke = yellow), BLUE label, SYNC alert -->
+    <rect x="758" y="3" width="37" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <path d="M 767 15.5 L 776.5 6 L 786 15.5 L 776.5 25 Z" fill="#8800aa"/>
+    <rect x="803" y="3" width="37" height="25" rx="12.5" fill="none" stroke="#fcc428" stroke-width="1.5"/>
+    <path d="M 812 15.5 L 821.5 6 L 831 15.5 L 821.5 25 Z" fill="#ff6600"/>
+    <rect x="848" y="3" width="59" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <text x="877.5" y="20" text-anchor="middle" fill="#7ddec8">BLUE</text>
+    <rect x="915" y="3" width="59" height="25" rx="12.5" fill="none" stroke="#fcc428" stroke-width="1.5"/>
+    <text x="944.5" y="20" text-anchor="middle" fill="#fcc428">SYNC</text>
+
+    <rect x="982" y="3" width="140" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <text x="1052" y="20" text-anchor="middle" fill="#7ddec8">WIFI AFTERLIFE</text>
+    <rect x="1130" y="3" width="91" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <text x="1175.5" y="20" text-anchor="middle" fill="#7ddec8">VOL  62%</text>
+    <rect x="1229" y="3" width="83" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <text x="1270.5" y="20" text-anchor="middle" fill="#7ddec8">CPU 12%</text>
+    <rect x="1320" y="3" width="83" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <text x="1361.5" y="20" text-anchor="middle" fill="#7ddec8">MEM 47%</text>
+    <rect x="1411" y="3" width="108" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <text x="1465" y="20" text-anchor="middle" fill="#7ddec8">2026-08-23</text>
+    <rect x="1527" y="3" width="67" height="25" rx="12.5" fill="#fcc428"/>
+    <text x="1560.5" y="20" text-anchor="middle" fill="#37220f">23:41</text>
+  </g>
+
+  <!-- ============ TRAY MENU ============
+       root panel + open Devices submenu to its LEFT; panels rounded rx 16. -->
+  <!-- Devices submenu: Mount / Eject -->
+  <rect x="1141" y="31" width="140" height="63.2" rx="16" fill="#0b0b07" stroke="#7ddec8" stroke-width="1.5"/>
+  <g font-size="14">
+    <path d="M 1161 49.8 L 1169 41.8 L 1177 49.8 L 1169 57.8 Z" fill="#8800aa"/>
+    <text x="1175" y="55" fill="#7ddec8">Mount</text>
+    <text x="1175" y="80.6" fill="#7ddec8">Eject</text>
+  </g>
+
+  <!-- root menu: Devices (open, selected) / Disconnect (dim) / rule / Enable networking (selected) / Quit -->
+  <rect x="1281" y="31" width="199" height="124" rx="16" fill="#0b0b07" stroke="#7ddec8" stroke-width="1.5"/>
+  <g font-size="14">
+    <rect x="1281" y="37" width="199" height="25.6" rx="12.8" fill="#fcc428"/>
+    <path d="M 1300 49.8 L 1308 41.8 L 1316 49.8 L 1308 57.8 Z" fill="#37220f"/>
+    <text x="1315" y="55" fill="#37220f">Devices</text>
+    <text x="1468" y="55" text-anchor="end" fill="#37220f">&lt;</text>
+    <text x="1293" y="80.6" fill="#4d9484">Disconnect</text>
+    <line x1="1291" y1="93" x2="1470" y2="93" stroke="#7ddec8" stroke-width="1.5"/>
+    <rect x="1281" y="97.7" width="199" height="25.6" rx="12.8" fill="#fcc428"/>
+    <text x="1293" y="115.7" fill="#37220f">Enable networking</text>
+    <path d="M 1300 141.3 L 1308 133.3 L 1316 141.3 L 1308 149.3 Z" fill="#7ddec8"/>
+    <text x="1315" y="147.3" fill="#7ddec8">Quit</text>
+  </g>
+</svg>

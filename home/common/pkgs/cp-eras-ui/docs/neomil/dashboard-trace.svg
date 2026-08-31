@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <!-- NEOMIL dashboard-trace: schematic of images/img-07-dashboard.png
+       (Behance 3fc4ef118663901.60e5fa6a7f2f7, 3840x2160 photo).
+       The source shows: a full-width cold-blue top band carrying red crest
+       blocks, a dark left margin, and the working area made of THREE large
+       bright-red chart cards side by side (dark slits between), a vertical
+       red block on the right and a small red corner block bottom-right.
+       No sidebar logo column, no services table, no footer tape: the app's
+       dashboard layout is NOT in this material.
+       Palette sampled from the photo (32x16 grid reads): top band
+       #2a3a51 -> #101f3d, crest #7c3542/#75263e, red bright #e13030,
+       red mid #8e1f20, dark #350e10, right block #501414, bg #04070b. -->
+  <defs>
+    <linearGradient id="topband" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2a3a51"/>
+      <stop offset="0.55" stop-color="#24364f"/>
+      <stop offset="1" stop-color="#101f3d"/>
+    </linearGradient>
+    <linearGradient id="bluemid" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1b2b4a"/>
+      <stop offset="1" stop-color="#121d38"/>
+    </linearGradient>
+  </defs>
+
+  <!-- outer background: near-black with a faint blue cast -->
+  <rect width="1600" height="900" fill="#04070b"/>
+
+  <!-- full-width top band (source rows 0-2, y 0..~19%) -->
+  <rect x="0" y="0" width="1600" height="172" fill="url(#topband)"/>
+
+  <!-- dark left margin below the band (rows 3-15) -->
+  <rect x="0" y="172" width="190" height="728" fill="#15090b"/>
+
+  <!-- top-left red crest block on the band -->
+  <rect x="240" y="112" width="160" height="58" fill="#7c3542"/>
+  <!-- top-right red-magenta block on the band -->
+  <rect x="1150" y="112" width="152" height="58" fill="#75263e"/>
+
+  <!-- mid-left blue zone under the band (rows 3-6) -->
+  <rect x="300" y="172" width="830" height="226" fill="url(#bluemid)"/>
+
+  <!-- three bright-red chart cards (rows 6-13, y 337..790) -->
+  <g>
+    <rect x="250" y="337" width="150" height="453" fill="#e13030"/>
+    <path d="M 250 337 h 150 v 12 l -6 10 h -144 Z" fill="#350e10"/>
+    <path d="M 250 780 h 150 v 10 l -8 8 h -142 Z" fill="#350e10"/>
+    <rect x="450" y="337" width="150" height="453" fill="#e13030"/>
+    <path d="M 450 337 h 150 v 12 l -6 10 h -144 Z" fill="#350e10"/>
+    <path d="M 450 780 h 150 v 10 l -8 8 h -142 Z" fill="#350e10"/>
+    <rect x="650" y="337" width="150" height="453" fill="#e13030"/>
+    <path d="M 650 337 h 150 v 12 l -6 10 h -144 Z" fill="#350e10"/>
+    <path d="M 650 780 h 150 v 10 l -8 8 h -142 Z" fill="#350e10"/>
+  </g>
+
+  <!-- vertical red block, right rail (rows 7-14) -->
+  <rect x="1150" y="396" width="260" height="441" fill="#501414"/>
+  <rect x="1150" y="396" width="260" height="24" fill="#350e10"/>
+
+  <!-- small red corner block bottom-right (source rows 14-15) -->
+  <rect x="1200" y="792" width="156" height="108" fill="#310b0d"/>
+
+  <!-- bottom-left faint red dots (source rows 14-15) -->
+  <rect x="250" y="837" width="30" height="18" fill="#1f0709"/>
+  <rect x="450" y="837" width="30" height="18" fill="#1f0709"/>
+  <rect x="650" y="837" width="30" height="18" fill="#1f0709"/>
+</svg>

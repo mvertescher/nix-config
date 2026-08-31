@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="220" viewBox="0 0 1600 220" font-family="Rajdhani">
+  <!-- NEOKITSCH BAR reference.
+       "Substance and style": gold line-work on true black, top-right corners clipped,
+       selection is a material (wood veneer). Sampled palette (docs/neokitsch/README.md):
+       bg #0a0a0a, bloom #34344c, frame #916424, gold text #e7c686, champagne #d3b279,
+       veneer #e3af5f (+ light #f4c474 dark #d8a558 grain #b98a44), on-veneer #3a2410,
+       amber #fcc474, dim #8a7048. Clip cut 30 clamped to 12.5 on 25px cells.
+       Golden geometry: 1600x220; bar strip 31px at top, tray menu beneath, right edge
+       at x=1480. Selected cells fill with the synthesised veneer (banded warp + grain). -->
+  <defs>
+    <linearGradient id="veneer" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4c474"/>
+      <stop offset="0.45" stop-color="#e3af5f"/>
+      <stop offset="1" stop-color="#d8a558"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="220" fill="#0a0a0a"/>
+
+  <!-- ============ BAR STRIP (cells y 3..28, 25px tall, top-right clip) ============ -->
+  <g font-size="14">
+
+    <!-- host tape: filled veneer, bg ink -->
+    <path d="M 6 3 H 65.5 L 77 14.5 V 28 H 6 Z" fill="url(#veneer)"/>
+    <text x="18" y="20" fill="#0a0a0a">nomad</text>
+
+    <!-- workspaces 1..6; 3 active = veneer material fill, on-veneer ink -->
+    <path d="M 84.2 3 H 107.7 L 119.2 14.5 V 28 H 84.2 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
+    <text x="101.7" y="20" text-anchor="middle" fill="#e7c686">1</text>
+    <path d="M 126.4 3 H 149.9 L 161.4 14.5 V 28 H 126.4 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
+    <text x="143.9" y="20" text-anchor="middle" fill="#e7c686">2</text>
+    <path d="M 168.6 3 H 192.1 L 203.6 14.5 V 28 H 168.6 Z" fill="url(#veneer)"/>
+    <text x="186.1" y="20" text-anchor="middle" fill="#3a2410">3</text>
+    <path d="M 210.8 3 H 234.3 L 245.8 14.5 V 28 H 210.8 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
+    <text x="228.3" y="20" text-anchor="middle" fill="#e7c686">4</text>
+    <path d="M 253 3 H 276.5 L 288 14.5 V 28 H 253 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
+    <text x="270.5" y="20" text-anchor="middle" fill="#e7c686">5</text>
+    <path d="M 295.2 3 H 318.7 L 330.2 14.5 V 28 H 295.2 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
+    <text x="312.7" y="20" text-anchor="middle" fill="#e7c686">6</text>
+
+    <!-- centred window label: dim -->
+    <text x="547.7" y="20" text-anchor="middle" fill="#8a7048">~/src/cp-eras-ui - nvim src/bar.rs</text>
+
+    <!-- tray: FLAM icon, ELEM icon (attention -> alert stroke = amber), BLUE label, SYNC alert -->
+    <path d="M 765.2 3 H 788.7 L 800.2 14.5 V 28 H 765.2 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
+    <path d="M 774.2 15.5 L 783.7 6 L 793.2 15.5 L 783.7 25 Z" fill="#8800aa"/>
+    <path d="M 809.4 3 H 832.9 L 844.4 14.5 V 28 H 809.4 Z" fill="none" stroke="#fcc474" stroke-width="1.6"/>
+    <path d="M 818.4 15.5 L 827.9 6 L 837.4 15.5 L 827.9 25 Z" fill="#ff6600"/>
+    <path d="M 853.6 3 H 899.1 L 910.6 14.5 V 28 H 853.6 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
+    <text x="883.1" y="20" text-anchor="middle" fill="#e7c686">BLUE</text>
+    <path d="M 919.8 3 H 965.3 L 976.8 14.5 V 28 H 919.8 Z" fill="none" stroke="#fcc474" stroke-width="1.6"/>
+    <text x="949.3" y="20" text-anchor="middle" fill="#fcc474">SYNC</text>
+
+    <path d="M 986 3 H 1112.5 L 1124 14.5 V 28 H 986 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
+    <text x="1056" y="20" text-anchor="middle" fill="#e7c686">WIFI AFTERLIFE</text>
+    <path d="M 1133.2 3 H 1210.7 L 1222.2 14.5 V 28 H 1133.2 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
+    <text x="1178.7" y="20" text-anchor="middle" fill="#e7c686">VOL  62%</text>
+    <path d="M 1231.4 3 H 1300.9 L 1312.4 14.5 V 28 H 1231.4 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
+    <text x="1272.9" y="20" text-anchor="middle" fill="#e7c686">CPU 12%</text>
+    <path d="M 1321.6 3 H 1391.1 L 1402.6 14.5 V 28 H 1321.6 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
+    <text x="1363.1" y="20" text-anchor="middle" fill="#e7c686">MEM 47%</text>
+    <path d="M 1411.8 3 H 1506.3 L 1517.8 14.5 V 28 H 1411.8 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
+    <text x="1465.8" y="20" text-anchor="middle" fill="#e7c686">2026-08-23</text>
+    <path d="M 1527 3 H 1582.5 L 1594 14.5 V 28 H 1527 Z" fill="url(#veneer)"/>
+    <text x="1560.5" y="20" text-anchor="middle" fill="#3a2410">23:41</text>
+  </g>
+
+  <!-- ============ TRAY MENU ============
+       root panel + open Devices submenu to its LEFT; panels clipped top-right. -->
+  <!-- Devices submenu: Mount / Eject -->
+  <path d="M 1141 31 H 1267.5 L 1281 44.5 V 94.2 H 1141 Z" fill="#0a0a0a" stroke="#916424" stroke-width="1.6"/>
+  <g font-size="14">
+    <path d="M 1161 49.8 L 1169 41.8 L 1177 49.8 L 1169 57.8 Z" fill="#8800aa"/>
+    <text x="1175" y="55" fill="#e7c686">Mount</text>
+    <text x="1175" y="80.6" fill="#e7c686">Eject</text>
+  </g>
+
+  <!-- root menu: Devices (open, selected) / Disconnect (dim) / rule / Enable networking (selected) / Quit -->
+  <path d="M 1281 31 H 1466.5 L 1480 44.5 V 155 H 1281 Z" fill="#0a0a0a" stroke="#916424" stroke-width="1.6"/>
+  <g font-size="14">
+    <rect x="1281" y="37" width="199" height="25.6" fill="url(#veneer)"/>
+    <path d="M 1300 49.8 L 1308 41.8 L 1316 49.8 L 1308 57.8 Z" fill="#3a2410"/>
+    <text x="1315" y="55" fill="#3a2410">Devices</text>
+    <text x="1468" y="55" text-anchor="end" fill="#3a2410">&lt;</text>
+    <text x="1293" y="80.6" fill="#8a7048">Disconnect</text>
+    <line x1="1291" y1="93" x2="1470" y2="93" stroke="#916424" stroke-width="1.6"/>
+    <rect x="1281" y="97.7" width="199" height="25.6" fill="url(#veneer)"/>
+    <text x="1293" y="115.7" fill="#3a2410">Enable networking</text>
+    <path d="M 1300 141.3 L 1308 133.3 L 1316 141.3 L 1308 149.3 Z" fill="#e7c686"/>
+    <text x="1315" y="147.3" fill="#e7c686">Quit</text>
+  </g>
+</svg>

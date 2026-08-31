@@ -16,6 +16,21 @@ palette (sampled from the Neo-Militarism Behance images — see
   panel, action buttons, nav rail, status bar). The acceptance test
   for the toolkit: when this screen can be built from library
   widgets, the toolkit is feature-complete.
+- `bar.svg` — the status bar exactly as `bar()` composes it: host
+  tape, workspaces, tray, the wired/audio/CPU/MEM modules and the
+  clock, at the 1600x220 geometry the bar golden tests render.
+- `dashboard.svg` — the ops dashboard exactly as `screens::dashboard`
+  assembles it under neomil's `Layout::OpsCharts`: a cold-blue top band
+  with red crests and the OPS DASHBOARD wordmark, three red chart
+  cards, a right rail and a corner block, at the 1600x900 geometry the
+  dashboard golden tests render.
+
+```sh
+nix shell nixpkgs#librsvg --command \
+  rsvg-convert -w 1600 -h 220 bar.svg -o /tmp/neomil-bar.png
+nix shell nixpkgs#librsvg --command \
+  rsvg-convert -w 1600 -h 900 dashboard.svg -o /tmp/neomil-dash.png
+```
 
 Render with Rajdhani + Orbitron available to fontconfig:
 
