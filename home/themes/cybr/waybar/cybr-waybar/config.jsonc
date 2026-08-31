@@ -16,7 +16,10 @@
 		"height": 31,
 		"layer": "top",
 		/* "output": "YOUR-FIRST-MONITOR-NAME", */
-		"mode": "dock",
+		/* "mode": "dock" deliberately dropped: waybar 0.15.0's dock
+		   preset hardcodes layer bottom via setMode(), overriding
+		   "layer": "top" above. Default mode honours the bar-level
+		   "layer" option, keeping the bar on top. */
 		"exclusive": true,
 		"passtrough": false,
 		"gtk-layer-shell": true,

@@ -164,7 +164,7 @@
 	   `0000:00:18.3` is the AMD data-fabric function, fixed by the
 	   architecture on every single-socket Zen part, and a GPU's slot
 	   address does not move unless the card does. On new hardware check
-	   `grep . /sys/class/hwmon/*/name` and
+	   `grep . /sys/class/hwmon/hwmonN/name` and
 	   `readlink -f /sys/class/hwmon/hwmonN`. Getting it wrong costs the
 	   module and not the bar -- waybar logs the constructor's throw and
 	   carries on without it.
