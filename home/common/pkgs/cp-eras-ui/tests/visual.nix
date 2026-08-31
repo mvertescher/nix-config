@@ -39,11 +39,12 @@
   # written against `Style` like the rest -- so the case moved onto the
   # matrix's geometry rather than keeping a size nothing else uses.
   #
-  # Known gap: this writes only `roles.names` into the sandbox theme
-  # file, while `home/themes/lib/era.nix` writes `names ++ extrasOf c`.
-  # So every ornamental colour in every golden comes from the compiled
-  # era table rather than the theme layer, and the matrix proves less
-  # about that contract than the README claims.
+  # The sandbox theme file carries the same role set the desktop
+  # publisher writes (`home/themes/lib/era.nix`): the base seven plus
+  # whichever ornamental roles the era's resolved palette declares. An
+  # extras value drifting in home/themes therefore moves these goldens
+  # exactly as a base-role drift does -- the ornamental half of the
+  # contract is under test, not just the seven shared roles.
   width ? 1600,
   height ? 900,
   golden ? ../tests/golden/dashboard-fallback-1600x900.png,
@@ -53,7 +54,8 @@
   # Seconds to let the app draw before capturing.
   settle ? 15,
   # Publish a theme into the sandbox HOME. `era` is the name the toolkit
-  # matches on, `roles` the seven-role attrset -- normally taken straight
+  # matches on, `roles` the resolved role attrset -- the base seven plus
+  # whatever ornamentals the era declares -- normally taken straight
   # from home/themes/<era>/scheme.nix, so this fails if either side of
   # that contract moves. Leave `era` null to exercise the fallback.
   era ? null,
@@ -65,7 +67,13 @@
 let
   python = python3.withPackages (ps: [ ps.pillow ]);
 
-  roleNames = (import ../../../../themes/lib/roles.nix).names;
+  rolesLib = import ../../../../themes/lib/roles.nix;
+
+  # The base seven plus every ornamental role the resolved palette
+  # actually declares, in `extraNames` order -- the same tail
+  # lib/era.nix writes. `extrasOf` filters on presence, so a minimalist
+  # era emits nothing extra, exactly as it does on the desktop.
+  roleNames = rolesLib.names ++ rolesLib.extrasOf roles;
 
   # The same shape lib/era.nix writes. Deliberately restated rather than
   # imported: this test's job includes noticing if that format changes,
@@ -73,7 +81,7 @@ let
   themeToml = ''
     era = "${era}"
     variant = "${variant}"
-    polarity = "${(import ../../../../themes/lib/roles.nix).polarityOf roles}"
+    polarity = "${rolesLib.polarityOf roles}"
 
     [font]
     ui = "${uiFont}"
