@@ -3,7 +3,8 @@
 //! All four eras frame every screen with something; they disagree about
 //! what. Entropism runs a row of outlined boxes over a build-string
 //! footer, neomil a thin rule with a hostname tape, kitsch a single
-//! centred compliance caption, neokitsch a strata wedge of fine lines.
+//! centred compliance caption, neokitsch the stepped double-stroke
+//! device frame itself with a strata wedge at its foot.
 //! [`crate::style::Chrome`] picks; the screens never ask.
 
 use super::surface::{surface, Surface};
@@ -11,6 +12,22 @@ use super::text;
 use crate::style::{Chrome, Style};
 use iced::widget::{canvas, column, container, row, Space};
 use iced::{mouse, Color, Element, Length, Padding, Point, Rectangle, Renderer, Theme};
+
+/// Height of the stepped device-frame rail at the top and bottom of a
+/// neokitsch screen.
+const RAIL: f32 = 46.0;
+/// Length of the flush corner section between the tab and the step.
+const RAIL_CORNER: f32 = 220.0;
+/// Horizontal run of the step diagonal.
+const RAIL_STEP_W: f32 = 22.0;
+/// Vertical rise of the step diagonal.
+const RAIL_STEP_H: f32 = 16.0;
+/// Corner radius of the outer stroke's tab.
+const RAIL_RADIUS: f32 = 16.0;
+/// Inset of the inner stroke from the outer one.
+const RAIL_INSET: f32 = 6.0;
+/// Width of the outer stroke.
+const RAIL_OUTER: f32 = 2.4;
 
 /// The layered fine lines neokitsch closes every screen with, bunching
 /// into a wedge at one end.
@@ -59,6 +76,179 @@ impl<Message> canvas::Program<Message> for Strata {
                     .with_width(1.0),
             );
         }
+
+        vec![frame.into_geometry()]
+    }
+}
+
+/// Which edge of the screen a [`DeviceRail`] band dresses.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum RailSide {
+    Top,
+    Bottom,
+}
+
+/// One band of neokitsch's device frame: the double gold stroke with
+/// the middle section stepped out and a tab at each corner.
+///
+/// The geometry is `docs/neokitsch/target-app.svg`:
+/// `path d="M150 120 h300 l24 -20 h972 l24 20 h300 q30 0 30 30 v760
+/// q0 30 -30 30 h-300 l-24 20 h-972 l-24 -20 h-300 ..."` -- the
+/// corner sections sit below the top rail and above the bottom rail,
+/// the steps are 24 wide by 20 tall, and the outer stroke is a gold
+/// that reads lit at the top. This band is that path truncated to the
+/// screen edge, so the tall vertical sides collapse into the corner
+/// tabs; the "outer" stroke is [`crate::palette::Ornaments::relief`]'s
+/// lit side on the top rail and the flat frame gold on the bottom one,
+/// and the "inner" stroke is its shaded side (`FRAME_INNER`).
+#[derive(Debug, Clone, Copy)]
+struct DeviceRail {
+    side: RailSide,
+    /// The lit edge of the bevel: `FRAME_LIT`.
+    lit: Color,
+    /// The flat frame gold: `FRAME`.
+    gold: Color,
+    /// The shaded inner stroke: `FRAME_INNER`.
+    shade: Color,
+    /// The era's stroke weight, for the inner line.
+    stroke: f32,
+}
+
+impl DeviceRail {
+    fn new(style: &Style, side: RailSide) -> Self {
+        let (lit, shade) = style.relief();
+        DeviceRail {
+            side,
+            lit,
+            gold: style.palette.border,
+            shade,
+            stroke: style.metrics.stroke,
+        }
+    }
+}
+
+/// The band's outer or inner stroke, as one open path: up the left
+/// tab, over the rounded corner, along the corner section, up the step
+/// into the raised middle, down the far step, along the far corner
+/// section, over that corner and down the right tab.
+///
+/// `corner_y` is the flush corner-section line and `mid_y` the raised
+/// middle line; the two are `RAIL_STEP_H` apart, 4px from the band's
+/// own edge so the step never clips.
+fn rail_path(
+    w: f32,
+    h: f32,
+    corner_y: f32,
+    mid_y: f32,
+    radius: f32,
+    corner: f32,
+    hangs: bool,
+) -> canvas::Path {
+    let tab = 24.0;
+    let x1 = tab + corner;
+    let x2 = x1 + RAIL_STEP_W;
+    let x3 = w - x2;
+    let x4 = w - tab - corner;
+    let l_tab = tab - radius;
+    let r_tab = w - tab + radius;
+
+    canvas::Path::new(|b| {
+        if hangs {
+            // The top rail: the tabs hang below the corner line, so
+            // the path starts at a tab's foot in the band's margin.
+            b.move_to(Point::new(l_tab, h));
+            b.line_to(Point::new(l_tab, corner_y + radius));
+            b.quadratic_curve_to(Point::new(l_tab, corner_y), Point::new(tab, corner_y));
+            b.line_to(Point::new(x1, corner_y));
+            b.line_to(Point::new(x2, mid_y));
+            b.line_to(Point::new(x3, mid_y));
+            b.line_to(Point::new(x4, corner_y));
+            b.line_to(Point::new(w - tab, corner_y));
+            b.quadratic_curve_to(Point::new(r_tab, corner_y), Point::new(r_tab, corner_y + radius));
+            b.line_to(Point::new(r_tab, h));
+        } else {
+            // The bottom rail: the tabs stand above the corner line,
+            // so the path starts at a tab's head at the band's top.
+            b.move_to(Point::new(l_tab, 0.0));
+            b.line_to(Point::new(l_tab, corner_y - radius));
+            b.quadratic_curve_to(Point::new(l_tab, corner_y), Point::new(tab, corner_y));
+            b.line_to(Point::new(x1, corner_y));
+            b.line_to(Point::new(x2, mid_y));
+            b.line_to(Point::new(x3, mid_y));
+            b.line_to(Point::new(x4, corner_y));
+            b.line_to(Point::new(w - tab, corner_y));
+            b.quadratic_curve_to(Point::new(r_tab, corner_y), Point::new(r_tab, corner_y - radius));
+            b.line_to(Point::new(r_tab, 0.0));
+        }
+    })
+}
+
+impl<Message> canvas::Program<Message> for DeviceRail {
+    type State = ();
+
+    fn draw(
+        &self,
+        _state: &Self::State,
+        renderer: &Renderer,
+        _theme: &Theme,
+        bounds: Rectangle,
+        _cursor: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        let mut frame = canvas::Frame::new(renderer, bounds.size());
+        let (w, h) = (bounds.width, bounds.height);
+
+        let (outer, inner) = match self.side {
+            // The top rail is the lit side of the bevel; the bottom one
+            // is the flat frame gold, as the target's stroke gradient
+            // runs lit at the top to darker at the foot.
+            RailSide::Top => (self.lit, self.shade),
+            RailSide::Bottom => (self.gold, self.shade),
+        };
+
+        let (corner_y, mid_y) = match self.side {
+            // The middle section steps out of the band -- up at the top
+            // of the screen, down at the foot -- leaving 4px of the
+            // band as clearance on the raised side and a 10px tab
+            // between the corner line and the band edge on the other.
+            RailSide::Top => (20.0, 20.0 - RAIL_STEP_H),
+            RailSide::Bottom => (h - 20.0, h - 20.0 + RAIL_STEP_H),
+        };
+
+        // The inner stroke is inset toward the frame's interior: below
+        // the outer line at the top, above it at the foot.
+        let (inner_corner_y, inner_mid_y) = match self.side {
+            RailSide::Top => (corner_y + RAIL_INSET, mid_y + RAIL_INSET),
+            RailSide::Bottom => (corner_y - RAIL_INSET, mid_y - RAIL_INSET),
+        };
+
+        frame.stroke(
+            &rail_path(
+                w,
+                h,
+                corner_y,
+                mid_y,
+                RAIL_RADIUS,
+                RAIL_CORNER,
+                self.side == RailSide::Top,
+            ),
+            canvas::Stroke::default()
+                .with_color(outer)
+                .with_width(RAIL_OUTER),
+        );
+        frame.stroke(
+            &rail_path(
+                w,
+                h,
+                inner_corner_y,
+                inner_mid_y,
+                RAIL_RADIUS - RAIL_INSET,
+                RAIL_CORNER - RAIL_INSET * 2.0,
+                self.side == RailSide::Top,
+            ),
+            canvas::Stroke::default()
+                .with_color(inner)
+                .with_width(self.stroke),
+        );
 
         vec![frame.into_geometry()]
     }
@@ -114,12 +304,24 @@ pub fn top_bar<'a, Message: 'static>(
             container(text::label(style, segments[2])).center_y(Length::Fixed(24.0)),
         ]
         .into(),
-        // Kitsch puts nothing at the top; neokitsch's frame is drawn by
-        // the screen itself, so the bar is just the meta line.
-        Chrome::Caption | Chrome::DeviceFrame => row![
+        // Kitsch puts nothing at the top; neokitsch opens with the
+        // device frame's top rail, the meta line beneath it.
+        Chrome::Caption => row![
             text::caption(style, segments[0]),
             Space::new(Length::Fill, Length::Shrink),
             text::caption(style, segments[2]),
+        ]
+        .into(),
+        Chrome::DeviceFrame => column![
+            canvas(DeviceRail::new(style, RailSide::Top))
+                .width(Length::Fill)
+                .height(Length::Fixed(RAIL)),
+            row![
+                text::caption(style, segments[0]),
+                Space::new(Length::Fill, Length::Shrink),
+                text::caption(style, segments[2]),
+            ]
+            .padding(Padding::from([2, 0])),
         ]
         .into(),
     }
@@ -158,13 +360,20 @@ pub fn footer<'a, Message: 'static>(
         ]
         .into(),
         Chrome::DeviceFrame => column![
+            // The strata wedge sits inside the frame, above its foot
+            // rail, as the target has it: `target-app.svg` runs its
+            // five-line wedge at `y=856..884` against a frame foot at
+            // `y=940`.
             canvas(Strata {
-                color: style.palette.border,
+                color: style.ornament(),
                 lines: 5,
             })
             .width(Length::Fill)
             .height(Length::Fixed(30.0)),
             container(line).padding(Padding::from([4, 0])),
+            canvas(DeviceRail::new(style, RailSide::Bottom))
+                .width(Length::Fill)
+                .height(Length::Fixed(RAIL)),
         ]
         .into(),
         Chrome::Caption => container(
