@@ -50,13 +50,15 @@ how much the eras share. The genuinely era-specific things left are
 extruded fan menu, neokitsch's card cascade, entropism's tiles, and
 neomil's dashboard. Both kinds live behind a choice on `Style` rather
 than an era test in a screen — the `Menu` enum for what a menu is, and
-the `Layout` enum for what a dashboard *is* (`Layout::ModuleHub`, the
-six-module hub the three hub eras wear; `Layout::OpsCharts`, neomil's
+the `Layout` enum for what a dashboard *is*: `Layout::ModuleHub`, the
+six-module hub the two hub eras wear; `Layout::OpsCharts`, neomil's
 ops-charts screen straight off `docs/neomil/dashboard-trace.svg`, which
-is what the material's `img-07` actually shows). So a screen picks a
-menu and a dashboard without naming an era, and a fifth era cannot wear
-either without adding data — which is the same discipline that forbids
-`if era ==` in `screens/`.
+is what the material's `img-07` actually shows; `Layout::TileRow`,
+entropism's four-tile row straight off
+`docs/entropism/dashboard-trace.svg`, which is what its Behance screen
+#42 actually shows. So a screen picks a menu and a dashboard without
+naming an era, and a fifth era cannot wear either without adding data —
+which is the same discipline that forbids `if era ==` in `screens/`.
 
 Neomil's arm was a **cut-diamond hub** until the table landed, and the
 story is worth keeping because it is the shape this crate's mistakes
@@ -290,6 +292,16 @@ the new `widgets::charts` chart-card behind each cell. Neomil keeps
 `menu: Menu::Table` — the services-table hub arm is **retained
 dormant** for any era or host that wants a table in the menu slot; the
 `OpsCharts` arm simply never consults the menu.
+
+Entropism's dashboard followed on the same day, the same way:
+`Layout::TileRow` draws the four-tile row from
+`docs/entropism/dashboard-trace.svg` (Behance screen #42 — the
+dim-olive top field with its boxed [A] TILE MENU header, four tiles
+with T2 `LOCATIONS` solid sage and selected, the caption strips, the
+thin build-rule at the foot) on the `screens::dashboard` TileRow arm.
+Entropism keeps `menu: Menu::Tiles` — the tile-grid hub arm is
+**retained dormant**, exactly as `Menu::Table` is for neomil; the
+TileRow arm never consults the menu either.
 
 Not yet done:
 - **`widgets::table` has no scroll rail**, which both neomil sheets draw.

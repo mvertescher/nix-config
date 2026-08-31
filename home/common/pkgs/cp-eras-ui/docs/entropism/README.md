@@ -68,10 +68,13 @@ The crate in this directory does not match the era it is named for:
   tape, workspaces, tray, the wired/audio/CPU/MEM modules and the
   clock, at the 1600x220 geometry the bar golden tests render.
 - `dashboard.svg` — the ops dashboard exactly as `screens::dashboard`
-  assembles it: top bar, sidebar (logotype, security-level badges),
-  the era's menu over the six modules with one selected, the detail
-  panel and the footer, at the 1600x900 geometry the dashboard
-  golden tests render.
+  assembles it under entropism's `Layout::TileRow`: a dim-olive top
+  field with a boxed [A] TILE MENU header, a single row of four tiles
+  (T2 `LOCATIONS`, solid sage, selected), a caption strip under each
+  tile carrying the module's catalogue code and blurb, and a thin
+  build-rule at the foot, at the 1600x900 geometry the dashboard
+  golden tests render. The frame comes from `dashboard-trace.svg`
+  (Behance screen #42): no sidebar, no detail panel, no footer band.
 
 ```sh
 nix shell nixpkgs#librsvg --command \

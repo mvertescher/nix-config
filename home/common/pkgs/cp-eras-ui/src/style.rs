@@ -215,6 +215,12 @@ impl Ticket {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Menu {
     /// Entropism: a grid of square tiles under caption strips.
+    ///
+    /// Dormant since 2026-08-31: entropism's dashboard is now
+    /// [`Layout::TileRow`], whose arm draws its own row of four tiles
+    /// and does not go through the menu, and this variant is retained
+    /// as the tile-grid hub arm for any era or host that wants the hub
+    /// -- the widget stays live, the screen just does not wear it today.
     Tiles { columns: usize },
     /// Kitsch: extruded slabs fanned about a pivot.
     Fan,
@@ -237,10 +243,10 @@ pub enum Menu {
 /// because offered six modules the four references reach for four
 /// different objects. The dashboard needs that lesson twice: the
 /// references disagree about the whole working area, not just the menu
-/// in it. Entropism, kitsch and neokitsch frame a module hub; neomil's
-/// `target` is not a hub at all.
+/// in it. Kitsch and neokitsch frame a module hub; neomil's `target`
+/// and entropism's dashboard are not hubs at all.
 ///
-/// * **Entropism, kitsch, neokitsch** -- [`Layout::ModuleHub`]: the
+/// * **Kitsch, neokitsch** -- [`Layout::ModuleHub`]: the
 ///   six-module hub `screens::dashboard` has always drawn -- top bar,
 ///   sidebar, the era's [`Menu`] over six modules, the description
 ///   panel and the footer. [`Menu`] keeps describing the middle slot.
@@ -252,16 +258,25 @@ pub enum Menu {
 ///   red rail on the right and a red corner block bottom-right. No
 ///   sidebar, no menu, no detail panel, no footer -- the material shows
 ///   none of those -- so this arm does not consult [`Menu`] at all.
+/// * **Entropism** -- [`Layout::TileRow`]: `docs/entropism/dashboard-trace.svg`
+///   is the schematic of `images/entropism-dashboard.png` (Behance
+///   screen #42, see `docs/sources.md`), and it is a single row of
+///   four menu tiles, not a hub: a dim-olive top field with a boxed
+///   header, the four tiles -- the second, selected, a solid sage fill
+///   -- each with a caption strip beneath, and a thin build-rule at
+///   the foot. No sidebar, no detail panel, no footer band, and no
+///   menu: the material's frame contains none of them, so this arm
+///   does not consult [`Menu`] either.
 ///
 /// The screen branches on this the way it branches on [`Menu`]:
 /// `screens::dashboard::view` matches it, and nothing in `screens/`
-/// names an era. A fifth era cannot wear either layout without the
-/// table entry, which is the point of making it data in the first
+/// names an era. A fifth era cannot wear any of these layouts without
+/// the table entry, which is the point of making it data in the first
 /// place.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Layout {
     /// The six-module hub shell: top bar, sidebar, the era's menu,
-    /// detail panel, footer. The three hub eras take this.
+    /// detail panel, footer. The two hub eras take this.
     ModuleHub,
     /// The ops-charts screen from `img-07-dashboard.png`, drawn
     /// edge-to-edge per `docs/neomil/dashboard-trace.svg`. The layout
@@ -270,6 +285,15 @@ pub enum Layout {
     /// everything else here, so a second era adopting it is a table
     /// entry.
     OpsCharts,
+    /// Entropism's dashboard, per `docs/entropism/dashboard-trace.svg`
+    /// -- a single row of four tiles (T2 selected, solid sage) under a
+    /// dim-olive top field, with caption strips beneath the tiles and a
+    /// thin build-rule at the foot. No sidebar, no detail panel, no
+    /// footer. Only worn by entropism today, but it is Style data like
+    /// everything else here, so a second era adopting it is a table
+    /// entry -- and [`Menu::Tiles`] keeps the tile-grid hub arm for any
+    /// era that wants the hub.
+    TileRow,
 }
 
 /// Where a screen puts its footnote markers.
@@ -386,10 +410,12 @@ pub struct Style {
     /// What this era means by a menu.
     pub menu: Menu,
     /// What this era's dashboard is: the six-module hub shell
-    /// ([`Layout::ModuleHub`]) for the three hub eras, or neomil's
+    /// ([`Layout::ModuleHub`]) for the two hub eras, neomil's
     /// ops-charts screen ([`Layout::OpsCharts`]) straight off
-    /// `docs/neomil/dashboard-trace.svg`. A screen dispatches on this
-    /// the way the menu widget dispatches on [`Menu`].
+    /// `docs/neomil/dashboard-trace.svg`, or entropism's four-tile row
+    /// ([`Layout::TileRow`]) straight off
+    /// `docs/entropism/dashboard-trace.svg`. A screen dispatches on
+    /// this the way the menu widget dispatches on [`Menu`].
     pub layout: Layout,
     /// Whether the era stamps compliance glyphs -- dotted matrix,
     /// hollow square, hollow triangle -- on its bands and rows.

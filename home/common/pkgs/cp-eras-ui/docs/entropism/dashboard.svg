@@ -1,156 +1,66 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" font-family="Rajdhani">
   <!-- ENTROPISM DASHBOARD — ground truth: tests/golden/dashboard-entropism-1600x900.png
-       Layout per src/screens/dashboard.rs (metrics: gap 14, pad 14, stroke 1).
-       Palette: bg #110c07, sage solid #9cb795, fg #94bb94, mid #718f6f, border #5d7752, dim #3d4d38, on-select #1f2a1c. -->
+       Layout per src/screens/dashboard.rs Layout::TileRow arm, fractions of
+       docs/entropism/dashboard-trace.svg (Behance screen #42). The trace is the
+       measure, so the row is not an even grid: T2 (the selection) is the widest
+       tile and the others taper around it, and the caption strips are narrower
+       than their tiles except under T1 and T4.
+       Palette: bg #110c07, sage solid #9cb795, fg #94bb94, mid #718f87
+       (mid_ink, dim→fg at 0.6), border #5d7752, dim #3d4d38, on-select #1f2a1c;
+       the field is border at 0.25 alpha over bg, the strips border at 0.4. -->
   <rect width="1600" height="900" fill="#110c07"/>
 
-  <!-- ======== TOP BAR (Segmented chrome, 3 outlined boxes, y40 h28) ======== -->
-  <g font-size="14">
-    <rect x="40" y="40" width="376" height="28" fill="none" stroke="#5d7752" stroke-width="1"/>
-    <text x="52" y="59" fill="#718f6f">COMPUTER SYSTEMS SOFTWAREV2</text>
-    <rect x="424" y="40" width="876" height="28" fill="none" stroke="#5d7752" stroke-width="1"/>
-    <text x="862" y="59" text-anchor="middle" fill="#718f6f">OPS DASHBOARD</text>
-    <rect x="1312" y="40" width="244" height="28" fill="none" stroke="#5d7752" stroke-width="1"/>
-    <text x="1324" y="59" fill="#718f6f">FLAIR TRS 5MMP</text>
-  </g>
+  <!-- dim-olive top field (trace rows 0-5, y 0..230). The era table has
+       no field colour; the app draws border at 0.25 alpha over bg, which
+       wgpu composites in linear space. The observed result is #323f2a,
+       so that is what this drawing uses. -->
+  <rect x="0" y="0" width="1600" height="230" fill="#323f2a"/>
 
-  <!-- ======== SIDEBAR (x 40..300, content from y82) ======== -->
+  <!-- boxed-letter header top-left: [A] and TILE MENU (trace y 120..166) -->
   <g>
-    <text x="40" y="130" font-size="52" fill="#94bb94">next</text>
-    <text x="42" y="163" font-size="14" fill="#3d4d38">T E C H N O L O G Y</text>
-
-    <g font-size="14">
-      <text x="42" y="203" fill="#3d4d38">CUSTOMER</text>
-      <text x="294" y="203" text-anchor="end" fill="#94bb94">#NC488402</text>
-      <text x="42" y="226" fill="#3d4d38">CLEARANCE</text>
-      <text x="294" y="226" text-anchor="end" fill="#94bb94">T2</text>
-      <text x="42" y="248" fill="#3d4d38">LAST UPDATE</text>
-      <text x="294" y="248" text-anchor="end" fill="#94bb94">10/05/2077</text>
-    </g>
-
-    <!-- heading A: marker box 24x24, fg stroke; text fg -->
-    <g font-size="14">
-      <rect x="40" y="286" width="24" height="24" fill="none" stroke="#94bb94" stroke-width="1"/>
-      <text x="52" y="302" text-anchor="middle" fill="#94bb94">A</text>
-      <text x="74" y="302" fill="#94bb94">SECURITY LEVEL</text>
-    </g>
-
-    <!-- badges 2x2, T2 selected. y332..362 / 368..398 -->
-    <g font-size="14">
-      <rect x="40" y="332" width="57" height="30" fill="none" stroke="#5d7752" stroke-width="1"/>
-      <text x="68" y="350" text-anchor="middle" fill="#94bb94">T1</text>
-      <rect x="103" y="332" width="57" height="30" fill="#9cb795"/>
-      <text x="131" y="350" text-anchor="middle" fill="#1f2a1c">T2</text>
-      <rect x="40" y="368" width="57" height="30" fill="none" stroke="#5d7752" stroke-width="1"/>
-      <text x="68" y="386" text-anchor="middle" fill="#94bb94">T3</text>
-      <rect x="103" y="368" width="57" height="30" fill="none" stroke="#5d7752" stroke-width="1"/>
-      <text x="131" y="386" text-anchor="middle" fill="#94bb94">T4</text>
-    </g>
-
-    <!-- marker B + notes -->
-    <g>
-      <rect x="40" y="436" width="24" height="24" fill="none" stroke="#94bb94" stroke-width="1"/>
-      <text x="52" y="452" text-anchor="middle" font-size="14" fill="#94bb94">B</text>
-      <g font-size="9" fill="#3d4d38">
-        <text x="74" y="446">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
-        <text x="74" y="460">SERVING CUSTOMERS SINCE 2006.</text>
-      </g>
-    </g>
+    <rect x="100" y="120" width="46" height="46" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="123" y="152" text-anchor="middle" font-size="26" fill="#94bb94">A</text>
+    <rect x="160" y="120" width="330" height="46" fill="none" stroke="#5d7752" stroke-width="1"/>
+    <text x="325" y="150" text-anchor="middle" font-size="20" fill="#94bb94">TILE MENU</text>
   </g>
 
-  <!-- ======== MODULES (x 328..985, heading C y82..106, tiles 3 per row) ======== -->
-  <g font-size="14">
-    <rect x="328" y="82" width="24" height="24" fill="none" stroke="#94bb94" stroke-width="1"/>
-    <text x="340" y="98" text-anchor="middle" fill="#94bb94">C</text>
-    <text x="360" y="98" fill="#94bb94">COMPUTER SYSTEMS</text>
-  </g>
+  <!-- the four tiles (trace rows 25-60%, y 270..560) -->
   <g>
-    <!-- tile row 1: y120..268 -->
-    <g>
-      <rect x="328" y="120" width="209" height="148" fill="none" stroke="#5d7752" stroke-width="1"/>
-      <text x="340" y="143" font-size="14" fill="#94bb94">VEHICLES</text>
-      <text x="340" y="156" font-size="9" fill="#3d4d38">161-9A</text>
-    </g>
-    <g>
-      <rect x="551" y="120" width="209" height="148" fill="none" stroke="#5d7752" stroke-width="1"/>
-      <text x="563" y="143" font-size="14" fill="#94bb94">LOCATIONS</text>
-      <text x="563" y="156" font-size="9" fill="#3d4d38">161-9B</text>
-    </g>
-    <g>
-      <rect x="774" y="120" width="209" height="148" fill="none" stroke="#5d7752" stroke-width="1"/>
-      <text x="786" y="143" font-size="14" fill="#94bb94">FACTIONS</text>
-      <text x="786" y="156" font-size="9" fill="#3d4d38">161-9C</text>
-    </g>
-    <!-- rules + captions under row 1 -->
-    <line x1="328" y1="276" x2="984" y2="276" stroke="#3d4d38" stroke-width="1"/>
-    <text x="328" y="288" font-size="7" fill="#3d4d38">REPORT ERROR · V2.11 · CERTIFIED</text>
-    <text x="551" y="288" font-size="7" fill="#3d4d38">REPORT ERROR · V2.11 · CERTIFIED</text>
-    <text x="774" y="288" font-size="7" fill="#3d4d38">REPORT ERROR · V2.11 · CERTIFIED</text>
+    <!-- T1: VEHICLES, outlined dim-olive -->
+    <rect x="96" y="270" width="178" height="290" fill="#3d4d38" stroke="#5d7752" stroke-width="1"/>
+    <text x="104" y="307" font-size="14" fill="#94bb94">VEHICLES</text>
+    <text x="104" y="322" font-size="9" fill="#94bb94">161-9A</text>
 
-    <!-- tile row 2: y300..448, WEAPONS selected -->
-    <g>
-      <rect x="328" y="300" width="209" height="148" fill="#9cb795"/>
-      <text x="340" y="323" font-size="14" fill="#1f2a1c">WEAPONS</text>
-      <text x="340" y="336" font-size="9" fill="#1f2a1c">161-9D</text>
-    </g>
-    <g>
-      <rect x="551" y="300" width="209" height="148" fill="none" stroke="#5d7752" stroke-width="1"/>
-      <text x="563" y="323" font-size="14" fill="#94bb94">PRODUCTS</text>
-      <text x="563" y="336" font-size="9" fill="#3d4d38">161-9E</text>
-    </g>
-    <g>
-      <rect x="774" y="300" width="209" height="148" fill="none" stroke="#5d7752" stroke-width="1"/>
-      <text x="786" y="323" font-size="14" fill="#94bb94">CORPORATIONS</text>
-      <text x="786" y="336" font-size="9" fill="#3d4d38">161-9F</text>
-    </g>
-    <line x1="328" y1="456" x2="984" y2="456" stroke="#3d4d38" stroke-width="1"/>
-    <text x="328" y="468" font-size="7" fill="#3d4d38">REPORT ERROR · V2.11 · CERTIFIED</text>
-    <text x="551" y="468" font-size="7" fill="#3d4d38">REPORT ERROR · V2.11 · CERTIFIED</text>
-    <text x="774" y="468" font-size="7" fill="#3d4d38">REPORT ERROR · V2.11 · CERTIFIED</text>
+    <!-- T2: LOCATIONS — SELECTED, solid sage with selection ink -->
+    <rect x="368" y="270" width="496" height="290" fill="#9cb795"/>
+    <text x="376" y="307" font-size="14" fill="#1f2a1c">LOCATIONS</text>
+    <text x="376" y="322" font-size="9" fill="#1f2a1c">161-9B</text>
+
+    <!-- T3: FACTIONS, outlined dim-olive -->
+    <rect x="896" y="270" width="400" height="290" fill="#3d4d38" stroke="#5d7752" stroke-width="1"/>
+    <text x="904" y="307" font-size="14" fill="#94bb94">FACTIONS</text>
+    <text x="904" y="322" font-size="9" fill="#94bb94">161-9C</text>
+
+    <!-- T4: WEAPONS, outlined dim-olive -->
+    <rect x="1328" y="270" width="208" height="290" fill="#3d4d38" stroke="#5d7752" stroke-width="1"/>
+    <text x="1336" y="307" font-size="14" fill="#94bb94">WEAPONS</text>
+    <text x="1336" y="322" font-size="9" fill="#94bb94">161-9D</text>
   </g>
 
-  <!-- ======== DETAIL (x 1013..1560, heading D y82..106, panel y120..780) ======== -->
-  <g font-size="14">
-    <rect x="1013" y="82" width="24" height="24" fill="none" stroke="#94bb94" stroke-width="1"/>
-    <text x="1025" y="98" text-anchor="middle" fill="#94bb94">D</text>
-    <text x="1045" y="98" fill="#94bb94">DESCRIPTION</text>
-  </g>
-  <rect x="1013" y="120" width="547" height="660" fill="none" stroke="#5d7752" stroke-width="1"/>
-  <g>
-    <text x="1027" y="149" font-size="16" fill="#94bb94">WEAPONS</text>
-    <text x="1028" y="164" font-size="9" fill="#3d4d38">161-9D</text>
-
-    <g font-size="14">
-      <text x="1027" y="199" fill="#94bb94">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do</text>
-      <text x="1027" y="219" fill="#94bb94">eiusmod tempor incididunt ut labore et dolore magna aliqua.</text>
-      <text x="1027" y="249" fill="#718f6f">Quis ipsum suspendisse ultrices gravida. Risus commodo viverra</text>
-      <text x="1027" y="269" fill="#718f6f">maecenas accumsan lacus vel facilisis.</text>
-    </g>
-
-    <g font-size="14">
-      <text x="1027" y="316" fill="#3d4d38">RECORDS</text>
-      <text x="1546" y="316" text-anchor="end" fill="#94bb94">1 842</text>
-      <text x="1027" y="344" fill="#3d4d38">CLEARANCE REQUIRED</text>
-      <text x="1546" y="344" text-anchor="end" fill="#94bb94">T2</text>
-      <text x="1027" y="372" fill="#3d4d38">LAST SYNC</text>
-      <text x="1546" y="372" text-anchor="end" fill="#94bb94">10/05/2077 04:12</text>
-      <text x="1027" y="400" fill="#3d4d38">SOURCE</text>
-      <text x="1546" y="400" text-anchor="end" fill="#94bb94">NEXUS NETWORK V10.8</text>
-    </g>
-  </g>
-  <!-- vendor chips: natural-width outlined 9pt captions -->
-  <g font-size="9" fill="#3d4d38">
-    <rect x="1012" y="795" width="62" height="18" fill="none" stroke="#5d7752" stroke-width="1"/>
-    <text x="1023" y="808">PETROCHEM</text>
-    <rect x="1083" y="795" width="73" height="18" fill="none" stroke="#5d7752" stroke-width="1"/>
-    <text x="1093" y="808">BETTERLIFE TEC</text>
+  <!-- caption strips under each tile (trace y 596..630), faint olive bars
+       (border at 0.4 over bg, composited #3d4e35) carrying the module's
+       code and blurb at caption size -->
+  <g font-size="7" fill="#718f87">
+    <rect x="104" y="596" width="178" height="34" fill="#3d4e35"/>
+    <text x="110" y="614">161-9A · REGISTERED CHASSIS, PLATES AND TRANSIT PERMITS.</text>
+    <rect x="376" y="596" width="200" height="34" fill="#3d4e35"/>
+    <text x="382" y="614">161-9B · DISTRICTS, CHECKPOINTS AND MAPPED ACCESS ROUTES.</text>
+    <rect x="904" y="596" width="240" height="34" fill="#3d4e35"/>
+    <text x="910" y="614">161-9C · STANDING, KNOWN CONTACTS AND OPEN CONTRACTS.</text>
+    <rect x="1336" y="596" width="200" height="34" fill="#3d4e35"/>
+    <text x="1342" y="614">161-9D · LICENSED HARDWARE AND SURPLUS COMBAT INVENTORY.</text>
   </g>
 
-  <!-- ======== FOOTER (Segmented: rule y829 + mid 11pt line) ======== -->
-  <line x1="40" y1="829" x2="1560" y2="829" stroke="#5d7752" stroke-width="1"/>
-  <g font-size="11" fill="#718f6f">
-    <text x="41" y="846">INTERFACE LOADED</text>
-    <text x="796" y="846" text-anchor="middle">PROVIDED BY NEXUS NETWORK V10.8</text>
-    <text x="1559" y="846" text-anchor="end">BUILD 6.47.48441.R15</text>
-  </g>
+  <!-- thin build-rule at the foot (trace y 860..862), 2px in dim -->
+  <rect x="0" y="860" width="1600" height="2" fill="#3d4d38"/>
 </svg>

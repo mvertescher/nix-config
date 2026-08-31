@@ -73,11 +73,22 @@ pub fn style() -> Style {
         ticket: Ticket::default(),
         // "MENU TILES" on the components sheet: 120x120 squares, three
         // to a row, each under a hairline and a caption strip.
+        //
+        // Retained-dormant since 2026-08-31, the same way Menu::Table
+        // is for neomil: the dashboard below (Layout::TileRow) draws
+        // its own row of four tiles and does not go through the menu,
+        // but any era or host wanting the hub grid still can -- the
+        // widget stays live, the screen just does not wear it today.
         menu: Menu::Tiles { columns: 3 },
-        // The six-module hub shell, like kitsch and neokitsch: this
-        // era's target is the store screen, and the hub is what the
-        // shared dashboard is for it.
-        layout: Layout::ModuleHub,
+        // The material's dashboard is not the hub: per
+        // docs/entropism/dashboard-trace.svg (the schematic of the
+        // Behance screen #42, see docs/sources.md) it is a dim-olive
+        // top field, a single row of four menu tiles -- the second
+        // solid sage, selected -- caption strips under each tile, and a
+        // thin build-rule at the foot. No sidebar, no detail panel, no
+        // footer band: the material's frame contains none of them, so
+        // this era's dashboard arm does not draw them.
+        layout: Layout::TileRow,
         glyphs: false,
         metrics: Metrics {
             stroke: 1.0,

@@ -1,20 +1,24 @@
 //! The ops dashboard, in any era.
 //!
 //! The four references do not agree about what a dashboard is.
-//! Entropism, kitsch and neokitsch frame a module hub -- six modules,
-//! one selected, the selected one's description beside it -- while
+//! Kitsch and neokitsch frame a module hub -- six modules, one
+//! selected, the selected one's description beside it -- while
 //! neomil's `images/img-07-dashboard.png` is an ops screen: a
 //! full-width cold-blue band carrying red crest blocks and the OPS
 //! DASHBOARD wordmark, three large bright-red chart cards side by side
 //! with dark slits between them, a vertical red rail on the right and a
-//! red corner block bottom-right, and no hub anywhere in it. So the
-//! *layout* is a value on the era table,
-//! [`crate::style::Layout`] -- beside `Menu`, the second thing four
-//! dressed rectangles could not express -- and this file is the
-//! dispatch that value exists to permit: [`Layout::ModuleHub`] is the
-//! hub shell below, [`Layout::OpsCharts`] is [`Dashboard::ops_charts`].
-//! Nothing in this file asks which era it is, which is the standing
-//! test and not a comment.
+//! red corner block bottom-right, and no hub anywhere in it. And
+//! entropism's dashboard (`images/entropism-dashboard.png`, Behance
+//! screen #42) is neither: a dim-olive top field over a single row of
+//! four menu tiles, the second one a solid sage fill. So the *layout*
+//! is a value on the era table, [`crate::style::Layout`] -- beside
+//! `Menu`, the second thing four dressed rectangles could not express
+//! -- and this file is the dispatch that value exists to permit:
+//! [`Layout::ModuleHub`] is the hub shell below,
+//! [`Layout::OpsCharts`] is [`Dashboard::ops_charts`],
+//! [`Layout::TileRow`] is [`Dashboard::tile_row`]. Nothing in this
+//! file asks which era it is, which is the standing test and not a
+//! comment.
 //!
 //! The hub shell is written once: six modules, one selected, the
 //! selected one's description, and the era's chrome. The four eras do
@@ -35,11 +39,23 @@
 //! data stays on this screen -- the OpsCharts arm simply does not draw
 //! it, the same way each menu arm takes what its object has room for.
 //!
+//! The [`Layout::TileRow`] arm is the same story for entropism,
+//! straight off `docs/entropism/dashboard-trace.svg`: the dim-olive
+//! top field, the row of four tiles (T2 selected, solid sage), the
+//! caption strips under them carrying each module's code and blurb --
+//! reused from `MODULES`, since the six-module data stays on this
+//! screen no matter which arm draws it -- and the thin build-rule at
+//! the foot. No sidebar, no detail panel, no footer: the material's
+//! frame contains none of them, so the arm draws none of them.
+//!
 //! Neomil's hub arm was a services table until the layout split, and
 //! it is now dormant rather than deleted: `Layout::OpsCharts` never
 //! consults `menu`, so `Menu::Table` and [`crate::widgets::table`]
 //! remain the retained services-table hub arm for any era or host that
-//! wants one -- see [`crate::style::Menu::Table`].
+//! wants one -- see [`crate::style::Menu::Table`]. Entropism's
+//! `Menu::Tiles` grid is retained-dormant the same way: the TileRow
+//! arm draws its own tiles and never consults `menu`, so the hub's
+//! tile grid stays live for any era or host that wants the hub.
 //!
 //! Note the column count. The grid here was two wide; entropism's
 //! sheet draws its tiles three to a row and the era table says so, so
@@ -49,6 +65,7 @@
 //! Run it with `cp-eras-ui-dashboard --era <name>`; with no flag it
 //! follows the desktop theme.
 
+use crate::palette::Palette;
 use crate::style::{Layout, Style};
 use crate::widgets::surface::{layered, surface, Surface};
 use crate::widgets::{badge, chart_card, footer, ground, marker, menu, text, top_bar, Chart, MenuItem, Slot};
@@ -148,10 +165,11 @@ impl Dashboard {
         let s = &self.style;
         match s.layout {
             // The hub shell pads its content 40px all round, like the
-            // other screens. The ops-charts screen does not: the trace
-            // draws the band edge to edge, so the arm does too.
+            // other screens. The ops-charts and tile-row screens do
+            // not: their traces draw edge to edge, so the arms do too.
             Layout::ModuleHub => stack![ground(s), container(self.screen()).padding(40)].into(),
             Layout::OpsCharts => stack![ground(s), self.ops_charts()].into(),
+            Layout::TileRow => stack![ground(s), self.tile_row()].into(),
         }
     }
 
@@ -211,6 +229,29 @@ impl Dashboard {
             canvas(OpsTrim { style: s })
                 .width(Length::Fill)
                 .height(Length::Fill),
+        ]
+        .into()
+    }
+
+    /// The four-tile row from the material, for [`Layout::TileRow`].
+    ///
+    /// A single full-frame canvas, fraction geometry exactly like the
+    /// ops-charts arm -- `docs/entropism/dashboard-trace.svg` read at
+    /// its 1600x900 frame -- drawing the dim-olive top field, the
+    /// boxed letter header, the four tiles (T2, `LOCATIONS`, the solid
+    /// sage selection), the caption strips under them and the thin
+    /// build-rule at the foot. The first four `MODULES` become the
+    /// tiles, labels and codes included, the same way the hub's menu
+    /// takes what its object has room for.
+    fn tile_row(&self) -> Element<'_, Message> {
+        stack![
+            canvas(TileRowBackdrop {
+                style: &self.style,
+                tiles: &MODULES[..4],
+                selected: TILE_SELECTED,
+            })
+            .width(Length::Fill)
+            .height(Length::Fill),
         ]
         .into()
     }
@@ -529,6 +570,196 @@ impl<Message> canvas::Program<Message> for OpsTrim<'_> {
             vertical_alignment: iced::alignment::Vertical::Center,
             ..Default::default()
         });
+
+        vec![frame.into_geometry()]
+    }
+}
+
+// ------------------------------------------------------------ tile-row
+
+/// Which of the four tiles the material shows selected. The trace's T2
+/// -- second from the left, `LOCATIONS` -- is the solid sage fill. The
+/// hub's `SELECTED_MODULE` selects the third module instead; the tile
+/// row deliberately does not reuse it, because the two screens select
+/// different things and the material is explicit about this one.
+const TILE_SELECTED: usize = 1;
+
+/// The tile row's geometry, from `docs/entropism/dashboard-trace.svg`
+/// at its 1600x900 frame, restated as fractions of the frame: `(x,
+/// w)` for each of the four tiles.
+///
+/// The row is deliberately *not* an even grid, because the trace is
+/// not one: T2, the selected tile, is the widest (x 368..864) and the
+/// others taper around it -- 178 / 496 / 400 / 208 of 1600 -- leaving
+/// a 94px gap at the row's start and 32px gaps between the rest.
+const TILE_ROW: [(f32, f32); 4] = [
+    (96.0 / 1600.0, 178.0 / 1600.0),
+    (368.0 / 1600.0, 496.0 / 1600.0),
+    (896.0 / 1600.0, 400.0 / 1600.0),
+    (1328.0 / 1600.0, 208.0 / 1600.0),
+];
+
+/// The caption strips under the tiles, same frame and convention. Each
+/// sits 8px inside its tile's leading edge; only T1 and T4's reach the
+/// tile's width, which is how the trace draws them.
+const TILE_STRIPS: [(f32, f32); 4] = [
+    (104.0 / 1600.0, 178.0 / 1600.0),
+    (376.0 / 1600.0, 200.0 / 1600.0),
+    (904.0 / 1600.0, 240.0 / 1600.0),
+    (1336.0 / 1600.0, 200.0 / 1600.0),
+];
+
+/// The backdrop of the tile-row screen: ground, the dim-olive top
+/// field, the boxed letter header, the four tiles with their labels
+/// and codes, the caption strips, and the thin build-rule at the foot.
+///
+/// All geometry is `docs/entropism/dashboard-trace.svg` at 1600x900,
+/// restated as fractions of the frame. The era table has no dedicated
+/// field or strip colour -- the material's are blends -- so the field
+/// is `border` (OUTLINE) faded to a quarter alpha over the page ground
+/// and the strips to two-fifths, via [`crate::palette::Palette::faded`].
+struct TileRowBackdrop<'a> {
+    style: &'a Style,
+    tiles: &'a [MenuItem<'a>],
+    selected: usize,
+}
+
+impl<Message> canvas::Program<Message> for TileRowBackdrop<'_> {
+    type State = ();
+
+    fn draw(
+        &self,
+        _state: &Self::State,
+        renderer: &Renderer,
+        _theme: &Theme,
+        bounds: Rectangle,
+        _cursor: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        let mut frame = canvas::Frame::new(renderer, bounds.size());
+        let (w, h) = (bounds.width, bounds.height);
+        if w <= 0.0 || h <= 0.0 {
+            return vec![frame.into_geometry()];
+        }
+        let s = self.style;
+
+        frame.fill(&canvas::Path::rectangle(Point::ORIGIN, bounds.size()), s.palette.bg);
+
+        // The dim-olive top field: the trace's rows 0-5, y 0..230 of
+        // 900. The trace's own field colour (#272a1c) sits between the
+        // page ground and the era's `dim`, and the read that lands
+        // there is `border` at a quarter alpha -- the same trick
+        // `ground` uses for its stacked discs, so no gradient support
+        // is needed.
+        frame.fill(
+            &canvas::Path::rectangle(Point::new(0.0, 0.0), Size::new(w, 230.0 / 900.0 * h)),
+            Palette::faded(s.palette.border, 0.25),
+        );
+
+        // The boxed-letter header top-left: [A] and TILE MENU, trace
+        // x 100..146 and 160..490, y 120..166, both olive outlines in
+        // `fg` ink. The era's boxed headings are exactly this object,
+        // drawn at the trace's proportions rather than through the
+        // hub's `heading` helper, which does not box its label.
+        let (hy, hh) = (120.0 / 900.0 * h, 46.0 / 900.0 * h);
+        let mut boxed = |x: f32, bw: f32, cx: f32, label: &str, size: f32| {
+            let rect = canvas::Path::rectangle(Point::new(x * w, hy), Size::new(bw * w, hh));
+            frame.stroke(
+                &rect,
+                canvas::Stroke::default()
+                    .with_color(s.palette.border)
+                    .with_width(s.metrics.stroke),
+            );
+            frame.fill_text(canvas::Text {
+                content: label.to_string(),
+                position: Point::new(cx * w, hy + hh / 2.0),
+                color: s.palette.fg,
+                size: size.into(),
+                font: crate::fonts::FONT_RAJDHANI_REGULAR,
+                horizontal_alignment: iced::alignment::Horizontal::Center,
+                vertical_alignment: iced::alignment::Vertical::Center,
+                ..Default::default()
+            });
+        };
+        boxed(100.0 / 1600.0, 46.0 / 1600.0, 123.0 / 1600.0, "A", 26.0);
+        boxed(160.0 / 1600.0, 330.0 / 1600.0, 325.0 / 1600.0, "TILE MENU", 20.0);
+
+        // The four tiles, trace y 270..560 (rows 25-60% of the frame).
+        // T2 is the selection: solid sage with the era's selection ink.
+        // The other three are dim-olive fills under olive outlines --
+        // the trace's T1/T3/T4 family, which the palette reads as
+        // `dim` + `border`.
+        let (ty, th) = (270.0 / 900.0 * h, 290.0 / 900.0 * h);
+        for (i, (tx, tw)) in TILE_ROW.iter().enumerate() {
+            let item = &self.tiles[i];
+            let selected = i == self.selected;
+            let (fill, ink, edge) = if selected {
+                (s.palette.select, s.palette.on_select, s.palette.select)
+            } else {
+                (s.palette.dim, s.palette.fg, s.palette.border)
+            };
+            let rect = canvas::Path::rectangle(Point::new(tx * w, ty), Size::new(tw * w, th));
+            frame.fill(&rect, fill);
+            frame.stroke(
+                &rect,
+                canvas::Stroke::default()
+                    .with_color(edge)
+                    .with_width(s.metrics.stroke),
+            );
+
+            // Label and catalogue code in the tile's top content zone
+            // (the trace's inner block, y 286..406): the name at body
+            // size, the code beneath at caption size, both in the
+            // tile's own ink.
+            let x = tx * w + 8.0;
+            frame.fill_text(canvas::Text {
+                content: item.label.to_string(),
+                position: Point::new(x, ty + 24.0),
+                color: ink,
+                size: (s.metrics.text_body as f32).into(),
+                font: crate::fonts::FONT_RAJDHANI_REGULAR,
+                ..Default::default()
+            });
+            frame.fill_text(canvas::Text {
+                content: item.code.to_string(),
+                position: Point::new(x, ty + 44.0),
+                color: ink,
+                size: (s.metrics.text_caption as f32).into(),
+                font: crate::fonts::FONT_RAJDHANI_REGULAR,
+                ..Default::default()
+            });
+        }
+
+        // The caption strips under each tile, trace y 596..630: faint
+        // olive bars carrying the module's catalogue code and blurb at
+        // caption size. Only the table arm has room for the blurb, so
+        // here the strip is where the material puts it. The ink is the
+        // era's secondary tone -- `mid_ink`, dim-to-fg at 0.6 -- which
+        // is what the trace's tiny captions read as against the dark
+        // bars, and it is derived rather than published because no era
+        // publishes a mid colour of its own.
+        let (sy, sh) = (596.0 / 900.0 * h, 34.0 / 900.0 * h);
+        for (i, (sx, sw)) in TILE_STRIPS.iter().enumerate() {
+            let item = &self.tiles[i];
+            let rect = canvas::Path::rectangle(Point::new(sx * w, sy), Size::new(sw * w, sh));
+            frame.fill(&rect, Palette::faded(s.palette.border, 0.4));
+            frame.fill_text(canvas::Text {
+                content: format!("{} · {}", item.code, item.blurb),
+                position: Point::new(sx * w + 6.0, sy + sh / 2.0),
+                color: text::mid_ink(s),
+                size: ((s.metrics.text_caption - 2) as f32).into(),
+                font: crate::fonts::FONT_RAJDHANI_REGULAR,
+                vertical_alignment: iced::alignment::Vertical::Center,
+                ..Default::default()
+            });
+        }
+
+        // The thin build-rule at the foot, trace y 860..862: 2px in
+        // `dim`, full width -- the whole of the chrome this frame
+        // keeps.
+        frame.fill(
+            &canvas::Path::rectangle(Point::new(0.0, 860.0 / 900.0 * h), Size::new(w, 2.0)),
+            s.palette.dim,
+        );
 
         vec![frame.into_geometry()]
     }
