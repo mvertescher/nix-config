@@ -1,47 +1,60 @@
 //! The ops dashboard, in any era.
 //!
-//! Neomil's design target is the odd one out: where the other three
-//! eras' `target-app.svg` is the 4ST store, neomil's is "NEOMIL OPS" --
-//! a module hub. The predecessor crate had the same screen in
-//! entropism (`EMAILS / MATRIX / STORE / CHAT / PRIVATE / DEVICES`, one
-//! selected, its description beside it, security levels down the side),
-//! drawn as tiles rather than diamonds. Two eras reached the same
-//! screen independently, which is the same evidence that put `store`,
-//! `login` and `mailbox` in the shared vocabulary.
+//! The four references do not agree about what a dashboard is.
+//! Entropism, kitsch and neokitsch frame a module hub -- six modules,
+//! one selected, the selected one's description beside it -- while
+//! neomil's `images/img-07-dashboard.png` is an ops screen: a
+//! full-width cold-blue band carrying red crest blocks and the OPS
+//! DASHBOARD wordmark, three large bright-red chart cards side by side
+//! with dark slits between them, a vertical red rail on the right and a
+//! red corner block bottom-right, and no hub anywhere in it. So the
+//! *layout* is a value on the era table,
+//! [`crate::style::Layout`] -- beside `Menu`, the second thing four
+//! dressed rectangles could not express -- and this file is the
+//! dispatch that value exists to permit: [`Layout::ModuleHub`] is the
+//! hub shell below, [`Layout::OpsCharts`] is [`Dashboard::ops_charts`].
+//! Nothing in this file asks which era it is, which is the standing
+//! test and not a comment.
 //!
-//! So it is written once here: six modules, one selected, the selected
-//! one's description, and the era's chrome. Nothing in this file asks
-//! which era it is -- and that is the standing test, not a comment.
+//! The hub shell is written once: six modules, one selected, the
+//! selected one's description, and the era's chrome. The four eras do
+//! not merely dress a module chooser differently, they reach for four
+//! different *objects* -- tiles, an extruded fan, a services table, a
+//! card cascade -- and this file cannot pick between them without an
+//! era branch. So it names none of them: it hands `menu` six
+//! [`MenuItem`]s and a selected index, and [`crate::style::Menu`] on
+//! the era table says what a menu is. Until that variant existed the
+//! hub drew a hardcoded two-column grid of `Surface`s, which was the
+//! right stopgap and the wrong screen for three eras out of four.
 //!
-//! The hub itself is [`crate::widgets::menu`], and this screen is why
-//! that widget exists. The four eras do not merely dress a module
-//! chooser differently, they reach for four different *objects* --
-//! tiles, an extruded fan, a services table, a card cascade -- and this
-//! file cannot pick between them without an era branch. So it names
-//! none of them: it hands `menu` six [`MenuItem`]s and a selected
-//! index, and [`crate::style::Menu`] on the era table says what a menu
-//! is. Until that variant existed the hub drew a hardcoded two-column
-//! grid of `Surface`s, which was the right stopgap and the wrong screen
-//! for three eras out of four.
+//! The [`Layout::OpsCharts`] arm draws none of that. It mirrors the
+//! material's own screen straight off
+//! `docs/neomil/dashboard-trace.svg`, edge to edge the way the trace
+//! draws it: the band is the chrome, the chart-card row is the working
+//! area, and the rail and corner block are the trim. The six-module
+//! data stays on this screen -- the OpsCharts arm simply does not draw
+//! it, the same way each menu arm takes what its object has room for.
 //!
-//! Neomil's arm is a services table now rather than the cut-diamond hub
-//! it inherited, which is the sampled answer for this slot and the
-//! reason [`crate::widgets::table`] exists -- see
-//! [`crate::style::Menu::Table`].
+//! Neomil's hub arm was a services table until the layout split, and
+//! it is now dormant rather than deleted: `Layout::OpsCharts` never
+//! consults `menu`, so `Menu::Table` and [`crate::widgets::table`]
+//! remain the retained services-table hub arm for any era or host that
+//! wants one -- see [`crate::style::Menu::Table`].
 //!
-//! Note the column count moved with it. The grid here was two wide;
-//! entropism's sheet draws its tiles three to a row and the era table
-//! says so, so wiring the menu up is also what stopped this screen
-//! overriding the reference from the outside.
+//! Note the column count. The grid here was two wide; entropism's
+//! sheet draws its tiles three to a row and the era table says so, so
+//! wiring the menu up was also what stopped this screen overriding the
+//! reference from the outside.
 //!
 //! Run it with `cp-eras-ui-dashboard --era <name>`; with no flag it
 //! follows the desktop theme.
 
-use crate::style::Style;
+use crate::style::{Layout, Style};
 use crate::widgets::surface::{layered, surface, Surface};
-use crate::widgets::{badge, footer, ground, marker, menu, text, top_bar, MenuItem};
+use crate::widgets::{badge, chart_card, footer, ground, marker, menu, text, top_bar, Chart, MenuItem, Slot};
 use iced::widget::{canvas, column, container, row, stack, Space};
-use iced::{Element, Length, Padding};
+use iced::mouse;
+use iced::{Element, Length, Padding, Point, Rectangle, Renderer, Size, Theme};
 
 /// The modules the hub offers: label, the catalogue code the references
 /// print under it, and the one-line blurb the entropism set puts inside
@@ -133,7 +146,13 @@ impl Dashboard {
 
     pub fn view(&self) -> Element<'_, Message> {
         let s = &self.style;
-        stack![ground(s), container(self.screen()).padding(40)].into()
+        match s.layout {
+            // The hub shell pads its content 40px all round, like the
+            // other screens. The ops-charts screen does not: the trace
+            // draws the band edge to edge, so the arm does too.
+            Layout::ModuleHub => stack![ground(s), container(self.screen()).padding(40)].into(),
+            Layout::OpsCharts => stack![ground(s), self.ops_charts()].into(),
+        }
     }
 
     fn screen(&self) -> Element<'_, Message> {
@@ -166,6 +185,33 @@ impl Dashboard {
             ),
         ]
         .spacing(s.metrics.gap)
+        .into()
+    }
+
+    /// The ops-charts screen from the material, for
+    /// [`Layout::OpsCharts`].
+    ///
+    /// A stack of full-frame layers, each computing its geometry as
+    /// fractions of the frame so the proportions hold at any window
+    /// size: the backdrop (ground, band, crests, left margin, blue
+    /// zone), the three chart cards with their dark slits
+    /// ([`crate::widgets::chart_card`]), and the trim (right rail,
+    /// corner block, bottom dots, the band's wordmark). The fraction
+    /// table is `docs/neomil/dashboard-trace.svg` read at its 1600x900
+    /// frame.
+    fn ops_charts(&self) -> Element<'_, Message> {
+        let s = &self.style;
+        stack![
+            canvas(OpsBackdrop { style: s })
+                .width(Length::Fill)
+                .height(Length::Fill),
+            chart_card(s, Slot::Left, Chart::Line),
+            chart_card(s, Slot::Middle, Chart::Bars),
+            chart_card(s, Slot::Right, Chart::Line),
+            canvas(OpsTrim { style: s })
+                .width(Length::Fill)
+                .height(Length::Fill),
+        ]
         .into()
     }
 
@@ -295,5 +341,195 @@ impl Dashboard {
             .spacing(8)
             .align_y(iced::Alignment::Center)
             .into()
+    }
+}
+
+// ------------------------------------------------------------- ops-charts
+
+/// Linear interpolation for the band's strip gradient. A helper rather
+/// than a dependency: `Color` is just four `f32`s.
+fn lerp(a: iced::Color, b: iced::Color, t: f32) -> iced::Color {
+    iced::Color {
+        r: a.r + (b.r - a.r) * t,
+        g: a.g + (b.g - a.g) * t,
+        b: a.b + (b.b - a.b) * t,
+        a: 1.0,
+    }
+}
+
+/// The backdrop of the ops-charts screen: ground, the full-width cold
+/// band, its crest blocks, and the two dark zones the trace draws
+/// behind the working area.
+///
+/// All geometry is `docs/neomil/dashboard-trace.svg` at 1600x900,
+/// restated as fractions of the frame. The band's gradient is drawn as
+/// stacked vertical strips interpolating `BAND_TOP` to `BAND_BOTTOM`
+/// -- the same call `ground` makes with its stacked discs: smooth
+/// enough at this scale, and it keeps the crate off renderer-specific
+/// gradient support.
+struct OpsBackdrop<'a> {
+    style: &'a Style,
+}
+
+impl<Message> canvas::Program<Message> for OpsBackdrop<'_> {
+    type State = ();
+
+    fn draw(
+        &self,
+        _state: &Self::State,
+        renderer: &Renderer,
+        _theme: &Theme,
+        bounds: Rectangle,
+        _cursor: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        let mut frame = canvas::Frame::new(renderer, bounds.size());
+        let (w, h) = (bounds.width, bounds.height);
+        if w <= 0.0 || h <= 0.0 {
+            return vec![frame.into_geometry()];
+        }
+        let s = self.style;
+
+        frame.fill(
+            &canvas::Path::rectangle(Point::ORIGIN, bounds.size()),
+            s.palette.bg,
+        );
+
+        // The band: the trace's rows 0-2, 172px of 900. The sampled
+        // consts live on the neomil table; `palette` has no role for a
+        // band that only one layout draws.
+        let (band_h, band_top, band_bot) = (0.19111 * h, crate::eras::neomil::BAND_TOP, crate::eras::neomil::BAND_BOTTOM);
+        let steps = 24;
+        for i in 0..steps {
+            let t0 = i as f32 / steps as f32;
+            let t1 = (i + 1) as f32 / steps as f32;
+            let c = lerp(band_top, band_bot, (t0 + t1) / 2.0);
+            frame.fill(
+                &canvas::Path::rectangle(
+                    Point::new(t0 * w, 0.0),
+                    Size::new((t1 - t0) * w + 1.0, band_h),
+                ),
+                c,
+            );
+        }
+
+        // The crest blocks on the band: top-left x 240..400, top-right
+        // x 1150..1302, both y 112..170 in the trace. `dim` is the
+        // era's mid red.
+        let (crest_y, crest_h) = (0.12444 * h, 0.06444 * h);
+        frame.fill(
+            &canvas::Path::rectangle(Point::new(0.15 * w, crest_y), Size::new(0.10 * w, crest_h)),
+            s.palette.dim,
+        );
+        frame.fill(
+            &canvas::Path::rectangle(
+                Point::new(0.71875 * w, crest_y),
+                Size::new(0.095 * w, crest_h),
+            ),
+            s.palette.dim,
+        );
+
+        // The dark left margin (a plain background zone in the source,
+        // not a sidebar with content) and the mid-left blue zone it
+        // borders. Both read as near-black red / a stop of the band's
+        // own blue; `on_select` and `BAND_BOTTOM` are the family.
+        frame.fill(
+            &canvas::Path::rectangle(
+                Point::new(0.0, band_h),
+                Size::new(0.11875 * w, h - band_h),
+            ),
+            s.palette.on_select,
+        );
+        frame.fill(
+            &canvas::Path::rectangle(
+                Point::new(0.1875 * w, band_h),
+                Size::new(0.51875 * w, 0.25111 * h),
+            ),
+            band_bot,
+        );
+
+        vec![frame.into_geometry()]
+    }
+}
+
+/// The foreground trim of the ops-charts screen: the right rail and its
+/// dark header strip, the bottom-right corner block, the three faint
+/// dots under the cards, and the band's wordmark.
+struct OpsTrim<'a> {
+    style: &'a Style,
+}
+
+impl<Message> canvas::Program<Message> for OpsTrim<'_> {
+    type State = ();
+
+    fn draw(
+        &self,
+        _state: &Self::State,
+        renderer: &Renderer,
+        _theme: &Theme,
+        bounds: Rectangle,
+        _cursor: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        let mut frame = canvas::Frame::new(renderer, bounds.size());
+        let (w, h) = (bounds.width, bounds.height);
+        if w <= 0.0 || h <= 0.0 {
+            return vec![frame.into_geometry()];
+        }
+        let s = self.style;
+        // The trace's dark trim red; same const as the cards' notches.
+        let dark = crate::eras::neomil::CARD_DARK;
+
+        // The vertical rail on the right: trace x 1150..1410, y 396..837,
+        // the trace's #501414, which `border` (RED_DEEP) is the family
+        // of. Its 24px dark header strip reads as the rail's own cap.
+        let (rail_x, rail_y, rail_w, rail_h) = (0.71875 * w, 0.44 * h, 0.1625 * w, 0.49 * h);
+        frame.fill(
+            &canvas::Path::rectangle(Point::new(rail_x, rail_y), Size::new(rail_w, rail_h)),
+            s.palette.border,
+        );
+        frame.fill(
+            &canvas::Path::rectangle(
+                Point::new(rail_x, rail_y),
+                Size::new(rail_w, 0.026667 * h),
+            ),
+            dark,
+        );
+
+        // Bottom-right corner block: trace x 1200..1356, y 792..900,
+        // the trace's #310b0d -- `CARD_DARK`'s own family.
+        frame.fill(
+            &canvas::Path::rectangle(
+                Point::new(0.75 * w, 0.88 * h),
+                Size::new(0.0975 * w, 0.12 * h),
+            ),
+            dark,
+        );
+
+        // The three faint markers under the cards, trace x 250/450/650,
+        // y 837..855.
+        for x in [0.15625f32, 0.28125, 0.40625] {
+            frame.fill(
+                &canvas::Path::rectangle(
+                    Point::new(x * w, 0.93 * h),
+                    Size::new(0.01875 * w, 0.02 * h),
+                ),
+                s.palette.on_select,
+            );
+        }
+
+        // The band's wordmark, centred between the crest blocks the
+        // way the source carries it. The tape (off-white) on the cold
+        // blue is the stencil reading of the material.
+        frame.fill_text(canvas::Text {
+            content: "OPS DASHBOARD".to_string(),
+            position: Point::new(0.5 * w, 0.155 * h),
+            color: s.palette.tape,
+            size: (0.036 * h).into(),
+            font: crate::fonts::FONT_RAJDHANI_BOLD,
+            horizontal_alignment: iced::alignment::Horizontal::Center,
+            vertical_alignment: iced::alignment::Vertical::Center,
+            ..Default::default()
+        });
+
+        vec![frame.into_geometry()]
     }
 }

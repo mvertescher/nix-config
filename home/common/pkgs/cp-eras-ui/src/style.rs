@@ -219,9 +219,57 @@ pub enum Menu {
     /// Kitsch: extruded slabs fanned about a pivot.
     Fan,
     /// Neomil: a header band over ruled rows, one of them selected.
+    ///
+    /// Dormant since 2026-08-31: neomil's dashboard is now
+    /// [`Layout::OpsCharts`], whose arm does not draw a menu at all,
+    /// and this variant is retained as the services-table hub arm for
+    /// any era or host that wants a table in the menu slot -- the
+    /// widget stays live, the screen just does not wear it today.
     Table,
     /// Neokitsch: staggered clipped-corner cards.
     Cascade,
+}
+
+/// What an era's *dashboard* is -- the second thing four dressed
+/// rectangles could not express.
+///
+/// [`Menu`] made the era's idea of a chooser a value on [`Style`],
+/// because offered six modules the four references reach for four
+/// different objects. The dashboard needs that lesson twice: the
+/// references disagree about the whole working area, not just the menu
+/// in it. Entropism, kitsch and neokitsch frame a module hub; neomil's
+/// `target` is not a hub at all.
+///
+/// * **Entropism, kitsch, neokitsch** -- [`Layout::ModuleHub`]: the
+///   six-module hub `screens::dashboard` has always drawn -- top bar,
+///   sidebar, the era's [`Menu`] over six modules, the description
+///   panel and the footer. [`Menu`] keeps describing the middle slot.
+/// * **Neomil** -- [`Layout::OpsCharts`]: `docs/neomil/dashboard-trace.svg`
+///   is the schematic of `images/img-07-dashboard.png`, and it is an
+///   ops screen, not a hub: a full-width cold-blue band carrying red
+///   crest blocks and the OPS DASHBOARD wordmark, three large bright-red
+///   chart cards side by side with dark slits between them, a vertical
+///   red rail on the right and a red corner block bottom-right. No
+///   sidebar, no menu, no detail panel, no footer -- the material shows
+///   none of those -- so this arm does not consult [`Menu`] at all.
+///
+/// The screen branches on this the way it branches on [`Menu`]:
+/// `screens::dashboard::view` matches it, and nothing in `screens/`
+/// names an era. A fifth era cannot wear either layout without the
+/// table entry, which is the point of making it data in the first
+/// place.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Layout {
+    /// The six-module hub shell: top bar, sidebar, the era's menu,
+    /// detail panel, footer. The three hub eras take this.
+    ModuleHub,
+    /// The ops-charts screen from `img-07-dashboard.png`, drawn
+    /// edge-to-edge per `docs/neomil/dashboard-trace.svg`. The layout
+    /// (and the chart-card row in it, [`crate::widgets::charts`]) is
+    /// only worn by neo-militarism today, but it is Style data like
+    /// everything else here, so a second era adopting it is a table
+    /// entry.
+    OpsCharts,
 }
 
 /// Where a screen puts its footnote markers.
@@ -337,6 +385,12 @@ pub struct Style {
     pub ticket: Ticket,
     /// What this era means by a menu.
     pub menu: Menu,
+    /// What this era's dashboard is: the six-module hub shell
+    /// ([`Layout::ModuleHub`]) for the three hub eras, or neomil's
+    /// ops-charts screen ([`Layout::OpsCharts`]) straight off
+    /// `docs/neomil/dashboard-trace.svg`. A screen dispatches on this
+    /// the way the menu widget dispatches on [`Menu`].
+    pub layout: Layout,
     /// Whether the era stamps compliance glyphs -- dotted matrix,
     /// hollow square, hollow triangle -- on its bands and rows.
     ///

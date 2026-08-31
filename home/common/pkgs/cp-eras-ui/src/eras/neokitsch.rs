@@ -11,7 +11,7 @@
 
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
-    Banner, Bar, Chrome, Compliance, Corner, Era, Footnotes, Ground, Metrics, Nameplate,
+    Banner, Bar, Chrome, Compliance, Corner, Era, Footnotes, Ground, Layout, Metrics, Nameplate,
     Menu, Selection, Style, Ticket,
 };
 
@@ -108,6 +108,9 @@ pub fn style() -> Style {
         // "CARD CASCADE (device software)": tall clipped-corner cards,
         // staggered, the active one filled with veneer.
         menu: Menu::Cascade,
+        // The six-module hub shell: this era's target is the store
+        // screen and the shared dashboard is the hub for it.
+        layout: Layout::ModuleHub,
         glyphs: false,
         metrics: Metrics {
             stroke: 1.6,

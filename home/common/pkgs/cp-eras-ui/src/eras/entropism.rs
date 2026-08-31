@@ -11,7 +11,7 @@
 
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
-    Banner, Bar, Chrome, Compliance, Corner, Era, Footnotes, Ground, Metrics, Nameplate,
+    Banner, Bar, Chrome, Compliance, Corner, Era, Footnotes, Ground, Layout, Metrics, Nameplate,
     Menu, Selection, Style, Ticket,
 };
 
@@ -74,6 +74,10 @@ pub fn style() -> Style {
         // "MENU TILES" on the components sheet: 120x120 squares, three
         // to a row, each under a hairline and a caption strip.
         menu: Menu::Tiles { columns: 3 },
+        // The six-module hub shell, like kitsch and neokitsch: this
+        // era's target is the store screen, and the hub is what the
+        // shared dashboard is for it.
+        layout: Layout::ModuleHub,
         glyphs: false,
         metrics: Metrics {
             stroke: 1.0,

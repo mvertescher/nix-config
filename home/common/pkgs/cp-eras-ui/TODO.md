@@ -7,12 +7,26 @@
   - also need to set opacities properly
 - [x] create iced advanced container. "chip type 1"
 - [ ] Reproduce dashboard image (`img-07-dashboard.png`) in demo app:
-  - [ ] Implement custom background (gradient/glow)
+  - [x] Implement custom background (gradient/glow) — the cold-blue
+    top band running `BAND_TOP`→`BAND_BOTTOM`, the crest blocks, the
+    dark left margin and the mid-left blue zone, drawn as the
+    `Layout::OpsCharts` arm's backdrop; the band is stacked strips
+    rather than a canvas gradient to stay off renderer-specific
+    gradient support (2026-08-31).
   - [ ] Implement `InfoPanel` widget (chamfered top-right/bottom-left)
+    — still open: the ops-charts material shows no such panel and the
+    current layout needs none; revisit if a neomil sheet draws one.
   - [x] ~~Implement `DiamondMenu` widget~~ — built, then deleted 2026-08-24
     when `widgets::table` landed: no neomil sheet draws a diamond, and
     the sheet puts a services table where the dashboard puts its menu.
-  - [ ] Update demo app layout, colors, and text to match image
+  - [x] Update demo app layout, colors, and text to match image — the
+    dashboard *layout* is now Style-owned data (`Layout::OpsCharts`, the
+    `screens::dashboard::ops_charts` arm: edge-to-edge band, three
+    `widgets::charts` card cells, right rail, corner block), the colors
+    are the sampled `BAND_TOP`/`BAND_BOTTOM`/`CARD_DARK` consts on
+    `eras/neomil.rs`, and the OPS DASHBOARD wordmark sits in the band.
+    Done 2026-08-31; the arm's geometry is documented against
+    `docs/neomil/dashboard-trace.svg`.
 
 ## Toolkit infrastructure
 

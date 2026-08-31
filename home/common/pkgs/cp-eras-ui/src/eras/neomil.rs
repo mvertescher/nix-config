@@ -12,7 +12,7 @@
 
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
-    Banner, Bar, Chrome, Compliance, Corner, Era, Footnotes, Ground, Metrics, Nameplate,
+    Banner, Bar, Chrome, Compliance, Corner, Era, Footnotes, Ground, Layout, Metrics, Nameplate,
     Menu, Selection, Style, Ticket,
 };
 
@@ -23,6 +23,22 @@ pub const RED_MID: iced::Color = rgb(0xa32226);
 pub const RED_FILL: iced::Color = rgb(0xde2e2e);
 pub const RED_HOT: iced::Color = rgb(0xff3b45);
 pub const OFF_WHITE: iced::Color = rgb(0xdedede);
+
+/// Left stop of the ops dashboard band's cold-blue gradient, and the
+/// top stop of the mid-blue zone. Sampled off
+/// `images/img-07-dashboard.png` (the 32x16 grid reads the top band as
+/// `#2a3a51` at the left running to `#101f3d` at the right); recorded
+/// in `docs/neomil/dashboard-trace.svg`.
+pub const BAND_TOP: iced::Color = rgb(0x2a3a51);
+/// Right stop of the same band gradient. Same citation as [`BAND_TOP`].
+pub const BAND_BOTTOM: iced::Color = rgb(0x101f3d);
+/// The dark red the ops screen trims its cards and rail with -- the
+/// trace's `#350e10`, sampled off the card notches in
+/// `images/img-07-dashboard.png` rows 6-8. The era's own `RED_DEEP` is
+/// a stop brighter and reads as a filled surface rather than a
+/// shadowed one, so it stays a separate constant like neokitsch's
+/// `FRAME_LIT`/`STRATA`.
+pub const CARD_DARK: iced::Color = rgb(0x350e10);
 
 pub fn palette() -> Palette {
     Palette {
@@ -76,7 +92,17 @@ pub fn style() -> Style {
         // cut-diamond hub that used to sit here was the one entry in
         // this table with no `docs/` citation; see
         // [`crate::style::Menu::Table`].
+        //
+        // Dormant since 2026-08-31: the dashboard is now
+        // [`Layout::OpsCharts`], whose arm draws no menu at all, and
+        // this field is kept as the services-table hub arm for any era
+        // or host that wants one. The field stays; the hub just is not
+        // rendered for this layout.
         menu: Menu::Table,
+        // The ops-charts dashboard straight off
+        // `docs/neomil/dashboard-trace.svg` -- the material's img-07 is
+        // a chart screen, not the module hub the other three eras wear.
+        layout: Layout::OpsCharts,
         glyphs: false,
         metrics: Metrics {
             stroke: 1.5,

@@ -11,7 +11,7 @@
 
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
-    Banner, Bar, Chrome, Compliance, Corner, Era, Footnotes, Ground, Metrics, Nameplate,
+    Banner, Bar, Chrome, Compliance, Corner, Era, Footnotes, Ground, Layout, Metrics, Nameplate,
     Menu, Selection, Style, Ticket,
 };
 
@@ -110,6 +110,9 @@ pub fn style() -> Style {
         // The extruded fan: slabs radiating from a pivot, each with
         // stacked outline copies receding up-right.
         menu: Menu::Fan,
+        // The six-module hub shell: this era's target is the store
+        // screen and the shared dashboard is the hub for it.
+        layout: Layout::ModuleHub,
         // The dotted matrix, hollow square and hollow triangle that
         // head every shelf band and lead every socket row.
         glyphs: true,
