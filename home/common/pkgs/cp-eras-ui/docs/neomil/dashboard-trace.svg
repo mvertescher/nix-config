@@ -1,66 +1,213 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
   <!-- NEOMIL dashboard-trace: schematic of images/img-07-dashboard.png
        (Behance 3fc4ef118663901.60e5fa6a7f2f7, 3840x2160 photo).
-       The source shows: a full-width cold-blue top band carrying red crest
-       blocks, a dark left margin, and the working area made of THREE large
-       bright-red chart cards side by side (dark slits between), a vertical
-       red block on the right and a small red corner block bottom-right.
-       No sidebar logo column, no services table, no footer tape: the app's
-       dashboard layout is NOT in this material.
-       Palette sampled from the photo (32x16 grid reads): top band
-       #2a3a51 -> #101f3d, crest #7c3542/#75263e, red bright #e13030,
-       red mid #8e1f20, dark #350e10, right block #501414, bg #04070b. -->
+
+       Every coordinate below is measured, not eyeballed:
+         scripts/extract_spec.py images/img-07-dashboard.png -o /tmp/src.json
+       and the trace is held to the source by
+         scripts/spec_diff.py /tmp/src.json /tmp/trace.json
+
+       What the source actually shows, top to bottom:
+         - no hard-edged top band; a broad blue glow over near-black, peaking
+           around x 300-700 at full height and gone by y~420, with a warm
+           near-black vignette down the left margin
+         - header row: CUSTOMER + one chamfered LEVEL T1 badge at the left,
+           the "next TECHNOLOGY" logotype with a code tape under it, and
+           SECURITY LEVEL + FOUR chamfered LEVEL badges at the right, the
+           second of which is filled (selected)
+         - a full-width hairline rule at y=187, x 42..1558
+         - a tab row at y=237: COMPUTER SYSTEMS centre, DESCRIPTION right,
+           and a small chip marker at each margin
+         - THE MENU IS SIX DIAMONDS in a staggered 3+3 lattice, half-diagonal
+           103, centres (334,460) (530,460) (725,460) / (431,593) (628,592)
+           (822,592) — x pitch 195.5, row pitch 132, row 2 offset +96.5.
+           Each carries a thin inset diamond outline at half-diagonal 68 and
+           a glyph at its centre; neighbours overlap by ~10px and are held
+           apart by a dark separator, drawn here as a background-coloured
+           stroke. Labels sit above row 1 and below row 2.
+         - a GO HOME info panel at x 1128..1358, y 313..756, chamfered
+           top-left (14) and bottom-left (42), with a scrollbar rail on its
+           right edge and a maker's mark at its foot
+         - rotated micro-text down both margins, and a two-cell footer tape
+           at x 1209..1358, y 864
+
+       Corrects the previous revision of this file, which drew three red
+       chart cards, a right rail and a corner block. None of those are in
+       the photo; that trace was written without reading the image and
+       still scored 0.560 layout on compare_ref.py, which is why
+       scripts/spec_diff.py now gates on the shape inventory instead.
+
+       Palette sampled by k-means over the photo (extract_spec.py):
+         ink   #ef3333 (9.0%)  #ae272b (1.1%)  #671b21 (2.1%)
+         ground #070304 (38.8%) #14244e (18.3%) #1e0d0e (15.3%)
+                #0f1f2b (9.3%)  #2d3149 (6.1%) -->
   <defs>
-    <linearGradient id="topband" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#2a3a51"/>
-      <stop offset="0.55" stop-color="#24364f"/>
-      <stop offset="1" stop-color="#101f3d"/>
+    <!-- The blue is not a band with an edge. Horizontally it is sampled from
+         the photo at y=90; vertically it holds to y~250 and is gone by y~430,
+         so the horizontal ramp is masked by a vertical fade rather than
+         clipped to a rectangle. -->
+    <linearGradient id="glowh" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0.000" stop-color="#282824"/>
+      <stop offset="0.063" stop-color="#273743"/>
+      <stop offset="0.188" stop-color="#263953"/>
+      <stop offset="0.313" stop-color="#202b56"/>
+      <stop offset="0.438" stop-color="#1b2253"/>
+      <stop offset="0.563" stop-color="#171f51"/>
+      <stop offset="0.688" stop-color="#121f51"/>
+      <stop offset="0.813" stop-color="#0d1f4e"/>
+      <stop offset="0.938" stop-color="#082447"/>
+      <stop offset="1.000" stop-color="#080b0e"/>
     </linearGradient>
-    <linearGradient id="bluemid" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#1b2b4a"/>
-      <stop offset="1" stop-color="#121d38"/>
+    <!-- stops read off the source's blue channel at x=1000, normalised -->
+    <linearGradient id="glowv" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.00" stop-color="#ffffff"/>
+      <stop offset="0.25" stop-color="#ffffff"/>
+      <stop offset="0.30" stop-color="#e3e3e3"/>
+      <stop offset="0.35" stop-color="#bababa"/>
+      <stop offset="0.40" stop-color="#8c8c8c"/>
+      <stop offset="0.45" stop-color="#545454"/>
+      <stop offset="0.50" stop-color="#2b2b2b"/>
+      <stop offset="0.55" stop-color="#121212"/>
+      <stop offset="0.60" stop-color="#000000"/>
     </linearGradient>
+    <mask id="glowmask">
+      <rect width="1600" height="900" fill="url(#glowv)"/>
+    </mask>
+    <radialGradient id="vignette" cx="0.02" cy="0.60" r="0.34">
+      <stop offset="0" stop-color="#241012"/>
+      <stop offset="1" stop-color="#241012" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- One menu cell. Half-diagonal 104, measured off the unoccluded tips
+         (D1's left, D3's right, D6's lower-right all read 103-106). The
+         diamonds are NOT outlined: outer tips run full, and only same-row
+         neighbours overlap at all — L1 distance 195.5 against a diameter of
+         208, so the rows merely interlock and never touch. The 16px dark
+         gap the source shows between same-row neighbours is drawn separately
+         as a bar on the midpoint, which is where it measures. -->
+    <g id="cell">
+      <path d="M 0,-104 L 104,0 L 0,104 L -104,0 Z" fill="#ef3333"/>
+      <path d="M 0,-68 L 68,0 L 0,68 L -68,0 Z"
+            fill="none" stroke="#671b21" stroke-width="2"/>
+      <rect x="-22" y="-21" width="43" height="36" fill="#671b21"/>
+    </g>
+    <!-- header badge: 59x57, bottom-left chamfer 15 -->
+    <path id="badge" d="M 0,0 H 59 V 57 H 15 L 0,42 Z"/>
   </defs>
 
-  <!-- outer background: near-black with a faint blue cast -->
-  <rect width="1600" height="900" fill="#04070b"/>
+  <rect width="1600" height="900" fill="#070304"/>
+  <rect width="1600" height="900" fill="url(#glowh)" mask="url(#glowmask)"/>
+  <rect width="1600" height="900" fill="url(#vignette)"/>
 
-  <!-- full-width top band (source rows 0-2, y 0..~19%) -->
-  <rect x="0" y="0" width="1600" height="172" fill="url(#topband)"/>
+  <!-- ==== header ==== -->
+  <g font-family="Rajdhani" fill="#ef3333">
+    <text x="109" y="90" font-size="14" letter-spacing="1.5">CUSTOMER</text>
+    <use href="#badge" x="117" y="104" fill="#671b21" stroke="#ef3333" stroke-width="1.5"/>
+    <text x="125" y="121" font-size="12" fill="#ef3333">LEVEL</text>
+    <text x="132" y="140" font-size="20" font-weight="700">T1</text>
 
-  <!-- dark left margin below the band (rows 3-15) -->
-  <rect x="0" y="172" width="190" height="728" fill="#15090b"/>
+    <text x="240" y="90" font-size="14" letter-spacing="1.5">#NC488402</text>
+    <!-- "next" logotype block, x 242..389, y 96..141 -->
+    <text x="242" y="132" font-size="42" font-family="Orbitron" font-weight="700"
+          fill="none" stroke="#ef3333" stroke-width="2">next</text>
+    <!-- code tape under the logotype, chamfered both bottom corners -->
+    <path d="M 257,151 H 379 V 158 L 377,160 H 259 L 257,158 Z" fill="#ef3333"/>
 
-  <!-- top-left red crest block on the band -->
-  <rect x="240" y="112" width="160" height="58" fill="#7c3542"/>
-  <!-- top-right red-magenta block on the band -->
-  <rect x="1150" y="112" width="152" height="58" fill="#75263e"/>
-
-  <!-- mid-left blue zone under the band (rows 3-6) -->
-  <rect x="300" y="172" width="830" height="226" fill="url(#bluemid)"/>
-
-  <!-- three bright-red chart cards (rows 6-13, y 337..790) -->
-  <g>
-    <rect x="250" y="337" width="150" height="453" fill="#e13030"/>
-    <path d="M 250 337 h 150 v 12 l -6 10 h -144 Z" fill="#350e10"/>
-    <path d="M 250 780 h 150 v 10 l -8 8 h -142 Z" fill="#350e10"/>
-    <rect x="450" y="337" width="150" height="453" fill="#e13030"/>
-    <path d="M 450 337 h 150 v 12 l -6 10 h -144 Z" fill="#350e10"/>
-    <path d="M 450 780 h 150 v 10 l -8 8 h -142 Z" fill="#350e10"/>
-    <rect x="650" y="337" width="150" height="453" fill="#e13030"/>
-    <path d="M 650 337 h 150 v 12 l -6 10 h -144 Z" fill="#350e10"/>
-    <path d="M 650 780 h 150 v 10 l -8 8 h -142 Z" fill="#350e10"/>
+    <text x="1125" y="90" font-size="14" letter-spacing="1.5">SECURITY LEVEL</text>
+    <g>
+      <use href="#badge" x="1133" y="104" fill="#671b21" stroke="#ef3333" stroke-width="1.5"/>
+      <use href="#badge" x="1193" y="104" fill="#ae272b" stroke="#ef3333" stroke-width="1.5"/>
+      <use href="#badge" x="1253" y="104" fill="#671b21" stroke="#ef3333" stroke-width="1.5"/>
+      <use href="#badge" x="1313" y="104" fill="#671b21" stroke="#ef3333" stroke-width="1.5"/>
+      <g font-size="12">
+        <text x="1141" y="121">LEVEL</text><text x="1201" y="121">LEVEL</text>
+        <text x="1261" y="121">LEVEL</text><text x="1321" y="121">LEVEL</text>
+      </g>
+      <g font-size="20" font-weight="700">
+        <text x="1148" y="140">T1</text><text x="1208" y="140">T2</text>
+        <text x="1268" y="140">T3</text><text x="1328" y="140">T4</text>
+      </g>
+    </g>
   </g>
 
-  <!-- vertical red block, right rail (rows 7-14) -->
-  <rect x="1150" y="396" width="260" height="441" fill="#501414"/>
-  <rect x="1150" y="396" width="260" height="24" fill="#350e10"/>
+  <!-- full-width hairline rule, measured y=187 x 42..1558 -->
+  <rect x="42" y="187" width="1516" height="2" fill="#ae272b"/>
 
-  <!-- small red corner block bottom-right (source rows 14-15) -->
-  <rect x="1200" y="792" width="156" height="108" fill="#310b0d"/>
+  <!-- ==== tab row, y 237..258 ==== -->
+  <g font-family="Rajdhani" font-size="12" letter-spacing="1.2">
+    <rect x="27" y="240" width="55" height="17" fill="#671b21" stroke="#ef3333"/>
+    <rect x="475" y="237" width="211" height="21" fill="#671b21" stroke="#ae272b"/>
+    <text x="515" y="252" fill="#ef3333">COMPUTER SYSTEMS</text>
+    <path d="M 1139,237 H 1354 V 258 H 1139 L 1132,251 V 244 Z"
+          fill="#671b21" stroke="#ae272b"/>
+    <text x="1145" y="252" fill="#ef3333">DESCRIPTION</text>
+    <rect x="1516" y="239" width="54" height="17" fill="#671b21" stroke="#ef3333"/>
+  </g>
 
-  <!-- bottom-left faint red dots (source rows 14-15) -->
-  <rect x="250" y="837" width="30" height="18" fill="#1f0709"/>
-  <rect x="450" y="837" width="30" height="18" fill="#1f0709"/>
-  <rect x="650" y="837" width="30" height="18" fill="#1f0709"/>
+  <!-- ==== the six-diamond menu ==== -->
+  <g>
+    <use href="#cell" x="334" y="460"/>
+    <use href="#cell" x="530" y="460"/>
+    <use href="#cell" x="725" y="460"/>
+    <use href="#cell" x="431" y="593"/>
+    <use href="#cell" x="628" y="592"/>
+    <use href="#cell" x="822" y="592"/>
+    <!-- separators: 16px wide on the midpoint of each same-row pair, which
+         is where the source's gaps measure (424..439 and 620..635 at y=460) -->
+    <g fill="#070304">
+      <rect x="424"   y="445" width="16" height="30"/>
+      <rect x="619.5" y="445" width="16" height="30"/>
+      <rect x="521.5" y="577" width="16" height="30"/>
+      <rect x="717"   y="577" width="16" height="30"/>
+    </g>
+  </g>
+  <g font-family="Rajdhani" font-size="19" font-weight="600" fill="#ef3333"
+     text-anchor="middle" letter-spacing="1.2">
+    <text x="334" y="347">VEHICLES</text>
+    <text x="530" y="347">LOCATIONS</text>
+    <text x="725" y="347">FACTIONS</text>
+    <text x="431" y="721">WEAPONS</text>
+    <text x="628" y="721">PRODUCTS</text>
+    <text x="822" y="721">CORPORATIONS</text>
+  </g>
+
+  <!-- ==== GO HOME info panel, x 1128..1358, y 313..756 ==== -->
+  <g>
+    <path d="M 1142,313 H 1358 V 756 H 1170 L 1128,714 V 327 Z"
+          fill="#671b21" fill-opacity="0.55" stroke="#ef3333" stroke-width="1.5"/>
+    <text x="1140" y="333" font-family="Rajdhani" font-size="20" font-weight="700"
+          fill="#ef3333">GO HOME</text>
+    <!-- body copy: five lines, blank, four lines (measured run boxes) -->
+    <g fill="#ae272b">
+      <rect x="1140" y="368" width="202" height="12"/>
+      <rect x="1140" y="389" width="215" height="12"/>
+      <rect x="1140" y="410" width="197" height="12"/>
+      <rect x="1140" y="431" width="121" height="12"/>
+      <rect x="1140" y="474" width="205" height="12"/>
+      <rect x="1140" y="495" width="216" height="12"/>
+      <rect x="1140" y="516" width="186" height="12"/>
+      <rect x="1140" y="537" width="193" height="12"/>
+    </g>
+    <!-- scrollbar rail on the panel's right edge, thumb y 408..504 -->
+    <rect x="1362" y="324" width="7" height="376" fill="#671b21"/>
+    <rect x="1362" y="408" width="7" height="96" fill="#ef3333"/>
+    <!-- maker's mark at the foot -->
+    <path d="M 1208,722 V 683 h 11 l 12 18 12,-18 h 11 v 39 h -11 v -20 l -12,16 -12,-16 v 20 Z"
+          fill="#ef3333"/>
+    <rect x="1208" y="731" width="89" height="8" fill="#671b21"/>
+  </g>
+
+  <!-- ==== margins: rotated micro-text down both sides ==== -->
+  <g fill="#671b21">
+    <rect x="33" y="463" width="8" height="113"/>
+    <rect x="1533" y="527" width="8" height="238"/>
+    <rect x="1348" y="341" width="4" height="49"/>
+  </g>
+
+  <!-- ==== footer tape, y 864, three cells x 1209..1358 ==== -->
+  <g>
+    <rect x="1209" y="864" width="48" height="25" fill="#ef3333"/>
+    <rect x="1257" y="864" width="38" height="25" fill="#ef3333"/>
+    <rect x="1295" y="864" width="59" height="25" fill="#671b21" stroke="#ef3333"/>
+  </g>
 </svg>

@@ -653,6 +653,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "cp-eras-ui"
+version = "0.0.0"
+dependencies = [
+ "async-channel",
+ "async-io",
+ "chrono",
+ "futures-lite",
+ "iced",
+ "iced_layershell",
+ "libpulse-binding",
+ "png",
+ "resvg",
+ "sysinfo",
+ "zbus 5.19.0",
+]
+
+[[package]]
 name = "cpufeatures"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -725,23 +742,6 @@ name = "cursor-icon"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f27ae1dd37df86211c42e150270f82743308803d90a6f6e6651cd730d5e1732f"
-
-[[package]]
-name = "cp-eras-ui"
-version = "0.0.0"
-dependencies = [
- "async-channel",
- "async-io",
- "chrono",
- "futures-lite",
- "iced",
- "iced_layershell",
- "libpulse-binding",
- "png",
- "resvg",
- "sysinfo",
- "zbus 5.19.0",
-]
 
 [[package]]
 name = "d3d12"

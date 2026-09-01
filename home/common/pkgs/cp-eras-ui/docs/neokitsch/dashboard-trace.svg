@@ -1,0 +1,341 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <!-- NEOKITSCH dashboard-trace: schematic of images/neokitsch-dashboard.png
+       (Behance 17a5c4118663901.60e5fa6e30417, screen #69 of the neokitsch
+       run — the module hub. docs/sources.md used to claim the run holds no
+       dashboard; it does, and this is it. #66 3b756e is the same screen
+       with presentation annotations in the right margin.)
+
+       Every coordinate below is measured, not eyeballed:
+         scripts/extract_spec.py images/neokitsch-dashboard.png
+       plus connected-component analysis on the gold ink mask, and the
+       trace is held to the source by
+         scripts/fidelity_check.sh -\-inventory neokitsch dashboard
+       (the inks gate — nested translucent outlines fragment unstably
+       under the shape templates, so the verdict rides ink placement).
+
+       What the source shows:
+         - a violet haze over the top of a near-black ground
+         - header: CUSTOMER #NC488402 and a LEVEL T1 mark at the left;
+           SECURITY LEVEL and LEVEL T1/T2/T3/T4 at the right with T2 as
+           a small filled card; a decorative multi-line wire band
+           sweeping the width, carrying boxed letters A (x~249) and
+           B (x~1021) with in-fiction annotation text
+         - SIX CASCADE CARDS, 91x327 each, chamfered top-right and
+           bottom-left, in two staircase triplets stepping (+102,-100):
+             EMAIL (244,383) MATRIX (347,284) BRAINDANCE (449,182)
+             PRIVATE (624,384) SECURITY SYSTEMS (724,284) DEVICES (826,182)
+           EMAIL is filled solid gold — the selection (its measured
+           centre (293,533), area 25.7k). Every card trails a stack of
+           concentric outline copies stepping up-right, and carries a
+           five-line micro-text caption under its foot and a label at
+           its upper left (plain text; every card carries a small
+           bright tab plate on its left edge)
+         - a detail panel at (1168,259)..(1400,725): the same card
+           family mirrored (chamfer top-LEFT), onion outlines, a solid
+           gold body at [1171,326,231,309] holding two dark paragraphs,
+           a micro-text tape and a large EMAIL label beneath
+         - boxed letters C (585,799) and D (1172,799) with annotation
+           lines at y~823/834 in the foot; all four letter plates are
+           26x26 rounded squares with a folded corner
+         - the EMAIL selection card carries NO onion rings (it stands
+           alone with a glow); the T2 badge is an outlined mini-card
+           with rings holding LEVEL and T2, not a solid fill
+
+       Palette sampled by k-means (extract_spec.py):
+         ink   #f2b463 (6.2%, fills)  #bd8951  #7e5836  #3b2416
+         ground #0e0a0d (63%) #3a3853 / #5b466c (violet haze) #192636 -->
+  <defs>
+    <!-- The haze is a lobe, not a band: its measured 50%-boundary dips to
+         (820, 302) and rises to y~22 at both top corners, with the right
+         flank ~30px fatter than the left. Drawn as a radial centred above
+         the canvas at (825,-120), y-compressed 0.515 (so the boundary
+         ellipse passes through the apex and the corners) and rotated 1.3
+         degrees for the flank asymmetry (the source flips thin again right
+         at the corner, which a rotated ellipse cannot follow — the corner
+         sits ~40px deep as the compromise). Stops keep the sampled colours,
+         re-mapped onto the ray: y=0 -> 0.258, 146 -> 0.572, 286 -> 0.873,
+         near-black by y~345 at the dip column. -->
+    <!-- Between the violet and the black sits a BLUE transition band —
+         a second lobe family the k-means palette carried as #192636 (7.9%).
+         Measured: a thin arm on the left (y 114..142 at x=280), a ~110px
+         under-band right of centre (211..316 at x=880), and sole ownership
+         of the top-right corner from y=0 (violet is absent past x~1460).
+         Drawn as an annulus over the violet: same lobe geometry centred
+         slightly right at (900,-120), transparent core, blue band at
+         f 0.62..0.84, alpha-blended so the violet fades through it. -->
+    <radialGradient id="hazeblue" gradientUnits="userSpaceOnUse"
+        cx="900" cy="-120" r="1030"
+        gradientTransform="rotate(2 900 -120) translate(900 -120) scale(1 0.515) translate(-900 120)">
+      <stop offset="0"    stop-color="#223350" stop-opacity="0"/>
+      <stop offset="0.60" stop-color="#223350" stop-opacity="0"/>
+      <stop offset="0.68" stop-color="#223350" stop-opacity="0.85"/>
+      <stop offset="0.76" stop-color="#1a2c46" stop-opacity="0.80"/>
+      <stop offset="0.84" stop-color="#101d30" stop-opacity="0"/>
+    </radialGradient>
+    <!-- The blue is right-weighted: on the left the violet stays on top of
+         the shared annulus (source shows only a thin arm there, and none at
+         all before x~200), so the blue layer is faded out leftward by a
+         luminance mask rather than by its own gradient. -->
+    <linearGradient id="hazebluefade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"    stop-color="#000000"/>
+      <stop offset="0.12" stop-color="#1a1a1a"/>
+      <stop offset="0.22" stop-color="#7a7a7a"/>
+      <stop offset="0.40" stop-color="#ffffff"/>
+      <stop offset="1"    stop-color="#ffffff"/>
+    </linearGradient>
+    <mask id="bluemask">
+      <rect width="1600" height="900" fill="url(#hazebluefade)"/>
+    </mask>
+    <radialGradient id="haze" gradientUnits="userSpaceOnUse"
+        cx="825" cy="-120" r="1030"
+        gradientTransform="rotate(1.3 825 -120) translate(825 -120) scale(1 0.515) translate(-825 120)">
+      <stop offset="0"     stop-color="#574568"/>
+      <stop offset="0.258" stop-color="#574568"/>
+      <stop offset="0.572" stop-color="#3a3853"/>
+      <stop offset="0.873" stop-color="#16121a"/>
+      <stop offset="1"     stop-color="#0e0a0d"/>
+    </radialGradient>
+    <!-- one cascade card: 93x327 including the left-edge tab (y 60..135);
+         body 83 wide, chamfer 32 top-right and bottom-left, rounded
+         top-left and bottom-right -->
+    <path id="ncard" d="M 16,0 H 61 L 93,32 V 321 Q 93,327 87,327 H 48
+                         L 10,289 V 93 H 2 Q 0,93 0,91 V 62 Q 0,60 2,60
+                         H 10 V 6 Q 10,0 16,0 Z"/>
+    <!-- the detail panel: same family mirrored, 232x472, chamfer 42 top-left -->
+    <path id="npanel" d="M 0,462 V 31 Q 0,25 6,25 H 51 L 73,0 H 222
+                          Q 232,0 232,10 V 462 Q 232,472 222,472 H 10
+                          Q 0,472 0,462 Z"/>
+    <!-- onion rings: concentric 45-degree offsets of the card silhouette
+         (a 45-degree chamfer offset keeps its axis intercepts, so the
+         chamfer endpoints stay at x=61/y=32 and x=48/y=289 while the
+         edges move outward). No tab — that lives on the front card only. -->
+    <path id="nring1" d="M 12.5,-3.5 H 61 L 96.5,32 V 324.5 Q 96.5,330.5 90.5,330.5 H 48 L 6.5,289 V 2.5 Q 6.5,-3.5 12.5,-3.5 Z"/>
+    <path id="nring2" d="M 9.0,-7.0 H 61 L 100.0,32 V 328.0 Q 100.0,334.0 94.0,334.0 H 48 L 3.0,289 V -1.0 Q 3.0,-7.0 9.0,-7.0 Z"/>
+    <path id="nring3" d="M 5.5,-10.5 H 61 L 103.5,32 V 331.5 Q 103.5,337.5 97.5,337.5 H 48 L -0.5,289 V -4.5 Q -0.5,-10.5 5.5,-10.5 Z"/>
+    <path id="nring4" d="M 2.0,-14.0 H 61 L 107.0,32 V 335.0 Q 107.0,341.0 101.0,341.0 H 48 L -4.0,289 V -8.0 Q -4.0,-14.0 2.0,-14.0 Z"/>
+    <path id="nring5" d="M -1.5,-17.5 H 61 L 110.5,32 V 338.5 Q 110.5,344.5 104.5,344.5 H 48 L -7.5,289 V -11.5 Q -7.5,-17.5 -1.5,-17.5 Z"/>
+    <path id="nring6" d="M -5.0,-21.0 H 61 L 114.0,32 V 342.0 Q 114.0,348.0 108.0,348.0 H 48 L -11.0,289 V -15.0 Q -11.0,-21.0 -5.0,-21.0 Z"/>
+    <!-- boxed section letter: 26x26 rounded plate, folded bottom-right
+         corner (the era's mini-SIM motif) -->
+    <g id="letterbox" fill="none" stroke-width="1.4">
+      <path d="M 3,0 H 23 Q 26,0 26,3 V 17 L 19,24 Q 17,26 14,26 H 3
+               Q 0,26 0,23 V 3 Q 0,0 3,0 Z"/>
+      <path d="M 26,17 H 21 Q 19,17 19,19 V 24" stroke-width="1"/>
+    </g>
+    <!-- five-line caption block -->
+    <g id="ncaption" fill="#bd8951">
+      <rect x="0" y="0"  width="84" height="5"/>
+      <rect x="0" y="8"  width="90" height="5"/>
+      <rect x="0" y="16" width="82" height="5"/>
+      <rect x="0" y="24" width="88" height="5"/>
+      <rect x="0" y="32" width="38" height="5"/>
+    </g>
+  </defs>
+
+  <rect width="1600" height="900" fill="#0e0a0d"/>
+  <rect width="1600" height="900" fill="url(#haze)"/>
+  <rect width="1600" height="560" fill="url(#hazeblue)" mask="url(#bluemask)"/>
+
+  <!-- ==== header ==== -->
+  <g font-family="Rajdhani" fill="#bd8951">
+    <text x="120" y="42" font-size="15" letter-spacing="1.5">CUSTOMER #NC488402</text>
+    <text x="120" y="70" font-size="12" letter-spacing="2">LEVEL</text>
+    <text x="126" y="90" font-size="21" font-weight="600">T1</text>
+
+    <text x="1131" y="68" font-size="12" letter-spacing="2">SECURITY</text>
+    <text x="1131" y="83" font-size="12" letter-spacing="2">LEVEL</text>
+    <g font-size="12" letter-spacing="1.5">
+      <text x="1229" y="63">LEVEL</text><text x="1354" y="63">LEVEL</text>
+      <text x="1417" y="63">LEVEL</text>
+    </g>
+    <g font-size="20" font-weight="600">
+      <text x="1236" y="86">T1</text><text x="1361" y="86">T3</text>
+      <text x="1424" y="86">T4</text>
+    </g>
+    <!-- T2: a FOLDER icon — low shelf on the left, a rounded diagonal
+         riser to the raised tab on the RIGHT. Front outline measured at
+         (1287,55)-(1338,104), tab top y~37, riser x~1310-1318. Seven
+         hairline rings: shelf tops fan widely (~13), tab tops just enough
+         to resolve as separate lines at render scale (drawn ~5 against a
+         measured ~3 — tighter overpaints into a fat border), right edges
+         spill out, all converging at the bottom. A solid gold trapezoid
+         tab points UP from the inside bottom edge. -->
+    <g fill="none" stroke="#a97c48" stroke-width="0.7">
+      <path d="M 1286.8,40.3 H 1302 Q 1314.6,42.4 1317.6,37.4 L 1320.6,41.1 Q 1322.6,32.1 1329.6,32.1 H 1344.2 Q 1349.2,32.1 1349.2,37.1 V 101.8 Q 1349.2,105.8 1345.2,105.8 H 1286.8 Q 1282.8,105.8 1282.8,101.8 V 46.4 Q 1282.8,42.4 1286.8,42.4 Z" stroke-opacity="0.55"/>
+      <path d="M 1287.4,42.4 H 1302 Q 1313.8,44.2 1316.8,39.2 L 1319.8,41.8 Q 1321.8,32.8 1328.8,32.8 H 1342.6 Q 1347.6,32.8 1347.6,37.8 V 101.5 Q 1347.6,105.5 1343.6,105.5 H 1287.4 Q 1283.4,105.5 1283.4,101.5 V 48.2 Q 1283.4,44.2 1287.4,44.2 Z" stroke-opacity="0.60"/>
+      <path d="M 1288.0,44.5 H 1302 Q 1313.0,46.0 1316.0,41.0 L 1319.0,42.5 Q 1321.0,33.5 1328.0,33.5 H 1341.0 Q 1346.0,33.5 1346.0,38.5 V 101.2 Q 1346.0,105.2 1342.0,105.2 H 1288.0 Q 1284.0,105.2 1284.0,101.2 V 50.0 Q 1284.0,46.0 1288.0,46.0 Z" stroke-opacity="0.65"/>
+      <path d="M 1288.6,46.6 H 1302 Q 1312.2,47.8 1315.2,42.8 L 1318.2,43.2 Q 1320.2,34.2 1327.2,34.2 H 1339.4 Q 1344.4,34.2 1344.4,39.2 V 101.0 Q 1344.4,105.0 1340.4,105.0 H 1288.6 Q 1284.6,105.0 1284.6,101.0 V 51.8 Q 1284.6,47.8 1288.6,47.8 Z" stroke-opacity="0.70"/>
+      <path d="M 1289.2,48.7 H 1302 Q 1311.4,49.6 1314.4,44.6 L 1317.4,43.9 Q 1319.4,34.9 1326.4,34.9 H 1337.8 Q 1342.8,34.9 1342.8,39.9 V 100.8 Q 1342.8,104.8 1338.8,104.8 H 1289.2 Q 1285.2,104.8 1285.2,100.8 V 53.6 Q 1285.2,49.6 1289.2,49.6 Z" stroke-opacity="0.75"/>
+      <path d="M 1289.8,50.8 H 1302 Q 1310.6,51.4 1313.6,46.4 L 1316.6,44.6 Q 1318.6,35.6 1325.6,35.6 H 1336.2 Q 1341.2,35.6 1341.2,40.6 V 100.5 Q 1341.2,104.5 1337.2,104.5 H 1289.8 Q 1285.8,104.5 1285.8,100.5 V 55.4 Q 1285.8,51.4 1289.8,51.4 Z" stroke-opacity="0.80"/>
+      <path d="M 1290.4,52.9 H 1302 Q 1309.8,53.2 1312.8,48.2 L 1315.8,45.3 Q 1317.8,36.3 1324.8,36.3 H 1334.6 Q 1339.6,36.3 1339.6,41.3 V 100.2 Q 1339.6,104.2 1335.6,104.2 H 1290.4 Q 1286.4,104.2 1286.4,100.2 V 57.2 Q 1286.4,53.2 1290.4,53.2 Z" stroke-opacity="0.85"/>
+    </g>
+    <path d="M 1291.0,55.0 H 1302 Q 1309.0,55.0 1312.0,50.0 L 1315.0,46.0 Q 1317.0,37.0 1324.0,37.0 H 1333.0 Q 1338.0,37.0 1338.0,42.0 V 100.0 Q 1338.0,104.0 1334.0,104.0 H 1291.0 Q 1287.0,104.0 1287.0,100.0 V 59.0 Q 1287.0,55.0 1291.0,55.0 Z" fill="none" stroke="#e8c186" stroke-width="1.1"/>
+    <path d="M 1293,104.5 L 1297,100 H 1322 L 1326,104.5 Z" fill="#f2b463"/>
+    <text x="1295" y="71" font-size="12" letter-spacing="1.2" fill="#d9a877">LEVEL</text>
+    <text x="1296" y="95" font-size="21" font-weight="600" fill="#e8c186">T2</text>
+  </g>
+
+  <!-- the wire band, measured: an eight-strand bundle enters low at the
+       left (y 122..145), sweeps up and CONVERGES into a tight line at
+       y~87 (the A box and annotations hang below it, uncrossed), runs to
+       x~950, fans back out into the ribbon at y 123..136 that passes
+       under the security badges, and ends ~x1560 curling down. -->
+  <g fill="none" stroke="#a97c48" stroke-width="1.1">
+    <path d="M 30,122.0 H 52 C 84,122.0 100,86.40 130,86.40 H 1040 C 1075,86.40 1090,123.0 1125,123.0 H 1535 Q 1562,123.0 1568,145.0 L 1570,153.0"/>
+    <path d="M 30,124.9 H 52 C 84,124.9 100,86.56 130,86.56 H 1040 C 1075,86.56 1090,124.8 1125,124.8 H 1535 Q 1562,124.8 1568,146.8 L 1570,154.8"/>
+    <path d="M 30,127.8 H 52 C 84,127.8 100,86.72 130,86.72 H 1040 C 1075,86.72 1090,126.6 1125,126.6 H 1535 Q 1562,126.6 1568,148.6 L 1570,156.6"/>
+    <path d="M 30,130.7 H 52 C 84,130.7 100,86.88 130,86.88 H 1040 C 1075,86.88 1090,128.4 1125,128.4 H 1535 Q 1562,128.4 1568,150.4 L 1570,158.4"/>
+    <path d="M 30,133.6 H 52 C 84,133.6 100,87.04 130,87.04 H 1040 C 1075,87.04 1090,130.2 1125,130.2 H 1535 Q 1562,130.2 1568,152.2 L 1570,160.2"/>
+    <path d="M 30,136.5 H 52 C 84,136.5 100,87.20 130,87.20 H 1040 C 1075,87.20 1090,132.0 1125,132.0 H 1535 Q 1562,132.0 1568,154.0 L 1570,162.0"/>
+    <path d="M 30,139.4 H 52 C 84,139.4 100,87.36 130,87.36 H 1040 C 1075,87.36 1090,133.8 1125,133.8 H 1535 Q 1562,133.8 1568,155.8 L 1570,163.8"/>
+    <path d="M 30,142.3 H 52 C 84,142.3 100,87.52 130,87.52 H 1040 C 1075,87.52 1090,135.6 1125,135.6 H 1535 Q 1562,135.6 1568,157.6 L 1570,165.6"/>
+  </g>
+  <!-- boxed letters: A/B hang under the tight line (boxes 26x26 at y98,
+       interiors masking the strands); C/D sit in the foot at the measured
+       y~799 with their annotation lines at y~823/834 -->
+  <g font-family="Rajdhani" font-size="15">
+    <g fill="#4c3f5f">
+      <rect x="238" y="98" width="26" height="26" rx="3"/>
+      <rect x="1011" y="98" width="26" height="26" rx="3"/>
+    </g>
+    <g stroke="#bd8951">
+      <use href="#letterbox" x="238" y="98"/>
+      <use href="#letterbox" x="1011" y="98"/>
+      <use href="#letterbox" x="585" y="799"/>
+      <use href="#letterbox" x="1172" y="799"/>
+    </g>
+    <g fill="#d9a877" text-anchor="middle">
+      <text x="250" y="117">A</text><text x="1023" y="117">B</text>
+      <text x="597" y="818">C</text><text x="1184" y="818">D</text>
+    </g>
+    <g font-size="8" fill="#a97c48" letter-spacing="0.4">
+      <text x="288" y="106">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+      <text x="288" y="116">SERVING CUSTOMERS SINCE 2006.</text>
+      <text x="1000" y="106" text-anchor="end">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+      <text x="1000" y="116" text-anchor="end">SERVING CUSTOMERS SINCE 2006.</text>
+      <text x="620" y="826">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+      <text x="620" y="837">SERVING CUSTOMERS SINCE 2006.</text>
+      <text x="1208" y="826">MAPS ARE PROVIDED BY SEOCHO. SATELITE SERVICES</text>
+      <text x="1208" y="837">SINCE 2006.</text>
+    </g>
+  </g>
+
+  <!-- ==== the six cascade cards ==== -->
+  <!-- onion stacks: concentric rings on the five unselected cards,
+       fading outward. The EMAIL selection card has none — in the source
+       it stands alone with a glow halo. -->
+  <g fill="none" stroke="#bd8951" stroke-width="1">
+    <g transform="translate(347 284)">
+      <use href="#nring6" stroke-opacity="0.25"/>
+      <use href="#nring5" stroke-opacity="0.37"/>
+      <use href="#nring4" stroke-opacity="0.49"/>
+      <use href="#nring3" stroke-opacity="0.61"/>
+      <use href="#nring2" stroke-opacity="0.73"/>
+      <use href="#nring1" stroke-opacity="0.85"/>
+    </g>
+    <g transform="translate(449 182)">
+      <use href="#nring6" stroke-opacity="0.25"/>
+      <use href="#nring5" stroke-opacity="0.37"/>
+      <use href="#nring4" stroke-opacity="0.49"/>
+      <use href="#nring3" stroke-opacity="0.61"/>
+      <use href="#nring2" stroke-opacity="0.73"/>
+      <use href="#nring1" stroke-opacity="0.85"/>
+    </g>
+    <g transform="translate(624 384)">
+      <use href="#nring6" stroke-opacity="0.25"/>
+      <use href="#nring5" stroke-opacity="0.37"/>
+      <use href="#nring4" stroke-opacity="0.49"/>
+      <use href="#nring3" stroke-opacity="0.61"/>
+      <use href="#nring2" stroke-opacity="0.73"/>
+      <use href="#nring1" stroke-opacity="0.85"/>
+    </g>
+    <g transform="translate(724 284)">
+      <use href="#nring6" stroke-opacity="0.25"/>
+      <use href="#nring5" stroke-opacity="0.37"/>
+      <use href="#nring4" stroke-opacity="0.49"/>
+      <use href="#nring3" stroke-opacity="0.61"/>
+      <use href="#nring2" stroke-opacity="0.73"/>
+      <use href="#nring1" stroke-opacity="0.85"/>
+    </g>
+    <g transform="translate(826 182)">
+      <use href="#nring6" stroke-opacity="0.25"/>
+      <use href="#nring5" stroke-opacity="0.37"/>
+      <use href="#nring4" stroke-opacity="0.49"/>
+      <use href="#nring3" stroke-opacity="0.61"/>
+      <use href="#nring2" stroke-opacity="0.73"/>
+      <use href="#nring1" stroke-opacity="0.85"/>
+    </g>
+  </g>
+  <g fill="none" stroke="#bd8951" stroke-width="1.6">
+    <use href="#ncard" x="347" y="284"/>
+    <use href="#ncard" x="449" y="182"/>
+    <use href="#ncard" x="624" y="384"/>
+    <use href="#ncard" x="724" y="284"/>
+    <use href="#ncard" x="826" y="182"/>
+  </g>
+  <!-- bright tab plates on every card's left edge -->
+  <g fill="none" stroke="#e8c186" stroke-width="1.4">
+    <rect x="346" y="341" width="12" height="36" rx="3"/>
+    <rect x="448" y="239" width="12" height="36" rx="3"/>
+    <rect x="623" y="441" width="12" height="36" rx="3"/>
+    <rect x="723" y="341" width="12" height="36" rx="3"/>
+    <rect x="825" y="239" width="12" height="36" rx="3"/>
+  </g>
+  <!-- EMAIL: the selection, solid gold, bright tab plate on its edge -->
+  <use href="#ncard" x="244" y="383" fill="#f2b463"/>
+  <rect x="243" y="438" width="12" height="38" rx="3" fill="#f2b463"
+        stroke="#ffe2ae" stroke-width="1.4"/>
+
+  <!-- labels: at each card's upper left; EMAIL's in a small box -->
+  <g font-family="Rajdhani" font-size="17" letter-spacing="1.5" fill="#f2b463" text-anchor="end">
+    <text x="238" y="468">EMAIL</text>
+    <text x="338" y="358">MATRIX</text>
+    <text x="440" y="256">BRAINDANCE</text>
+    <text x="615" y="450">PRIVATE</text>
+    <text x="714" y="360">SECURITY</text>
+    <text x="714" y="379">SYSTEMS</text>
+    <text x="817" y="256">DEVICES</text>
+  </g>
+
+  <!-- captions under each card's foot -->
+  <use href="#ncaption" x="253" y="723"/>
+  <use href="#ncaption" x="352" y="622"/>
+  <use href="#ncaption" x="455" y="520"/>
+  <use href="#ncaption" x="630" y="723"/>
+  <use href="#ncaption" x="730" y="622"/>
+  <use href="#ncaption" x="832" y="520"/>
+
+  <!-- ==== the detail panel ==== -->
+  <g>
+    <g fill="none" stroke="#bd8951" transform="translate(1168 253)">
+      <path d="M -18,480 V 7 Q -18,1 -12,1 H 51 L 73,-18 H 240 Q 250,-18 250,-8 V 480 Q 250,490 240,490 H -8 Q -18,490 -18,480 Z" stroke-width="1" stroke-opacity="0.25"/>
+      <path d="M -15,477 V 10 Q -15,4 -9,4 H 51 L 73,-15 H 237 Q 247,-15 247,-5 V 477 Q 247,487 237,487 H -5 Q -15,487 -15,477 Z" stroke-width="1" stroke-opacity="0.37"/>
+      <path d="M -12,474 V 13 Q -12,7 -6,7 H 51 L 73,-12 H 234 Q 244,-12 244,-2 V 474 Q 244,484 234,484 H -2 Q -12,484 -12,474 Z" stroke-width="1" stroke-opacity="0.49"/>
+      <path d="M -9,471 V 16 Q -9,10 -3,10 H 51 L 73,-9 H 231 Q 241,-9 241,1 V 471 Q 241,481 231,481 H 1 Q -9,481 -9,471 Z" stroke-width="1" stroke-opacity="0.61"/>
+      <path d="M -6,468 V 19 Q -6,13 0,13 H 51 L 73,-6 H 228 Q 238,-6 238,4 V 468 Q 238,478 228,478 H 4 Q -6,478 -6,468 Z" stroke-width="1" stroke-opacity="0.73"/>
+      <path d="M -3,465 V 22 Q -3,16 3,16 H 51 L 73,-3 H 225 Q 235,-3 235,7 V 465 Q 235,475 225,475 H 7 Q -3,475 -3,465 Z" stroke-width="1" stroke-opacity="0.85"/>
+    </g>
+    <use href="#npanel" x="1168" y="253" fill="none" stroke="#bd8951" stroke-width="1.8"/>
+    <!-- solid body, measured [1171,326,231,309] -->
+    <rect x="1171" y="326" width="231" height="309" fill="#f2b463"/>
+    <!-- two dark paragraphs on the fill -->
+    <g fill="#3b2416">
+      <rect x="1190" y="349" width="196" height="11"/>
+      <rect x="1190" y="369" width="200" height="11"/>
+      <rect x="1190" y="389" width="192" height="11"/>
+      <rect x="1190" y="409" width="196" height="11"/>
+      <rect x="1190" y="429" width="188" height="11"/>
+      <rect x="1190" y="449" width="120" height="11"/>
+      <rect x="1190" y="474" width="198" height="11"/>
+      <rect x="1190" y="494" width="184" height="11"/>
+      <rect x="1190" y="514" width="90"  height="11"/>
+    </g>
+    <!-- micro-text tape and the big EMAIL label -->
+    <g fill="#bd8951">
+      <rect x="1186" y="646" width="200" height="6"/>
+      <rect x="1200" y="656" width="172" height="6"/>
+    </g>
+    <text x="1286" y="700" font-family="Rajdhani" font-size="24" font-weight="600"
+          letter-spacing="3" fill="#f2b463" text-anchor="middle">EMAIL</text>
+  </g>
+</svg>

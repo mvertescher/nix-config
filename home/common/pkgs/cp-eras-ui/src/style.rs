@@ -250,23 +250,31 @@ pub enum Menu {
 ///   six-module hub `screens::dashboard` has always drawn -- top bar,
 ///   sidebar, the era's [`Menu`] over six modules, the description
 ///   panel and the footer. [`Menu`] keeps describing the middle slot.
-/// * **Neomil** -- [`Layout::OpsCharts`]: `docs/neomil/dashboard-trace.svg`
-///   is the schematic of `images/img-07-dashboard.png`, and it is an
-///   ops screen, not a hub: a full-width cold-blue band carrying red
-///   crest blocks and the OPS DASHBOARD wordmark, three large bright-red
-///   chart cards side by side with dark slits between them, a vertical
-///   red rail on the right and a red corner block bottom-right. No
-///   sidebar, no menu, no detail panel, no footer -- the material shows
-///   none of those -- so this arm does not consult [`Menu`] at all.
-/// * **Entropism** -- [`Layout::TileRow`]: `docs/entropism/dashboard-trace.svg`
-///   is the schematic of `images/entropism-dashboard.png` (Behance
-///   screen #42, see `docs/sources.md`), and it is a single row of
-///   four menu tiles, not a hub: a dim-olive top field with a boxed
-///   header, the four tiles -- the second, selected, a solid sage fill
-///   -- each with a caption strip beneath, and a thin build-rule at
-///   the foot. No sidebar, no detail panel, no footer band, and no
-///   menu: the material's frame contains none of them, so this arm
-///   does not consult [`Menu`] either.
+/// * **Neomil** -- [`Layout::OpsCharts`]: **this description is wrong and
+///   the arm is built on it.** Corrected 2026-09-01 by opening
+///   `images/img-07-dashboard.png`. It is not an ops screen and there are
+///   no chart cards, no rail and no corner block anywhere in it. It is a
+///   hub: a six-diamond staggered menu (half-diagonal 104, labelled
+///   VEHICLES / LOCATIONS / FACTIONS above and WEAPONS / PRODUCTS /
+///   CORPORATIONS below) with a chamfered GO HOME detail panel beside it
+///   and four LEVEL badges in the header. So neomil almost certainly
+///   *does* want [`Menu`] and the hub shell, and the reasoning below --
+///   that the four references disagree about what a dashboard is -- rests
+///   partly on a trace nobody had checked. See `docs/sources.md` and the
+///   crate TODO before extending this. `docs/neomil/dashboard-trace.svg`
+///   has been rewritten from measured geometry; this arm has not.
+/// * **Entropism** -- [`Layout::TileRow`]: **also wrong, and wrong twice
+///   over.** `images/entropism-dashboard.png` is the 4ST *store*, not a
+///   dashboard -- the two entropism source files are named the wrong way
+///   round (`docs/sources.md`). The actual hub material, in the file
+///   named `entropism-store.png`, is a 3x2 grid of six tiles (BRAINDANCE
+///   selected, solid sage) with a MESSAGE detail panel beside it and a
+///   SECURITY LEVEL badge column -- i.e. a hub with a detail panel, which
+///   is precisely what this comment says the frame does not contain.
+///   `docs/entropism/dashboard-trace.svg` has since been rewritten from
+///   the real hub material and passes the inventory gate; this arm has
+///   not been touched. Kitsch and neokitsch turned out to be hubs too
+///   (see `docs/sources.md`), so all four eras share the hub grammar.
 ///
 /// The screen branches on this the way it branches on [`Menu`]:
 /// `screens::dashboard::view` matches it, and nothing in `screens/`

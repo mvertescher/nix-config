@@ -1,5 +1,20 @@
 //! The ops dashboard, in any era.
 //!
+//! **Health warning, 2026-09-01:** the paragraph below is factually
+//! wrong, and is kept only because this file has not been rebuilt yet.
+//! With all four eras' sources finally opened (see `docs/sources.md`),
+//! **the four references agree completely** about what a dashboard is:
+//! every era shows the same module hub — a menu of six modules with one
+//! selected (neomil diamonds, entropism 3x2 tiles, kitsch fan blades,
+//! neokitsch cascade cards), a detail panel describing the selection,
+//! and a security-badge row with the second badge filled. The claimed
+//! disagreement came from two invented traces and two false "no
+//! dashboard material" claims, so [`Layout::OpsCharts`] and
+//! [`Layout::TileRow`] model a misreading, not the material.
+//! `scripts/fidelity_check.sh --inventory` scores this screen's neomil
+//! golden at 0% of the source's shape area. See the crate TODO's
+//! "Decide whether `Layout` should exist" before touching anything.
+//!
 //! The four references do not agree about what a dashboard is.
 //! Kitsch and neokitsch frame a module hub -- six modules, one
 //! selected, the selected one's description beside it -- while

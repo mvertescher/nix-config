@@ -7,26 +7,135 @@
   - also need to set opacities properly
 - [x] create iced advanced container. "chip type 1"
 - [ ] Reproduce dashboard image (`img-07-dashboard.png`) in demo app:
-  - [x] Implement custom background (gradient/glow) — the cold-blue
-    top band running `BAND_TOP`→`BAND_BOTTOM`, the crest blocks, the
-    dark left margin and the mid-left blue zone, drawn as the
-    `Layout::OpsCharts` arm's backdrop; the band is stacked strips
-    rather than a canvas gradient to stay off renderer-specific
-    gradient support (2026-08-31).
-  - [ ] Implement `InfoPanel` widget (chamfered top-right/bottom-left)
-    — still open: the ops-charts material shows no such panel and the
-    current layout needs none; revisit if a neomil sheet draws one.
-  - [x] ~~Implement `DiamondMenu` widget~~ — built, then deleted 2026-08-24
-    when `widgets::table` landed: no neomil sheet draws a diamond, and
-    the sheet puts a services table where the dashboard puts its menu.
-  - [x] Update demo app layout, colors, and text to match image — the
-    dashboard *layout* is now Style-owned data (`Layout::OpsCharts`, the
-    `screens::dashboard::ops_charts` arm: edge-to-edge band, three
-    `widgets::charts` card cells, right rail, corner block), the colors
-    are the sampled `BAND_TOP`/`BAND_BOTTOM`/`CARD_DARK` consts on
-    `eras/neomil.rs`, and the OPS DASHBOARD wordmark sits in the band.
-    Done 2026-08-31; the arm's geometry is documented against
-    `docs/neomil/dashboard-trace.svg`.
+
+  > **Everything under this heading was built against a trace that was
+  > invented, and most of it is wrong.** Corrected 2026-09-01 after
+  > actually opening `img-07-dashboard.png`. The photo holds a
+  > **six-diamond staggered menu** (half-diagonal 104, centres
+  > (334,460) (530,460) (725,460) / (431,593) (628,592) (822,592),
+  > labelled VEHICLES / LOCATIONS / FACTIONS above and WEAPONS /
+  > PRODUCTS / CORPORATIONS below) and a **chamfered GO HOME info
+  > panel** at x 1128..1358, y 313..756. It holds no chart cards at
+  > all. `docs/neomil/dashboard-trace.svg` has been rewritten from
+  > measured geometry and now passes `fidelity_check.sh --inventory
+  > neomil dashboard` at 92% of source shape area; the *implementation*
+  > has not been touched and still scores 0%.
+
+  - [x] ~~Implement custom background (gradient/glow)~~ — landed
+    2026-08-31 as stacked strips forming a "cold-blue top band" with
+    crest blocks. **The premise is wrong**: the source has no band and
+    no edge. It is a broad blue glow over near-black, at full strength
+    to y~250 and gone by y~420, with a warm near-black vignette down
+    the left margin. Measured stops are in `dashboard-trace.svg`'s
+    `glowh`/`glowv`. Redo against those.
+  - [ ] Implement `InfoPanel` widget (chamfered corners) — **reopened.**
+    The old note said "the ops-charts material shows no such panel";
+    it does. The GO HOME panel is the right-hand third of the source:
+    230x443, chamfered top-left (14) and bottom-left (42), 1px bright
+    border over a dark-red translucent fill, heading + two body
+    paragraphs, a scrollbar rail on its right edge and a maker's mark
+    at its foot. Note the chamfers are top-left/bottom-left, not the
+    top-right/bottom-left this item used to claim.
+  - [ ] Restore `DiamondMenu` — **reopened.** It was built, then deleted
+    2026-08-24 on the reasoning "no neomil sheet draws a diamond, and
+    the sheet puts a services table where the dashboard puts its menu".
+    The first half is false: `img-07-dashboard.png` is a six-diamond
+    menu, and it is the era's dashboard material. The deletion was
+    argued from `docs/neomil/target-app.svg` (the *console* screen,
+    `img-08-main.png`) while the dashboard source went unread. Geometry
+    to build against is in `dashboard-trace.svg`: pure 45° diamonds, no
+    chamfer, x pitch 195.5, row pitch 132, row 2 offset +96.5, a 16px
+    ground gap on the midpoint of each same-row pair (rows only
+    interlock — L1 distance 195.5 against a diameter of 208 — so no
+    cross-row separator is needed), an inset outline at half-diagonal
+    68 and a glyph at each centre.
+  - [ ] Update demo app layout, colors, and text to match image —
+    **reopened.** `Layout::OpsCharts` and `screens::dashboard::ops_charts`
+    render three `widgets::charts` cards, a right rail and a corner
+    block, none of which are in the material:
+    `fidelity_check.sh --inventory` scores the golden at **0% of source
+    shape area, with 12 diamonds and the rule absent**. The sampled
+    `BAND_TOP`/`BAND_BOTTOM`/`CARD_DARK` consts on `eras/neomil.rs` were
+    sampled off the same misreading. Decide first whether neomil's
+    dashboard should follow its material (diamond menu + info panel) or
+    stay a shared cross-era layout — see the "Layout" entry below — and
+    only then rebuild. Do not touch `tests/golden/` until that is settled.
+
+## Design pipeline: the traces were invented (2026-09-01)
+
+> **Standing rule (2026-09-01): SVG edits require a vision-capable
+> model; SVG → iced conversion does not.** The traces exist so that
+> coding models can build the Rust iced screens from a text spec
+> (measured coordinates + sampled palette) without ever needing to see
+> the source photos. Dispatch accordingly, and see `docs/PIPELINE.md`
+> § Division of labour.
+
+Two of the two `dashboard-trace.svg` files that have ever been checked
+against their source material turned out to have been written without
+anyone opening the image. Both passed the G1 grid gate. Both had their
+invented descriptions copied into `docs/sources.md` as observation, and
+from there into `src/style.rs`, `src/screens/dashboard.rs` and the
+`Layout` enum's justification.
+
+- [x] **`scripts/extract_spec.py`** — measures an image into a shape
+  inventory: palette by deterministic k-means, ground/ink split by which
+  clusters reach the canvas border, per-cluster connected components
+  (hole-filled, so an outlined widget is one shape and not a ring plus a
+  core), overlapping convex blobs split by nearest-peak on the distance
+  transform, each component fitted against rect / diamond / chamfered-rect
+  / rule templates by an occlusion-aware IoU. No RNG; same bytes in, same
+  JSON out. `--crops DIR` writes a zoom per shape for inspection.
+- [x] **`scripts/spec_diff.py`** + `fidelity_check.sh --inventory` — the
+  gate G1 could not be. Matches two inventories shape by shape and fails
+  when a whole class is absent or under 60% of source shape area is
+  matched. On the old neomil trace it reports, in one line, `diamond 12
+  source / 0 candidate — ABSENT`. Needs numpy + scipy; the script's nix
+  fallback builds them.
+- [x] **`docs/neomil/dashboard-trace.svg` rewritten** from measured
+  geometry. PASS at 92% of source shape area, centre error median 1.4px,
+  and the six diamonds now extract at half-diagonal 103 against the
+  source's 103.
+- [x] **`docs/entropism/dashboard-trace.svg` rewritten** (2026-09-01)
+  from the real hub material (`entropism-store.png` — the swapped name
+  stands; `fidelity_check.sh`'s G1i source table points at the right
+  file with a comment). PASS at 92% of source shape area, centre error
+  median 1.5px. The file-name swap itself is still unfixed and still
+  documented in `docs/sources.md`; `src/style.rs` and
+  `src/screens/dashboard.rs` still name the files as they stand.
+- [x] **Kitsch and neokitsch runs opened** (2026-09-01): the "no
+  dashboard material" claims were **false in both cases**. Kitsch #49
+  (`e6ea35…`) is the hub — two 3-blade fans, EVENTS selected yellow,
+  USER box, 01–04 badges, BRAINDANCE panel. Neokitsch #69 (`17a5c4…`)
+  is the hub — six staircase cascade cards, EMAIL selected gold, detail
+  panel, T1–T4 badges. Full-res sources downloaded
+  (`images/{kitsch,neokitsch}-dashboard.png`), traces written from
+  measured geometry (`docs/{kitsch,neokitsch}/dashboard-trace.svg`),
+  both gated. The gate grew an **ink-placement mode** for these two:
+  their rotated/translucent geometry (fan blades, onion cascades)
+  fragments unstably under the axis-aligned shape templates, so the
+  verdict rides per-colour-family occupancy IoU (faithful ~0.5 vs
+  0.03–0.07 for the old composites; `spec_diff.py --gate inks`).
+- [ ] **Rework `docs/kitsch/dashboard.svg` and
+  `docs/neokitsch/dashboard.svg`** — both are "original composites"
+  drawn app-first while their real source went unread; both score
+  0.03–0.07 against the material on the ink gate. They should follow
+  their era's `dashboard-trace.svg`, not the other way around
+  (`docs/PIPELINE.md`, direction of change).
+- [ ] **Decide whether `Layout` should exist — the material now answers
+  the factual half.** With all four sources finally opened (2026-09-01),
+  **all four eras are the same module-hub screen in different dress**:
+  a menu of six modules with one selected (neomil diamonds, entropism
+  tiles, kitsch fan blades, neokitsch cascade cards), a detail panel
+  describing the selection, and a security-badge row with the second
+  badge filled. That is exactly the `ModuleHub` + per-era `Menu` model
+  the crate already has — the material never disagreed about what a
+  dashboard is; the traces and unread claims did. So `OpsCharts` and
+  `TileRow` model a misreading, and `widgets::charts` has no referent
+  in any source. What remains is the design call: fold all four back
+  onto `ModuleHub` (the menu variants differ per era, which `Menu`
+  already carries) and delete the two layouts, or keep them as
+  deliberate original compositions. Settle this before rebuilding any
+  dashboard arm, and do not touch `tests/golden/` until it is settled.
 
 ## Toolkit infrastructure
 

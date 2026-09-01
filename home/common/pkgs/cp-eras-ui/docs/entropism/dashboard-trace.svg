@@ -1,58 +1,168 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
-  <!-- ENTROPISM dashboard-trace: schematic of images/entropism-dashboard.png
-       (Behance 360994118663901.60901b1b6119b, 3840x2160 photo, gallery doc
-       #42 = the entropism run's tile menu / module hub).
-       The source shows a row of four menu tiles on a warm dark field; the
-       second-from-left tile is filled solid sage (the selection), the others
-       are dark olive-sage; tiny caption strips sit under each tile and a
-       small boxed-letter header sits top-left. No sidebar column, no detail
-       panel, no footer band: the app's dashboard chrome is not in this frame.
-       Palette sampled from the photo: bg #140d07, top field #2a2c1e,
-       mid sage #6f8f68, selected sage #a2ca9b, dim olive #4a5340,
-       caption #23271b, outline #5d7752. -->
-  <rect width="1600" height="900" fill="#0d0803"/>
+  <!-- ENTROPISM dashboard-trace: schematic of images/entropism-store.png
+       (the module hub — the two entropism source files are named the wrong
+       way round; see docs/sources.md).
 
-  <!-- top field (photo rows 0-5, y 0..~26%): dim olive -->
-  <rect x="0" y="0" width="1600" height="230" fill="#272a1c"/>
+       Every coordinate below is measured, not eyeballed:
+         scripts/extract_spec.py images/entropism-store.png -o /tmp/src.json
+       plus targeted row/column probes for the outline-only geometry, and the
+       trace is held to the source by
+         scripts/fidelity_check.sh -\-inventory entropism dashboard
 
-  <!-- boxed-letter header top-left ([A] ...) -->
-  <rect x="100" y="120" width="46" height="46" fill="none" stroke="#5d7752" stroke-width="2"/>
-  <rect x="160" y="120" width="330" height="46" fill="none" stroke="#5d7752" stroke-width="2"/>
-  <text x="123" y="152" text-anchor="middle" font-family="Rajdhani" font-size="26" fill="#94bb94">A</text>
-  <text x="240" y="152" font-family="Rajdhani" font-size="22" letter-spacing="3" fill="#94bb94">TILE MENU</text>
+       What the source actually shows, top to bottom:
+         - a full-width header strip, x 49..1547, y 43..69, with dividers at
+           x 465 and x 1353: RIPPERDOC SURGICAL SOFTWAREV2 / STORE ACCESS
+           SCREEN / FLAIR TRS 5MMP (the hub screen itself carries the
+           STORE ACCESS SCREEN caption — that is the material, not an error)
+         - three boxed section letters with labels at y~147..174:
+           A MAIL BOX (box x 132..158), B MESSAGE (x 1013..1040),
+           C SECURITY LEVEL (x 1328..1354, label on two lines)
+         - a 3x2 TILE GRID: tiles 194 wide at x 128, 418, 716; row 1
+           y 226..438, row 2 y 499..710; square corners, thin outline.
+           Labels EMAILS / MATRIX / BRAINDANCE and SECURITY SYSTEMS /
+           PRIVATE / DEVICES centred in the tiles. BRAINDANCE (row 1,
+           tile 3) is filled solid sage — the selection. Each tile's foot
+           carries a two-cell caption strip (top rule at y 409 / y 681,
+           internal divider 95px in): 85SD4F3Q5S41 | COMBAT COLONIZATION
+           DEFENCE PROGRAM
+         - a MESSAGE detail panel, x 1014..1275, y 215..723: BRAINDANCE
+           heading over a full-width underline at y 281, then two lorem
+           paragraphs (5 lines + 3 lines)
+         - a SECURITY LEVEL badge column: four 68x68 boxes at x 1380,
+           y 214 / 304 / 393 / 482, labelled T1..T4, with T2 filled solid
+           (the extractor reads it at exactly [1380,304,68,68])
+         - a full-width footer strip, x 49..1547, y 847..872: INTERFACE
+           LOADED / PROVIDED BY NEXUS NETWORK V10.8 / BUILD 6.47.48441.R15
 
-  <!-- four menu tiles in a row (photo y 25..60%) -->
+       Replaces the previous revision, which drew "four tiles in a row,
+       caption strips, a build-rule at the foot" and claimed the app's
+       3-per-row grid, sidebar and detail panel were not in the frame.
+       That trace was written without reading the image (and against the
+       wrong file); the material shows a 3-per-row grid WITH a detail
+       panel and a badge column.
+
+       Palette sampled by k-means over the photo (extract_spec.py):
+         ink   #a6d3a7 (3.3%, the solid fills)  #739676  #59755b  #3a4c38
+         ground #0f0a03 (63.8%) #1c1a10 (19.5%) #232419 (9.2%) -->
+  <defs>
+    <radialGradient id="lift" cx="0.45" cy="0.45" r="0.75">
+      <stop offset="0"   stop-color="#1c1a10"/>
+      <stop offset="0.7" stop-color="#141107"/>
+      <stop offset="1"   stop-color="#0f0a03"/>
+    </radialGradient>
+    <!-- one caption strip, drawn at the tile's local origin: top rule,
+         internal divider 95px in, small text in each cell -->
+    <g id="caption">
+      <path d="M 0,0 H 194" fill="none" stroke="#59755b" stroke-width="1.5"/>
+      <path d="M 95,0 V 29" fill="none" stroke="#59755b" stroke-width="1.5"/>
+      <rect x="7"   y="8" width="80" height="7" fill="#59755b"/>
+      <rect x="103" y="5" width="82" height="6" fill="#59755b"/>
+      <rect x="103" y="14" width="70" height="6" fill="#59755b"/>
+    </g>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#lift)"/>
+
+  <!-- ==== header strip, y 43..69, dividers at x 465 and 1353 ==== -->
   <g>
-    <!-- T1: mid sage, outlined -->
-    <rect x="96" y="270" width="178" height="290" fill="#5d7752" fill-opacity="0.25"/>
-    <rect x="96" y="270" width="178" height="290" fill="none" stroke="#6f8f68" stroke-width="2"/>
-    <rect x="104" y="286" width="162" height="120" fill="#6f8f68"/>
-
-    <!-- T2: SELECTED, solid bright sage -->
-    <rect x="368" y="270" width="496" height="290" fill="#a2ca9b"/>
-    <rect x="368" y="270" width="496" height="34" fill="#8eb888"/>
-    <rect x="380" y="330" width="472" height="64" fill="#94bb94"/>
-    <rect x="380" y="410" width="472" height="120" fill="#a2ca9b"/>
-
-    <!-- T3: dim olive -->
-    <rect x="896" y="270" width="400" height="290" fill="#4a5340"/>
-    <rect x="896" y="270" width="400" height="290" fill="none" stroke="#5d7752" stroke-width="2"/>
-    <rect x="908" y="286" width="376" height="120" fill="#56614a"/>
-
-    <!-- T4: dim olive -->
-    <rect x="1328" y="270" width="208" height="290" fill="#454d3a"/>
-    <rect x="1328" y="270" width="208" height="290" fill="none" stroke="#5d7752" stroke-width="2"/>
-    <rect x="1336" y="286" width="192" height="120" fill="#525c44"/>
+    <rect x="49" y="43" width="1498" height="26" fill="none" stroke="#739676" stroke-width="1.5"/>
+    <path d="M 465,43 V 69 M 1353,43 V 69" fill="none" stroke="#739676" stroke-width="1.5"/>
+    <g font-family="Rajdhani" font-size="14" fill="#87b08d" letter-spacing="1">
+      <text x="60" y="61">RIPPERDOC SURGICAL SOFTWAREV2</text>
+      <text x="477" y="61">STORE ACCESS SCREEN</text>
+      <text x="1365" y="61">FLAIR TRS 5MMP</text>
+    </g>
   </g>
 
-  <!-- caption strips under each tile -->
-  <g fill="#23271b">
-    <rect x="104" y="596" width="178" height="34"/>
-    <rect x="376" y="596" width="200" height="34"/>
-    <rect x="904" y="596" width="240" height="34"/>
-    <rect x="1336" y="596" width="200" height="34"/>
+  <!-- ==== section headings, y 147..174 ==== -->
+  <g font-family="Rajdhani" font-size="17" fill="#87b08d" letter-spacing="2">
+    <rect x="132" y="147" width="26" height="26" fill="none" stroke="#87b08d" stroke-width="1.5"/>
+    <text x="139" y="166">A</text>
+    <text x="170" y="166">MAIL BOX</text>
+    <rect x="1013" y="147" width="27" height="26" fill="none" stroke="#87b08d" stroke-width="1.5"/>
+    <text x="1020" y="166">B</text>
+    <text x="1049" y="166">MESSAGE</text>
+    <rect x="1328" y="147" width="26" height="26" fill="none" stroke="#87b08d" stroke-width="1.5"/>
+    <text x="1335" y="166">C</text>
+    <text x="1381" y="160" font-size="15">SECURITY</text>
+    <text x="1381" y="178" font-size="15">LEVEL</text>
   </g>
 
-  <!-- thin rule under the captions (the build-string footer area) -->
-  <rect x="0" y="860" width="1600" height="2" fill="#3d4d38"/>
+  <!-- ==== the 3x2 tile grid ==== -->
+  <!-- row 1: y 226..438, caption rule at y 409 -->
+  <g font-family="Rajdhani" font-size="19" letter-spacing="1.5" text-anchor="middle">
+    <rect x="128" y="226" width="194" height="212" fill="none" stroke="#739676" stroke-width="2"/>
+    <text x="225" y="327" fill="#a6d3a7">EMAILS</text>
+    <use href="#caption" x="128" y="409" fill="#59755b"/>
+
+    <rect x="418" y="226" width="194" height="212" fill="none" stroke="#739676" stroke-width="2"/>
+    <text x="515" y="327" fill="#a6d3a7">MATRIX</text>
+    <use href="#caption" x="418" y="409"/>
+
+    <!-- the selection: solid sage fill, dark caption elements -->
+    <rect x="716" y="227" width="194" height="211" fill="#a6d3a7"/>
+    <text x="813" y="327" fill="#22301f">BRAINDANCE</text>
+    <g transform="translate(716,409)">
+      <path d="M 0,0 H 194" fill="none" stroke="#3a4c38" stroke-width="1.5"/>
+      <path d="M 95,0 V 29" fill="none" stroke="#3a4c38" stroke-width="1.5"/>
+      <rect x="7"   y="8" width="80" height="7" fill="#3a4c38"/>
+      <rect x="103" y="5" width="82" height="6" fill="#3a4c38"/>
+      <rect x="103" y="14" width="70" height="6" fill="#3a4c38"/>
+    </g>
+
+    <!-- row 2: y 499..710, caption rule at y 681 -->
+    <rect x="128" y="499" width="194" height="211" fill="none" stroke="#739676" stroke-width="2"/>
+    <text x="225" y="590" fill="#a6d3a7" font-size="17">SECURITY</text>
+    <text x="225" y="610" fill="#a6d3a7" font-size="17">SYSTEMS</text>
+    <use href="#caption" x="128" y="681"/>
+
+    <rect x="418" y="499" width="194" height="211" fill="none" stroke="#739676" stroke-width="2"/>
+    <text x="515" y="600" fill="#a6d3a7">PRIVATE</text>
+    <use href="#caption" x="418" y="681"/>
+
+    <rect x="716" y="499" width="194" height="211" fill="none" stroke="#739676" stroke-width="2"/>
+    <text x="813" y="600" fill="#a6d3a7">DEVICES</text>
+    <use href="#caption" x="716" y="681"/>
+  </g>
+
+  <!-- ==== MESSAGE detail panel, x 1014..1275, y 215..723 ==== -->
+  <g>
+    <rect x="1014" y="215" width="261" height="508" fill="none" stroke="#739676" stroke-width="2"/>
+    <text x="1034" y="262" font-family="Rajdhani" font-size="20" letter-spacing="2"
+          fill="#a6d3a7">BRAINDANCE</text>
+    <path d="M 1014,281 H 1275" fill="none" stroke="#739676" stroke-width="1.5"/>
+    <!-- body copy: five lines, blank, three lines (measured line pitch 21) -->
+    <g fill="#59755b">
+      <rect x="1034" y="308" width="222" height="10"/>
+      <rect x="1034" y="329" width="214" height="10"/>
+      <rect x="1034" y="350" width="220" height="10"/>
+      <rect x="1034" y="371" width="208" height="10"/>
+      <rect x="1034" y="392" width="120" height="10"/>
+      <rect x="1034" y="413" width="216" height="10"/>
+      <rect x="1034" y="434" width="210" height="10"/>
+      <rect x="1034" y="455" width="96"  height="10"/>
+    </g>
+  </g>
+
+  <!-- ==== SECURITY LEVEL badges: four 68x68 at x 1380, T2 filled ==== -->
+  <g font-family="Rajdhani" font-size="22" letter-spacing="1" text-anchor="middle">
+    <rect x="1380" y="214" width="68" height="68" fill="none" stroke="#739676" stroke-width="2"/>
+    <text x="1414" y="256" fill="#a6d3a7">T1</text>
+    <rect x="1380" y="304" width="68" height="68" fill="#a6d3a7"/>
+    <text x="1414" y="346" fill="#22301f">T2</text>
+    <rect x="1380" y="393" width="68" height="68" fill="none" stroke="#739676" stroke-width="2"/>
+    <text x="1414" y="435" fill="#a6d3a7">T3</text>
+    <rect x="1380" y="482" width="68" height="68" fill="none" stroke="#739676" stroke-width="2"/>
+    <text x="1414" y="524" fill="#a6d3a7">T4</text>
+  </g>
+
+  <!-- ==== footer strip, y 847..872 ==== -->
+  <g>
+    <rect x="49" y="847" width="1498" height="25" fill="none" stroke="#739676" stroke-width="1.5"/>
+    <g font-family="Rajdhani" font-size="14" fill="#87b08d" letter-spacing="1">
+      <text x="60" y="864">INTERFACE LOADED</text>
+      <text x="700" y="864">PROVIDED BY NEXUS NETWORK V10.8</text>
+      <text x="1400" y="864">BUILD 6.47.48441.R15</text>
+    </g>
+  </g>
 </svg>
