@@ -21,13 +21,12 @@
          - THE MENU IS TWO THREE-BLADE FANS of rounded cards (190x60,
            r14), each solid card trailing a stack of translated ghost
            copies:
-             left hub ~(455,470): VEHICLES rot 30 c(364,413) ghosts
-             up-right; WEAPONS rot -30 c(549,413) ghosts down-right;
-             PRODUCTS rot 90 c(458,575) ghosts right
-             right hub ~(825,535): PRODUCTS rot 90 c(824,427) ghosts
-             right; EVENTS rot -30 c(731,586) — SOLID YELLOW, the
-             selection — ghosts up-left; LOCATIONS rot 30 c(919,586)
-             ghosts up-right
+             left hub ~(455,470): VEHICLES rot 30 c(364,413); WEAPONS
+             rot -30 c(549,413); PRODUCTS rot 90 c(458,575)
+             right hub ~(825,535): PRODUCTS rot 90 c(824,427); EVENTS
+             rot -30 c(731,586) — SOLID YELLOW, the selection;
+             LOCATIONS rot 30 c(919,586). ALL SIX trails recede up-right
+             at ~-50 deg in screen space (see the fan block below)
          - BRAINDANCE detail panel: yellow header tab at [1200,261,232,38]
            (chamfered tl/tr/bl), a small warning tape at ~[1172,306,180,24],
            an outlined body to y 666 holding two yellow paragraphs
@@ -96,65 +95,70 @@
 
   <!-- ==== the two fans ==== -->
   <!-- ghosts: translated copies trailing each solid card, dimming with
-       depth. Every trail is a pure perpendicular offset — frame -y inside
-       that card's rotate() group — which the source shows as: VEHICLES and
-       WEAPONS converging up over the left hub, both PRODUCTS stepping
-       screen-right, EVENTS up-left and LOCATIONS up-right. -->
-  <g stroke="#6cc4bd" stroke-width="1.3">
-    <!-- VEHICLES: up-right -->
-    <g transform="rotate(30 364 413)">
-      <use href="#card" x="364" y="293" fill="#195147" fill-opacity="0.33"/>
-      <use href="#card" x="364" y="313" fill="#195147" fill-opacity="0.44"/>
-      <use href="#card" x="364" y="333" fill="#195147" fill-opacity="0.55"/>
-      <use href="#card" x="364" y="353" fill="#195147" fill-opacity="0.66"/>
-      <use href="#card" x="364" y="373" fill="#195147" fill-opacity="0.77"/>
-      <use href="#card" x="364" y="393" fill="#195147" fill-opacity="0.88"/>
-    </g>
-    <!-- WEAPONS: up-left -->
-    <g transform="rotate(-30 549 413)">
-      <use href="#card" x="549" y="293" fill="#195147" fill-opacity="0.33"/>
-      <use href="#card" x="549" y="313" fill="#195147" fill-opacity="0.44"/>
-      <use href="#card" x="549" y="333" fill="#195147" fill-opacity="0.55"/>
-      <use href="#card" x="549" y="353" fill="#195147" fill-opacity="0.66"/>
-      <use href="#card" x="549" y="373" fill="#195147" fill-opacity="0.77"/>
-      <use href="#card" x="549" y="393" fill="#195147" fill-opacity="0.88"/>
-    </g>
-    <!-- left PRODUCTS: right -->
-    <g transform="rotate(90 458 575)">
-      <use href="#card" x="458" y="485" fill="#195147" fill-opacity="0.44"/>
-      <use href="#card" x="458" y="503" fill="#195147" fill-opacity="0.55"/>
-      <use href="#card" x="458" y="521" fill="#195147" fill-opacity="0.66"/>
-      <use href="#card" x="458" y="539" fill="#195147" fill-opacity="0.77"/>
-      <use href="#card" x="458" y="557" fill="#195147" fill-opacity="0.88"/>
-    </g>
-    <!-- right PRODUCTS: right, cascading down -->
-    <g transform="rotate(90 824 427)">
-      <use href="#card" x="894" y="231" fill="#195147" fill-opacity="0.22"/>
-      <use href="#card" x="884" y="259" fill="#195147" fill-opacity="0.33"/>
-      <use href="#card" x="874" y="287" fill="#195147" fill-opacity="0.44"/>
-      <use href="#card" x="864" y="315" fill="#195147" fill-opacity="0.55"/>
-      <use href="#card" x="854" y="343" fill="#195147" fill-opacity="0.66"/>
-      <use href="#card" x="844" y="371" fill="#195147" fill-opacity="0.77"/>
-      <use href="#card" x="834" y="399" fill="#195147" fill-opacity="0.88"/>
-    </g>
-    <!-- EVENTS: up-left -->
-    <g transform="rotate(-30 731 586)">
-      <use href="#card" x="731" y="490" fill="#195147" fill-opacity="0.33"/>
-      <use href="#card" x="731" y="506" fill="#195147" fill-opacity="0.44"/>
-      <use href="#card" x="731" y="522" fill="#195147" fill-opacity="0.55"/>
-      <use href="#card" x="731" y="538" fill="#195147" fill-opacity="0.66"/>
-      <use href="#card" x="731" y="554" fill="#195147" fill-opacity="0.77"/>
-      <use href="#card" x="731" y="570" fill="#195147" fill-opacity="0.88"/>
-    </g>
-    <!-- LOCATIONS: up-right -->
-    <g transform="rotate(30 919 586)">
-      <use href="#card" x="919" y="394" fill="#195147" fill-opacity="0.33"/>
-      <use href="#card" x="919" y="426" fill="#195147" fill-opacity="0.44"/>
-      <use href="#card" x="919" y="458" fill="#195147" fill-opacity="0.55"/>
-      <use href="#card" x="919" y="490" fill="#195147" fill-opacity="0.66"/>
-      <use href="#card" x="919" y="522" fill="#195147" fill-opacity="0.77"/>
-      <use href="#card" x="919" y="554" fill="#195147" fill-opacity="0.88"/>
-    </g>
+       depth. Every trail steps in the SAME SCREEN DIRECTION, up-right at
+       about -50 deg — a shared depth extrusion, not an offset along each
+       card's own normal. (An earlier version of this file offset each
+       trail perpendicular to its card, which sent WEAPONS and EVENTS
+       up-left and the right PRODUCTS down-right; the ink gate at 80x45
+       passed it at 0.47 all the same.) Per-blade vectors were measured
+       on a 50px grid over the source at 2x: VEHICLES (+15,-18) x8,
+       WEAPONS (+13,-15) x9, left PRODUCTS (+13,-15) x8, right PRODUCTS
+       (+21,-16) x7, EVENTS (+15,-15) x6, LOCATIONS (+16,-19) x9, then
+       checked by overlaying the render on the photo. -->
+  <g fill="#195147" stroke="#6cc4bd" stroke-width="1.2">
+    <!-- VEHICLES: c(364,413) rot 30, trail (+15,-18) x8 -->
+    <use href="#card" transform="translate(484 269) rotate(30)" fill-opacity="0.18" stroke-opacity="0.30"/>
+    <use href="#card" transform="translate(469 287) rotate(30)" fill-opacity="0.26" stroke-opacity="0.39"/>
+    <use href="#card" transform="translate(454 305) rotate(30)" fill-opacity="0.34" stroke-opacity="0.47"/>
+    <use href="#card" transform="translate(439 323) rotate(30)" fill-opacity="0.42" stroke-opacity="0.56"/>
+    <use href="#card" transform="translate(424 341) rotate(30)" fill-opacity="0.49" stroke-opacity="0.64"/>
+    <use href="#card" transform="translate(409 359) rotate(30)" fill-opacity="0.57" stroke-opacity="0.73"/>
+    <use href="#card" transform="translate(394 377) rotate(30)" fill-opacity="0.65" stroke-opacity="0.81"/>
+    <use href="#card" transform="translate(379 395) rotate(30)" fill-opacity="0.73" stroke-opacity="0.90"/>
+    <!-- WEAPONS: c(549,413) rot -30, trail (+13,-15) x9 -->
+    <use href="#card" transform="translate(666 278) rotate(-30)" fill-opacity="0.18" stroke-opacity="0.30"/>
+    <use href="#card" transform="translate(653 293) rotate(-30)" fill-opacity="0.25" stroke-opacity="0.38"/>
+    <use href="#card" transform="translate(640 308) rotate(-30)" fill-opacity="0.32" stroke-opacity="0.45"/>
+    <use href="#card" transform="translate(627 323) rotate(-30)" fill-opacity="0.39" stroke-opacity="0.52"/>
+    <use href="#card" transform="translate(614 338) rotate(-30)" fill-opacity="0.46" stroke-opacity="0.60"/>
+    <use href="#card" transform="translate(601 353) rotate(-30)" fill-opacity="0.52" stroke-opacity="0.68"/>
+    <use href="#card" transform="translate(588 368) rotate(-30)" fill-opacity="0.59" stroke-opacity="0.75"/>
+    <use href="#card" transform="translate(575 383) rotate(-30)" fill-opacity="0.66" stroke-opacity="0.82"/>
+    <use href="#card" transform="translate(562 398) rotate(-30)" fill-opacity="0.73" stroke-opacity="0.90"/>
+    <!-- left PRODUCTS: c(458,575) rot 90, trail (+13,-15) x8 -->
+    <use href="#card" transform="translate(562 455) rotate(90)" fill-opacity="0.18" stroke-opacity="0.30"/>
+    <use href="#card" transform="translate(549 470) rotate(90)" fill-opacity="0.26" stroke-opacity="0.39"/>
+    <use href="#card" transform="translate(536 485) rotate(90)" fill-opacity="0.34" stroke-opacity="0.47"/>
+    <use href="#card" transform="translate(523 500) rotate(90)" fill-opacity="0.42" stroke-opacity="0.56"/>
+    <use href="#card" transform="translate(510 515) rotate(90)" fill-opacity="0.49" stroke-opacity="0.64"/>
+    <use href="#card" transform="translate(497 530) rotate(90)" fill-opacity="0.57" stroke-opacity="0.73"/>
+    <use href="#card" transform="translate(484 545) rotate(90)" fill-opacity="0.65" stroke-opacity="0.81"/>
+    <use href="#card" transform="translate(471 560) rotate(90)" fill-opacity="0.73" stroke-opacity="0.90"/>
+    <!-- right PRODUCTS: c(824,427) rot 90, trail (+21,-16) x7 -->
+    <use href="#card" transform="translate(971 315) rotate(90)" fill-opacity="0.18" stroke-opacity="0.30"/>
+    <use href="#card" transform="translate(950 331) rotate(90)" fill-opacity="0.27" stroke-opacity="0.40"/>
+    <use href="#card" transform="translate(929 347) rotate(90)" fill-opacity="0.36" stroke-opacity="0.50"/>
+    <use href="#card" transform="translate(908 363) rotate(90)" fill-opacity="0.46" stroke-opacity="0.60"/>
+    <use href="#card" transform="translate(887 379) rotate(90)" fill-opacity="0.55" stroke-opacity="0.70"/>
+    <use href="#card" transform="translate(866 395) rotate(90)" fill-opacity="0.64" stroke-opacity="0.80"/>
+    <use href="#card" transform="translate(845 411) rotate(90)" fill-opacity="0.73" stroke-opacity="0.90"/>
+    <!-- EVENTS (selection): c(731,586) rot -30, trail (+15,-15) x6 -->
+    <use href="#card" transform="translate(821 496) rotate(-30)" fill-opacity="0.18" stroke-opacity="0.30"/>
+    <use href="#card" transform="translate(806 511) rotate(-30)" fill-opacity="0.29" stroke-opacity="0.42"/>
+    <use href="#card" transform="translate(791 526) rotate(-30)" fill-opacity="0.40" stroke-opacity="0.54"/>
+    <use href="#card" transform="translate(776 541) rotate(-30)" fill-opacity="0.51" stroke-opacity="0.66"/>
+    <use href="#card" transform="translate(761 556) rotate(-30)" fill-opacity="0.62" stroke-opacity="0.78"/>
+    <use href="#card" transform="translate(746 571) rotate(-30)" fill-opacity="0.73" stroke-opacity="0.90"/>
+    <!-- LOCATIONS: c(919,586) rot 30, trail (+16,-19) x9 -->
+    <use href="#card" transform="translate(1063 415) rotate(30)" fill-opacity="0.18" stroke-opacity="0.30"/>
+    <use href="#card" transform="translate(1047 434) rotate(30)" fill-opacity="0.25" stroke-opacity="0.38"/>
+    <use href="#card" transform="translate(1031 453) rotate(30)" fill-opacity="0.32" stroke-opacity="0.45"/>
+    <use href="#card" transform="translate(1015 472) rotate(30)" fill-opacity="0.39" stroke-opacity="0.52"/>
+    <use href="#card" transform="translate(999 491) rotate(30)" fill-opacity="0.46" stroke-opacity="0.60"/>
+    <use href="#card" transform="translate(983 510) rotate(30)" fill-opacity="0.52" stroke-opacity="0.68"/>
+    <use href="#card" transform="translate(967 529) rotate(30)" fill-opacity="0.59" stroke-opacity="0.75"/>
+    <use href="#card" transform="translate(951 548) rotate(30)" fill-opacity="0.66" stroke-opacity="0.82"/>
+    <use href="#card" transform="translate(935 567) rotate(30)" fill-opacity="0.73" stroke-opacity="0.90"/>
   </g>
 
   <!-- solid cards + labels -->
