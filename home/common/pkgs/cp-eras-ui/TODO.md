@@ -647,7 +647,14 @@ four bars, done in this order so the Rust is written once.
   G2i, final, all from main's script and traces (`/tmp/wave-shots/
   gates.txt` for the run), as entropism/neomil/kitsch/neokitsch: bar
   100/86/83/**52**, login **28**/96/72/89, mailbox 100/95/67/86, store
-  100/84/88/82. Two accepted FAILs, do not chase:
+  100/84/88/82. **Re-run 2026-09-03 evening against the follow-up traces
+  (`45c31b4`): identical except kitsch login 97 and neokitsch login 67**
+  — neither trace nor login code changed since `d27b334`, so the wave's
+  72/89 were taken before the third-pass trace edits were bundled into
+  that commit; both PASS. Neomil login held 96 with the trace chamfer now
+  51 (the era table still draws 46 — a measured 5px delta the gate
+  absorbs; fix with the login table, not alone). Two accepted FAILs, do
+  not chase:
   - **entropism login 28%** — the warm-lift ground shape (72% of the
     design's area) loses its k-means centre to the render's edge ramp:
     iced built without `web-colors` blends AA in linear space and 4×
@@ -657,9 +664,9 @@ four bars, done in this order so the Rust is written once.
     move every golden.
   - **neokitsch bar 52%** — extractor fragmentation, see the bar item.
   - kitsch mailbox 67% (unselected chevrons are two cells in the
-    design, one in the render) and kitsch login 72% (`Wash::RoseBloom`
-    kept over Plain's 98% because layout IoU is 0.963 vs 0.568) are
-    PASSes with a known reason.
+    design, one in the render) is a PASS with a known reason; kitsch
+    login's `Wash::RoseBloom` was kept over Plain's 98% because layout
+    IoU is 0.963 vs 0.568 (it now scores 97 anyway, see above).
   - Dashboard, not in the wave, gated after the merge: entropism and
     neokitsch PASS; neomil 0% (the item at the top of this file) and
     kitsch 19% — the kitsch number is identical against the
