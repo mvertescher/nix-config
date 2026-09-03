@@ -105,7 +105,10 @@ fn table_menu<'a, Message: 'static>(
 
 // ---------------------------------------------------------------- tiles
 
-/// Sampled from `docs/entropism/target-components.svg`: the tiles are
+/// Sampled from `docs/entropism/target-components.svg` (the by-eye sheet
+/// replaced 2026-09-03 by `components.svg`, rebuilt from the traces; the
+/// sheet citations in this file are the old sheet's, what the menus
+/// were built to): the tiles are
 /// `120x120`, the hairline sits 8 below one and the caption strip 14
 /// below that, at 7pt in `dim`.
 const TILE_HEIGHT: f32 = 148.0;

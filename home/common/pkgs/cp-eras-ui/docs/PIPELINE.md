@@ -29,8 +29,10 @@ original image       SVG reference          Rust iced implementation
    `store-trace.svg`, sixteen in all — plus `bar.svg`, the one original.
    The app-shaped `dashboard.svg` and `target-app.svg` composites that
    predated the traces were deleted 2026-09-03 (`docs/sources.md` keeps a
-   row per deleted file saying what was wrong with it); the three
-   remaining `target-components.svg` sheets are by-eye and unverified.
+   row per deleted file saying what was wrong with it). Each era also has
+   a `components.svg` widget sheet, rebuilt the same day from its four
+   traces and `bar.svg` with every component cited back to a trace
+   element, replacing the by-eye `target-components.svg`.
    This is what a render is compared against, by eye or by script.
 3. **iced implementation** — `src/`. Screens, widgets and era tables
    compose from `Style`; the golden matrix renders them headless and locks

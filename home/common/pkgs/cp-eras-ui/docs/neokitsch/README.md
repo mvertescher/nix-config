@@ -19,7 +19,8 @@ carries a header comment narrating its source region by region with
 measurements. Read those headers, not this file, for geometry. The
 app-shaped `target-app.svg` and `dashboard.svg` compositions that
 predated them were deleted 2026-09-03; the notes at the end say what
-they were. `target-components.svg` remains, by-eye and unverified.
+they were. `components.svg` is the widget sheet, rebuilt from the traces
+the same day.
 
 ## Sampled palette
 
@@ -121,11 +122,24 @@ Role mapping: `bg`=bg, `panel`=bloom field, `border`=frame gold,
   SMG the veneer selection, and four weapon cards with echo strands,
   the second expanded and solid gold across its middle. Gate: PASS,
   inks 0.60. Supersedes `target-app.svg`.
-- `target-components.svg` — folder-tabs, strata divider, login field
-  and CTA, nav pills, step-notch pill, basket panel, product card in
-  both states, card cascade, mail list, detail text, the device frame
-  in miniature (an invention — see the era rules above), sampled
-  swatches.
+- `components.svg` — the widget sheet, rebuilt 2026-09-03 from the
+  four traces and `bar.svg` (it was `target-components.svg`, drawn by
+  eye: a device-frame miniature, a strata divider, step-notch pills and
+  150x24 nav pills, none of which any trace contains). Trace geometry
+  spliced in verbatim and translated only, each component cited to
+  file and coordinates in an XML comment and captioned on-sheet: the
+  ARASAKA and 4ST logotypes, the clock block, CUSTOMER/LEVEL, SECURITY
+  LEVEL with the ringed T2 folder badge, the BASKET plate with grain
+  and QR, letter box, the cascade card pair both states with onion
+  rings, the store nav cell plain and veneer-selected, the mailbox
+  RIFLES button, the product card plain and expanded (66 grain paths),
+  the login entry group, hub detail panel, message panel, mail rows
+  plain and veneer-selected, three 300px windows onto the wire bands,
+  store meta lines, then 32 sampled palette values, typography, ground,
+  observed era rules and an implementation-delta box listing where
+  `src/eras/neokitsch.rs` still disagrees with the traces (DeviceFrame,
+  ClipTopRight 30, FRAME/STRATA unsampled, Bloom, the "#54-62" doc).
+  Not gated — the traces are.
 - `bar.svg` — the status bar: host tape, workspaces, tray, the
   wired/audio/CPU/MEM modules and the clock, at the 1600x220 geometry
   the bar golden tests render. The bar has no photo source, so this is

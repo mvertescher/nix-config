@@ -569,7 +569,10 @@ pub enum Nameplate {
 /// at 372: it hangs 12px past the surface and its trailing corner steps
 /// down 8. Neokitsch's footer nameplate is a plain `rect` -- no step --
 /// but it hangs by the same 12: `x=340 w=188` against a card at
-/// `x=352 w=176`, in `docs/neokitsch/target-components.svg`, and
+/// `x=352 w=176`, in `docs/neokitsch/target-components.svg` (the by-eye
+/// sheet replaced 2026-09-03 by `components.svg`, rebuilt from the
+/// traces; every `target-components.svg` citation in this file is the
+/// old sheet's, i.e. what the code was built to), and
 /// `x=506 w=244` against a card at `x=520 w=230` in its `target-app`
 /// (deleted 2026-09-03; `store-trace.svg` draws the nameplate as a tab
 /// under the card's bottom edge).

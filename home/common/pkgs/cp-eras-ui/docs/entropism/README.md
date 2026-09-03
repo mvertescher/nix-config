@@ -19,8 +19,8 @@ screens, each gated by `scripts/fidelity_check.sh --inventory entropism
 region by region with measurements. Read those headers, not this file,
 for geometry. The app-shaped `target-app.svg` and `dashboard.svg`
 compositions that predated them were deleted 2026-09-03; the notes at
-the end say what they were. `target-components.svg` remains, by-eye and
-unverified.
+the end say what they were. `components.svg` is the widget sheet, rebuilt
+from the traces the same day.
 
 Note the file-name swap recorded in `docs/sources.md`:
 `images/entropism-store.png` is the **module hub** (traced by
@@ -119,10 +119,23 @@ build strings) and make it the default.
   sage through its values row with the recoil/spread/range and bonus
   block beneath; boxed A and B letters in the foot; the footer strip.
   Gate: PASS, 80% area. Supersedes `target-app.svg`.
-- `target-components.svg` — login, footer strips, boxed headers,
-  security levels, button segments, menu tiles, mail list, message
-  detail, product card in both states, sampled swatches, and the
-  divergence notes rendered on-sheet. Sampled across the run.
+- `components.svg` — the widget sheet, rebuilt 2026-09-03 from the
+  four traces and `bar.svg` (it was `target-components.svg`, drawn by
+  eye before the traces existed; the traces contradicted every
+  dimension on it — 120x120 hub tiles against the traced 194x212, the
+  wrong card grown, no PETROCHEM band, no socket row). Every component
+  is a translate-only copy of a trace element with an XML comment
+  citing file and coordinates and an on-sheet caption of the numbers:
+  header and footer strips, the login footer band, letter boxes,
+  mail-list rows and envelope glyphs, the category nav cell both
+  states, the hub tile both states, the product card plain and grown
+  with its socket row and QR glyph, the 4ST logotype, the message
+  panel and button row, the hub detail panel, security badges, the
+  login field and NEXT button, then the sampled palette, typography,
+  ground stops, observed era rules and an implementation-delta box
+  listing where `src/eras/entropism.rs` still disagrees with the
+  traces (stroke 1.0, palette, OUTLINE/BG, TileRow). Not gated — the
+  traces are; this is derived from them.
 - `bar.svg` — the status bar: host tape, workspaces, tray, the
   wired/audio/CPU/MEM modules and the clock, at the 1600x220 geometry
   the bar golden tests render. The bar has no photo source, so this is

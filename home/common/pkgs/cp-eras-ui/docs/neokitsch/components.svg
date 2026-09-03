@@ -1,0 +1,1129 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" font-family="Rajdhani">
+  <!-- NEOKITSCH COMPONENT SHEET, rebuilt 2026-09-03.
+
+       Every reusable widget the era's four screens are made of, drawn once,
+       in isolation, at 1:1 trace scale (translate only, never scaled), with
+       its measurements beside it. A coding model that cannot see images
+       should be able to build the iced widget from this file as a text
+       spec; a person should recognise the era from the render.
+
+       Built from, and citing, only these five files:
+         docs/neokitsch/login-trace.svg      (images/neokitsch-login.png  #70)
+         docs/neokitsch/dashboard-trace.svg  (images/neokitsch-dashboard.png #69)
+         docs/neokitsch/mailbox-trace.svg    (images/neokitsch-mail.png   #71)
+         docs/neokitsch/store-trace.svg      (images/neokitsch-store.png  #72)
+         docs/neokitsch/bar.svg              (original composition; its
+                                              citations are pointers back
+                                              into the four traces)
+       Each component carries an XML comment naming the trace, the source
+       coordinates and the translate applied. Geometry is spliced verbatim
+       out of the traces: the paths below are the traces' paths.
+
+       WHAT CHANGED versus the old by-eye sheet (target-components.svg,
+       drawn before the traces existed and renamed away 2026-09-03). The old
+       sheet inherited the inventions of the since-deleted target-app.svg
+       composite. Dropped, because no trace supports them: the full-screen
+       DEVICE FRAME in miniature (the photos have no frame at all; the era's
+       chrome is the stacked-hairline wire band, which the old sheet did not
+       draw); the STRATA DIVIDER wedge of bunched fine lines (no trace has
+       one; the era's layered fine lines are the wire band and the onion
+       rings); the STEP-NOTCH PILL, a 150x28 outlined pill with a stepped
+       bottom-RIGHT corner credited to "the mailbox footer", where the
+       mailbox in fact has 184x39 buttons with a bottom-LEFT chamfer and a
+       filled tab. Corrected, because the traces measure otherwise: the nav
+       "pills" were 150x24 r4 and are 200.6x38.6 with a bottom-left cut and
+       a tab; the security row was a veneer-filled folder tab and is an
+       outlined ringed folder badge; the BASKET panel was a 180x40 veneer
+       slab with a barcode and is a 204.6x85.4 solid plate, cut bottom-left,
+       split by a hairline, with a veneer lower band and a 9x9 QR; the
+       product card, the cascade and the mail list were all drawn without
+       the echo and onion strands. Added, because the traces have them: the wire band
+       in all three of its measured forms, the onion/echo outline stacks
+       that are the era's signature, the six-card staircase geometry, the
+       stepped 262-wide product card in both its plain and expanded states,
+       the ringed folder T2 badge (outlined, not filled), the veneer grain
+       with its book-match seam, the trapezoid tab every button and rule
+       carries, and the boxed A/B/C/D plates with their annotations. The
+       palette is now the traces' measured per-role values rather than the
+       era consts, with the disagreements listed in IMPLEMENTATION DELTA.
+
+       The traces' blurred halo copies are tagged class="photo" (photo
+       residue, not UI) and are deliberately NOT drawn here. -->
+  <defs>
+    <!-- GROUND, verbatim from login/mailbox/store-trace, translated +160 in
+         x so the lobe centres on this 1920 sheet instead of a 1600 screen -->
+    <radialGradient id="haze" gradientUnits="userSpaceOnUse"
+        cx="930" cy="-120" r="1000"
+        gradientTransform="rotate(1.3 930 -120) translate(930 -120) scale(1 0.49) translate(-930 120)">
+      <stop offset="0"    stop-color="#574568"/>
+      <stop offset="0.35" stop-color="#574568"/>
+      <stop offset="0.66" stop-color="#3a3853"/>
+      <stop offset="0.85" stop-color="#16121a"/>
+      <stop offset="1"    stop-color="#0e0a0d"/>
+    </radialGradient>
+    <radialGradient id="hazelobe" gradientUnits="userSpaceOnUse"
+        cx="590" cy="-40" r="560"
+        gradientTransform="translate(590 -40) scale(1 0.30) translate(-590 40)">
+      <stop offset="0"    stop-color="#7a5288" stop-opacity="0.85"/>
+      <stop offset="0.45" stop-color="#7a5288" stop-opacity="0.55"/>
+      <stop offset="1"    stop-color="#7a5288" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="hazeblue" gradientUnits="userSpaceOnUse"
+        cx="1010" cy="-120" r="1000"
+        gradientTransform="rotate(2 1010 -120) translate(1010 -120) scale(1 0.47) translate(-1010 120)">
+      <stop offset="0"    stop-color="#223350" stop-opacity="0"/>
+      <stop offset="0.60" stop-color="#223350" stop-opacity="0"/>
+      <stop offset="0.68" stop-color="#223350" stop-opacity="0.85"/>
+      <stop offset="0.76" stop-color="#1a2c46" stop-opacity="0.80"/>
+      <stop offset="0.84" stop-color="#101d30" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="hazebluefade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"    stop-color="#000000"/>
+      <stop offset="0.12" stop-color="#1a1a1a"/>
+      <stop offset="0.22" stop-color="#7a7a7a"/>
+      <stop offset="0.40" stop-color="#ffffff"/>
+      <stop offset="1"    stop-color="#ffffff"/>
+    </linearGradient>
+    <mask id="bluemask"><rect width="1920" height="1080" fill="url(#hazebluefade)"/></mask>
+    <!-- the same five stops as a flat strip, for the GROUND swatch -->
+    <linearGradient id="hazestrip" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"    stop-color="#574568"/>
+      <stop offset="0.35" stop-color="#574568"/>
+      <stop offset="0.66" stop-color="#3a3853"/>
+      <stop offset="0.85" stop-color="#16121a"/>
+      <stop offset="1"    stop-color="#0e0a0d"/>
+    </linearGradient>
+    <!-- window clips: the wire bands are 1530 wide, so each is shown
+         through a fixed window of the trace, never scaled -->
+    <clipPath id="winStore"><rect x="190" y="116" width="300" height="84"/></clipPath>
+    <clipPath id="winHub"><rect x="20" y="78" width="300" height="84"/></clipPath>
+    <clipPath id="winLogin"><rect x="180" y="716" width="300" height="130"/></clipPath>
+    <clipPath id="winMsg"><rect x="730" y="255" width="352" height="150"/></clipPath>
+    <!-- defs copied verbatim from the traces -->
+    <g id="letterbox" fill="none" stroke-width="1.4">
+      <path d="M 3,0 H 23 Q 26,0 26,3 V 17 L 19,24 Q 17,26 14,26 H 3
+               Q 0,26 0,23 V 3 Q 0,0 3,0 Z"/>
+      <path d="M 26,17 H 21 Q 19,17 19,19 V 24" stroke-width="1"/>
+    </g>
+    <path id="ncard" d="M 16,0 H 61 L 93,32 V 321 Q 93,327 87,327 H 48
+                         L 10,289 V 93 H 2 Q 0,93 0,91 V 62 Q 0,60 2,60
+                         H 10 V 6 Q 10,0 16,0 Z"/>
+    <!-- the detail panel: same family mirrored, 232x472, chamfer 42 top-left -->
+    <path id="npanel" d="M 0,462 V 31 Q 0,25 6,25 H 51 L 73,0 H 222
+                          Q 232,0 232,10 V 462 Q 232,472 222,472 H 10
+                          Q 0,472 0,462 Z"/>
+    <path id="nring1" d="M 12.5,-3.5 H 61 L 96.5,32 V 324.5 Q 96.5,330.5 90.5,330.5 H 48 L 6.5,289 V 2.5 Q 6.5,-3.5 12.5,-3.5 Z"/>
+    <path id="nring2" d="M 9.0,-7.0 H 61 L 100.0,32 V 328.0 Q 100.0,334.0 94.0,334.0 H 48 L 3.0,289 V -1.0 Q 3.0,-7.0 9.0,-7.0 Z"/>
+    <path id="nring3" d="M 5.5,-10.5 H 61 L 103.5,32 V 331.5 Q 103.5,337.5 97.5,337.5 H 48 L -0.5,289 V -4.5 Q -0.5,-10.5 5.5,-10.5 Z"/>
+    <path id="nring4" d="M 2.0,-14.0 H 61 L 107.0,32 V 335.0 Q 107.0,341.0 101.0,341.0 H 48 L -4.0,289 V -8.0 Q -4.0,-14.0 2.0,-14.0 Z"/>
+    <path id="nring5" d="M -1.5,-17.5 H 61 L 110.5,32 V 338.5 Q 110.5,344.5 104.5,344.5 H 48 L -7.5,289 V -11.5 Q -7.5,-17.5 -1.5,-17.5 Z"/>
+    <path id="nring6" d="M -5.0,-21.0 H 61 L 114.0,32 V 342.0 Q 114.0,348.0 108.0,348.0 H 48 L -11.0,289 V -15.0 Q -11.0,-21.0 -5.0,-21.0 Z"/>
+    <g id="ncaption" fill="#bd8951">
+      <rect x="0" y="0"  width="84" height="5"/>
+      <rect x="0" y="8"  width="90" height="5"/>
+      <rect x="0" y="16" width="82" height="5"/>
+      <rect x="0" y="24" width="88" height="5"/>
+      <rect x="0" y="32" width="38" height="5"/>
+    </g>
+    <g id="entrylines">
+      <rect x="417" y="361" width="345" height="42" fill="#3c1c11"/>
+      <!-- gold bar, bottom-left chamfer 16x13 -->
+      <path d="M 417,414 H 761 V 441 H 433 L 417,428 Z" fill="#fbc171"/>
+      <use href="#letterbox" x="416" y="465" stroke="#c8914d"/>
+    </g>
+    <g id="entrytext" font-family="Rajdhani">
+      <text x="428.5" y="350" font-size="19.5" font-weight="500" letter-spacing="0.15" fill="#f5bf75">PRASE_6054012</text>
+      <text x="582.5" y="435" font-size="14" font-weight="300" letter-spacing="4.1"
+            fill="#6b3f1e" text-anchor="middle">ENTER / LOGIN</text>
+      <g font-size="7" fill="#a97c48" letter-spacing="0.4">
+        <text x="454" y="471">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+        <text x="454" y="479">SERVING CUSTOMERS SINCE 2006.</text>
+      </g>
+    </g>
+    <!-- the band's interior glow: the floor between strands is black at
+         the top strand and rises to ~#371c11 at the bottom one, with no
+         spill below (measured at x=200: red 13 at y725, 56 at y805, 14
+         at y820) -->
+    <linearGradient id="bandglow" x1="0" y1="727" x2="0" y2="846" gradientUnits="userSpaceOnUse">
+      <stop offset="0"    stop-color="#371c11" stop-opacity="0"/>
+      <stop offset="0.45" stop-color="#371c11" stop-opacity="0.55"/>
+      <stop offset="1"    stop-color="#371c11" stop-opacity="1"/>
+    </linearGradient>
+    <!-- the selection bar silhouette, used to clip its veneer grain -->
+    <clipPath id="selclip">
+      <path d="M 35,315 H 490 L 512,337 V 366 Q 512,370 508,370 H 35 Z"/>
+    </clipPath>
+  <g id="riflebox">
+    <path d="M 740,684 H 914 Q 919,684 919,689 V 718 Q 919,723 914,723 H 748 L 735,713 V 689 Q 735,684 740,684 Z" fill="none" stroke="#ecbe82" stroke-width="1.25"/>
+    <path d="M 866,723 L 870,716 H 899 L 903,723 Z" fill="#fdcf8c"/>
+  </g>
+    <clipPath id="smgclip"><path d="M 97,418.6 H 289.5 Q 293.5,418.6 293.5,422.6 V 453.2 Q 293.5,457.2 289.5,457.2 H 108 L 92.9,445.6 V 422.6 Q 92.9,418.6 97,418.6 Z"/></clipPath>
+    <clipPath id="card2clip"><rect x="667.1" y="411.2" width="262.1" height="241.7"/></clipPath>
+    <clipPath id="basketclip"><path d="M 1291.7,60 H 1496.3 V 105 H 1307 L 1291.7,90 Z"/></clipPath>
+    <g id="qr">
+      <path d="M0.00,0.00h3.2v3.2h-3.2z M10.47,0.00h3.2v3.2h-3.2z M17.45,0.00h3.2v3.2h-3.2z M27.92,0.00h3.2v3.2h-3.2z M3.49,3.49h3.2v3.2h-3.2z M20.94,3.49h3.2v3.2h-3.2z M6.98,6.98h3.2v3.2h-3.2z M27.92,6.98h3.2v3.2h-3.2z M0.00,10.47h3.2v3.2h-3.2z M10.47,10.47h3.2v3.2h-3.2z M17.45,10.47h3.2v3.2h-3.2z M24.43,10.47h3.2v3.2h-3.2z M3.49,17.45h3.2v3.2h-3.2z M10.47,17.45h3.2v3.2h-3.2z M20.94,17.45h3.2v3.2h-3.2z M27.92,17.45h3.2v3.2h-3.2z M0.00,20.94h3.2v3.2h-3.2z M6.98,20.94h3.2v3.2h-3.2z M17.45,20.94h3.2v3.2h-3.2z M3.49,24.43h3.2v3.2h-3.2z M24.43,24.43h3.2v3.2h-3.2z M0.00,27.92h3.2v3.2h-3.2z M10.47,27.92h3.2v3.2h-3.2z M17.45,27.92h3.2v3.2h-3.2z M27.92,27.92h3.2v3.2h-3.2z"/>
+    </g>
+  </defs>
+
+  <rect width="1920" height="1080" fill="#0e0a0d"/>
+  <rect width="1920" height="1080" fill="url(#haze)"/>
+  <rect width="1920" height="300" fill="url(#hazelobe)"/>
+  <rect width="1920" height="560" fill="url(#hazeblue)" mask="url(#bluemask)"/>
+
+  <!-- sheet title block -->
+  <text x="56" y="62" font-size="34" font-weight="700" letter-spacing="6" fill="#e7c686">NEOKITSCH</text>
+  <text x="56" y="84" font-size="11" font-weight="500" letter-spacing="4.2" fill="#c5965a">COMPONENT SHEET // SUBSTANCE AND STYLE // 2026-09-03</text>
+  <text x="1880" y="62" font-size="10" letter-spacing="2" fill="#a97c48" text-anchor="end">BUILT FROM login-trace / dashboard-trace / mailbox-trace / store-trace / bar.svg</text>
+  <text x="1880" y="80" font-size="10" letter-spacing="2" fill="#a97c48" text-anchor="end">GEOMETRY COPIED 1:1 FROM THE 1600x900 TRACE SPACE (TRANSLATE ONLY)</text>
+  <path d="M 56,98 H 1880" stroke="#a97c48" stroke-width="1" stroke-opacity="0.45"/>
+  <path d="M 1551,110 V 1032" stroke="#a97c48" stroke-width="1" stroke-opacity="0.25"/>
+
+  <!-- ============================ ROW 1: HEADER / CHROME ============================ -->
+  <text x="56" y="122" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">1  HEADER / CHROME</text>
+  <text x="56" y="138" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">LOGOTYPE BLOCK, LOGIN</text>
+  <!-- ARASAKA LOGOTYPE BLOCK. login-trace.svg: logotype text at translate(91 87) scale(1.155 1), 36px 700 ls 3, ink extent x 92.1..272.1 y 59..88; tagline (118,97) 8px ls 0.8; two cell box rect (90,100,185,25) stroke #c8914d 1 with a divider at x 195. Placed at (56,142): translate(-34 83) -->
+  <g transform="translate(-34 83)">
+  <g fill="none" stroke="#c8914d" stroke-width="1">
+    <rect x="90" y="100" width="185" height="25"/>
+    <line x1="195" y1="100" x2="195" y2="125"/>
+  </g>
+  <g fill="#f5bf75" font-family="Rajdhani">
+    <text transform="translate(91 87) scale(1.155 1)" font-size="36" font-weight="700" letter-spacing="3">ARASAKA</text>
+    <text x="118" y="97" font-size="8" letter-spacing="0.8" fill="#d9a877">ARASAKA CONSUMER TECHNOLOGY</text>
+    <g font-size="8" fill="#d9a877" letter-spacing="0.5">
+      <text x="96" y="115" font-size="9">57ASD4AV15AA</text>
+      <text x="200" y="110">COMBAT COLONIZATION</text>
+      <text x="200" y="120">DEFENCE PROGRAM</text>
+    </g>
+  </g>
+  </g>
+  <text x="56" y="238.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">185x66 · logotype 36px 700 ls 3, x scale 1.155 onto the ink</text>
+  <text x="56" y="246.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">extent 92.1..272.1 · tagline 8px ls 0.8 #d9a877 · box</text>
+  <text x="56" y="254.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">185x25 stroke #c8914d 1, divider at x 195 · cell text 9px /</text>
+  <text x="56" y="262.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">8px</text>
+  <text x="271" y="138" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">LOGOTYPE, STORE</text>
+  <!-- 4ST LOGOTYPE. store-trace.svg: one text per glyph at 74px 700, each x scaled onto its measured extent (4: 109.6..169.2 scale 1.50; S: 172.9..234.6 scale 1.72; T: 237.1..277.1 scale 1.23), cap 66.2..117.5. 4 and S are filled AND stroked #fdcd9d 3; T is OUTLINE ONLY, stroke #f0c48a 1.4. S T O R E under it, 16.5px 700 ls 30.6 #e9bd7a, x 112.9..275.8, cap 126..138. Placed at (271,142): translate(162.6 76) -->
+  <g transform="translate(162.6 76)">
+  <g font-family="Rajdhani" font-weight="700">
+    <!-- one element per glyph, each horizontally scaled to its measured
+         ink extent (4: 109.6..169.2, S: 172.9..234.6, T: 237.1..277.1,
+         cap 66.2..117.5). librsvg ignores textLength, which is what had
+         left the S-T gap open. -->
+    <g font-size="74" stroke-linejoin="round">
+      <text transform="translate(108.4 115.8) scale(1.50 1)" fill="#fdcd9d" stroke="#fdcd9d" stroke-width="3">4</text>
+      <text transform="translate(169.2 115.8) scale(1.72 1)" fill="#fdcd9d" stroke="#fdcd9d" stroke-width="3">S</text>
+      <text transform="translate(237.1 115.8) scale(1.23 1)" fill="none" stroke="#f0c48a" stroke-width="1.4">T</text>
+    </g>
+  </g>
+      <text font-family="Rajdhani" font-weight="700" x="112" y="138" font-size="16.5" letter-spacing="30.6" fill="#e9bd7a">STORE</text>
+  </g>
+  <text x="271" y="238.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">168x76 · 4 and S 74px 700, fill AND stroke #fdcd9d 3,</text>
+  <text x="271" y="246.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">x scale 1.50 / 1.72 · T outline only, stroke #f0c48a</text>
+  <text x="271" y="254.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">1.4, x scale 1.23 · STORE 16.5px 700 ls 30.6 #e9bd7a</text>
+  <text x="469" y="138" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">CLOCK / PLACE</text>
+  <!-- CLOCK BLOCK. login-trace.svg: 10:10 PM at (1293,87) 28px 500 ls 1, ink x 1293..1404 y 67..87; NIGHT CITY (1295,110) and AREA (1295,129), both 13px 500 ls 0.5. No box, no rule: the only clock in the run is unboxed. Placed at (469,142): translate(-824 75) -->
+  <g transform="translate(-824 75)">
+  <g fill="#f5bf75" font-family="Rajdhani">
+    <text x="1293" y="87" font-size="28" font-weight="500" letter-spacing="1">10:10 PM</text>
+    <text x="1295" y="110" font-size="13" font-weight="500" letter-spacing="0.5">NIGHT CITY</text>
+    <text x="1295" y="129" font-size="13" font-weight="500" letter-spacing="0.5">AREA</text>
+  </g>
+  </g>
+  <text x="469" y="238.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">115x62 · clock 28px 500 ls 1 · NIGHT</text>
+  <text x="469" y="246.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">CITY / AREA 13px 500 ls 0.5, 19 apart</text>
+  <text x="469" y="254.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">· no plate, no rule</text>
+  <text x="617" y="138" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">CUSTOMER / LEVEL</text>
+  <!-- CUSTOMER META. mailbox-trace.svg (the hub's header verbatim, mean abs diff 2.7/255): CUSTOMER #NC488402 at (118.3,42.2) 13px 500 ls -0.05, run 118..240; LEVEL (120,70) 12px ls 2; T1 (126,90) 21px 600. dashboard-trace.svg sets the same line at 15px ls 1.5, which measured 121..286 and was refitted here. Placed at (617,142): translate(499 110) -->
+  <g transform="translate(499 110)">
+  <g fill="#e8b98e" font-family="Rajdhani">
+    <text x="118.3" y="42.2" font-size="13" font-weight="500" letter-spacing="-0.05">CUSTOMER #NC488402</text>
+    <text x="120" y="70" font-size="12" letter-spacing="2">LEVEL</text>
+    <text x="126" y="90" font-size="21" font-weight="600">T1</text>
+  </g>
+  </g>
+  <text x="617" y="238.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">13px 500 ls -0.05 #e8b98e · LEVEL 12px ls 2</text>
+  <text x="617" y="246.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">· T1 21px 600 · the hub trace sets the same</text>
+  <text x="617" y="254.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">line at 15px ls 1.5</text>
+  <text x="785" y="138" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">SECURITY LEVEL ROW, T2 BADGE</text>
+  <!-- SECURITY LEVEL ROW. mailbox-trace.svg (identical in dashboard-trace): SECURITY / LEVEL at (1131,68/83) 12px ls 2; LEVEL marks at x 1229 / 1354 / 1417 baseline 63, 12px ls 1.5, with T1 (1236,86) T3 (1361,86) T4 (1424,86) 20px 600. T2 is the second cell and is a RINGED FOLDER TAB, outlined not filled: seven hairline rings #a97c48 0.7 at opacity 0.55 to 0.85, a front outline #e8c186 1.1 at (1287,55)-(1338,104) with the tab top at y 37 and the riser x 1310..1318, and a solid gold trapezoid (1293,104.5)-(1326,100) pointing UP off the inside bottom edge. Placed at (785,142): translate(-346 110) -->
+  <g transform="translate(-346 110)">
+  <g font-family="Rajdhani" fill="#e8b98e">
+    <text x="1131" y="68" font-size="12" letter-spacing="2">SECURITY</text>
+    <text x="1131" y="83" font-size="12" letter-spacing="2">LEVEL</text>
+    <g font-size="12" letter-spacing="1.5">
+      <text x="1229" y="63">LEVEL</text><text x="1354" y="63">LEVEL</text>
+      <text x="1417" y="63">LEVEL</text>
+    </g>
+    <g font-size="20" font-weight="600">
+      <text x="1236" y="86">T1</text><text x="1361" y="86">T3</text>
+      <text x="1424" y="86">T4</text>
+    </g>
+    <text x="1295" y="71" font-size="12" letter-spacing="1.2" fill="#d9a877">LEVEL</text>
+    <text x="1296" y="95" font-size="21" font-weight="600" fill="#e8c186">T2</text>
+  </g>
+    <g fill="none" stroke="#a97c48" stroke-width="0.7">
+      <path d="M 1286.8,40.3 H 1302 Q 1314.6,42.4 1317.6,37.4 L 1320.6,41.1 Q 1322.6,32.1 1329.6,32.1 H 1344.2 Q 1349.2,32.1 1349.2,37.1 V 101.8 Q 1349.2,105.8 1345.2,105.8 H 1286.8 Q 1282.8,105.8 1282.8,101.8 V 46.4 Q 1282.8,42.4 1286.8,42.4 Z" stroke-opacity="0.55"/>
+      <path d="M 1287.4,42.4 H 1302 Q 1313.8,44.2 1316.8,39.2 L 1319.8,41.8 Q 1321.8,32.8 1328.8,32.8 H 1342.6 Q 1347.6,32.8 1347.6,37.8 V 101.5 Q 1347.6,105.5 1343.6,105.5 H 1287.4 Q 1283.4,105.5 1283.4,101.5 V 48.2 Q 1283.4,44.2 1287.4,44.2 Z" stroke-opacity="0.60"/>
+      <path d="M 1288.0,44.5 H 1302 Q 1313.0,46.0 1316.0,41.0 L 1319.0,42.5 Q 1321.0,33.5 1328.0,33.5 H 1341.0 Q 1346.0,33.5 1346.0,38.5 V 101.2 Q 1346.0,105.2 1342.0,105.2 H 1288.0 Q 1284.0,105.2 1284.0,101.2 V 50.0 Q 1284.0,46.0 1288.0,46.0 Z" stroke-opacity="0.65"/>
+      <path d="M 1288.6,46.6 H 1302 Q 1312.2,47.8 1315.2,42.8 L 1318.2,43.2 Q 1320.2,34.2 1327.2,34.2 H 1339.4 Q 1344.4,34.2 1344.4,39.2 V 101.0 Q 1344.4,105.0 1340.4,105.0 H 1288.6 Q 1284.6,105.0 1284.6,101.0 V 51.8 Q 1284.6,47.8 1288.6,47.8 Z" stroke-opacity="0.70"/>
+      <path d="M 1289.2,48.7 H 1302 Q 1311.4,49.6 1314.4,44.6 L 1317.4,43.9 Q 1319.4,34.9 1326.4,34.9 H 1337.8 Q 1342.8,34.9 1342.8,39.9 V 100.8 Q 1342.8,104.8 1338.8,104.8 H 1289.2 Q 1285.2,104.8 1285.2,100.8 V 53.6 Q 1285.2,49.6 1289.2,49.6 Z" stroke-opacity="0.75"/>
+      <path d="M 1289.8,50.8 H 1302 Q 1310.6,51.4 1313.6,46.4 L 1316.6,44.6 Q 1318.6,35.6 1325.6,35.6 H 1336.2 Q 1341.2,35.6 1341.2,40.6 V 100.5 Q 1341.2,104.5 1337.2,104.5 H 1289.8 Q 1285.8,104.5 1285.8,100.5 V 55.4 Q 1285.8,51.4 1289.8,51.4 Z" stroke-opacity="0.80"/>
+      <path d="M 1290.4,52.9 H 1302 Q 1309.8,53.2 1312.8,48.2 L 1315.8,45.3 Q 1317.8,36.3 1324.8,36.3 H 1334.6 Q 1339.6,36.3 1339.6,41.3 V 100.2 Q 1339.6,104.2 1335.6,104.2 H 1290.4 Q 1286.4,104.2 1286.4,100.2 V 57.2 Q 1286.4,53.2 1290.4,53.2 Z" stroke-opacity="0.85"/>
+    </g>
+    <path d="M 1291.0,55.0 H 1302 Q 1309.0,55.0 1312.0,50.0 L 1315.0,46.0 Q 1317.0,37.0 1324.0,37.0 H 1333.0 Q 1338.0,37.0 1338.0,42.0 V 100.0 Q 1338.0,104.0 1334.0,104.0 H 1291.0 Q 1287.0,104.0 1287.0,100.0 V 59.0 Q 1287.0,55.0 1291.0,55.0 Z" fill="none" stroke="#e8c186" stroke-width="1.1"/>
+    <path d="M 1293,104.5 L 1297,100 H 1322 L 1326,104.5 Z" fill="#f2b463"/>
+  </g>
+  <text x="785" y="238.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">319x74 · T2 badge 66x74: 7 rings #a97c48 0.7 at opacity 0.55 to 0.85, front outline #e8c186 1.1,</text>
+  <text x="785" y="246.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">trapezoid tab 33/25/4.5 #f2b463 pointing UP off the inside bottom edge · T marks 20px 600, LEVEL</text>
+  <text x="785" y="254.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">12px ls 1.5 · cells at x 1229 / 1283 / 1354 / 1417</text>
+  <text x="1133" y="138" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">BASKET PLATE, STORE</text>
+  <!-- BASKET PLATE. store-trace.svg: a solid slab [1291.7,19.6]..[1496.3,105] (204.6x85.4) filled #fbb86c with its bottom LEFT corner cut (1291.7,90)-(1307,105). A dark hairline #5a3418 0.8 at y 60 splits it; below the split the band is #eea666 WOOD VENEER: 21 wavy hairlines #c9844c 0.7 at ~2.1 pitch, a vertical seam #b47a4a 0.9 at x 1374 the lines chevron into, and two strands bending down into the cut corner. A second hairline at x 1455.5 fences the 9x9 QR cell (origin 1464.25,29.8, pitch 2.71, squares 2.3), which is the card QR mirrored left to right. Placed at (1133,142): translate(-158.7 122.4) -->
+  <g transform="translate(-158.7 122.4)">
+  <path d="M 1291.7,19.6 H 1496.3 V 105 H 1307 L 1291.7,90 Z" fill="#fbb86c"/>
+  <path d="M 1291.7,60 H 1496.3 V 105 H 1307 L 1291.7,90 Z" fill="#eea666"/>
+  <g clip-path="url(#basketclip)" fill="none" stroke="#c9844c" stroke-width="0.7">
+    <path d="M 1291.7,60.2 l 5,0 5,.4 5,.5 5,.5 5,.2 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,.4 5,.5 5,.5 5,.2 5,-.8 5,-1.5 5,-.5 5,.7 5,.5 5,.4 5,.5 5,.5 5,.2 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,.4 5,.5 5,.5 5,.2 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,.4 5,.5 5,.5 4.6,.2"/>
+    <path d="M 1291.7,62.3 l 5,.5 5,.7 5,.6 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 5,.5 5,.8 5,.7 5,.2 5,-.3 5,-1.2 5,-1.8 5,-.4 5,1.1 5,1 5,.8 5,.7 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 5,.5 5,.8 5,.7 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 5,.5 5,.8 5,.7 5,.2 4.6,-.3"/>
+    <path d="M 1291.7,65.1 l 5,.7 5,.6 5,.2 5,-.4 5,-.8 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.3 5,-.8 5,-1.4 5,-1.5 5,.1 5,1.6 5,1.3 5,.7 5,.2 5,-.3 5,-.8 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.3 5,-.8 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.3 4.6,-.7"/>
+    <path d="M 1291.7,68.2 l 5,.3 5,0 5,-.4 5,-.7 5,-.7 5,-.4 5,0 5,.5 5,.7 5,.6 5,.2 5,-.3 5,-.6 5,-.7 5,-.9 5,-1 5,.6 5,1.7 5,1 5,.2 5,-.3 5,-.6 5,-.7 5,-.4 5,0 5,.5 5,.7 5,.6 5,.2 5,-.3 5,-.6 5,-.7 5,-.4 5,0 5,.5 5,.7 5,.6 5,.2 5,-.3 5,-.6 4.6,-.6"/>
+    <path d="M 1291.7,70.7 l 5,-.2 5,-.4 5,-.5 5,-.5 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.2 5,-.4 5,-.4 5,-.2 5,-.5 5,-.7 5,.5 5,1.3 5,.6 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.2 5,-.4 5,-.4 4.6,-.2"/>
+    <path d="M 1291.7,72.9 l 5,-.5 5,-.5 5,-.4 5,-.2 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,-.4 5,-.8 5,.3 5,1.1 5,.4 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.2 5,-.2 5,-.1 4.6,0"/>
+    <path d="M 1291.7,75.2 l 5,-.8 5,-.7 5,-.4 5,-.1 5,.2 5,.3 5,.3 5,.1 5,-.1 5,-.3 5,-.3 5,-.2 5,0 5,.2 5,-.2 5,-.7 5,.2 5,.9 5,.2 5,-.3 5,-.2 5,0 5,.2 5,.3 5,.3 5,.1 5,-.1 5,-.3 5,-.3 5,-.2 5,0 5,.2 5,.3 5,.3 5,.1 5,-.1 5,-.3 5,-.3 5,-.2 5,0 4.6,.2"/>
+    <path d="M 1291.7,77.2 l 5,-1.2 5,-.8 5,-.2 5,.3 5,.5 5,.5 5,.1 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,.4 5,.5 5,-.1 5,-.9 5,-.1 5,.5 5,-.1 5,-.3 5,0 5,.4 5,.5 5,.5 5,.1 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,.4 5,.5 5,.5 5,.1 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,.4 4.6,.5"/>
+    <path d="M 1291.7,78.8 l 5,-1.2 5,-.5 5,.2 5,.7 5,.7 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 5,-.3 5,-1.3 5,-.6 5,.2 5,0 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 5,.6 5,.8 4.6,.6"/>
+    <path d="M 1291.7,80.6 l 5,-.7 5,0 5,.5 5,.6 5,.2 5,-.4 5,-.8 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.9 5,-1.8 5,-.7 5,.5 5,.5 5,.6 5,.8 5,.7 5,.2 5,-.4 5,-.8 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.4 5,-.8 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 4.6,.2"/>
+    <path d="M 1291.7,83.2 l 5,-.4 5,0 5,.2 5,0 5,-.3 5,-.6 5,-.7 5,-.4 5,.1 5,.5 5,.7 5,.6 5,.2 5,-.3 5,-1.1 5,-1.7 5,-.3 5,1.1 5,.9 5,.7 5,.6 5,.2 5,-.3 5,-.6 5,-.7 5,-.4 5,.1 5,.5 5,.7 5,.6 5,.2 5,-.3 5,-.6 5,-.7 5,-.4 5,.1 5,.5 5,.7 5,.6 5,.2 4.6,-.2"/>
+    <path d="M 1291.7,86.1 l 5,-.6 5,-.4 5,-.3 5,-.3 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.2 5,-.4 5,-.9 5,-1.2 5,.1 5,1.3 5,.9 5,.3 5,.1 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.2 4.6,-.3"/>
+    <path d="M 1291.7,88.8 l 5,-.9 5,-.7 5,-.6 5,-.4 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.2 5,-.2 5,-.7 5,-1 5,.3 5,1.2 5,.7 5,.1 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.2 4.6,-.2"/>
+    <path d="M 1291.7,91.4 l 5,-1.1 5,-1 5,-.8 5,-.5 5,-.2 5,0 5,.2 5,.3 5,.3 5,.1 5,-.1 5,-.3 5,-.3 5,-.2 5,-.5 5,-.8 5,.4 5,1.3 5,.5 5,-.1 5,-.3 5,-.3 5,-.2 5,0 5,.2 5,.3 5,.3 5,.1 5,-.1 5,-.3 5,-.3 5,-.2 5,0 5,.2 5,.3 5,.3 5,.1 5,-.1 5,-.3 5,-.3 4.6,-.2"/>
+    <path d="M 1291.7,94.1 l 5,-1.5 5,-1.4 5,-1.1 5,-.5 5,0 5,.4 5,.6 5,.5 5,.1 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,-.1 5,-.4 5,.5 5,1.1 5,.2 5,-.5 5,-.5 5,-.3 5,0 5,.4 5,.6 5,.5 5,.1 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,.4 5,.6 5,.5 5,.1 5,-.2 5,-.5 5,-.5 5,-.3 4.6,0"/>
+    <path d="M 1291.7,96.4 l 5,-2.1 5,-1.7 5,-1 5,-.1 5,.6 5,.8 5,.6 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 5,.6 5,.3 5,-.4 5,.3 5,.7 5,-.3 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.6 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.6 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 4.6,.5"/>
+    <path d="M 1291.7,98.0 l 5,-2.2 5,-1.5 5,-.5 5,.4 5,.8 5,.7 5,.2 5,-.4 5,-.8 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.1 5,-.8 5,-.3 5,.2 5,-.4 5,-.5 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.4 5,-.8 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.4 5,-.8 5,-.8 5,-.5 5,.1 5,.6 4.6,.8"/>
+    <path d="M 1291.7,99.6 l 5,-1.9 5,-1 5,-.2 5,.4 5,.5 5,.2 5,-.3 5,-.6 5,-.6 5,-.4 5,.1 5,.5 5,.7 5,.5 5,-.4 5,-1.3 5,-.5 5,.4 5,.1 5,.1 5,.5 5,.7 5,.5 5,.2 5,-.3 5,-.6 5,-.6 5,-.4 5,.1 5,.5 5,.7 5,.5 5,.2 5,-.3 5,-.6 5,-.6 5,-.4 5,.1 5,.5 5,.7 4.6,.5"/>
+    <path d="M 1291.7,101.9 l 5,-1.6 5,-.9 5,-.3 5,.1 5,.1 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.7 5,-1.4 5,-.3 5,.8 5,.5 5,.3 5,.4 5,.3 5,.1 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 4.6,.1"/>
+    <path d="M 1291.7,104.5 l 5,-1.5 5,-1 5,-.5 5,-.2 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.8 5,-1.2 5,-.1 5,1 5,.6 5,.2 5,.2 5,.1 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 4.6,-.1"/>
+    <path d="M 1291.7,106.9 l 5,-1.5 5,-1 5,-.7 5,-.4 5,-.3 5,-.3 5,-.2 5,0 5,.2 5,.3 5,.3 5,.1 5,-.1 5,-.3 5,-.8 5,-1.2 5,.1 5,1.2 5,.8 5,.3 5,.1 5,-.1 5,-.3 5,-.3 5,-.2 5,0 5,.2 5,.3 5,.3 5,.1 5,-.1 5,-.3 5,-.3 5,-.2 5,0 5,.2 5,.3 5,.3 5,.1 5,-.1 4.6,-.3"/>
+    <g stroke="#b47a4a" stroke-width="0.9">
+      <line x1="1374" y1="60" x2="1374" y2="105"/>
+      <path d="M 1291.7,72 C 1300,72 1306,78 1312,83"/>
+      <path d="M 1291.7,80 C 1298,80 1302,86 1307,92"/>
+    </g>
+  </g>
+  <g fill="none" stroke="#5a3418" stroke-width="0.8">
+    <path d="M 1291.7,60 H 1496.3"/>
+    <path d="M 1455.5,19.6 V 60"/>
+  </g>
+    <path fill="#5a3418" d="M1464.25,29.80h2.3v2.3h-2.3z M1472.38,29.80h2.3v2.3h-2.3z M1477.80,29.80h2.3v2.3h-2.3z M1485.93,29.80h2.3v2.3h-2.3z M1469.67,32.51h2.3v2.3h-2.3z M1483.22,32.51h2.3v2.3h-2.3z M1464.25,35.22h2.3v2.3h-2.3z M1480.51,35.22h2.3v2.3h-2.3z M1466.96,37.93h2.3v2.3h-2.3z M1472.38,37.93h2.3v2.3h-2.3z M1477.80,37.93h2.3v2.3h-2.3z M1485.93,37.93h2.3v2.3h-2.3z M1464.25,43.35h2.3v2.3h-2.3z M1469.67,43.35h2.3v2.3h-2.3z M1477.80,43.35h2.3v2.3h-2.3z M1483.22,43.35h2.3v2.3h-2.3z M1472.38,46.06h2.3v2.3h-2.3z M1480.51,46.06h2.3v2.3h-2.3z M1485.93,46.06h2.3v2.3h-2.3z M1466.96,48.77h2.3v2.3h-2.3z M1483.22,48.77h2.3v2.3h-2.3z M1464.25,51.48h2.3v2.3h-2.3z M1472.38,51.48h2.3v2.3h-2.3z M1477.80,51.48h2.3v2.3h-2.3z M1485.93,51.48h2.3v2.3h-2.3z"/>
+  <g font-family="Rajdhani">
+    <text x="1369" y="50" font-family="Rajdhani" font-size="15" letter-spacing="1.5" text-anchor="middle" fill="#5a3418">BASKET</text>
+    <text font-family="Rajdhani" font-size="5" font-weight="600" fill="#5a3418" x="1304.4" y="72.8" letter-spacing="0.78">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE</text>
+    <text font-family="Rajdhani" font-size="5" font-weight="600" fill="#5a3418" x="1304.4" y="78.4" letter-spacing="0.82">ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+  </g>
+  </g>
+  <text x="1133" y="238.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">204.6x85.4 #fbb86c, bottom left cut 15.3x15 · split hairline</text>
+  <text x="1133" y="246.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">#5a3418 0.8 at y 60 · band #eea666 veneer, grain #c9844c 0.7 at</text>
+  <text x="1133" y="254.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">2.1 pitch, seam #b47a4a 0.9 at x 1374 · QR 9x9 pitch 2.71</text>
+  <text x="1133" y="262.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">squares 2.3</text>
+  <text x="1352" y="138" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">BOXED LETTER + ANNOTATION</text>
+  <!-- BOXED LETTER. all four traces share <g id="letterbox">: a 26x26 rounded plate, stroke 1.4, with a FOLDED bottom right corner (the mini SIM motif) drawn as a second 1.0 stroke M 26,17 H 21 Q 19,17 19,19 V 24. Where it sits on the wire band the interior is filled #4c3f5f so the strands do not read through (dashboard, mailbox). Letter 19.5px 700 x scaled 1.6 (A/C) or 1.75 (B/D), centred on the plate. Annotation 6.2px 500 ls 0.7 #d9a877, two lines 6.7 apart, at x +40.3. Placed at (1352,150): translate(1114 52) -->
+  <g transform="translate(1114 52)">
+  <g fill="#4c3f5f"><rect x="238" y="98" width="26" height="26" rx="3"/></g>
+  <g stroke="#bd8951"><use href="#letterbox" x="238" y="98"/></g>
+  <g font-family="Rajdhani" fill="#d9a877" text-anchor="middle" font-size="19.5" font-weight="700">
+    <text transform="translate(249.7 115.5) scale(1.6 1)">A</text>
+  </g>
+  <g font-family="Rajdhani" font-size="6.2" font-weight="500" fill="#d9a877" letter-spacing="0.7">
+    <text x="278.3" y="103.3">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+    <text x="278.3" y="110">SERVING CUSTOMERS SINCE 2006.</text>
+  </g>
+  </g>
+  <text x="1352" y="238.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">26x26 r3 stroke 1.4 · folded corner 7x7 stroke 1.0 · letter</text>
+  <text x="1352" y="246.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">19.5px 700, x scale 1.6 (A, C) / 1.75 (B, D) · annotation</text>
+  <text x="1352" y="254.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">6.2px 500 ls 0.7 at +40.3 · interior #4c3f5f only where it</text>
+  <text x="1352" y="262.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">sits on the band</text>
+
+  <!-- ============================ ROW 2: CARDS, PANELS, CONTROLS ============================ -->
+  <text x="56" y="300" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">2  MODULE MENU UNIT: CASCADE CARD</text>
+  <text x="56" y="312.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">hub cards are 93x327 on a (+102, -100) staircase; shown at the trace's own offset,</text>
+  <text x="56" y="320.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">EMAIL (244,383) selected and MATRIX (347,284) plain</text>
+  <!-- CASCADE CARDS, both states. dashboard-trace.svg: <path id="ncard"> is 93x327 including the left edge tab well, body 83 wide, chamfer 32 at the top RIGHT and bottom LEFT, Q6 rounded top left and bottom right. Unselected (MATRIX at 347,284): outline #bd8951 1.6, six onion rings #bd8951 1 at 3.5 pitch fading 0.85 0.73 0.61 0.49 0.37 0.25 (each ring is a 45 degree offset of the silhouette, so the chamfer endpoints stay at x 61 / y 32 and x 48 / y 289), a bright tab plate 12x36 r3 #e8c186 1.4 on the left edge, a label right anchored 9px left of the card at 17px ls 1.5, and a five line caption block under the foot. Selected (EMAIL at 244,383): the same silhouette filled SOLID #f2b463 with NO rings, its tab plate filled #f2b463 and stroked #ffe2ae 1.4, 38 tall not 36. Placed at (56,330): translate(-130 67) -->
+  <g transform="translate(-130 67)">
+  <g fill="none" stroke="#bd8951" stroke-width="1">
+    <g transform="translate(347 284)">
+      <use href="#nring6" stroke-opacity="0.25"/>
+      <use href="#nring5" stroke-opacity="0.37"/>
+      <use href="#nring4" stroke-opacity="0.49"/>
+      <use href="#nring3" stroke-opacity="0.61"/>
+      <use href="#nring2" stroke-opacity="0.73"/>
+      <use href="#nring1" stroke-opacity="0.85"/>
+    </g>
+  </g>
+  <g fill="none" stroke="#bd8951" stroke-width="1.6"><use href="#ncard" x="347" y="284"/></g>
+  <g fill="none" stroke="#e8c186" stroke-width="1.4"><rect x="346" y="341" width="12" height="36" rx="3"/></g>
+  <use href="#ncard" x="244" y="383" fill="#f2b463"/>
+  <rect x="243" y="438" width="12" height="38" rx="3" fill="#f2b463"
+        stroke="#ffe2ae" stroke-width="1.4"/>
+  <g font-family="Rajdhani" font-size="17" letter-spacing="1.5" fill="#f2b463" text-anchor="end">
+    <text x="238" y="468">EMAIL</text>
+    <text x="338" y="358">MATRIX</text>
+  </g>
+    <use href="#ncaption" x="253" y="723"/>
+    <use href="#ncaption" x="352" y="622"/>
+  </g>
+  <text x="56" y="840.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">93x327 · chamfer 32 top right AND bottom left · outline #bd8951 1.6 · 6 rings at</text>
+  <text x="56" y="848.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">3.5 pitch, opacity 0.85 to 0.25 · tab plate 12x36 r3 #e8c186 1.4 · selected: solid</text>
+  <text x="56" y="856.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">#f2b463, tab 12x38, NO rings</text>
+  <text x="341" y="300" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">3  PRODUCT CARD, EXPANDED</text>
+  <text x="341" y="312.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">store card 2 at x0 667.1: the plain template stretched, top -81.7 and bottom +70.9,</text>
+  <text x="341" y="320.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">with y 411.2..652.9 solid veneer across the full width</text>
+  <!-- PRODUCT CARD, EXPANDED. store-trace.svg card 2 at x0 667.1 (262.1 wide): the same outline template as the plain card, shifted 81.7 up at the top (edge y 263.3, step to 233.3) and 70.9 down at the foot (bottom 711.3, socket row 605..652.9, name cap 670..685). The span y 411.2..652.9 is SOLID across the full width, fill #f6c27a, and is WOOD VENEER: 66 wavy hairlines #cd9553 0.7 at ~2.4 pitch, a dark stripe #a86e33 1.4 at y 531 running right from x 781 with two strands fanning into it, and a vertical pinch band at x 864. All text on the veneer is #3a2010. Placed at (341,330): translate(-326.1 97.1) -->
+  <g transform="translate(-326.1 97.1)">
+  <g><!-- card x0=667.1 -->
+    <path d="M 667.1,688.9 V 276.3 Q 667.1,263.3 680.1,263.3 H 803.3 L 843.3,232.9 H 911.2 Q 929.2,232.9 929.2,250.9 V 703.3 Q 929.2,711.3 921.2,711.3 H 686.3 L 686.3,711.3 Z"
+          fill="none" stroke="#dab176" stroke-width="1.3"/>
+    <path d="M 808.4,263.3 L 845.1,235.3 H 911.2 Q 926.2,235.3 926.2,250.3 V 703.3 Q 926.2,708.2 921.2,708.2 H 683.7"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.55"/>
+    <path d="M 813.5,263.3 L 847.0,237.8 H 911.2 Q 923.1,237.8 923.1,249.7 V 703.3 Q 923.1,705.2 921.2,705.2 H 681.1"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.40"/>
+    <path d="M 818.6,263.3 L 848.8,240.2 H 911.2 Q 920.1,240.2 920.1,249.1 V 700.6 Q 920.1,702.1 918.6,702.1 H 678.5"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.28"/>
+    <path d="M 823.6,263.3 L 850.6,242.7 H 911.2 Q 917.0,242.7 917.0,248.5 V 697.6 Q 917.0,699.1 915.5,699.1 H 675.8"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.18"/>
+    <path d="M 766.1,703.8 H 830.6 L 827.1,712.3 H 769.1 Z" fill="#fed08d"/>
+    <path d="M 667.1,411.2 H 929.2 V 652.9 H 667.1 Z" fill="#f6c27a"/>
+    <!-- card-2 veneer grain: wavy horizontals at ~2.4 pitch; right of
+         x~781 the lines within ~48px of y=531 fan into ONE dark stripe
+         (source y 1275, x 1875..2215) that runs out to the right edge; a
+         vertical pinch band at x~864 (source 2075); bottom-left lines
+         droop into the corner. Source mean #e9b269, dark strand
+         ~#a86e33, bright #ffd28a -->
+    <g clip-path="url(#card2clip)" fill="none" stroke="#cd9553" stroke-width="0.7">
+      <path d="M 667.0,412.6 l 8,.3 8,-.3 8,-.7 8,-.6 8,-.2 8,.4 8,.7 8,.5 8,0 8,-.5 8,-.7 8,-.4 8,.2 8,.6 8,.7 8,.3 8,-.3 8,-.7 8,-.6 8,-.2 8,.4 8,.7 8,.5 8,-.8 8,-.8 8,.3 8,-.4 8,.2 8,.6 8,.7 8,.3 8,-.3 6.5,-.6"/>
+      <path d="M 667.0,415.6 l 8,-.3 8,-.9 8,-.9 8,-.3 8,.5 8,1 8,.8 8,.1 8,-.7 8,-1 8,-.7 8,.1 8,.8 8,1 8,.5 8,-.3 8,-.9 8,-.9 8,-.3 8,.5 8,1 8,.8 8,.1 8,-1.4 8,-1.3 8,.3 8,.1 8,.8 8,1 8,.5 8,-.3 8,-.9 6.5,-.8"/>
+      <path d="M 667.0,417.9 l 8,-.9 8,-1.1 8,-.5 8,.4 8,1 8,1 8,.3 8,-.6 8,-1.1 8,-.9 8,-.1 8,.8 8,1.1 8,.7 8,-.2 8,-.9 8,-1.1 8,-.5 8,.4 8,1 8,1 8,.3 8,-.6 8,-1.8 8,-1.2 8,1 8,.8 8,1.1 8,.7 8,-.2 8,-.9 8,-1.1 6.5,-.5"/>
+      <path d="M 667.0,419.5 l 8,-.9 8,-.5 8,.2 8,.8 8,.8 8,.4 8,-.4 8,-.8 8,-.8 8,-.2 8,.5 8,.9 8,.7 8,0 8,-.7 8,-.9 8,-.5 8,.2 8,.8 8,.8 8,.4 8,-.4 8,-.8 8,-1.5 8,-.5 8,1.6 8,.9 8,.7 8,0 8,-.7 8,-.9 8,-.5 6.5,.1"/>
+      <path d="M 667.0,421.3 l 8,-.4 8,0 8,.5 8,.6 8,.3 8,-.2 8,-.5 8,-.5 8,-.2 8,.3 8,.6 8,.5 8,.1 8,-.4 8,-.6 8,-.4 8,0 8,.5 8,.6 8,.3 8,-.2 8,-.5 8,-.5 8,-.9 8,0 8,1.6 8,.5 8,.1 8,-.4 8,-.6 8,-.4 8,0 6.5,.3"/>
+      <path d="M 667.0,423.6 l 8,0 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.4 8,-.2 8,.1 8,.3 8,.3 8,.1 8,-.2 8,-.4 8,-.3 8,0 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.4 8,-.2 8,-.6 8,0 8,1.4 8,.1 8,-.2 8,-.4 8,-.3 8,0 8,.3 6.5,.3"/>
+      <path d="M 667.0,425.9 l 8,.3 8,.4 8,.3 8,0 8,-.3 8,-.4 8,-.3 8,.1 8,.4 8,.4 8,.2 8,-.2 8,-.4 8,-.4 8,-.1 8,.3 8,.4 8,.3 8,0 8,-.3 8,-.4 8,-.3 8,.1 8,-.4 8,.1 8,1.2 8,-.2 8,-.4 8,-.4 8,-.1 8,.3 8,.4 6.5,.3"/>
+      <path d="M 667.0,428.3 l 8,.7 8,.6 8,.1 8,-.5 8,-.7 8,-.5 8,.1 8,.6 8,.7 8,.4 8,-.2 8,-.7 8,-.7 8,-.2 8,.4 8,.7 8,.6 8,.1 8,-.5 8,-.7 8,-.5 8,.1 8,.6 8,0 8,.1 8,.8 8,-.7 8,-.7 8,-.2 8,.4 8,.7 8,.6 6.5,.1"/>
+      <path d="M 667.0,431.3 l 8,.9 8,.3 8,-.6 8,-1 8,-.8 8,-.1 8,.7 8,1 8,.6 8,-.2 8,-.9 8,-1 8,-.5 8,.4 8,1 8,.9 8,.3 8,-.6 8,-1 8,-.8 8,-.1 8,.7 8,1 8,-.1 8,-.5 8,.2 8,-1 8,-.5 8,.4 8,1 8,.9 8,.3 6.5,-.4"/>
+      <path d="M 667.0,434.5 l 8,.4 8,-.5 8,-1 8,-.9 8,-.2 8,.7 8,1.1 8,.8 8,0 8,-.8 8,-1.1 8,-.6 8,.2 8,1 8,1 8,.4 8,-.5 8,-1 8,-.9 8,-.2 8,.7 8,1.1 8,.8 8,-.8 8,-1.1 8,0 8,-.6 8,.2 8,1 8,1 8,.4 8,-.5 6.5,-.8"/>
+      <path d="M 667.0,437.1 l 8,-.3 8,-.8 8,-.8 8,-.3 8,.4 8,.9 8,.7 8,.1 8,-.6 8,-.9 8,-.6 8,.1 8,.7 8,.9 8,.5 8,-.3 8,-.8 8,-.8 8,-.3 8,.4 8,.9 8,.7 8,.1 8,-1.3 8,-1.2 8,.4 8,.1 8,.7 8,.9 8,.5 8,-.3 8,-.8 6.5,-.7"/>
+      <path d="M 667.0,439.0 l 8,-.5 8,-.5 8,-.3 8,.2 8,.5 8,.5 8,.1 8,-.3 8,-.6 8,-.4 8,0 8,.4 8,.6 8,.4 8,-.1 8,-.5 8,-.5 8,-.3 8,.2 8,.5 8,.5 8,.1 8,-.3 8,-1.3 8,-.7 8,1 8,.4 8,.6 8,.4 8,-.1 8,-.5 8,-.5 6.5,-.2"/>
+      <path d="M 667.0,440.9 l 8,-.4 8,-.2 8,.1 8,.3 8,.4 8,.1 8,-.2 8,-.4 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,0 8,-.3 8,-.4 8,-.2 8,.1 8,.3 8,.4 8,.1 8,-.2 8,-.4 8,-1.1 8,-.4 8,1.3 8,.4 8,.3 8,0 8,-.3 8,-.4 8,-.2 6.5,0"/>
+      <path d="M 667.0,443.0 l 8,-.3 8,0 8,.4 8,.4 8,.2 8,-.1 8,-.4 8,-.4 8,-.1 8,.2 8,.4 8,.4 8,.1 8,-.3 8,-.5 8,-.3 8,0 8,.4 8,.4 8,.2 8,-.1 8,-.4 8,-.4 8,-.9 8,-.1 8,1.5 8,.4 8,.1 8,-.3 8,-.5 8,-.3 8,0 6.5,.3"/>
+      <path d="M 667.0,444.8 l 8,0 8,.5 8,.7 8,.5 8,-.1 8,-.6 8,-.7 8,-.3 8,.3 8,.7 8,.7 8,.2 8,-.4 8,-.7 8,-.6 8,0 8,.5 8,.7 8,.5 8,-.1 8,-.6 8,-.7 8,-.3 8,-.5 8,.4 8,1.7 8,.2 8,-.4 8,-.7 8,-.6 8,0 8,.5 6.5,.6"/>
+      <path d="M 667.0,446.8 l 8,.6 8,1 8,.7 8,0 8,-.8 8,-1 8,-.6 8,.2 8,.9 8,1 8,.4 8,-.4 8,-1 8,-.9 8,-.2 8,.6 8,1 8,.7 8,0 8,-.8 8,-1 8,-.6 8,.2 8,.2 8,.7 8,1.4 8,-.4 8,-1 8,-.9 8,-.2 8,.6 8,1 6.5,.7"/>
+      <path d="M 667.0,449.6 l 8,1.1 8,.9 8,.1 8,-.7 8,-1.1 8,-.7 8,.1 8,.9 8,1.1 8,.5 8,-.3 8,-1 8,-1 8,-.3 8,.5 8,1.1 8,.9 8,.1 8,-.7 8,-1.1 8,-.7 8,.1 8,.9 8,.3 8,.2 8,.7 8,-1 8,-1 8,-.3 8,.5 8,1.1 8,.9 6.5,.2"/>
+      <path d="M 667.0,452.9 l 8,.8 8,.2 8,-.5 8,-.9 8,-.7 8,0 8,.6 8,.9 8,.5 8,-.1 8,-.7 8,-.8 8,-.4 8,.3 8,.8 8,.8 8,.2 8,-.5 8,-.9 8,-.7 8,0 8,.6 8,.9 8,-.2 8,-.4 8,.3 8,-.8 8,-.4 8,.3 8,.8 8,.8 8,.2 6.5,-.4"/>
+      <path d="M 667.0,455.7 l 8,.2 8,-.2 8,-.5 8,-.5 8,-.1 8,.3 8,.6 8,.4 8,0 8,-.4 8,-.6 8,-.3 8,.1 8,.5 8,.5 8,.2 8,-.2 8,-.5 8,-.5 8,-.1 8,.3 8,.6 8,.4 8,-.8 8,-.7 8,.5 8,-.3 8,.1 8,.5 8,.5 8,.2 8,-.2 6.5,-.4"/>
+      <path d="M 667.0,458.1 l 8,-.1 8,-.3 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,0 8,-.2 8,-.4 8,-.2 8,0 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,0 8,-1 8,-.7 8,.8 8,0 8,.3 8,.4 8,.2 8,-.1 8,-.3 6.5,-.3"/>
+      <path d="M 667.0,460.5 l 8,-.4 8,-.4 8,-.2 8,.2 8,.4 8,.4 8,.1 8,-.3 8,-.5 8,-.3 8,0 8,.3 8,.5 8,.3 8,-.1 8,-.4 8,-.4 8,-.2 8,.2 8,.4 8,.4 8,.1 8,-.3 8,-1.2 8,-.6 8,1 8,.3 8,.5 8,.3 8,-.1 8,-.4 8,-.4 6.5,-.2"/>
+      <path d="M 667.0,462.7 l 8,-.7 8,-.4 8,.2 8,.7 8,.7 8,.3 8,-.3 8,-.7 8,-.6 8,-.1 8,.5 8,.7 8,.5 8,0 8,-.6 8,-.7 8,-.4 8,.2 8,.7 8,.7 8,.3 8,-.3 8,-.7 8,-1.4 8,-.4 8,1.5 8,.7 8,.5 8,0 8,-.6 8,-.7 8,-.4 6.5,.1"/>
+      <path d="M 667.0,464.3 l 8,-.7 8,.1 8,.8 8,1 8,.5 8,-.3 8,-.9 8,-.9 8,-.3 8,.5 8,1 8,.8 8,.1 8,-.7 8,-1 8,-.7 8,.1 8,.8 8,1 8,.5 8,-.3 8,-.9 8,-.9 8,-1.1 8,.2 8,2.1 8,.8 8,.1 8,-.7 8,-1 8,-.7 8,.1 6.5,.6"/>
+      <path d="M 667.0,466.0 l 8,0 8,.8 8,1.1 8,.7 8,-.2 8,-.9 8,-1 8,-.5 8,.4 8,1 8,1 8,.3 8,-.6 8,-1.1 8,-.8 8,0 8,.8 8,1.1 8,.7 8,-.2 8,-.9 8,-1 8,-.5 8,-.3 8,.7 8,2 8,.3 8,-.6 8,-1.1 8,-.8 8,0 8,.8 6.5,.9"/>
+      <path d="M 667.0,468.6 l 8,.5 8,.9 8,.6 8,0 8,-.7 8,-.9 8,-.5 8,.2 8,.8 8,.8 8,.3 8,-.4 8,-.8 8,-.7 8,-.1 8,.5 8,.9 8,.6 8,0 8,-.7 8,-.9 8,-.5 8,.2 8,0 8,.5 8,1.4 8,-.4 8,-.8 8,-.7 8,-.1 8,.5 8,.9 6.5,.5"/>
+      <path d="M 667.0,471.6 l 8,.5 8,.4 8,.1 8,-.4 8,-.6 8,-.4 8,.1 8,.5 8,.5 8,.3 8,-.2 8,-.5 8,-.5 8,-.2 8,.3 8,.5 8,.4 8,.1 8,-.4 8,-.6 8,-.4 8,.1 8,.5 8,-.2 8,0 8,.9 8,-.5 8,-.5 8,-.2 8,.3 8,.5 8,.4 6.5,.1"/>
+      <path d="M 667.0,474.4 l 8,.3 8,.1 8,-.2 8,-.4 8,-.3 8,0 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.4 8,-.2 8,.1 8,.4 8,.3 8,.1 8,-.2 8,-.4 8,-.3 8,0 8,.3 8,.4 8,-.5 8,-.4 8,.7 8,-.4 8,-.2 8,.1 8,.4 8,.3 8,.1 6.5,-.2"/>
+      <path d="M 667.0,477.2 l 8,.2 8,-.2 8,-.4 8,-.4 8,-.1 8,.3 8,.5 8,.3 8,0 8,-.4 8,-.5 8,-.3 8,.1 8,.4 8,.4 8,.2 8,-.2 8,-.4 8,-.4 8,-.1 8,.3 8,.5 8,.3 8,-.8 8,-.7 8,.6 8,-.3 8,.1 8,.4 8,.4 8,.2 8,-.2 6.5,-.4"/>
+      <path d="M 667.0,480.1 l 8,-.2 8,-.7 8,-.7 8,-.2 8,.4 8,.7 8,.6 8,.1 8,-.5 8,-.8 8,-.5 8,.1 8,.6 8,.7 8,.4 8,-.2 8,-.7 8,-.7 8,-.2 8,.4 8,.7 8,.6 8,.1 8,-1.3 8,-1.1 8,.6 8,.1 8,.6 8,.7 8,.4 8,-.2 8,-.7 6.5,-.6"/>
+      <path d="M 667.0,482.6 l 8,-.9 8,-1 8,-.4 8,.4 8,1 8,.9 8,.2 8,-.6 8,-1 8,-.8 8,0 8,.8 8,1 8,.6 8,-.2 8,-.9 8,-1 8,-.4 8,.4 8,1 8,.9 8,.2 8,-.6 8,-1.8 8,-1.1 8,1 8,.8 8,1 8,.6 8,-.2 8,-.9 8,-1 6.5,-.4"/>
+      <path d="M 667.0,484.3 l 8,-1.1 8,-.6 8,.3 8,1 8,1 8,.4 8,-.5 8,-1 8,-.9 8,-.2 8,.7 8,1.1 8,.8 8,-.1 8,-.8 8,-1.1 8,-.6 8,.3 8,1.1 8,1.3 8,.6 8,-.5 8,-1.3 8,-1.9 8,-.5 8,1.9 8,1.6 8,1.2 8,0 8,-1.2 8,-1.7 8,-.8 6.5,.2"/>
+      <path d="M 667.0,485.9 l 8,-.6 8,.1 8,.7 8,.8 8,.4 8,-.3 8,-.8 8,-.8 8,-.2 8,.5 8,.9 8,.7 8,.1 8,-.6 8,-.8 8,-.5 8,.2 8,.9 8,1.1 8,.6 8,-.2 8,-.9 8,-.9 8,-1 8,.4 8,2.3 8,1.1 8,.3 8,-.7 8,-1.2 8,-.8 8,.3 6.5,.9"/>
+      <path d="M 667.0,488.2 l 8,0 8,.4 8,.5 8,.3 8,-.1 8,-.5 8,-.5 8,-.2 8,.2 8,.5 8,.5 8,.1 8,-.3 8,-.5 8,-.3 8,.2 8,.6 8,.8 8,.6 8,.1 8,-.3 8,-.4 8,-.1 8,-.3 8,.6 8,1.9 8,.4 8,-.2 8,-.6 8,-.4 8,.2 8,.8 6.5,.7"/>
+      <path d="M 667.0,490.8 l 8,.2 8,.4 8,.3 8,0 8,-.3 8,-.4 8,-.2 8,.1 8,.3 8,.3 8,.1 8,-.2 8,-.4 8,-.3 8,.1 8,.5 8,.7 8,.6 8,.3 8,-.1 8,-.2 8,0 8,.4 8,-.1 8,.4 8,1.5 8,.1 8,-.2 8,-.2 8,.2 8,.6 8,.8 6.5,.3"/>
+      <path d="M 667.0,493.3 l 8,.5 8,.4 8,0 8,-.3 8,-.5 8,-.3 8,.1 8,.4 8,.5 8,.2 8,-.2 8,-.4 8,-.4 8,-.1 8,.5 8,.8 8,.7 8,.4 8,0 8,-.2 8,0 8,.4 8,.8 8,.1 8,.3 8,1.2 8,-.2 8,-.2 8,.1 8,.6 8,.9 8,.8 6.5,.1"/>
+      <path d="M 667.0,496.1 l 8,.7 8,.2 8,-.4 8,-.8 8,-.6 8,0 8,.6 8,.8 8,.5 8,-.2 8,-.7 8,-.7 8,-.3 8,.3 8,1 8,1.1 8,.6 8,-.1 8,-.4 8,-.3 8,.4 8,1 8,1.2 8,.2 8,-.1 8,.6 8,-.5 8,0 8,.8 8,1.3 8,1.2 8,.6 6.5,-.4"/>
+      <path d="M 667.0,499.3 l 8,.4 8,-.5 8,-1 8,-.9 8,-.1 8,.7 8,1 8,.7 8,-.1 8,-.8 8,-1 8,-.6 8,.3 8,.9 8,1.3 8,.8 8,-.1 8,-.6 8,-.5 8,.2 8,1.1 8,1.6 8,1.2 8,-.4 8,-.8 8,.3 8,-.3 8,.7 8,1.5 8,1.6 8,.9 8,-.2 6.5,-1"/>
+      <path d="M 667.0,502.1 l 8,-.4 8,-1 8,-1 8,-.3 8,.6 8,1.1 8,.9 8,.1 8,-.7 8,-1.1 8,-.7 8,.1 8,.9 8,1 8,.8 8,.1 8,-.6 8,-.6 8,.1 8,1 8,1.6 8,1.4 8,.5 8,-1.1 8,-1.1 8,.7 8,.6 8,1.5 8,1.6 8,1 8,0 8,-.7 6.5,-1"/>
+      <path d="M 667.0,504.1 l 8,-.7 8,-.8 8,-.3 8,.4 8,.8 8,.7 8,.2 8,-.5 8,-.9 8,-.6 8,0 8,.6 8,.9 8,.5 8,.2 8,-.3 8,-.4 8,.1 8,.8 8,1.3 8,1.2 8,.7 8,-.1 8,-1.2 8,-.5 8,1.5 8,1.2 8,1.4 8,1 8,.3 8,-.3 8,-.5 6.5,-.4"/>
+      <path d="M 667.0,505.8 l 8,-.5 8,-.3 8,.2 8,.5 8,.5 8,.2 8,-.3 8,-.5 8,-.4 8,-.1 8,.4 8,.5 8,.4 8,0 8,-.1 8,-.1 8,.2 8,.6 8,1 8,1 8,.7 8,.2 8,-.1 8,-.7 8,.1 8,1.9 8,1 8,.9 8,.4 8,0 8,-.1 8,.2 6.5,.1"/>
+      <path d="M 667.0,507.8 l 8,-.2 8,.1 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,0 8,-.3 8,0 8,.2 8,.5 8,.8 8,.8 8,.6 8,.3 8,.1 8,.1 8,-.4 8,.4 8,1.9 8,.8 8,.5 8,.2 8,.1 8,.2 8,.5 6.5,.2"/>
+      <path d="M 667.0,509.9 l 8,0 8,.4 8,.5 8,.3 8,-.1 8,-.4 8,-.4 8,-.2 8,.2 8,.4 8,.4 8,.1 8,-.3 8,-.5 8,0 8,.5 8,.8 8,.9 8,.7 8,.4 8,.1 8,0 8,.3 8,-.1 8,.6 8,1.9 8,.5 8,.2 8,0 8,.1 8,.5 8,.8 6.5,.3"/>
+      <path d="M 667.0,511.9 l 8,.5 8,.8 8,.5 8,-.1 8,-.6 8,-.8 8,-.4 8,.2 8,.7 8,.7 8,.3 8,-.4 8,-.7 8,-.6 8,.2 8,.9 8,1.2 8,1 8,.4 8,-.1 8,-.3 8,.1 8,.7 8,.3 8,.8 8,1.7 8,.1 8,-.2 8,-.1 8,.4 8,.9 8,1.1 6.5,.4"/>
+      <path d="M 667.0,514.5 l 8,1 8,.8 8,.1 8,-.7 8,-1 8,-.7 8,.2 8,.9 8,1 8,.5 8,-.4 8,-1 8,-.9 8,-.3 8,.9 8,1.4 8,1.2 8,.5 8,-.3 8,-.5 8,-.2 8,.6 8,1.2 8,.5 8,.5 8,1.1 8,-.4 8,-.4 8,.2 8,.9 8,1.2 8,1 6.5,.1"/>
+      <path d="M 667.0,517.8 l 8,.9 8,.2 8,-.6 8,-1.1 8,-.8 8,0 8,.8 8,1.1 8,.6 8,-.2 8,-.9 8,-1 8,-.4 8,.5 8,1.3 8,1.3 8,.6 8,-.2 8,-.6 8,-.3 8,.4 8,1.1 8,1.3 8,.1 8,-.1 8,.7 8,-.4 8,.1 8,.7 8,1.2 8,1 8,.5 6.5,-.3"/>
+      <path d="M 667.0,520.8 l 8,.3 8,-.4 8,-.8 8,-.7 8,-.1 8,.6 8,.9 8,.6 8,-.1 8,-.7 8,-.8 8,-.4 8,.2 8,.8 8,1 8,.6 8,-.1 8,-.4 8,-.3 8,.3 8,.8 8,1.1 8,.8 8,-.5 8,-.5 8,.7 8,0 8,.5 8,.9 8,.8 8,.5 8,.1 6.5,-.4"/>
+      <path d="M 667.0,523.1 l 8,-.2 8,-.5 8,-.5 8,-.1 8,.3 8,.5 8,.4 8,0 8,-.4 8,-.5 8,-.3 8,.1 8,.5 8,.5 8,.4 8,.1 8,-.2 8,-.2 8,.2 8,.5 8,.7 8,.6 8,.3 8,-.8 8,-.4 8,1.1 8,.4 8,.6 8,.6 8,.4 8,.2 8,0 6.5,-.2"/>
+      <path d="M 667.0,525.2 l 8,-.3 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,.1 8,-.2 8,-.4 8,-.3 8,0 8,.3 8,.4 8,.2 8,.1 8,-.1 8,-.1 8,.1 8,.4 8,.5 8,.5 8,.3 8,0 8,-.8 8,-.3 8,1.3 8,.4 8,.4 8,.3 8,.2 8,0 8,0 6.5,-.1"/>
+      <path d="M 667.0,527.3 l 8,-.5 8,-.2 8,.1 8,.4 8,.4 8,.2 8,-.2 8,-.5 8,-.4 8,-.1 8,.3 8,.5 8,.3 8,0 8,-.3 8,-.3 8,-.1 8,.3 8,.5 8,.5 8,.2 8,-.1 8,-.2 8,-.9 8,-.2 8,1.4 8,.4 8,.3 8,.1 8,-.1 8,-.1 8,0 6.5,0"/>
+      <path d="M 667.0,529.2 l 8,-.5 8,.1 8,.7 8,.7 8,.3 8,-.3 8,-.7 8,-.7 8,-.2 8,.4 8,.8 8,.6 8,0 8,-.6 8,-.7 8,-.4 8,.2 8,.6 8,.7 8,.3 8,-.2 8,-.5 8,-.4 8,-.8 8,0 8,1.6 8,.4 8,0 8,-.2 8,-.3 8,-.1 8,.1 6.5,.2"/>
+      <path d="M 667.0,530.8 l 8,0 8,.8 8,1 8,.6 8,-.2 8,-.9 8,-1 8,-.4 8,.4 8,1 8,.9 8,.2 8,-.6 8,-1 8,-.8 8,0 8,.7 8,.9 8,.4 8,-.3 8,-.8 8,-.7 8,-.3 8,-.5 8,.3 8,1.5 8,0 8,-.4 8,-.5 8,-.3 8,0 8,.3 6.5,.3"/>
+      <path d="M 667.0,533.1 l 8,.7 8,1.1 8,.7 8,-.1 8,-.9 8,-1.1 8,-.5 8,.3 8,1 8,1 8,.3 8,-.5 8,-1.1 8,-.9 8,-.2 8,.6 8,.9 8,.5 8,-.3 8,-.9 8,-.9 8,-.5 8,.1 8,-.2 8,.2 8,1.1 8,-.5 8,-.7 8,-.5 8,-.1 8,.2 8,.3 6.5,.3"/>
+      <path d="M 667.0,536.2 l 8,.8 8,.7 8,0 8,-.6 8,-.8 8,-.5 8,.1 8,.7 8,.8 8,.4 8,-.3 8,-.8 8,-.8 8,-.2 8,.3 8,.6 8,.4 8,-.2 8,-.8 8,-.9 8,-.6 8,-.1 8,.3 8,-.4 8,-.3 8,.6 8,-.7 8,-.6 8,-.3 8,.1 8,.2 8,.1 6.5,0"/>
+      <path d="M 667.0,539.3 l 8,.5 8,.1 8,-.3 8,-.5 8,-.4 8,0 8,.4 8,.5 8,.3 8,-.1 8,-.5 8,-.5 8,-.2 8,.2 8,.3 8,.2 8,-.2 8,-.6 8,-.7 8,-.6 8,-.2 8,.1 8,.1 8,-.8 8,-.7 8,.4 8,-.6 8,-.4 8,-.1 8,0 8,0 8,-.2 6.5,-.1"/>
+      <path d="M 667.0,541.9 l 8,.1 8,-.2 8,-.4 8,-.3 8,0 8,.2 8,.4 8,.2 8,0 8,-.3 8,-.4 8,-.2 8,.1 8,.3 8,.1 8,-.2 8,-.5 8,-.7 8,-.6 8,-.4 8,-.1 8,0 8,-.1 8,-1.1 8,-.9 8,.5 8,-.5 8,-.2 8,-.1 8,-.1 8,-.3 8,-.4 6.5,-.2"/>
+      <path d="M 667.0,544.6 l 8,-.2 8,-.4 8,-.4 8,-.1 8,.3 8,.5 8,.4 8,0 8,-.3 8,-.5 8,-.3 8,.1 8,.4 8,.5 8,-.1 8,-.6 8,-.8 8,-.8 8,-.5 8,-.1 8,0 8,-.1 8,-.4 8,-1.4 8,-1.1 8,.5 8,-.3 8,-.1 8,0 8,-.2 8,-.5 8,-.7 6.5,-.2"/>
+      <path d="M 667.0,547.2 l 8,-.7 8,-.7 8,-.3 8,.3 8,.8 8,.7 8,.1 8,-.5 8,-.8 8,-.6 8,0 8,.6 8,.8 8,.4 8,-.5 8,-1.1 8,-1.1 8,-.7 8,-.1 8,.3 8,.2 8,-.3 8,-.9 8,-1.8 8,-1.2 8,.7 8,.1 8,.2 8,-.1 8,-.6 8,-1 8,-1 6.5,-.2"/>
+      <path d="M 667.0,549.1 l 8,-1 8,-.5 8,.3 8,1 8,1 8,.3 8,-.5 8,-1 8,-.8 8,-.1 8,.7 8,1 8,.7 8,-.1 8,-1.2 8,-1.4 8,-.9 8,-.1 8,.5 8,.5 8,-.1 8,-.9 8,-1.4 8,-1.9 8,-.8 8,1.2 8,.5 8,.2 8,-.6 8,-1.2 8,-1.3 8,-.8 6.5,.2"/>
+      <path d="M 667.0,550.6 l 8,-.7 8,.2 8,.9 8,1 8,.5 8,-.4 8,-1 8,-.9 8,-.3 8,.6 8,1.1 8,.8 8,0 8,-.8 8,-1.4 8,-1.1 8,-.3 8,.4 8,.5 8,0 8,-.9 8,-1.4 8,-1.3 8,-1.4 8,-.2 8,1.6 8,.3 8,-.4 8,-1.2 8,-1.4 8,-1 8,-.3 6.5,.6"/>
+      <path d="M 667.0,552.6 l 8,0 8,.6 8,.8 8,.5 8,-.2 8,-.7 8,-.8 8,-.3 8,.4 8,.8 8,.7 8,.1 8,-.5 8,-.8 8,-1 8,-.4 8,.2 8,.4 8,0 8,-.7 8,-1.2 8,-1.2 8,-.8 8,-.9 8,0 8,1.3 8,-.3 8,-1 8,-1.3 8,-1 8,-.4 8,.1 6.5,.7"/>
+      <path d="M 667.0,555.4 l 8,.4 8,.5 8,.4 8,-.1 8,-.4 8,-.5 8,-.3 8,.2 8,.5 8,.5 8,.2 8,-.3 8,-.5 8,-.4 8,-.4 8,-.1 8,.1 8,-.1 8,-.5 8,-.9 8,-1 8,-.7 8,-.3 8,-.7 8,-.3 8,.7 8,-.7 8,-1 8,-.9 8,-.5 8,-.1 8,.1 6.5,.3"/>
+      <path d="M 667.0,558.2 l 8,.4 8,.3 8,0 8,-.3 8,-.4 8,-.2 8,.1 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.3 8,-.1 8,-.1 8,-.1 8,-.2 8,-.5 8,-.7 8,-.8 8,-.7 8,-.4 8,-.1 8,-.8 8,-.6 8,.4 8,-.8 8,-.8 8,-.6 8,-.2 8,-.1 8,-.2 6.5,0"/>
+      <path d="M 667.0,563.4 l 8,-1 8,-.8 8,-.5 8,-.5 8,-.3 8,0 8,.4 8,.5 8,.3 8,-.1 8,-.4 8,-.5 8,-.2 8,.2 8,.1 8,0 8,-.4 8,-.8 8,-.9 8,-.8 8,-.4 8,-.1 8,.1 8,-.9 8,-.9 8,.1 8,-1 8,-.6 8,-.2 8,.1 8,0 8,-.3 6.5,-.3"/>
+      <path d="M 667.0,566.4 l 8,-1.2 8,-1.2 8,-1 8,-.6 8,-.1 8,.5 8,.8 8,.5 8,-.1 8,-.6 8,-.8 8,-.4 8,.3 8,.7 8,.4 8,-.2 8,-.8 8,-1.2 8,-1.1 8,-.5 8,.1 8,.4 8,.2 8,-1.3 8,-1.4 8,-.3 8,-.9 8,-.1 8,.4 8,.5 8,-.1 8,-.9 6.5,-.8"/>
+      <path d="M 667.0,569.4 l 8,-1.8 8,-1.8 8,-1.2 8,-.2 8,.6 8,1 8,.8 8,0 8,-.8 8,-1 8,-.6 8,.2 8,.9 8,1 8,.2 8,-.8 8,-1.4 8,-1.4 8,-.7 8,.3 8,.8 8,.5 8,-.3 8,-2 8,-1.9 8,-.1 8,-.2 8,.7 8,.9 8,.2 8,-.9 8,-1.7 6.5,-1"/>
+      <path d="M 667.0,571.5 l 8,-2.4 8,-1.8 8,-.6 8,.5 8,1 8,.9 8,.2 8,-.7 8,-1.1 8,-.8 8,.1 8,.8 8,1.1 8,.6 8,-.5 8,-1.3 8,-1.4 8,-.8 8,.2 8,.8 8,.7 8,-.1 8,-1.1 8,-2.4 8,-1.6 8,.8 8,.7 8,1 8,.5 8,-.7 8,-1.6 8,-1.7 6.5,-.5"/>
+      <path d="M 667.0,573.1 l 8,-2.3 8,-1.2 8,0 8,.8 8,.8 8,.2 8,-.4 8,-.8 8,-.7 8,-.1 8,.6 8,.8 8,.5 8,-.1 8,-.9 8,-1.1 8,-.7 8,0 8,.6 8,.6 8,0 8,-.8 8,-1.3 8,-1.9 8,-.7 8,1.5 8,.8 8,.5 8,-.4 8,-1.2 8,-1.4 8,-.9 6.5,.2"/>
+      <path d="M 667.0,575.0 l 8,-1.7 8,-.7 8,.2 8,.5 8,.2 8,-.2 8,-.5 8,-.5 8,-.1 8,.3 8,.5 8,.4 8,0 8,-.4 8,-.7 8,-.6 8,-.1 8,.3 8,.4 8,.1 8,-.4 8,-.8 8,-.8 8,-1.1 8,-.1 8,1.5 8,.3 8,-.2 8,-.7 8,-1 8,-.7 8,-.1 6.5,.5"/>
+      <path d="M 667.0,577.3 l 8,-1.4 8,-.5 8,.1 8,.2 8,-.1 8,-.3 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,.1 8,-.2 8,-.4 8,-.4 8,-.1 8,.2 8,.3 8,.1 8,-.2 8,-.5 8,-.6 8,-.3 8,-.7 8,0 8,1.3 8,0 8,-.5 8,-.7 8,-.5 8,-.1 8,.3 6.5,.5"/>
+      <path d="M 667.0,579.5 l 8,-1.1 8,-.3 8,.1 8,-.1 8,-.4 8,-.5 8,-.2 8,.2 8,.5 8,.4 8,.1 8,-.3 8,-.5 8,-.4 8,-.1 8,.3 8,.5 8,.3 8,-.1 8,-.5 8,-.6 8,-.4 8,.1 8,-.2 8,.3 8,1.2 8,-.4 8,-.8 8,-.7 8,-.1 8,.5 8,.7 6.5,.5"/>
+      <path d="M 667.0,582.0 l 8,-.6 8,-.2 8,-.2 8,-.6 8,-.8 8,-.5 8,.2 8,.7 8,.8 8,.3 8,-.3 8,-.8 8,-.7 8,-.2 8,.5 8,.8 8,.6 8,0 8,-.6 8,-.8 8,-.5 8,.2 8,.7 8,0 8,0 8,.7 8,-.8 8,-.7 8,-.2 8,.5 8,.8 8,.6 6.5,.1"/>
+      <path d="M 667.0,585.1 l 8,-.6 8,-.7 8,-.9 8,-1.1 8,-.7 8,.1 8,.8 8,1 8,.6 8,-.3 8,-.9 8,-1 8,-.4 8,.5 8,1 8,.9 8,.2 8,-.7 8,-1.1 8,-.7 8,.1 8,.8 8,1 8,-.2 8,-.6 8,.1 8,-1 8,-.4 8,.5 8,1 8,.9 8,.2 6.5,-.5"/>
+      <path d="M 667.0,588.3 l 8,-1.1 8,-1.4 8,-1.3 8,-.8 8,-.1 8,.7 8,1.1 8,.7 8,-.1 8,-.9 8,-1 8,-.5 8,.4 8,1 8,1 8,.3 8,-.6 8,-1.1 8,-.8 8,-.1 8,.7 8,1.1 8,.7 8,-.9 8,-1.2 8,0 8,-.5 8,.4 8,1 8,1 8,.3 8,-.6 6.5,-.8"/>
+      <path d="M 667.0,590.7 l 8,-1.8 8,-1.6 8,-1 8,-.2 8,.5 8,.8 8,.6 8,0 8,-.6 8,-.8 8,-.5 8,.2 8,.7 8,.8 8,.3 8,-.3 8,-.8 8,-.7 8,-.2 8,.5 8,.8 8,.6 8,0 8,-1.4 8,-1.1 8,.6 8,.2 8,.7 8,.8 8,.3 8,-.3 8,-.8 6.5,-.6"/>
+      <path d="M 667.0,592.6 l 8,-1.9 8,-1.3 8,-.4 8,.2 8,.5 8,.4 8,.1 8,-.3 8,-.5 8,-.4 8,0 8,.4 8,.5 8,.3 8,-.1 8,-.5 8,-.5 8,-.2 8,.2 8,.5 8,.4 8,.1 8,-.3 8,-1.3 8,-.7 8,1.1 8,.4 8,.5 8,.3 8,-.1 8,-.5 8,-.5 6.5,-.2"/>
+      <path d="M 667.0,594.6 l 8,-1.8 8,-1 8,-.1 8,.3 8,.3 8,.1 8,-.2 8,-.4 8,-.3 8,0 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.4 8,-.2 8,.1 8,.3 8,.3 8,.1 8,-.2 8,-.4 8,-1 8,-.3 8,1.3 8,.4 8,.2 8,-.1 8,-.3 8,-.4 8,-.2 6.5,.1"/>
+      <path d="M 667.0,596.6 l 8,-1.7 8,-.7 8,.2 8,.5 8,.2 8,-.2 8,-.5 8,-.4 8,-.1 8,.3 8,.5 8,.4 8,0 8,-.4 8,-.5 8,-.3 8,.1 8,.4 8,.5 8,.2 8,-.2 8,-.5 8,-.4 8,-.9 8,0 8,1.5 8,.4 8,0 8,-.4 8,-.5 8,-.3 8,.1 6.5,.3"/>
+      <path d="M 667.0,598.4 l 8,-1.4 8,-.2 8,.6 8,.4 8,-.2 8,-.7 8,-.7 8,-.3 8,.4 8,.8 8,.7 8,.1 8,-.5 8,-.8 8,-.6 8,.1 8,.6 8,.8 8,.4 8,-.2 8,-.7 8,-.7 8,-.3 8,-.4 8,.5 8,1.7 8,.1 8,-.5 8,-.8 8,-.6 8,.1 8,.6 6.5,.7"/>
+      <path d="M 667.0,600.5 l 8,-.7 8,.2 8,.4 8,-.2 8,-.9 8,-1 8,-.5 8,.4 8,1 8,.9 8,.3 8,-.6 8,-1 8,-.8 8,-.1 8,.7 8,1.1 8,.7 8,-.2 8,-.9 8,-1 8,-.5 8,.4 8,.2 8,.6 8,1.3 8,-.6 8,-1 8,-.8 8,-.1 8,.7 8,1.1 6.5,.6"/>
+      <path d="M 667.0,603.5 l 8,-.4 8,0 8,-.2 8,-.8 8,-1.1 8,-.6 8,.2 8,.9 8,1 8,.4 8,-.4 8,-1 8,-.9 8,-.2 8,.6 8,1.1 8,.8 8,0 8,-.8 8,-1.1 8,-.6 8,.2 8,.9 8,.3 8,.1 8,.6 8,-1 8,-.9 8,-.2 8,.6 8,1.1 8,.8 6.5,.1"/>
+      <path d="M 667.0,606.7 l 8,-.8 8,-.7 8,-.8 8,-.8 8,-.6 8,.1 8,.7 8,.8 8,.4 8,-.2 8,-.7 8,-.8 8,-.3 8,.4 8,.8 8,.7 8,.1 8,-.5 8,-.8 8,-.6 8,.1 8,.7 8,.8 8,-.3 8,-.5 8,.3 8,-.8 8,-.3 8,.4 8,.8 8,.7 8,.1 6.5,-.4"/>
+      <path d="M 667.0,609.4 l 8,-1.3 8,-1.1 8,-.7 8,-.4 8,0 8,.4 8,.5 8,.3 8,-.1 8,-.4 8,-.5 8,-.2 8,.2 8,.5 8,.5 8,.1 8,-.3 8,-.5 8,-.4 8,0 8,.4 8,.5 8,.3 8,-.8 8,-.7 8,.6 8,-.2 8,.2 8,.5 8,.5 8,.1 8,-.3 6.5,-.4"/>
+      <path d="M 667.0,611.8 l 8,-1.6 8,-1.2 8,-.5 8,-.1 8,.2 8,.4 8,.3 8,0 8,-.3 8,-.4 8,-.2 8,.1 8,.3 8,.3 8,.1 8,-.2 8,-.3 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,0 8,-1 8,-.7 8,.8 8,.1 8,.3 8,.3 8,.1 8,-.2 8,-.3 6.5,-.3"/>
+      <path d="M 667.0,614.2 l 8,-1.9 8,-1.3 8,-.4 8,.2 8,.5 8,.4 8,.1 8,-.3 8,-.5 8,-.3 8,0 8,.4 8,.5 8,.3 8,-.1 8,-.4 8,-.5 8,-.2 8,.2 8,.5 8,.4 8,.1 8,-.3 8,-1.2 8,-.6 8,1.1 8,.4 8,.5 8,.3 8,-.1 8,-.4 8,-.5 6.5,-.2"/>
+      <path d="M 667.0,616.3 l 8,-2.2 8,-1.2 8,.1 8,.8 8,.7 8,.2 8,-.4 8,-.8 8,-.6 8,0 8,.6 8,.8 8,.5 8,-.1 8,-.7 8,-.8 8,-.4 8,.3 8,.8 8,.7 8,.2 8,-.4 8,-.8 8,-1.4 8,-.3 8,1.6 8,.8 8,.5 8,-.1 8,-.7 8,-.8 8,-.4 6.5,.2"/>
+      <path d="M 667.0,617.8 l 8,-2 8,-.6 8,.7 8,1 8,.4 8,-.4 8,-1 8,-.9 8,-.2 8,.6 8,1.1 8,.8 8,0 8,-.8 8,-1.1 8,-.6 8,.2 8,.9 8,1 8,.4 8,-.4 8,-1 8,-.9 8,-1 8,.3 8,2.1 8,.8 8,0 8,-.8 8,-1.1 8,-.6 8,.2 6.5,.7"/>
+      <path d="M 667.0,619.7 l 8,-1.3 8,0 8,.8 8,.5 8,-.3 8,-1 8,-1 8,-.3 8,.5 8,1 8,.9 8,.1 8,-.7 8,-1.1 8,-.7 8,.1 8,.9 8,1 8,.5 8,-.3 8,-1 8,-1 8,-.3 8,-.2 8,.7 8,1.9 8,.1 8,-.7 8,-1.1 8,-.7 8,.1 8,.9 6.5,.9"/>
+      <path d="M 667.0,622.4 l 8,-.9 8,0 8,.3 8,-.1 8,-.7 8,-.8 8,-.4 8,.3 8,.8 8,.7 8,.2 8,-.4 8,-.8 8,-.6 8,0 8,.6 8,.8 8,.5 8,-.1 8,-.7 8,-.8 8,-.4 8,.3 8,0 8,.4 8,1.3 8,-.4 8,-.8 8,-.6 8,0 8,.6 8,.8 6.5,.5"/>
+      <path d="M 667.0,625.4 l 8,-.9 8,-.5 8,-.2 8,-.4 8,-.5 8,-.3 8,.1 8,.4 8,.5 8,.2 8,-.2 8,-.5 8,-.4 8,-.1 8,.3 8,.5 8,.4 8,0 8,-.4 8,-.5 8,-.3 8,.1 8,.4 8,-.3 8,-.1 8,.8 8,-.5 8,-.4 8,-.1 8,.3 8,.5 8,.4 6.5,0"/>
+      <path d="M 667.0,628.2 l 8,-1.1 8,-.8 8,-.5 8,-.4 8,-.2 8,0 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,0 8,-.2 8,-.4 8,-.2 8,0 8,.3 8,.4 8,-.6 8,-.4 8,.7 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,0 6.5,-.2"/>
+      <path d="M 667.0,631.0 l 8,-1.3 8,-1.1 8,-.7 8,-.4 8,0 8,.4 8,.5 8,.3 8,-.1 8,-.4 8,-.5 8,-.2 8,.2 8,.5 8,.4 8,.1 8,-.3 8,-.5 8,-.4 8,0 8,.4 8,.5 8,.3 8,-.8 8,-.7 8,.6 8,-.2 8,.2 8,.5 8,.4 8,.1 8,-.3 6.5,-.4"/>
+      <path d="M 667.0,633.9 l 8,-1.8 8,-1.6 8,-.9 8,-.1 8,.5 8,.8 8,.6 8,0 8,-.6 8,-.8 8,-.5 8,.2 8,.7 8,.8 8,.3 8,-.4 8,-.8 8,-.7 8,-.1 8,.5 8,.8 8,.6 8,0 8,-1.4 8,-1.1 8,.6 8,.2 8,.7 8,.8 8,.3 8,-.4 8,-.8 6.5,-.6"/>
+      <path d="M 667.0,636.3 l 8,-2.4 8,-1.8 8,-.6 8,.5 8,1 8,.9 8,.1 8,-.7 8,-1.1 8,-.7 8,.1 8,.9 8,1 8,.5 8,-.3 8,-1 8,-1 8,-.3 8,.5 8,1 8,.9 8,.1 8,-.7 8,-1.8 8,-1 8,1.2 8,.9 8,1 8,.5 8,-.3 8,-1 8,-1 6.5,-.3"/>
+      <path d="M 667.0,637.9 l 8,-2.5 8,-1.3 8,.2 8,1 8,.9 8,.3 8,-.6 8,-1.1 8,-.8 8,0 8,.8 8,1.1 8,.7 8,-.2 8,-.9 8,-1 8,-.5 8,.4 8,1 8,.9 8,.3 8,-.6 8,-1.1 8,-1.6 8,-.3 8,1.8 8,1.1 8,.7 8,-.2 8,-.9 8,-1 8,-.5 6.5,.3"/>
+      <path d="M 667.0,639.6 l 8,-1.9 8,-.6 8,.5 8,.8 8,.3 8,-.4 8,-.8 8,-.7 8,-.1 8,.5 8,.8 8,.6 8,0 8,-.6 8,-.8 8,-.5 8,.2 8,.7 8,.8 8,.3 8,-.4 8,-.8 8,-.7 8,-.9 8,.2 8,1.9 8,.6 8,0 8,-.6 8,-.8 8,-.5 8,.2 6.5,.6"/>
+      <path d="M 667.0,641.9 l 8,-1.4 8,-.4 8,.3 8,.3 8,-.2 8,-.5 8,-.5 8,-.2 8,.3 8,.5 8,.4 8,.1 8,-.3 8,-.5 8,-.3 8,.1 8,.4 8,.5 8,.3 8,-.2 8,-.5 8,-.5 8,-.2 8,-.5 8,.2 8,1.5 8,.1 8,-.3 8,-.5 8,-.3 8,.1 8,.4 6.5,.4"/>
+      <path d="M 667.0,644.5 l 8,-1.2 8,-.5 8,0 8,-.1 8,-.3 8,-.4 8,-.2 8,.1 8,.3 8,.3 8,.1 8,-.2 8,-.4 8,-.3 8,0 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.4 8,-.2 8,.1 8,-.4 8,0 8,1.1 8,-.2 8,-.4 8,-.3 8,0 8,.3 8,.4 6.5,.2"/>
+      <path d="M 667.0,647.0 l 8,-.9 8,-.5 8,-.3 8,-.4 8,-.5 8,-.3 8,.1 8,.4 8,.5 8,.2 8,-.2 8,-.5 8,-.4 8,-.1 8,.3 8,.5 8,.4 8,0 8,-.4 8,-.5 8,-.3 8,.1 8,.4 8,-.3 8,-.1 8,.8 8,-.5 8,-.4 8,-.1 8,.3 8,.5 8,.4 6.5,0"/>
+      <path d="M 667.0,649.9 l 8,-.8 8,-.8 8,-.8 8,-.8 8,-.5 8,.1 8,.7 8,.8 8,.4 8,-.3 8,-.7 8,-.7 8,-.2 8,.4 8,.8 8,.7 8,.1 8,-.6 8,-.8 8,-.5 8,.1 8,.7 8,.8 8,-.3 8,-.6 8,.3 8,-.7 8,-.2 8,.4 8,.8 8,.7 8,.1 6.5,-.4"/>
+      <path d="M 667.0,653.1 l 8,-1.2 8,-1.4 8,-1.3 8,-.8 8,0 8,.8 8,1.1 8,.6 8,-.2 8,-.9 8,-1 8,-.5 8,.4 8,1 8,.9 8,.2 8,-.6 8,-1.1 8,-.8 8,0 8,.8 8,1.1 8,.6 8,-.9 8,-1.2 8,0 8,-.5 8,.4 8,1 8,.9 8,.2 8,-.6 6.5,-.9"/>
+      <path d="M 667.0,655.8 l 8,-1.9 8,-1.9 8,-1.1 8,-.2 8,.7 8,1.1 8,.8 8,0 8,-.8 8,-1 8,-.6 8,.3 8,.9 8,1 8,.4 8,-.5 8,-1 8,-.9 8,-.2 8,.7 8,1.1 8,.8 8,0 8,-1.6 8,-1.3 8,.5 8,.3 8,.9 8,1 8,.4 8,-.5 8,-1 6.5,-.8"/>
+      <g stroke="#a86e33" stroke-width="0.9">
+        <path d="M 781,531 H 929.2" stroke-width="1.4"/>
+        <path d="M 800,527 C 850,528.5 900,530 929.2,530.5"/>
+        <path d="M 800,535 C 850,533.5 900,532 929.2,531.5"/>
+        <line x1="864" y1="411.2" x2="864" y2="652.9" stroke-width="0.7" stroke-opacity="0.7"/>
+      </g>
+    </g>
+    <g transform="translate(704.3,302.3)" fill="#f2c06e" stroke="#2d2518" stroke-width="0.8">
+      <rect x="0" y="0" width="162" height="9"/>
+      <path d="M 0,9 H 70 V 43 Q 70,47 66,47 H 4 Q 0,47 0,43 Z"/>
+      <path d="M 70,9 H 117 V 28 H 102 L 95,43 H 85 L 82,28 H 70 Z"/>
+      <path d="M 117,9 H 162 L 187,20 V 53 H 175 L 167,28 L 162,26 H 117 Z"/>
+      <g fill="none" stroke="#2d2518" stroke-width="0.6"><path d="M 6,16 H 64 M 6,23 H 64 M 6,30 H 64 M 6,37 H 64"/></g>
+    </g>
+    <g font-family="Rajdhani" font-size="16.5" fill="#f5c689">
+    </g>
+    <g font-family="Rajdhani" fill="#3a2010">
+    </g>
+    <g font-family="Rajdhani" font-size="19" fill="#3a2010">
+    </g>
+    <g fill="none" stroke="#3a2010" stroke-width="1.1">
+      <path d="M 667.1,603.8 H 929.2 M 667.1,651.7 H 929.2"/>
+      <path d="M 718.4,603.8 V 651.7 M 785.9,603.8 V 651.7 M 857.5,603.8 V 651.7"/>
+    </g>
+    <use href="#qr" x="676.9" y="613.1" fill="#3a2010"/>
+    <g font-family="Rajdhani" font-size="11.5" text-anchor="middle" fill="#3a2010">
+    </g>
+  </g>
+  <g font-family="Rajdhani">
+    <text font-family="Rajdhani" font-size="16.5" fill="#f5c689" x="689.1" y="403.3">DPS</text>
+    <text font-family="Rajdhani" font-size="16.5" fill="#f5c689" x="753.1" y="403.3">PNT</text>
+    <text font-family="Rajdhani" font-size="16.5" fill="#f5c689" x="804.1" y="403.3">ACC</text>
+    <text font-family="Rajdhani" font-size="16.5" fill="#f5c689" x="859.1" y="403.3">ROF</text>
+    <text font-family="Rajdhani" fill="#3a2010" x="682.1" y="440.3" font-size="27" font-weight="600">620</text>
+    <text font-family="Rajdhani" fill="#3a2010" x="755.1" y="437.3" font-size="21">30</text>
+    <text font-family="Rajdhani" fill="#3a2010" x="814.1" y="437.3" font-size="21">5</text>
+    <text font-family="Rajdhani" fill="#3a2010" x="867.1" y="437.3" font-size="21">5</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="468">20</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="700" y="468">Recoil</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="488">22</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="700" y="488">Sperad</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="509">12</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="700" y="509">Range</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="539">Bonus</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="560">+9 Reflexes</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="580">+2 Modules Slots</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="752.2" y="624.3">EMPTY</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="752.2" y="639.8">SOCKET</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="821.7" y="624.3">EMPTY</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="821.7" y="639.8">SOCKET</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="893.4" y="624.3">EMPTY</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="893.4" y="639.8">SOCKET</text>
+    <text x="691.1" y="683.9" font-family="Rajdhani" font-size="19" fill="#f5c689"><tspan font-weight="700">MAGNUM 650</tspan> HAND GUN</text>
+  </g>
+  </g>
+  <text x="341" y="822.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">262.1x479.4 incl. the foot tab · outline #dab176 1.3 · 4 echo strands #c5965a 1 at</text>
+  <text x="341" y="830.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">0.55 / 0.40 / 0.28 / 0.18 · veneer body 262.1x241.7 #f6c27a, grain #cd9553 0.7 at</text>
+  <text x="341" y="838.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">2.4 pitch, dark stripe #a86e33 1.4 at y 531, pinch at x 864 · all text on it</text>
+  <text x="341" y="846.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">#3a2010 19px</text>
+  <text x="626" y="300" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">PRODUCT CARD, PLAIN</text>
+  <text x="626" y="312.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">cards 1, 3 and 4 are one template at x0 360.8 / 978.8 / 1288.8, width 262, y</text>
+  <text x="626" y="320.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">314.6..641.4; 3 and 4 repeat 1 exactly</text>
+  <!-- PRODUCT CARD, PLAIN. store-trace.svg card 1 at x0 360.8: left edge a single line from a r13 top left corner; top edge y 345 out to x0+136, a 37 degree STEP up to y 314.6 at x0+176, on to a r18 top right corner and the right edge at x0+262; bottom y 640.4 with a bottom LEFT cut (x0+19,640)-(x0,618) and a r8 bottom right. Outline #dab176 1.3. Four ECHO strands #c5965a 1 at pitch ~2.5, opacity 0.55 / 0.40 / 0.28 / 0.18, shadow the outline from the step, round the top right, down the right side and along the bottom, dying on the bottom left cut. Inside: the weapon illustration (x0+37..x0+220, y 384..438, a simplified filled silhouette #f2c06e stroked #2d2518 0.8 for the source's hatched line drawing), the DPS PNT ACC ROF row, the values row, a socket row between hairlines y 532.9 and 580.8 with dividers at x0+51.3 / +118.8 / +190.4 carrying a 9x9 QR glyph and three EMPTY SOCKET cells, the name at the FOOT (not a header) and a solid tab x0+99..x0+163 under the bottom edge. Placed at (626,330): translate(265.2 15.4) -->
+  <g transform="translate(265.2 15.4)">
+  <g><!-- card x0=360.8 -->
+    <path d="M 360.8,618.0 V 358.0 Q 360.8,345.0 373.8,345.0 H 497.0 L 537.0,314.6 H 604.9 Q 622.9,314.6 622.9,332.6 V 632.4 Q 622.9,640.4 614.9,640.4 H 380.0 L 380.0,640.4 Z"
+          fill="none" stroke="#dab176" stroke-width="1.3"/>
+    <path d="M 502.1,345.0 L 538.8,317.0 H 604.9 Q 619.9,317.0 619.9,332.0 V 632.4 Q 619.9,637.4 614.9,637.4 H 377.4"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.55"/>
+    <path d="M 507.2,345.0 L 540.7,319.5 H 604.9 Q 616.8,319.5 616.8,331.4 V 632.4 Q 616.8,634.3 614.9,634.3 H 374.8"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.40"/>
+    <path d="M 512.3,345.0 L 542.5,321.9 H 604.9 Q 613.8,321.9 613.8,330.8 V 629.8 Q 613.8,631.2 612.3,631.2 H 372.2"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.28"/>
+    <path d="M 517.3,345.0 L 544.3,324.4 H 604.9 Q 610.7,324.4 610.7,330.2 V 626.7 Q 610.7,628.2 609.2,628.2 H 369.5"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.18"/>
+    <path d="M 459.8,632.9 H 524.3 L 520.8,641.4 H 462.8 Z" fill="#fed08d"/>
+    <g transform="translate(398.0,384.0)" fill="#f2c06e" stroke="#2d2518" stroke-width="0.8">
+      <rect x="0" y="0" width="162" height="9"/>
+      <path d="M 0,9 H 70 V 43 Q 70,47 66,47 H 4 Q 0,47 0,43 Z"/>
+      <path d="M 70,9 H 117 V 28 H 102 L 95,43 H 85 L 82,28 H 70 Z"/>
+      <path d="M 117,9 H 162 L 187,20 V 53 H 175 L 167,28 L 162,26 H 117 Z"/>
+      <g fill="none" stroke="#2d2518" stroke-width="0.6"><path d="M 6,16 H 64 M 6,23 H 64 M 6,30 H 64 M 6,37 H 64"/></g>
+    </g>
+    <g font-family="Rajdhani" font-size="16.5" fill="#f5c689">
+    </g>
+    <g font-family="Rajdhani" fill="#f5c689">
+    </g>
+    <g fill="none" stroke="#c5965a" stroke-width="1.1">
+      <path d="M 360.8,532.9 H 622.9 M 360.8,580.8 H 622.9"/>
+      <path d="M 412.1,532.9 V 580.8 M 479.6,532.9 V 580.8 M 551.2,532.9 V 580.8"/>
+    </g>
+    <use href="#qr" x="370.6" y="542.2" fill="#e9bd7a"/>
+    <g font-family="Rajdhani" font-size="11.5" text-anchor="middle" fill="#e9bd7a">
+    </g>
+  </g>
+  <g font-family="Rajdhani">
+    <text font-family="Rajdhani" font-size="16.5" fill="#f5c689" x="382.8" y="485.0">DPS</text>
+    <text font-family="Rajdhani" font-size="16.5" fill="#f5c689" x="446.8" y="485.0">PNT</text>
+    <text font-family="Rajdhani" font-size="16.5" fill="#f5c689" x="497.8" y="485.0">ACC</text>
+    <text font-family="Rajdhani" font-size="16.5" fill="#f5c689" x="552.8" y="485.0">ROF</text>
+    <text font-family="Rajdhani" fill="#f5c689" x="375.8" y="522.0" font-size="27" font-weight="600">620</text>
+    <text font-family="Rajdhani" fill="#f5c689" x="448.8" y="519.0" font-size="21">30</text>
+    <text font-family="Rajdhani" fill="#f5c689" x="507.8" y="519.0" font-size="21">5</text>
+    <text font-family="Rajdhani" fill="#f5c689" x="560.8" y="519.0" font-size="21">5</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#e9bd7a" text-anchor="middle" x="445.9" y="553.4">EMPTY</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#e9bd7a" text-anchor="middle" x="445.9" y="568.9">SOCKET</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#e9bd7a" text-anchor="middle" x="515.4" y="553.4">EMPTY</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#e9bd7a" text-anchor="middle" x="515.4" y="568.9">SOCKET</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#e9bd7a" text-anchor="middle" x="587.1" y="553.4">EMPTY</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#e9bd7a" text-anchor="middle" x="587.1" y="568.9">SOCKET</text>
+    <text x="384.8" y="613.0" font-family="Rajdhani" font-size="19" fill="#f5c689"><tspan font-weight="700">MAGNUM 650</tspan> HAND GUN</text>
+  </g>
+  </g>
+  <text x="626" y="668.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">262.1x326.8 · r13 top left, 37 degree step (136 to 176 in x, 345 to 314.6 in y),</text>
+  <text x="626" y="676.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">r18 top right, r8 bottom right, bottom left cut 19.2x22.4 · socket row 47.9 tall</text>
+  <text x="626" y="684.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">between #c5965a 1.1 rules, QR 9x9 pitch 3.49 · foot tab 64.5/58/8.5 #fed08d · name</text>
+  <text x="626" y="692.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">at the FOOT, 19px 700 + 400</text>
+  <text x="626" y="706" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">6  STORE NAV CELL, PLAIN AND SELECTED</text>
+  <text x="626" y="716.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">five buttons x 93..293.5, 39 tall, on a 60.7 pitch from y 357.9; SMG is the</text>
+  <text x="626" y="724.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">selection</text>
+  <!-- STORE NAV CELL, PLAIN. store-trace.svg RIFLES at (93,357.9): 200.6x38.6, r4 corners, a bottom LEFT cut (93,385)-(108,396.5), outline #dab176 1.3, a small solid tab 33.8 base / 28 top / 3.4 tall #f7cc8c under the bottom right at x 241.7..275.5, and a left aligned label at x+22, 17px ls 1, #f5c689. Placed at (626,736): translate(533.1 378.1) -->
+  <g transform="translate(533.1 378.1)">
+    <path d="M 97,357.9 H 289.5 Q 293.5,357.9 293.5,361.9 V 392.5 Q 293.5,396.5 289.5,396.5 H 108 L 92.9,384.9 V 361.9 Q 92.9,357.9 97,357.9 Z" fill="none" stroke="#dab176" stroke-width="1.3"/>
+    <path d="M 241.7,394.1 H 275.5 L 272.5,397.5 H 244.7 Z" fill="#f7cc8c"/>
+  <g font-family="Rajdhani">
+      <text x="115" y="384.4" font-family="Rajdhani" font-size="17" letter-spacing="1" fill="#f5c689">RIFLES</text>
+  </g>
+  </g>
+  <!-- STORE NAV CELL, SELECTED. store-trace.svg SMG at (93,418.6): the same silhouette filled #f4c078 and grained: 22 wavy hairlines #d0975a 0.7 at ~2.1 pitch that pinch into nested arcs at the left end (x < 113), chevron on a book match seam #b57f46 0.8 at x 192.5 (the plate's midpoint) and sweep up toward the top right past x 272. No outline. Label #3a2010. The tab is kept. Placed at (626,782): translate(533.1 363.4) -->
+  <g transform="translate(533.1 363.4)">
+    <path d="M 97,418.6 H 289.5 Q 293.5,418.6 293.5,422.6 V 453.2 Q 293.5,457.2 289.5,457.2 H 108 L 92.9,445.6 V 422.6 Q 92.9,418.6 97,418.6 Z" fill="#f4c078"/>
+  <g clip-path="url(#smgclip)" fill="none" stroke="#d0975a" stroke-width="0.7">
+    <path d="M 93.0,429.5 l 5,-4.1 5,-2.7 5,-1.7 5,-.8 5,-.4 5,-.5 5,-.4 5,-.1 5,.2 5,.5 5,.5 5,.3 5,0 5,-.3 5,-.5 5,-.5 5,-.3 5,-.4 5,-.5 5,-.2 5,1.3 5,1.1 5,.1 5,-.4 5,-.5 5,-.4 5,-.2 5,.2 5,.4 5,.5 5,.4 5,.1 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,.3 5,.5 5,.5 0.5,0"/>
+    <path d="M 93.0,430.8 l 5,-3.4 5,-2.4 5,-1.8 5,-1.2 5,-.7 5,-.5 5,-.1 5,.4 5,.7 5,.7 5,.5 5,0 5,-.4 5,-.7 5,-.7 5,-.4 5,.1 5,.1 5,-.1 5,0 5,1.1 5,.7 5,-.3 5,-.7 5,-.6 5,-.2 5,.3 5,.6 5,.7 5,.5 5,.1 5,-.4 5,-.7 5,-.7 5,-.5 5,0 5,.4 5,.7 5,.6 5,.3 0.5,0"/>
+    <path d="M 93.0,432.0 l 5,-3 5,-2.5 5,-2 5,-1.3 5,-.5 5,-.1 5,.4 5,.7 5,.8 5,.5 5,0 5,-.5 5,-.8 5,-.7 5,-.4 5,.1 5,.6 5,.4 5,-.2 5,-.4 5,.6 5,.2 5,-.5 5,-.6 5,-.2 5,.3 5,.7 5,.8 5,.5 5,.1 5,-.4 5,-.7 5,-.8 5,-.5 5,0 5,.5 5,.7 5,.7 5,.3 5,-.3 0.5,-.1"/>
+    <path d="M 93.0,432.9 l 5,-2.8 5,-2.4 5,-1.8 5,-.8 5,0 5,.4 5,.6 5,.6 5,.4 5,0 5,-.4 5,-.6 5,-.6 5,-.3 5,.1 5,.5 5,.6 5,.1 5,-.6 5,-.9 5,.3 5,.2 5,-.2 5,-.1 5,.3 5,.6 5,.6 5,.4 5,0 5,-.4 5,-.6 5,-.6 5,-.4 5,0 5,.4 5,.6 5,.5 5,.2 5,-.3 5,-.7 0.5,-.1"/>
+    <path d="M 93.0,433.6 l 5,-2.5 5,-2 5,-1.3 5,-.4 5,.2 5,.4 5,.4 5,.2 5,0 5,-.3 5,-.4 5,-.3 5,-.2 5,.1 5,.3 5,.4 5,.3 5,-.3 5,-1 5,-1 5,.4 5,.6 5,.2 5,.2 5,.4 5,.4 5,.2 5,0 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.2 5,-.5 5,-.7 0.5,-.1"/>
+    <path d="M 93.0,434.4 l 5,-2 5,-1.5 5,-.8 5,-.1 5,.2 5,.2 5,.1 5,0 5,-.2 5,-.2 5,-.2 5,-.1 5,.1 5,.2 5,.2 5,.2 5,.1 5,-.5 5,-1 5,-.9 5,.7 5,.8 5,.4 5,.2 5,.2 5,.1 5,0 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.4 5,-.5 5,-.5 0.5,-.1"/>
+    <path d="M 93.0,435.2 l 5,-1.5 5,-1 5,-.4 5,.1 5,.3 5,.1 5,-.1 5,-.2 5,-.3 5,-.2 5,-.1 5,.1 5,.2 5,.3 5,.2 5,.1 5,-.1 5,-.7 5,-1.1 5,-.9 5,.8 5,1 5,.5 5,.3 5,.2 5,0 5,-.2 5,-.3 5,-.3 5,-.1 5,.1 5,.2 5,.3 5,.2 5,.1 5,-.1 5,-.3 5,-.5 5,-.5 5,-.5 0.5,0"/>
+    <path d="M 93.0,435.9 l 5,-1 5,-.4 5,.1 5,.3 5,.2 5,-.1 5,-.4 5,-.5 5,-.4 5,-.1 5,.2 5,.4 5,.5 5,.4 5,.1 5,-.3 5,-.5 5,-.9 5,-1.2 5,-.7 5,1.1 5,1.3 5,.7 5,.3 5,-.1 5,-.4 5,-.5 5,-.5 5,-.2 5,.1 5,.4 5,.5 5,.4 5,.1 5,-.2 5,-.4 5,-.6 5,-.6 5,-.4 5,-.2 0.5,0"/>
+    <path d="M 93.0,436.8 l 5,-.2 5,.3 5,.5 5,.2 5,-.2 5,-.6 5,-.7 5,-.6 5,-.2 5,.3 5,.7 5,.7 5,.5 5,.1 5,-.4 5,-.7 5,-.7 5,-.8 5,-.8 5,-.2 5,1.6 5,1.5 5,.6 5,-.1 5,-.5 5,-.7 5,-.6 5,-.3 5,.2 5,.6 5,.7 5,.6 5,.2 5,-.3 5,-.7 5,-.7 5,-.6 5,-.3 5,0 5,.1 0.5,0"/>
+    <path d="M 93.0,438.0 l 5,.6 5,.7 5,.4 5,-.2 5,-.7 5,-.8 5,-.6 5,-.1 5,.4 5,.7 5,.8 5,.5 5,0 5,-.5 5,-.8 5,-.7 5,-.4 5,-.4 5,-.3 5,.1 5,1.5 5,1.2 5,.1 5,-.6 5,-.8 5,-.7 5,-.2 5,.3 5,.7 5,.8 5,.6 5,.1 5,-.4 5,-.7 5,-.8 5,-.5 5,-.2 5,.2 5,.3 5,.1 0.5,0"/>
+    <path d="M 93.0,439.3 l 5,1.1 5,.7 5,.1 5,-.4 5,-.6 5,-.4 5,-.1 5,.3 5,.6 5,.6 5,.4 5,0 5,-.4 5,-.6 5,-.6 5,-.3 5,.1 5,0 5,-.2 5,-.1 5,1.1 5,.7 5,-.3 5,-.6 5,-.5 5,-.2 5,.2 5,.5 5,.6 5,.4 5,.1 5,-.3 5,-.6 5,-.6 5,-.4 5,0 5,.3 5,.3 5,.1 5,-.4 0.5,-.1"/>
+    <path d="M 93.0,440.3 l 5,1.3 5,.8 5,.2 5,-.2 5,-.3 5,0 5,.2 5,.4 5,.4 5,.2 5,0 5,-.2 5,-.4 5,-.3 5,-.2 5,.1 5,.3 5,0 5,-.5 5,-.5 5,.7 5,.5 5,-.1 5,-.3 5,-.1 5,.2 5,.3 5,.4 5,.3 5,0 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.2 5,.2 5,0 5,-.4 5,-.8 0.5,-.1"/>
+    <path d="M 93.0,441.2 l 5,1.7 5,1 5,.5 5,.1 5,0 5,.1 5,.2 5,.2 5,.1 5,0 5,-.2 5,-.2 5,-.2 5,-.1 5,.1 5,.2 5,.2 5,-.2 5,-.8 5,-.7 5,.6 5,.6 5,.1 5,0 5,.1 5,.2 5,.2 5,.1 5,0 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,0 5,-.3 5,-.7 5,-1 0.5,-.1"/>
+    <path d="M 93.0,442.1 l 5,2.1 5,1.3 5,.7 5,.3 5,.2 5,.3 5,.3 5,.1 5,0 5,-.2 5,-.3 5,-.3 5,-.1 5,.1 5,.2 5,.3 5,.2 5,-.3 5,-.9 5,-.9 5,.5 5,.6 5,.2 5,.1 5,.3 5,.3 5,.2 5,0 5,-.2 5,-.3 5,-.3 5,-.1 5,0 5,.2 5,.3 5,.2 5,-.1 5,-.5 5,-.9 5,-1.2 0.5,-.1"/>
+    <path d="M 93.0,442.9 l 5,2.3 5,1.6 5,1.1 5,.7 5,.5 5,.5 5,.2 5,-.1 5,-.4 5,-.5 5,-.4 5,-.2 5,.2 5,.4 5,.5 5,.4 5,.1 5,-.6 5,-1.3 5,-1.2 5,.5 5,.8 5,.5 5,.5 5,.5 5,.3 5,0 5,-.3 5,-.5 5,-.5 5,-.2 5,.1 5,.4 5,.5 5,.4 5,.2 5,-.3 5,-.9 5,-1.2 5,-1.4 0.5,-.1"/>
+    <path d="M 93.0,443.5 l 5,2.7 5,2.1 5,1.7 5,1.2 5,.7 5,.3 5,-.2 5,-.6 5,-.7 5,-.6 5,-.2 5,.3 5,.6 5,.7 5,.5 5,.1 5,-.3 5,-1.1 5,-1.6 5,-1.1 5,.8 5,1.3 5,1 5,.7 5,.4 5,-.1 5,-.5 5,-.7 5,-.7 5,-.3 5,.2 5,.6 5,.7 5,.6 5,.2 5,-.3 5,-.8 5,-1.2 5,-1.3 5,-1.2 0.5,-.1"/>
+    <path d="M 93.0,444.2 l 5,3.5 5,2.9 5,2.3 5,1.2 5,.3 5,-.2 5,-.6 5,-.8 5,-.6 5,-.2 5,.3 5,.7 5,.8 5,.6 5,.1 5,-.4 5,-.7 5,-1.2 5,-1.3 5,-.7 5,1.3 5,1.6 5,1 5,.4 5,-.1 5,-.6 5,-.8 5,-.7 5,-.3 5,.2 5,.6 5,.8 5,.6 5,.2 5,-.3 5,-.7 5,-1 5,-1.1 5,-.9 5,-.7 0.5,-.1"/>
+    <path d="M 93.0,445.3 l 5,4.3 5,3.5 5,2.3 5,.8 5,-.2 5,-.5 5,-.6 5,-.5 5,-.1 5,.3 5,.6 5,.6 5,.4 5,0 5,-.3 5,-.6 5,-.6 5,-.8 5,-.8 5,-.3 5,1.4 5,1.4 5,.5 5,-.1 5,-.5 5,-.6 5,-.5 5,-.2 5,.2 5,.5 5,.6 5,.5 5,.1 5,-.3 5,-.6 5,-.6 5,-.6 5,-.6 5,-.5 5,-.6 0.5,-.1"/>
+    <g stroke="#b57f46" stroke-width="0.9">
+      <line x1="192.5" y1="418.6" x2="192.5" y2="457.2" stroke-width="0.8"/>
+    </g>
+  </g>
+    <path d="M 241.7,454.8 H 275.5 L 272.5,458.2 H 244.7 Z" fill="#f7cc8c"/>
+  <g font-family="Rajdhani">
+      <text x="115" y="445.1" font-family="Rajdhani" font-size="17" letter-spacing="1" fill="#3a2010">SMG</text>
+  </g>
+  </g>
+  <text x="626" y="832.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">200.6x38.6, r4, bottom left cut 15.1x11.6 · plain: no fill, stroke #dab176 1.3,</text>
+  <text x="626" y="840.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">label #f5c689 17px ls 1 at x+22 · selected: fill #f4c078 + grain #d0975a 0.7 at 2.1</text>
+  <text x="626" y="848.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">pitch + seam #b57f46 0.8 at the midpoint x 192.5, no stroke, label #3a2010 · tab</text>
+  <text x="626" y="856.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">33.8/28/3.4 #f7cc8c</text>
+  <text x="911" y="300" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">4  DETAIL PANEL, HUB</text>
+  <text x="911" y="312.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">the cascade card family mirrored: 232x472 at (1168,253), chamfer 42 at the top</text>
+  <text x="911" y="320.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">LEFT, 6 onion rings, a solid body and the module name beneath</text>
+  <!-- DETAIL PANEL. dashboard-trace.svg at (1168,253): <path id="npanel"> is 232x472, Q6 top left, a 22x25 diagonal from (51,25) to (73,0) reading as a 42 chamfer at the top LEFT (the cascade card's 32 top RIGHT chamfer mirrored), Q10 top right and bottom corners. Outline #bd8951 1.8. Six onion rings #bd8951 1 at 3 pitch, opacity 0.25 to 0.85, offset outward from -18 to -3. A solid gold body [1171,326,231,309] #f2b463 carries two dark paragraphs as #3b2416 bars 11 tall at 20 pitch (six lines, a 25 gap, three lines), then a two bar micro text tape #bd8951 at y 646 / 656 and the module name EMAIL 24px 600 ls 3 #f2b463 centred at (1286,700). Placed at (911,330): translate(-239 95) -->
+  <g transform="translate(-239 95)">
+  <g>
+    <g fill="none" stroke="#bd8951" transform="translate(1168 253)">
+      <path d="M -18,480 V 7 Q -18,1 -12,1 H 51 L 73,-18 H 240 Q 250,-18 250,-8 V 480 Q 250,490 240,490 H -8 Q -18,490 -18,480 Z" stroke-width="1" stroke-opacity="0.25"/>
+      <path d="M -15,477 V 10 Q -15,4 -9,4 H 51 L 73,-15 H 237 Q 247,-15 247,-5 V 477 Q 247,487 237,487 H -5 Q -15,487 -15,477 Z" stroke-width="1" stroke-opacity="0.37"/>
+      <path d="M -12,474 V 13 Q -12,7 -6,7 H 51 L 73,-12 H 234 Q 244,-12 244,-2 V 474 Q 244,484 234,484 H -2 Q -12,484 -12,474 Z" stroke-width="1" stroke-opacity="0.49"/>
+      <path d="M -9,471 V 16 Q -9,10 -3,10 H 51 L 73,-9 H 231 Q 241,-9 241,1 V 471 Q 241,481 231,481 H 1 Q -9,481 -9,471 Z" stroke-width="1" stroke-opacity="0.61"/>
+      <path d="M -6,468 V 19 Q -6,13 0,13 H 51 L 73,-6 H 228 Q 238,-6 238,4 V 468 Q 238,478 228,478 H 4 Q -6,478 -6,468 Z" stroke-width="1" stroke-opacity="0.73"/>
+      <path d="M -3,465 V 22 Q -3,16 3,16 H 51 L 73,-3 H 225 Q 235,-3 235,7 V 465 Q 235,475 225,475 H 7 Q -3,475 -3,465 Z" stroke-width="1" stroke-opacity="0.85"/>
+    </g>
+    <use href="#npanel" x="1168" y="253" fill="none" stroke="#bd8951" stroke-width="1.8"/>
+    <!-- solid body, measured [1171,326,231,309] -->
+    <rect x="1171" y="326" width="231" height="309" fill="#f2b463"/>
+    <!-- two dark paragraphs on the fill -->
+    <g fill="#3b2416">
+      <rect x="1190" y="349" width="196" height="11"/>
+      <rect x="1190" y="369" width="200" height="11"/>
+      <rect x="1190" y="389" width="192" height="11"/>
+      <rect x="1190" y="409" width="196" height="11"/>
+      <rect x="1190" y="429" width="188" height="11"/>
+      <rect x="1190" y="449" width="120" height="11"/>
+      <rect x="1190" y="474" width="198" height="11"/>
+      <rect x="1190" y="494" width="184" height="11"/>
+      <rect x="1190" y="514" width="90"  height="11"/>
+    </g>
+    <!-- micro-text tape and the big EMAIL label -->
+    <g fill="#bd8951">
+      <rect x="1186" y="646" width="200" height="6"/>
+      <rect x="1200" y="656" width="172" height="6"/>
+    </g>
+    <text x="1286" y="700" font-family="Rajdhani" font-size="24" font-weight="600"
+          letter-spacing="3" fill="#f2b463" text-anchor="middle">EMAIL</text>
+  </g>
+  </g>
+  <text x="911" y="844.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">232x472 · outline #bd8951 1.8 · rings 6 at 3 pitch, 0.25 to 0.85 · body 231x309</text>
+  <text x="911" y="852.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">#f2b463 · text bars 11 tall at 20 pitch #3b2416 · name 24px 600 ls 3 · no scroll</text>
+  <text x="911" y="860.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">rail, no maker's mark</text>
+  <text x="1189" y="300" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">6  LOGIN ENTRY GROUP</text>
+  <text x="1189" y="312.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">two identical groups, the right one exactly +420 in x; there is no user card, no selected state and</text>
+  <text x="1189" y="320.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">nothing else on the login screen</text>
+  <!-- LOGIN ENTRY GROUP. login-trace.svg <g id="entrylines"> + <g id="entrytext">: a PRASE_6054012 label at (428.5,350) 19.5px 500 ls 0.15 #f5bf75 (run 429.2..553.8, cap 336.2..349.2); a dark chocolate FIELD [417,361]..[762,403], 345x42, fill #3c1c11 and NO outline; a solid gold BAR [417,414]..[761,441], 344x27, fill #fbc171 with a 16x13 chamfer cut off its bottom LEFT corner only, carrying ENTER / LOGIN centred on x 582.5 at 14px 300 ls 4.1 in #6b3f1e (run 532.9..645.4); a 26x26 letter box at (416,465) stroke #c8914d and the SPARE TIME MANAGER micro text at (454,471/479) 7px ls 0.4 #a97c48. Placed at (1189,330): translate(773 -6) -->
+  <g transform="translate(773 -6)">
+  <use href="#entrylines"/>
+  <use href="#entrytext"/>
+  <g font-family="Rajdhani" font-size="15" fill="#d9a877" text-anchor="middle">
+    <text x="429" y="483">A</text>
+  </g>
+  </g>
+  <text x="1189" y="496.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">label 19.5px 500 ls 0.15 #f5bf75 · field 345x42 #3c1c11, NO outline, no caret, no inner rule · CTA bar</text>
+  <text x="1189" y="504.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">344x27 #fbc171, square but for a 16x13 bottom LEFT chamfer, ENTER / LOGIN 14px 300 ls 4.1 #6b3f1e centred</text>
+  <text x="1189" y="518" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">4  MESSAGE PANEL: PLAIN TEXT, NO OUTLINE</text>
+  <g transform="translate(452 269)" clip-path="url(#winMsg)">
+  <!-- MESSAGE BODY. mailbox-trace.svg: the message is drawn with NO panel, no
+       outline and no fill; only type on the ground. URGENT INFORMATION (!) at
+       (737,276) 15px 700 ls 1.15 #f8c884 (run 737..908); FROM: MOM (740,297)
+       11.5px 600 ls 1.65 #f3c583; three lorem paragraphs at (738, 333) 17px 600
+       ls 0.3 #f3c583 on a 21.5 line pitch, 2 / 5 / 3 lines, widest run ~600 to
+       x 1338. Shown here at full size with the lines cut to the column width.
+       Placed at (1189,546): translate(452 269) -->
+  <g font-family="Rajdhani" fill="#f8c884">
+    <text x="737" y="276" font-size="15" font-weight="700" letter-spacing="1.15">URGENT INFORMATION (!)</text>
+    <text x="740" y="297" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: MOM</text>
+    <g font-size="17" font-weight="600" fill="#f3c583" letter-spacing="0.3">
+      <text x="738" y="333">Lorem ipsum dolor sit amet, consec</text>
+      <text x="738" y="354">tempor incididunt ut labore et dolo</text>
+      <text x="738" y="397">Ut enim ad minim veniam, quis nost</text>
+    </g>
+  </g>
+  </g>
+  <text x="1189" y="680.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">no panel, no outline, no fill · heading 15px 700 ls 1.15 #f8c884 · FROM: 11.5px 600 ls 1.65 #f3c583 · body</text>
+  <text x="1189" y="688.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">17px 600 ls 0.3 on a 21.5 line pitch, x 738, widest run 600, paragraph gaps 43 / 42</text>
+  <text x="1189" y="706" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">6  OUTLINED BUTTON, MAILBOX</text>
+  <!-- OUTLINED BUTTON. mailbox-trace.svg: four RIFLES buttons 184x39 at y 684..723, x from 735 on a 192 pitch. r5 corners with the bottom LEFT cut by a 13x10 chamfer, outline #ecbe82 1.25, a filled trapezoid tab #fdcf8c (37 base / 29 top / 7 tall) sitting INSIDE the outline on the bottom edge at x 866..903, and a left aligned label at x+22, 16px 500 ls 1, #f9cb8a. Placed at (1189,718): translate(454 34) -->
+  <g transform="translate(454 34)">
+  <use href="#riflebox"/>
+  <g font-family="Rajdhani">
+      <text x="757" y="710.5" font-size="16" font-weight="500" letter-spacing="1" fill="#f9cb8a">RIFLES</text>
+  </g>
+  </g>
+  <text x="1189" y="768.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">184x39, r5, bottom left chamfer 13x10 · stroke #ecbe82 1.25 · tab 37/29/7 #fdcf8c inside the stroke at</text>
+  <text x="1189" y="776.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">x+131 · label 16px 500 ls 1 #f9cb8a at x+22 · four on a 192 pitch</text>
+  <text x="1189" y="790" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">STORE META LINES</text>
+  <!-- STORE META LINES. store-trace.svg left column: CUSTOMER / #NC488402 (cap 243..252, right edge 289), LOYALTY DISCOUNT / 10% (275..283), LAST UPDATE / 10/05/2077 (291..299). Label left aligned at x 96, value right anchored to x 288..289, 11.5px #e9bd7a, no rule between them. Placed at (1189,800): translate(1093 557) -->
+  <g transform="translate(1093 557)">
+  <g font-family="Rajdhani">
+    <text font-family="Rajdhani" font-size="11.5" fill="#e9bd7a" x="96" y="252">CUSTOMER</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#e9bd7a" x="289" y="252" text-anchor="end">#NC488402</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#e9bd7a" x="96" y="283">LOYALTY DISCOUNT</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#e9bd7a" x="288" y="283" text-anchor="end">10%</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#e9bd7a" x="96" y="299">LAST UPDATE</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#e9bd7a" x="288" y="299" text-anchor="end">10/05/2077</text>
+  </g>
+  </g>
+
+  <!-- ============================ ROW 3: WIRE BAND, LIST ROWS ============================ -->
+  <text x="56" y="872" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">1  WIRE BAND: THE ERA'S CHROME (THERE IS NO DEVICE FRAME)</text>
+  <text x="56" y="884.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">STORE HEADER. 8 strands, low runs y 160.4 + 3.2i (x 35..290 and 1290..1562), each rising</text>
+  <text x="56" y="892.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">through ONE S bend onto a single bridge line y 124.2 spanning 349..1230</text>
+  <g transform="translate(-134 784)">
+  <g clip-path="url(#winStore)">
+  <!-- WIRE BAND, store header. store-trace.svg, shown through a 300 wide window
+       of the trace at x 190..490, y 116..200: the low run, the S bend at
+       x 290 to 349, the bridge line, and the boxed A at (360,143) that hangs
+       BELOW the bridge on the low run. Both ends of the band curl down ~10px
+       into a vertical at x 35 / 1562. Placed at (56,900): translate(-134 784) -->
+  <g fill="none" stroke="#e0b67a" stroke-width="1.2">
+    <path d="M 35,170.4 Q 35,160.4 45,160.4 H 290 C 322,160.4 316,124.2 349,124.2 H 1230 C 1264,124.2 1258,160.4 1290,160.4 H 1552 Q 1562,160.4 1562,170.4" stroke-opacity="0.35"/>
+    <path d="M 35,173.6 Q 35,163.6 45,163.6 H 290 C 322,163.6 316,124.2 349,124.2 H 1230 C 1264,124.2 1258,163.6 1290,163.6 H 1552 Q 1562,163.6 1562,173.6" stroke-opacity="0.44"/>
+    <path d="M 35,176.8 Q 35,166.8 45,166.8 H 290 C 322,166.8 316,124.2 349,124.2 H 1230 C 1264,124.2 1258,166.8 1290,166.8 H 1552 Q 1562,166.8 1562,176.8" stroke-opacity="0.54"/>
+    <path d="M 35,180.0 Q 35,170.0 45,170.0 H 290 C 322,170.0 316,124.2 349,124.2 H 1230 C 1264,124.2 1258,170.0 1290,170.0 H 1552 Q 1562,170.0 1562,180.0" stroke-opacity="0.63"/>
+    <path d="M 35,183.2 Q 35,173.2 45,173.2 H 290 C 322,173.2 316,124.2 349,124.2 H 1230 C 1264,124.2 1258,173.2 1290,173.2 H 1552 Q 1562,173.2 1562,183.2" stroke-opacity="0.72"/>
+    <path d="M 35,186.4 Q 35,176.4 45,176.4 H 290 C 322,176.4 316,124.2 349,124.2 H 1230 C 1264,124.2 1258,176.4 1290,176.4 H 1552 Q 1562,176.4 1562,186.4" stroke-opacity="0.81"/>
+    <path d="M 35,189.6 Q 35,179.6 45,179.6 H 290 C 322,179.6 316,124.2 349,124.2 H 1230 C 1264,124.2 1258,179.6 1290,179.6 H 1552 Q 1562,179.6 1562,189.6" stroke-opacity="0.91"/>
+    <path d="M 35,192.8 Q 35,182.8 45,182.8 H 290 C 322,182.8 316,124.2 349,124.2 H 1230 C 1264,124.2 1258,182.8 1290,182.8 H 1552 Q 1562,182.8 1562,192.8" stroke-opacity="1.00"/>
+  </g>
+  <g stroke="#e0b67a" fill="none">
+    <use href="#letterbox" x="360" y="143"/>
+    <use href="#letterbox" x="1178" y="143"/>
+  </g>
+  <g font-family="Rajdhani">
+      <text fill="#e0b67a" stroke="none" x="368" y="163" font-family="Rajdhani" font-size="17" font-weight="600">A</text>
+  </g>
+  </g>
+  </g>
+  <text x="56" y="992.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">strands #e0b67a 1.2, opacity 0.35 to 1.00 top to bottom · S bend C 322,ys 316,yb 349,yb ·</text>
+  <text x="56" y="1000.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">ends curl down 10 into a vertical</text>
+  <text x="376" y="884.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">HUB AND MAIL HEADER. the same 8 strands entering low at the left (y 122..145), sweeping up</text>
+  <text x="376" y="892.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">and CONVERGING into a tight line at y 87 that runs to x 950</text>
+  <g transform="translate(356 822)">
+  <g clip-path="url(#winHub)">
+  <!-- WIRE BAND, hub and mail header. dashboard-trace.svg, shown through a 300
+       wide window at x 20..320, y 78..162. Same construction as the store band
+       but the strands CONVERGE (spacing 2.9 on the run, 0.16 on the tight line)
+       instead of merging, and past x 1040 they fan back out into a ribbon at
+       y 123..136 that passes under the security badges and curls down at x 1568.
+       mailbox-trace.svg carries this block verbatim, at stroke #cb9a64.
+       Placed at (376,900): translate(356 822) -->
+  <g fill="none" stroke="#a97c48" stroke-width="1.1">
+    <path d="M 30,122.0 H 52 C 84,122.0 100,86.40 130,86.40 H 1040 C 1075,86.40 1090,123.0 1125,123.0 H 1535 Q 1562,123.0 1568,145.0 L 1570,153.0"/>
+    <path d="M 30,124.9 H 52 C 84,124.9 100,86.56 130,86.56 H 1040 C 1075,86.56 1090,124.8 1125,124.8 H 1535 Q 1562,124.8 1568,146.8 L 1570,154.8"/>
+    <path d="M 30,127.8 H 52 C 84,127.8 100,86.72 130,86.72 H 1040 C 1075,86.72 1090,126.6 1125,126.6 H 1535 Q 1562,126.6 1568,148.6 L 1570,156.6"/>
+    <path d="M 30,130.7 H 52 C 84,130.7 100,86.88 130,86.88 H 1040 C 1075,86.88 1090,128.4 1125,128.4 H 1535 Q 1562,128.4 1568,150.4 L 1570,158.4"/>
+    <path d="M 30,133.6 H 52 C 84,133.6 100,87.04 130,87.04 H 1040 C 1075,87.04 1090,130.2 1125,130.2 H 1535 Q 1562,130.2 1568,152.2 L 1570,160.2"/>
+    <path d="M 30,136.5 H 52 C 84,136.5 100,87.20 130,87.20 H 1040 C 1075,87.20 1090,132.0 1125,132.0 H 1535 Q 1562,132.0 1568,154.0 L 1570,162.0"/>
+    <path d="M 30,139.4 H 52 C 84,139.4 100,87.36 130,87.36 H 1040 C 1075,87.36 1090,133.8 1125,133.8 H 1535 Q 1562,133.8 1568,155.8 L 1570,163.8"/>
+    <path d="M 30,142.3 H 52 C 84,142.3 100,87.52 130,87.52 H 1040 C 1075,87.52 1090,135.6 1125,135.6 H 1535 Q 1562,135.6 1568,157.6 L 1570,165.6"/>
+  </g>
+  <g fill="#4c3f5f"><rect x="238" y="98" width="26" height="26" rx="3"/></g>
+  <g stroke="#bd8951"><use href="#letterbox" x="238" y="98"/></g>
+  <g font-family="Rajdhani" font-size="15">
+    <g fill="#d9a877" text-anchor="middle"><text x="250" y="117">A</text></g>
+  </g>
+  </g>
+  </g>
+  <text x="376" y="992.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">strands #a97c48 1.1 (mail #cb9a64), 8 at 2.9 pitch, converging to 0.16 · boxed letters hang</text>
+  <text x="376" y="1000.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">under the tight line, uncrossed</text>
+  <text x="696" y="884.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">LOGIN FOOT. 22 strands as a wide trapezoid: outer plateaus y 727.1 + 3.9i, S bending onto a</text>
+  <text x="696" y="892.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">LOW centre plateau y 782.1 + 3.03i, mirrored about x 808</text>
+  <text x="696" y="1040.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">#eab15c 1.2, opacity 0.30 to 1.00 top to bottom · floor glow #371c11 between the strands,</text>
+  <text x="696" y="1048.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">no spill outside the band</text>
+  <g transform="translate(516 184)">
+  <g clip-path="url(#winLogin)">
+  <!-- WIRE BAND, login foot. login-trace.svg, shown through a 300 wide window at
+       x 180..480, y 716..854: the outer plateau, the fan of S bends (top strand
+       leaves at x 358 and lands at 406, bottom strand 398 to 452, so the bends
+       splay), and the start of the centre plateau where the spacing tightens
+       from 3.9 to 3.0. The floor BETWEEN the strands glows: #bandglow, black at
+       the top strand rising to #371c11 at the bottom one, with no spill outside
+       the band. Brightness steps 0.30 to 1.00 top to bottom.
+       Placed at (696,900): translate(516 184) -->
+    <path d="M 35,727.1 H 358.0 C 384.4,727.1 379.6,782.1 406.0,782.1 H 1210.0 C 1236.4,782.1 1231.6,727.1 1258.0,727.1 H 1564 V 809.0 H 1218.1 C 1188.2,809.0 1193.7,845.7 1163.8,845.7 H 452.2 C 422.3,845.7 427.8,809.0 397.9,809.0 H 35 Z" fill="url(#bandglow)"/>
+  <g fill="none" stroke="#eab15c" stroke-width="1.2">
+    <path d="M 35,812 V 735.1 Q 35,727.1 43,727.1 H 358.0 C 384.4,727.1 379.6,782.1 406.0,782.1 H 1210.0 C 1236.4,782.1 1231.6,727.1 1258.0,727.1 H 1556 Q 1564,727.1 1564,735.1 V 812" stroke-opacity="0.30"/>
+    <path d="M 35,812 V 739.0 Q 35,731.0 43,731.0 H 359.9 C 386.5,731.0 381.6,785.1 408.2,785.1 H 1207.8 C 1234.4,785.1 1229.5,731.0 1256.1,731.0 H 1556 Q 1564,731.0 1564,739.0 V 812" stroke-opacity="0.33"/>
+    <path d="M 35,812 V 742.9 Q 35,734.9 43,734.9 H 361.8 C 388.5,734.9 383.7,788.2 410.4,788.2 H 1205.6 C 1232.3,788.2 1227.5,734.9 1254.2,734.9 H 1556 Q 1564,734.9 1564,742.9 V 812" stroke-opacity="0.37"/>
+    <path d="M 35,812 V 746.8 Q 35,738.8 43,738.8 H 363.7 C 390.6,738.8 385.7,791.2 412.6,791.2 H 1203.4 C 1230.3,791.2 1225.4,738.8 1252.3,738.8 H 1556 Q 1564,738.8 1564,746.8 V 812" stroke-opacity="0.40"/>
+    <path d="M 35,812 V 750.7 Q 35,742.7 43,742.7 H 365.6 C 392.7,742.7 387.7,794.2 414.8,794.2 H 1201.2 C 1228.3,794.2 1223.3,742.7 1250.4,742.7 H 1556 Q 1564,742.7 1564,750.7 V 812" stroke-opacity="0.43"/>
+    <path d="M 35,812 V 754.6 Q 35,746.6 43,746.6 H 367.5 C 394.7,746.6 389.8,797.2 417.0,797.2 H 1199.0 C 1226.2,797.2 1221.3,746.6 1248.5,746.6 H 1556 Q 1564,746.6 1564,754.6 V 812" stroke-opacity="0.47"/>
+    <path d="M 35,812 V 758.5 Q 35,750.5 43,750.5 H 369.4 C 396.8,750.5 391.8,800.3 419.2,800.3 H 1196.8 C 1224.2,800.3 1219.2,750.5 1246.6,750.5 H 1556 Q 1564,750.5 1564,758.5 V 812" stroke-opacity="0.50"/>
+    <path d="M 35,812 V 762.4 Q 35,754.4 43,754.4 H 371.3 C 398.9,754.4 393.8,803.3 421.4,803.3 H 1194.6 C 1222.2,803.3 1217.1,754.4 1244.7,754.4 H 1556 Q 1564,754.4 1564,762.4 V 812" stroke-opacity="0.53"/>
+    <path d="M 35,812 V 766.3 Q 35,758.3 43,758.3 H 373.2 C 400.9,758.3 395.9,806.3 423.6,806.3 H 1192.4 C 1220.1,806.3 1215.1,758.3 1242.8,758.3 H 1556 Q 1564,758.3 1564,766.3 V 812" stroke-opacity="0.57"/>
+    <path d="M 35,812 V 770.2 Q 35,762.2 43,762.2 H 375.1 C 403.0,762.2 397.9,809.4 425.8,809.4 H 1190.2 C 1218.1,809.4 1213.0,762.2 1240.9,762.2 H 1556 Q 1564,762.2 1564,770.2 V 812" stroke-opacity="0.60"/>
+    <path d="M 35,812 V 774.1 Q 35,766.1 43,766.1 H 377.0 C 405.1,766.1 399.9,812.4 428.0,812.4 H 1188.0 C 1216.0,812.4 1211.0,766.1 1239.0,766.1 H 1556 Q 1564,766.1 1564,774.1 V 812" stroke-opacity="0.63"/>
+    <path d="M 35,812 V 778.0 Q 35,770.0 43,770.0 H 378.9 C 407.1,770.0 402.0,815.4 430.2,815.4 H 1185.8 C 1214.0,815.4 1208.9,770.0 1237.1,770.0 H 1556 Q 1564,770.0 1564,778.0 V 812" stroke-opacity="0.67"/>
+    <path d="M 35,812 V 781.9 Q 35,773.9 43,773.9 H 380.8 C 409.2,773.9 404.0,818.5 432.4,818.5 H 1183.6 C 1212.0,818.5 1206.8,773.9 1235.2,773.9 H 1556 Q 1564,773.9 1564,781.9 V 812" stroke-opacity="0.70"/>
+    <path d="M 35,812 V 785.8 Q 35,777.8 43,777.8 H 382.7 C 411.2,777.8 406.1,821.5 434.6,821.5 H 1181.4 C 1209.9,821.5 1204.8,777.8 1233.3,777.8 H 1556 Q 1564,777.8 1564,785.8 V 812" stroke-opacity="0.73"/>
+    <path d="M 35,812 V 789.7 Q 35,781.7 43,781.7 H 384.6 C 413.3,781.7 408.1,824.5 436.8,824.5 H 1179.2 C 1207.9,824.5 1202.7,781.7 1231.4,781.7 H 1556 Q 1564,781.7 1564,789.7 V 812" stroke-opacity="0.77"/>
+    <path d="M 35,812 V 793.6 Q 35,785.6 43,785.6 H 386.5 C 415.4,785.6 410.1,827.6 439.0,827.6 H 1177.0 C 1205.9,827.6 1200.6,785.6 1229.5,785.6 H 1556 Q 1564,785.6 1564,793.6 V 812" stroke-opacity="0.80"/>
+    <path d="M 35,812 V 797.5 Q 35,789.5 43,789.5 H 388.4 C 417.4,789.5 412.2,830.6 441.2,830.6 H 1174.8 C 1203.8,830.6 1198.6,789.5 1227.6,789.5 H 1556 Q 1564,789.5 1564,797.5 V 812" stroke-opacity="0.83"/>
+    <path d="M 35,812 V 801.4 Q 35,793.4 43,793.4 H 390.3 C 419.5,793.4 414.2,833.6 443.4,833.6 H 1172.6 C 1201.8,833.6 1196.5,793.4 1225.7,793.4 H 1556 Q 1564,793.4 1564,801.4 V 812" stroke-opacity="0.87"/>
+    <path d="M 35,812 V 805.3 Q 35,797.3 43,797.3 H 392.2 C 421.6,797.3 416.2,836.6 445.6,836.6 H 1170.4 C 1199.8,836.6 1194.4,797.3 1223.8,797.3 H 1556 Q 1564,797.3 1564,805.3 V 812" stroke-opacity="0.90"/>
+    <path d="M 35,812 V 809.2 Q 35,801.2 43,801.2 H 394.1 C 423.6,801.2 418.3,839.7 447.8,839.7 H 1168.2 C 1197.7,839.7 1192.4,801.2 1221.9,801.2 H 1556 Q 1564,801.2 1564,809.2 V 812" stroke-opacity="0.93"/>
+    <path d="M 35,812 V 813.1 Q 35,805.1 43,805.1 H 396.0 C 425.7,805.1 420.3,842.7 450.0,842.7 H 1166.0 C 1195.7,842.7 1190.3,805.1 1220.0,805.1 H 1556 Q 1564,805.1 1564,813.1 V 812" stroke-opacity="0.97"/>
+    <path d="M 35,812 V 817.0 Q 35,809.0 43,809.0 H 397.9 C 427.8,809.0 422.3,845.7 452.2,845.7 H 1163.8 C 1193.7,845.7 1188.2,809.0 1218.1,809.0 H 1556 Q 1564,809.0 1564,817.0 V 812" stroke-opacity="1.00"/>
+  </g>
+  </g>
+  </g>
+  <text x="1016" y="872" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">5  MAIL LIST ROW, PLAIN AND SELECTED</text>
+  <text x="1016" y="884.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">seven rows on a 60.2 pitch from y 309; row 2 is the selection, a wood veneer bar with a 22 chamfer on its top RIGHT corner</text>
+  <!-- MAIL LIST ROW, PLAIN. mailbox-trace.svg row 1: a title at (193,276) 18px 600 #f3c583, a FROM: line at (193,297) 11.5px 600 ls 1.65, an envelope glyph at x 429..445 (OPEN on rows 1, 3, 7: flap raised, 14.5 tall; CLOSED on the rest: 16x10.5 with a V crease), and a hairline rule #e0b67a 1.5 from x 35 to 483 under the row carrying a small filled trapezoid tab #fdcf8c (31 base / 24 top / 5 tall) on top of it at x 421.5..452.5. Placed at (1016,900): translate(-981 642) -->
+  <g transform="translate(981 642)">
+  <g stroke="#e0b67a" stroke-width="1.5" fill="#fdcf8c">
+      <line x1="35" y1="309.0" x2="483" y2="309.0"/>
+      <path d="M 421.5,309.0 L 425,304.0 H 449 L 452.5,309.0 Z" stroke="none"/>
+  </g>
+  <g fill="none" stroke-width="1">
+      <g stroke="#f0bf7b" transform="translate(429 271.7)"><path d="M 0,4 L 8,0 L 16,4 V 14.5 H 0 Z"/><path d="M 0,4 L 8,9.5 L 16,4"/></g>
+  </g>
+  <g font-family="Rajdhani">
+    <text x="193" y="276.0" font-size="18" font-weight="600" fill="#f3c583">You'll regret that</text>
+    <text x="193" y="297.0" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: JACKIE</text>
+  </g>
+  </g>
+  <!-- MAIL LIST ROW, SELECTED. mailbox-trace.svg row 2: a bar [35,315]..[512,370] (477x55) with a 22px chamfer on its top RIGHT corner only and a Q4 bottom right, base fill #f8c678, and it is WOOD VENEER, not a flat fill: 32 hairlines #cf975c 0.7 on the measured 1.7 pitch, clipped to the bar, pinched into a swirl at the left edge, chevroned into a vertical book match seam at x 273 (the bar's midpoint) and arcing up into the chamfer past x 430, with the bunched darker lines #c19867 0.9 drawn on top. Text on veneer is a MID BROWN, not near black: title #7b5438, FROM: #895f3b, envelope #865c39. Placed at (1016,960): translate(981 655) -->
+  <g transform="translate(981 655)">
+    <path d="M 35,315 H 490 L 512,337 V 366 Q 512,370 508,370 H 35 Z" fill="#f8c678"/>
+  <g clip-path="url(#selclip)" fill="none" stroke="#cf975c" stroke-width="0.7">
+      <path d="M 35.0,327.9 C 39.7,327.9 43.3,326.0 48.0,326.0 S 64.5,318.9 74.0,318.9 S 90.5,318.3 100.0,318.3 S 116.5,314.7 126.0,314.7 S 142.5,317.1 152.0,317.1 S 168.5,314.7 178.0,314.7 S 194.5,317.1 204.0,317.1 S 220.5,314.7 230.0,314.7 S 246.5,317.1 256.0,317.1 S 272.5,313.7 282.0,313.7 S 298.5,317.1 308.0,317.1 S 324.5,314.7 334.0,314.7 S 350.5,317.1 360.0,317.1 S 376.5,314.7 386.0,314.7 S 402.5,317.1 412.0,317.1 S 428.5,314.7 438.0,314.7 S 454.5,317.0 464.0,317.0 S 480.5,314.4 490.0,314.4 S 504.0,316.5 512.0,316.5"/>
+      <path d="M 35.0,329.6 C 38.1,329.6 40.4,328.5 43.4,328.5 S 60.0,320.6 69.4,320.6 S 86.0,320.7 95.4,320.7 S 112.0,316.1 121.4,316.1 S 138.0,319.2 147.4,319.2 S 164.0,316.0 173.4,316.0 S 190.0,319.2 199.4,319.2 S 216.0,316.0 225.4,316.0 S 242.0,319.2 251.4,319.2 S 268.0,314.2 277.4,314.2 S 294.0,319.2 303.4,319.2 S 320.0,316.0 329.4,316.0 S 346.0,319.2 355.4,319.2 S 372.0,316.0 381.4,316.0 S 398.0,319.2 407.4,319.2 S 424.0,316.0 433.4,316.0 S 450.0,319.0 459.4,319.0 S 476.0,315.4 485.4,315.4 S 502.3,317.8 512.0,317.8"/>
+      <path d="M 35.0,331.2 C 36.4,331.2 37.5,330.6 38.9,330.6 S 55.4,322.5 64.9,322.5 S 81.4,322.8 90.9,322.8 S 107.4,317.8 116.9,317.8 S 133.4,321.0 142.9,321.0 S 159.4,317.6 168.9,317.6 S 185.4,321.0 194.9,321.0 S 211.4,317.6 220.9,317.6 S 237.4,321.0 246.9,321.0 S 263.4,315.1 272.9,315.1 S 289.4,321.0 298.9,321.0 S 315.4,317.6 324.9,317.6 S 341.4,321.0 350.9,321.0 S 367.4,317.6 376.9,317.6 S 393.4,321.0 402.9,321.0 S 419.4,317.6 428.9,317.6 S 445.4,320.8 454.9,320.8 S 471.4,316.7 480.9,316.7 S 497.4,318.9 506.9,318.9 S 510.1,318.3 512.0,318.3"/>
+      <path d="M 35.0,332.1 C 44.2,332.1 51.1,324.8 60.3,324.8 S 76.9,324.5 86.3,324.5 S 102.9,319.9 112.3,319.9 S 128.9,322.4 138.3,322.4 S 154.9,319.6 164.3,319.6 S 180.9,322.4 190.3,322.4 S 206.9,319.6 216.3,319.6 S 232.9,322.4 242.3,322.4 S 258.9,317.9 268.3,317.9 S 284.9,322.4 294.3,322.4 S 310.9,319.6 320.3,319.6 S 336.9,322.4 346.3,322.4 S 362.9,319.6 372.3,319.6 S 388.9,322.4 398.3,322.4 S 414.9,319.6 424.3,319.6 S 440.9,322.2 450.3,322.2 S 466.9,318.5 476.3,318.5 S 492.9,319.8 502.3,319.8 S 508.5,318.3 512.0,318.3"/>
+      <path d="M 35.0,332.4 C 42.6,332.4 48.2,327.2 55.8,327.2 S 72.3,326.0 81.8,326.0 S 98.3,322.2 107.8,322.2 S 124.3,323.7 133.8,323.7 S 150.3,321.7 159.8,321.7 S 176.3,323.7 185.8,323.7 S 202.3,321.7 211.8,321.7 S 228.3,323.7 237.8,323.7 S 254.3,320.8 263.8,320.8 S 280.3,323.7 289.8,323.7 S 306.3,321.7 315.8,321.7 S 332.3,323.7 341.8,323.7 S 358.3,321.7 367.8,321.7 S 384.3,323.7 393.8,323.7 S 410.3,321.7 419.8,321.7 S 436.3,323.5 445.8,323.5 S 462.3,320.6 471.8,320.6 S 488.3,320.8 497.8,320.8 S 506.8,318.3 512.0,318.3"/>
+      <path d="M 35.0,332.8 C 40.9,332.8 45.3,329.3 51.2,329.3 S 67.8,327.6 77.2,327.6 S 93.8,324.3 103.2,324.3 S 119.8,325.1 129.2,325.1 S 145.8,323.7 155.2,323.7 S 171.8,325.1 181.2,325.1 S 197.8,323.7 207.2,323.7 S 223.8,325.1 233.2,325.1 S 249.8,323.5 259.2,323.5 S 275.8,324.7 285.2,324.7 S 301.8,323.7 311.2,323.7 S 327.8,325.1 337.2,325.1 S 353.8,323.7 363.2,323.7 S 379.8,325.1 389.2,325.1 S 405.8,323.7 415.2,323.7 S 431.8,325.0 441.2,325.0 S 457.8,322.6 467.2,322.6 S 483.8,322.0 493.2,322.0 S 505.2,318.8 512.0,318.8"/>
+      <path d="M 35.0,333.4 C 39.3,333.4 42.4,331.0 46.7,331.0 S 63.2,329.6 72.7,329.6 S 89.2,326.1 98.7,326.1 S 115.2,326.9 124.7,326.9 S 141.2,325.3 150.7,325.3 S 167.2,326.9 176.7,326.9 S 193.2,325.3 202.7,325.3 S 219.2,326.9 228.7,326.9 S 245.2,325.3 254.7,325.3 S 271.2,325.7 280.7,325.7 S 297.2,325.3 306.7,325.3 S 323.2,326.9 332.7,326.9 S 349.2,325.3 358.7,325.3 S 375.2,326.9 384.7,326.9 S 401.2,325.3 410.7,325.3 S 427.2,326.9 436.7,326.9 S 453.2,324.3 462.7,324.3 S 479.2,323.8 488.7,323.8 S 503.5,319.2 512.0,319.2"/>
+      <path d="M 35.0,333.6 C 37.6,333.6 39.5,332.2 42.1,332.2 S 58.7,331.8 68.1,331.8 S 84.7,327.5 94.1,327.5 S 110.7,329.1 120.1,329.1 S 136.7,326.6 146.1,326.6 S 162.7,329.0 172.1,329.0 S 188.7,326.6 198.1,326.6 S 214.7,329.0 224.1,329.0 S 240.7,326.6 250.1,326.6 S 266.7,327.0 276.1,327.0 S 292.7,326.6 302.1,326.6 S 318.7,329.0 328.1,329.0 S 344.7,326.6 354.1,326.6 S 370.7,329.0 380.1,329.0 S 396.7,326.6 406.1,326.6 S 422.7,329.0 432.1,329.0 S 448.7,325.8 458.1,325.8 S 474.7,325.9 484.1,325.9 S 501.9,319.6 512.0,319.6"/>
+      <path d="M 35.0,333.8 C 45.4,333.8 53.2,334.0 63.6,334.0 S 80.1,329.0 89.6,329.0 S 106.1,331.2 115.6,331.2 S 132.1,327.9 141.6,327.9 S 158.1,331.1 167.6,331.1 S 184.1,327.9 193.6,327.9 S 210.1,331.1 219.6,331.1 S 236.1,327.9 245.6,327.9 S 262.1,328.8 271.6,328.8 S 288.1,327.9 297.6,327.9 S 314.1,331.1 323.6,331.1 S 340.1,327.9 349.6,327.9 S 366.1,331.1 375.6,331.1 S 392.1,327.9 401.6,327.9 S 418.1,331.1 427.6,331.1 S 444.1,327.2 453.6,327.2 S 470.1,328.2 479.6,328.2 S 496.1,321.1 505.6,321.1 S 509.7,320.4 512.0,320.4"/>
+      <path d="M 35.0,334.6 C 43.8,334.6 50.3,335.7 59.0,335.7 S 75.6,330.7 85.0,330.7 S 101.6,333.1 111.0,333.1 S 127.6,329.5 137.0,329.5 S 153.6,332.9 163.0,332.9 S 179.6,329.5 189.0,329.5 S 205.6,332.9 215.0,332.9 S 231.6,329.5 241.0,329.5 S 257.6,331.4 267.0,331.4 S 283.6,329.5 293.0,329.5 S 309.6,332.9 319.0,332.9 S 335.6,329.5 345.0,329.5 S 361.6,332.9 371.0,332.9 S 387.6,329.5 397.0,329.5 S 413.6,332.9 423.0,332.9 S 439.6,329.0 449.0,329.0 S 465.6,330.2 475.0,330.2 S 491.6,322.8 501.0,322.8 S 508.0,321.9 512.0,321.9"/>
+      <path d="M 35.0,336.2 C 42.1,336.2 47.4,337.0 54.5,337.0 S 71.0,332.7 80.5,332.7 S 97.0,334.6 106.5,334.6 S 123.0,331.5 132.5,331.5 S 149.0,334.3 158.5,334.3 S 175.0,331.5 184.5,331.5 S 201.0,334.3 210.5,334.3 S 227.0,331.5 236.5,331.5 S 253.0,333.6 262.5,333.6 S 279.0,331.5 288.5,331.5 S 305.0,334.3 314.5,334.3 S 331.0,331.5 340.5,331.5 S 357.0,334.3 366.5,334.3 S 383.0,331.5 392.5,331.5 S 409.0,334.3 418.5,334.3 S 435.0,331.2 444.5,331.2 S 461.0,331.9 470.5,331.9 S 487.0,325.0 496.5,325.0 S 506.3,323.5 512.0,323.5"/>
+      <path d="M 35.0,337.9 C 40.4,337.9 44.5,338.1 49.9,338.1 S 66.5,334.8 75.9,334.8 S 92.5,335.9 101.9,335.9 S 118.5,333.6 127.9,333.6 S 144.5,335.6 153.9,335.6 S 170.5,333.6 179.9,333.6 S 196.5,335.6 205.9,335.6 S 222.5,333.6 231.9,333.6 S 248.5,335.6 257.9,335.6 S 274.5,333.0 283.9,333.0 S 300.5,335.6 309.9,335.6 S 326.5,333.6 335.9,333.6 S 352.5,335.6 361.9,335.6 S 378.5,333.6 387.9,333.6 S 404.5,335.6 413.9,335.6 S 430.5,333.5 439.9,333.5 S 456.5,333.5 465.9,333.5 S 482.5,327.5 491.9,327.5 S 504.7,324.6 512.0,324.6"/>
+      <path d="M 35.0,339.3 C 38.8,339.3 41.6,339.2 45.4,339.2 S 61.9,336.7 71.4,336.7 S 87.9,337.3 97.4,337.3 S 113.9,335.6 123.4,335.6 S 139.9,337.0 149.4,337.0 S 165.9,335.6 175.4,335.6 S 191.9,337.0 201.4,337.0 S 217.9,335.6 227.4,335.6 S 243.9,337.0 253.4,337.0 S 269.9,334.2 279.4,334.2 S 295.9,337.0 305.4,337.0 S 321.9,335.6 331.4,335.6 S 347.9,337.0 357.4,337.0 S 373.9,335.6 383.4,335.6 S 399.9,337.0 409.4,337.0 S 425.9,335.5 435.4,335.5 S 451.9,335.3 461.4,335.3 S 477.9,329.9 487.4,329.9 S 503.0,325.3 512.0,325.3"/>
+      <path d="M 35.0,340.6 C 37.1,340.6 38.7,340.6 40.8,340.6 S 57.4,338.1 66.8,338.1 S 83.4,339.1 92.8,339.1 S 109.4,337.2 118.8,337.2 S 135.4,338.8 144.8,338.8 S 161.4,337.2 170.8,337.2 S 187.4,338.8 196.8,338.8 S 213.4,337.2 222.8,337.2 S 239.4,338.8 248.8,338.8 S 265.4,335.0 274.8,335.0 S 291.4,338.8 300.8,338.8 S 317.4,337.2 326.8,337.2 S 343.4,338.8 352.8,338.8 S 369.4,337.2 378.8,337.2 S 395.4,338.8 404.8,338.8 S 421.4,337.2 430.8,337.2 S 447.4,337.5 456.8,337.5 S 473.4,331.9 482.8,331.9 S 499.4,327.1 508.8,327.1 S 510.8,326.1 512.0,326.1"/>
+      <path d="M 35.0,342.2 C 44.9,342.2 52.3,339.1 62.3,339.1 S 78.8,341.2 88.3,341.2 S 104.8,338.5 114.3,338.5 S 130.8,340.9 140.3,340.9 S 156.8,338.5 166.3,338.5 S 182.8,340.9 192.3,340.9 S 208.8,338.5 218.3,338.5 S 234.8,340.9 244.3,340.9 S 260.8,336.4 270.3,336.4 S 286.8,340.9 296.3,340.9 S 312.8,338.5 322.3,338.5 S 338.8,340.9 348.3,340.9 S 364.8,338.5 374.3,338.5 S 390.8,340.9 400.3,340.9 S 416.8,338.5 426.3,338.5 S 442.8,339.9 452.3,339.9 S 468.8,333.8 478.3,333.8 S 494.8,329.8 504.3,329.8 S 509.2,326.8 512.0,326.8"/>
+      <path d="M 35.0,343.4 C 43.3,343.4 49.4,340.1 57.7,340.1 S 74.3,343.1 83.7,343.1 S 100.3,339.8 109.7,339.8 S 126.3,343.0 135.7,343.0 S 152.3,339.8 161.7,339.8 S 178.3,343.0 187.7,343.0 S 204.3,339.8 213.7,339.8 S 230.3,343.0 239.7,343.0 S 256.3,338.5 265.7,338.5 S 282.3,343.0 291.7,343.0 S 308.3,339.8 317.7,339.8 S 334.3,343.0 343.7,343.0 S 360.3,339.8 369.7,339.8 S 386.3,343.0 395.7,343.0 S 412.3,339.8 421.7,339.8 S 438.3,342.3 447.7,342.3 S 464.3,335.7 473.7,335.7 S 490.3,332.5 499.7,332.5 S 507.5,327.0 512.0,327.0"/>
+      <path d="M 35.0,343.8 C 41.6,343.8 46.6,341.2 53.2,341.2 S 69.7,344.7 79.2,344.7 S 95.7,341.4 105.2,341.4 S 121.7,344.8 131.2,344.8 S 147.7,341.4 157.2,341.4 S 173.7,344.8 183.2,344.8 S 199.7,341.4 209.2,341.4 S 225.7,344.8 235.2,344.8 S 251.7,340.9 261.2,340.9 S 277.7,344.6 287.2,344.6 S 303.7,341.4 313.2,341.4 S 329.7,344.8 339.2,344.8 S 355.7,341.4 365.2,341.4 S 381.7,344.8 391.2,344.8 S 407.7,341.4 417.2,341.4 S 433.7,344.4 443.2,344.4 S 459.7,337.9 469.2,337.9 S 485.7,335.0 495.2,335.0 S 505.9,326.9 512.0,326.9"/>
+      <path d="M 35.0,343.9 C 40.0,343.9 43.7,342.6 48.6,342.6 S 65.1,345.8 74.6,345.8 S 91.1,343.3 100.6,343.3 S 117.1,346.2 126.6,346.2 S 143.1,343.4 152.6,343.4 S 169.1,346.2 178.6,346.2 S 195.1,343.4 204.6,343.4 S 221.1,346.2 230.6,346.2 S 247.1,343.4 256.6,343.4 S 273.1,345.3 282.6,345.3 S 299.1,343.4 308.6,343.4 S 325.1,346.2 334.6,346.2 S 351.1,343.4 360.6,343.4 S 377.1,346.2 386.6,346.2 S 403.1,343.4 412.6,343.4 S 429.1,346.0 438.6,346.0 S 455.1,340.5 464.6,340.5 S 481.1,337.2 490.6,337.2 S 504.2,327.2 512.0,327.2"/>
+      <path d="M 35.0,344.3 C 38.3,344.3 40.8,344.1 44.1,344.1 S 60.6,346.7 70.1,346.7 S 86.6,345.3 96.1,345.3 S 112.6,347.5 122.1,347.5 S 138.6,345.5 148.1,345.5 S 164.6,347.5 174.1,347.5 S 190.6,345.5 200.1,345.5 S 216.6,347.5 226.1,347.5 S 242.6,345.5 252.1,345.5 S 268.6,345.8 278.1,345.8 S 294.6,345.5 304.1,345.5 S 320.6,347.5 330.1,347.5 S 346.6,345.5 356.1,345.5 S 372.6,347.5 382.1,347.5 S 398.6,345.5 408.1,345.5 S 424.6,347.4 434.1,347.4 S 450.6,343.2 460.1,343.2 S 476.6,339.4 486.1,339.4 S 502.6,328.2 512.0,328.2"/>
+      <path d="M 35.0,345.0 C 36.6,345.0 37.9,345.2 39.5,345.2 S 56.0,347.7 65.5,347.7 S 82.0,347.1 91.5,347.1 S 108.0,348.9 117.5,348.9 S 134.0,347.5 143.5,347.5 S 160.0,348.9 169.5,348.9 S 186.0,347.5 195.5,347.5 S 212.0,348.9 221.5,348.9 S 238.0,347.5 247.5,347.5 S 264.0,346.5 273.5,346.5 S 290.0,347.5 299.5,347.5 S 316.0,348.9 325.5,348.9 S 342.0,347.5 351.5,347.5 S 368.0,348.9 377.5,348.9 S 394.0,347.5 403.5,347.5 S 420.0,348.9 429.5,348.9 S 446.0,345.7 455.5,345.7 S 472.0,341.7 481.5,341.7 S 498.0,331.2 507.5,331.2 S 510.4,329.3 512.0,329.3"/>
+      <path d="M 35.0,345.7 C 44.5,345.7 51.5,349.0 61.0,349.0 S 77.5,348.4 87.0,348.4 S 103.5,350.6 113.0,350.6 S 129.5,349.1 139.0,349.1 S 155.5,350.7 165.0,350.7 S 181.5,349.1 191.0,349.1 S 207.5,350.7 217.0,350.7 S 233.5,349.1 243.0,349.1 S 259.5,348.9 269.0,348.9 S 285.5,349.1 295.0,349.1 S 311.5,350.7 321.0,350.7 S 337.5,349.1 347.0,349.1 S 363.5,350.7 373.0,350.7 S 389.5,349.1 399.0,349.1 S 415.5,350.7 425.0,350.7 S 441.5,347.8 451.0,347.8 S 467.5,344.4 477.0,344.4 S 493.5,333.9 503.0,333.9 S 508.7,330.3 512.0,330.3"/>
+      <path d="M 35.0,346.5 C 42.8,346.5 48.6,350.4 56.4,350.4 S 72.9,349.3 82.4,349.3 S 98.9,352.6 108.4,352.6 S 124.9,350.4 134.4,350.4 S 150.9,352.8 160.4,352.8 S 176.9,350.4 186.4,350.4 S 202.9,352.8 212.4,352.8 S 228.9,350.4 238.4,350.4 S 254.9,351.8 264.4,351.8 S 280.9,350.4 290.4,350.4 S 306.9,352.8 316.4,352.8 S 332.9,350.4 342.4,350.4 S 358.9,352.8 368.4,352.8 S 384.9,350.4 394.4,350.4 S 410.9,352.8 420.4,352.8 S 436.9,349.6 446.4,349.6 S 462.9,347.4 472.4,347.4 S 488.9,336.4 498.4,336.4 S 507.1,331.6 512.0,331.6"/>
+      <path d="M 35.0,347.7 C 41.1,347.7 45.7,351.6 51.9,351.6 S 68.4,350.2 77.9,350.2 S 94.4,354.5 103.9,354.5 S 120.4,351.7 129.9,351.7 S 146.4,354.9 155.9,354.9 S 172.4,351.7 181.9,351.7 S 198.4,354.9 207.9,354.9 S 224.4,351.7 233.9,351.7 S 250.4,354.6 259.9,354.6 S 276.4,351.3 285.9,351.3 S 302.4,354.9 311.9,354.9 S 328.4,351.7 337.9,351.7 S 354.4,354.9 363.9,354.9 S 380.4,351.7 389.9,351.7 S 406.4,354.9 415.9,354.9 S 432.4,351.3 441.9,351.3 S 458.4,350.4 467.9,350.4 S 484.4,338.9 493.9,338.9 S 505.4,333.2 512.0,333.2"/>
+      <path d="M 35.0,349.5 C 39.5,349.5 42.8,352.4 47.3,352.4 S 63.8,351.3 73.3,351.3 S 89.8,356.1 99.3,356.1 S 115.8,353.3 125.3,353.3 S 141.8,356.7 151.3,356.7 S 167.8,353.3 177.3,353.3 S 193.8,356.7 203.3,356.7 S 219.8,353.3 229.3,353.3 S 245.8,356.7 255.3,356.7 S 271.8,352.2 281.3,352.2 S 297.8,356.7 307.3,356.7 S 323.8,353.3 333.3,353.3 S 349.8,356.7 359.3,356.7 S 375.8,353.3 385.3,353.3 S 401.8,356.7 411.3,356.7 S 427.8,353.1 437.3,353.1 S 453.8,353.1 463.3,353.1 S 479.8,341.8 489.3,341.8 S 503.7,334.5 512.0,334.5"/>
+      <path d="M 35.0,351.1 C 37.8,351.1 39.9,352.7 42.8,352.7 S 59.3,352.7 68.8,352.7 S 85.3,357.2 94.8,357.2 S 111.3,355.2 120.8,355.2 S 137.3,358.1 146.8,358.1 S 163.3,355.3 172.8,355.3 S 189.3,358.1 198.8,358.1 S 215.3,355.3 224.8,355.3 S 241.3,358.1 250.8,358.1 S 267.3,353.4 276.8,353.4 S 293.3,358.1 302.8,358.1 S 319.3,355.3 328.8,355.3 S 345.3,358.1 354.8,358.1 S 371.3,355.3 380.8,355.3 S 397.3,358.1 406.8,358.1 S 423.3,355.3 432.8,355.3 S 449.3,355.3 458.8,355.3 S 475.3,345.1 484.8,345.1 S 502.1,335.1 512.0,335.1"/>
+      <path d="M 35.0,352.1 C 36.2,352.1 37.0,352.7 38.2,352.7 S 54.7,354.0 64.2,354.0 S 80.7,358.1 90.2,358.1 S 106.7,357.3 116.2,357.3 S 132.7,359.4 142.2,359.4 S 158.7,357.4 168.2,357.4 S 184.7,359.4 194.2,359.4 S 210.7,357.4 220.2,357.4 S 236.7,359.4 246.2,359.4 S 262.7,355.1 272.2,355.1 S 288.7,359.4 298.2,359.4 S 314.7,357.4 324.2,357.4 S 340.7,359.4 350.2,359.4 S 366.7,357.4 376.2,357.4 S 392.7,359.4 402.2,359.4 S 418.7,357.4 428.2,357.4 S 444.7,357.3 454.2,357.3 S 470.7,348.5 480.2,348.5 S 496.7,338.7 506.2,338.7 S 509.9,335.3 512.0,335.3"/>
+      <path d="M 35.0,352.9 C 44.0,352.9 50.7,355.1 59.7,355.1 S 76.2,359.1 85.7,359.1 S 102.2,359.1 111.7,359.1 S 128.2,360.8 137.7,360.8 S 154.2,359.4 163.7,359.4 S 180.2,360.8 189.7,360.8 S 206.2,359.4 215.7,359.4 S 232.2,360.8 241.7,360.8 S 258.2,357.8 267.7,357.8 S 284.2,360.8 293.7,360.8 S 310.2,359.4 319.7,359.4 S 336.2,360.8 345.7,360.8 S 362.2,359.4 371.7,359.4 S 388.2,360.8 397.7,360.8 S 414.2,359.4 423.7,359.4 S 440.2,359.4 449.7,359.4 S 466.2,351.7 475.7,351.7 S 492.2,341.9 501.7,341.9 S 508.2,335.5 512.0,335.5"/>
+      <path d="M 35.0,353.7 C 42.3,353.7 47.8,355.6 55.1,355.6 S 71.6,360.3 81.1,360.3 S 97.6,360.5 107.1,360.5 S 123.6,362.6 133.1,362.6 S 149.6,361.0 159.1,361.0 S 175.6,362.6 185.1,362.6 S 201.6,361.0 211.1,361.0 S 227.6,362.6 237.1,362.6 S 253.6,360.1 263.1,360.1 S 279.6,362.6 289.1,362.6 S 305.6,361.0 315.1,361.0 S 331.6,362.6 341.1,362.6 S 357.6,361.0 367.1,361.0 S 383.6,362.6 393.1,362.6 S 409.6,361.0 419.1,361.0 S 435.6,361.8 445.1,361.8 S 461.6,354.5 471.1,354.5 S 487.6,345.4 497.1,345.4 S 506.6,335.9 512.0,335.9"/>
+      <path d="M 35.0,354.4 C 40.7,354.4 44.9,355.7 50.5,355.7 S 67.1,361.7 76.5,361.7 S 93.1,361.5 102.5,361.5 S 119.1,364.7 128.5,364.7 S 145.1,362.3 154.5,362.3 S 171.1,364.7 180.5,364.7 S 197.1,362.3 206.5,362.3 S 223.1,364.7 232.5,364.7 S 249.1,362.2 258.5,362.2 S 275.1,364.2 284.5,364.2 S 301.1,362.3 310.5,362.3 S 327.1,364.7 336.5,364.7 S 353.1,362.3 362.5,362.3 S 379.1,364.7 388.5,364.7 S 405.1,362.3 414.5,362.3 S 431.1,364.3 440.5,364.3 S 457.1,357.0 466.5,357.0 S 483.1,349.2 492.5,349.2 S 504.9,336.0 512.0,336.0"/>
+      <path d="M 35.0,354.6 C 39.0,354.6 42.0,355.6 46.0,355.6 S 62.5,363.0 72.0,363.0 S 88.5,362.4 98.0,362.4 S 114.5,366.8 124.0,366.8 S 140.5,363.6 150.0,363.6 S 166.5,366.8 176.0,366.8 S 192.5,363.6 202.0,363.6 S 218.5,366.8 228.0,366.8 S 244.5,363.6 254.0,363.6 S 270.5,365.5 280.0,365.5 S 296.5,363.6 306.0,363.6 S 322.5,366.8 332.0,366.8 S 348.5,363.6 358.0,363.6 S 374.5,366.8 384.0,366.8 S 400.5,363.6 410.0,363.6 S 426.5,366.7 436.0,366.7 S 452.5,359.4 462.0,359.4 S 478.5,353.0 488.0,353.0 S 503.3,336.0 512.0,336.0"/>
+      <path d="M 35.0,354.7 C 37.3,354.7 39.1,355.7 41.4,355.7 S 58.0,363.8 67.4,363.8 S 84.0,363.6 93.4,363.6 S 110.0,368.4 119.4,368.4 S 136.0,365.2 145.4,365.2 S 162.0,368.6 171.4,368.6 S 188.0,365.2 197.4,365.2 S 214.0,368.6 223.4,368.6 S 240.0,365.2 249.4,365.2 S 266.0,366.5 275.4,366.5 S 292.0,365.2 301.4,365.2 S 318.0,368.6 327.4,368.6 S 344.0,365.2 353.4,365.2 S 370.0,368.6 379.4,368.6 S 396.0,365.2 405.4,365.2 S 422.0,368.6 431.4,368.6 S 448.0,362.0 457.4,362.0 S 474.0,356.5 483.4,356.5 S 501.6,336.8 512.0,336.8"/>
+      <path d="M 35.0,355.5 C 45.2,355.5 52.7,364.1 62.9,364.1 S 79.4,365.0 88.9,365.0 S 105.4,369.7 114.9,369.7 S 131.4,367.2 140.9,367.2 S 157.4,370.0 166.9,370.0 S 183.4,367.2 192.9,367.2 S 209.4,370.0 218.9,370.0 S 235.4,367.2 244.9,367.2 S 261.4,367.8 270.9,367.8 S 287.4,367.2 296.9,367.2 S 313.4,370.0 322.9,370.0 S 339.4,367.2 348.9,367.2 S 365.4,370.0 374.9,370.0 S 391.4,367.2 400.9,367.2 S 417.4,370.0 426.9,370.0 S 443.4,364.9 452.9,364.9 S 469.4,359.5 478.9,359.5 S 495.4,342.6 504.9,342.6 S 509.4,338.2 512.0,338.2"/>
+    <!-- the darker grain that still resolves at 1600: the bunched lines
+         of the left swirl, the book-match seam and the arcs into the
+         top-right chamfer (sampled #c19867; everywhere else the grain
+         averages back into the bright base) -->
+    <g stroke="#c19867" stroke-width="0.9">
+      <path d="M 35,334.3 C 60,334.3 75,319.0 110,319.0"/>
+      <path d="M 35,337.3 C 60,337.3 75,327.6 110,327.6"/>
+      <path d="M 35,340.3 C 60,340.3 75,336.2 110,336.2"/>
+      <path d="M 35,343.3 C 60,343.3 75,344.8 110,344.8"/>
+      <path d="M 35,346.3 C 60,346.3 75,353.4 110,353.4"/>
+      <path d="M 35,349.3 C 60,349.3 75,362.0 110,362.0"/>
+      <path d="M 425,326.0 C 445,326.0 458,319.4 470.0,315"/>
+      <path d="M 425,333.0 C 445,333.0 458,322.2 478.0,315"/>
+      <path d="M 425,340.0 C 445,340.0 458,325.0 486.0,315"/>
+      <path d="M 425,347.0 C 445,347.0 458,327.8 494.0,315"/>
+      <path d="M 425,354.0 C 445,354.0 458,330.6 502.0,315"/>
+    <line x1="273" y1="315" x2="273" y2="370" stroke-width="0.8"/>
+    </g>
+  </g>
+  <g fill="none" stroke-width="1">
+      <g stroke="#865c39" transform="translate(429 335.4)"><rect x="0" y="0" width="16" height="10.5"/><path d="M 0,0 L 8,6 L 16,0"/></g>
+  </g>
+  <g font-family="Rajdhani">
+    <text x="193.5" y="336.2" font-size="18" font-weight="600" fill="#7b5438" letter-spacing="-0.22">Urgent information (!)</text>
+    <text x="193" y="357.2" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#895f3b">FROM: MOM</text>
+  </g>
+  </g>
+  <text x="1016" y="1036.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">pitch 60.2 · rule x 35..483 #e0b67a 1.5 with a tab 31/24/5 #fdcf8c at x 421.5 · envelope 16 wide at x 429, open 14.5 tall (rows 1, 3, 7) or closed</text>
+  <text x="1016" y="1044.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">10.5 · selected 477x55, chamfer 22 top right, Q4 bottom right, base #f8c678, grain #cf975c 0.7 at 1.7 pitch, seam x 273, text #7b5438 / #895f3b ·</text>
+  <text x="1016" y="1052.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">the trace header also describes a dark outlined notch cut into the bar's bottom edge at x 420..457, but no element in the trace draws one</text>
+
+  <!-- ============================ FOOTER STRIP ============================ -->
+  <text x="56" y="1050" font-size="9" font-weight="600" letter-spacing="3" fill="#c5965a">1  FOOTER LINE, LOGIN (the only footer in the run; hub, mail and store have none)</text>
+  <!-- LOGIN FOOTER LINE. login-trace.svg: one centred line at y 875, 9.5px ls 0.06, #c8914d, run x 501.2..1097.5, the first phrase in weight 700 and the rest in 400. The mailbox, hub and store screens carry NO footer line, and none of the four carries the kitsch ARASAKA footer strip the old sheet borrowed. Centred on this sheet: translate(160 193) -->
+  <g transform="translate(160 193)">
+    <text x="800" y="875" font-size="9.5" letter-spacing="0.06" fill="#c8914d" text-anchor="middle"><tspan font-weight="700">ARASAKA CONSUMER TECHNOLOGY</tspan>  ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+  </g>
+  <text x="56" y="1064" font-size="7" letter-spacing="0.2" fill="#7e5836">every component above is spliced verbatim from a gated trace; the XML comment over each one names the trace and the translate</text>
+
+  <!-- ============================ RIGHT RAIL: PALETTE, TYPE, RULES ============================ -->
+  <text x="1563" y="122.0" font-size="9.5" font-weight="600" letter-spacing="3" fill="#c5965a">8  SAMPLED PALETTE, PER ROLE</text>
+  <rect x="1563" y="129.0" width="7" height="7" fill="#0e0a0d" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1573" y="135.0" font-size="7" fill="#d9a877">#0e0a0d</text>
+  <text x="1605" y="135.0" font-size="7" fill="#a97c48">ground, all four traces</text>
+  <rect x="1563" y="139.0" width="7" height="7" fill="#574568" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1573" y="145.0" font-size="7" fill="#d9a877">#574568</text>
+  <text x="1605" y="145.0" font-size="7" fill="#a97c48">haze stop 0 and 0.35</text>
+  <rect x="1563" y="149.0" width="7" height="7" fill="#3a3853" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1573" y="155.0" font-size="7" fill="#d9a877">#3a3853</text>
+  <text x="1605" y="155.0" font-size="7" fill="#a97c48">haze stop 0.66</text>
+  <rect x="1563" y="159.0" width="7" height="7" fill="#16121a" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1573" y="165.0" font-size="7" fill="#d9a877">#16121a</text>
+  <text x="1605" y="165.0" font-size="7" fill="#a97c48">haze stop 0.85</text>
+  <rect x="1563" y="169.0" width="7" height="7" fill="#7a5288" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1573" y="175.0" font-size="7" fill="#d9a877">#7a5288</text>
+  <text x="1605" y="175.0" font-size="7" fill="#a97c48">haze lobe, top left</text>
+  <rect x="1563" y="179.0" width="7" height="7" fill="#223350" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1573" y="185.0" font-size="7" fill="#d9a877">#223350</text>
+  <text x="1605" y="185.0" font-size="7" fill="#a97c48">blue annulus</text>
+  <rect x="1563" y="189.0" width="7" height="7" fill="#4c3f5f" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1573" y="195.0" font-size="7" fill="#d9a877">#4c3f5f</text>
+  <text x="1605" y="195.0" font-size="7" fill="#a97c48">letter box interior</text>
+  <rect x="1563" y="199.0" width="7" height="7" fill="#3c1c11" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1573" y="205.0" font-size="7" fill="#d9a877">#3c1c11</text>
+  <text x="1605" y="205.0" font-size="7" fill="#a97c48">login field fill</text>
+  <rect x="1563" y="209.0" width="7" height="7" fill="#fbc171" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1573" y="215.0" font-size="7" fill="#d9a877">#fbc171</text>
+  <text x="1605" y="215.0" font-size="7" fill="#a97c48">login CTA bar</text>
+  <rect x="1563" y="219.0" width="7" height="7" fill="#f2b463" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1573" y="225.0" font-size="7" fill="#d9a877">#f2b463</text>
+  <text x="1605" y="225.0" font-size="7" fill="#a97c48">hub card + panel body</text>
+  <rect x="1563" y="229.0" width="7" height="7" fill="#f8c678" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1573" y="235.0" font-size="7" fill="#d9a877">#f8c678</text>
+  <text x="1605" y="235.0" font-size="7" fill="#a97c48">mail veneer base</text>
+  <rect x="1563" y="239.0" width="7" height="7" fill="#f4c078" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1573" y="245.0" font-size="7" fill="#d9a877">#f4c078</text>
+  <text x="1605" y="245.0" font-size="7" fill="#a97c48">SMG veneer base</text>
+  <rect x="1563" y="249.0" width="7" height="7" fill="#f6c27a" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1573" y="255.0" font-size="7" fill="#d9a877">#f6c27a</text>
+  <text x="1605" y="255.0" font-size="7" fill="#a97c48">card 2 veneer base</text>
+  <rect x="1563" y="259.0" width="7" height="7" fill="#fbb86c" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1573" y="265.0" font-size="7" fill="#d9a877">#fbb86c</text>
+  <text x="1605" y="265.0" font-size="7" fill="#a97c48">basket plate</text>
+  <rect x="1563" y="269.0" width="7" height="7" fill="#eea666" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1573" y="275.0" font-size="7" fill="#d9a877">#eea666</text>
+  <text x="1605" y="275.0" font-size="7" fill="#a97c48">basket veneer band</text>
+  <rect x="1563" y="279.0" width="7" height="7" fill="#f2c06e" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1573" y="285.0" font-size="7" fill="#d9a877">#f2c06e</text>
+  <text x="1605" y="285.0" font-size="7" fill="#a97c48">weapon silhouette</text>
+  <rect x="1723" y="129.0" width="7" height="7" fill="#fdcf8c" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1733" y="135.0" font-size="7" fill="#d9a877">#fdcf8c</text>
+  <text x="1765" y="135.0" font-size="7" fill="#a97c48">brightest: rule tabs</text>
+  <rect x="1723" y="139.0" width="7" height="7" fill="#fed08d" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1733" y="145.0" font-size="7" fill="#d9a877">#fed08d</text>
+  <text x="1765" y="145.0" font-size="7" fill="#a97c48">card foot tabs</text>
+  <rect x="1723" y="149.0" width="7" height="7" fill="#e8c186" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1733" y="155.0" font-size="7" fill="#d9a877">#e8c186</text>
+  <text x="1765" y="155.0" font-size="7" fill="#a97c48">T2 outline, tab plate</text>
+  <rect x="1723" y="159.0" width="7" height="7" fill="#e0b67a" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1733" y="165.0" font-size="7" fill="#d9a877">#e0b67a</text>
+  <text x="1765" y="165.0" font-size="7" fill="#a97c48">store strands, rules</text>
+  <rect x="1723" y="169.0" width="7" height="7" fill="#dab176" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1733" y="175.0" font-size="7" fill="#d9a877">#dab176</text>
+  <text x="1765" y="175.0" font-size="7" fill="#a97c48">store card, nav outline</text>
+  <rect x="1723" y="179.0" width="7" height="7" fill="#c5965a" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1733" y="185.0" font-size="7" fill="#d9a877">#c5965a</text>
+  <text x="1765" y="185.0" font-size="7" fill="#a97c48">echo strands, outlines</text>
+  <rect x="1723" y="189.0" width="7" height="7" fill="#bd8951" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1733" y="195.0" font-size="7" fill="#d9a877">#bd8951</text>
+  <text x="1765" y="195.0" font-size="7" fill="#a97c48">onion rings, hub lines</text>
+  <rect x="1723" y="199.0" width="7" height="7" fill="#a97c48" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1733" y="205.0" font-size="7" fill="#d9a877">#a97c48</text>
+  <text x="1765" y="205.0" font-size="7" fill="#a97c48">hub strands, T2 rings</text>
+  <rect x="1723" y="209.0" width="7" height="7" fill="#cf975c" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1733" y="215.0" font-size="7" fill="#d9a877">#cf975c</text>
+  <text x="1765" y="215.0" font-size="7" fill="#a97c48">veneer grain cores</text>
+  <rect x="1723" y="219.0" width="7" height="7" fill="#c19867" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1733" y="225.0" font-size="7" fill="#d9a877">#c19867</text>
+  <text x="1765" y="225.0" font-size="7" fill="#a97c48">grain mid, 1.6 pct</text>
+  <rect x="1723" y="229.0" width="7" height="7" fill="#a86e33" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1733" y="235.0" font-size="7" fill="#d9a877">#a86e33</text>
+  <text x="1765" y="235.0" font-size="7" fill="#a97c48">dark grain strands</text>
+  <rect x="1723" y="239.0" width="7" height="7" fill="#f5bf75" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1733" y="245.0" font-size="7" fill="#d9a877">#f5bf75</text>
+  <text x="1765" y="245.0" font-size="7" fill="#a97c48">login label text</text>
+  <rect x="1723" y="249.0" width="7" height="7" fill="#f3c583" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1733" y="255.0" font-size="7" fill="#d9a877">#f3c583</text>
+  <text x="1765" y="255.0" font-size="7" fill="#a97c48">mail titles and body</text>
+  <rect x="1723" y="259.0" width="7" height="7" fill="#e9bd7a" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1733" y="265.0" font-size="7" fill="#d9a877">#e9bd7a</text>
+  <text x="1765" y="265.0" font-size="7" fill="#a97c48">store nav, socket text</text>
+  <rect x="1723" y="269.0" width="7" height="7" fill="#3a2010" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1733" y="275.0" font-size="7" fill="#d9a877">#3a2010</text>
+  <text x="1765" y="275.0" font-size="7" fill="#a97c48">dark on gold, store</text>
+  <rect x="1723" y="279.0" width="7" height="7" fill="#38261a" stroke="#4a3a28" stroke-width="0.4"/>
+  <text x="1733" y="285.0" font-size="7" fill="#d9a877">#38261a</text>
+  <text x="1765" y="285.0" font-size="7" fill="#a97c48">glow, class photo</text>
+  <text x="1563" y="300.0" font-size="6.8" fill="#8a7048">Gold is three tiers, not one: bright bars and tabs #f5c379 / #f0bf7b, mid text cores and veneer</text>
+  <text x="1563" y="307.8" font-size="6.8" fill="#8a7048">grain #c19867, dark outlines and strands #c5965a, over a glow family #38261a / #39281b / #3b2416 /</text>
+  <text x="1563" y="315.6" font-size="6.8" fill="#8a7048">#351b11 that is as much ink as the gold.</text>
+  <text x="1563" y="335.4" font-size="9.5" font-weight="600" letter-spacing="3" fill="#c5965a">7  GROUND</text>
+  <rect x="1563" y="343.4" width="317" height="14" fill="url(#hazestrip)"/>
+  <text x="1563" y="365.4" font-size="6.8" fill="#a97c48">haze radial cx 770 cy -120 r 1000, rotate 1.3, y scale 0.49; stops 0 and 0.35 #574568, 0.66</text>
+  <text x="1563" y="373.2" font-size="6.8" fill="#a97c48">#3a3853, 0.85 #16121a, 1 #0e0a0d. lobe cx 430 cy -40 r 560, y scale 0.30, #7a5288 at 0.85 / 0.55 /</text>
+  <text x="1563" y="381.0" font-size="6.8" fill="#a97c48">0. blue annulus cx 850 r 1000, y scale 0.47, #223350 0.68 to 0.84 under a left fading luminance</text>
+  <text x="1563" y="388.8" font-size="6.8" fill="#a97c48">mask. Lit to y 300 at the centre, y 150 at the edges; black below. Drawn here translated +160 in x</text>
+  <text x="1563" y="396.6" font-size="6.8" fill="#a97c48">for the wider sheet.</text>
+  <text x="1563" y="407.4" font-size="6.8" fill="#7e5836">PHOTO RESIDUE, do not draw: each trace lays a blurred copy of its content under the crisp content,</text>
+  <text x="1563" y="415.2" font-size="6.8" fill="#7e5836">filter #halo blur 1.5 x 4.5 for strokes and #halotext 1.0 x 1.6 for glyphs, tagged class=photo.</text>
+  <text x="1563" y="423.0" font-size="6.8" fill="#7e5836">That is the photograph's bloom. This sheet omits it.</text>
+  <text x="1563" y="442.8" font-size="9.5" font-weight="600" letter-spacing="3" fill="#c5965a">9  TYPOGRAPHY (Rajdhani only)</text>
+  <text x="1563" y="480.2" font-size="36" font-weight="700" letter-spacing="3" fill="#e7c686">ARASAKA</text>
+  <text x="1563" y="487.7" font-size="6.6" fill="#a97c48">700 36 ls 3, x scale 1.155  login logotype. Store logotype 700 74, x scale 1.50 / 1.72 / 1.23, its T</text>
+  <text x="1563" y="495.3" font-size="6.6" fill="#a97c48">outlined only</text>
+  <text x="1563" y="527.1" font-size="28" font-weight="500" letter-spacing="1" fill="#e7c686">10:10 PM</text>
+  <text x="1563" y="534.6" font-size="6.6" fill="#a97c48">500 28 ls 1  clock. Also 600 27 (620), 600 21 and 20 (T marks, 30 / 5), 600 24 ls 3 (panel name)</text>
+  <text x="1563" y="558.9" font-size="18" font-weight="600" letter-spacing="-0.22" fill="#e7c686">You'll regret that</text>
+  <text x="1563" y="566.4" font-size="6.6" fill="#a97c48">600 18 ls -0.22 mail row title. 600 19 / 400 19 card name. 700 15 ls 1.15 message heading. 600 17 ls</text>
+  <text x="1563" y="574.0" font-size="6.6" fill="#a97c48">0.3 body, 17 ls 1 store nav, 17 ls 1.5 hub labels, 16.5 stat labels. 700 19.5 x scale 1.6 / 1.75 boxed</text>
+  <text x="1563" y="581.6" font-size="6.6" fill="#a97c48">letters</text>
+  <text x="1563" y="602.9" font-size="14" font-weight="300" letter-spacing="4.1" fill="#e7c686">ENTER / LOGIN</text>
+  <text x="1563" y="610.4" font-size="6.6" fill="#a97c48">300 14 ls 4.1  the era's one light face, on the CTA bar only, in #6b3f1e</text>
+  <text x="1563" y="630.1" font-size="12" font-weight="400" letter-spacing="2" fill="#e7c686">SECURITY LEVEL</text>
+  <text x="1563" y="637.6" font-size="6.6" fill="#a97c48">12 ls 2 header labels. 500 16 ls 1 button labels. 500 13 ls -0.05 customer line. 600 11.5 ls 1.65</text>
+  <text x="1563" y="645.2" font-size="6.6" fill="#a97c48">FROM: lines, 11.5 socket and meta text, 9.5 ls 0.06 footer</text>
+  <text x="1563" y="660.7" font-size="6.5" font-weight="500" letter-spacing="0.55" fill="#e7c686">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+  <text x="1563" y="668.2" font-size="6.6" fill="#a97c48">500 6.5 ls 0.55 and 6.2 ls 0.7 annotations, 600 5 ls 0.78 basket micro text, 7 ls 0.4 login micro text</text>
+  <text x="1563" y="687.8" font-size="9.5" font-weight="600" letter-spacing="3" fill="#c5965a">10  ERA RULES (OBSERVED)</text>
+  <text x="1563" y="698.8" font-size="6.6" fill="#a97c48">1  There is NO device frame. The chrome is the stacked hairline wire band: parallel strands on low</text>
+  <text x="1563" y="706.2" font-size="6.6" fill="#a97c48">runs rising through mirrored S bends onto ONE high line. Store 8 at 3.2 pitch, bridge y 124.2; hub and</text>
+  <text x="1563" y="713.6" font-size="6.6" fill="#a97c48">mail 8 converging to y 87; login 22 as a trapezoid across the foot. Both ends curl down into a</text>
+  <text x="1563" y="721.0" font-size="6.6" fill="#a97c48">vertical.</text>
+  <text x="1563" y="731.4" font-size="6.6" fill="#a97c48">2  Corners are cut per widget, never by one rule: cascade card 32 top right AND bottom left; detail</text>
+  <text x="1563" y="738.8" font-size="6.6" fill="#a97c48">panel mirrored, 42 top left; store card r13 top left, 37 degree step, r18 top right, r8 bottom right,</text>
+  <text x="1563" y="746.2" font-size="6.6" fill="#a97c48">bottom left cut 19x22; nav and RIFLES buttons r4 / r5 with a 15x11.6 / 13x10 bottom left cut; mail</text>
+  <text x="1563" y="753.6" font-size="6.6" fill="#a97c48">selection 22 top right; CTA 16x13 bottom left.</text>
+  <text x="1563" y="764.0" font-size="6.6" fill="#a97c48">3  Selection is a MATERIAL: a veneer base fill plus wavy grain hairlines (mail 1.7 pitch #cf975c, SMG</text>
+  <text x="1563" y="771.4" font-size="6.6" fill="#a97c48">2.1 #d0975a, card 2 2.4 #cd9553, basket 2.1 #c9844c), a vertical book match seam at the plate's</text>
+  <text x="1563" y="778.8" font-size="6.6" fill="#a97c48">midpoint, arcs into the chamfer and a swirl at the leading edge.</text>
+  <text x="1563" y="789.2" font-size="6.6" fill="#a97c48">4  Outlines come in onion layers: hub cards and the detail panel trail 6 concentric 45 degree offsets</text>
+  <text x="1563" y="796.6" font-size="6.6" fill="#a97c48">at 3 to 3.5 pitch, 0.85 down to 0.25; store cards carry 4 echo strands at 2.5 pitch, 0.55 down to</text>
+  <text x="1563" y="804.0" font-size="6.6" fill="#a97c48">0.18, round the step, top right, right side and bottom, dying on the bottom left cut. The SELECTED</text>
+  <text x="1563" y="811.4" font-size="6.6" fill="#a97c48">item carries none.</text>
+  <text x="1563" y="821.8" font-size="6.6" fill="#a97c48">5  Every outlined button and every list rule wears a filled trapezoid tab on its bottom edge, inside</text>
+  <text x="1563" y="829.2" font-size="6.6" fill="#a97c48">the stroke: mail RIFLES 37/29/7 #fdcf8c, store nav 33.8/28/3.4 #f7cc8c, list rules 31/24/5, card foot</text>
+  <text x="1563" y="836.6" font-size="6.6" fill="#a97c48">64.5/58/8.5 #fed08d, T2 badge 33/25/4.5 #f2b463.</text>
+  <text x="1563" y="847.0" font-size="6.6" fill="#a97c48">6  Boxed letters A B C D are 26x26 r3 plates with a folded bottom right corner, beside the band and in</text>
+  <text x="1563" y="854.4" font-size="6.6" fill="#a97c48">the foot, each with a two line SPARE TIME MANAGER annotation. On the band their interior is filled</text>
+  <text x="1563" y="861.8" font-size="6.6" fill="#a97c48">#4c3f5f so no strand reads through.</text>
+  <text x="1563" y="872.2" font-size="6.6" fill="#a97c48">7  Dark on gold is a mid brown, never black: #3a2010 store, #5a3418 basket, #6b3f1e CTA, and #7b5438 /</text>
+  <text x="1563" y="879.6" font-size="6.6" fill="#a97c48">#895f3b / #865c39 on the mail veneer, lighter again. Solid gold bars with a bottom left cut are the</text>
+  <text x="1563" y="887.0" font-size="6.6" fill="#a97c48">only strong CTA.</text>
+  <text x="1563" y="897.4" font-size="6.6" fill="#a97c48">8  Product cards name themselves at the FOOT, with a tab under the bottom edge; hub cards label at the</text>
+  <text x="1563" y="904.8" font-size="6.6" fill="#a97c48">upper left, outside the card. The T2 badge is outlined, not filled. The message pane has no panel at</text>
+  <text x="1563" y="912.2" font-size="6.6" fill="#a97c48">all: type on the ground.</text>
+  <text x="1563" y="931.6" font-size="9.5" font-weight="600" letter-spacing="3" fill="#c5965a">IMPLEMENTATION DELTA vs src/eras/neokitsch.rs</text>
+  <text x="1563" y="942.6" font-size="6.4" fill="#7e5836">Chrome::DeviceFrame, and the module doc's 'device frame itself part of the UI': no trace has a full</text>
+  <text x="1563" y="949.8" font-size="6.4" fill="#7e5836">screen frame. Corner::ClipTopRight { cut: 30.0 } is one global corner; every trace cuts per widget, and</text>
+  <text x="1563" y="957.0" font-size="6.4" fill="#7e5836">nothing anywhere clips its top right by 30.</text>
+  <text x="1563" y="967.2" font-size="6.4" fill="#7e5836">border FRAME #916424 is sampled by nothing. Outlines run #dab176 / #c5965a / #bd8951 / #e0b67a / #a97c48;</text>
+  <text x="1563" y="974.4" font-size="6.4" fill="#7e5836">FRAME_LIT #c69a55 is the nearest const, as bar.svg records.</text>
+  <text x="1563" y="984.6" font-size="6.4" fill="#7e5836">STRATA #634427, 'fine lines of a strata divider bunching into a wedge': no trace has one. The era's</text>
+  <text x="1563" y="991.8" font-size="6.4" fill="#7e5836">layered fine lines are the wire band and the onion rings.</text>
+  <text x="1563" y="1002.0" font-size="6.4" fill="#7e5836">FIELD #2c1c14 vs the measured field #3c1c11; VENEER #e3af5f vs bases #f8c678 / #f4c078 / #f6c27a;</text>
+  <text x="1563" y="1009.2" font-size="6.4" fill="#7e5836">GOLD_TEXT #e7c686 vs cores #f5bf75 / #f3c583 / #e9bd7a. AMBER #fcc474 does agree with the CTA bar</text>
+  <text x="1563" y="1016.4" font-size="6.4" fill="#7e5836">#fbc171.</text>
+  <text x="1563" y="1026.6" font-size="6.4" fill="#7e5836">ON_VENEER #3a2410 matches store gold, but the mail veneer carries #7b5438 / #895f3b, three stops lighter:</text>
+  <text x="1563" y="1033.8" font-size="6.4" fill="#7e5836">one on_select cannot say both.</text>
+  <text x="1563" y="1044.0" font-size="6.4" fill="#7e5836">Ground::Bloom { radius 0.75 }, one BLOOM #34344c disc, vs a four stop haze plus a top left lobe plus a</text>
+  <text x="1563" y="1051.2" font-size="6.4" fill="#7e5836">blue annulus. The module doc and README cite doc #53-62 / #54-62; sources.md's canonical positions are</text>
+  <text x="1563" y="1058.4" font-size="6.4" fill="#7e5836">the title card 63 and the screens 64 to 72.</text>
+</svg>

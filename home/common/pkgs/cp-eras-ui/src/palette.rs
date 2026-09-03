@@ -194,8 +194,10 @@ impl Palette {
     ///   card 2 amber) fills the
     ///   selected card's shelf band `#f0a80a` against `#fcc428` on the
     ///   other three, ink unchanged at `#37220f`; the same `#f0a80a`
-    ///   is the folded corner of the callout panel in
-    ///   `target-components.svg`. It is the yellow one stop down.
+    ///   is the folded corner of the callout panel in the old
+    ///   `target-components.svg` (the by-eye sheet replaced 2026-09-03 by
+    ///   `components.svg`, rebuilt from the traces; sheet citations in
+    ///   this file are the old sheet's). It is the yellow one stop down.
     /// * neokitsch inverts. `target-components.svg` draws the
     ///   unselected footer nameplate `#d3b279` with `#3a2410` text and
     ///   the selected one `#3a2410` with `#e7c686` -- the ink is the

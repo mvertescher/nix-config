@@ -1,6 +1,9 @@
 //! The compliance glyphs a maximalist era stamps on its bands and rows.
 //!
-//! Three shapes, all measured off `docs/kitsch/target-components.svg`:
+//! Three shapes, all measured off `docs/kitsch/target-components.svg`
+//! (the by-eye sheet replaced 2026-09-03 by `components.svg`, rebuilt
+//! from the traces; the coordinates here are the old sheet's, what the
+//! glyphs were built to):
 //! a dotted matrix (`<pattern id="dotmat">`, a 2px square on a 4px
 //! pitch), a hollow square, and a hollow triangle. They appear twice on
 //! the kitsch store card -- as a 10px strip at the head of the shelf

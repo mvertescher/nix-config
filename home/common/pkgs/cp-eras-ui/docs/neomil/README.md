@@ -44,6 +44,26 @@ Each is held to its photo by
   with bottom-left chamfers, and four MAGNUM 650 HAND GUN cards with
   the second selected and grown. Gate: PASS, 71% area.
 
+## The widget sheet — derived from the traces
+
+- `components.svg` — every reusable component of the four screens,
+  drawn once in isolation, built 2026-09-03 from the four traces and
+  `bar.svg`. Every component is a translate-only copy of a trace
+  element with an XML comment citing file and coordinates and an
+  on-sheet caption of the numbers: the header chrome (CUSTOMER/LEVEL
+  badge, SECURITY LEVEL row, #NC488402 block, `next` and MASURAO
+  logotypes, tab boxes, footers, margin chips), the store nav cell
+  both states, message-list rows (selected / NEW / plain) with the
+  disc column and scroll widget, the menu diamond and its separator,
+  buttons, the NEW pill, the user card active and idle, the product
+  card plain and selected, the GO HOME panel, the message-panel
+  corner, then 36 measured palette values, typography, ground stops,
+  observed era rules and an implementation-delta box listing where
+  `src/eras/neomil.rs` still disagrees with the traces (a global
+  Chamfer 15, the RED consts, white tape, `Ground::Flat`, OpsCharts,
+  `Menu::Table`). Not gated — the traces are. It replaces the deleted
+  `target-components.svg` below, which sampled nothing.
+
 ## The bar — the one original
 
 - `bar.svg` — the status bar: host tape, workspaces, tray, the
@@ -65,7 +85,8 @@ keeps a row per file saying what each got wrong. In short:
   claim; superseded by `mailbox-trace.svg` and `store-trace.svg`.
   `src/widgets/table.rs` and `style::Menu::Table` were built to it.
 - `target-components.svg` — a widget sheet that claimed to be "sampled
-  across the run" and sampled nothing from it.
+  across the run" and sampled nothing from it. Replaced the same day by
+  `components.svg` above, built from the traces.
 - `dashboard.svg` — the ops-charts composite `screens::dashboard` still
   assembles under `Layout::OpsCharts` (three red chart diamonds, a
   right rail, a corner block). The photo holds the six-diamond hub

@@ -1,0 +1,875 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <!-- KITSCH COMPONENT SHEET, rebuilt 2026-09-03.
+
+       What this is: the widget sheet for the kitsch era. Every reusable
+       component the four kitsch screens are made of, drawn once, in
+       isolation, at 1:1 TRACE SCALE, with its measurements beside it. A
+       coding model that cannot see the render should be able to build the
+       iced widget from this file as a text spec.
+
+       Built from, and only from:
+         docs/kitsch/login-trace.svg      (images/kitsch-login.png,     #50)
+         docs/kitsch/dashboard-trace.svg  (images/kitsch-dashboard.png, #49)
+         docs/kitsch/mailbox-trace.svg    (images/kitsch-mail.png,      #51)
+         docs/kitsch/store-trace.svg      (images/kitsch-store.png,     #52)
+         docs/kitsch/bar.svg              (original composition; its citations
+                                           are pointers back into the traces)
+       plus docs/sources.md and docs/kitsch/README.md for roles and rules.
+
+       HOW TO READ THE COORDINATES. Each component sits in a group whose only
+       transform is a translate. The geometry inside a group is the TRACE'S
+       OWN absolute coordinates on its 1600x900 canvas, copied verbatim, so
+       "M 140,297" in this file is "M 140,297" in store-trace.svg. Nothing is
+       scaled; the translate is the only thing this sheet adds. Every
+       component carries an XML comment naming the trace, the element and the
+       coordinates it came from, and a dim on-sheet caption with the numbers.
+
+       WHAT CHANGED versus the sheet this replaces. The old sheet was drawn
+       by eye before the traces existed and inherited the errors of the
+       deleted target-app.svg composite, so none of its geometry was trusted
+       and all of it was redrawn. The nav is no longer 160-wide rounded
+       pills over a blob: it is five 216x39 peaked chevrons on a 60px pitch
+       inside the measured bracket that wraps the customer block and ends in
+       the solid teal wave. The product card's shelf band is 35px tall with a
+       27px flag poking past the card's left edge and a 45 degree chamfer at
+       its right end, not a 20px band with no flag. The dashboard menu is two
+       three-blade fans of 162x50 r8 rounded cards, each trailing a stack of
+       same-size ghosts stepping (+20,-20) in SCREEN space, not tilted
+       extruded slabs. The orange DEVICE BEZEL, the numbered D1..D4 mail
+       list, the callout panel's folded corner and the "no chamfers" rule are
+       gone: no trace shows any of them, and several traces contradict them.
+       Added from the traces: the boxed letter unit, the stepped USER box,
+       both security badge variants, the login guest card and its chip glyph,
+       the input field and the stepped ENTER / PROTECTED bars, the barcode,
+       the message panel, the BRAINDANCE panel, the mailbox list rows and
+       chevrons, and the measured type and ground specifications.
+
+       Ground: the store trace's bloom (its stops, stretched over this
+       1920x1080 canvas) plus its grey-green left wash, so components render
+       in context. NOTE: no element in any of the four kitsch traces carries
+       class="photo". There is no photo residue to exclude; the bloom, the
+       left wash and the fading container lines are the era's ground and line
+       treatment and the implementation draws all three.
+  -->
+  <defs>
+    <!-- GROUND. store-trace.svg #bloom / #leftwash, stops verbatim. -->
+    <radialGradient id="k-bloom" cx="0.5" cy="-0.25" r="0.95">
+      <stop offset="0"    stop-color="#b05064"/>
+      <stop offset="0.35" stop-color="#933b53"/>
+      <stop offset="0.6"  stop-color="#5c2236"/>
+      <stop offset="0.85" stop-color="#1e0f14"/>
+      <stop offset="1"    stop-color="#0e0e0d"/>
+    </radialGradient>
+    <radialGradient id="k-leftwash" cx="0" cy="0.5" r="0.5">
+      <stop offset="0"   stop-color="#2a2e2a" stop-opacity="1"/>
+      <stop offset="0.6" stop-color="#2a2e2a" stop-opacity="0.5"/>
+      <stop offset="1"   stop-color="#2a2e2a" stop-opacity="0"/>
+    </radialGradient>
+    <!-- container lines fade where they leave the composition. store-trace
+         #fadeR, identical stops in mailbox-trace. -->
+    <linearGradient id="k-fadeR" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0"   stop-color="#5fd6c2" stop-opacity="1"/>
+      <stop offset="0.6" stop-color="#5fd6c2" stop-opacity="1"/>
+      <stop offset="1"   stop-color="#5fd6c2" stop-opacity="0"/>
+    </linearGradient>
+    <!-- swatch gradients for the GROUND section (same stops, drawn flat) -->
+    <linearGradient id="k-bloomswatch" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0"    stop-color="#b05064"/>
+      <stop offset="0.35" stop-color="#933b53"/>
+      <stop offset="0.6"  stop-color="#5c2236"/>
+      <stop offset="0.85" stop-color="#1e0f14"/>
+      <stop offset="1"    stop-color="#0e0e0d"/>
+    </linearGradient>
+    <linearGradient id="k-washswatch" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0"   stop-color="#2a2e2a" stop-opacity="1"/>
+      <stop offset="0.6" stop-color="#2a2e2a" stop-opacity="0.5"/>
+      <stop offset="1"   stop-color="#2a2e2a" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- NAV CHEVRON, store-trace #nav: 216x39, origin at the bbox top-left
+         (the five cells sit at x 140, y 297 + n*60). -->
+    <path id="k-nav" d="M 0,39 V 19 L 18,0 L 27,3 H 214 Q 216,3 216,5 V 11 L 190,39 Z"/>
+    <!-- TAB CHEVRON, mailbox-trace #chev: 161x46, the right column's
+         DETAILS / MODS / PRICE / DAMAGE at x 1216, y 306 + n*53.5. -->
+    <path id="k-chev" d="M 0,46 V 24 L 22,0 L 28,9 H 155 Q 161,9 161,14 V 24 L 139,46 Z"/>
+    <!-- ENVELOPE GLYPH, mailbox-trace #env: 20x13, one per list row. -->
+    <path id="k-env" d="M 0,0 H 20 V 13 H 0 Z M 0,0 L 10,8 L 20,0"/>
+    <!-- SECURITY BADGES: mailbox-trace #badge 56x34 rx2, dashboard-trace
+         #badge 57x52 square. -->
+    <rect id="k-badge-mb" width="56" height="34" rx="2"/>
+    <rect id="k-badge-db" width="57" height="52"/>
+    <!-- FAN CARD, dashboard-trace #card: 162x50 rx8, centred on its own
+         origin, measured in each card's own rotated frame. -->
+    <rect id="k-fancard" x="-81" y="-25" width="162" height="50" rx="8"/>
+    <!-- SOCKET / QR GLYPH, store-trace #qr: 30x30, first cell of the socket row. -->
+    <g id="k-qr">
+      <rect x="0"  y="0"  width="5" height="5"/><rect x="10" y="0"  width="5" height="5"/><rect x="20" y="0"  width="5" height="5"/>
+      <rect x="5"  y="6"  width="5" height="5"/><rect x="25" y="6"  width="5" height="5"/>
+      <rect x="0"  y="12" width="5" height="5"/><rect x="12" y="12" width="5" height="5"/><rect x="20" y="12" width="5" height="5"/>
+      <rect x="6"  y="18" width="5" height="5"/><rect x="15" y="18" width="5" height="5"/><rect x="25" y="18" width="5" height="5"/>
+      <rect x="0"  y="24" width="5" height="5"/><rect x="10" y="24" width="5" height="5"/><rect x="20" y="24" width="5" height="5"/>
+    </g>
+    <!-- BAND GLYPHS, store-trace #bandglyphs: the compliance marks in the
+         LOWER half of the shelf band, local y 78..90 (screen 296..308).
+         Certification square, disc in square with SC, C in C, then a rounded
+         box holding a warning triangle and seven rules of micro-text. -->
+    <g id="k-bandglyphs">
+    <g fill="none" stroke="#5a3a08" stroke-width="1">
+      <rect x="-16.5" y="78.5" width="10.5" height="11"/>
+      <path d="M -15,80 H -13.5 M -15,80 V 81.5 M -7.5,80 H -9 M -7.5,80 V 81.5 M -15,88 H -13.5 M -15,88 V 86.5 M -7.5,88 H -9 M -7.5,88 V 86.5" stroke-width="0.7"/>
+      <path d="M -13.5,83.2 H -8.5 M -13.5,85.2 H -8.5" stroke-width="0.8"/>
+      <rect x="-0.5" y="78.5" width="10.5" height="11"/>
+      <path d="M 24.5,81.5 V 80.5 Q 24.5,78.5 22.5,78.5 H 17.5 Q 15.5,78.5 15.5,80.5 V 87.5 Q 15.5,89.5 17.5,89.5 H 22.5 Q 24.5,89.5 24.5,87.5 V 86.5" stroke-width="1.4"/>
+      <path d="M 22,82.5 H 19.5 Q 18.5,82.5 18.5,83.5 V 84.5 Q 18.5,85.5 19.5,85.5 H 22" stroke-width="0.9"/>
+      <rect x="28.5" y="74" width="64" height="18" rx="1.5" stroke-width="0.5" stroke-opacity="0.6"/>
+      <path d="M 45,77.5 H 91 M 45,79.6 H 66 M 45,81.7 H 90 M 45,83.8 H 60 M 45,85.9 H 91 M 45,88 H 87 M 45,90 H 70" stroke-width="0.5" stroke-opacity="0.75"/>
+    </g>
+    <g fill="#5a3a08">
+      <circle cx="4.75" cy="84" r="4.2"/>
+      <path d="M -0.5,78.5 H 2 L -0.5,81 Z M 10,78.5 H 7.5 L 10,81 Z M -0.5,89.5 H 2 L -0.5,87 Z M 10,89.5 H 7.5 L 10,87 Z"/>
+      <path d="M 30.5,90 L 36.5,78 L 42.5,90 Z"/>
+    </g>
+    <g fill="#fec32f">
+      <text x="4.75" y="85.6" font-family="Rajdhani" font-size="4.5" font-weight="700" text-anchor="middle">SC</text>
+      <rect x="36" y="82.5" width="1.1" height="4.2"/>
+      <circle cx="36.55" cy="88.3" r="0.7"/>
+    </g>
+    </g>
+    <!-- PRODUCT ART, store-trace #gun / #gundetail: the mint line drawing,
+         card-local x 37..235, y 129..183, outlined from the photo's mint mask
+         with three evenodd holes (ejection port, magazine well, trigger guard). -->
+    <path id="k-gun" fill-rule="evenodd" d="M 41,131 H 76 V 133.7 H 136 L 137.7,132 H 146 L 169.3,140.3 L 196,145.8 L 197.7,148.7 L 202.7,149.5 L 205.2,147.4 L 235.2,154.5 V 180.3 L 231,179.9 L 228.5,182 V 157.4 H 223.5 V 182 L 221,182.8 L 214.3,180.8 L 211.8,171.6 L 201.8,159.1 H 184.3 L 183.5,161.2 H 180.2 L 157.7,170.8 L 135.2,170.3 L 131.8,172.4 H 121 L 116.8,170.8 L 115.2,175.8 L 111.8,176.2 H 86 L 85.2,173.2 H 59.3 L 56.8,173.2 L 56,176.6 L 55.2,175.3 H 45.2 L 43.5,172 L 38.5,174.1 L 36.8,172 V 148.7 L 40.2,144.5 L 41,130.8 Z M 127,144.5 H 146 V 146 L 148,149 L 147,151 L 135,152.5 L 131,150 L 124,149 V 146.5 Z M 135,152.5 H 153 V 167 H 135 Z M 159,147 H 171 L 174,150 V 156 L 170,158.5 L 164,159.5 V 152 Z"/>
+    <path id="k-gundetail" d="M 41,137 H 136 M 50,131 V 137 M 58,131 V 137 M 66,131 V 137 M 74,131 V 137 M 61,140 V 172 M 84,140 V 172 M 66,145 L 88,167 M 41,147 H 61 M 88,147 H 118 M 94,152 H 116 M 94,157 H 116 M 94,162 H 116 M 94,167 H 116 M 101,152 V 167 M 109,152 V 167 M 49,149 V 172 M 37,152 H 49 M 37,158 H 49 M 37,164 H 49 M 37,170 H 49 M 59,171 H 83 M 63,171 V 175 M 67,171 V 175 M 71,171 V 175 M 75,171 V 175 M 79,171 V 175 M 150,138 L 190,146 M 214,166 H 223 M 228.5,166 H 235"/>
+
+    <!-- STANDARD PRODUCT CARD, store-trace #card verbatim. Origin at the
+         outline's top-left corner, i.e. (x0, 218) with x0 = 484 / 1123 / 1443.
+         261 wide, y 218..538 outline, micro-text to 567. -->
+    <g id="k-card">
+      <path d="M 6.5,0.5 H 237 L 261.5,24.5 V 320.5 H 0.5 V 6.5 Q 0.5,0.5 6.5,0.5 Z" fill="none" stroke="#5fd6c2" stroke-width="1.25"/>
+      <g font-family="Rajdhani" font-weight="500" fill="#7fe0c8">
+        <text x="10.5" y="30.5" font-size="24.4" letter-spacing="-0.75">MAGNUM 650</text>
+        <text x="10" y="49.5" font-size="19.5" letter-spacing="0.6">HAND GUN</text>
+      </g>
+      <path d="M -27,94 V 72 L -3,50 V 59 H 256 Q 258,59 258,61 V 71.5 L 235.5,94 Z" fill="#fec32f"/>
+      <use href="#k-bandglyphs"/>
+      <g font-family="Rajdhani" fill="#5a3a08">
+        <rect x="163" y="72.8" width="58" height="8" fill="#5a3a08"/>
+        <text transform="translate(163 79.6) scale(1.3 1)" font-size="8" font-weight="700" letter-spacing="0.6" fill="#fec32f">PETROCHEM</text>
+        <text transform="translate(163 90) scale(1.3 1)" font-size="8" font-weight="700" letter-spacing="0.2">BETTERLIFE TEC</text>
+      </g>
+      <use href="#k-gun" fill="#93ffe4"/>
+      <use href="#k-gundetail" fill="none" stroke="#0e0e0d" stroke-width="1"/>
+      <g font-family="Rajdhani" font-size="17" fill="#7fe0c8" text-anchor="middle">
+        <text x="41"  y="225">DPS</text>
+        <text x="101" y="225">PNT</text>
+        <text x="162" y="225">ACC</text>
+        <text x="222" y="225">ROF</text>
+      </g>
+      <path d="M 8,232 H 254 Q 258,232 258,236 V 262 H 72 L 65,270 H 8 Q 4,270 4,266 V 236 Q 4,232 8,232 Z" fill="#81fee7"/>
+      <g font-family="Rajdhani" font-size="20" fill="#123c38" text-anchor="middle">
+        <text x="41"  y="255">86</text>
+        <text x="101" y="255">30</text>
+        <text x="162" y="255">5</text>
+        <text x="222" y="255">5</text>
+      </g>
+      <path d="M 0.5,274.5 H 261.5 M 52.5,274.5 V 320.5 M 119.5,274.5 V 320.5 M 190.5,274.5 V 320.5" fill="none" stroke="#5fd6c2" stroke-width="1.25"/>
+      <use href="#k-qr" x="12" y="283" fill="#81fee7"/>
+      <g font-family="Rajdhani" font-size="9" font-weight="600" fill="#7fe0c8" text-anchor="middle">
+        <text x="85"  y="295">EMPTY</text><text x="85"  y="307">SOCKET</text>
+        <text x="154" y="295">EMPTY</text><text x="154" y="307">SOCKET</text>
+        <text x="225" y="295">EMPTY</text><text x="225" y="307">SOCKET</text>
+      </g>
+      <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.3" fill="#5fc9b5">
+        <text x="4" y="341">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
+        <text x="4" y="349">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+      </g>
+    </g>
+
+    <!-- LOGIN GUEST CARD, login-trace #guest verbatim: chip glyph 62x61,
+         name, boxed A, three note lines. Origin at the chip's top-left
+         (258 / 651 / 1043, y 338), a 393px pitch. -->
+    <g id="k-guest">
+      <rect width="62" height="61" fill="#1cb6ae"/>
+      <path d="M 36.8,3.7 L 54,13.7 V 33 L 36.8,43.7 L 17.4,33 V 13.7 Z" fill="#0e2b2a"/>
+      <path d="M 17.4,33 L 54,13.7" fill="none" stroke="#1cb6ae" stroke-width="2"/>
+      <path d="M 0,4 H 13 L 12.5,13 H 10 L 0,44 Z" fill="#0e2b2a"/>
+      <path d="M 0,6.5 H 12.6 M 0,9 H 12.4 M 0,11.5 H 12.2" fill="none" stroke="#1cb6ae" stroke-width="0.9"/>
+      <g fill="#0e2b2a">
+        <rect x="1" y="52" width="3" height="3"/><rect x="1" y="56" width="3" height="3.5"/>
+        <circle cx="13" cy="54.5" r="1.4"/>
+        <rect x="30" y="52.5" width="3.7" height="3.2"/><rect x="30" y="56.3" width="3.7" height="3"/>
+        <rect x="34.5" y="51" width="1" height="1"/>
+        <rect x="35" y="53.5" width="9" height="0.8"/><rect x="35" y="55.5" width="7" height="0.8"/><rect x="35" y="57.5" width="8" height="0.8"/>
+      </g>
+      <path d="M 23,52.6 H 29 V 59 H 23 Z M 23,52.6 L 29,59" fill="none" stroke="#0e2b2a" stroke-width="1"/>
+      <text x="82" y="17" font-family="Rajdhani" font-size="20" font-weight="600"
+            letter-spacing="0.5" fill="#a9e6df">GUEST 7702</text>
+      <rect x="81.3" y="33.9" width="24.5" height="24.1" fill="none" stroke="#82f0d3" stroke-width="2"/>
+      <text transform="translate(93.55 52.4) scale(1.7 1)" font-family="Rajdhani" font-size="18" font-weight="500" text-anchor="middle" fill="#82f0d3">A</text>
+      <g transform="translate(114.1 0) scale(1.32 1)" font-family="Rajdhani" font-size="8" font-weight="700" fill="#82f0d3">
+        <text x="0" y="38.3">ACCESS MANAGER WAS DEVE-</text>
+        <text x="0" y="47.5">LOPED BY SEOCHO. SERVING</text>
+        <text x="0" y="56.7">CUSTOMERS SINCE 2006.</text>
+      </g>
+    </g>
+  </defs>
+
+  <!-- ==================== GROUND ==================== -->
+  <rect width="1920" height="1080" fill="#0e0e0d"/>
+  <rect width="1920" height="744" fill="url(#k-bloom)"/>
+  <rect x="0" y="72" width="720" height="936" fill="url(#k-leftwash)"/>
+
+<g font-family="Rajdhani">
+
+  <!-- ==================== TITLE BLOCK ==================== -->
+  <!-- LOGOTYPE. store-trace.svg: 4 / S at x 147.4 / 207.9 solid #8ff2dc and
+       an OUTLINED T at 277.5 (stroke 1.3), each a horizontal stretch
+       (1.63 / 1.89 / 1.24) of Rajdhani Bold 73 on baseline 134, cap y 85..134;
+       S T O R E beneath as five texts on the measured 38.6px pitch (lefts
+       153 / 192 / 229.3 / 269.7 / 308.5, size 17 weight 500, baseline 156).
+       Used here 1:1 as the sheet's own masthead. -->
+  <g transform="translate(-107.4 -75)" font-weight="700">
+    <text transform="translate(147.4 134) scale(1.63 1)" font-size="73" fill="#8ff2dc">4</text>
+    <text transform="translate(207.9 134) scale(1.89 1)" font-size="73" fill="#8ff2dc">S</text>
+    <text transform="translate(277.5 134) scale(1.24 1)" font-size="73" fill="none" stroke="#8ff2dc" stroke-width="1.3">T</text>
+    <g font-size="17" font-weight="500" fill="#7fe0c8">
+      <text x="153" y="156">S</text><text x="192" y="156">T</text><text x="229.3" y="156">O</text><text x="269.7" y="156">R</text><text x="308.5" y="156">E</text>
+    </g>
+  </g>
+  <g fill="#82f0d3">
+    <text x="250" y="46" font-size="27" font-weight="600" letter-spacing="4">KITSCH // COMPONENT SHEET</text>
+    <text x="251" y="66" font-size="11" font-weight="500" letter-spacing="1.6" fill="#7fd4cc">EVERY WIDGET AT 1:1 TRACE SCALE, 2026-09-03. GROUND: store-trace bloom.</text>
+    <text x="251" y="82" font-size="11" font-weight="500" letter-spacing="1.6" fill="#7fd4cc" fill-opacity="0.8">SOURCES: login-trace / dashboard-trace / mailbox-trace / store-trace / bar.svg + docs/sources.md</text>
+    <text x="1890" y="46" font-size="11" font-weight="600" letter-spacing="2" text-anchor="end" fill="#7fd4cc">MASTHEAD, LEFT: store-trace.svg logotype, x 147..322, y 85..156, 1:1</text>
+    <text x="1890" y="64" font-size="11" font-weight="500" letter-spacing="1" text-anchor="end" fill="#7fd4cc" fill-opacity="0.8">geometry inside each group is the trace's own 1600x900 coordinate; the group translate is the only change</text>
+    <text x="1890" y="82" font-size="11" font-weight="500" letter-spacing="1" text-anchor="end" fill="#7fd4cc" fill-opacity="0.8">no kitsch trace marks class="photo": there is no photo residue to keep off the implementation</text>
+  </g>
+  <path d="M 30,96 H 1890" stroke="#4f9a92" stroke-width="1" fill="none"/>
+
+  <!-- ==================== BAND A: HEADER CHROME + CONTROLS ==================== -->
+  <text x="30" y="115" font-size="11.5" font-weight="600" letter-spacing="2.5" fill="#82f0d3">1 . HEADER / CHROME</text>
+
+  <!-- CUSTOMER CHIP + ACCOUNT LINES. store-trace.svg: rounded outline
+       x 124.5, y 178.5, 213x21, rx 8, stroke #5fd6c2 1.25; "customer" at
+       x 133 and "#NC488402" at x 243, both size 12 #7fe0c8 baseline 193;
+       loyalty discount / last update at baselines 227 / 243 with their
+       values end-anchored to x 306. -->
+  <g transform="translate(-88.5 -52.5)">
+    <rect x="124.5" y="178.5" width="213" height="21" rx="8" fill="none" stroke="#5fd6c2" stroke-width="1.25"/>
+    <g font-size="12" fill="#7fe0c8">
+      <text x="133" y="193">customer</text>
+      <text x="243" y="193">#NC488402</text>
+      <text x="133" y="227">loyalty discount</text>
+      <text x="306" y="227" text-anchor="end">10%</text>
+      <text x="133" y="243">last update</text>
+      <text x="306" y="243" text-anchor="end">10/05/2077</text>
+    </g>
+  </g>
+  <g font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">
+    <text x="36" y="203">CUSTOMER CHIP  213x21 rx8 . stroke 1.25 #5fd6c2 . label and value 400 12 #7fe0c8</text>
+    <text x="36" y="214">account lines pitch 16, values end-anchored 182px right of the label</text>
+  </g>
+
+  <!-- BOXED LETTER UNIT. mailbox-trace.svg header column A: a 24.1x23.8
+       square stroked 2 in #82f0d3 at (165.2,106.2), a wide heavy cap
+       (Rajdhani 600 18 stretched 1.7, centred, cap y 113.8..125.5), three
+       lines of in-fiction micro-text at x 205 (Rajdhani 600 8 stretched
+       1.3, rows 110 / 119.1 / 128.2) and a section label beneath
+       (Rajdhani 600 12.3 stretched 1.37, ls 0.6, cap y 151..159).
+       The same unit appears in dashboard-trace (A/C/D at x 164.6 / 673.3 /
+       1215.2, y 109.8) and store-trace (A/C in the foot). -->
+  <g transform="translate(-129.2 121.8)" fill="#7fd4cc">
+    <g font-size="8" font-weight="600" fill="#82f0d3">
+      <g transform="translate(205 0) scale(1.3 1)">
+        <text x="0" y="110">SPARE TIME MANAGER WAS DEVELO-</text>
+        <text x="0" y="119.1">PED BY SEOCHO. SERVING CUSTO-</text>
+        <text x="0" y="128.2">MERS SINCE 2006.</text>
+      </g>
+    </g>
+    <rect x="165.2" y="106.2" width="24.1" height="23.8" fill="none" stroke="#82f0d3" stroke-width="2"/>
+    <text transform="translate(177.25 125.5) scale(1.7 1)" font-size="18" font-weight="600" text-anchor="middle" fill="#82f0d3">A</text>
+    <text transform="translate(166 159) scale(1.37 1)" font-size="12.3" font-weight="600" letter-spacing="0.6" fill="#82f0d3">USER</text>
+  </g>
+  <g font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">
+    <text x="36" y="293">LETTER BOX  24x24 . stroke 2 #82f0d3 . cap 600 18 x1.7, cap height 11.7</text>
+    <text x="36" y="304">notes 600 8 x1.3, rows +3.8/+12.9/+22 . label 600 12.3 x1.37 ls .6 at +45</text>
+  </g>
+
+  <!-- STEPPED USER BOX. mailbox-trace.svg: x 155.5..349.5 (194 wide), top
+       y 185.5, bottom y 228.5 on the right and 236.5 under the first 55px,
+       joined by a 12px diagonal at x 208..220; stroke #7fd4cc 1.25 with
+       rounded joins. GUES 7702 Rajdhani 600 20 ls 0.5 #a9e6df, cap y 199..213.
+       dashboard-trace draws the same box 4px lower (y 189.5..240.5) with the
+       label at 21.5. The DESCRIPTION box (MAILBOX) is the same shape at x 575.5. -->
+  <g transform="translate(-119.5 134.5)">
+    <path d="M 155.5,185.5 H 349.5 V 228.5 H 220 L 208,236.5 H 155.5 Z"
+          fill="none" stroke="#7fd4cc" stroke-width="1.25" stroke-linejoin="round"/>
+    <text x="166" y="213" font-size="20" font-weight="600" letter-spacing="0.5" fill="#a9e6df">GUES 7702</text>
+  </g>
+  <g font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">
+    <text x="36" y="384">USER / DESCRIPTION BOX  194x51 . step down 8 under the first 55px via a 12px diagonal</text>
+    <text x="36" y="395">stroke 1.25 #7fd4cc round joins . label Rajdhani 600 20 (hub 21.5) ls 0.5 #a9e6df</text>
+  </g>
+
+  <!-- SECURITY BADGE ROW. mailbox-trace.svg: four 56x34 rx2 badges at
+       x 1215.5 / 1275 / 1336.5 / 1396.5, y 190.5, 1.0px #7fd4cc outlines,
+       the SECOND filled amber #f0a93c with #7a3a1a digits; digits Rajdhani
+       600 23 centred, cap y 200..215. dashboard-trace has the same row as
+       four 57x52 SQUARE badges at x 664.5 / 725 / 785.5 / 844.5, y 189.5,
+       second filled #f5cb23 with #6b4d08 digits, digits size 22. -->
+  <g transform="translate(-1179.5 221.5)" font-size="23" font-weight="600" text-anchor="middle">
+    <use href="#k-badge-mb" x="1215.5" y="190.5" fill="none" stroke="#7fd4cc" stroke-width="1"/>
+    <text x="1243" y="215" fill="#7fd4cc">01</text>
+    <use href="#k-badge-mb" x="1275" y="190" fill="#f0a93c"/>
+    <text x="1303" y="215" fill="#7a3a1a">02</text>
+    <use href="#k-badge-mb" x="1336.5" y="190.5" fill="none" stroke="#7fd4cc" stroke-width="1"/>
+    <text x="1364" y="215" fill="#7fd4cc">03</text>
+    <use href="#k-badge-mb" x="1396.5" y="190.5" fill="none" stroke="#7fd4cc" stroke-width="1"/>
+    <text x="1424" y="215" fill="#7fd4cc">04</text>
+  </g>
+  <g font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">
+    <text x="36" y="459">SECURITY LEVEL  4 x 56x34 rx2 on a ~60 pitch . stroke 1.0 #7fd4cc . digits 600 23</text>
+    <text x="36" y="470">SECOND badge always filled: mail #f0a93c ink #7a3a1a . hub #f5cb23 ink #6b4d08</text>
+    <text x="36" y="481">hub variant: 57x52 SQUARE, no rx, pitch 60, digits 22 (hub x 664.5, y 189.5)</text>
+  </g>
+
+  <!-- FOOTER MARK. store-trace.svg foot: three lines of bright bold wide
+       micro-text at x 181 (Rajdhani 700 8 stretched 1.3, cap rows
+       733.3..738.8 / 742.5..748.3 / 751.2..756.7) beside a boxed A, a
+       23.7x24.2 square stroked 2 with a size-18 cap stretched 1.7.
+       dashboard-trace draws the same mark as B DEVICE SOFTWARE at x 574.3,
+       y 741, with the section label beneath it. -->
+  <g transform="translate(-145 -236.3)" fill="#7fd4cc">
+    <g font-size="8" font-weight="700" fill="#82f0d3">
+      <g transform="translate(181 0) scale(1.3 1)">
+        <text x="0" y="738.8">SPARE TIME MANAGER WAS DEVELO-</text>
+        <text x="0" y="747.8">PED BY SEOCHO. SERVING CUSTO-</text>
+        <text x="0" y="756.7">MERS SINCE 2006.</text>
+      </g>
+    </g>
+    <rect x="354" y="734.3" width="23.7" height="24.2" fill="none" stroke="#82f0d3" stroke-width="2"/>
+    <text transform="translate(365.9 753.8) scale(1.7 1)" font-size="18" font-weight="700" text-anchor="middle" fill="#82f0d3">A</text>
+  </g>
+  <g font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">
+    <text x="36" y="535">FOOTNOTE MARK  notes+box in the foot, box+notes in headers . 24x24, 2px</text>
+    <text x="36" y="546">all in #82f0d3: the footnote ink is the BRIGHT mint, never the dim caption teal</text>
+  </g>
+
+  <text x="30" y="578" font-size="11.5" font-weight="600" letter-spacing="2.5" fill="#82f0d3">6 . CONTROLS (login-trace)</text>
+
+  <!-- GUEST CARD. login-trace.svg #guest at (258,338), pitch 393: a 62x61
+       #1cb6ae chip carrying a dark hexagon with a teal slash, a hatched
+       corner wedge and a row of marks along its foot; GUEST 7702 at x+82
+       (Rajdhani 600 20 ls 0.5 #a9e6df, baseline +17); the boxed A at x+81.3,
+       y+33.9 (24.5x24.1, stroke 2) and three note lines at x+114.1
+       (Rajdhani 700 8 stretched 1.32). -->
+  <use href="#k-guest" x="36" y="590"/>
+  <g font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">
+    <text x="36" y="663">GUEST CARD  chip 62x61 #1cb6ae, glyphs #0e2b2a . name baseline +17</text>
+    <text x="36" y="674">boxed A at +81.3,+33.9 (2px) . card 1 = field + ENTER, cards 2/3 PROTECTED</text>
+  </g>
+
+  <!-- INPUT FIELD. login-trace.svg: a dark-teal rect [257,413,335,51] rx 2,
+       fill #162826, no outline, with a 2x22 mint cursor at (266,421). -->
+  <g transform="translate(-221 277)">
+    <rect x="257" y="413" width="335" height="51" rx="2" fill="#162826"/>
+    <rect x="266" y="421" width="2" height="22" fill="#8af0d8"/>
+  </g>
+  <text x="36" y="754" font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">INPUT FIELD  335x51 rx2 solid #162826, NO outline . cursor 2x22 #8af0d8 at +9,+8</text>
+
+  <!-- ENTER BAR (primary button). login-trace.svg: a solid mint bar
+       x 257..591.5, y 470..497.5 whose right two-fifths step UP to y 463
+       through a 12px diagonal at x 418..430; fill #8afada, ENTER centred at
+       x 510 in Rajdhani 600 14 ls 2.5 #0f3a33. -->
+  <g transform="translate(-221 307)">
+    <path d="M 257,470 H 418 L 430,463 H 591.5 V 497.5 H 257 Z" fill="#8afada"/>
+    <text x="510" y="486" font-size="14" font-weight="600" letter-spacing="2.5" text-anchor="middle" fill="#0f3a33">ENTER</text>
+  </g>
+  <text x="36" y="817" font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">BUTTON, FILLED  335x34.5, steps up 7 at 48% width . #8afada ink #0f3a33</text>
+
+  <!-- PROTECTED BAR (disabled button). login-trace.svg cards 2 and 3: the
+       same stepped bar in dark teal, x 649..984.5 / 1042..1377, y 462..497.5,
+       fill #122724 stroke #1d3f3a 1, label PROTECTED centred, Rajdhani 600
+       13 ls 2.5 #7fe0c8. -->
+  <g transform="translate(-613 370)">
+    <path d="M 649,471 H 812 L 824,462 H 984.5 V 497.5 H 649 Z" fill="#122724" stroke="#1d3f3a" stroke-width="1"/>
+    <text x="904" y="486" font-size="13" font-weight="600" letter-spacing="2.5" text-anchor="middle" fill="#7fe0c8">PROTECTED</text>
+  </g>
+  <g font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">
+    <text x="36" y="880">BUTTON, DISABLED  same silhouette 335.5x35.5 . #122724, stroke #1d3f3a 1</text>
+    <text x="36" y="891">label 600 13 ls 2.5 #7fe0c8 . the era keeps the shape and swaps the fill</text>
+  </g>
+
+  <!-- BARCODE. login-trace.svg, inside the bracket foot: a 7x63 label strip
+       at (370,632) filled #16a49c carrying rotated micro-text (Rajdhani 5.5
+       ls 0.3 #0e2b2a), then 50 bars from the photo's column profile,
+       x 377.5..590.4, y 632..683, fill #8af0d8, and the digits
+       12345678123456789 at (420,696) size 13 ls 0.5. -->
+  <g transform="translate(-334 274)" fill="#8af0d8">
+    <rect x="370" y="632" width="7" height="63" fill="#16a49c"/>
+    <text transform="translate(375.5 693) rotate(-90)" font-size="5.5" letter-spacing="0.3" fill="#0e2b2a">0033 05 64 08 CP</text>
+    <g transform="translate(0 632)">
+      <rect x="377.5" width="7.5" height="51"/><rect x="385.8" width="1.7" height="51"/><rect x="389.2" width="1.7" height="51"/><rect x="392.1" width="1.7" height="51"/>
+      <rect x="395.0" width="1.7" height="51"/><rect x="401.2" width="3.3" height="51"/><rect x="405.8" width="2.9" height="51"/><rect x="410.4" width="1.7" height="51"/>
+      <rect x="415.0" width="1.7" height="51"/><rect x="419.6" width="2.9" height="51"/><rect x="425.8" width="1.2" height="51"/><rect x="428.8" width="1.7" height="51"/>
+      <rect x="431.2" width="3.3" height="51"/><rect x="436.2" width="1.3" height="51"/><rect x="440.4" width="1.7" height="51"/><rect x="443.8" width="2.9" height="51"/>
+      <rect x="449.6" width="1.7" height="51"/><rect x="452.5" width="3.3" height="51"/><rect x="457.1" width="2.1" height="51"/><rect x="460.4" width="3.3" height="51"/>
+      <rect x="464.6" width="3.3" height="51"/><rect x="469.2" width="1.7" height="51"/><rect x="473.8" width="1.7" height="51"/><rect x="478.3" width="3.3" height="51"/>
+      <rect x="484.6" width="1.7" height="51"/><rect x="487.5" width="1.7" height="51"/><rect x="490.4" width="3.3" height="51"/><rect x="495.0" width="1.7" height="51"/>
+      <rect x="499.6" width="1.7" height="51"/><rect x="504.2" width="3.3" height="51"/><rect x="510.0" width="1.7" height="51"/><rect x="513.3" width="1.7" height="51"/>
+      <rect x="516.2" width="3.3" height="51"/><rect x="520.8" width="1.7" height="51"/><rect x="525.4" width="1.7" height="51"/><rect x="528.3" width="2.9" height="51"/>
+      <rect x="534.2" width="2.1" height="51"/><rect x="537.5" width="2.9" height="51"/><rect x="542.1" width="1.7" height="51"/><rect x="545.0" width="3.3" height="51"/>
+      <rect x="549.6" width="2.9" height="51"/><rect x="554.2" width="1.7" height="51"/><rect x="558.3" width="2.1" height="51"/><rect x="563.3" width="2.9" height="51"/>
+      <rect x="567.5" width="2.1" height="51"/><rect x="572.1" width="1.7" height="51"/><rect x="575.0" width="3.3" height="51"/><rect x="581.2" width="1.7" height="51"/>
+      <rect x="584.2" width="3.3" height="51"/><rect x="589.2" width="1.2" height="51"/>
+    </g>
+    <text x="420" y="696" font-size="13" letter-spacing="0.5" fill="#8af0d8">12345678123456789</text>
+  </g>
+  <g font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">
+    <text x="36" y="983">BARCODE  label strip 7x63 #16a49c + 50 bars over x 377.5..590.4, 51 tall</text>
+    <text x="36" y="994">bars #8af0d8 . digits 400 13 ls .5 . widths = the photo's column profile</text>
+  </g>
+
+  <!-- SOCKET GLYPH. store-trace.svg #qr, 30x30, drawn at (x0+12, 501) in the
+       first cell of every socket row; 14 5x5 squares on a 6px grid. -->
+  <use href="#k-qr" x="36" y="1006" fill="#81fee7"/>
+  <g font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">
+    <text x="76" y="1018">SOCKET GLYPH  30x30, fourteen 5x5 squares . #81fee7 on the plain card,</text>
+    <text x="76" y="1030">#fabe29 on the grown card . card-local (12,283)</text>
+  </g>
+
+  <!-- ==================== BAND B: NAVIGATION ==================== -->
+  <text x="392" y="115" font-size="11.5" font-weight="600" letter-spacing="2.5" fill="#82f0d3">2 . NAVIGATION CONTAINER (store-trace)</text>
+
+  <!-- NAV BRACKET + WAVE + FIVE CHEVRONS, store-trace.svg, 1:1 and complete.
+       Bracket: a 1.25px #5fd6c2 line on .5 coordinates. Top line y 186.5
+       fading in from x 440 to x 372, an S-bend down through (348.5,215) to
+       (348.5,235), out to a horizontal at y 267.5 running left to x 136 (it
+       wraps the customer block), an r30 corner into the left edge x 106.5,
+       which runs to y 575 and becomes THE WAVE: solid #1bb6a3 whose top edge
+       is y 617 from an r40 corner to x 312, rounds (r33) to a near-vertical
+       right side at x 345 over y 650..685, and flares into a bottom line at
+       y 718 that runs right and fades by x 445; the outer sweep runs
+       (106.5,575) to (300,718).
+       Chevrons: five #k-nav cells 216x39 at x 140, tops y 297 / 357 / 417 /
+       477 / 537, i.e. a 60px PITCH with a 21px gap; SMG is solid #ffbe18 with
+       #5a3a08 ink, the other four are 1.25px #5fd6c2 outlines with rounded
+       joins; labels at x 170, baseline top+30, Rajdhani 500 24.5 ls -0.4. -->
+  <g transform="translate(291.5 -62.5)">
+    <path d="M 106.5,575 Q 106.5,617 150,617 H 312 Q 345,617 345,650 V 685 Q 345,716 375,718 H 310 Q 110,718 106.5,575 Z"
+          fill="#1bb6a3"/>
+    <path d="M 440,186.5 H 372 Q 348.5,186.5 348.5,215 V 235 Q 348.5,267.5 313,267.5 H 136 Q 106.5,267.5 106.5,298 V 575 Q 106.5,617.5 150,617.5 H 312 Q 345.5,617.5 345.5,650 V 685 Q 345.5,716 375,718.5"
+          fill="none" stroke="#5fd6c2" stroke-width="1.25"/>
+    <path d="M 372,186.5 H 440" fill="none" stroke="url(#k-fadeR)" stroke-width="1.25"/>
+    <path d="M 106.5,575 Q 110,718.5 310,718.5 H 445" fill="none" stroke="url(#k-fadeR)" stroke-width="1.25"/>
+    <g fill="none" stroke="#5fd6c2" stroke-width="1.25" stroke-linejoin="round">
+      <use href="#k-nav" x="140.5" y="296.5"/>
+      <use href="#k-nav" x="140.5" y="416.5"/>
+      <use href="#k-nav" x="140.5" y="476.5"/>
+      <use href="#k-nav" x="140.5" y="536.5"/>
+    </g>
+    <use href="#k-nav" x="140" y="357" fill="#ffbe18"/>
+    <g font-size="24.5" font-weight="500" letter-spacing="-0.4" fill="#7fe0c8">
+      <text x="170" y="327">RIFLES</text>
+      <text x="170" y="387" fill="#5a3a08">SMG</text>
+      <text x="170" y="447">SNIPER</text>
+      <text x="170" y="507">SHOTGUN</text>
+      <text x="170" y="567">PISTOL</text>
+    </g>
+  </g>
+  <g font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">
+    <text x="398" y="666">NAV CONTAINER  339x532 . 1.25 #5fd6c2 on .5 coords, r30 corners</text>
+    <text x="398" y="677">top line y 186.5 fades in from x 440, S-bends round the customer block,</text>
+    <text x="398" y="688">left edge x 106.5 . WAVE solid #1bb6a3: top y 617 to x 312, r33 shoulder</text>
+    <text x="398" y="699">to x 345 over y 650..685, foot y 718 fading by x 445 . one wave a screen</text>
+    <text x="398" y="710">five 216x39 chevrons at x 140, tops 297 + n*60 (21px gap), SMG selected</text>
+  </g>
+
+  <!-- NAV CHEVRON, BOTH STATES, store-trace.svg #nav copied with its own
+       60px pitch so the gap is literal: path "M 0,39 V 19 L 18,0 L 27,3
+       H 214 Q 216,3 216,5 V 11 L 190,39 Z" - the left edge rises 20 to a
+       peak 18 in, drops onto the top edge at (27,3), the top-right is an
+       r2 corner and the right end chamfers back 26 wide by 28 tall.
+       Plain: RIFLES at (140.5,296.5), 1.25 #5fd6c2 outline, round joins, ink
+       #7fe0c8. Selected: SMG at (140,357), solid #ffbe18, ink #5a3a08. -->
+  <g transform="translate(258 421.5)">
+    <use href="#k-nav" x="140.5" y="296.5" fill="none" stroke="#5fd6c2" stroke-width="1.25" stroke-linejoin="round"/>
+    <use href="#k-nav" x="140" y="357" fill="#ffbe18"/>
+    <g font-size="24.5" font-weight="500" letter-spacing="-0.4">
+      <text x="170" y="327" fill="#7fe0c8">RIFLES</text>
+      <text x="170" y="387" fill="#5a3a08">SMG</text>
+    </g>
+  </g>
+  <g font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">
+    <text x="398" y="830">NAV CHEVRON  216x39, pitch 60 . peak 18 in and 19 up, drop onto the top</text>
+    <text x="398" y="841">edge at x 27, r2 top-right, right end chamfered 26 wide x 28 tall</text>
+    <text x="398" y="852">label +30,+30 (500 24.5 ls -.4) . idle 1.25 #5fd6c2, selected #ffbe18</text>
+  </g>
+
+  <!-- TAB CHEVRON, mailbox-trace.svg right column: the same figure 161x46 on
+       a 53.5 pitch at x 1216, tops y 306 / 359.5 / 414.5 / 468.5 - peak 22 in
+       and 24 up, drop onto the top edge at x 28, r6 top-right, right end
+       chamfered 22x22. DETAILS solid #e6c020 ink #5a4a14; MODS / PRICE /
+       DAMAGE 1.25 #5fd6c2 outlines ink #7fe0c8, labels x 1243, size 16 ls 1. -->
+  <g transform="translate(-818 562)">
+    <use href="#k-chev" x="1216" y="306" fill="#e6c020"/>
+    <use href="#k-chev" x="1216.5" y="359.5" fill="none" stroke="#5fd6c2" stroke-width="1.25" stroke-linejoin="round"/>
+    <g font-size="16" letter-spacing="1">
+      <text x="1243" y="339" fill="#5a4a14">DETAILS</text>
+      <text x="1243" y="393" fill="#7fe0c8">MODS</text>
+    </g>
+  </g>
+  <g font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">
+    <text x="398" y="980">TAB CHEVRON  161x46, pitch 53.5 (7.5 gap) . the same cell at a second size:</text>
+    <text x="398" y="991">peak 22 in / 24 up, r6 top-right, chamfer 22x22 . label +27,+33 (400 16 ls 1)</text>
+    <text x="398" y="1002">so the cell ranges 161x46 .. 216x39; both keep peak, drop step and chamfer</text>
+    <text x="398" y="1017">DROPPED from the old sheet: 160x36 rounded ticket pills with an 18x15 jut.</text>
+    <text x="398" y="1028">No trace has them. src/style.rs Ticket still carries the pill numbers.</text>
+    <text x="398" y="1039">LOGIN VARIANT: bracket full frame height x 228.5..611.5, 1.3px, lobe, no wave</text>
+  </g>
+
+  <!-- ==================== BAND C: FAN MENU, LIST ROWS, DETAIL PANEL ==================== -->
+  <text x="754" y="115" font-size="11.5" font-weight="600" letter-spacing="2.5" fill="#82f0d3">2b . MODULE MENU BLADE (dashboard-trace)</text>
+
+  <!-- FAN BLADE, IDLE, with its ghost stack. dashboard-trace.svg LOCATIONS:
+       a 162x50 rx8 card (#card, measured in the card's OWN frame by rotating
+       the photo by -rot about the centre) at c(919,586) rot 30, fill #2c9798,
+       stroke #a9e6df 1.8, label Rajdhani 400 19 ls 2 #123c38 centred, baseline
+       +6.5. Behind it six GHOSTS: the SAME 162x50 card, not shrunk, each
+       stepping (+20,-20) in SCREEN space (the shared depth direction all six
+       blades use, not each card's own normal), fill #0f9f80 at opacity
+       0.58 / 0.48 / 0.40 / 0.30 / 0.21 / 0.12 with stroke #6cc4bd 1.2 at
+       0.80 / 0.68 / 0.56 / 0.45 / 0.34 / 0.24. -->
+  <g transform="translate(-82 -288)">
+    <g fill="#0f9f80" stroke="#6cc4bd" stroke-width="1.2">
+      <use href="#k-fancard" transform="translate(1039 466) rotate(30)" fill-opacity="0.12" stroke-opacity="0.24"/>
+      <use href="#k-fancard" transform="translate(1019 486) rotate(30)" fill-opacity="0.21" stroke-opacity="0.34"/>
+      <use href="#k-fancard" transform="translate(999 506) rotate(30)" fill-opacity="0.30" stroke-opacity="0.45"/>
+      <use href="#k-fancard" transform="translate(979 526) rotate(30)" fill-opacity="0.40" stroke-opacity="0.56"/>
+      <use href="#k-fancard" transform="translate(959 546) rotate(30)" fill-opacity="0.48" stroke-opacity="0.68"/>
+      <use href="#k-fancard" transform="translate(939 566) rotate(30)" fill-opacity="0.58" stroke-opacity="0.80"/>
+    </g>
+    <g font-size="19" letter-spacing="2" text-anchor="middle">
+      <g transform="translate(919 586) rotate(30)">
+        <use href="#k-fancard" fill="#2c9798" stroke="#a9e6df" stroke-width="1.8"/>
+        <text y="6.5" fill="#123c38">LOCATIONS</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- FAN BLADE, SELECTED. dashboard-trace.svg EVENTS at c(731,586) rot -30:
+       identical 162x50 rx8 card, fill #f5cb23, stroke #fce89a 1.8, ink
+       #4a3a05. Its own ghost stack (5, the rest run under the neighbouring
+       PRODUCTS card) uses the same teal #0f9f80 ramp as every other blade:
+       the selection changes the solid card's fill only. -->
+  <g transform="translate(411.6 -338)">
+    <g font-size="19" letter-spacing="2" text-anchor="middle">
+      <g transform="translate(731 586) rotate(-30)">
+        <use href="#k-fancard" fill="#f5cb23" stroke="#fce89a" stroke-width="1.8"/>
+        <text y="6.5" fill="#4a3a05">EVENTS</text>
+      </g>
+    </g>
+  </g>
+  <g font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">
+    <text x="754" y="378">FAN BLADE  162x50 rx8 . idle fill #2c9798 stroke #a9e6df 1.8 ink #123c38 . selected fill #f5cb23 stroke #fce89a ink #4a3a05</text>
+    <text x="754" y="389">label Rajdhani 400 19 ls 2, centred, baseline +6.5 . the blade rotates, the label rotates with it</text>
+    <text x="754" y="400">GHOSTS  the same 162x50, NOT scaled, stepping (+20,-20) in SCREEN space</text>
+    <text x="754" y="411">fill #0f9f80 at op .58 / .48 / .40 / .30 / .21 / .12, stroke #6cc4bd 1.2 at op .80 / .68 / .56 / .45 / .34 / .24</text>
+    <text x="754" y="422">two 3-blade fans: hub (455,470) VEHICLES rot30 c(364,413), WEAPONS rot-30 c(551,414), PRODUCTS rot90 c(458,575);</text>
+    <text x="754" y="433">hub (825,535) PRODUCTS rot90 c(825,424), EVENTS rot-30 c(731,586), LOCATIONS rot30 c(919,586) . ghost counts 6/7/6/6/5/6</text>
+  </g>
+
+  <text x="754" y="446" font-size="11.5" font-weight="600" letter-spacing="2.5" fill="#82f0d3">5 . LIST ROW (mailbox-trace)</text>
+
+  <!-- MAILBOX LIST ROW, SELECTED then PLAIN, at the trace's own 60px pitch.
+       Selected (mailbox-trace y 313): SOLID #e8c21f in TWO pieces split by a
+       2px gap at x 196 - an icon cell x 154..195, y 313..351 whose
+       bottom-right is chamfered (M 154,313 H 195 V 345 L 176,351 H 154 Z),
+       and a body x 197..491, y 313..346 chamfered from (491,325) to
+       (471,346). Envelope 20x13 #k-env stroked 1.25 in #4a3a05 at
+       (165.5,325.5); title Rajdhani 400 17 ls 0.5 #4a3a05 at (220,340);
+       the from: line stays OUTSIDE the plate, size 11 #f2c825 at (220,362).
+       Plain: envelope 1.25 #5fd6c2 at (166.5,385.5), title size 18 #7fe0c8
+       at (220,399), from: size 11 at (220,421). -->
+  <g transform="translate(606 135)">
+    <g fill="#e8c21f">
+      <path d="M 154,313 H 195 V 345 L 176,351 H 154 Z"/>
+      <path d="M 197,313 H 491 V 325 L 471,346 H 197 Z"/>
+    </g>
+    <use href="#k-env" x="165.5" y="325.5" fill="none" stroke="#4a3a05" stroke-width="1.25"/>
+    <text x="220" y="340" font-size="17" letter-spacing="0.5" fill="#4a3a05">YOU'LL REGRET THAT</text>
+    <text x="220" y="362" font-size="11" fill="#f2c825">from: Jackie</text>
+    <use href="#k-env" x="166.5" y="385.5" fill="none" stroke="#5fd6c2" stroke-width="1.25"/>
+    <g fill="#7fe0c8">
+      <text x="220" y="399" font-size="18" letter-spacing="0.5">URGENT INFORMATION (!)</text>
+      <text x="220" y="421" font-size="11">from: Mom</text>
+    </g>
+  </g>
+  <g font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">
+    <text x="754" y="572">LIST ROW  pitch 60 . icon column x 154..195 (41 wide), body from x 197 (a 2px gap), title x 220, from: 22px below</text>
+    <text x="754" y="583">SELECTED = two solid #e8c21f plates: icon cell 41x38 chamfered 19x6 bottom-right, body 294x33 chamfered 20x21 right end</text>
+    <text x="754" y="594">the era never draws a row outline: an idle row is glyph + text on the ground, the selection is the only plate</text>
+  </g>
+
+  <text x="754" y="616" font-size="11.5" font-weight="600" letter-spacing="2.5" fill="#82f0d3">4 . DETAIL PANEL (dashboard-trace)</text>
+
+  <!-- BRAINDANCE DETAIL PANEL, dashboard-trace.svg: a solid #f5cb23 header
+       tab [1200,261,232,38] chamfered top-left, top-right and bottom-left
+       (M 1213,261 H 1419 L 1432,274 V 299 H 1213 L 1200,286 V 274 Z), label
+       Rajdhani 600 20 ls 1 #4a3a05 at (1222,288); a 180x24 warning tape at
+       (1172,306) stroked 1 #f5cb23 holding the CC35 notice at size 7 #d9b41f;
+       and a body outline [1207.5,299.5,224.5,367] stroked 1.25 #f5cb23
+       holding nine #e3bd20 paragraph bars 11 tall at y 345..519 (pitch 20,
+       a 23px gap between the two paragraphs), widths 196/188/192/176/120 and
+       194/184/188/98.
+       ELIDED HERE: the body's empty lower half. Drawn to y 525, then the
+       bottom edge is shown at y 543..558; in the trace the outline runs
+       unbroken to y 666.5, i.e. 147px of empty outline below the last bar. -->
+  <g transform="translate(-412 365)">
+    <path d="M 1213,261 H 1419 L 1432,274 V 299 H 1213 L 1200,286 V 274 Z" fill="#f5cb23"/>
+    <text x="1222" y="288" font-size="20" font-weight="600" letter-spacing="1" fill="#4a3a05">BRAINDANCE</text>
+    <rect x="1172" y="306" width="180" height="24" fill="none" stroke="#f5cb23" stroke-width="1"/>
+    <g fill="#d9b41f" font-size="7">
+      <text x="1178" y="316">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE</text>
+      <text x="1178" y="325">ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+    </g>
+    <path d="M 1207.5,299.5 H 1432 V 525 M 1207.5,299.5 V 525" fill="none" stroke="#f5cb23" stroke-width="1.25"/>
+    <path d="M 1207.5,543 V 558 H 1432 V 543" fill="none" stroke="#f5cb23" stroke-width="1.25"/>
+    <path d="M 1207.5,534 H 1432" fill="none" stroke="#f5cb23" stroke-width="0.8" stroke-dasharray="3 4" stroke-opacity="0.55"/>
+    <g fill="#e3bd20">
+      <rect x="1224" y="345" width="196" height="11"/>
+      <rect x="1224" y="365" width="188" height="11"/>
+      <rect x="1224" y="385" width="192" height="11"/>
+      <rect x="1224" y="405" width="176" height="11"/>
+      <rect x="1224" y="425" width="120" height="11"/>
+      <rect x="1224" y="448" width="194" height="11"/>
+      <rect x="1224" y="468" width="184" height="11"/>
+      <rect x="1224" y="488" width="188" height="11"/>
+      <rect x="1224" y="508" width="98"  height="11"/>
+    </g>
+  </g>
+  <g font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">
+    <text x="754" y="935">DETAIL PANEL  tab 232x38 solid #f5cb23, 13x13 chamfers tl/tr/bl</text>
+    <text x="754" y="946">body 224.5x367, 1.25 #f5cb23, SQUARE corners . the tab sits 7.5px</text>
+    <text x="754" y="957">left of the body and lands on its top edge . tape 180x24, 1.0</text>
+    <text x="754" y="968">bars #e3bd20, 11 tall, pitch 20, 23px between the two paragraphs</text>
+    <text x="754" y="979">dashed rule = 147px of empty outline elided here</text>
+  </g>
+
+  <!-- TYPOGRAPHY. Every glyph in every kitsch trace is Rajdhani, weights
+       300..700; Orbitron is available to the crate but no kitsch trace uses
+       it. Two habits worth copying: sizes are measured, not rounded (24.4,
+       16.8, 12.3, 21.5), and the small in-fiction text is HORIZONTALLY
+       STRETCHED rather than letter-spaced (scale(1.3 1) etc, because the
+       photo's face is wider than Rajdhani at the same cap height). -->
+  <text x="1035" y="640" font-size="11" font-weight="600" letter-spacing="1.6" fill="#82f0d3">9 . TYPOGRAPHY (Rajdhani only)</text>
+  <g fill="#a9e6df">
+    <text x="1035" y="664" font-size="24.4" font-weight="500" letter-spacing="-0.75">MAGNUM 650</text>
+    <text x="1180" y="664" font-size="8.5" fill="#7fd4cc">500 24.4 ls -0.75</text>
+    <text x="1035" y="691" font-size="24.5" font-weight="500" letter-spacing="-0.4">SHOTGUN</text>
+    <text x="1180" y="691" font-size="8.5" fill="#7fd4cc">500 24.5 ls -0.4 nav</text>
+    <text x="1035" y="716" font-size="21.5" font-weight="600" letter-spacing="0.5">GUES 7702</text>
+    <text x="1180" y="716" font-size="8.5" fill="#7fd4cc">600 21.5 ls 0.5 (mail 20)</text>
+    <text x="1035" y="739" font-size="18" letter-spacing="0.5" fill="#7fe0c8">URGENT INFORMATION</text>
+    <text x="1035" y="760" font-size="16.8" font-weight="500" fill="#f5cd2a">Lorem ipsum dolor sit amet,</text>
+    <text x="1035" y="775" font-size="8.5" fill="#7fd4cc">400 17..18 ls 0.5 list titles . 500 16.8 message body . 400 11 from: lines</text>
+    <text transform="translate(1035 793) scale(1.37 1)" font-size="12.3" font-weight="600" letter-spacing="0.6" fill="#82f0d3">SECURITY LEVEL</text>
+    <text x="1180" y="793" font-size="8.5" fill="#7fd4cc">600 12.3 scale(1.37 1) label</text>
+    <g transform="translate(1035 0) scale(1.3 1)" font-size="8" font-weight="700" fill="#82f0d3">
+      <text x="0" y="808">MAPS ARE PROVIDED BY SEOCHO.</text>
+    </g>
+    <text x="1180" y="808" font-size="8.5" fill="#7fd4cc">700 8 scale(1.3 1) notes</text>
+    <text x="1035" y="823" font-size="9" font-weight="700" letter-spacing="0.25" fill="#82f0d3">ARASAKA CONSUMER TECHNOLOGY</text>
+    <text x="1035" y="836" font-size="8.5" fill="#7fd4cc">700 9 ls .25 FOOT LINE x 503..1095 y 870 (+ CC35 run from x 641)</text>
+    <text x="1035" y="851" font-size="8.5" fill="#7fd4cc">also: 700 73 stretched 1.63/1.89/1.24 logotype . 600 23 badge digits . 600 20 tab</text>
+    <text x="1035" y="862" font-size="8.5" fill="#7fd4cc">. 400 6.5 ls 0.3 card micro-text . 600 9 EMPTY SOCKET . 400 12 customer lines</text>
+  </g>
+
+  <!-- IMPLEMENTATION DELTA: where src/eras/kitsch.rs and the era README
+       disagree with the traces. Read-only; nothing here was fixed. -->
+  <text x="1035" y="886" font-size="11" font-weight="600" letter-spacing="1.6" fill="#82f0d3">IMPLEMENTATION DELTA (kitsch.rs, read only)</text>
+  <g font-size="8.8" fill="#7fd4cc" fill-opacity="0.9">
+    <text x="1035" y="900">Corner::Round r16 . traces: r8 (fan card, chip, panel</text>
+    <text x="1035" y="911">   foot), r6 (card top-left), r2 (badge), r30..40 (bracket).</text>
+    <text x="1035" y="922">Module doc "no chamfers anywhere" . five measured:</text>
+    <text x="1035" y="933">   card tr 24, band end 45deg, chevron end, tab tr, row ends.</text>
+    <text x="1035" y="944">Ticket { reach 18, drop 15 } is the deleted composite's</text>
+    <text x="1035" y="955">   pill . trace: 216x39, peak 18 in / 20 up, chamfer 26x28.</text>
+    <text x="1035" y="966">Banner { overhang 12, notch 8 } . trace: 35px band, 27px</text>
+    <text x="1035" y="977">   flag, no notch, 45deg chamfer at the right end.</text>
+    <text x="1035" y="988">Ground::Bloom x .82 y 0 r .75 (top RIGHT) . traces: cx .5,</text>
+    <text x="1035" y="999">   cy -.25, r .95, top CENTRE, gone by y 420.</text>
+    <text x="1035" y="1010">Metrics.stroke 1.5 . traces: 1.25 on .5 coords (2.0 letter</text>
+    <text x="1035" y="1021">   boxes, 1.0 badges only). SLAB #2bc4ac . fan is #2c9798.</text>
+    <text x="1035" y="1032">BEZEL #f08c1e: no traced screen has a bezel. Doc says</text>
+    <text x="1035" y="1043">   "doc #34-42"; kitsch is #44-52 (#34-42 is entropism).</text>
+  </g>
+
+  <!-- ==================== BAND D: PRODUCT CARDS, MESSAGE PANEL, PALETTE ==================== -->
+  <text x="1300" y="115" font-size="11.5" font-weight="600" letter-spacing="2.5" fill="#82f0d3">3 . PRODUCT CARD (store-trace) . PLAIN and SELECTED</text>
+
+  <!-- PRODUCT CARD, PLAIN: store-trace.svg #card, used at x0 = 484 / 1123 /
+       1443 on a 320px pitch, y 218. Everything inside is card-local: see the
+       caption. Drawn here at 1:1 with the flag clear of the card edge. -->
+  <use href="#k-card" x="1327" y="124"/>
+  <g font-size="9.2" fill="#7fd4cc" fill-opacity="0.85">
+    <text x="1300" y="484">PRODUCT CARD  261x320 outline, 1.25 #5fd6c2 on .5 coordinates</text>
+    <text x="1300" y="494">r6 top-left, 24px chamfer TOP-RIGHT . pitch 320, x0 484/804/1123/1443</text>
+    <text x="1300" y="504">titles +10.5,+30.5 (500 24.4 ls -.75) and +10,+49.5 (500 19.5 ls .6)</text>
+    <text x="1300" y="514">SHELF BAND  35 tall (local y 59..94), solid #fec32f, FLAGGING 27px</text>
+    <text x="1300" y="524">   past the card's LEFT edge: edge x0-27 from 94 up to 72, a diagonal</text>
+    <text x="1300" y="534">   to the peak (x0-3,50), a drop onto the top edge; right end r2 into</text>
+    <text x="1300" y="544">   a 45 degree chamfer, (+258,71.5) to (+235.5,94). No notch.</text>
+    <text x="1300" y="554">band cargo in its LOWER half, y 74..92: cert square, disc+SC, C-in-C,</text>
+    <text x="1300" y="564">   warning triangle in a box of 7 micro-rules; PETROCHEM in a 58x8</text>
+    <text x="1300" y="574">   dark box at +163,+72.8, BETTERLIFE TEC under it (700 8, x1.3)</text>
+    <text x="1300" y="584">ART  #93ffe4, local x 37..235 y 129..183, over #0e0e0d 1px detail</text>
+    <text x="1300" y="594">STATS  DPS PNT ACC ROF centred +41/101/162/222, baseline +225, 400 17</text>
+    <text x="1300" y="604">VALUES BAR  #81fee7, local x 4..258 y 232..262, LEFT 65px hanging to</text>
+    <text x="1300" y="614">   270 over a diagonal at 65..72 . figures 400 20 #123c38</text>
+    <text x="1300" y="624">SOCKET ROW  rule +274.5 edge to edge, cells +52.5/119.5/190.5, QR +12</text>
+    <text x="1300" y="634">MICRO-TEXT  400 6.5 ls .3 #5fc9b5 at +4, 341/349, BELOW the outline</text>
+    <text x="1300" y="648">SELECTED (right): same 261 width, GROWN . #ffc233 to a stepped bottom,</text>
+    <text x="1300" y="658">   y 457 right / 472 under the first 64px, diagonal at +64..79</text>
+    <text x="1300" y="668">the band is NOT refilled: a 1.1 #a4583a OUTLINE over the amber (top</text>
+    <text x="1300" y="678">   276.6, right +258.2, r3, same chamfer, bottom 312.5), nothing left</text>
+    <text x="1300" y="688">   of the card edge . ink #8a3f28 / #5a3a08 / #3a2408, art 14px higher</text>
+    <text x="1300" y="698">below the step, an #e2a408 1.25 outline to y 680: 20 Recoil / 22</text>
+    <text x="1300" y="708">   Sperad / 12 Range, Bonus / +9 Reflexes / +2 Modules Slots (279..392),</text>
+    <text x="1300" y="718">   socket row 414..462, micro-text 481/489 . FILL above, OUTLINE below</text>
+  </g>
+
+  <!-- PRODUCT CARD, SELECTED (grown): store-trace.svg card 2 at x0 = 804,
+       copied verbatim inside its own translate(804 218). The selection is
+       not an inversion: the upper body is FILLED amber to a stepped bottom,
+       the shelf band becomes a dark OUTLINE over that fill, and the card
+       then continues as an amber outline holding the extra stats. -->
+  <g transform="translate(823.5 -94)">
+  <g transform="translate(804 218)">
+    <path d="M 6,0 H 237 L 261,24 V 239 H 79 L 64,254 H 0 V 6 Q 0,0 6,0 Z" fill="#ffc233"/>
+    <path d="M -27,94 V 72 L -3,50 V 59 H 0 V 94 Z" fill="#ffc233"/>
+    <path d="M -3,52 V 55.5 Q -3,58.5 0,58.5 H 255.5 Q 258.5,58.5 258.5,61.5 V 70.5 Q 258.5,73 257,74.5 L 238.5,93 Q 237,94.5 234.5,94.5 H 0"
+          fill="none" stroke="#a4583a" stroke-width="1.1"/>
+    <g font-weight="500" fill="#8a3f28">
+      <text x="10.5" y="30.5" font-size="24.4" letter-spacing="-0.75">MAGNUM 650</text>
+      <text x="10" y="49.5" font-size="19.5" letter-spacing="0.6">HAND GUN</text>
+    </g>
+    <use href="#k-bandglyphs"/>
+    <rect x="163" y="72.8" width="58" height="8" fill="#8a3f28"/>
+    <text transform="translate(163 79.6) scale(1.3 1)" font-size="8" font-weight="700" letter-spacing="0.6" fill="#ffc233">PETROCHEM</text>
+    <text transform="translate(163 90) scale(1.3 1)" font-size="8" font-weight="700" letter-spacing="0.2" fill="#5a3a08">BETTERLIFE TEC</text>
+    <g transform="translate(1.5 -13.7)">
+      <use href="#k-gun" fill="#3a2408"/>
+      <use href="#k-gundetail" fill="none" stroke="#ffc233" stroke-width="1"/>
+    </g>
+    <g text-anchor="middle" fill="#5a3a08">
+      <g font-size="17">
+        <text x="41" y="204">DPS</text><text x="101" y="204">PNT</text><text x="162" y="204">ACC</text><text x="222" y="204">ROF</text>
+      </g>
+      <g font-size="20">
+        <text x="41" y="233">86</text><text x="101" y="233">30</text><text x="162" y="233">5</text><text x="222" y="233">5</text>
+      </g>
+    </g>
+    <path d="M 0.5,239 V 461.5 H 261.5 V 239 M 0.5,414.5 H 261.5 M 52.5,414.5 V 461.5 M 118.5,414.5 V 461.5 M 190.5,414.5 V 461.5"
+          fill="none" stroke="#e2a408" stroke-width="1.25"/>
+    <g font-size="16" fill="#fabe29">
+      <text x="16" y="279">20</text><text x="52" y="279">Recoil</text>
+      <text x="16" y="300">22</text><text x="52" y="300">Sperad</text>
+      <text x="16" y="321">12</text><text x="52" y="321">Range</text>
+      <text x="16" y="350">Bonus</text>
+      <text x="16" y="371">+9 Reflexes</text>
+      <text x="16" y="392">+2 Modules Slots</text>
+    </g>
+    <use href="#k-qr" x="12" y="423" fill="#fabe29"/>
+    <g font-size="9" font-weight="600" fill="#fabe29" text-anchor="middle">
+      <text x="85"  y="436">EMPTY</text><text x="85"  y="448">SOCKET</text>
+      <text x="154" y="436">EMPTY</text><text x="154" y="448">SOCKET</text>
+      <text x="225" y="436">EMPTY</text><text x="225" y="448">SOCKET</text>
+    </g>
+    <g font-size="6.5" letter-spacing="0.3" fill="#e3bd20">
+      <text x="4" y="481">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
+      <text x="4" y="489">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+    </g>
+  </g>
+  </g>
+  <text x="1300" y="730" font-size="11.5" font-weight="600" letter-spacing="2.5" fill="#82f0d3">4b . MESSAGE PANEL (mailbox-trace)</text>
+
+  <!-- MESSAGE PANEL, mailbox-trace.svg: a solid #fbd42c tab x 575..1127,
+       y 313..349 with a 22x24 top-right chamfer and a 3px top-left cut; the
+       "flag band", a diagonal from the tab's left edge (575,327) out to
+       (540,363), down to y 384.2, a rule right to x 1104 chamfering up to
+       (1127.5,360.7), holding two lines of CC35 micro-text at size 6; and
+       the body, x 576.5..1127.5 stroked 1.25 #f2c825 on half-pixel
+       coordinates with r8 bottom corners, holding three lorem paragraphs at
+       x 592 (500 16.8 #f5cd2a, line pitch 19, paragraph gap 38).
+       ELIDED HERE: the body is drawn to y 455 and its r8 foot is shown at
+       y 473..489.5; in the trace the sides run unbroken to y 739.5 and the
+       foot sits at y 747.5, a 551x364 body. -->
+  <g transform="translate(760 429)">
+    <path d="M 578,313 H 1105 L 1127,337 V 349 H 575 V 316 Z" fill="#fbd42c"/>
+    <text x="590" y="340" font-size="17" letter-spacing="0.5" fill="#5a4a14">YOU'LL REGRET THAT</text>
+    <path d="M 575,327 L 540,363 V 384.2 H 1104 L 1127.5,360.7 M 1127.5,337 V 455 M 576.5,384.2 V 455"
+          fill="none" stroke="#f2c825" stroke-width="1.25"/>
+    <path d="M 1127.5,473 V 481.5 Q 1127.5,489.5 1119.5,489.5 H 584.5 Q 576.5,489.5 576.5,481.5 V 473"
+          fill="none" stroke="#f2c825" stroke-width="1.25"/>
+    <path d="M 576.5,464 H 1127.5" fill="none" stroke="#f2c825" stroke-width="0.8" stroke-dasharray="3 4" stroke-opacity="0.55"/>
+    <g font-size="6" letter-spacing="0.3" fill="#e3bd20">
+      <text x="578" y="365">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE</text>
+      <text x="578" y="373">ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+    </g>
+    <g font-size="16.8" font-weight="500" fill="#f5cd2a">
+      <text x="592" y="411">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod</text>
+      <text x="592" y="430">tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim</text>
+    </g>
+  </g>
+  <g font-size="9.2" fill="#7fd4cc" fill-opacity="0.85">
+    <text x="1300" y="931">MESSAGE PANEL  tab 552x36 solid #fbd42c, 22x24 chamfer top-right, 3px cut top-left . title 400 17 ls 0.5 #5a4a14 at +15,+27</text>
+    <text x="1300" y="941">FLAG BAND  the tab's left edge breaks 35px LEFT and 36 DOWN to (540,363), squares off at y 384.2, chamfers back up to the right edge</text>
+    <text x="1300" y="951">BODY  551x364, 1.25 #f2c825 on .5 coords, r8 bottom corners only . paragraphs 500 16.8 #f5cd2a at x 592, pitch 19, gap 38 . dashed = elision</text>
+  </g>
+
+  <!-- GROUND swatch and SAMPLED PALETTE: the trace headers' measured values
+       with role names. Stops are store-trace.svg's; the other traces' variants
+       are named in the lines beneath. -->
+  <text x="1300" y="971" font-size="11" font-weight="600" letter-spacing="1.6" fill="#82f0d3">7 . GROUND</text>
+  <rect x="1380" y="962" width="300" height="11" fill="url(#k-bloomswatch)"/>
+  <rect x="1690" y="962" width="200" height="11" fill="#0e0e0d"/>
+  <rect x="1690" y="962" width="200" height="11" fill="url(#k-washswatch)"/>
+  <g font-size="8.2" fill="#7fd4cc" fill-opacity="0.9">
+    <text x="1300" y="983">bloom radial cx .5 cy -.25 r .95 over a 1600x620 rect: 0 #b05064 . .35 #933b53 . .6 #5c2236 . .85 #1e0f14 . 1 #0e0e0d (the base)</text>
+    <text x="1300" y="993">left wash radial cx 0 cy .5 r .5, #2a2e2a at op 1 / .5 at .6 / 0, over [0,60,600,780] . login base #0a0907 wash #262a24 . hub cx .52 cy -.05 r .85</text>
+  </g>
+  <text x="1300" y="1005" font-size="11" font-weight="600" letter-spacing="1.6" fill="#82f0d3">8 . SAMPLED PALETTE (measured, per role)</text>
+  <g font-size="8.5" fill="#7fd4cc">
+    <rect x="1300" y="1010" width="14" height="8" fill="#0e0e0d" stroke="#2e5f57" stroke-width="0.5"/><text x="1320" y="1017">ground #0e0e0d</text>
+    <rect x="1300" y="1022" width="14" height="8" fill="#5fd6c2"/><text x="1320" y="1029">line #5fd6c2</text>
+    <rect x="1420" y="1010" width="14" height="8" fill="#7fe0c8"/><text x="1440" y="1017">text #7fe0c8</text>
+    <rect x="1420" y="1022" width="14" height="8" fill="#82f0d3"/><text x="1440" y="1029">bright #82f0d3</text>
+    <rect x="1540" y="1010" width="14" height="8" fill="#a9e6df"/><text x="1560" y="1017">pale #a9e6df</text>
+    <rect x="1540" y="1022" width="14" height="8" fill="#8afada"/><text x="1560" y="1029">mint fill #8afada</text>
+    <rect x="1660" y="1010" width="14" height="8" fill="#1bb6a3"/><text x="1680" y="1017">wave #1bb6a3</text>
+    <rect x="1660" y="1022" width="14" height="8" fill="#2c9798"/><text x="1680" y="1029">fan #2c9798</text>
+    <rect x="1780" y="1010" width="14" height="8" fill="#ffbe18"/><text x="1800" y="1017">select #ffbe18</text>
+    <rect x="1780" y="1022" width="14" height="8" fill="#5a3a08"/><text x="1800" y="1029">on-select #5a3a08</text>
+  </g>
+  <g font-size="7.8" fill="#7fd4cc" fill-opacity="0.9">
+    <text x="1300" y="1041">also measured: band #fec32f . grown card #ffc233 . EVENTS #f5cb23 . mail tab #fbd42c . row #e8c21f . DETAILS #e6c020 . outlines #f2c825 / #e2a408 . badge #f0a93c . ghost #0f9f80</text>
+  </g>
+
+  <!-- ==================== FOOTER: ERA RULES ==================== -->
+  <path d="M 30,1048 H 1890" stroke="#4f9a92" stroke-width="1" fill="none"/>
+  <text x="30" y="1060" font-size="9" font-weight="600" letter-spacing="1" fill="#82f0d3">10 . ERA RULES</text>
+  <text x="30" y="1072" font-size="8" font-weight="500" letter-spacing="0.5" fill="#7fd4cc" fill-opacity="0.8">(observed, 4 traces)</text>
+  <g font-size="8.5" fill="#7fd4cc" fill-opacity="0.9">
+    <text x="150" y="1058">1 . Line-work is 1.25px centred on .5 coordinates. The only exceptions measured: 2.0 for letter boxes, 1.0 for security badges, 1.8 for a fan card.</text>
+    <text x="150" y="1068">2 . Rounded AND chamfered: r8 (fan card, chip, panel foot), r6 (card top-left), r2..3, r30..40 (bracket); chamfers on the card top-right, band end, chevron end and tab.</text>
+    <text x="150" y="1078">9 . A rose bloom sits over the TOP of every screen, brightest at top centre, gone by y 420; every screen ends with the same centred mint foot line at y 870.</text>
+    <text x="800" y="1058">3 . Yellow means SELECTED, never alarm: SMG, EVENTS, DETAILS, list row 1, badge 02, card 2. Everything else is teal line-work.</text>
+    <text x="800" y="1068">4 . Selection is not always a fill. Card 2 is amber-filled above and amber-OUTLINED below; the message panel is a yellow outline under a solid tab.</text>
+    <text x="800" y="1078">5 . A selected cell keeps its silhouette exactly and swaps fill for outline; no era screen grows or moves a cell to select it.</text>
+    <text x="1440" y="1058">6 . One solid teal wave per screen, at the foot of the container where its left edge forks (store 575..718, mail 606..748).</text>
+    <text x="1440" y="1068">7 . Container lines FADE where they leave the frame rather than stopping square; bars step 7..9px over a 12px diagonal.</text>
+    <text x="1440" y="1078">8 . Micro-text is STRETCHED, not tracked: notes x1.3, labels x1.37, boxed caps x1.7. Every glyph is Rajdhani.</text>
+  </g>
+</g>
+</svg>

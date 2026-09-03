@@ -1,11 +1,13 @@
 //! Kitsch's page-curl, the one solid flourish the era allows itself.
 //!
-//! `docs/kitsch/target-components.svg` states the rule outright -- "one
-//! solid page-curl per screen" -- and the store spends it at the foot
-//! of the nav column, where the container's outline stops being an
-//! outline and becomes a filled swoosh with a rule running off its
-//! shoulder. The fill is [`crate::style::Style::ornament`], which is
-//! exactly the role that colour was added for.
+//! `docs/kitsch/target-components.svg` (the by-eye sheet replaced
+//! 2026-09-03 by `components.svg`, rebuilt from the traces) stated the
+//! rule outright -- "one solid page-curl per screen" -- and the store
+//! spends it at the foot of the nav column, where the container's
+//! outline stops being an outline and becomes a filled swoosh with a
+//! rule running off its shoulder. The fill is
+//! [`crate::style::Style::ornament`], which is exactly the role that
+//! colour was added for.
 
 use crate::style::Style;
 use iced::widget::canvas;

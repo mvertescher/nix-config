@@ -14,7 +14,8 @@ carries a header comment narrating its source region by region with
 measurements. Read those headers, not this file, for geometry. The
 app-shaped `target-app.svg` and `dashboard.svg` compositions that
 predated them were deleted 2026-09-03; the notes at the end say what
-they were. `target-components.svg` remains, by-eye and unverified.
+they were. `components.svg` is the widget sheet, rebuilt from the traces
+the same day.
 
 ## Provenance
 
@@ -152,10 +153,24 @@ the thing the toolkit abstraction should be tested against.
   drawing, stat row, solid mint values bar, socket row) with the second
   amber-filled, grown, and continued in an amber outline. Gate: PASS,
   inks 0.57. Supersedes `target-app.svg`.
-- `target-components.svg` — the widget sheet: ticket-pill nav with
-  page-curl container, product card in both states, fan menu, callout
-  panel, mail list, device bezel, guest card, security strip, sampled
-  swatches. Sampled across the run.
+- `components.svg` — the widget sheet, rebuilt 2026-09-03 from the
+  four traces and `bar.svg` (it was `target-components.svg`, drawn by
+  eye: 160-wide rounded pills where the traces have 216x39 peaked
+  chevrons, a 20px band with no flag where the traces have 35px with a
+  27px flag, extruded slabs and an orange device bezel that no traced
+  screen has). Every component is a translate-only copy of a trace
+  element, cited to file and coordinates in an XML comment and
+  captioned on-sheet: the 4ST logotype, customer chip, letter boxes,
+  the stepped USER box, 01–04 badges, the full nav container (bracket,
+  wave, five chevrons) plus chevrons and tabs isolated in both states,
+  the fan blade and ghost stack idle and selected, mail rows, the
+  product card plain and grown, the BRAINDANCE and message panels, the
+  guest card, input field, ENTER/PROTECTED bars, barcode and socket
+  glyph, then the sampled palette, typography, ground, observed era
+  rules and an implementation-delta box listing where
+  `src/eras/kitsch.rs` still disagrees with the traces (Round 16,
+  "no chamfers", Ticket 18/15, Banner 12/8, top-right Bloom, stroke
+  1.5, SLAB/BEZEL, YELLOW_SHADE unsampled). Not gated — the traces are.
 - `bar.svg` — the status bar: host tape, workspaces, tray, the
   wired/audio/CPU/MEM modules and the clock, at the 1600x220 geometry
   the bar golden tests render. The bar has no photo source, so this is

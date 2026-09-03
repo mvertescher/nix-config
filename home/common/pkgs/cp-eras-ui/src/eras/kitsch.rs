@@ -35,7 +35,10 @@ pub const TEAL_DIM: iced::Color = rgb(0x4d9484);
 pub const ON_MINT: iced::Color = rgb(0x0b3b31);
 /// Lit face of an extruded fan-menu slab, and the darker teal its
 /// stacked outlines recede in. Sampled off the braindance screens; see
-/// `docs/kitsch/target-components.svg`, "EXTRUDED FAN MENU".
+/// the old `docs/kitsch/target-components.svg`, "EXTRUDED FAN MENU" (the
+/// by-eye sheet replaced 2026-09-03 by `components.svg`, rebuilt from the
+/// traces; `dashboard-trace.svg` has 162x50 r8 cards with ghosts fading
+/// 0.58 to 0.12, not extruded slabs).
 pub const SLAB: iced::Color = rgb(0x2bc4ac);
 pub const SLAB_SHADE: iced::Color = rgb(0x177a6b);
 /// The yellow one stop down: the shelf band on the *selected* card

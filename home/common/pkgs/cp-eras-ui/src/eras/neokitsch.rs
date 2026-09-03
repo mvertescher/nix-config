@@ -72,7 +72,9 @@ pub fn palette() -> Palette {
         emphasis: None,
         // You cannot shade a *material*: a slightly darker champagne
         // band on a grained plank reads as a knot, so the era inverts
-        // instead. `target-components.svg` fills the selected card's
+        // instead. The old `target-components.svg` (the by-eye sheet
+        // replaced 2026-09-03 by `components.svg`, rebuilt from the traces;
+        // sheet citations in this file are the old sheet's) filled the selected card's
         // footer nameplate `#3a2410` and prints the name on it in
         // `#e7c686` -- the era's `fg`, a stop brighter than the
         // champagne the unselected band is filled with.

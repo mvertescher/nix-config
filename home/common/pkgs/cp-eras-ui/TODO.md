@@ -331,6 +331,53 @@ here is blocked):
   `--source` now runs four screens per era instead of one (the "script
   gap" noted under the wave findings is closed).
 
+### Component sheets (2026-09-03) — `docs/<era>/components.svg`
+
+The three surviving `target-components.svg` (drawn by eye before the
+traces existed, inheriting `target-app.svg`'s errors) were renamed to
+`components.svg` and rebuilt, and neomil got one too, so all four eras
+have a widget sheet. One vision agent per era, file-disjoint, brief in
+`/tmp/comp/BRIEF.md` at the time: every component is a **translate-only
+copy of a trace element** (`bar.svg`'s citations count as pointers back
+into the traces), with an XML comment naming file and coordinates and
+an on-sheet caption of the numbers, so a coding model can read the
+sheet as a text spec. Each sheet ends with a sampled palette,
+typography, ground stops, observed era rules and an **IMPLEMENTATION
+DELTA** box listing where `src/eras/<era>.rs` still disagrees with the
+traces. Renders viewed at 1920 wide, no rsvg warnings, no `--` in
+comments. The sheets are derived from the traces and are **not gated**;
+`fidelity_check.sh` never reads them.
+
+Findings the rebuild surfaced, none fixed here:
+
+- [ ] **Trace prose disagrees with trace path** (vision work; fix the
+  header text to the path, or the path to the photo, after measuring):
+  neokitsch `mailbox-trace.svg` header describes a notch at x 420..457
+  that no path draws; neokitsch `dashboard-trace.svg` prose "91x327" vs
+  the 93-wide `#ncard`; neomil `login-trace.svg` prose notch "14px" vs
+  path 15 (`M 0,392 L 15,402`), chamfer "46" vs 46/47; neomil
+  `dashboard-trace.svg` header half-diagonal 103 vs `#cell` 104; neomil
+  `mailbox-trace.svg` "pitch 70" vs a first gap of 72. The sheets
+  follow the paths.
+- [ ] **`src/eras/*.rs` vs traces** — now enumerated per era in each
+  sheet's IMPLEMENTATION DELTA box rather than scattered through doc
+  comments. Do not fix blindly: entropism (stroke 1.0, palette,
+  OUTLINE/BG, TileRow) and neomil (global Chamfer 15, RED consts, white
+  tape, `Ground::Flat`, OpsCharts, `Menu::Table`) feed the OUTLINE and
+  `Layout` decisions above; neokitsch (DeviceFrame, ClipTopRight 30,
+  FRAME/STRATA unsampled, Bloom, the "#54-62" doc) and kitsch (Round
+  16, "no chamfers", Ticket 18/15, Banner 12/8, top-right Bloom, stroke
+  1.5, SLAB/BEZEL, YELLOW_SHADE #f0a80a unsampled) are the conversion
+  wave's inputs. The `src/` doc comments that cited the old sheet by
+  coordinate were annotated, not moved — those numbers are what the
+  code was built to.
+- [x] **`docs/sources.md` neomil trace rows had the wrong numbers**
+  (dashboard panel, login card x-ranges/chamfer/notch, mailbox panel and
+  button geometry — written from memory, not the file). Corrected to
+  the traces' own geometry and marked "corrected 2026-09-03". Same
+  pattern as the five false-premise items under Trace improvements:
+  measure before you file.
+
 ### Bar restyle (2026-09-02) — SVG done; `bar.rs` followed 2026-09-03
 
 The four `docs/<era>/bar.svg` were one skeleton with a palette swap.
@@ -421,8 +468,10 @@ Open:
   Unverified README claims the docs pass left in place: kitsch bezel
   #f08c1e and #fcbb15, neokitsch #c78948, the neomil `dashboard.svg`
   wordmark vs `dashboard.rs:225-234` "wordmark" (moot: the SVG is
-  deleted), the entropism
-  desktop-theme paragraph, the `target-components.svg` inventories.
+  deleted), the entropism desktop-theme paragraph. The
+  `target-components.svg` inventories are moot too: the sheets were
+  rebuilt as `components.svg` 2026-09-03 and the README entries
+  rewritten from the new sheets.
 
 ### SVG→iced pre-work (2026-09-02)
 
@@ -641,7 +690,10 @@ when that screen assembles from library widgets. Priority order:
 > Both neomil sheets were deleted 2026-09-03 (see Housekeeping); the
 > acceptance test no longer exists as a file. The items below stand on
 > their own as widget work, but "NEOMIL OPS" is not a screen the
-> material has — the neomil traces are the targets now.
+> material has — the neomil traces are the targets now, and the widget
+> set to implement is the one on `docs/<era>/components.svg` (rebuilt
+> from the traces the same day, see "Component sheets"), not the old
+> by-eye mock.
 
 - [ ] **Theme/Catalog first**: replace loose color consts at call
   sites with a semantic iced Theme + widget catalogs (surface/

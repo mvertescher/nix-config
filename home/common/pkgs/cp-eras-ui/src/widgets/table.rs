@@ -28,7 +28,7 @@
 //!
 //! * **Header band.** `rect x=116 y=132 w=900 h=30` filled `#FF3B45` at
 //!   `fill-opacity 0.12` in `target-app.svg`; `h=26` and `#DE2E2E` at
-//!   `0.15` in `target-components.svg`. So: a wash of the era's hot
+//!   `0.15` in the old `target-components.svg`. So: a wash of the era's hot
 //!   colour at about an eighth, behind small structural labels. `select`
 //!   rather than `alert` is the role, because the band marks the table
 //!   rather than warning about it -- and in kitsch, where the two are
