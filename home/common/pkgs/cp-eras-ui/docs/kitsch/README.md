@@ -194,7 +194,7 @@ keeps a row per file saying what each got wrong. In short:
   — `src/style.rs` `Ticket` and `Banner` still carry those numbers
   (the open kitsch item in the crate TODO.md).
 - `dashboard.svg` — the six-module hub composite `screens::dashboard`
-  still assembles under `Layout::ModuleHub`. Drawn before the hub
+  assembled under `Layout::ModuleHub` until the fold of 2026-09-03 late (the screen is now a `Prim` table transcribed from the trace, G2i 31% — a layout match by eye; the number is renderer alpha-blending plus extractor hole-fill, see the crate TODO.md). Drawn before the hub
   screen was found: its fan widget came from the fan scenes but its
   chrome matched the app, and it scored 0.07 on the ink gate against
   `kitsch-dashboard.png` (the trace scores 0.59). Until the `Layout`

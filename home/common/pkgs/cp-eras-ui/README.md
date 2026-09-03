@@ -47,32 +47,29 @@ branches on era. If a fifth era cannot wear one without adding
 shows.
 
 The alternative, a crate per era, was rejected once the sampling showed
-how much the eras share. The genuinely era-specific things left are
-*interaction models* and one *layout*, not dressed rectangles: kitsch's
-extruded fan menu, neokitsch's card cascade, entropism's tiles, and
-neomil's dashboard. Both kinds live behind a choice on `Style` rather
-than an era test in a screen — the `Menu` enum for what a menu is, and
-the `Layout` enum for what a dashboard *is*: `Layout::ModuleHub`, the
-six-module hub the two hub eras wear; `Layout::OpsCharts`, neomil's
-ops-charts screen straight off `docs/neomil/dashboard-trace.svg`, which
-is what the material's `img-07` actually shows; `Layout::TileRow`,
-entropism's four-tile row straight off
-`docs/entropism/dashboard-trace.svg`, which is what its Behance screen
-#42 actually shows. So a screen picks a menu and a dashboard without
-naming an era, and a fifth era cannot wear either without adding data —
-which is the same discipline that forbids `if era ==` in `screens/`.
+how much the eras share. Where the eras genuinely diverge is not in
+dressed rectangles but in *drawings*: the store and the dashboard agree
+on a screen (a masthead, a nav and four cards; six menu units, a detail
+panel and a badge row) and then draw it with four unrelated pieces of
+furniture -- neomil's staggered diamonds, entropism's tile grid,
+kitsch's fan blades, neokitsch's cascade cards. No corner radius turns
+one into another, so for those two screens the era table carries the
+drawing itself: `Style::store` and `Style::dashboard` are `&'static
+[Prim]` display lists transcribed from `docs/<era>/<screen>-trace.svg`
+at 1600x900, and `screens::scene` is the one renderer that paints
+either. A `Prim::Plate` is a hit box wearing an `on` and an `off`
+drawing, which is the whole of "one unit is selected". A fifth era
+cannot wear either screen without a table entry -- the same discipline
+that forbids `if era ==` in `screens/`.
 
-Neomil's arm was a **cut-diamond hub** until the table landed, and the
-story is worth keeping because it is the shape this crate's mistakes
-take. The hub was inherited from the pre-generalisation crate and was in
-*neither* neomil sheet -- the since-deleted `target-app.svg` composite
-put a services table where the dashboard put its menu -- so it was kept
-as an admitted stand-in,
-with both `style.rs` and the widget's own header saying it was the first
-thing to reconsider when the table arrived. It arrived; the hub is
-deleted. Nothing was lost with it: the hit-testing it was credited with
-is `mouse_area` in `panels::mail` and `bar`, and a table built out of
-layout needs none.
+The dashboard took the long way there. Until 2026-09-03 it was a
+widget-built hub shell plus two extra layout arms (`Layout::OpsCharts`,
+`Layout::TileRow`) drawn to sources that had been described without
+being opened; all four scored 0% against their traces. When the sources
+were finally read, all four eras turned out to be the same module hub
+in different dress, so the arms, the `Layout` and `Menu` enums and the
+menu/table/charts widgets behind them were deleted and the screen folded
+onto the store's scene model. `docs/sources.md` keeps the record.
 
 ## Where the eras actually differ
 
@@ -98,10 +95,10 @@ Two entries carry most of the risk:
   foot. It was drawn to neokitsch's `target-app.svg` composite, which
   invented it: the photos have no full-screen frame, and the
   `store-trace.svg` that superseded the composite (deleted 2026-09-03)
-  has none either. The canvas screens (store, login, mailbox) do not
-  wear it; the widget-based dashboard and the bar's mail panel still
-  do, until the widget-vs-canvas decision in `TODO.md` settles what
-  happens to the widget layer.
+  has none either. The canvas screens (store, login, mailbox and, since
+  2026-09-03, the dashboard) do not wear it; only the bar's mail panel
+  still does, until the widget-vs-canvas decision in `TODO.md` settles
+  what happens to the widget layer.
 
 ## Palette resolution
 
@@ -128,15 +125,17 @@ is why they are separate roles.
 ```
 src/
   style.rs        Era, Style, Corner, Selection, Ground, Chrome,
-                  Nameplate, Banner, Footnotes, Metrics
+                  Nameplate, Banner, Footnotes, Metrics; the login,
+                  mailbox and scene (Prim) vocabularies
   palette.rs      Palette; rgb() for compile-time #rrggbb
   theme.rs        runtime palette published by the nix theme layer
-  eras/           one table per era, sampled figures
-  widgets/        surface, pill, card, banner, silhouette, glyph,
-                  bracket, ornament, chrome, marker, ground, menu, table,
-                  text
+  eras/           one table per era, sampled figures, plus each era's
+                  store and dashboard scenes as Prim lists
+  widgets/        surface, card, banner, silhouette, glyph, bracket,
+                  ornament, chrome, ground, row, input, text
   screens/        store, login, mailbox, dashboard — era-agnostic by
-                  construction
+                  construction; scene is the Prim renderer the store
+                  and dashboard share
   panels/         mail — the interactive counterpart to screens::mail
 ```
 
@@ -298,41 +297,25 @@ Version stays at 0.0.0: this is nowhere near release.
 
 Implemented: the era abstraction, the shared widget vocabulary, all four
 era tables, four screens (store, login, mailbox, dashboard) in all four
-dresses, each hub era's own menu on the dashboard, and a screen-by-era
-visual regression matrix. All four eras also have desktop themes under
-`home/themes/`, so `Style::from_desktop` has something real to follow.
+dresses, and a screen-by-era visual regression matrix. All four eras
+also have desktop themes under `home/themes/`, so `Style::from_desktop`
+has something real to follow.
 
-Since 2026-08-31 neomil's dashboard follows its own material rather
-than the hub: `Layout::OpsCharts` draws the ops-charts screen from
-`docs/neomil/dashboard-trace.svg` (the cold band, the three chart
-cards, the right rail) on the `screens::dashboard` OpsCharts arm, with
-the new `widgets::charts` chart-card behind each cell. Neomil keeps
-`menu: Menu::Table` — the services-table hub arm is **retained
-dormant** for any era or host that wants a table in the menu slot; the
-`OpsCharts` arm simply never consults the menu.
-
-Entropism's dashboard followed on the same day, the same way:
-`Layout::TileRow` draws the four-tile row from
-`docs/entropism/dashboard-trace.svg` (Behance screen #42 — the
-dim-olive top field with its boxed [A] TILE MENU header, four tiles
-with T2 `LOCATIONS` solid sage and selected, the caption strips, the
-thin build-rule at the foot) on the `screens::dashboard` TileRow arm.
-Entropism keeps `menu: Menu::Tiles` — the tile-grid hub arm is
-**retained dormant**, exactly as `Menu::Table` is for neomil; the
-TileRow arm never consults the menu either.
+The dashboard is the newest of the trace-driven screens (2026-09-03):
+`screens::dashboard` is a `Store`-shaped screen -- one canvas over the
+era's ground, `Message::Select` on a click, `Style::dashboard_selection`
+as the opening state -- and everything it draws is the era's
+`Style::dashboard` scene, transcribed from `docs/<era>/dashboard-trace.svg`
+into the `// --- dashboard ---` block of `src/eras/<era>.rs`. The
+transcriptions land per era; an era whose block is still `&[]` renders
+its ground and nothing else.
 
 Not yet done:
-- **`widgets::table` has no scroll rail**, which both neomil sheets draw.
-  Left out on purpose: a rail asserts rows exist off-screen, this widget
-  shows every row it is handed, and its one caller sat in a column with
-  slack below it. That caller went dormant with the ops-charts layout,
-  and the rail stays a no-caller decoration until a table hub has a
-  caller again — which is the trap the audit below exists to close.
 - Neokitsch's BASKET panel and its step-notch pill on the mailbox
-  footer are in the design targets but not yet widgets. The fan, the
-  cascade, the tiles, the table, the ticket notch, the compliance
-  caption and the nav-column outline that runs into the page-curl have
-  all since landed.
+  footer are in the design targets but not yet drawn. The ticket notch,
+  the compliance caption and the nav-column outline that runs into the
+  page-curl have all since landed; the fan, cascade and tiles now arrive
+  as dashboard scene data rather than widgets.
 - Fields are display-only. `widgets::input::field` draws the box and the
   value but takes no input; the screens it serves are design targets,
   and a real `text_input` needs per-era styling before it earns a place.

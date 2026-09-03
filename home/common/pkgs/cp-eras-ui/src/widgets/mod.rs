@@ -1,19 +1,14 @@
 pub mod banner;
 pub mod bracket;
 pub mod card;
-pub mod charts;
 pub mod chrome;
 pub mod glyph;
 pub mod ground;
-pub mod marker;
-pub mod menu;
 pub mod input;
 pub mod ornament;
-pub mod pill;
 pub mod row;
 pub mod silhouette;
 pub mod surface;
-pub mod table;
 pub mod text;
 
 // What is left of the neo-militarism widget set, from before the
@@ -34,7 +29,8 @@ pub mod text;
 //     arm. Deleted with that variant. It was the crate's own recorded
 //     stand-in for a data table -- no neomil sheet draws a diamond
 //     anywhere, and where `screens::dashboard` puts its menu the sheet
-//     puts a services table -- and `widgets::table` is now that table.
+//     puts a services table -- and `widgets::table` became that table
+//     (itself deleted since; see below).
 //     Its own header said it was "the first thing to reconsider when
 //     the table lands". Nothing was lost with it: the hit-testing it
 //     was credited with is `mouse_area` in `panels::mail` and `bar`,
@@ -42,8 +38,17 @@ pub mod text;
 //     of layout.
 //   * `chip`, `level_badge`, `text_box`, `vertical_text` -- four
 //     dressed rectangles with neomil's cut sizes baked in, no caller
-//     between them since the retirement. Deleted; `pill::badge` and
-//     `surface::Surface` draw all four of those shapes in four eras.
+//     between them since the retirement. Deleted; `surface::Surface`
+//     draws all four of those shapes in four eras.
+//   * `menu` (`Menu::Fan/Cascade/Tiles/Table`), `table`, `charts`,
+//     `marker`, `pill` -- the widget-built dashboard's furniture, and
+//     the two layouts the dashboard drew to misread sources. Deleted
+//     2026-09-03 when the dashboard became a trace-driven scene like
+//     the store (`screens::scene`): after that fold not one of them had
+//     a caller outside `screens::dashboard`. The diamond, tile, fan and
+//     cascade menus now live as `Prim` lists in each era's
+//     `// --- dashboard ---` block, transcribed from the traces the
+//     widgets had only approximated.
 //
 // `floppy_icon` and `floppy_vector` stay, and they are the one honest
 // exception: they are *art*, not a dressed rectangle -- a traced
@@ -55,17 +60,12 @@ pub mod floppy_vector;
 pub use banner::banner;
 pub use bracket::bracket_panel;
 pub use card::{notice as card_notice, product_card, Product};
-pub use charts::{chart_card, Chart, Slot};
 pub use chrome::{footer, top_bar};
 pub use glyph::{glyph, Glyph};
 pub use ground::ground;
-pub use marker::marker;
-pub use menu::{menu, MenuItem};
 pub use ornament::{column_rule, page_curl};
-pub use pill::{badge, pill};
 pub use row::{mail_row, Mail};
 pub use silhouette::silhouette;
 pub use surface::{layered, surface, Corners, Cut, Fill, Surface};
-pub use table::{table, Column, Row};
 
 pub use floppy_icon::{floppy_icon, FloppyIcon};

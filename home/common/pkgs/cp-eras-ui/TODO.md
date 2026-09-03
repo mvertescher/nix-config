@@ -6,7 +6,7 @@
   - primary black #DEDE17
   - also need to set opacities properly
 - [x] create iced advanced container. "chip type 1"
-- [ ] Reproduce dashboard image (`img-07-dashboard.png`) in demo app:
+- [x] Reproduce dashboard image (`img-07-dashboard.png`) in demo app:
 
   > **Everything under this heading was built against a trace that was
   > invented, and most of it is wrong.** Corrected 2026-09-01 after
@@ -21,6 +21,15 @@
   > neomil dashboard` at 92% of source shape area; the *implementation*
   > has not been touched and still scores 0%.
 
+  **Closed 2026-09-03 by the `Layout` fold** (item in the next section):
+  the neomil dashboard is now the `DASHBOARD` Prim table in
+  `src/eras/neomil.rs`, transcribed from the trace — six diamonds as
+  `Plate`s from `#cell-up`/`#cell-down`, the GO HOME panel, the glow
+  rasterised at compile time from the trace's own stop tables — and
+  scores G2i **96%**. The three sub-items below are therefore done, but
+  not as the widgets they name: there is no `InfoPanel` or
+  `DiamondMenu` widget, and there will not be one.
+
   - [x] ~~Implement custom background (gradient/glow)~~ — landed
     2026-08-31 as stacked strips forming a "cold-blue top band" with
     crest blocks. **The premise is wrong**: the source has no band and
@@ -28,7 +37,7 @@
     to y~250 and gone by y~420, with a warm near-black vignette down
     the left margin. Measured stops are in `dashboard-trace.svg`'s
     `glowh`/`glowv`. Redo against those.
-  - [ ] Implement `InfoPanel` widget (chamfered corners) — **reopened.**
+  - [x] Implement `InfoPanel` widget (chamfered corners) — **reopened**, then closed by the fold (see above).
     The old note said "the ops-charts material shows no such panel";
     it does. The GO HOME panel is the right-hand third of the source:
     230x443, chamfered top-left (14) and bottom-left (42), 1px bright
@@ -36,7 +45,7 @@
     paragraphs, a scrollbar rail on its right edge and a maker's mark
     at its foot. Note the chamfers are top-left/bottom-left, not the
     top-right/bottom-left this item used to claim.
-  - [ ] Restore `DiamondMenu` — **reopened.** It was built, then deleted
+  - [x] Restore `DiamondMenu` — **reopened**, then closed by the fold (see above). It was built, then deleted
     2026-08-24 on the reasoning "no neomil sheet draws a diamond, and
     the sheet puts a services table where the dashboard puts its menu".
     The first half is false: `img-07-dashboard.png` is a six-diamond
@@ -49,7 +58,7 @@
     interlock — L1 distance 195.5 against a diameter of 208 — so no
     cross-row separator is needed), an inset outline at half-diagonal
     68 and a glyph at each centre.
-  - [ ] Update demo app layout, colors, and text to match image —
+  - [x] Update demo app layout, colors, and text to match image — closed by the fold (see above);
     **reopened.** `Layout::OpsCharts` and `screens::dashboard::ops_charts`
     render three `widgets::charts` cards, a right rail and a corner
     block, none of which are in the material:
@@ -122,7 +131,7 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   the ink gate) and reworking them would have meant redrawing the
   trace under another name. The trace is the design; the *screen* is
   what has to follow it, which is the `Layout` item below.
-- [ ] **Decide whether `Layout` should exist — the material now answers
+- [x] **Decide whether `Layout` should exist — the material now answers
   the factual half.** With all four sources finally opened (2026-09-01),
   **all four eras are the same module-hub screen in different dress**:
   a menu of six modules with one selected (neomil diamonds, entropism
@@ -137,6 +146,65 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   already carries) and delete the two layouts, or keep them as
   deliberate original compositions. Settle this before rebuilding any
   dashboard arm, and do not touch `tests/golden/` until it is settled.
+  **Settled 2026-09-03: neither.** The user chose a third option — fold
+  the dashboard to a trace-driven canvas the way login/mailbox/store
+  were converted, and delete `Layout` outright. What landed:
+  - `Layout`, `Menu`, `Style::{layout, menu}` and `widgets::{charts,
+    menu, table, marker, pill}` deleted (each grep-proved dead outside
+    the dashboard; the bar reads its own `BarMenu`). The `Prim`
+    interpreter moved out of `screens/store.rs` into
+    `screens/scene.rs` (`Scene<M>`, `Picked`, `hit`, `scale`) and both
+    store and dashboard drive it; store's capture is byte-identical
+    before/after (md5-checked, G2i unchanged). `Group::Module` is the
+    dashboard's `Plate` group; `Style::dashboard: &[Prim]` +
+    `dashboard_selection` per era in `// --- dashboard ---` blocks.
+    `screens/dashboard.rs` is 781 → 167 lines.
+  - Two trace fixes first (vision): neomil's diamonds are now two
+    explicit truncated defs (`#cell-up`/`#cell-down`, flats at 89) and
+    the footer tape is a two-cell outlined frame; neokitsch's detail
+    panel is a stepped top edge with an S-curve and four rings nested
+    *inside* (the old one was the cascade card mirrored, with 42
+    chamfer and six rings outside — none of it in the photo). G1:
+    neomil 94 held, neokitsch 0.67 → 0.68.
+  - G2i dashboard, was 0% ×4: entropism **98**, neomil **96**,
+    neokitsch **92**, kitsch **31 FAIL**. Kitsch is a layout match by
+    eye (see the side-by-side); the number is two measured effects, not
+    the table: (1) iced/wgpu blends alpha in linear space and rsvg in
+    sRGB, so the translucent ghost stacks render far brighter (ghost 6
+    at α .12: design G=33, impl G=61) and the dark-teal family shifts;
+    replacing alphas with linear-equivalents lifted it to 45%/IoU 0.75
+    but the equivalent is backdrop-dependent, so it was not kept — this
+    is a `scene.rs` decision that also touches every haze/lobe (item
+    below); (2) the extractor hole-fills the BRAINDANCE panel's closed
+    outline into one blob (10% of source area), which rsvg's
+    62%-coverage edge escapes. Weighted IoU 0.69 = what the trace itself
+    scores against the photo.
+  - All five dashboard goldens re-taken (`tests/bar.nix` procedure);
+    21/21 matrix green; the 16 non-dashboard G2i cells unchanged.
+- [ ] **`scene.rs` alpha blending.** Translucent `Ink::Fixed` alphas
+  are composited in linear space by wgpu but the traces were designed
+  in sRGB (rsvg). Every ghost stack, haze and lobe is therefore brighter
+  in the app than in its trace. Options: pre-blend over the known
+  backdrop (what the neokitsch table does by hand for its ring
+  opacities — `RING_25..85` consts), or convert alpha at paint time.
+  Measure on kitsch dashboard ghosts (numbers above) before choosing.
+- [ ] Dashboard renderer limits surfaced by the transcription, all
+  small and all shared with the earlier conversions: no rotated text
+  (kitsch's ±30° blade labels are drawn upright; the two PRODUCTS
+  labels stacked one glyph per line), no letter-spacing, no stroked
+  text (neomil's outlined `next` logotype is drawn filled), `Wide` is
+  start-anchored only (centred stretched glyphs are placed by hand at
+  `cx - run/2`), Rajdhani 600 renders as Medium, no gradient masks
+  (neokitsch's `#bluemask` left-fade; the blue lobe is drawn unmasked).
+- [ ] Follow-ups the era agents flagged and did not touch: neomil
+  `components.svg:1113` calls the maker's mark "an M of 89x39" but the
+  trace path (`dashboard-trace.svg:242`) is 46 wide — the 89 is the bar
+  under it (vision fix); neokitsch `STRATA` doc comment (~`:66-68`)
+  still says "dashboard top bar / footer" though the dashboard no
+  longer reads `Chrome::DeviceFrame` (only `panels::mail` does); kitsch
+  `style.ticket` now has no reader at all — every `Ticket` caller
+  passes `Ticket::default()` and nothing calls `Surface::ticket()` —
+  which feeds the widget-vs-canvas item.
 
 ### Trace improvements (2026-09-02)
 
@@ -634,7 +702,7 @@ four bars, done in this order so the Rust is written once.
   re-examining.
 - [x] The conversion wave — bar, login, mailbox and store landed
   2026-09-03 (bar on main; the three screens on worktree branches,
-  merged by hand). Dashboard is still blocked on `Layout`. What
+  merged by hand). Dashboard followed on 2026-09-03 late (the `Layout` item). What
   landed: every converted screen is **one `canvas::Program` walking an
   era table** — `Style::access` (login), `Style::mailbox`,
   `Style::store: &[Prim]` + `store_selection` — with hit-testing
@@ -673,7 +741,7 @@ four bars, done in this order so the Rust is written once.
     `a0a9274` trace, so pre-existing, not a regression. **Superseded
     2026-09-03:** those four numbers were against the app-shaped
     `dashboard.svg` composites, since deleted; against the traces all
-    four dashboards score 0% (see the housekeeping item).
+    four dashboards scored 0%; the fold the same night took them to 98/96/31/92 (the `Layout` item).
 
   Findings that outlive the wave, each verified by the orchestrator:
   - **Gate change:** `fidelity_check.sh --implementation` hides

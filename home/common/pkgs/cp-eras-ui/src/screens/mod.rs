@@ -4,10 +4,15 @@
 //! Style`] and never asks which era it is. That constraint is the point
 //! -- it is what makes "four eras, one toolkit" a testable claim rather
 //! than an aspiration.
+//!
+//! Two of the four -- the store and the dashboard -- are trace-driven:
+//! the era table holds a `&'static [Prim]` scene transcribed from the
+//! trace and [`scene`] is the one renderer that paints it.
 
 pub mod dashboard;
 pub mod login;
 pub mod mail;
+pub mod scene;
 pub mod store;
 
 pub use dashboard::Dashboard;

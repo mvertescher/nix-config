@@ -155,8 +155,8 @@ keeps a row per file saying what each got wrong. In short:
   `store-trace.svg`: it grew the second card where the photo grows the
   first, and had none of the pale header blocks or the yellow PETROCHEM
   / BETTERLIFE TEC band.
-- `dashboard.svg` — the tile-row composite `screens::dashboard` still
-  assembles under `Layout::TileRow`: a boxed [A] TILE MENU header over
+- `dashboard.svg` — the tile-row composite `screens::dashboard`
+  assembled under `Layout::TileRow` until the fold of 2026-09-03 late (the screen is now a `Prim` table transcribed from the trace, G2i 98%): a boxed [A] TILE MENU header over
   a single row of four tiles and a caption strip. `dashboard-trace.svg`
   measures the hub as a 3x2 grid of six tiles **with** a MESSAGE detail
   panel and a SECURITY LEVEL badge column; the "row of four tiles, no

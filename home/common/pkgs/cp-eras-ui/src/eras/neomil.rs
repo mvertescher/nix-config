@@ -16,7 +16,7 @@
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
     Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Compliance, Corner, Dress,
-    Era, Face, Footnotes, Ground, Ink, Layout, MenuMarker, MenuRule, Metrics, Nameplate, Menu,
+    Era, Face, Footnotes, Ground, Ink, MenuMarker, MenuRule, Metrics, Nameplate,
     PanelEcho, Selection, Style, Ticket, WindowLabel,
 };
 use crate::widgets::surface::{Corners, Cut};
@@ -292,23 +292,6 @@ pub fn style() -> Style {
         // Neomil chamfers its containers; it does not cut a wedge into
         // a nav pill.
         ticket: Ticket::default(),
-        // The services table. This era's own target *is* an ops
-        // screen, and where the dashboard puts a menu it puts
-        // `UNIT | MEM | UPTIME | STATE` with one row picked out. The
-        // cut-diamond hub that used to sit here was the one entry in
-        // this table with no `docs/` citation; see
-        // [`crate::style::Menu::Table`].
-        //
-        // Dormant since 2026-08-31: the dashboard is now
-        // [`Layout::OpsCharts`], whose arm draws no menu at all, and
-        // this field is kept as the services-table hub arm for any era
-        // or host that wants one. The field stays; the hub just is not
-        // rendered for this layout.
-        menu: Menu::Table,
-        // The ops-charts dashboard straight off
-        // `docs/neomil/dashboard-trace.svg` -- the material's img-07 is
-        // a chart screen, not the module hub the other three eras wear.
-        layout: Layout::OpsCharts,
         glyphs: false,
         // --- login ---
         access: ACCESS,
@@ -320,6 +303,14 @@ pub fn style() -> Style {
         store: STORE,
         store_selection: (0, 1),
         // --- end store ---
+        // --- dashboard ---
+        dashboard: DASHBOARD,
+        // The photo distinguishes no unit (trace header :107-121 and
+        // components.svg :722-723: "the source shows NO selected
+        // state"), so every plate wears one dress and the opening
+        // selection is the first unit by convention.
+        dashboard_selection: 0,
+        // --- end dashboard ---
         metrics: Metrics {
             stroke: 1.5,
             gap: 16.0,
@@ -1360,3 +1351,370 @@ pub const STORE: &[Prim] = &[
     txt(313.0, 872.0, 11.0, Ink::Dim, "00032 05 54 08 CP"),
 ];
 // --- end store -----------------------------------------------------------
+
+// --- dashboard -----------------------------------------------------------
+//
+// `docs/neomil/dashboard-trace.svg`, transcribed. Coordinates are the
+// trace's own in the 1600x900 frame, measured off
+// `images/img-07-dashboard.png`; each group below names the trace
+// lines it came from, in the trace's paint order. The two `<use>`
+// defs -- `#badge` and the two menu cells -- are written once as
+// consts and placed with `Prim::At`, and each menu unit is a
+// `Prim::Plate` whose hit box is the cell's bounding box.
+//
+// The three reds are the trace's `#ef3333` / `#ae272b` / `#671b21`,
+// which are the same three roles the store block maps to `Ink::Fg` /
+// `Ink::Dim` / `Ink::Border` (its `#df3131` / `#96282d` / `#60181a`),
+// so the palette still reaches the screen; the ground and the glow
+// stops are the trace's own hex, as the store's `GROUND` and
+// `GLOW_TOP` are.
+//
+// What the trace draws that is not transcribed as drawn, and why: the
+// blue glow is a horizontal gradient under a vertical mask (:75-101),
+// which the `Prim` set has no single shape for -- `Wash` is vertical
+// only -- so `glow()` rasterises it from the trace's own stop tables
+// at compile time: 10px vertical strips, each the horizontal gradient
+// sampled at its centre (interpolated in sRGB, as SVG does), held flat
+// over the mask's plateau and washed to the ground down the mask's
+// ramp in three linear pieces. The `next` logotype (:151-152) is
+// *outlined* Orbitron, and the
+// scene has neither a stroked text nor an Orbitron face, so it is set
+// filled in the bold Rajdhani face. Letter-spacing on the header and
+// tab labels is dropped, as the store block drops it. The body copy of
+// the GO HOME panel is drawn as the trace's measured run boxes
+// (:232-239) because the trace carries no copy for it.
+
+/// The ground: `#070304`, the k-means' largest cluster (38.8%), two
+/// levels off the era's `BG`.
+pub const HUB_GROUND: iced::Color = rgb(0x070304);
+/// The panel's translucent fill: `#671b21` at `fill-opacity 0.55`
+/// (:218) -- the deep red *over* the ground, not a fourth red.
+const PANEL_FILL: iced::Color = iced::Color { a: 0.55, ..rgb(0x671b21) };
+/// `glowh` (:75-86): the glow's horizontal stops, offsets in page x
+/// (`offset x 1600`) and the sampled hex.
+const GLOW_H: [(f32, u32); 10] = [
+    (0.0, 0x282824),
+    (100.8, 0x273743),
+    (300.8, 0x263953),
+    (500.8, 0x202b56),
+    (700.8, 0x1b2253),
+    (900.8, 0x171f51),
+    (1100.8, 0x121f51),
+    (1300.8, 0x0d1f4e),
+    (1500.8, 0x082447),
+    (1600.0, 0x080b0e),
+];
+/// `glowv` (:88-98), the mask, as `(y, opacity)`: opaque to y 225,
+/// then the S-curve through its `#bababa` (315) and `#2b2b2b` (450)
+/// stops to clear at 540. Three ramps hold the other stops within 0.05.
+const GLOW_V: [(f32, f32); 4] = [
+    (225.0, 1.0),
+    (315.0, 186.0 / 255.0),
+    (450.0, 43.0 / 255.0),
+    (540.0, 0.0),
+];
+const GLOW_PITCH: f32 = 10.0;
+const GLOW_STRIPS: usize = 160;
+
+/// `a` toward `b` by `t`, in sRGB, opaque.
+const fn mix(a: iced::Color, b: iced::Color, t: f32) -> iced::Color {
+    iced::Color {
+        r: a.r + (b.r - a.r) * t,
+        g: a.g + (b.g - a.g) * t,
+        b: a.b + (b.b - a.b) * t,
+        a: 1.0,
+    }
+}
+
+/// The glow's colour at page `x`, between its bracketing stops.
+const fn glow_at(x: f32) -> iced::Color {
+    let mut i = 1;
+    while i < GLOW_H.len() {
+        let (x1, c1) = GLOW_H[i];
+        if x <= x1 {
+            let (x0, c0) = GLOW_H[i - 1];
+            return mix(rgb(c0), rgb(c1), (x - x0) / (x1 - x0));
+        }
+        i += 1;
+    }
+    rgb(GLOW_H[GLOW_H.len() - 1].1)
+}
+
+/// The masked glow as strips: per strip one flat band over the mask's
+/// plateau and one `Wash` per ramp, each ramp's ends the glow blended
+/// over the ground at the mask's opacity there.
+const fn glow() -> [Prim; GLOW_STRIPS * 4] {
+    let mut out = [fill_rect(0.0, 0.0, 0.0, 0.0, Ink::None); GLOW_STRIPS * 4];
+    let mut i = 0;
+    while i < GLOW_STRIPS {
+        let x = i as f32 * GLOW_PITCH;
+        let c = glow_at(x + GLOW_PITCH / 2.0);
+        out[i * 4] = fill_rect(x, 0.0, GLOW_PITCH, GLOW_V[0].0, Ink::Fixed(c));
+        let mut j = 0;
+        while j < 3 {
+            let (y0, a0) = GLOW_V[j];
+            let (y1, a1) = GLOW_V[j + 1];
+            out[i * 4 + 1 + j] = Prim::Wash {
+                x,
+                y: y0,
+                w: GLOW_PITCH,
+                h: y1 - y0,
+                top: Ink::Fixed(mix(HUB_GROUND, c, a0)),
+                foot: Ink::Fixed(mix(HUB_GROUND, c, a1)),
+            };
+            j += 1;
+        }
+        i += 1;
+    }
+    out
+}
+const HUB_GLOW: [Prim; GLOW_STRIPS * 4] = glow();
+
+/// The warm near-black vignette down the left margin, `radialGradient
+/// id="vignette"` (:102-105): one colour from opaque to clear.
+const VIGNETTE: &[(f32, iced::Color)] = &[
+    (0.0, rgb(0x241012)),
+    (1.0, iced::Color { a: 0.0, ..rgb(0x241012) }),
+];
+
+/// `#badge` (:135): 59x57 with a 15px bottom-left chamfer, at its own
+/// origin. Filled deep red on four of the five uses, mid red on the
+/// selected T2.
+const BADGE_SEGS: &[Seg] = &[
+    Seg::Line(59.0, 0.0),
+    Seg::Line(59.0, 57.0),
+    Seg::Line(15.0, 57.0),
+    Seg::Line(0.0, 42.0),
+];
+const BADGE: &[Prim] = &[Prim::Path {
+    x: 0.0,
+    y: 0.0,
+    segs: BADGE_SEGS,
+    close: true,
+    fill: Some(Ink::Border),
+    stroke: Some(Ink::Fg),
+    width: 1.5,
+}];
+const BADGE_ON: &[Prim] = &[Prim::Path {
+    x: 0.0,
+    y: 0.0,
+    segs: BADGE_SEGS,
+    close: true,
+    fill: Some(Ink::Dim),
+    stroke: Some(Ink::Fg),
+    width: 1.5,
+}];
+
+/// `#cell-up` (:122-127): row 1's menu cell at its own centre. A solid
+/// diamond of half-diagonal 104 whose top tip is cut flat at 89 (a
+/// 30px plateau), an inset outline at 68 cut the same way at 59, and
+/// the 43x36 glyph plate.
+const CELL_UP_OUTER: &[Seg] = &[
+    Seg::Line(15.0, -89.0),
+    Seg::Line(104.0, 0.0),
+    Seg::Line(0.0, 104.0),
+    Seg::Line(-104.0, 0.0),
+];
+const CELL_UP_INNER: &[Seg] = &[
+    Seg::Line(9.0, -59.0),
+    Seg::Line(68.0, 0.0),
+    Seg::Line(0.0, 68.0),
+    Seg::Line(-68.0, 0.0),
+];
+const CELL_UP: &[Prim] = &[
+    fill_path(-15.0, -89.0, CELL_UP_OUTER, Ink::Fg),
+    shut_path(-9.0, -59.0, CELL_UP_INNER, Ink::Border, 2.0),
+    fill_rect(-22.0, -21.0, 43.0, 36.0, Ink::Border),
+];
+/// `#cell-down` (:128-133): row 2's cell, `#cell-up` mirrored in y --
+/// the bottom tip is the cut one.
+const CELL_DOWN_OUTER: &[Seg] = &[
+    Seg::Line(104.0, 0.0),
+    Seg::Line(15.0, 89.0),
+    Seg::Line(-15.0, 89.0),
+    Seg::Line(-104.0, 0.0),
+];
+const CELL_DOWN_INNER: &[Seg] = &[
+    Seg::Line(68.0, 0.0),
+    Seg::Line(9.0, 59.0),
+    Seg::Line(-9.0, 59.0),
+    Seg::Line(-68.0, 0.0),
+];
+const CELL_DOWN: &[Prim] = &[
+    fill_path(0.0, -104.0, CELL_DOWN_OUTER, Ink::Fg),
+    shut_path(0.0, -68.0, CELL_DOWN_INNER, Ink::Border, 2.0),
+    fill_rect(-22.0, -21.0, 43.0, 36.0, Ink::Border),
+];
+
+// One menu unit, at its own centre: the plate's box is the cell's
+// bounding box (208 wide; 89 above and 104 below the centre for row 1,
+// the reverse for row 2), and `on` and `off` are the same drawing
+// because the photo shows no selected state.
+macro_rules! unit {
+    ($i:expr, $top:expr, $cell:expr) => {
+        &[Prim::Plate {
+            group: Group::Module,
+            index: $i,
+            x: -104.0,
+            y: $top,
+            w: 208.0,
+            h: 193.0,
+            on: $cell,
+            off: $cell,
+        }]
+    };
+}
+const UNIT_0: &[Prim] = unit!(0, -89.0, CELL_UP);
+const UNIT_1: &[Prim] = unit!(1, -89.0, CELL_UP);
+const UNIT_2: &[Prim] = unit!(2, -89.0, CELL_UP);
+const UNIT_3: &[Prim] = unit!(3, -104.0, CELL_DOWN);
+const UNIT_4: &[Prim] = unit!(4, -104.0, CELL_DOWN);
+const UNIT_5: &[Prim] = unit!(5, -104.0, CELL_DOWN);
+
+/// The code tape under the logotype (:154), chamfered 2 at both bottom
+/// corners.
+const CODE_TAPE: &[Seg] = &[
+    Seg::Line(379.0, 151.0),
+    Seg::Line(379.0, 158.0),
+    Seg::Line(377.0, 160.0),
+    Seg::Line(259.0, 160.0),
+    Seg::Line(257.0, 158.0),
+];
+/// The DESCRIPTION tab (:181): a box with its left end chamfered 7 at
+/// both corners.
+const DESCRIPTION_TAB: &[Seg] = &[
+    Seg::Line(1354.0, 237.0),
+    Seg::Line(1354.0, 258.0),
+    Seg::Line(1139.0, 258.0),
+    Seg::Line(1132.0, 251.0),
+    Seg::Line(1132.0, 244.0),
+];
+/// The GO HOME panel's outline (:217): square top-left and
+/// bottom-right, an 8px top-right chamfer, the right edge stepping 8
+/// inward at y 516 below the bright bar, a 42px bottom-left chamfer.
+const PANEL: &[Seg] = &[
+    Seg::Line(1358.0, 314.0),
+    Seg::Line(1366.0, 322.0),
+    Seg::Line(1366.0, 508.0),
+    Seg::Line(1358.0, 516.0),
+    Seg::Line(1358.0, 756.0),
+    Seg::Line(1170.0, 756.0),
+    Seg::Line(1128.0, 714.0),
+];
+/// The bright bar on the panel's right edge, y 405..516, chamfered 8
+/// at both ends (:220).
+const PANEL_BAR: &[Seg] = &[
+    Seg::Line(1366.0, 508.0),
+    Seg::Line(1358.0, 516.0),
+    Seg::Line(1358.0, 414.0),
+];
+/// The maker's mark, an M (:242). The trace's path is relative from
+/// `M 1208,722`; these are the same points made absolute.
+const MAKER_MARK: &[Seg] = &[
+    Seg::Line(1208.0, 683.0),
+    Seg::Line(1219.0, 683.0),
+    Seg::Line(1231.0, 701.0),
+    Seg::Line(1243.0, 683.0),
+    Seg::Line(1254.0, 683.0),
+    Seg::Line(1254.0, 722.0),
+    Seg::Line(1243.0, 722.0),
+    Seg::Line(1243.0, 702.0),
+    Seg::Line(1231.0, 718.0),
+    Seg::Line(1219.0, 702.0),
+    Seg::Line(1219.0, 722.0),
+];
+
+pub const DASHBOARD: &[Prim] = &[
+    // ground (:138)
+    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(HUB_GROUND)),
+    // the blue glow (:139): `glowh` under `glowv`, rasterised from the
+    // stop tables by `glow()`
+    Prim::At { x: 0.0, y: 0.0, prims: &HUB_GLOW },
+    // the warm vignette (:140): `cx 0.02 cy 0.60 r 0.34` of the page
+    Prim::Lobe { x: 32.0, y: 540.0, rx: 544.0, ry: 306.0, stops: VIGNETTE },
+    // header, left (:144-154)
+    txt(109.0, 90.0, 14.0, Ink::Fg, "CUSTOMER"),
+    Prim::At { x: 117.0, y: 104.0, prims: BADGE },
+    txt(125.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
+    txt_bold(132.0, 140.0, 20.0, Ink::Fg, "T1"),
+    txt(240.0, 90.0, 14.0, Ink::Fg, "#NC488402"),
+    txt_bold(242.0, 132.0, 42.0, Ink::Fg, "next"),
+    fill_path(257.0, 151.0, CODE_TAPE, Ink::Fg),
+    // header, right (:156-169): four badges, T2 filled
+    txt(1125.0, 90.0, 14.0, Ink::Fg, "SECURITY LEVEL"),
+    Prim::At { x: 1133.0, y: 104.0, prims: BADGE },
+    Prim::At { x: 1193.0, y: 104.0, prims: BADGE_ON },
+    Prim::At { x: 1253.0, y: 104.0, prims: BADGE },
+    Prim::At { x: 1313.0, y: 104.0, prims: BADGE },
+    txt(1141.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
+    txt(1201.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
+    txt(1261.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
+    txt(1321.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
+    txt_bold(1148.0, 140.0, 20.0, Ink::Fg, "T1"),
+    txt_bold(1208.0, 140.0, 20.0, Ink::Fg, "T2"),
+    txt_bold(1268.0, 140.0, 20.0, Ink::Fg, "T3"),
+    txt_bold(1328.0, 140.0, 20.0, Ink::Fg, "T4"),
+    // the hairline rule (:174)
+    fill_rect(42.0, 187.0, 1516.0, 2.0, Ink::Dim),
+    // tab row (:178-184)
+    Prim::Rect { x: 27.0, y: 240.0, w: 55.0, h: 17.0, fill: Some(Ink::Border), stroke: Some(Ink::Fg), width: 1.0 },
+    Prim::Rect { x: 475.0, y: 237.0, w: 211.0, h: 21.0, fill: Some(Ink::Border), stroke: Some(Ink::Dim), width: 1.0 },
+    txt(515.0, 252.0, 12.0, Ink::Fg, "COMPUTER SYSTEMS"),
+    Prim::Path { x: 1139.0, y: 237.0, segs: DESCRIPTION_TAB, close: true, fill: Some(Ink::Border), stroke: Some(Ink::Dim), width: 1.0 },
+    txt(1145.0, 252.0, 12.0, Ink::Fg, "DESCRIPTION"),
+    Prim::Rect { x: 1516.0, y: 239.0, w: 54.0, h: 17.0, fill: Some(Ink::Border), stroke: Some(Ink::Fg), width: 1.0 },
+    // the six-diamond menu (:190-195), each cell at its centre
+    Prim::At { x: 334.0, y: 460.0, prims: UNIT_0 },
+    Prim::At { x: 530.0, y: 460.0, prims: UNIT_1 },
+    Prim::At { x: 725.0, y: 460.0, prims: UNIT_2 },
+    Prim::At { x: 431.0, y: 593.0, prims: UNIT_3 },
+    Prim::At { x: 628.0, y: 592.0, prims: UNIT_4 },
+    Prim::At { x: 822.0, y: 592.0, prims: UNIT_5 },
+    // the separators (:199-202): 16x30 ground-coloured bars on the
+    // midpoint of each same-row pair, cutting the facing side tips
+    fill_rect(424.0, 445.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
+    fill_rect(619.5, 445.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
+    fill_rect(521.5, 577.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
+    fill_rect(717.0, 577.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
+    // labels (:207-212): 600/19, centred on each cell's x
+    Prim::Text { x: 334.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, content: "VEHICLES" },
+    Prim::Text { x: 530.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, content: "LOCATIONS" },
+    Prim::Text { x: 725.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, content: "FACTIONS" },
+    Prim::Text { x: 431.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, content: "WEAPONS" },
+    Prim::Text { x: 628.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, content: "PRODUCTS" },
+    Prim::Text { x: 822.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, content: "CORPORATIONS" },
+    // GO HOME panel (:217-244): the outline, the bright edge bar, the
+    // glitch echoes 3 and 5 out, the heading, the body run boxes and
+    // the maker's mark
+    Prim::Path { x: 1128.0, y: 314.0, segs: PANEL, close: true, fill: Some(Ink::Fixed(PANEL_FILL)), stroke: Some(Ink::Fg), width: 1.5 },
+    fill_path(1366.0, 405.0, PANEL_BAR, Ink::Fg),
+    fill_rect(1369.0, 322.0, 1.5, 193.0, Ink::Border),
+    fill_rect(1371.0, 322.0, 1.5, 193.0, Ink::Border),
+    fill_rect(1361.0, 516.0, 1.5, 240.0, Ink::Border),
+    fill_rect(1363.0, 516.0, 1.5, 240.0, Ink::Border),
+    txt_bold(1140.0, 333.0, 20.0, Ink::Fg, "GO HOME"),
+    fill_rect(1140.0, 368.0, 202.0, 12.0, Ink::Dim),
+    fill_rect(1140.0, 389.0, 215.0, 12.0, Ink::Dim),
+    fill_rect(1140.0, 410.0, 197.0, 12.0, Ink::Dim),
+    fill_rect(1140.0, 431.0, 121.0, 12.0, Ink::Dim),
+    fill_rect(1140.0, 474.0, 205.0, 12.0, Ink::Dim),
+    fill_rect(1140.0, 495.0, 216.0, 12.0, Ink::Dim),
+    fill_rect(1140.0, 516.0, 186.0, 12.0, Ink::Dim),
+    fill_rect(1140.0, 537.0, 193.0, 12.0, Ink::Dim),
+    fill_path(1208.0, 722.0, MAKER_MARK, Ink::Fg),
+    fill_rect(1208.0, 731.0, 89.0, 8.0, Ink::Border),
+    // margins (:249-251): the rotated micro-text runs as the trace's
+    // own bars
+    fill_rect(33.0, 463.0, 8.0, 113.0, Ink::Border),
+    fill_rect(1533.0, 527.0, 8.0, 238.0, Ink::Border),
+    fill_rect(1348.0, 341.0, 4.0, 49.0, Ink::Border),
+    // footer tape (:262-271): the dim echo 3px right and down, the
+    // bright frame, the divider and the two cells' text
+    line_rect(1212.5, 867.5, 144.0, 24.0, Ink::Border, 1.0),
+    line_rect(1209.5, 864.5, 144.0, 24.0, Ink::Fg, 1.0),
+    fill_rect(1270.0, 864.5, 1.2, 24.0, Ink::Fg),
+    txt_bold(1215.0, 875.0, 8.0, Ink::Fg, "68SD1D1100D1S"),
+    Prim::Text { x: 1277.0, y: 874.0, size: 7.5, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
+    Prim::Text { x: 1277.0, y: 882.0, size: 7.5, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
+];
+// --- end dashboard -------------------------------------------------------

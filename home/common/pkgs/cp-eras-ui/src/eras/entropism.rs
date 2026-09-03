@@ -32,7 +32,7 @@
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
     Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Compliance, Corner, Dress,
-    Era, Face, Footnotes, Ground, Ink, Layout, MenuMarker, MenuRule, Metrics, Nameplate, Menu,
+    Era, Face, Footnotes, Ground, Ink, MenuMarker, MenuRule, Metrics, Nameplate,
     PanelEcho, Selection, Style, Ticket, WindowLabel,
 };
 use crate::widgets::surface::Corners;
@@ -229,24 +229,6 @@ pub fn style() -> Style {
         compliance: Compliance::Inside,
         // No wedge: entropism cuts nothing, anywhere.
         ticket: Ticket::default(),
-        // "MENU TILES" on the components sheet: 120x120 squares, three
-        // to a row, each under a hairline and a caption strip.
-        //
-        // Retained-dormant since 2026-08-31, the same way Menu::Table
-        // is for neomil: the dashboard below (Layout::TileRow) draws
-        // its own row of four tiles and does not go through the menu,
-        // but any era or host wanting the hub grid still can -- the
-        // widget stays live, the screen just does not wear it today.
-        menu: Menu::Tiles { columns: 3 },
-        // The material's dashboard is not the hub: per
-        // docs/entropism/dashboard-trace.svg (the schematic of the
-        // Behance screen #42, see docs/sources.md) it is a dim-olive
-        // top field, a single row of four menu tiles -- the second
-        // solid sage, selected -- caption strips under each tile, and a
-        // thin build-rule at the foot. No sidebar, no detail panel, no
-        // footer band: the material's frame contains none of them, so
-        // this era's dashboard arm does not draw them.
-        layout: Layout::TileRow,
         glyphs: false,
         // --- login ---
         access: ACCESS,
@@ -260,6 +242,14 @@ pub fn style() -> Style {
         // other three grow their second.
         store_selection: (1, 0),
         // --- end store ---
+        // --- dashboard ---
+        dashboard: DASHBOARD,
+        // BRAINDANCE, row 1 tile 3: the one tile dashboard-trace.svg
+        // fills solid (`<rect x="716" y="227" ... fill="#a6d3a7"/>`
+        // under "the selection: solid sage fill, dark caption box and
+        // text").
+        dashboard_selection: 2,
+        // --- end dashboard ---
         metrics: Metrics {
             // Traces measure 1.25 (login/dashboard/store) and 2.0
             // (mailbox); see the module doc. Left at 1.0 because the
@@ -905,3 +895,245 @@ pub const STORE: &[Prim] = &[
 ];
 
 // --- end store -----------------------------------------------------------
+
+// --- dashboard -----------------------------------------------------------
+//
+// `docs/entropism/dashboard-trace.svg`, transcribed: the module hub,
+// measured off `images/entropism-store.png` (the two entropism source
+// files are named the wrong way round, see `docs/sources.md`). Every
+// figure below is the trace's own coordinate in the 1600x900 frame, in
+// the trace's paint order; the comment on each group names the trace
+// element it came from.
+//
+// Inks are the trace's sampled hex values. None of the era's role
+// consts above carries any of them (BG #110c07 vs the trace's ground
+// #0f0a03; SAGE_SOLID #9cb795 vs the fill #a6d3a7; SAGE_TEXT #94bb94 vs
+// the stroke #8fba97 and label #acddb4; ON_SOLID #1f2a1c vs #22301f), so
+// they are spelled here as block-local consts, the way `STORE_BAND` is.
+// Reconciling them with the palette is ERAS-DELTA work, not this block's.
+
+use crate::style::{hline, Anchor};
+
+/// The 1.25px core of every outlined frame, measured at full resolution
+/// (trace header "Stroke profile").
+const HUB_STROKE: iced::Color = rgb(0x8fba97);
+/// The solid fill of the selected tile and the T2 badge.
+const HUB_SOLID: iced::Color = rgb(0xa6d3a7);
+/// Ink on the solid fill: the selected tile's label and T2.
+const HUB_ON_SOLID: iced::Color = rgb(0x22301f);
+/// The selected tile's caption box, drawn dark on the fill.
+const HUB_ON_CAPTION: iced::Color = rgb(0x2e4a2c);
+/// Tile labels, badge glyphs and the panel heading.
+const HUB_LABEL: iced::Color = rgb(0xacddb4);
+/// Header and footer strings.
+const HUB_STRIP: iced::Color = rgb(0x97c4a0);
+/// The panel's lorem body copy.
+const HUB_BODY: iced::Color = rgb(0x9fc09c);
+/// The idle tiles' caption box: heavier and brighter than the frames.
+const HUB_CAPTION: iced::Color = rgb(0xa8d7a7);
+/// The A / B / C letter boxes.
+const HUB_LETTER_BOX: iced::Color = rgb(0x9ac3a0);
+/// The boxed letters and their MAIL BOX / MESSAGE / SECURITY LEVEL labels.
+const HUB_SECTION: iced::Color = rgb(0xa0d2a9);
+
+/// The ground's radial lift, trace `<radialGradient id="lift">`: the
+/// three stops, with the outermost also painted flat under the lobe
+/// because r 0.75 leaves the page corners outside the ellipse.
+const LIFT: &[(f32, iced::Color)] = &[
+    (0.0, rgb(0x1c1a10)),
+    (0.7, rgb(0x141107)),
+    (1.0, rgb(0x0f0a03)),
+];
+
+/// Rajdhani 500 (`font-weight="500"`), start-anchored.
+const fn medium(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -> Prim {
+    Prim::Text { x, y, size, ink, face: Face::Medium, anchor: Anchor::Start, content }
+}
+
+/// Rajdhani 600 (`font-weight="600"`), start-anchored.
+const fn semibold(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -> Prim {
+    Prim::Text { x, y, size, ink, face: Face::SemiBold, anchor: Anchor::Start, content }
+}
+
+/// Rajdhani 600, `text-anchor="middle"`: the tile labels.
+const fn label(x: f32, y: f32, ink: Ink, content: &'static str) -> Prim {
+    Prim::Text { x, y, size: 22.0, ink, face: Face::SemiBold, anchor: Anchor::Middle, content }
+}
+
+/// A stretched glyph run, trace `transform="translate(..) scale(sx,1)"`.
+/// The trace centres these (`text-anchor="middle"`) and `Prim::Wide` is
+/// start-anchored, so `x` here is the trace's centre less half the run
+/// the header measured for it; the caller says which.
+const fn wide(x: f32, y: f32, size: f32, stretch: f32, ink: Ink, face: Face, content: &'static str) -> Prim {
+    Prim::Wide { x, y, size, stretch, ink, face, content }
+}
+
+// One caption box, trace `<g id="caption">` (defs): drawn at the tile's
+// foot-left corner with the tile's own frame at y 0 and the box's bottom
+// edge lying on it. Top rule 28px up, divider 96px in, both 1.7px (the
+// def's `<path d="M 0,-28 H 194 M 96,-28 V 0">`), two cells of 600-weight
+// text stretched to the measured runs.
+macro_rules! caption {
+    ($ink:expr) => {
+        &[
+            hline(0.0, -28.0, 194.0, $ink, 1.7),
+            vline(96.0, -28.0, 0.0, $ink, 1.7),
+            wide(6.0, -15.0, 12.0, 0.78, $ink, Face::SemiBold, "85SD4F3Q5S41"),
+            wide(103.0, -15.0, 12.0, 0.685, $ink, Face::SemiBold, "COMBAT COLONIZATION"),
+            wide(103.0, -6.0, 10.5, 0.82, $ink, Face::SemiBold, "DEFENCE PROGRAM"),
+        ]
+    };
+}
+/// The box as the five idle tiles wear it, `<use href="#caption"
+/// fill="#a8d7a7" stroke="#a8d7a7">`.
+const CAPTION: &[Prim] = caption!(Ink::Fixed(HUB_CAPTION));
+/// The box as the selected tile wears it, `<use href="#caption"
+/// fill="#2e4a2c" stroke="#2e4a2c">` -- dark on the sage fill.
+const CAPTION_ON: &[Prim] = caption!(Ink::Fixed(HUB_ON_CAPTION));
+
+// One menu tile, foot-anchored like the caption def so the `At` that
+// places it carries the trace's own `<use href="#caption" x y>`
+// coordinates. `$h` is the idle frame's height (row 1 tiles are 212
+// tall, row 2 tiles 211); the labels are `(x, y)` relative to the foot,
+// one per line. Two dresses:
+//
+//   on   the selection as the trace draws BRAINDANCE (row 1 tile 3,
+//        "the selection: solid sage fill, dark caption box and text"):
+//        a 194x211 solid with no outline, sitting 1px lower than its
+//        idle neighbours -- `components.svg` K3 "HUB TILE, SELECTED"
+//        keeps that 1px as the measurement, and so does this;
+//   off  the idle dress of the other five: a 1.25px outlined frame,
+//        bright label, bright caption box (`components.svg` K3 "HUB
+//        TILE, PLAIN").
+//
+// The trace only draws each tile in one state; the other is derived
+// from its siblings as above (trace header "BRAINDANCE (row 1, tile 3)
+// is filled solid sage -- the selection ... On the selected tile the box
+// and text are dark on the sage fill").
+macro_rules! tile {
+    ($h:expr, $( ($lx:expr, $ly:expr, $label:expr) ),+) => {
+        (
+            &[
+                fill_rect(0.0, -211.0, 194.0, 211.0, Ink::Fixed(HUB_SOLID)),
+                $( label($lx, $ly, Ink::Fixed(HUB_ON_SOLID), $label), )+
+                Prim::At { x: 0.0, y: 0.0, prims: CAPTION_ON },
+            ],
+            &[
+                line_rect(0.0, -$h, 194.0, $h, Ink::Fixed(HUB_STROKE), 1.25),
+                $( label($lx, $ly, Ink::Fixed(HUB_LABEL), $label), )+
+                Prim::At { x: 0.0, y: 0.0, prims: CAPTION },
+            ],
+        )
+    };
+}
+// Row 1, foot y 438: labels at baseline 327 (-111). The trace's label x
+// values are not all at the tile's centre (221 / 514 / 813 for tiles at
+// 128 / 418 / 716), so each is its own offset.
+const TILE_ON_0: &[Prim] = tile!(212.0, (93.0, -111.0, "EMAILS")).0;
+const TILE_OFF_0: &[Prim] = tile!(212.0, (93.0, -111.0, "EMAILS")).1;
+const TILE_ON_1: &[Prim] = tile!(212.0, (96.0, -111.0, "MATRIX")).0;
+const TILE_OFF_1: &[Prim] = tile!(212.0, (96.0, -111.0, "MATRIX")).1;
+const TILE_ON_2: &[Prim] = tile!(212.0, (97.0, -111.0, "BRAINDANCE")).0;
+const TILE_OFF_2: &[Prim] = tile!(212.0, (97.0, -111.0, "BRAINDANCE")).1;
+// Row 2, foot y 710: SECURITY / SYSTEMS on two lines at 591 / 615
+// (-119 / -95), PRIVATE and DEVICES at 599 (-111).
+const TILE_ON_3: &[Prim] = tile!(211.0, (94.0, -119.0, "SECURITY"), (92.0, -95.0, "SYSTEMS")).0;
+const TILE_OFF_3: &[Prim] = tile!(211.0, (94.0, -119.0, "SECURITY"), (92.0, -95.0, "SYSTEMS")).1;
+const TILE_ON_4: &[Prim] = tile!(211.0, (96.0, -111.0, "PRIVATE")).0;
+const TILE_OFF_4: &[Prim] = tile!(211.0, (96.0, -111.0, "PRIVATE")).1;
+const TILE_ON_5: &[Prim] = tile!(211.0, (98.0, -111.0, "DEVICES")).0;
+const TILE_OFF_5: &[Prim] = tile!(211.0, (98.0, -111.0, "DEVICES")).1;
+
+/// The six tiles as plates, hit box = the idle frame, foot-anchored.
+macro_rules! module {
+    ($i:expr, $h:expr, $on:expr, $off:expr) => {
+        &[Prim::Plate {
+            group: Group::Module,
+            index: $i,
+            x: 0.0,
+            y: -$h,
+            w: 194.0,
+            h: $h,
+            on: $on,
+            off: $off,
+        }]
+    };
+}
+const MODULE_0: &[Prim] = module!(0, 212.0, TILE_ON_0, TILE_OFF_0);
+const MODULE_1: &[Prim] = module!(1, 212.0, TILE_ON_1, TILE_OFF_1);
+const MODULE_2: &[Prim] = module!(2, 212.0, TILE_ON_2, TILE_OFF_2);
+const MODULE_3: &[Prim] = module!(3, 211.0, TILE_ON_3, TILE_OFF_3);
+const MODULE_4: &[Prim] = module!(4, 211.0, TILE_ON_4, TILE_OFF_4);
+const MODULE_5: &[Prim] = module!(5, 211.0, TILE_ON_5, TILE_OFF_5);
+
+pub const DASHBOARD: &[Prim] = &[
+    // ground: `<rect width=1600 height=900 fill="url(#lift)">`, the
+    // radial at cx 0.45 cy 0.45 r 0.75 of the page's box -> centre
+    // (720, 405), radii (1200, 675)
+    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(rgb(0x0f0a03))),
+    Prim::Lobe { x: 720.0, y: 405.0, rx: 1200.0, ry: 675.0, stops: LIFT },
+    // header strip, y 43..69, dividers at x 465 and 1353
+    line_rect(49.0, 43.0, 1498.0, 26.0, Ink::Fixed(HUB_STROKE), 1.25),
+    vline(465.0, 43.0, 69.0, Ink::Fixed(HUB_STROKE), 1.25),
+    vline(1353.0, 43.0, 69.0, Ink::Fixed(HUB_STROKE), 1.25),
+    medium(61.0, 60.0, 17.0, Ink::Fixed(HUB_STRIP), "RIPPERDOC SURGICAL SOFTWAREV2"),
+    medium(518.0, 60.0, 17.0, Ink::Fixed(HUB_STRIP), "STORE ACCESS SCREEN"),
+    medium(1382.0, 60.0, 17.0, Ink::Fixed(HUB_STRIP), "FLAIR TRS 5MMP"),
+    // section headings: 26x26 boxes holding a bold letter stretched
+    // 1.5-1.6, centred at the trace's translate() x and placed here by
+    // its measured run (A 18 wide at x 137..154, B and C 15 wide)
+    line_rect(133.0, 145.0, 26.0, 26.0, Ink::Fixed(HUB_LETTER_BOX), 1.5),
+    wide(137.0, 165.0, 22.0, 1.6, Ink::Fixed(HUB_SECTION), Face::Bold, "A"),
+    line_rect(1014.0, 145.0, 26.0, 26.0, Ink::Fixed(HUB_LETTER_BOX), 1.5),
+    wide(1019.5, 165.0, 22.0, 1.5, Ink::Fixed(HUB_SECTION), Face::Bold, "B"),
+    line_rect(1329.0, 142.0, 26.0, 26.0, Ink::Fixed(HUB_LETTER_BOX), 1.5),
+    wide(1334.5, 162.0, 22.0, 1.5, Ink::Fixed(HUB_SECTION), Face::Bold, "C"),
+    semibold(169.0, 164.0, 23.0, Ink::Fixed(HUB_SECTION), "MAIL BOX"),
+    semibold(1047.0, 164.0, 23.0, Ink::Fixed(HUB_SECTION), "MESSAGE"),
+    semibold(1380.0, 162.0, 23.0, Ink::Fixed(HUB_SECTION), "SECURITY"),
+    semibold(1379.0, 186.0, 23.0, Ink::Fixed(HUB_SECTION), "LEVEL"),
+    // the 3x2 tile grid, each placed at its caption `<use x y>`: row 1
+    // feet at y 438 (frames y 226..438), row 2 at y 710 (y 499..710),
+    // columns x 128 / 418 / 716
+    Prim::At { x: 128.0, y: 438.0, prims: MODULE_0 },
+    Prim::At { x: 418.0, y: 438.0, prims: MODULE_1 },
+    Prim::At { x: 716.0, y: 438.0, prims: MODULE_2 },
+    Prim::At { x: 128.0, y: 710.0, prims: MODULE_3 },
+    Prim::At { x: 418.0, y: 710.0, prims: MODULE_4 },
+    Prim::At { x: 716.0, y: 710.0, prims: MODULE_5 },
+    // MESSAGE detail panel, x 1014..1275, y 215..723: heading over a
+    // full-width rule at y 281 (`<path d="M 1014,281 H 1275">`)
+    line_rect(1014.0, 215.0, 261.0, 508.0, Ink::Fixed(HUB_STROKE), 1.25),
+    semibold(1033.0, 264.0, 22.0, Ink::Fixed(HUB_LABEL), "BRAINDANCE"),
+    hline(1014.0, 281.0, 1275.0, Ink::Fixed(HUB_STROKE), 1.25),
+    // body copy: 7 lines, blank, 3 lines on a 21px pitch, the group's
+    // `transform="translate(1033,0) scale(1.16,1)"` as the stretch
+    wide(1033.0, 321.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "Lorem ipsum dolor sit amet,"),
+    wide(1033.0, 342.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "consectetur adipiscing elit,"),
+    wide(1033.0, 363.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "sed do eiusmod tempor inci-"),
+    wide(1033.0, 384.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "didunt ut labore et dolore"),
+    wide(1033.0, 405.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "magna aliqua. Quis ipsum"),
+    wide(1033.0, 426.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "suspendisse ultrices gravi-"),
+    wide(1033.0, 447.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "da."),
+    wide(1033.0, 489.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "Risus commodo viverra ma-"),
+    wide(1033.0, 510.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "ecenas accumsan lacus vel"),
+    wide(1033.0, 531.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "facilisis."),
+    // SECURITY LEVEL badges: four 68x68 at x 1380, T2 filled. Glyphs
+    // bold 27 stretched to the measured runs, centred at x 1414 (T1 26
+    // wide, T2 34, T3 36, T4 36), hence the start x here
+    line_rect(1380.0, 214.0, 68.0, 68.0, Ink::Fixed(HUB_STROKE), 1.25),
+    wide(1401.0, 257.0, 27.0, 1.37, Ink::Fixed(HUB_LABEL), Face::Bold, "T1"),
+    fill_rect(1380.0, 304.0, 68.0, 68.0, Ink::Fixed(HUB_SOLID)),
+    wide(1397.0, 346.0, 27.0, 1.42, Ink::Fixed(HUB_ON_SOLID), Face::Bold, "T2"),
+    line_rect(1380.0, 393.0, 68.0, 68.0, Ink::Fixed(HUB_STROKE), 1.25),
+    wide(1396.0, 435.0, 27.0, 1.5, Ink::Fixed(HUB_LABEL), Face::Bold, "T3"),
+    line_rect(1380.0, 482.0, 68.0, 68.0, Ink::Fixed(HUB_STROKE), 1.25),
+    wide(1396.0, 524.0, 27.0, 1.38, Ink::Fixed(HUB_LABEL), Face::Bold, "T4"),
+    // footer strip, y 847..872, no dividers; only BUILD is end-anchored
+    line_rect(49.0, 847.0, 1498.0, 25.0, Ink::Fixed(HUB_STROKE), 1.25),
+    medium(61.0, 865.0, 17.0, Ink::Fixed(HUB_STRIP), "INTERFACE LOADED"),
+    medium(518.0, 865.0, 17.0, Ink::Fixed(HUB_STRIP), "PROVIDED BY NEXUS NETWORK V10.8"),
+    Prim::Text { x: 1525.0, y: 865.0, size: 17.0, ink: Ink::Fixed(HUB_STRIP), face: Face::Medium, anchor: Anchor::End, content: "BUILD 6.47.48441.R15" },
+];
+
+// --- end dashboard -------------------------------------------------------

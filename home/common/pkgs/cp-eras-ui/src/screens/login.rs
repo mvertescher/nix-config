@@ -16,8 +16,8 @@
 //! [`crate::style::Slot`]. Everything below reads it off the era table
 //! and draws it; nothing here names an era. The measured coordinates
 //! live in the tables' `--- login ---` blocks because they are
-//! sampled facts about an era, the same way [`crate::style::Menu`] and
-//! [`crate::style::Layout`] are.
+//! sampled facts about an era, the same way [`crate::style::Style::store`]
+//! and [`crate::style::Style::dashboard`] are.
 //!
 //! Why one canvas rather than a column of widgets: the traces carry
 //! measured coordinates -- "field, x 563..922, y 414..447" -- and the
@@ -887,8 +887,10 @@ fn draw_slot(pen: &mut Pen, slot: &Slot) {
 
 /// The boxed footnote letter.
 ///
-/// Square in three of the four references -- `widgets::marker` records
-/// why -- and neokitsch is the exception: its box is the era's mini-SIM
+/// Square in three of the four references (`rect x=380 y=796 width=26
+/// height=26` even in kitsch, which rounds its containers; the deleted
+/// `widgets::marker` was built to that) -- and neokitsch is the
+/// exception: its box is the era's mini-SIM
 /// plate, rounded and with one corner folded in. Which one an era draws
 /// follows its declared [`crate::style::Corner`] rather than its name.
 fn badge_plate(pen: &mut Pen, badge: &Plate) {

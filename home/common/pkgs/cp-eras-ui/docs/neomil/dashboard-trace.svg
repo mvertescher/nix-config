@@ -21,26 +21,41 @@
          - THE MENU IS SIX DIAMONDS in a staggered 3+3 lattice, half-diagonal
            104 (the four unoccluded side tips read 102.2..104.6 on the
            photo, half-maximum mean 103.7; inside the glow blur, so 104
-           is used here and in #cell alike), centres (334,460) (530,460)
+           is used here and in the cells alike), centres (334,460) (530,460)
            (725,460) / (431,593) (628,592) (822,592) — x pitch 195.5, row
            pitch 132..133, row 2 offset +97 (97, 98, 97 as drawn).
-           Each carries a thin inset diamond outline at half-diagonal 68 and
-           a glyph at its centre; neighbours overlap by ~10px and are held
+           EVERY OUTWARD TIP IS CUT FLAT: row 1's three top tips end in a
+           30px plateau at y 371 (photo 370.8..371.2, plateau 29..31 wide:
+           x 320..349, 516..545, 711..740), row 2's three bottom tips at
+           y 682..683 (photo 682.1..682.9, plateau 27.5..31 wide) — a 104
+           half-diagonal cut 15 short, i.e. flat at 89 from the centre.
+           The inward tips run full (row 1 bottoms at 563.3, row 2 tops at
+           490.4: 103 from the centre). Re-measured 2026-09-03, column and
+           row scans of the 3840px photo.
+           Each carries a thin inset diamond outline at half-diagonal 68
+           (edge fits 65.5..69) truncated the same way, flat at 59 from the
+           centre (photo 58.3 row 1, 59.6 row 2; an 18px plateau), and a
+           glyph at its centre; neighbours overlap by ~10px and are held
            apart by a dark separator, drawn here as a background-coloured
-           stroke. Labels sit above row 1 and below row 2.
+           bar. Labels sit above row 1 and below row 2.
          - a GO HOME info panel at x 1128..1366, y 314..756. Pixel scans
            of the 1600 downscale (2026-09-02): the top-left and
            bottom-right corners are SQUARE; the top-right is chamfered 8
            ((1358,314)->(1366,322)) and the bottom-left 42
            ((1128,714)->(1170,756)). The right edge sits at x 1366 from
-           the chamfer down to a filled bar x 1358..1366, y 405..515
-           (top end chamfered (1366,405)->(1358,414), bottom nearly
-           flat), and steps 8px inward to x 1358 below the bar - the
-           same bar-and-step motif as the store cards. Faint glitch
+           the chamfer down to a filled bar x 1358..1366, y 405..516,
+           chamfered 8 at both ends ((1366,405)->(1358,414) and
+           (1366,508)->(1358,516); re-scanned 2026-09-03, the bottom is
+           not "nearly flat"), and steps 8px inward to x 1358 below the
+           bar - the same bar-and-step motif as the store cards. Faint glitch
            echoes of the edge sit 3 and 5px to its right; no scrollbar.
            A maker's mark at its foot
-         - rotated micro-text down both margins, and a two-cell footer tape
-           at x 1209..1358, y 864
+         - rotated micro-text down both margins, and a two-cell OUTLINED
+           footer tape x 1209..1354, y 864..888 (bright 1px frame, divider
+           at x 1270.5; a code in the left cell, two lines of micro-text in
+           the right), with a dim glitch echo 3px right and down that
+           reaches x ~1358. Re-read 2026-09-03: the earlier two filled
+           cells were the extractor's blobs, not the picture
 
        Corrects the previous revision of this file, which drew three red
        chart cards, a right rail and a corner block. None of those are in
@@ -89,17 +104,30 @@
       <stop offset="1" stop-color="#241012" stop-opacity="0"/>
     </radialGradient>
 
-    <!-- One menu cell. Half-diagonal 104, measured off the unoccluded tips
-         (D1 and D4 left, D3 and D6 right: 102.2..104.6 by solid fill,
-         103.7 mean by half-maximum, re-read 2026-09-03). The
-         diamonds are NOT outlined: outer tips run full, and only same-row
-         neighbours overlap at all — L1 distance 195.5 against a diameter of
-         208, so the rows merely interlock and never touch. The 16px dark
-         gap the source shows between same-row neighbours is drawn separately
-         as a bar on the midpoint, which is where it measures. -->
-    <g id="cell">
-      <path d="M 0,-104 L 104,0 L 0,104 L -104,0 Z" fill="#ef3333"/>
-      <path d="M 0,-68 L 68,0 L 0,68 L -68,0 Z"
+    <!-- One menu cell, two variants. Half-diagonal 104, measured off the
+         unoccluded side tips (D1 and D4 left, D3 and D6 right: 102.2..104.6
+         by solid fill, 103.7 mean by half-maximum). The OUTWARD tip is cut
+         flat at 89 from the centre (photo: row 1 tops 370.8..371.2, row 2
+         bottoms 682.1..682.9), leaving a 30px plateau; the inward tip runs
+         full. The inset outline (half-diagonal 68, stroke 2) is cut the
+         same way, flat at 59 (photo 58.3 / 59.6), an 18px plateau.
+         #cell-up is row 1 (top cut), #cell-down is row 2 (bottom cut);
+         each is the other mirrored in y. Coordinates are explicit so the
+         two shapes transcribe straight to path primitives: no clip.
+         The diamonds are NOT outlined, and only same-row neighbours
+         overlap at all — L1 distance 195.5 against a diameter of 208, so
+         the rows merely interlock and never touch. The 16px dark gap the
+         source shows between same-row neighbours is drawn separately as a
+         bar on the midpoint, which is where it measures. -->
+    <g id="cell-up">
+      <path d="M -15,-89 L 15,-89 L 104,0 L 0,104 L -104,0 Z" fill="#ef3333"/>
+      <path d="M -9,-59 L 9,-59 L 68,0 L 0,68 L -68,0 Z"
+            fill="none" stroke="#671b21" stroke-width="2"/>
+      <rect x="-22" y="-21" width="43" height="36" fill="#671b21"/>
+    </g>
+    <g id="cell-down">
+      <path d="M 0,-104 L 104,0 L 15,89 L -15,89 L -104,0 Z" fill="#ef3333"/>
+      <path d="M 0,-68 L 68,0 L 9,59 L -9,59 L -68,0 Z"
             fill="none" stroke="#671b21" stroke-width="2"/>
       <rect x="-22" y="-21" width="43" height="36" fill="#671b21"/>
     </g>
@@ -158,12 +186,13 @@
 
   <!-- ==== the six-diamond menu ==== -->
   <g>
-    <use href="#cell" x="334" y="460"/>
-    <use href="#cell" x="530" y="460"/>
-    <use href="#cell" x="725" y="460"/>
-    <use href="#cell" x="431" y="593"/>
-    <use href="#cell" x="628" y="592"/>
-    <use href="#cell" x="822" y="592"/>
+    <!-- row 1: tops cut flat at y 371; row 2: bottoms cut flat at y 682/681 -->
+    <use href="#cell-up" x="334" y="460"/>
+    <use href="#cell-up" x="530" y="460"/>
+    <use href="#cell-up" x="725" y="460"/>
+    <use href="#cell-down" x="431" y="593"/>
+    <use href="#cell-down" x="628" y="592"/>
+    <use href="#cell-down" x="822" y="592"/>
     <!-- separators: 16px wide on the midpoint of each same-row pair, which
          is where the source's gaps measure (424..439 and 620..635 at y=460) -->
     <g fill="#070304">
@@ -185,16 +214,16 @@
 
   <!-- ==== GO HOME info panel, x 1128..1366, y 314..756 ==== -->
   <g>
-    <path d="M 1128,314 H 1358 L 1366,322 V 512 L 1358,515 V 756 H 1170 L 1128,714 Z"
+    <path d="M 1128,314 H 1358 L 1366,322 V 508 L 1358,516 V 756 H 1170 L 1128,714 Z"
           fill="#671b21" fill-opacity="0.55" stroke="#ef3333" stroke-width="1.5"/>
-    <!-- the bright bar on the right edge, y 405..515 -->
-    <path d="M 1366,405 V 512 L 1358,515 V 414 Z" fill="#ef3333"/>
+    <!-- the bright bar on the right edge, y 405..516, chamfered 8 at both ends -->
+    <path d="M 1366,405 V 508 L 1358,516 V 414 Z" fill="#ef3333"/>
     <!-- glitch echoes of the right edge, 3px and 5px out, above and below the bar -->
     <g fill="#671b21">
       <rect x="1369" y="322" width="1.5" height="193"/>
       <rect x="1371" y="322" width="1.5" height="193"/>
-      <rect x="1361" y="515" width="1.5" height="241"/>
-      <rect x="1363" y="515" width="1.5" height="241"/>
+      <rect x="1361" y="516" width="1.5" height="240"/>
+      <rect x="1363" y="516" width="1.5" height="240"/>
     </g>
     <text x="1140" y="333" font-family="Rajdhani" font-size="20" font-weight="700"
           fill="#ef3333">GO HOME</text>
@@ -222,10 +251,25 @@
     <rect x="1348" y="341" width="4" height="49"/>
   </g>
 
-  <!-- ==== footer tape, y 864, three cells x 1209..1358 ==== -->
+  <!-- ==== footer tape, x 1209..1354, y 864..888: two outlined cells ====
+       Frame and divider are the bright ink at ~1px (photo 1209.2, 1270.0..
+       1271.2, 1353.8; 863.8..865.0 and 887.1..888.3); the cells are NOT
+       filled. Left cell: one code line, cap-height ~6 at y 869..875,
+       x 1215..1264. Right cell: two lines of micro-text, y 869..874 and
+       877..882, x 1277..1345. A dim echo of the frame sits 3px right and
+       down, which is what reaches x ~1358. -->
   <g>
-    <rect x="1209" y="864" width="48" height="25" fill="#ef3333"/>
-    <rect x="1257" y="864" width="38" height="25" fill="#ef3333"/>
-    <rect x="1295" y="864" width="59" height="25" fill="#671b21" stroke="#ef3333"/>
+    <rect x="1212.5" y="867.5" width="144" height="24" fill="none"
+          stroke="#671b21" stroke-width="1"/>
+    <rect x="1209.5" y="864.5" width="144" height="24" fill="none"
+          stroke="#ef3333" stroke-width="1"/>
+    <rect x="1270" y="864.5" width="1.2" height="24" fill="#ef3333"/>
+    <g font-family="Rajdhani" font-size="8" font-weight="700" fill="#ef3333">
+      <text x="1215" y="875">68SD1D1100D1S</text>
+      <g font-size="7.5" font-weight="600">
+        <text x="1277" y="874">COMBAT COLONIZATION</text>
+        <text x="1277" y="882">DEFENCE PROGRAM</text>
+      </g>
+    </g>
   </g>
 </svg>

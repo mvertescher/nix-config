@@ -108,9 +108,12 @@ Role mapping: `bg`=bg, `panel`=bloom field, `border`=frame gold,
   T1–T4 with T2 as a ringed badge, the wire band with boxed A and B),
   **six cascade cards in two staircase triplets** (EMAIL solid gold as
   the selection, then MATRIX, BRAINDANCE, PRIVATE, SECURITY SYSTEMS,
-  DEVICES) each carrying nested onion outlines, a mirrored detail
-  panel with a solid gold body, and boxed C and D in the foot. Gate:
-  PASS, inks 0.67.
+  DEVICES) each carrying nested onion outlines, a detail panel with a
+  **stepped top edge** (a shoulder at the left climbing through an
+  S-curve to the top line — not the cascade card mirrored, which the
+  first pass drew), four onion outlines nested *inside* it, a solid
+  gold body and the EMAIL label, and boxed C and D in the foot.
+  Gate: PASS, inks 0.68 (panel re-measured 2026-09-03; was 0.67).
 - `mailbox-trace.svg` — `images/neokitsch-mail.png` (#71): the hub's
   header block verbatim; a seven-row message list with a rule and small
   tab under each row and row 2 the selection as a wood-veneer bar with
@@ -166,7 +169,7 @@ keeps a row per file saying what each got wrong. In short:
   panel), lacked the onion outlines that are the era's signature, and
   borrowed kitsch's ARASAKA footer.
 - `dashboard.svg` — the six-module hub composite `screens::dashboard`
-  still assembles under `Layout::ModuleHub`. Its cascade widget was
+  assembled under `Layout::ModuleHub` until the fold of 2026-09-03 late (the screen is now a `Prim` table transcribed from the trace, G2i 92%). Its cascade widget was
   credited to a screen that is actually a login, the real hub went
   unread, and it scored 0.03 on the ink gate against
   `neokitsch-dashboard.png` (the trace scores 0.60). Until the `Layout`

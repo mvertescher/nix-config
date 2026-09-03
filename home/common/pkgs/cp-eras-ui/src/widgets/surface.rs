@@ -243,7 +243,7 @@ impl Surface {
 /// variants, one amount, no per-corner geometry. This is the bridge to
 /// the widget's vocabulary, and it is total -- an era that declares a
 /// chamfer hands the same cut to whichever corner a caller puts it on,
-/// which is what lets [`crate::widgets::charts`] ask for "the era's
+/// which is what let the since-deleted `widgets::charts` ask for "the era's
 /// treatment, bottom-right only" without naming an era.
 pub fn era_cut(corner: Corner) -> Cut {
     match corner {

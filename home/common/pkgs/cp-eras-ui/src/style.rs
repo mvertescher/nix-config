@@ -623,163 +623,6 @@ impl Ticket {
     }
 }
 
-/// How an era lays out a *menu* -- the one thing four dressed
-/// rectangles could not express.
-///
-/// Every other knob here dresses a shape the four eras agree on. This
-/// one does not: they reach for four different objects when they offer
-/// a choice of modules, and no amount of corner radius turns one into
-/// another. That is what makes it a variant beside [`Chrome`] and
-/// [`Footnotes`] rather than a widget-side era test -- a screen says
-/// "put a menu here", and the era says what a menu is.
-///
-/// The evidence, in the same document order as the rest of the table:
-///
-/// * **Entropism** -- `target-components.svg` "MENU TILES": a grid of
-///   `120x120` squares three to a row, the selected one a solid sage
-///   fill, each with a hairline and a tiny caption strip under it
-///   ("REPORT ERROR · V2.11 · CERTIFIED"). Square, flat, repeated: the
-///   era doing the least it can.
-/// * **Kitsch** -- `target-components.svg` "EXTRUDED FAN MENU": slabs
-///   fanned about a pivot at `-15`, `+7` and `+27` degrees -- a `42`
-///   degree sweep the widget now caps rather than letting six modules
-///   open to `105` -- each with
-///   two stacked outline copies receding up-right by `(6,-8)` at half
-///   opacity, labels rotated to the slab. The active slab is yellow,
-///   the rest the era's lit teal.
-/// * **Neomil** -- the services table, and the one row in this table
-///   that had to be *earned* rather than read off a sheet.
-///
-///   Where `screens::dashboard` puts a menu, `target-app.svg` (both
-///   neomil sheets deleted 2026-09-03; neither sampled the run, and the
-///   hub photo has a six-module menu, not a table -- the `Layout` item
-///   in `TODO.md`) put a table: `UNIT | MEM | UPTIME | STATE`, four rows, one of them
-///   washed and marked, under a tinted header band and beside a scroll
-///   rail. `target-components.svg` names the same object "TABLE /
-///   LIST" and draws it again at widget scale. Both sheets also draw
-///   neomil choosing between things at two *other* scales -- a ~60px
-///   vertical rail of five 16px glyphs with one filled, and a "TAB
-///   BAR" of four chamfered pills, `SYS | NET | GEAR | LOG` -- and
-///   neither of those is a screen's centre column, which is why
-///   neither is this.
-///
-///   For a long time this arm was a cut-diamond hub instead, inherited
-///   from the pre-generalisation `neomil-ui`, and it was the one entry
-///   in this whole table that cited no file: neither neomil sheet
-///   draws a diamond anywhere. It was kept, deliberately and with the
-///   reasoning written down, *because the sampled answer was a data
-///   table this crate had not grown*, and stretching a four-tab
-///   switcher to six modules would have been exactly as unsampled.
-///   The table exists now ([`crate::widgets::table`]), so the
-///   stand-in went with it -- the hub's own header said it was "the
-///   first thing to reconsider when the table lands", and leaving 696
-///   lines of unsampled drawing exported and uncalled is the trap this
-///   crate has already sprung on itself once, with `message_card`.
-/// * **Neokitsch** -- `target-components.svg` "CARD CASCADE (device
-///   software)": tall clipped-corner cards `68x134` at an `88` pitch,
-///   staggered vertically (`0, -30, -34, -30`), the active one filled
-///   with veneer, each carrying its name at its own foot.
-///
-/// Deliberately not carrying the fine geometry. [`Chrome`],
-/// [`Footnotes`], [`Compliance`] and [`Nameplate`] are all bare choices
-/// whose figures live in the widget that draws them, and a menu is the
-/// same kind of thing: the numbers above are constants of one drawing,
-/// not values a host or a variant would retune. The one exception is
-/// `Tiles::columns`, which is a *layout* fact -- a caller sizing the
-/// column the menu sits in needs it, and the reference sheet and the
-/// dashboard disagree about it (three against two).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Menu {
-    /// Entropism: a grid of square tiles under caption strips.
-    ///
-    /// Dormant since 2026-08-31: entropism's dashboard is now
-    /// [`Layout::TileRow`], whose arm draws its own row of four tiles
-    /// and does not go through the menu, and this variant is retained
-    /// as the tile-grid hub arm for any era or host that wants the hub
-    /// -- the widget stays live, the screen just does not wear it today.
-    Tiles { columns: usize },
-    /// Kitsch: extruded slabs fanned about a pivot.
-    Fan,
-    /// Neomil: a header band over ruled rows, one of them selected.
-    ///
-    /// Dormant since 2026-08-31: neomil's dashboard is now
-    /// [`Layout::OpsCharts`], whose arm does not draw a menu at all,
-    /// and this variant is retained as the services-table hub arm for
-    /// any era or host that wants a table in the menu slot -- the
-    /// widget stays live, the screen just does not wear it today.
-    Table,
-    /// Neokitsch: staggered clipped-corner cards.
-    Cascade,
-}
-
-/// What an era's *dashboard* is -- the second thing four dressed
-/// rectangles could not express.
-///
-/// [`Menu`] made the era's idea of a chooser a value on [`Style`],
-/// because offered six modules the four references reach for four
-/// different objects. The dashboard needs that lesson twice: the
-/// references disagree about the whole working area, not just the menu
-/// in it. Kitsch and neokitsch frame a module hub; neomil's `target`
-/// and entropism's dashboard are not hubs at all.
-///
-/// * **Kitsch, neokitsch** -- [`Layout::ModuleHub`]: the
-///   six-module hub `screens::dashboard` has always drawn -- top bar,
-///   sidebar, the era's [`Menu`] over six modules, the description
-///   panel and the footer. [`Menu`] keeps describing the middle slot.
-/// * **Neomil** -- [`Layout::OpsCharts`]: **this description is wrong and
-///   the arm is built on it.** Corrected 2026-09-01 by opening
-///   `images/img-07-dashboard.png`. It is not an ops screen and there are
-///   no chart cards, no rail and no corner block anywhere in it. It is a
-///   hub: a six-diamond staggered menu (half-diagonal 104, labelled
-///   VEHICLES / LOCATIONS / FACTIONS above and WEAPONS / PRODUCTS /
-///   CORPORATIONS below) with a chamfered GO HOME detail panel beside it
-///   and four LEVEL badges in the header. So neomil almost certainly
-///   *does* want [`Menu`] and the hub shell, and the reasoning below --
-///   that the four references disagree about what a dashboard is -- rests
-///   partly on a trace nobody had checked. See `docs/sources.md` and the
-///   crate TODO before extending this. `docs/neomil/dashboard-trace.svg`
-///   has been rewritten from measured geometry; this arm has not.
-/// * **Entropism** -- [`Layout::TileRow`]: **also wrong, and wrong twice
-///   over.** `images/entropism-dashboard.png` is the 4ST *store*, not a
-///   dashboard -- the two entropism source files are named the wrong way
-///   round (`docs/sources.md`). The actual hub material, in the file
-///   named `entropism-store.png`, is a 3x2 grid of six tiles (BRAINDANCE
-///   selected, solid sage) with a MESSAGE detail panel beside it and a
-///   SECURITY LEVEL badge column -- i.e. a hub with a detail panel, which
-///   is precisely what this comment says the frame does not contain.
-///   `docs/entropism/dashboard-trace.svg` has since been rewritten from
-///   the real hub material and passes the inventory gate; this arm has
-///   not been touched. Kitsch and neokitsch turned out to be hubs too
-///   (see `docs/sources.md`), so all four eras share the hub grammar.
-///
-/// The screen branches on this the way it branches on [`Menu`]:
-/// `screens::dashboard::view` matches it, and nothing in `screens/`
-/// names an era. A fifth era cannot wear any of these layouts without
-/// the table entry, which is the point of making it data in the first
-/// place.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Layout {
-    /// The six-module hub shell: top bar, sidebar, the era's menu,
-    /// detail panel, footer. The two hub eras take this.
-    ModuleHub,
-    /// The ops-charts screen from `img-07-dashboard.png`, drawn
-    /// edge-to-edge per `docs/neomil/dashboard-trace.svg`. The layout
-    /// (and the chart-card row in it, [`crate::widgets::charts`]) is
-    /// only worn by neo-militarism today, but it is Style data like
-    /// everything else here, so a second era adopting it is a table
-    /// entry.
-    OpsCharts,
-    /// Entropism's dashboard, per `docs/entropism/dashboard-trace.svg`
-    /// -- a single row of four tiles (T2 selected, solid sage) under a
-    /// dim-olive top field, with caption strips beneath the tiles and a
-    /// thin build-rule at the foot. No sidebar, no detail panel, no
-    /// footer. Only worn by entropism today, but it is Style data like
-    /// everything else here, so a second era adopting it is a table
-    /// entry -- and [`Menu::Tiles`] keeps the tile-grid hub arm for any
-    /// era that wants the hub.
-    TileRow,
-}
-
 /// Where a screen puts its footnote markers.
 ///
 /// Not decoration and not one rule with four dresses: the three store
@@ -893,16 +736,6 @@ pub struct Style {
     /// The wedge a nav pill cuts into its top-right corner. Zero in
     /// every era but kitsch.
     pub ticket: Ticket,
-    /// What this era means by a menu.
-    pub menu: Menu,
-    /// What this era's dashboard is: the six-module hub shell
-    /// ([`Layout::ModuleHub`]) for the two hub eras, neomil's
-    /// ops-charts screen ([`Layout::OpsCharts`]) straight off
-    /// `docs/neomil/dashboard-trace.svg`, or entropism's four-tile row
-    /// ([`Layout::TileRow`]) straight off
-    /// `docs/entropism/dashboard-trace.svg`. A screen dispatches on
-    /// this the way the menu widget dispatches on [`Menu`].
-    pub layout: Layout,
     /// Whether the era stamps compliance glyphs -- dotted matrix,
     /// hollow square, hollow triangle -- on its bands and rows.
     ///
@@ -940,6 +773,21 @@ pub struct Style {
     /// state is era data, not a constant of the screen.
     pub store_selection: (usize, usize),
     // --- end store ---
+
+    // --- dashboard ---
+    /// The era's module-hub dashboard, as the scene its
+    /// `docs/<era>/dashboard-trace.svg` measures: the same `Prim`
+    /// vocabulary as [`Style::store`], at the trace's own 1600x900. Each
+    /// of the six menu units is a [`Prim::Plate`] in
+    /// [`Group::Module`]. Lives in the `// --- dashboard ---` block of
+    /// `src/eras/<era>.rs`.
+    pub dashboard: &'static [Prim],
+    /// Which module (0..6) the dashboard opens on: the one the era's
+    /// trace shows filled. The traces disagree -- neomil fills a
+    /// diamond, entropism BRAINDANCE, kitsch EVENTS, neokitsch EMAIL --
+    /// so the opening state is era data, not a constant of the screen.
+    pub dashboard_selection: usize,
+    // --- end dashboard ---
 }
 
 /// The four UI eras of the reference material.
@@ -1108,7 +956,7 @@ impl Style {
 // one of them live, each with a name, a mark and a control -- and that
 // grammar is [`Slot`]. What they do not share is where anything sits,
 // so the measured coordinates come from the era table the same way
-// [`Menu`] and [`Layout`] do, and `screens::login` names no era.
+// [`Access`] and [`Style::store`] do, and `screens::login` names no era.
 //
 // Coordinates are in the traces' own 1600x900 frame and are transcribed
 // from them verbatim. The screen scales them to whatever window it is
@@ -1357,7 +1205,7 @@ impl Legend {
 /// hexagon split by a teal slash with a hatched wedge in one corner.
 /// The figures are constants of one drawing, so they live in the
 /// screen; which drawing an era uses is the era's business, so it lives
-/// here. Same division as [`Menu`].
+/// here. Same division as [`Chrome`] and [`Footnotes`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Emblem {
     None,
@@ -2019,12 +1867,14 @@ pub struct Mailbox {
 // --- end mailbox ---
 // --- store ---------------------------------------------------------------
 //
-// The store screen's scene vocabulary. Everything from here to the
-// closing marker was added for the SVG -> iced conversion of the four
+// The scene vocabulary. Everything from here to the closing marker was
+// added for the SVG -> iced conversion of the four
 // `docs/<era>/store-trace.svg` files and is purely additive: no field
-// above changes meaning, and no era table entry above was touched.
+// above changes meaning. The dashboard folded onto the same vocabulary
+// on 2026-09-03 ([`Style::dashboard`]), which is why [`Group`] has a
+// third member; nothing else here is dashboard-specific.
 //
-// ## Why the store is a display list and the dashboard is not
+// ## Why the store is a display list
 //
 // Every other knob in this file dresses a shape the four eras agree on.
 // The store traces do not agree on a shape. They agree on a *screen* --
@@ -2037,31 +1887,38 @@ pub struct Mailbox {
 // solid "wave"; neokitsch runs an eight-strand wire band across the top
 // and puts a BASKET plate in the corner. There is no corner radius that
 // turns one into another, and the geometry is not a constant of one
-// drawing the way [`Menu`]'s figures are -- it is the measured content
+// drawing the way [`Chrome`]'s figures are -- it is the measured content
 // of four different photographs.
 //
 // So the era carries the drawing and the screen carries the drawing
-// *engine*. `screens::store` matches on nothing: it walks
-// [`Style::store`] and paints it. A fifth era is a fifth table entry,
-// which is the same contract [`Layout`] and [`Menu`] have, just with a
-// richer value.
+// *engine*. `screens::store` matches on nothing: it hands
+// [`Style::store`] to `screens::scene` and that paints it. A fifth era
+// is a fifth table entry, which is the same contract every other field
+// here has, just with a richer value. The dashboard is the same story
+// told again (a six-diamond menu, a 3x2 tile grid, two three-blade fans
+// and a six-card cascade are not one shape in four dresses), so it is a
+// display list too.
 //
 // Coordinates are the trace's own, in the 1600x900 frame the traces and
 // the golden matrix share, so a figure here can be diffed against the
 // SVG line it came from.
 
-/// Which of the store's two choosers a [`Prim::Plate`] belongs to.
+/// Which chooser a [`Prim::Plate`] belongs to.
 ///
 /// The store screen has exactly two things a person can pick: a weapon
-/// category down the nav, and a card along the shelf. Both are in every
-/// era's material and both are drawn differently in each, so the plate
-/// -- hit box plus the two drawings it wears -- is scene data like
-/// everything else here, and `screens::store` hit-tests it without
-/// knowing which era it is in.
+/// category down the nav, and a card along the shelf. The dashboard has
+/// one: a module in its six-unit menu. All are in every era's material
+/// and all are drawn differently in each, so the plate -- hit box plus
+/// the two drawings it wears -- is scene data like everything else
+/// here, and the screens hit-test it without knowing which era they are
+/// in. A screen only reads the groups its scene uses; a plate in
+/// another group is a table error, not a feature.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Group {
     Category,
     Card,
+    /// A dashboard menu unit, indexed 0..6.
+    Module,
 }
 
 /// Horizontal anchoring of a run of scene text, matching SVG's
@@ -2092,7 +1949,7 @@ pub enum Seg {
     Cubic { c1x: f32, c1y: f32, c2x: f32, c2y: f32, x: f32, y: f32 },
 }
 
-/// One drawing operation of a store scene.
+/// One drawing operation of a scene (a store or dashboard display list).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Prim {
     Rect {

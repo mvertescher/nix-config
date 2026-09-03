@@ -28,11 +28,16 @@ Each is held to its photo by
 - `dashboard-trace.svg` — `images/img-07-dashboard.png` (#60), the
   module hub: a broad blue glow over near-black (not a band with an
   edge), the header and hairline rule, a tab row, **a six-diamond
-  staggered 3+3 menu** labelled above row 1 and below row 2, and a
-  chamfered GO HOME info panel at the right with a bar-and-step motif
-  on its edge. Gate: PASS, 94% area. It corrects a previous revision
-  that drew three red chart cards, a right rail and a corner block;
-  none of those are in the photo.
+  staggered 3+3 menu** labelled above row 1 and below row 2 — each
+  diamond's *outward* tip (row 1's top, row 2's bottom) is cut flat 15
+  short of the point, a 30px plateau at 89 from the centre, and the
+  inset outline is cut the same way; the trace carries this as two
+  cell variants, `#cell-up` and `#cell-down` — and a chamfered GO HOME
+  info panel at the right with a bar-and-step motif on its edge, the
+  bar chamfered 8 at both ends. A two-cell outlined footer tape sits
+  under the panel. Gate: PASS, 94% area. It corrects a previous
+  revision that drew three red chart cards, a right rail and a corner
+  block; none of those are in the photo.
 - `mailbox-trace.svg` — `images/img-08-main.png` (#61): the same
   header, a tab row, a column of eight disc icons beside an eight-row
   message list (row 1 filled, three rows flagged NEW), a scroll rail,
@@ -87,8 +92,8 @@ keeps a row per file saying what each got wrong. In short:
 - `target-components.svg` — a widget sheet that claimed to be "sampled
   across the run" and sampled nothing from it. Replaced the same day by
   `components.svg` above, built from the traces.
-- `dashboard.svg` — the ops-charts composite `screens::dashboard` still
-  assembles under `Layout::OpsCharts` (three red chart diamonds, a
+- `dashboard.svg` — the ops-charts composite `screens::dashboard`
+  assembled under `Layout::OpsCharts` until the fold of 2026-09-03 late (the screen is now a `Prim` table transcribed from the trace, G2i 96%): three red chart diamonds, a
   right rail, a corner block). The photo holds the six-diamond hub
   `dashboard-trace.svg` draws; the inventory gate scored the composite
   at 0% of the source's shape area. Until the `Layout` decision in the

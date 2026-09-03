@@ -1,4 +1,4 @@
-//! The ops dashboard, in any era.
+//! The module-hub dashboard, in any era.
 //!
 //!     cp-eras-ui-dashboard                # follow the desktop theme
 //!     cp-eras-ui-dashboard --era kitsch   # force one

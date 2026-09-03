@@ -115,10 +115,23 @@
     <path id="ncardsel" d="M 0,6.5 Q 0,0 6.5,0 H 48 L 90.5,42.5 V 322.3
                             A 4 4 0 0 1 83.7,325.2 L 0,241.5 V 94.2 L 5,90.8
                             V 57.1 L 0,54.2 Z"/>
-    <!-- the detail panel: same family mirrored, 232x472, chamfer 42 top-left -->
-    <path id="npanel" d="M 0,462 V 31 Q 0,25 6,25 H 51 L 73,0 H 222
-                          Q 232,0 232,10 V 462 Q 232,472 222,472 H 10
-                          Q 0,472 0,462 Z"/>
+    <!-- the detail panel (re-measured 2026-09-03, copied from
+         dashboard-trace.svg): 230.4x465.3 stroke centre, origin at the left
+         edge / the HIGH top line. A stepped top: shoulder at y 30.3 from the
+         r7.5 top-left corner to x 64, then an S-curve (one cubic, horizontal
+         tangents, controls 15.6 in) up to the top line by x 110; r10
+         top-right and bottom corners. Not the cascade card mirrored. -->
+    <path id="npanel" d="M 0,37.8 Q 0,30.3 7.5,30.3 H 64 C 79.6,30.3 94.4,0 110,0
+                          H 220.4 Q 230.4,0 230.4,10 V 455.3 Q 230.4,465.3 220.4,465.3
+                          H 9 Q 0,465.3 0,456.3 Z"/>
+    <!-- its four echo outlines, nested inside: all leave the shoulder at
+         the S-curve's foot and fan to their own top lines 3.2 apart, right
+         edge 3 in and bottom 3.2 up per ring, r7 corners, filleting back
+         into the shared left edge -->
+    <path id="npring1" d="M 64,30.3 C 79.6,30.3 94.4,3.2 110,3.2 H 220.4 Q 227.4,3.2 227.4,10.2 V 455.1 Q 227.4,462.1 220.4,462.1 H 7 Q 0,462.1 0,455.1"/>
+    <path id="npring2" d="M 64,30.3 C 79.6,30.3 94.4,6.4 110,6.4 H 217.4 Q 224.4,6.4 224.4,13.4 V 451.9 Q 224.4,458.9 217.4,458.9 H 7 Q 0,458.9 0,451.9"/>
+    <path id="npring3" d="M 64,30.3 C 79.6,30.3 94.4,9.6 110,9.6 H 214.4 Q 221.4,9.6 221.4,16.6 V 448.7 Q 221.4,455.7 214.4,455.7 H 7 Q 0,455.7 0,448.7"/>
+    <path id="npring4" d="M 64,30.3 C 79.6,30.3 94.4,12.8 110,12.8 H 211.4 Q 218.4,12.8 218.4,19.8 V 445.5 Q 218.4,452.5 211.4,452.5 H 7 Q 0,452.5 0,445.5"/>
     <!-- the six echo outlines nested inside the card: shared left edge and
          foot diagonal, top edge down 3.7 and right edge in 2.4 per ring -->
     <path id="nring1" d="M 0,10.2 Q 0,3.7 6.5,3.7 H 48 L 88.1,43.8 V 319.9 A 4 4 0 0 1 81.3,322.8"/>
@@ -355,7 +368,7 @@
   <text x="56" y="300" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">2  MODULE MENU UNIT: CASCADE CARD</text>
   <text x="56" y="312.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">hub cards are 91.7x327.9 to the outer edge on a (+102, -100) staircase; shown at the trace's own</text>
   <text x="56" y="320.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">offset, EMAIL (246,384) selected and MATRIX (347,284) plain</text>
-  <!-- CASCADE CARDS, both states. dashboard-trace.svg (re-measured 2026-09-03): <path id="ncard"> is the 90.5x327 stroke-centre silhouette (91.7x327.9 to the outer edge), r6.5 top left, a 45 degree chamfer from (48,0) to the right edge at y 42.5, the right edge down to 322.3, an r4 fillet into a 45 degree diagonal that runs the whole foot back to the LEFT edge at y 241.5. Unselected (MATRIX at 347,284): outline #bd8951 1.6, six echo outlines #bd8951 1 NESTED INSIDE the card sharing its left edge and foot diagonal, the top edge stepping down 3.7 and the right edge in 2.4 per ring, fading 0.85 0.73 0.61 0.49 0.37 0.25; a solid tab plate 6x38.3 r1.5 #fcbe6d on the left edge at local y 54.6; a label right anchored 9px left of the card at 17px ls 1.5; a five line caption block under the foot. Selected (EMAIL at 246,384): <path id="ncardsel">, the silhouette with a 5 deep plate well cut into its left edge over y 54.2..94.2, filled AND stroked #f2b463 1.2, NO rings, and a smaller 4.6x32.1 r1.5 #fcbe6d plate standing 1.25 proud of the edge inside the well. Placed at (56,330): translate(-130 67) -->
+  <!-- CASCADE CARDS, both states. dashboard-trace.svg (re-measured 2026-09-03): <path id="ncard"> is the 90.5x327 stroke-centre silhouette (91.7x327.9 to the outer edge), r6.5 top left, a 45 degree chamfer from (48,0) to the right edge at y 42.5, the right edge down to 322.3, an r4 fillet into a 45 degree diagonal that runs the whole foot back to the LEFT edge at y 241.5. Unselected (MATRIX at 347,284): outline #e8ab66 1.2 (re-measured 2026-09-03: 0.9 wide at peak (247,175,105) on the photo; 1.6 #bd8951 was ~40% too much ink), six echo outlines #bd8951 1 NESTED INSIDE the card sharing its left edge and foot diagonal, the top edge stepping down 3.7 and the right edge in 2.4 per ring, fading 0.85 0.73 0.61 0.49 0.37 0.25; a solid tab plate 6x38.3 r1.5 #fcbe6d on the left edge at local y 54.6; a label right anchored 9px left of the card at 17px ls 1.5, baseline 82.5 below the card's top edge (re-measured 2026-09-03; MATRIX 366.3, EMAIL 466.7); a five line caption block under the foot. Selected (EMAIL at 246,384): <path id="ncardsel">, the silhouette with a 5 deep plate well cut into its left edge over y 54.2..94.2, filled AND stroked #f2b463 1.2, NO rings, and a smaller 4.6x32.1 r1.5 #fcbe6d plate standing 1.25 proud of the edge inside the well. Placed at (56,330): translate(-130 67) -->
   <g transform="translate(-130 67)">
   <g fill="none" stroke="#bd8951" stroke-width="1">
     <g transform="translate(347 284)">
@@ -367,20 +380,20 @@
       <use href="#nring1" stroke-opacity="0.85"/>
     </g>
   </g>
-  <g fill="none" stroke="#bd8951" stroke-width="1.6"><use href="#ncard" x="347" y="284"/></g>
+  <g fill="none" stroke="#e8ab66" stroke-width="1.2"><use href="#ncard" x="347" y="284"/></g>
   <rect x="346.4" y="338.6" width="6" height="38.3" rx="1.5" fill="#fcbe6d"/>
   <use href="#ncardsel" x="246" y="384" fill="#f2b463" stroke="#f2b463" stroke-width="1.2"/>
   <rect x="244.75" y="442.3" width="4.6" height="32.1" rx="1.5" fill="#fcbe6d"/>
   <g font-family="Rajdhani" font-size="17" letter-spacing="1.5" fill="#f2b463" text-anchor="end">
-    <text x="238" y="468">EMAIL</text>
-    <text x="338" y="358">MATRIX</text>
+    <text x="238" y="466.7">EMAIL</text>
+    <text x="338" y="366.3">MATRIX</text>
   </g>
     <use href="#ncaption" x="253" y="723"/>
     <use href="#ncaption" x="352" y="622"/>
   </g>
   <text x="56" y="840.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">90.5x327 stroke centre · chamfer 42.5 top right · 45 degree foot diagonal from the bottom right</text>
-  <text x="56" y="848.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">corner to the left edge at y 241.5 · outline #bd8951 1.6 · 6 rings nested inside, top -3.7 / right -2.4</text>
-  <text x="56" y="856.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">per ring, opacity 0.85 to 0.25 · plate 6x38.3 solid #fcbe6d · selected: solid #f2b463, 5 deep well, plate 4.6x32.1</text>
+  <text x="56" y="848.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">corner to the left edge at y 241.5 · outline #e8ab66 1.2 · 6 rings nested inside, top -3.7 / right -2.4</text>
+  <text x="56" y="856.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">per ring, opacity 0.85 to 0.25 · plate 6x38.3 solid #fcbe6d · label baseline +82.5 · selected: solid #f2b463, 5 deep well, plate 4.6x32.1</text>
   <text x="341" y="300" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">3  PRODUCT CARD, EXPANDED</text>
   <text x="341" y="312.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">store card 2 at x0 667.1: the plain template stretched, top -81.7 and bottom +70.9,</text>
   <text x="341" y="320.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">with y 411.2..652.9 solid veneer across the full width</text>
@@ -671,45 +684,39 @@
   <text x="626" y="848.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">pitch + seam #b57f46 0.8 at the midpoint x 192.5, no stroke, label #3a2010 · tab</text>
   <text x="626" y="856.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">33.8/28/3.4 #f7cc8c</text>
   <text x="911" y="300" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">4  DETAIL PANEL, HUB</text>
-  <text x="911" y="312.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">the cascade card family mirrored: 232x472 at (1168,253), chamfer 42 at the top</text>
-  <text x="911" y="320.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">LEFT, 6 onion rings, a solid body and the module name beneath</text>
-  <!-- DETAIL PANEL. dashboard-trace.svg at (1168,253): <path id="npanel"> is 232x472, Q6 top left, a 22x25 diagonal from (51,25) to (73,0) reading as a 42 chamfer at the top LEFT (the cascade card's 32 top RIGHT chamfer mirrored), Q10 top right and bottom corners. Outline #bd8951 1.8. Six onion rings #bd8951 1 at 3 pitch, opacity 0.25 to 0.85, offset outward from -18 to -3. A solid gold body [1171,326,231,309] #f2b463 carries two dark paragraphs as #3b2416 bars 11 tall at 20 pitch (six lines, a 25 gap, three lines), then a two bar micro text tape #bd8951 at y 646 / 656 and the module name EMAIL 24px 600 ls 3 #f2b463 centred at (1286,700). Placed at (911,330): translate(-239 95) -->
-  <g transform="translate(-239 95)">
+  <text x="911" y="312.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">230.4x465.3 at (1170.8,259.7): a stepped top edge, low at the LEFT and climbing through an</text>
+  <text x="911" y="320.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">S-curve, 4 onion rings nested inside, a solid body and the module name beneath</text>
+  <!-- DETAIL PANEL. dashboard-trace.svg at (1170.8,259.7), re-measured 2026-09-03: <path id="npanel"> is 230.4x465.3 stroke centre; the top edge is stepped, a shoulder at local y 30.3 from the r7.5 top-left corner to x 64 and an S-curve (one cubic with horizontal tangents, controls 15.6 in) climbing to the high top line by x 110; r10 top-right and bottom corners. It is NOT the cascade card mirrored (no chamfer, no foot diagonal, no plate). Outline #e8ab66 1.2. FOUR onion rings #bd8951 1 NESTED INSIDE, sharing the left edge and the shoulder, fanning from the S-curve's foot to top lines 3.2 apart, right edge 3 in and bottom 3.2 up per ring, r7 corners, opacity 0.70 0.70 0.55 0.25 inward. A solid gold body [1170.8,326,230.4,309] #f2b463 edge to edge carries two dark paragraphs as #3b2416 bars 11 tall at 19.5 pitch from x 1181.5 (six lines from y 343, two from y 480, each as long as its line), then a two bar micro text tape #bd8951 4.2 tall at y 641.2 / 647.5 and the module name EMAIL 20px 600 ls 1 #f2b463 centred at (1286.7,692). Placed at (911,330): translate(-259.8 70.3) -->
+  <g transform="translate(-259.8 70.3)">
   <g>
-    <g fill="none" stroke="#bd8951" transform="translate(1168 253)">
-      <path d="M -18,480 V 7 Q -18,1 -12,1 H 51 L 73,-18 H 240 Q 250,-18 250,-8 V 480 Q 250,490 240,490 H -8 Q -18,490 -18,480 Z" stroke-width="1" stroke-opacity="0.25"/>
-      <path d="M -15,477 V 10 Q -15,4 -9,4 H 51 L 73,-15 H 237 Q 247,-15 247,-5 V 477 Q 247,487 237,487 H -5 Q -15,487 -15,477 Z" stroke-width="1" stroke-opacity="0.37"/>
-      <path d="M -12,474 V 13 Q -12,7 -6,7 H 51 L 73,-12 H 234 Q 244,-12 244,-2 V 474 Q 244,484 234,484 H -2 Q -12,484 -12,474 Z" stroke-width="1" stroke-opacity="0.49"/>
-      <path d="M -9,471 V 16 Q -9,10 -3,10 H 51 L 73,-9 H 231 Q 241,-9 241,1 V 471 Q 241,481 231,481 H 1 Q -9,481 -9,471 Z" stroke-width="1" stroke-opacity="0.61"/>
-      <path d="M -6,468 V 19 Q -6,13 0,13 H 51 L 73,-6 H 228 Q 238,-6 238,4 V 468 Q 238,478 228,478 H 4 Q -6,478 -6,468 Z" stroke-width="1" stroke-opacity="0.73"/>
-      <path d="M -3,465 V 22 Q -3,16 3,16 H 51 L 73,-3 H 225 Q 235,-3 235,7 V 465 Q 235,475 225,475 H 7 Q -3,475 -3,465 Z" stroke-width="1" stroke-opacity="0.85"/>
+    <g fill="none" stroke="#bd8951" stroke-width="1" transform="translate(1170.8 259.7)">
+      <use href="#npring4" stroke-opacity="0.25"/>
+      <use href="#npring3" stroke-opacity="0.55"/>
+      <use href="#npring2" stroke-opacity="0.70"/>
+      <use href="#npring1" stroke-opacity="0.70"/>
     </g>
-    <use href="#npanel" x="1168" y="253" fill="none" stroke="#bd8951" stroke-width="1.8"/>
-    <!-- solid body, measured [1171,326,231,309] -->
-    <rect x="1171" y="326" width="231" height="309" fill="#f2b463"/>
-    <!-- two dark paragraphs on the fill -->
+    <use href="#npanel" x="1170.8" y="259.7" fill="none" stroke="#e8ab66" stroke-width="1.2"/>
+    <rect x="1170.8" y="326" width="230.4" height="309" fill="#f2b463"/>
     <g fill="#3b2416">
-      <rect x="1190" y="349" width="196" height="11"/>
-      <rect x="1190" y="369" width="200" height="11"/>
-      <rect x="1190" y="389" width="192" height="11"/>
-      <rect x="1190" y="409" width="196" height="11"/>
-      <rect x="1190" y="429" width="188" height="11"/>
-      <rect x="1190" y="449" width="120" height="11"/>
-      <rect x="1190" y="474" width="198" height="11"/>
-      <rect x="1190" y="494" width="184" height="11"/>
-      <rect x="1190" y="514" width="90"  height="11"/>
+      <rect x="1181.5" y="343"   width="182" height="11"/>
+      <rect x="1181.5" y="362.5" width="200" height="11"/>
+      <rect x="1181.5" y="382"   width="195" height="11"/>
+      <rect x="1181.5" y="401.5" width="170" height="11"/>
+      <rect x="1181.5" y="421"   width="202" height="11"/>
+      <rect x="1181.5" y="440.5" width="101" height="11"/>
+      <rect x="1181.5" y="480"   width="202" height="11"/>
+      <rect x="1181.5" y="499.5" width="207" height="11"/>
     </g>
-    <!-- micro-text tape and the big EMAIL label -->
     <g fill="#bd8951">
-      <rect x="1186" y="646" width="200" height="6"/>
-      <rect x="1200" y="656" width="172" height="6"/>
+      <rect x="1194" y="641.2" width="174" height="4.2"/>
+      <rect x="1194" y="647.5" width="181" height="4.2"/>
     </g>
-    <text x="1286" y="700" font-family="Rajdhani" font-size="24" font-weight="600"
-          letter-spacing="3" fill="#f2b463" text-anchor="middle">EMAIL</text>
+    <text x="1286.7" y="692" font-family="Rajdhani" font-size="20" font-weight="600"
+          letter-spacing="1" fill="#f2b463" text-anchor="middle">EMAIL</text>
   </g>
   </g>
-  <text x="911" y="844.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">232x472 · outline #bd8951 1.8 · rings 6 at 3 pitch, 0.25 to 0.85 · body 231x309</text>
-  <text x="911" y="852.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">#f2b463 · text bars 11 tall at 20 pitch #3b2416 · name 24px 600 ls 3 · no scroll</text>
+  <text x="911" y="844.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">230.4x465.3 · stepped top, shoulder 30.3 low, S-curve x 64..110 · outline #e8ab66 1.2 · 4 rings</text>
+  <text x="911" y="852.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">nested inside at 3.2 / 3 pitch, 0.70 to 0.25 · body 230.4x309 #f2b463 · text bars 11 tall at 19.5 pitch #3b2416 · name 20px 600 ls 1 · no scroll</text>
   <text x="911" y="860.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">rail, no maker's mark</text>
   <text x="1189" y="300" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">6  LOGIN ENTRY GROUP</text>
   <text x="1189" y="312.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">two identical groups, the right one exactly +420 in x; there is no user card, no selected state and</text>
@@ -1098,17 +1105,17 @@
   <text x="1563" y="706.2" font-size="6.6" fill="#a97c48">runs rising through mirrored S bends onto ONE high line. Store 8 at 3.2 pitch, bridge y 124.2; hub and</text>
   <text x="1563" y="713.6" font-size="6.6" fill="#a97c48">mail 8 converging to y 87; login 22 as a trapezoid across the foot. Both ends curl down into a</text>
   <text x="1563" y="721.0" font-size="6.6" fill="#a97c48">vertical.</text>
-  <text x="1563" y="731.4" font-size="6.6" fill="#a97c48">2  Corners are cut per widget, never by one rule: cascade card 32 top right AND bottom left; detail</text>
-  <text x="1563" y="738.8" font-size="6.6" fill="#a97c48">panel mirrored, 42 top left; store card r13 top left, 37 degree step, r18 top right, r8 bottom right,</text>
-  <text x="1563" y="746.2" font-size="6.6" fill="#a97c48">bottom left cut 19x22; nav and RIFLES buttons r4 / r5 with a 15x11.6 / 13x10 bottom left cut; mail</text>
-  <text x="1563" y="753.6" font-size="6.6" fill="#a97c48">selection 22 top right; CTA 16x13 bottom left.</text>
+  <text x="1563" y="731.4" font-size="6.6" fill="#a97c48">2  Corners are cut per widget, never by one rule: cascade card 42.5 top right and a 45 degree foot</text>
+  <text x="1563" y="738.8" font-size="6.6" fill="#a97c48">diagonal; detail panel a stepped top (S-curve rising 30 over 46, r7.5 / r10); store card r13 top left,</text>
+  <text x="1563" y="746.2" font-size="6.6" fill="#a97c48">37 degree step, r18 top right, r8 bottom right, bottom left cut 19x22; nav and RIFLES buttons r4 / r5</text>
+  <text x="1563" y="753.6" font-size="6.6" fill="#a97c48">with a 15x11.6 / 13x10 bottom left cut; mail selection 22 top right; CTA 16x13 bottom left.</text>
   <text x="1563" y="764.0" font-size="6.6" fill="#a97c48">3  Selection is a MATERIAL: a veneer base fill plus wavy grain hairlines (mail 1.7 pitch #cf975c, SMG</text>
   <text x="1563" y="771.4" font-size="6.6" fill="#a97c48">2.1 #d0975a, card 2 2.4 #cd9553, basket 2.1 #c9844c), a vertical book match seam at the plate's</text>
   <text x="1563" y="778.8" font-size="6.6" fill="#a97c48">midpoint, arcs into the chamfer and a swirl at the leading edge.</text>
-  <text x="1563" y="789.2" font-size="6.6" fill="#a97c48">4  Outlines come in onion layers: hub cards and the detail panel trail 6 concentric 45 degree offsets</text>
-  <text x="1563" y="796.6" font-size="6.6" fill="#a97c48">at 3 to 3.5 pitch, 0.85 down to 0.25; store cards carry 4 echo strands at 2.5 pitch, 0.55 down to</text>
-  <text x="1563" y="804.0" font-size="6.6" fill="#a97c48">0.18, round the step, top right, right side and bottom, dying on the bottom left cut. The SELECTED</text>
-  <text x="1563" y="811.4" font-size="6.6" fill="#a97c48">item carries none.</text>
+  <text x="1563" y="789.2" font-size="6.6" fill="#a97c48">4  Outlines come in onion layers: hub cards carry 6 and the detail panel 4 echo outlines nested INSIDE,</text>
+  <text x="1563" y="796.6" font-size="6.6" fill="#a97c48">sharing the left edge, 3 to 3.7 pitch, 0.85 (panel 0.70) down to 0.25; store cards carry 4 echo strands</text>
+  <text x="1563" y="804.0" font-size="6.6" fill="#a97c48">at 2.5 pitch, 0.55 down to 0.18, round the step, top right, right side and bottom, dying on the bottom</text>
+  <text x="1563" y="811.4" font-size="6.6" fill="#a97c48">left cut. The SELECTED item carries none.</text>
   <text x="1563" y="821.8" font-size="6.6" fill="#a97c48">5  Every outlined button and every list rule wears a filled trapezoid tab on its bottom edge, inside</text>
   <text x="1563" y="829.2" font-size="6.6" fill="#a97c48">the stroke: mail RIFLES 37/29/7 #fdcf8c, store nav 33.8/28/3.4 #f7cc8c, list rules 31/24/5, card foot</text>
   <text x="1563" y="836.6" font-size="6.6" fill="#a97c48">64.5/58/8.5 #fed08d, T2 badge 33/25/4.5 #f2b463.</text>

@@ -39,10 +39,25 @@
            left (plain text); and a solid bright 6x38.3 tab plate on
            its left edge at local y 54.6. EMAIL's plate is smaller
            (4.6x32.1) and sits in a 5-deep well cut into its edge
-         - a detail panel at (1168,259)..(1400,725): the same card
-           family mirrored (chamfer top-LEFT), onion outlines, a solid
-           gold body at [1171,326,231,309] holding two dark paragraphs,
-           a micro-text tape and a large EMAIL label beneath
+         - a detail panel at (1170.8,259.7)..(1401.2,725), re-measured
+           2026-09-03 (the first pass had it at (1168,253) with a 42
+           chamfer and six rings offset OUTWARD; none of that is in the
+           photo): a stepped top edge, low at the LEFT (a shoulder at
+           y 290 from the left edge to x~1235) climbing through an
+           S-curve to the high top line at y 259.7 by x~1281 (source
+           line y 696 -> 623 over x 2965..3075), r10 top-right and
+           bottom corners, r7.5 at the shoulder's left corner; FOUR
+           echo outlines NESTED INSIDE it like the cards' (source top
+           lines y 623.5 631 638 646 654, right edges x 3363 3356 3349
+           3341 3334, bottoms y 1740 1732 1724 1716 1708), sharing the
+           left edge and the shoulder and fanning out from the foot of
+           the S-curve to their own top lines, the fourth barely there;
+           a solid gold body at [1170.8,326,230.4,309] (source x
+           2809..3364, y 782..1524) holding two dark paragraphs (six
+           lines and two at 19.5 pitch, source ascender tops y 823 870
+           916 963 1010 1057 / 1152 1197, left edge x 2836), a two-line
+           micro-text tape (source y 1539..1549 / 1554..1564) and an
+           EMAIL label beneath (source caps y 1629..1661, x 3029..3147)
          - boxed letters C (585,799) and D (1172,799) with annotation
            lines at y~823/834 in the foot; all four letter plates are
            26x26 rounded squares with a folded corner
@@ -61,6 +76,12 @@
                      extractor bins the halo as its own ink family.
                      Nothing else carries the class; G1i still renders
                      the halo and its verdict is unchanged
+         2026-09-03  detail panel re-measured against the photo (see the
+                     #npanel comment): stepped top edge with an S-curve,
+                     four rings nested inside, body/paragraph/tape/label
+                     re-placed; card labels dropped to their measured
+                     baselines; front outlines 1.2 #e8ab66. Inks 0.67 ->
+                     0.68, PASS
 
        Palette sampled by k-means (extract_spec.py):
          ink   #f2b463 (6.2%, fills)  #bd8951  #7e5836  #3b2416
@@ -140,10 +161,46 @@
     <path id="ncardsel" d="M 0,6.5 Q 0,0 6.5,0 H 48 L 90.5,42.5 V 322.3
                             A 4 4 0 0 1 83.7,325.2 L 0,241.5 V 94.2 L 5,90.8
                             V 57.1 L 0,54.2 Z"/>
-    <!-- the detail panel: same family mirrored, 232x472, chamfer 42 top-left -->
-    <path id="npanel" d="M 0,462 V 31 Q 0,25 6,25 H 51 L 73,0 H 222
-                          Q 232,0 232,10 V 462 Q 232,472 222,472 H 10
-                          Q 0,472 0,462 Z"/>
+    <!-- the detail panel, re-measured on the photo 2026-09-03 (the first
+         pass drew a 232x472 outline with a 22x25 diagonal read as a 42
+         chamfer, placed at (1168,253), and six rings offset outward;
+         the photo has none of that). Stroke-centre silhouette, origin
+         at the left edge / the HIGH top line, used at (1170.8,259.7):
+         230.4 wide (source x 2810..3363) x 465.3 tall (source y
+         623.5..1740). The top edge is stepped: a shoulder at local y
+         30.3 (source y 696) runs from the r7.5 top-left corner to
+         x 64, then an S-curve climbs 30.3 to the top line by x 110
+         (source: the front line leaves y 696 at x~2965, runs a 45
+         degree middle from (2988,687) to (3040,638) and lands on
+         y 623 by x~3075; drawn as one cubic with horizontal tangents,
+         control points 15.6 in from each end, which fits the measured
+         line within 1.5 source px). r10 top-right and bottom corners.
+         It is NOT the cascade card mirrored: no chamfer, no foot
+         diagonal, no tab plate. -->
+    <path id="npanel" d="M 0,37.8 Q 0,30.3 7.5,30.3 H 64 C 79.6,30.3 94.4,0 110,0
+                          H 220.4 Q 230.4,0 230.4,10 V 455.3 Q 230.4,465.3 220.4,465.3
+                          H 9 Q 0,465.3 0,456.3 Z"/>
+    <!-- the panel's onion rings (re-measured 2026-09-03): FOUR echo
+         outlines NESTED INSIDE the panel, not six outside it. Like the
+         cards' rings they share the front's left edge and, here, its
+         shoulder: all four leave the shoulder at the S-curve's foot
+         (64,30.3) and fan out to their own top lines, each 3.2 lower
+         than the last (source top lines y 623.5 631 638 646 654 at
+         x 3200; the ring diagonals through the S-curve get shallower
+         one by one, source slopes 1.0 0.94 0.88 0.75 0.5, all landing
+         by x~3072), run the top, the right edge 3 further in per ring
+         (source x 3363 3356 3349 3341 3334) and the bottom 3.2 higher
+         (source y 1740 1732 1724 1716 1708), r7 corners (source ~17 px
+         on every ring, against the front's ~24), and fillet back into
+         the shared left edge. Drawn open; the front draws the left
+         edge and the shoulder once. Fading inward: measured peak R on
+         the right edge 242 / 178 190 150 83 over a ~35 ground, i.e.
+         0.7 0.7 0.55 0.25 of the front, set as the stroke-opacities
+         on the paths. -->
+    <path id="npring1" d="M 64,30.3 C 79.6,30.3 94.4,3.2 110,3.2 H 220.4 Q 227.4,3.2 227.4,10.2 V 455.1 Q 227.4,462.1 220.4,462.1 H 7 Q 0,462.1 0,455.1"/>
+    <path id="npring2" d="M 64,30.3 C 79.6,30.3 94.4,6.4 110,6.4 H 217.4 Q 224.4,6.4 224.4,13.4 V 451.9 Q 224.4,458.9 217.4,458.9 H 7 Q 0,458.9 0,451.9"/>
+    <path id="npring3" d="M 64,30.3 C 79.6,30.3 94.4,9.6 110,9.6 H 214.4 Q 221.4,9.6 221.4,16.6 V 448.7 Q 221.4,455.7 214.4,455.7 H 7 Q 0,455.7 0,448.7"/>
+    <path id="npring4" d="M 64,30.3 C 79.6,30.3 94.4,12.8 110,12.8 H 211.4 Q 218.4,12.8 218.4,19.8 V 445.5 Q 218.4,452.5 211.4,452.5 H 7 Q 0,452.5 0,445.5"/>
     <!-- onion rings (re-measured 2026-09-03): six echo outlines NESTED
          INSIDE the card, not around it. They share the card's left edge
          and its foot diagonal; each ring's top edge steps DOWN 3.7 and
@@ -324,7 +381,12 @@
       <use href="#nring1" stroke-opacity="0.85"/>
     </g>
   </g>
-  <g fill="none" stroke="#bd8951" stroke-width="1.6">
+  <!-- front outlines: 1.2 wide #e8ab66 (re-measured 2026-09-03 on MATRIX's
+       right edge at 3840: peak (247,175,105) over a ~35 ground, 2.2 source px
+       of integrated width = 0.9 here; 1.6 #bd8951 carried ~40% too much ink
+       and read dull against the photo, 1.0 #f5b068 dropped the inks gate to
+       0.64, 1.2 #e8ab66 holds 0.68) -->
+  <g fill="none" stroke="#e8ab66" stroke-width="1.2">
     <use href="#ncard" x="347" y="284"/>
     <use href="#ncard" x="449" y="182"/>
     <use href="#ncard" x="624" y="384"/>
@@ -351,15 +413,21 @@
   <use href="#ncardsel" x="246" y="384" fill="#f2b463" stroke="#f2b463" stroke-width="1.2"/>
   <rect x="244.75" y="442.3" width="4.6" height="32.1" rx="1.5" fill="#fcbe6d"/>
 
-  <!-- labels: at each card's upper left; EMAIL's in a small box -->
+  <!-- labels: right-anchored 8 left of each card, baseline 82.5 below the
+       card's top edge (re-measured 2026-09-03 from the photo's cap
+       bottoms: EMAIL 1120, MATRIX 879, BRAINDANCE 635, PRIVATE 1120,
+       SECURITY 855 / SYSTEMS 907, DEVICES 635 at 3840; the first pass
+       had MATRIX/BRAINDANCE/DEVICES 8 too high and PRIVATE 16, from an
+       eyeballed pass). The source caps are 12.3 tall but 52 wide for
+       MATRIX; Rajdhani 17 ls 1.5 matches the width (11 tall) -->
   <g font-family="Rajdhani" font-size="17" letter-spacing="1.5" fill="#f2b463" text-anchor="end">
-    <text x="238" y="468">EMAIL</text>
-    <text x="338" y="358">MATRIX</text>
-    <text x="440" y="256">BRAINDANCE</text>
-    <text x="615" y="450">PRIVATE</text>
-    <text x="714" y="360">SECURITY</text>
-    <text x="714" y="379">SYSTEMS</text>
-    <text x="817" y="256">DEVICES</text>
+    <text x="238" y="466.7">EMAIL</text>
+    <text x="338" y="366.3">MATRIX</text>
+    <text x="440" y="264.6">BRAINDANCE</text>
+    <text x="615" y="466.7">PRIVATE</text>
+    <text x="714" y="356.3">SECURITY</text>
+    <text x="714" y="377.9">SYSTEMS</text>
+    <text x="817" y="264.6">DEVICES</text>
   </g>
 
   <!-- captions under each card's foot -->
@@ -371,37 +439,44 @@
   <use href="#ncaption" x="832" y="520"/>
 
   <!-- ==== the detail panel ==== -->
+  <!-- placed at its measured left edge / top line (source x 2810,
+       y 623.5); the four rings nest inside and fade inward -->
   <g>
-    <g fill="none" stroke="#bd8951" transform="translate(1168 253)">
-      <path d="M -18,480 V 7 Q -18,1 -12,1 H 51 L 73,-18 H 240 Q 250,-18 250,-8 V 480 Q 250,490 240,490 H -8 Q -18,490 -18,480 Z" stroke-width="1" stroke-opacity="0.25"/>
-      <path d="M -15,477 V 10 Q -15,4 -9,4 H 51 L 73,-15 H 237 Q 247,-15 247,-5 V 477 Q 247,487 237,487 H -5 Q -15,487 -15,477 Z" stroke-width="1" stroke-opacity="0.37"/>
-      <path d="M -12,474 V 13 Q -12,7 -6,7 H 51 L 73,-12 H 234 Q 244,-12 244,-2 V 474 Q 244,484 234,484 H -2 Q -12,484 -12,474 Z" stroke-width="1" stroke-opacity="0.49"/>
-      <path d="M -9,471 V 16 Q -9,10 -3,10 H 51 L 73,-9 H 231 Q 241,-9 241,1 V 471 Q 241,481 231,481 H 1 Q -9,481 -9,471 Z" stroke-width="1" stroke-opacity="0.61"/>
-      <path d="M -6,468 V 19 Q -6,13 0,13 H 51 L 73,-6 H 228 Q 238,-6 238,4 V 468 Q 238,478 228,478 H 4 Q -6,478 -6,468 Z" stroke-width="1" stroke-opacity="0.73"/>
-      <path d="M -3,465 V 22 Q -3,16 3,16 H 51 L 73,-3 H 225 Q 235,-3 235,7 V 465 Q 235,475 225,475 H 7 Q -3,475 -3,465 Z" stroke-width="1" stroke-opacity="0.85"/>
+    <g fill="none" stroke="#bd8951" stroke-width="1" transform="translate(1170.8 259.7)">
+      <use href="#npring4" stroke-opacity="0.25"/>
+      <use href="#npring3" stroke-opacity="0.55"/>
+      <use href="#npring2" stroke-opacity="0.70"/>
+      <use href="#npring1" stroke-opacity="0.70"/>
     </g>
-    <use href="#npanel" x="1168" y="253" fill="none" stroke="#bd8951" stroke-width="1.8"/>
-    <!-- solid body, measured [1171,326,231,309] -->
-    <rect x="1171" y="326" width="231" height="309" fill="#f2b463"/>
-    <!-- two dark paragraphs on the fill -->
+    <use href="#npanel" x="1170.8" y="259.7" fill="none" stroke="#e8ab66" stroke-width="1.2"/>
+    <!-- solid body, measured [1170.8,326,230.4,309] (source x 2809..3364,
+         y 782..1524): edge to edge under the outline -->
+    <rect x="1170.8" y="326" width="230.4" height="309" fill="#f2b463"/>
+    <!-- two dark paragraphs on the fill: six lines and TWO (the first
+         pass drew three), 11 tall at 19.5 pitch from the measured
+         ascender tops, left edge x 1181.5, each bar as long as its
+         line (source line ends x 3273 3316 3304 3244 3321 3079 / 3320
+         3332) -->
     <g fill="#3b2416">
-      <rect x="1190" y="349" width="196" height="11"/>
-      <rect x="1190" y="369" width="200" height="11"/>
-      <rect x="1190" y="389" width="192" height="11"/>
-      <rect x="1190" y="409" width="196" height="11"/>
-      <rect x="1190" y="429" width="188" height="11"/>
-      <rect x="1190" y="449" width="120" height="11"/>
-      <rect x="1190" y="474" width="198" height="11"/>
-      <rect x="1190" y="494" width="184" height="11"/>
-      <rect x="1190" y="514" width="90"  height="11"/>
+      <rect x="1181.5" y="343"   width="182" height="11"/>
+      <rect x="1181.5" y="362.5" width="200" height="11"/>
+      <rect x="1181.5" y="382"   width="195" height="11"/>
+      <rect x="1181.5" y="401.5" width="170" height="11"/>
+      <rect x="1181.5" y="421"   width="202" height="11"/>
+      <rect x="1181.5" y="440.5" width="101" height="11"/>
+      <rect x="1181.5" y="480"   width="202" height="11"/>
+      <rect x="1181.5" y="499.5" width="207" height="11"/>
     </g>
-    <!-- micro-text tape and the big EMAIL label -->
+    <!-- micro-text tape (two caps lines, source y 1539..1549 and
+         1554..1564, x 2865..3283 / 2866..3300) and the EMAIL label
+         (source caps y 1629..1661, x 3029..3147: 13.3 tall, 49 wide,
+         centred x 1286.7; 20px 600 ls 1 renders 13.3 x ~51) -->
     <g fill="#bd8951">
-      <rect x="1186" y="646" width="200" height="6"/>
-      <rect x="1200" y="656" width="172" height="6"/>
+      <rect x="1194" y="641.2" width="174" height="4.2"/>
+      <rect x="1194" y="647.5" width="181" height="4.2"/>
     </g>
-    <text x="1286" y="700" font-family="Rajdhani" font-size="24" font-weight="600"
-          letter-spacing="3" fill="#f2b463" text-anchor="middle">EMAIL</text>
+    <text x="1286.7" y="692" font-family="Rajdhani" font-size="20" font-weight="600"
+          letter-spacing="1" fill="#f2b463" text-anchor="middle">EMAIL</text>
   </g>
   </g>
 </svg>

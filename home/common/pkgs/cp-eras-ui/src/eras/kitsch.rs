@@ -25,7 +25,7 @@
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
     Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Compliance, Corner, Dress,
-    Era, Face, Footnotes, Ground, Ink, Layout, MenuMarker, MenuRule, Metrics, Nameplate, Menu,
+    Era, Face, Footnotes, Ground, Ink, MenuMarker, MenuRule, Metrics, Nameplate,
     PanelEcho, Selection, Style, Ticket, WindowLabel,
 };
 use crate::widgets::surface::{Corners, Cut};
@@ -340,9 +340,15 @@ pub fn style() -> Style {
         // `M172 340 h158 l18 15 ...` in the target-app.svg composite
         // (deleted 2026-09-03).
         //
-        // Unconsumed as of 2026-09-03: `style.ticket` is read only by
-        // `widgets::pill::pill`, which nothing calls. Trace value would
-        // be a peaked chevron, not a pill -- `store-trace.svg` `#nav`
+        // Unconsumed as of 2026-09-03: nothing reads `style.ticket`
+        // (`widgets::pill` was deleted 2026-09-03). The `Ticket` type
+        // survives as a parameter of `widgets::surface::{outline,
+        // span_at, band_path}` and `Surface::ticket()`, but every
+        // caller -- `bar.rs`, `screens::mail`, `widgets::bracket`,
+        // `Surface::{outlined, filled, selected}` -- passes
+        // `Ticket::default()`, and nothing calls `Surface::ticket()`.
+        // Trace value would be a peaked chevron, not a pill --
+        // `store-trace.svg` `#nav`
         // `M 0,39 V 19 L 18,0 L 27,3 H 214 Q 216,3 216,5 V 11 L 190,39 Z`
         // (216x39; the left edge stops 20 short of the top and the peak
         // is 18 in from it; 26x28 chamfer at the right), which
@@ -351,12 +357,6 @@ pub fn style() -> Style {
             reach: 18.0,
             drop: 15.0,
         },
-        // The extruded fan: slabs radiating from a pivot, each with
-        // stacked outline copies receding up-right.
-        menu: Menu::Fan,
-        // The six-module hub shell: this era's target is the store
-        // screen and the shared dashboard is the hub for it.
-        layout: Layout::ModuleHub,
         // The dotted matrix, hollow square and hollow triangle that
         // head every shelf band and lead every socket row.
         glyphs: true,
@@ -370,6 +370,14 @@ pub fn style() -> Style {
         store: STORE,
         store_selection: (1, 1),
         // --- end store ---
+        // --- dashboard ---
+        dashboard: DASHBOARD,
+        // EVENTS, the fifth solid card in `dashboard-trace.svg` (group at
+        // `translate(731 586) rotate(-30)`, the one `<use href="#card"
+        // fill="#f5cb23" stroke="#fce89a">` under the comment "the
+        // selection"); the other five fill `#2c9798`.
+        dashboard_selection: 4,
+        // --- end dashboard ---
         metrics: Metrics {
             stroke: 1.5,
             gap: 20.0,
@@ -1444,3 +1452,383 @@ pub const STORE: &[Prim] = &[
     txt(640.0, 870.0, 9.0, Ink::Fixed(FOOT_MICRO), "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
 ];
 // --- end store -----------------------------------------------------------
+
+// --- dashboard -----------------------------------------------------------
+//
+// `docs/kitsch/dashboard-trace.svg`, transcribed: the module hub.
+// Coordinates are the trace's own in the 1600x900 frame, measured off
+// `images/kitsch-dashboard.png` (#49). Elements are in the trace's paint
+// order -- ground and bloom, header, USER box, badges, the thirty-six
+// ghosts, the six solid blades, the BRAINDANCE panel, the B mark, the
+// foot line -- and every group cites the trace element it came from.
+//
+// What the `Prim` set cannot express here, and what stands in for it:
+//
+// - `rotate(30)` / `rotate(-30)` on the fan cards. `Prim::At` is a
+//   translation only, so the rotation is *baked into the card path*:
+//   `#card` (`x=-81 y=-25 width=162 height=50 rx=8`) is written as a
+//   closed path with cubic corner arcs (handle 0.5523 * 8) and each of
+//   its points rotated about the card's own origin, to two decimals
+//   (`CARD_CW`, `CARD_CCW`). The `rotate(90)` cards need no path: a
+//   162x50 r8 card turned a quarter is a 50x162 r8 `Prim::Round`.
+// - the labels rotate with their blade in the trace (`components.svg`
+//   line 575). Scene text is upright, so the +-30 labels are drawn
+//   horizontally through the card centre (the horizontal chord of a
+//   162x50 card at 30 degrees is 100px, and the widest label fits it)
+//   and the two PRODUCTS labels on the 90-degree cards are stacked one
+//   upright glyph per line on a 14px pitch centred on the card, which
+//   keeps the ink inside the silhouette. Letter-spacing 2 is dropped
+//   with them.
+// - `fill-opacity` / `stroke-opacity` on the ghosts are carried as the
+//   alpha of an `Ink::Fixed` colour (`faded`), which composites onto
+//   the bloom the way the SVG does; nothing is pre-mixed.
+// - the two `text-anchor="middle"` letters under a `scale(1.7 1)` --
+//   `Prim::Wide` is start-anchored, so A / C / D / B are placed at the
+//   box centreline minus half the trace's stated cap width (15.8, line
+//   124): 176.7 - 7.9 and so on.
+// - the bloom: `radialGradient cx=0.52 cy=-0.05 r=0.85` over the
+//   1600x620 rect is an ellipse centred (832, -31) with radii 1360 x
+//   527, which the `Lobe` draws as rings; its foot stop is the page
+//   ground, so the rect's clip edge at y 620 (beyond ry) never shows.
+
+use crate::style::Anchor;
+
+/// The hub's page ground and bloom stops: its own samples, a shade
+/// off the store's `PAGE` / `ROSE`.
+pub const HUB_GROUND: iced::Color = rgb(0x0d0d0c);
+const HUB_ROSE: &[(f32, iced::Color)] = &[
+    (0.00, rgb(0xa84a5e)),
+    (0.45, rgb(0x7a3346)),
+    (0.75, rgb(0x3a1c24)),
+    (1.00, HUB_GROUND),
+];
+/// The selection yellow the hub samples -- EVENTS, badge 02, the
+/// BRAINDANCE tab and outlines -- and the inks set on it. A hair off
+/// the palette's `YELLOW` (#fcc428) and the store's `BAND` (#fec32f).
+pub const HUB_YELLOW: iced::Color = rgb(0xf5cb23);
+pub const ON_HUB_YELLOW: iced::Color = rgb(0x4a3a05);
+pub const ON_BADGE: iced::Color = rgb(0x6b4d08);
+/// The selected blade's lit edge.
+pub const SELECT_EDGE: iced::Color = rgb(0xfce89a);
+/// An idle blade's fill; its edge is `NAME_INK` and its label
+/// `ON_MINT_BAR`, both already sampled on other screens.
+pub const BLADE: iced::Color = rgb(0x2c9798);
+/// A ghost's fill and edge: a greener teal than the solid blade,
+/// sampled mid-strip over the black ground (trace lines 189-193).
+pub const GHOST: iced::Color = rgb(0x0f9f80);
+pub const GHOST_EDGE: iced::Color = rgb(0x6cc4bd);
+/// The warning tape's micro-text.
+pub const TAPE_INK: iced::Color = rgb(0xd9b41f);
+
+const fn faded(c: iced::Color, a: f32) -> iced::Color {
+    iced::Color { a, ..c }
+}
+
+/// `#card` rotated 30 degrees clockwise (SVG `rotate(30)`), about its
+/// own origin; opens at the rotated (-73,-25) and runs the top edge
+/// first, as the unrotated rect would.
+const CARD_CW: &[Seg] = &[
+    Seg::Line(75.72, 14.85),
+    Seg::Cubic { c1x: 79.55, c1y: 17.06, c2x: 80.86, c2y: 21.95, x: 78.65, y: 25.78 },
+    Seg::Line(61.65, 55.22),
+    Seg::Cubic { c1x: 59.44, c1y: 59.05, c2x: 54.55, c2y: 60.36, x: 50.72, y: 58.15 },
+    Seg::Line(-75.72, -14.85),
+    Seg::Cubic { c1x: -79.55, c1y: -17.06, c2x: -80.86, c2y: -21.95, x: -78.65, y: -25.78 },
+    Seg::Line(-61.65, -55.22),
+    Seg::Cubic { c1x: -59.44, c1y: -59.05, c2x: -54.55, c2y: -60.36, x: -50.72, y: -58.15 },
+];
+const CARD_CW_X: f32 = -50.72;
+const CARD_CW_Y: f32 = -58.15;
+/// `#card` under `rotate(-30)`, likewise.
+const CARD_CCW: &[Seg] = &[
+    Seg::Line(50.72, -58.15),
+    Seg::Cubic { c1x: 54.55, c1y: -60.36, c2x: 59.44, c2y: -59.05, x: 61.65, y: -55.22 },
+    Seg::Line(78.65, -25.78),
+    Seg::Cubic { c1x: 80.86, c1y: -21.95, c2x: 79.55, c2y: -17.06, x: 75.72, y: -14.85 },
+    Seg::Line(-50.72, 58.15),
+    Seg::Cubic { c1x: -54.55, c1y: 60.36, c2x: -59.44, c2y: 59.05, x: -61.65, y: 55.22 },
+    Seg::Line(-78.65, 25.78),
+    Seg::Cubic { c1x: -80.86, c1y: 21.95, c2x: -79.55, c2y: 17.06, x: -75.72, y: 14.85 },
+];
+const CARD_CCW_X: f32 = -75.72;
+const CARD_CCW_Y: f32 = 14.85;
+
+/// One ghost at its own origin: `#card` in `#0f9f80` under a 1.2px
+/// `#6cc4bd`, at one of the trace's seven opacity pairs (fill /
+/// stroke). The ramp is the same for every blade, selected or not
+/// (`components.svg` lines 560-564).
+macro_rules! ghost {
+    ($x0:expr, $y0:expr, $segs:expr, $fill:expr, $edge:expr) => {
+        &[Prim::Path {
+            x: $x0,
+            y: $y0,
+            segs: $segs,
+            close: true,
+            fill: Some(Ink::Fixed(faded(GHOST, $fill))),
+            stroke: Some(Ink::Fixed(faded(GHOST_EDGE, $edge))),
+            width: 1.2,
+        }]
+    };
+}
+macro_rules! ghost_v {
+    ($fill:expr, $edge:expr) => {
+        &[Prim::Round {
+            x: -25.0,
+            y: -81.0,
+            w: 50.0,
+            h: 162.0,
+            r: 8.0,
+            fill: Some(Ink::Fixed(faded(GHOST, $fill))),
+            stroke: Some(Ink::Fixed(faded(GHOST_EDGE, $edge))),
+            width: 1.2,
+        }]
+    };
+}
+/// Ghost dresses by depth, index 0 the faintest (WEAPONS' seventh) and
+/// 6 the one nearest its solid card.
+const GHOST_CW: [&[Prim]; 7] = [
+    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.07, 0.16),
+    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.12, 0.24),
+    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.21, 0.34),
+    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.30, 0.45),
+    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.40, 0.56),
+    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.48, 0.68),
+    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.58, 0.80),
+];
+const GHOST_CCW: [&[Prim]; 7] = [
+    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.07, 0.16),
+    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.12, 0.24),
+    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.21, 0.34),
+    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.30, 0.45),
+    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.40, 0.56),
+    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.48, 0.68),
+    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.58, 0.80),
+];
+const GHOST_V: [&[Prim]; 7] = [
+    ghost_v!(0.07, 0.16),
+    ghost_v!(0.12, 0.24),
+    ghost_v!(0.21, 0.34),
+    ghost_v!(0.30, 0.45),
+    ghost_v!(0.40, 0.56),
+    ghost_v!(0.48, 0.68),
+    ghost_v!(0.58, 0.80),
+];
+
+/// The solid blades at their own origin: idle `#2c9798` under 1.8px
+/// `#a9e6df`, selected `#f5cb23` under 1.8px `#fce89a` (trace lines
+/// 244 and 261; `components.svg` line 574).
+const BLADE_CW_OFF: &[Prim] = &[shut_and_fill(CARD_CW_X, CARD_CW_Y, CARD_CW, Ink::Fixed(BLADE), Ink::Fixed(NAME_INK))];
+const BLADE_CW_ON: &[Prim] = &[shut_and_fill(CARD_CW_X, CARD_CW_Y, CARD_CW, Ink::Fixed(HUB_YELLOW), Ink::Fixed(SELECT_EDGE))];
+const BLADE_CCW_OFF: &[Prim] = &[shut_and_fill(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, Ink::Fixed(BLADE), Ink::Fixed(NAME_INK))];
+const BLADE_CCW_ON: &[Prim] = &[shut_and_fill(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, Ink::Fixed(HUB_YELLOW), Ink::Fixed(SELECT_EDGE))];
+const BLADE_V_OFF: &[Prim] = &[Prim::Round { x: -25.0, y: -81.0, w: 50.0, h: 162.0, r: 8.0, fill: Some(Ink::Fixed(BLADE)), stroke: Some(Ink::Fixed(NAME_INK)), width: 1.8 }];
+const BLADE_V_ON: &[Prim] = &[Prim::Round { x: -25.0, y: -81.0, w: 50.0, h: 162.0, r: 8.0, fill: Some(Ink::Fixed(HUB_YELLOW)), stroke: Some(Ink::Fixed(SELECT_EDGE)), width: 1.8 }];
+
+const fn shut_and_fill(x: f32, y: f32, segs: &'static [Seg], fill: Ink, stroke: Ink) -> Prim {
+    Prim::Path { x, y, segs, close: true, fill: Some(fill), stroke: Some(stroke), width: 1.8 }
+}
+
+/// A +-30 blade as a plate: the hit box is the rotated card's bounding
+/// box (half extents 81 cos 30 + 25 sin 30 = 82.65 by 81 sin 30 +
+/// 25 cos 30 = 62.15), the label the trace's Rajdhani 19 centred at
+/// baseline +6.5, drawn upright.
+macro_rules! blade {
+    ($i:expr, $cx:expr, $cy:expr, $on:expr, $off:expr, $label:expr) => {
+        Prim::Plate {
+            group: Group::Module,
+            index: $i,
+            x: $cx - 82.65,
+            y: $cy - 62.15,
+            w: 165.3,
+            h: 124.3,
+            on: &[
+                Prim::At { x: $cx, y: $cy, prims: $on },
+                txt_mid($cx, $cy + 6.5, 19.0, Ink::Fixed(ON_HUB_YELLOW), $label),
+            ],
+            off: &[
+                Prim::At { x: $cx, y: $cy, prims: $off },
+                txt_mid($cx, $cy + 6.5, 19.0, Ink::Fixed(ON_MINT_BAR), $label),
+            ],
+        }
+    };
+}
+/// A 90-degree blade: hit box the 50x162 card itself, PRODUCTS stacked
+/// one upright glyph per 14px line, the column centred on the card.
+macro_rules! stack {
+    ($ink:expr) => {
+        &[
+            txt_mid(0.0, -42.35, 19.0, $ink, "P"),
+            txt_mid(0.0, -28.35, 19.0, $ink, "R"),
+            txt_mid(0.0, -14.35, 19.0, $ink, "O"),
+            txt_mid(0.0, -0.35, 19.0, $ink, "D"),
+            txt_mid(0.0, 13.65, 19.0, $ink, "U"),
+            txt_mid(0.0, 27.65, 19.0, $ink, "C"),
+            txt_mid(0.0, 41.65, 19.0, $ink, "T"),
+            txt_mid(0.0, 55.65, 19.0, $ink, "S"),
+        ]
+    };
+}
+const PRODUCTS_ON: &[Prim] = &[
+    Prim::At { x: 0.0, y: 0.0, prims: BLADE_V_ON },
+    Prim::At { x: 0.0, y: 0.0, prims: stack!(Ink::Fixed(ON_HUB_YELLOW)) },
+];
+const PRODUCTS_OFF: &[Prim] = &[
+    Prim::At { x: 0.0, y: 0.0, prims: BLADE_V_OFF },
+    Prim::At { x: 0.0, y: 0.0, prims: stack!(Ink::Fixed(ON_MINT_BAR)) },
+];
+macro_rules! blade_v {
+    ($i:expr, $cx:expr, $cy:expr) => {
+        Prim::Plate {
+            group: Group::Module,
+            index: $i,
+            x: $cx - 25.0,
+            y: $cy - 81.0,
+            w: 50.0,
+            h: 162.0,
+            on: &[Prim::At { x: $cx, y: $cy, prims: PRODUCTS_ON }],
+            off: &[Prim::At { x: $cx, y: $cy, prims: PRODUCTS_OFF }],
+        }
+    };
+}
+
+/// The BRAINDANCE header tab, chamfered top-left, top-right and
+/// bottom-left: `M 1213,261 H 1419 L 1432,274 V 299 H 1213 L 1200,286
+/// V 274 Z` (trace line 273).
+const TAB: &[Seg] = &[
+    Seg::Line(1419.0, 261.0),
+    Seg::Line(1432.0, 274.0),
+    Seg::Line(1432.0, 299.0),
+    Seg::Line(1213.0, 299.0),
+    Seg::Line(1200.0, 286.0),
+    Seg::Line(1200.0, 274.0),
+];
+/// The USER box: `M 155.5,189.5 H 349.5 V 232.5 H 220 L 208,240.5
+/// H 155.5 Z` (trace line 148), the mailbox's stepped box.
+const USER_STEP: &[Seg] = &[
+    Seg::Line(349.5, 189.5),
+    Seg::Line(349.5, 232.5),
+    Seg::Line(220.0, 232.5),
+    Seg::Line(208.0, 240.5),
+    Seg::Line(155.5, 240.5),
+];
+
+pub const DASHBOARD: &[Prim] = &[
+    // ground and bloom (trace lines 89-94, 100-101)
+    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(HUB_GROUND)),
+    Prim::Lobe { x: 832.0, y: -31.0, rx: 1360.0, ry: 527.0, stops: HUB_ROSE },
+    // header notes: Rajdhani 600 8 stretched 1.3 (lines 107-122)
+    Prim::Wide { x: 205.0, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "SPARE TIME MANAGER WAS DEVELO-" },
+    Prim::Wide { x: 205.0, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "PED BY SEOCHO. SERVING CUSTO-" },
+    Prim::Wide { x: 205.0, y: 131.9, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "MERS SINCE 2006." },
+    Prim::Wide { x: 715.3, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "SPARE TIME MANAGER WAS DEVELO-" },
+    Prim::Wide { x: 715.3, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "PED BY SEOCHO. SERVING CUSTO-" },
+    Prim::Wide { x: 715.3, y: 131.9, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "MERS SINCE 2006." },
+    Prim::Wide { x: 1253.8, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "MAPS ARE PROVIDED BY SEOCHO." },
+    Prim::Wide { x: 1253.8, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "SATELITE SERVICES SINCE 2006." },
+    // boxed A / C / D: 24x24 2px squares (lines 125-129) holding a
+    // size-18 cap stretched 1.7, centred on the box (lines 130-134)
+    line_rect(164.6, 109.8, 24.2, 24.2, Ink::Fixed(BRIGHT), 2.0),
+    line_rect(673.3, 109.8, 24.2, 24.2, Ink::Fixed(BRIGHT), 2.0),
+    line_rect(1215.2, 109.8, 24.0, 24.2, Ink::Fixed(BRIGHT), 2.0),
+    Prim::Wide { x: 168.8, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "A" },
+    Prim::Wide { x: 677.5, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "C" },
+    Prim::Wide { x: 1219.3, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "D" },
+    // section labels: Rajdhani 600 12.3 stretched 1.37 (lines 137-141)
+    Prim::Wide { x: 165.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "USER" },
+    Prim::Wide { x: 674.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "SECURITY LEVEL" },
+    Prim::Wide { x: 1216.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "DESCRIPTION" },
+    // USER box and GUES 7702 (lines 148-151)
+    shut_path(155.5, 189.5, USER_STEP, Ink::Fixed(MARK), 1.25),
+    Prim::Text { x: 164.0, y: 218.0, size: 21.5, ink: Ink::Fixed(NAME_INK), face: Face::SemiBold, anchor: Anchor::Start, content: "GUES 7702" },
+    // security badges, `#badge` 57x52, 02 filled (lines 155-164)
+    line_rect(664.5, 189.5, 57.0, 52.0, Ink::Fixed(MARK), 1.0),
+    Prim::Text { x: 692.0, y: 222.0, size: 22.0, ink: Ink::Fixed(MARK), face: Face::SemiBold, anchor: Anchor::Middle, content: "01" },
+    fill_rect(725.0, 189.0, 57.0, 52.0, Ink::Fixed(HUB_YELLOW)),
+    Prim::Text { x: 753.0, y: 222.0, size: 22.0, ink: Ink::Fixed(ON_BADGE), face: Face::SemiBold, anchor: Anchor::Middle, content: "02" },
+    line_rect(785.5, 189.5, 57.0, 52.0, Ink::Fixed(MARK), 1.0),
+    Prim::Text { x: 813.0, y: 222.0, size: 22.0, ink: Ink::Fixed(MARK), face: Face::SemiBold, anchor: Anchor::Middle, content: "03" },
+    line_rect(844.5, 189.5, 57.0, 52.0, Ink::Fixed(MARK), 1.0),
+    Prim::Text { x: 872.0, y: 222.0, size: 22.0, ink: Ink::Fixed(MARK), face: Face::SemiBold, anchor: Anchor::Middle, content: "04" },
+    // the ghosts, farthest first, every trail stepping (+20,-20) in
+    // screen space from its solid card (lines 196-239); they belong to
+    // no plate because they do not change with the selection and the
+    // solid cards paint over them in one pass
+    // VEHICLES c(364,413) rot 30, 6 ghosts (lines 198-203)
+    Prim::At { x: 484.0, y: 293.0, prims: GHOST_CW[1] },
+    Prim::At { x: 464.0, y: 313.0, prims: GHOST_CW[2] },
+    Prim::At { x: 444.0, y: 333.0, prims: GHOST_CW[3] },
+    Prim::At { x: 424.0, y: 353.0, prims: GHOST_CW[4] },
+    Prim::At { x: 404.0, y: 373.0, prims: GHOST_CW[5] },
+    Prim::At { x: 384.0, y: 393.0, prims: GHOST_CW[6] },
+    // WEAPONS c(551,414) rot -30, 7 ghosts (lines 205-211)
+    Prim::At { x: 691.0, y: 274.0, prims: GHOST_CCW[0] },
+    Prim::At { x: 671.0, y: 294.0, prims: GHOST_CCW[1] },
+    Prim::At { x: 651.0, y: 314.0, prims: GHOST_CCW[2] },
+    Prim::At { x: 631.0, y: 334.0, prims: GHOST_CCW[3] },
+    Prim::At { x: 611.0, y: 354.0, prims: GHOST_CCW[4] },
+    Prim::At { x: 591.0, y: 374.0, prims: GHOST_CCW[5] },
+    Prim::At { x: 571.0, y: 394.0, prims: GHOST_CCW[6] },
+    // left PRODUCTS c(458,575) rot 90, 6 ghosts (lines 213-218)
+    Prim::At { x: 578.0, y: 455.0, prims: GHOST_V[1] },
+    Prim::At { x: 558.0, y: 475.0, prims: GHOST_V[2] },
+    Prim::At { x: 538.0, y: 495.0, prims: GHOST_V[3] },
+    Prim::At { x: 518.0, y: 515.0, prims: GHOST_V[4] },
+    Prim::At { x: 498.0, y: 535.0, prims: GHOST_V[5] },
+    Prim::At { x: 478.0, y: 555.0, prims: GHOST_V[6] },
+    // right PRODUCTS c(825,424) rot 90, 6 ghosts (lines 220-225)
+    Prim::At { x: 945.0, y: 304.0, prims: GHOST_V[1] },
+    Prim::At { x: 925.0, y: 324.0, prims: GHOST_V[2] },
+    Prim::At { x: 905.0, y: 344.0, prims: GHOST_V[3] },
+    Prim::At { x: 885.0, y: 364.0, prims: GHOST_V[4] },
+    Prim::At { x: 865.0, y: 384.0, prims: GHOST_V[5] },
+    Prim::At { x: 845.0, y: 404.0, prims: GHOST_V[6] },
+    // EVENTS c(731,586) rot -30, 5 ghosts (lines 227-231)
+    Prim::At { x: 831.0, y: 486.0, prims: GHOST_CCW[2] },
+    Prim::At { x: 811.0, y: 506.0, prims: GHOST_CCW[3] },
+    Prim::At { x: 791.0, y: 526.0, prims: GHOST_CCW[4] },
+    Prim::At { x: 771.0, y: 546.0, prims: GHOST_CCW[5] },
+    Prim::At { x: 751.0, y: 566.0, prims: GHOST_CCW[6] },
+    // LOCATIONS c(919,586) rot 30, 6 ghosts (lines 233-238)
+    Prim::At { x: 1039.0, y: 466.0, prims: GHOST_CW[1] },
+    Prim::At { x: 1019.0, y: 486.0, prims: GHOST_CW[2] },
+    Prim::At { x: 999.0, y: 506.0, prims: GHOST_CW[3] },
+    Prim::At { x: 979.0, y: 526.0, prims: GHOST_CW[4] },
+    Prim::At { x: 959.0, y: 546.0, prims: GHOST_CW[5] },
+    Prim::At { x: 939.0, y: 566.0, prims: GHOST_CW[6] },
+    // the six solid blades in the trace's order (lines 243-267);
+    // EVENTS is the selection
+    blade!(0, 364.0, 413.0, BLADE_CW_ON, BLADE_CW_OFF, "VEHICLES"),
+    blade!(1, 551.0, 414.0, BLADE_CCW_ON, BLADE_CCW_OFF, "WEAPONS"),
+    blade_v!(2, 458.0, 575.0),
+    blade_v!(3, 825.0, 424.0),
+    blade!(4, 731.0, 586.0, BLADE_CCW_ON, BLADE_CCW_OFF, "EVENTS"),
+    blade!(5, 919.0, 586.0, BLADE_CW_ON, BLADE_CW_OFF, "LOCATIONS"),
+    // BRAINDANCE panel: tab, warning tape, outlined body, two
+    // paragraphs of yellow bars (lines 273-295)
+    fill_path(1213.0, 261.0, TAB, Ink::Fixed(HUB_YELLOW)),
+    Prim::Text { x: 1222.0, y: 288.0, size: 20.0, ink: Ink::Fixed(ON_HUB_YELLOW), face: Face::SemiBold, anchor: Anchor::Start, content: "BRAINDANCE" },
+    line_rect(1172.0, 306.0, 180.0, 24.0, Ink::Fixed(HUB_YELLOW), 1.0),
+    txt(1178.0, 316.0, 7.0, Ink::Fixed(TAPE_INK), "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE"),
+    txt(1178.0, 325.0, 7.0, Ink::Fixed(TAPE_INK), "ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
+    line_rect(1207.5, 299.5, 224.5, 367.0, Ink::Fixed(HUB_YELLOW), 1.25),
+    fill_rect(1224.0, 345.0, 196.0, 11.0, Ink::Fixed(GROWN_MICRO)),
+    fill_rect(1224.0, 365.0, 188.0, 11.0, Ink::Fixed(GROWN_MICRO)),
+    fill_rect(1224.0, 385.0, 192.0, 11.0, Ink::Fixed(GROWN_MICRO)),
+    fill_rect(1224.0, 405.0, 176.0, 11.0, Ink::Fixed(GROWN_MICRO)),
+    fill_rect(1224.0, 425.0, 120.0, 11.0, Ink::Fixed(GROWN_MICRO)),
+    fill_rect(1224.0, 448.0, 194.0, 11.0, Ink::Fixed(GROWN_MICRO)),
+    fill_rect(1224.0, 468.0, 184.0, 11.0, Ink::Fixed(GROWN_MICRO)),
+    fill_rect(1224.0, 488.0, 188.0, 11.0, Ink::Fixed(GROWN_MICRO)),
+    fill_rect(1224.0, 508.0, 98.0, 11.0, Ink::Fixed(GROWN_MICRO)),
+    // B DEVICE SOFTWARE mark: notes Rajdhani 700 8 stretched 1.3, the
+    // boxed B, the label (lines 302-308)
+    Prim::Wide { x: 609.9, y: 746.0, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::Bold, content: "MAPS ARE PROVIDED BY SEOCHO." },
+    Prim::Wide { x: 609.9, y: 755.0, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::Bold, content: "SATELITE SERVICES SINCE 2006." },
+    line_rect(574.3, 741.0, 24.0, 24.2, Ink::Fixed(BRIGHT), 2.0),
+    Prim::Wide { x: 578.4, y: 761.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "B" },
+    Prim::Wide { x: 575.0, y: 794.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "DEVICE SOFTWARE" },
+    // the foot line, one bold weight, two runs (lines 318-321)
+    txt_bold(503.0, 870.0, 9.0, Ink::Fixed(BRIGHT), "ARASAKA CONSUMER TECHNOLOGY"),
+    txt_bold(641.0, 870.0, 9.0, Ink::Fixed(BRIGHT), "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
+];
+// --- end dashboard -------------------------------------------------------

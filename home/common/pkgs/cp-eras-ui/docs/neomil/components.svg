@@ -110,11 +110,20 @@
       <stop offset="0" stop-color="#74272c"/>
       <stop offset="1" stop-color="#5e1516"/>
     </linearGradient>
-    <!-- dashboard-trace.svg #cell: the menu diamond, half diagonal 104,
-         inset outline at 68, 43x36 glyph plate -->
-    <g id="cell">
-      <path d="M 0,-104 L 104,0 L 0,104 L -104,0 Z" fill="#ef3333"/>
-      <path d="M 0,-68 L 68,0 L 0,68 L -68,0 Z"
+    <!-- dashboard-trace.svg #cell-up / #cell-down: the menu diamond, half
+         diagonal 104, its OUTWARD tip cut flat at 89 from the centre (a
+         30px plateau); inset outline at 68 cut the same way at 59 (18px
+         plateau); 43x36 glyph plate. #cell-up is row 1 (top cut),
+         #cell-down row 2 (bottom cut): the same shape mirrored in y. -->
+    <g id="cell-up">
+      <path d="M -15,-89 L 15,-89 L 104,0 L 0,104 L -104,0 Z" fill="#ef3333"/>
+      <path d="M -9,-59 L 9,-59 L 68,0 L 0,68 L -68,0 Z"
+            fill="none" stroke="#671b21" stroke-width="2"/>
+      <rect x="-22" y="-21" width="43" height="36" fill="#671b21"/>
+    </g>
+    <g id="cell-down">
+      <path d="M 0,-104 L 104,0 L 15,89 L -15,89 L -104,0 Z" fill="#ef3333"/>
+      <path d="M 0,-68 L 68,0 L 9,59 L -9,59 L -68,0 Z"
             fill="none" stroke="#671b21" stroke-width="2"/>
       <rect x="-22" y="-21" width="43" height="36" fill="#671b21"/>
     </g>
@@ -487,14 +496,27 @@
     <rect x="153" y="878" width="147" height="1" fill="#60181a"/>
     <text x="313" y="872" font-size="11" letter-spacing="1" fill="#96282d">00032 05 54 08 CP</text>
   </g>
-  <!-- FOOTER TAPE, DASHBOARD. dashboard-trace.svg y 864..889, three
-       abutting cells x 1209..1257 (48), 1257..1295 (38), 1295..1354
-       (59): two filled #ef3333, the third #671b21 stroked #ef3333.
-       Translated by (-879,-596). -->
+  <!-- FOOTER TAPE, DASHBOARD. dashboard-trace.svg x 1209..1354
+       y 864..888: the store footer's two-cell box in dashboard dress, a
+       144x24 #ef3333 1px frame, NOT filled, divided at x 1270 by a
+       1.2px rule; 68SD1D1100D1S in 700/8 at x 1215 and two 7.5px lines
+       at x 1277; a dim #671b21 echo of the frame 3px right and down.
+       (Re-read 2026-09-03: the earlier three filled cells 48/38/59 were
+       the extractor's blobs, not the picture.) Translated by
+       (-879,-602). -->
   <g transform="translate(-879,-602)">
-    <rect x="1209" y="864" width="48" height="25" fill="#ef3333"/>
-    <rect x="1257" y="864" width="38" height="25" fill="#ef3333"/>
-    <rect x="1295" y="864" width="59" height="25" fill="#671b21" stroke="#ef3333"/>
+    <rect x="1212.5" y="867.5" width="144" height="24" fill="none"
+          stroke="#671b21" stroke-width="1"/>
+    <rect x="1209.5" y="864.5" width="144" height="24" fill="none"
+          stroke="#ef3333" stroke-width="1"/>
+    <rect x="1270" y="864.5" width="1.2" height="24" fill="#ef3333"/>
+    <g font-family="Rajdhani" font-size="8" font-weight="700" fill="#ef3333">
+      <text x="1215" y="875">68SD1D1100D1S</text>
+      <g font-size="7.5" font-weight="600">
+        <text x="1277" y="874">COMBAT COLONIZATION</text>
+        <text x="1277" y="882">DEFENCE PROGRAM</text>
+      </g>
+    </g>
   </g>
   <!-- FOOTER, MAILBOX. mailbox-trace.svg: the code string at (771,875)
        in 9 ls 0.8 #a8282b with a LEFT arrow (20x2 shaft at x 892 y 870,
@@ -545,7 +567,7 @@
     <text x="30" y="300">FOOTER, store . 144x22 two cell box, #60181a on #df3131,</text>
     <text x="30" y="309">divider at +62, 147x1 underline 5 below the box</text>
     <text x="330" y="300">FOOTER TAPE, dashboard</text>
-    <text x="330" y="309">48 / 38 / 59 x 25, abutting, the third outlined</text>
+    <text x="330" y="309">144x24 1px frame, unfilled, divider at +61, echo +3,+3</text>
     <text x="500" y="300">FOOTER, mailbox</text>
     <text x="500" y="309">code 9 ls 0.8 + left arrow 26x10</text>
     <text x="662" y="300">LETTER CHIP</text>
@@ -677,28 +699,42 @@
     <text x="345" y="570">spine #8a2024 . subject 15 at x+8 +26, sender end anchored x+263 . NEW pill 76x14 rx 4 . DISC ICON 89x54 . RAIL 6, thumb 6x71</text>
   </g>
 
-  <!-- MENU DIAMOND. dashboard-trace.svg #cell, used at centres
-       (334,460) (530,460) (725,460) / (431,593) (628,592) (822,592):
-       a solid #ef3333 diamond of half diagonal 104 (208 across), a
-       thin inset diamond outline at half diagonal 68 stroked #671b21
-       2, and a 43x36 #671b21 glyph plate centred at (-22,-21). The
-       lattice: x pitch 195.5, row pitch 132, row 2 offset +96.5, so
-       same-row neighbours OVERLAP by 12.5 and are held apart by a
-       16x30 separator bar in the background colour on the midpoint,
-       drawn here at its true offset (+90..+106 from the centre). The
-       source shows NO second state: all six cells are drawn alike,
-       and selection is not expressed on the cell. Labels are Rajdhani
-       600/19 ls 1.2, centred on the cell's x, ABOVE row 1 (baseline
-       113 above the centre) and BELOW row 2 (baseline 129 below).
-       Translated by (+488,-24). -->
+  <!-- MENU DIAMOND, two variants. dashboard-trace.svg #cell-up at
+       (334,460) (530,460) (725,460) and #cell-down at (431,593)
+       (628,592) (822,592): a solid #ef3333 diamond of half diagonal 104
+       (208 across) whose OUTWARD tip is cut flat at 89 from the centre,
+       leaving a 30px plateau (row 1 the top, row 2 the bottom; the
+       inward tip runs full); a thin inset diamond outline at half
+       diagonal 68 stroked #671b21 2, cut the same way at 59 (18px
+       plateau); and a 43x36 #671b21 glyph plate centred at (-22,-21).
+       The two variants are one shape mirrored in y. Shown here at 1:1
+       superimposed, since the sheet has no 208px of room for a second:
+       the FILL is #cell-up, the DASHED #96282d outline is #cell-down
+       (outer "M 0,-104 L 104,0 L 15,89 L -15,89 L -104,0 Z", inner
+       "M 0,-68 L 68,0 L 9,59 L -9,59 L -68,0 Z"). The lattice: x pitch
+       195.5, row pitch 132, row 2 offset +96.5, so same-row neighbours
+       OVERLAP by 12.5 and are held apart by a 16x30 separator bar in
+       the background colour on the midpoint, drawn here at its true
+       offset (+90..+106 from the centre); it cuts the facing side tips
+       at the same ~89..90, so on the photo only the inward tip and the
+       four outer side tips (D1/D4 left, D3/D6 right) are pointed. The
+       source shows NO selected state: selection is not expressed on
+       the cell. Labels are Rajdhani 600/19 ls 1.2, centred on the
+       cell's x, ABOVE row 1 (baseline 113 above the centre) and BELOW
+       row 2 (baseline 129 below). Translated by (+488,-24). -->
   <g transform="translate(488,-24)">
-    <use href="#cell" x="334" y="460"/>
+    <use href="#cell-up" x="334" y="460"/>
     <rect x="424" y="445" width="16" height="30" fill="#070304"/>
+    <g transform="translate(334,460)" fill="none" stroke="#96282d"
+       stroke-width="1.5" stroke-dasharray="4 3">
+      <path d="M 0,-104 L 104,0 L 15,89 L -15,89 L -104,0 Z"/>
+      <path d="M 0,-68 L 68,0 L 9,59 L -9,59 L -68,0 Z"/>
+    </g>
   </g>
   <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.2" fill="#96282d">
-    <text x="718" y="552">MENU DIAMOND (dashboard hub) . 208 across, half diagonal 104, solid #ef3333 . inset outline at</text>
-    <text x="718" y="561">half diagonal 68, stroke #671b21 2 . glyph plate 43x36 . lattice 3+3, x pitch 195.5, row pitch 132,</text>
-    <text x="718" y="570">row 2 offset +96.5, cells OVERLAP 12.5 and are cut by a 16x30 ground bar . no selected variant</text>
+    <text x="718" y="552">MENU DIAMOND (dashboard hub) . 208 across, half diagonal 104, solid #ef3333, OUTWARD TIP CUT FLAT at 89 (30 plateau)</text>
+    <text x="718" y="561">inset outline 68 stroke #671b21 2, cut at 59 (18 plateau) . glyph plate 43x36 . FILL = #cell-up (row 1, top cut),</text>
+    <text x="718" y="570">DASHED = #cell-down (row 2, bottom cut) . lattice 3+3, x pitch 195.5, row pitch 132, offset +96.5, 16x30 ground bar . no selected variant</text>
   </g>
 
   <!-- BUTTON, filled and outlined. mailbox-trace.svg #btn at (728,702)
@@ -1058,12 +1094,12 @@
   </g>
 
   <!-- INFO PANEL. dashboard-trace.svg x 1128..1366 y 314..756
-       (238x442): "M 1128,314 H 1358 L 1366,322 V 512 L 1358,515 V 756
+       (238x442): "M 1128,314 H 1358 L 1366,322 V 508 L 1358,516 V 756
        H 1170 L 1128,714 Z" - top-left and bottom-right corners SQUARE,
        top-right chamfered 8, bottom-left chamfered 42; fill #671b21 at
        0.55 opacity over the ground, stroke #ef3333 1.5. The right edge
-       carries the same bright bar as the store cards, 8x110 at
-       y 405..515 with a cut top end, and steps 8 inward below it; two
+       carries the same bright bar as the store cards, 8x111 at
+       y 405..516 chamfered 8 at BOTH ends, and steps 8 inward below it; two
        1.5px #671b21 glitch echoes of the edge sit 3 and 5 out, above
        and below the bar. Heading GO HOME 700/20 at (1140,333). Body
        copy is drawn as measured RUN BOXES 12 high on a 21 pitch, five
@@ -1072,14 +1108,14 @@
        maker's mark sits at the foot, an M of 89x39 over an 89x8 bar.
        Translated by (-216,+260). -->
   <g transform="translate(-216,260)">
-    <path d="M 1128,314 H 1358 L 1366,322 V 512 L 1358,515 V 756 H 1170 L 1128,714 Z"
+    <path d="M 1128,314 H 1358 L 1366,322 V 508 L 1358,516 V 756 H 1170 L 1128,714 Z"
           fill="#671b21" fill-opacity="0.55" stroke="#ef3333" stroke-width="1.5"/>
-    <path d="M 1366,405 V 512 L 1358,515 V 414 Z" fill="#ef3333"/>
+    <path d="M 1366,405 V 508 L 1358,516 V 414 Z" fill="#ef3333"/>
     <g fill="#671b21">
       <rect x="1369" y="322" width="1.5" height="193"/>
       <rect x="1371" y="322" width="1.5" height="193"/>
-      <rect x="1361" y="515" width="1.5" height="241"/>
-      <rect x="1363" y="515" width="1.5" height="241"/>
+      <rect x="1361" y="516" width="1.5" height="240"/>
+      <rect x="1363" y="516" width="1.5" height="240"/>
     </g>
     <text x="1140" y="333" font-family="Rajdhani" font-size="20" font-weight="700"
           fill="#ef3333">GO HOME</text>
@@ -1100,7 +1136,7 @@
   <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.2" fill="#96282d">
     <text x="912" y="1028">INFO PANEL (dashboard) . 238x442 . TOP-RIGHT chamfer 8, BOTTOM-LEFT chamfer 42,</text>
     <text x="912" y="1037">the other two corners SQUARE . fill #671b21 at 0.55, stroke #ef3333 1.5</text>
-    <text x="912" y="1046">edge bar 8x110 at y +91, edge steps 8 inward below it, two 1.5 echoes 3 and 5 out</text>
+    <text x="912" y="1046">edge bar 8x111 at y +91, both ends cut 8, edge steps 8 inward below it, two 1.5 echoes 3 and 5 out</text>
     <text x="912" y="1055">heading 700/20 at +12,+19 . body on a 21 pitch . MAKER MARK 89x56 at the foot</text>
   </g>
 

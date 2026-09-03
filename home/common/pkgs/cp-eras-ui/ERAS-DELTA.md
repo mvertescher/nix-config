@@ -135,10 +135,17 @@ box's "band #2a3a51 to #101f3d" is the code's own `BAND_TOP`/
 
 ## Ready to apply once the Layout decision lands (class b)
 
-Values whose only readers are dashboard widgets or the bar-side widget
-set. Applying them moves no login/mailbox/store golden; they may move
-`bar-<era>` goldens where the bar inherits the metric (surface stroke,
-corner) -- check `tests/golden/bar-*.png` after.
+**The Layout decision landed 2026-09-03 late: `Layout`, `Menu` and
+`Style::{layout, menu}` were deleted and the dashboard became a
+`Prim` table per era, so the two `layout` rows and the `menu` row
+below are resolved by deletion.** The dashboard no longer reads any
+of the remaining fields either — its ground, strokes and corners are
+literal values in the `// --- dashboard ---` blocks — so every
+remaining reader of these is bar-side or the widget layer under
+`panels::mail`. Applying them is now purely the widget-vs-canvas
+question in `TODO.md`, and they may move `bar-<era>` goldens where the
+bar inherits the metric (surface stroke, corner) -- check
+`tests/golden/bar-*.png` after.
 
 | era | field | file:line | proposed value (trace) |
 |---|---|---|---|

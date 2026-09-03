@@ -11,9 +11,12 @@
 //! per-widget outlines, never a double gold stroke around the screen
 //! (`docs/neokitsch/README.md`, "There is no device frame"). The frame
 //! was an invention of the deleted `target-app.svg` composite.
-//! `chrome: Chrome::DeviceFrame` below stands because its only readers
-//! are the bar / dashboard chrome widgets and the mail example panel,
-//! and the `Layout` fold is undecided; see `ERAS-DELTA.md`.
+//! `chrome: Chrome::DeviceFrame` below stands because its only remaining
+//! reader is the bar's mail example panel (`panels::mail` through
+//! `widgets::chrome`); the dashboard no longer reads it, being a `Prim`
+//! table transcribed from `dashboard-trace.svg` (the
+//! `// --- dashboard ---` block at the foot of this file) since the
+//! `Layout` fold of 2026-09-03. See `ERAS-DELTA.md`.
 //!
 //! Its defining rule is that selection is a *material*, not a colour:
 //! the chosen tab, pill, card or mail row fills with wood veneer. That
@@ -24,7 +27,7 @@
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
     Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Compliance, Corner, Dress,
-    Era, Face, Footnotes, Ground, Ink, Layout, MenuMarker, MenuRule, Metrics, Nameplate, Menu,
+    Era, Face, Footnotes, Ground, Ink, MenuMarker, MenuRule, Metrics, Nameplate,
     PanelEcho, Selection, Style, Tab, Ticket, WindowLabel,
 };
 use crate::widgets::surface::{Corners, Cut};
@@ -375,12 +378,6 @@ pub fn style() -> Style {
         // The era has a step-notch shape but spends it on the mailbox
         // footer; its nav pills are plain `rx="4"` rects.
         ticket: Ticket::default(),
-        // "CARD CASCADE (device software)": tall clipped-corner cards,
-        // staggered, the active one filled with veneer.
-        menu: Menu::Cascade,
-        // The six-module hub shell: this era's target is the store
-        // screen and the shared dashboard is the hub for it.
-        layout: Layout::ModuleHub,
         glyphs: false,
         // --- login ---
         access: ACCESS,
@@ -392,6 +389,10 @@ pub fn style() -> Style {
         store: STORE,
         store_selection: (1, 1),
         // --- end store ---
+        // --- dashboard ---
+        dashboard: DASHBOARD,
+        dashboard_selection: 0,
+        // --- end dashboard ---
         metrics: Metrics {
             stroke: 2.0,
             gap: 18.0,
@@ -1861,3 +1862,534 @@ const CONTENT: &[Prim] = &[
     txt(715.0, 787.0, 6.5, Ink::Fixed(STORE_MICRO), "SERVING CUSTOMERS SINCE 2006."),
 ];
 // --- end store -----------------------------------------------------------
+// --- dashboard -----------------------------------------------------------
+//
+// `docs/neokitsch/dashboard-trace.svg` (revised 2026-09-03), transcribed
+// the way the store block above is: coordinates are the trace's own in
+// the 1600x900 frame, elements in the trace's paint order, every `<use>`
+// expanded through `Prim::At` at the trace's `x`/`y` or `translate`, so
+// a figure here reads against the SVG line it came from. Line numbers
+// below are the trace's.
+//
+// What is not transcribed, and why:
+//
+//   * the halo (:252, `<use href="#content" filter="url(#halo)"
+//     class="photo">`): the photograph's glow, hidden by G2i and never
+//     drawn by any screen here (docs/PIPELINE.md).
+//   * the blue annulus's left fade (`mask="url(#bluemask)"`, :250 and :128, a
+//     luminance ramp over x 0..640): the `Prim` set has no mask, so the
+//     annulus is drawn whole and shows a thin arm on the left the
+//     source has only faintly.
+//   * the haze's 1.3-degree rotation and the blue's 2 degrees
+//     (`gradientTransform`, :133 and :110): `Prim::Lobe` is axis-aligned.
+//   * `letter-spacing` on every text (1.5 on the header, 2 on LEVEL,
+//     0.4 on the annotations): `Prim::Text` has no tracking. The store
+//     block drops the same attribute; only `S T O R E` earned `Spaced`.
+//   * stroke opacity. The onion rings are one hex (`#bd8951` on the
+//     cards and panel, `#a97c48` on the T2 badge) at a per-ring
+//     `stroke-opacity`, and iced's canvas stroke has none, so each ring
+//     gets that hex composited onto its ground -- `PAGE` for the cards
+//     and panel, `HAZE_MID` for the badge, which sits in the violet.
+//   * the r4 foot fillet on the cards and their rings is an SVG arc
+//     (`A 4 4 0 0 1`, :154 and :217-222); `Seg` has no arc, so each is
+//     one cubic through the same two endpoints (k = 4/3 tan(135/4 deg)
+//     = 0.891, within 0.02 px of the arc). The control points are the
+//     only figures in this block that are derived rather than copied.
+
+/// The run's dashboard ink families, the trace's hex values. None of
+/// them is an existing era const (`GOLD_TEXT #e7c686` and `AMBER
+/// #fcc474` are each a step off), so they are named here rather than
+/// approximated; `MICRO #a97c48`, `CAPTION #d9a877`, `PAGE #0e0a0d` and
+/// the `HAZE_*` stops are reused where the trace samples the same hex.
+/// Mid gold: header text, onion rings, captions, the tape, letterbox strokes.
+pub const HUB_MID: iced::Color = rgb(0xbd8951);
+/// The front outline of every card and of the panel (:389, :451).
+pub const HUB_EDGE: iced::Color = rgb(0xe8ab66);
+/// The solid gold: EMAIL's card, the panel body, the labels, T2's tab.
+pub const HUB_FILL: iced::Color = rgb(0xf2b463);
+/// The tab plates on the cards' left edges (:400-406).
+pub const HUB_PLATE: iced::Color = rgb(0xfcbe6d);
+/// The dark paragraph bars on the panel body (:460).
+pub const HUB_DARK: iced::Color = rgb(0x3b2416);
+/// The T2 badge's front outline and its "T2" (:287, :290).
+pub const BADGE_LIT: iced::Color = rgb(0xe8c186);
+/// The interior of the A/B letterboxes where they mask the wire band (:312).
+pub const BOX_FILL: iced::Color = rgb(0x4c3f5f);
+
+/// `HUB_MID` at the trace's ring opacities over `PAGE`. The cards' six
+/// rings run 0.85 0.73 0.61 0.49 0.37 0.25 outermost to innermost
+/// (:344-349); the panel's four run 0.70 0.70 0.55 0.25 (:446-449).
+pub const RING_85: iced::Color = rgb(0xa37647);
+pub const RING_73: iced::Color = rgb(0x8e673f);
+pub const RING_70: iced::Color = rgb(0x89633d);
+pub const RING_61: iced::Color = rgb(0x795736);
+pub const RING_55: iced::Color = rgb(0x6e5032);
+pub const RING_49: iced::Color = rgb(0x64482e);
+pub const RING_37: iced::Color = rgb(0x4f3926);
+pub const RING_25: iced::Color = rgb(0x3a2a1e);
+/// `MICRO` at the T2 badge's seven ring opacities 0.55..0.85 (:279-285)
+/// over `HAZE_MID`, the haze stop nearest the badge's ground.
+pub const BADGE_55: iced::Color = rgb(0x775d4d);
+pub const BADGE_60: iced::Color = rgb(0x7d614c);
+pub const BADGE_65: iced::Color = rgb(0x82644c);
+pub const BADGE_70: iced::Color = rgb(0x88684b);
+pub const BADGE_75: iced::Color = rgb(0x8d6b4b);
+pub const BADGE_80: iced::Color = rgb(0x936e4a);
+pub const BADGE_85: iced::Color = rgb(0x98724a);
+
+/// The haze (`#haze`, :131-139): the same four colours the bar and store
+/// use, at this trace's own stop offsets, centred (825,-120), r 1030,
+/// y-scaled 0.515. The blue annulus (`#hazeblue`, :108-116) is the
+/// store's `BLUE` table stop for stop, at (900,-120) and the same radii.
+const HUB_HAZE: &[(f32, iced::Color)] = &[
+    (0.0, HAZE_CORE),
+    (0.258, HAZE_CORE),
+    (0.572, HAZE_MID),
+    (0.873, HAZE_EDGE),
+    (1.0, HAZE_OUT),
+];
+const HUB_GROUND: &[Prim] = &[
+    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(PAGE)),
+    Prim::Lobe { x: 825.0, y: -120.0, rx: 1030.0, ry: 530.45, stops: HUB_HAZE },
+    Prim::Lobe { x: 900.0, y: -120.0, rx: 1030.0, ry: 530.45, stops: BLUE },
+];
+
+/// One cascade card (`#ncard`, :154): r6.5 top-left, the 45-degree
+/// chamfer from (48,0) to the right edge at y 42.5, the right edge to
+/// 322.3, the r4 fillet, and the foot diagonal back to the left edge at
+/// y 241.5. Opens at (0,6.5).
+const NCARD: &[Seg] = &[
+    Seg::Quad { cx: 0.0, cy: 0.0, x: 6.5, y: 0.0 },
+    Seg::Line(48.0, 0.0),
+    Seg::Line(90.5, 42.5),
+    Seg::Line(90.5, 322.3),
+    Seg::Cubic { c1x: 90.54, c1y: 325.87, c2x: 86.25, c2y: 327.7, x: 83.7, y: 325.2 },
+    Seg::Line(0.0, 241.5),
+];
+/// The selected card (`#ncardsel`, :161): the same silhouette with the
+/// plate well cut 5 deep into the left edge over y 54.2..94.2.
+const NCARDSEL: &[Seg] = &[
+    Seg::Quad { cx: 0.0, cy: 0.0, x: 6.5, y: 0.0 },
+    Seg::Line(48.0, 0.0),
+    Seg::Line(90.5, 42.5),
+    Seg::Line(90.5, 322.3),
+    Seg::Cubic { c1x: 90.54, c1y: 325.87, c2x: 86.25, c2y: 327.7, x: 83.7, y: 325.2 },
+    Seg::Line(0.0, 241.5),
+    Seg::Line(0.0, 94.2),
+    Seg::Line(5.0, 90.8),
+    Seg::Line(5.0, 57.1),
+    Seg::Line(0.0, 54.2),
+];
+/// The six echo outlines nested inside a card (`#nring1..6`, :217-222),
+/// open: the top edge 3.7 lower and the right edge 2.4 further in per
+/// ring, the chamfer keeping its start at x 48. Each opens on the left
+/// edge at (0, 6.5 + 3.7 d).
+const NRING1: &[Seg] = &[
+    Seg::Quad { cx: 0.0, cy: 3.7, x: 6.5, y: 3.7 },
+    Seg::Line(48.0, 3.7),
+    Seg::Line(88.1, 43.8),
+    Seg::Line(88.1, 319.9),
+    Seg::Cubic { c1x: 88.14, c1y: 323.47, c2x: 83.85, c2y: 325.3, x: 81.3, y: 322.8 },
+];
+const NRING2: &[Seg] = &[
+    Seg::Quad { cx: 0.0, cy: 7.4, x: 6.5, y: 7.4 },
+    Seg::Line(48.0, 7.4),
+    Seg::Line(85.7, 45.1),
+    Seg::Line(85.7, 317.5),
+    Seg::Cubic { c1x: 85.74, c1y: 321.07, c2x: 81.45, c2y: 322.9, x: 78.9, y: 320.4 },
+];
+const NRING3: &[Seg] = &[
+    Seg::Quad { cx: 0.0, cy: 11.1, x: 6.5, y: 11.1 },
+    Seg::Line(48.0, 11.1),
+    Seg::Line(83.3, 46.4),
+    Seg::Line(83.3, 315.1),
+    Seg::Cubic { c1x: 83.34, c1y: 318.67, c2x: 79.05, c2y: 320.5, x: 76.5, y: 318.0 },
+];
+const NRING4: &[Seg] = &[
+    Seg::Quad { cx: 0.0, cy: 14.8, x: 6.5, y: 14.8 },
+    Seg::Line(48.0, 14.8),
+    Seg::Line(80.9, 47.7),
+    Seg::Line(80.9, 312.7),
+    Seg::Cubic { c1x: 80.94, c1y: 316.27, c2x: 76.65, c2y: 318.1, x: 74.1, y: 315.6 },
+];
+const NRING5: &[Seg] = &[
+    Seg::Quad { cx: 0.0, cy: 18.5, x: 6.5, y: 18.5 },
+    Seg::Line(48.0, 18.5),
+    Seg::Line(78.5, 49.0),
+    Seg::Line(78.5, 310.3),
+    Seg::Cubic { c1x: 78.54, c1y: 313.87, c2x: 74.25, c2y: 315.7, x: 71.7, y: 313.2 },
+];
+const NRING6: &[Seg] = &[
+    Seg::Quad { cx: 0.0, cy: 22.2, x: 6.5, y: 22.2 },
+    Seg::Line(48.0, 22.2),
+    Seg::Line(76.1, 50.3),
+    Seg::Line(76.1, 307.9),
+    Seg::Cubic { c1x: 76.14, c1y: 311.47, c2x: 71.85, c2y: 313.3, x: 69.3, y: 310.8 },
+];
+
+/// A card's idle dress, card-local: the six rings innermost first
+/// (:343-349, the trace's order), the front outline (:389-395) and the
+/// 6x38.3 r1.5 plate on the left edge at local y 54.6 (:401: MATRIX's
+/// is at 346.4 = 347 - 0.6, 338.6 = 284 + 54.6).
+const CARD_IDLE: &[Prim] = &[
+    line_path(0.0, 28.7, NRING6, Ink::Fixed(RING_25), 1.0),
+    line_path(0.0, 25.0, NRING5, Ink::Fixed(RING_37), 1.0),
+    line_path(0.0, 21.3, NRING4, Ink::Fixed(RING_49), 1.0),
+    line_path(0.0, 17.6, NRING3, Ink::Fixed(RING_61), 1.0),
+    line_path(0.0, 13.9, NRING2, Ink::Fixed(RING_73), 1.0),
+    line_path(0.0, 10.2, NRING1, Ink::Fixed(RING_85), 1.0),
+    shut_path(0.0, 6.5, NCARD, Ink::Fixed(HUB_EDGE), 1.2),
+    Prim::Round { x: -0.6, y: 54.6, w: 6.0, h: 38.3, r: 1.5, fill: Some(Ink::Fixed(HUB_PLATE)), stroke: None, width: 0.0 },
+];
+/// A card's selected dress, from EMAIL (:413-414): the well silhouette
+/// filled AND stroked `#f2b463` 1.2, no rings, and the smaller
+/// 4.6x32.1 plate standing 1.25 proud of the edge inside the well
+/// (244.75 = 246 - 1.25, 442.3 = 384 + 58.3).
+const CARD_SELECTED: &[Prim] = &[
+    Prim::Path { x: 0.0, y: 6.5, segs: NCARDSEL, close: true, fill: Some(Ink::Fixed(HUB_FILL)), stroke: Some(Ink::Fixed(HUB_FILL)), width: 1.2 },
+    Prim::Round { x: -1.25, y: 58.3, w: 4.6, h: 32.1, r: 1.5, fill: Some(Ink::Fixed(HUB_PLATE)), stroke: None, width: 0.0 },
+];
+/// One menu unit: the plate's hit box is the stroke-centre silhouette
+/// (90.5x327) at the trace's `<use x y>`, and both dresses are the
+/// card-local consts placed there.
+macro_rules! module {
+    ($i:expr, $x:expr, $y:expr) => {
+        Prim::Plate {
+            group: Group::Module,
+            index: $i,
+            x: $x,
+            y: $y,
+            w: 90.5,
+            h: 327.0,
+            on: &[Prim::At { x: $x, y: $y, prims: CARD_SELECTED }],
+            off: &[Prim::At { x: $x, y: $y, prims: CARD_IDLE }],
+        }
+    };
+}
+
+/// The five-line caption block under a card's foot (`#ncaption`, :231-237).
+const NCAPTION: &[Prim] = &[
+    fill_rect(0.0, 0.0, 84.0, 5.0, Ink::Fixed(HUB_MID)),
+    fill_rect(0.0, 8.0, 90.0, 5.0, Ink::Fixed(HUB_MID)),
+    fill_rect(0.0, 16.0, 82.0, 5.0, Ink::Fixed(HUB_MID)),
+    fill_rect(0.0, 24.0, 88.0, 5.0, Ink::Fixed(HUB_MID)),
+    fill_rect(0.0, 32.0, 38.0, 5.0, Ink::Fixed(HUB_MID)),
+];
+
+/// The detail panel (`#npanel`, :180): the shoulder at local y 30.3
+/// from the r7.5 top-left corner to x 64, one cubic climbing to the
+/// top line by x 110, r10 top-right and bottom corners. Opens (0,37.8).
+const NPANEL: &[Seg] = &[
+    Seg::Quad { cx: 0.0, cy: 30.3, x: 7.5, y: 30.3 },
+    Seg::Line(64.0, 30.3),
+    Seg::Cubic { c1x: 79.6, c1y: 30.3, c2x: 94.4, c2y: 0.0, x: 110.0, y: 0.0 },
+    Seg::Line(220.4, 0.0),
+    Seg::Quad { cx: 230.4, cy: 0.0, x: 230.4, y: 10.0 },
+    Seg::Line(230.4, 455.3),
+    Seg::Quad { cx: 230.4, cy: 465.3, x: 220.4, y: 465.3 },
+    Seg::Line(9.0, 465.3),
+    Seg::Quad { cx: 0.0, cy: 465.3, x: 0.0, y: 456.3 },
+];
+/// The panel's four rings nested inside it (`#npring1..4`, :200-203),
+/// open, all leaving the shoulder at (64,30.3).
+const NPRING1: &[Seg] = &[
+    Seg::Cubic { c1x: 79.6, c1y: 30.3, c2x: 94.4, c2y: 3.2, x: 110.0, y: 3.2 },
+    Seg::Line(220.4, 3.2),
+    Seg::Quad { cx: 227.4, cy: 3.2, x: 227.4, y: 10.2 },
+    Seg::Line(227.4, 455.1),
+    Seg::Quad { cx: 227.4, cy: 462.1, x: 220.4, y: 462.1 },
+    Seg::Line(7.0, 462.1),
+    Seg::Quad { cx: 0.0, cy: 462.1, x: 0.0, y: 455.1 },
+];
+const NPRING2: &[Seg] = &[
+    Seg::Cubic { c1x: 79.6, c1y: 30.3, c2x: 94.4, c2y: 6.4, x: 110.0, y: 6.4 },
+    Seg::Line(217.4, 6.4),
+    Seg::Quad { cx: 224.4, cy: 6.4, x: 224.4, y: 13.4 },
+    Seg::Line(224.4, 451.9),
+    Seg::Quad { cx: 224.4, cy: 458.9, x: 217.4, y: 458.9 },
+    Seg::Line(7.0, 458.9),
+    Seg::Quad { cx: 0.0, cy: 458.9, x: 0.0, y: 451.9 },
+];
+const NPRING3: &[Seg] = &[
+    Seg::Cubic { c1x: 79.6, c1y: 30.3, c2x: 94.4, c2y: 9.6, x: 110.0, y: 9.6 },
+    Seg::Line(214.4, 9.6),
+    Seg::Quad { cx: 221.4, cy: 9.6, x: 221.4, y: 16.6 },
+    Seg::Line(221.4, 448.7),
+    Seg::Quad { cx: 221.4, cy: 455.7, x: 214.4, y: 455.7 },
+    Seg::Line(7.0, 455.7),
+    Seg::Quad { cx: 0.0, cy: 455.7, x: 0.0, y: 448.7 },
+];
+const NPRING4: &[Seg] = &[
+    Seg::Cubic { c1x: 79.6, c1y: 30.3, c2x: 94.4, c2y: 12.8, x: 110.0, y: 12.8 },
+    Seg::Line(211.4, 12.8),
+    Seg::Quad { cx: 218.4, cy: 12.8, x: 218.4, y: 19.8 },
+    Seg::Line(218.4, 445.5),
+    Seg::Quad { cx: 218.4, cy: 452.5, x: 211.4, y: 452.5 },
+    Seg::Line(7.0, 452.5),
+    Seg::Quad { cx: 0.0, cy: 452.5, x: 0.0, y: 445.5 },
+];
+/// The panel's outline group, panel-local to `translate(1170.8 259.7)`
+/// (:445-451): rings innermost first, then the front.
+const PANEL_FRAME: &[Prim] = &[
+    line_path(64.0, 30.3, NPRING4, Ink::Fixed(RING_25), 1.0),
+    line_path(64.0, 30.3, NPRING3, Ink::Fixed(RING_55), 1.0),
+    line_path(64.0, 30.3, NPRING2, Ink::Fixed(RING_70), 1.0),
+    line_path(64.0, 30.3, NPRING1, Ink::Fixed(RING_70), 1.0),
+    shut_path(0.0, 37.8, NPANEL, Ink::Fixed(HUB_EDGE), 1.2),
+];
+
+/// The T2 badge (:270-290): seven hairline rings of the folder outline
+/// fading inward, the front, and the solid trapezoid tab pointing up
+/// off the inside bottom edge. Each ring is closed (`Z`) and opens at
+/// its own top-left, (1286.8,40.3) for the outermost.
+const T2_1: &[Seg] = &[
+    Seg::Line(1302.0, 40.3),
+    Seg::Quad { cx: 1314.6, cy: 42.4, x: 1317.6, y: 37.4 },
+    Seg::Line(1320.6, 41.1),
+    Seg::Quad { cx: 1322.6, cy: 32.1, x: 1329.6, y: 32.1 },
+    Seg::Line(1344.2, 32.1),
+    Seg::Quad { cx: 1349.2, cy: 32.1, x: 1349.2, y: 37.1 },
+    Seg::Line(1349.2, 101.8),
+    Seg::Quad { cx: 1349.2, cy: 105.8, x: 1345.2, y: 105.8 },
+    Seg::Line(1286.8, 105.8),
+    Seg::Quad { cx: 1282.8, cy: 105.8, x: 1282.8, y: 101.8 },
+    Seg::Line(1282.8, 46.4),
+    Seg::Quad { cx: 1282.8, cy: 42.4, x: 1286.8, y: 42.4 },
+];
+const T2_2: &[Seg] = &[
+    Seg::Line(1302.0, 42.4),
+    Seg::Quad { cx: 1313.8, cy: 44.2, x: 1316.8, y: 39.2 },
+    Seg::Line(1319.8, 41.8),
+    Seg::Quad { cx: 1321.8, cy: 32.8, x: 1328.8, y: 32.8 },
+    Seg::Line(1342.6, 32.8),
+    Seg::Quad { cx: 1347.6, cy: 32.8, x: 1347.6, y: 37.8 },
+    Seg::Line(1347.6, 101.5),
+    Seg::Quad { cx: 1347.6, cy: 105.5, x: 1343.6, y: 105.5 },
+    Seg::Line(1287.4, 105.5),
+    Seg::Quad { cx: 1283.4, cy: 105.5, x: 1283.4, y: 101.5 },
+    Seg::Line(1283.4, 48.2),
+    Seg::Quad { cx: 1283.4, cy: 44.2, x: 1287.4, y: 44.2 },
+];
+const T2_3: &[Seg] = &[
+    Seg::Line(1302.0, 44.5),
+    Seg::Quad { cx: 1313.0, cy: 46.0, x: 1316.0, y: 41.0 },
+    Seg::Line(1319.0, 42.5),
+    Seg::Quad { cx: 1321.0, cy: 33.5, x: 1328.0, y: 33.5 },
+    Seg::Line(1341.0, 33.5),
+    Seg::Quad { cx: 1346.0, cy: 33.5, x: 1346.0, y: 38.5 },
+    Seg::Line(1346.0, 101.2),
+    Seg::Quad { cx: 1346.0, cy: 105.2, x: 1342.0, y: 105.2 },
+    Seg::Line(1288.0, 105.2),
+    Seg::Quad { cx: 1284.0, cy: 105.2, x: 1284.0, y: 101.2 },
+    Seg::Line(1284.0, 50.0),
+    Seg::Quad { cx: 1284.0, cy: 46.0, x: 1288.0, y: 46.0 },
+];
+const T2_4: &[Seg] = &[
+    Seg::Line(1302.0, 46.6),
+    Seg::Quad { cx: 1312.2, cy: 47.8, x: 1315.2, y: 42.8 },
+    Seg::Line(1318.2, 43.2),
+    Seg::Quad { cx: 1320.2, cy: 34.2, x: 1327.2, y: 34.2 },
+    Seg::Line(1339.4, 34.2),
+    Seg::Quad { cx: 1344.4, cy: 34.2, x: 1344.4, y: 39.2 },
+    Seg::Line(1344.4, 101.0),
+    Seg::Quad { cx: 1344.4, cy: 105.0, x: 1340.4, y: 105.0 },
+    Seg::Line(1288.6, 105.0),
+    Seg::Quad { cx: 1284.6, cy: 105.0, x: 1284.6, y: 101.0 },
+    Seg::Line(1284.6, 51.8),
+    Seg::Quad { cx: 1284.6, cy: 47.8, x: 1288.6, y: 47.8 },
+];
+const T2_5: &[Seg] = &[
+    Seg::Line(1302.0, 48.7),
+    Seg::Quad { cx: 1311.4, cy: 49.6, x: 1314.4, y: 44.6 },
+    Seg::Line(1317.4, 43.9),
+    Seg::Quad { cx: 1319.4, cy: 34.9, x: 1326.4, y: 34.9 },
+    Seg::Line(1337.8, 34.9),
+    Seg::Quad { cx: 1342.8, cy: 34.9, x: 1342.8, y: 39.9 },
+    Seg::Line(1342.8, 100.8),
+    Seg::Quad { cx: 1342.8, cy: 104.8, x: 1338.8, y: 104.8 },
+    Seg::Line(1289.2, 104.8),
+    Seg::Quad { cx: 1285.2, cy: 104.8, x: 1285.2, y: 100.8 },
+    Seg::Line(1285.2, 53.6),
+    Seg::Quad { cx: 1285.2, cy: 49.6, x: 1289.2, y: 49.6 },
+];
+const T2_6: &[Seg] = &[
+    Seg::Line(1302.0, 50.8),
+    Seg::Quad { cx: 1310.6, cy: 51.4, x: 1313.6, y: 46.4 },
+    Seg::Line(1316.6, 44.6),
+    Seg::Quad { cx: 1318.6, cy: 35.6, x: 1325.6, y: 35.6 },
+    Seg::Line(1336.2, 35.6),
+    Seg::Quad { cx: 1341.2, cy: 35.6, x: 1341.2, y: 40.6 },
+    Seg::Line(1341.2, 100.5),
+    Seg::Quad { cx: 1341.2, cy: 104.5, x: 1337.2, y: 104.5 },
+    Seg::Line(1289.8, 104.5),
+    Seg::Quad { cx: 1285.8, cy: 104.5, x: 1285.8, y: 100.5 },
+    Seg::Line(1285.8, 55.4),
+    Seg::Quad { cx: 1285.8, cy: 51.4, x: 1289.8, y: 51.4 },
+];
+const T2_7: &[Seg] = &[
+    Seg::Line(1302.0, 52.9),
+    Seg::Quad { cx: 1309.8, cy: 53.2, x: 1312.8, y: 48.2 },
+    Seg::Line(1315.8, 45.3),
+    Seg::Quad { cx: 1317.8, cy: 36.3, x: 1324.8, y: 36.3 },
+    Seg::Line(1334.6, 36.3),
+    Seg::Quad { cx: 1339.6, cy: 36.3, x: 1339.6, y: 41.3 },
+    Seg::Line(1339.6, 100.2),
+    Seg::Quad { cx: 1339.6, cy: 104.2, x: 1335.6, y: 104.2 },
+    Seg::Line(1290.4, 104.2),
+    Seg::Quad { cx: 1286.4, cy: 104.2, x: 1286.4, y: 100.2 },
+    Seg::Line(1286.4, 57.2),
+    Seg::Quad { cx: 1286.4, cy: 53.2, x: 1290.4, y: 53.2 },
+];
+/// The front (:287), opening at (1291,55).
+const T2_FRONT: &[Seg] = &[
+    Seg::Line(1302.0, 55.0),
+    Seg::Quad { cx: 1309.0, cy: 55.0, x: 1312.0, y: 50.0 },
+    Seg::Line(1315.0, 46.0),
+    Seg::Quad { cx: 1317.0, cy: 37.0, x: 1324.0, y: 37.0 },
+    Seg::Line(1333.0, 37.0),
+    Seg::Quad { cx: 1338.0, cy: 37.0, x: 1338.0, y: 42.0 },
+    Seg::Line(1338.0, 100.0),
+    Seg::Quad { cx: 1338.0, cy: 104.0, x: 1334.0, y: 104.0 },
+    Seg::Line(1291.0, 104.0),
+    Seg::Quad { cx: 1287.0, cy: 104.0, x: 1287.0, y: 100.0 },
+    Seg::Line(1287.0, 59.0),
+    Seg::Quad { cx: 1287.0, cy: 55.0, x: 1291.0, y: 55.0 },
+];
+/// The tab (:288), opening at (1293,104.5).
+const T2_TAB: &[Seg] = &[
+    Seg::Line(1297.0, 100.0),
+    Seg::Line(1322.0, 100.0),
+    Seg::Line(1326.0, 104.5),
+];
+const T2_BADGE: &[Prim] = &[
+    shut_path(1286.8, 40.3, T2_1, Ink::Fixed(BADGE_55), 0.7),
+    shut_path(1287.4, 42.4, T2_2, Ink::Fixed(BADGE_60), 0.7),
+    shut_path(1288.0, 44.5, T2_3, Ink::Fixed(BADGE_65), 0.7),
+    shut_path(1288.6, 46.6, T2_4, Ink::Fixed(BADGE_70), 0.7),
+    shut_path(1289.2, 48.7, T2_5, Ink::Fixed(BADGE_75), 0.7),
+    shut_path(1289.8, 50.8, T2_6, Ink::Fixed(BADGE_80), 0.7),
+    shut_path(1290.4, 52.9, T2_7, Ink::Fixed(BADGE_85), 0.7),
+    shut_path(1291.0, 55.0, T2_FRONT, Ink::Fixed(BADGE_LIT), 1.1),
+    fill_path(1293.0, 104.5, T2_TAB, Ink::Fixed(HUB_FILL)),
+    txt(1295.0, 71.0, 12.0, Ink::Fixed(CAPTION), "LEVEL"),
+    Prim::Text { x: 1296.0, y: 95.0, size: 21.0, ink: Ink::Fixed(BADGE_LIT), face: Face::SemiBold, anchor: Anchor::Start, content: "T2" },
+];
+
+/// One strand of the wire band (:299-306): in low at the left at `yl`,
+/// a cubic up onto the tight line at `yb`, the long run to x 1040, a
+/// cubic back down to `yr` under the badges, and the curl at x 1568.
+macro_rules! wire {
+    ($yl:expr, $yb:expr, $yr:expr) => {
+        line_path(30.0, $yl, &[
+            Seg::Line(52.0, $yl),
+            Seg::Cubic { c1x: 84.0, c1y: $yl, c2x: 100.0, c2y: $yb, x: 130.0, y: $yb },
+            Seg::Line(1040.0, $yb),
+            Seg::Cubic { c1x: 1075.0, c1y: $yb, c2x: 1090.0, c2y: $yr, x: 1125.0, y: $yr },
+            Seg::Line(1535.0, $yr),
+            Seg::Quad { cx: 1562.0, cy: $yr, x: 1568.0, y: $yr + 22.0 },
+            Seg::Line(1570.0, $yr + 30.0),
+        ], Ink::Fixed(MICRO), 1.1)
+    };
+}
+
+/// A boxed section letter on this screen (:308-335): the store's
+/// `LETTERBOX` silhouette in `HUB_MID`, the 15px letter in `CAPTION`
+/// centred on the plate at (+12, +19).
+macro_rules! hub_box {
+    ($x:expr, $y:expr, $letter:expr) => {
+        Prim::At {
+            x: $x,
+            y: $y,
+            prims: &[
+                shut_path(3.0, 0.0, LETTERBOX, Ink::Fixed(HUB_MID), 1.4),
+                line_path(26.0, 17.0, LETTERBOX_FOLD, Ink::Fixed(HUB_MID), 1.0),
+                txt_mid(12.0, 19.0, 15.0, Ink::Fixed(CAPTION), $letter),
+            ],
+        }
+    };
+}
+
+pub const DASHBOARD: &[Prim] = &[
+    Prim::At { x: 0.0, y: 0.0, prims: HUB_GROUND },
+    // ==== header (:254-291) ====
+    txt(120.0, 42.0, 15.0, Ink::Fixed(HUB_MID), "CUSTOMER #NC488402"),
+    txt(120.0, 70.0, 12.0, Ink::Fixed(HUB_MID), "LEVEL"),
+    Prim::Text { x: 126.0, y: 90.0, size: 21.0, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T1" },
+    txt(1131.0, 68.0, 12.0, Ink::Fixed(HUB_MID), "SECURITY"),
+    txt(1131.0, 83.0, 12.0, Ink::Fixed(HUB_MID), "LEVEL"),
+    txt(1229.0, 63.0, 12.0, Ink::Fixed(HUB_MID), "LEVEL"),
+    txt(1354.0, 63.0, 12.0, Ink::Fixed(HUB_MID), "LEVEL"),
+    txt(1417.0, 63.0, 12.0, Ink::Fixed(HUB_MID), "LEVEL"),
+    Prim::Text { x: 1236.0, y: 86.0, size: 20.0, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T1" },
+    Prim::Text { x: 1361.0, y: 86.0, size: 20.0, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T3" },
+    Prim::Text { x: 1424.0, y: 86.0, size: 20.0, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T4" },
+    Prim::At { x: 0.0, y: 0.0, prims: T2_BADGE },
+    // the wire band (:299-306): eight strands, low runs 2.9 apart on the
+    // left, 0.16 apart on the tight line, 1.8 apart on the right ribbon
+    wire!(122.0, 86.40, 123.0),
+    wire!(124.9, 86.56, 124.8),
+    wire!(127.8, 86.72, 126.6),
+    wire!(130.7, 86.88, 128.4),
+    wire!(133.6, 87.04, 130.2),
+    wire!(136.5, 87.20, 132.0),
+    wire!(139.4, 87.36, 133.8),
+    wire!(142.3, 87.52, 135.6),
+    // boxed letters (:308-335): A/B mask the strands with an r3 interior
+    Prim::Round { x: 238.0, y: 98.0, w: 26.0, h: 26.0, r: 3.0, fill: Some(Ink::Fixed(BOX_FILL)), stroke: None, width: 0.0 },
+    Prim::Round { x: 1011.0, y: 98.0, w: 26.0, h: 26.0, r: 3.0, fill: Some(Ink::Fixed(BOX_FILL)), stroke: None, width: 0.0 },
+    hub_box!(238.0, 98.0, "A"),
+    hub_box!(1011.0, 98.0, "B"),
+    hub_box!(585.0, 799.0, "C"),
+    hub_box!(1172.0, 799.0, "D"),
+    txt(288.0, 106.0, 8.0, Ink::Fixed(MICRO), "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO."),
+    txt(288.0, 116.0, 8.0, Ink::Fixed(MICRO), "SERVING CUSTOMERS SINCE 2006."),
+    txt_end(1000.0, 106.0, 8.0, Ink::Fixed(MICRO), "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO."),
+    txt_end(1000.0, 116.0, 8.0, Ink::Fixed(MICRO), "SERVING CUSTOMERS SINCE 2006."),
+    txt(620.0, 826.0, 8.0, Ink::Fixed(MICRO), "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO."),
+    txt(620.0, 837.0, 8.0, Ink::Fixed(MICRO), "SERVING CUSTOMERS SINCE 2006."),
+    txt(1208.0, 826.0, 8.0, Ink::Fixed(MICRO), "MAPS ARE PROVIDED BY SEOCHO. SATELITE SERVICES"),
+    txt(1208.0, 837.0, 8.0, Ink::Fixed(MICRO), "SINCE 2006."),
+    // ==== the six cascade cards (:338-414) ====
+    // in the trace's reading order, at the `<use>` positions of :390-394
+    // and :413; the trace paints all rings, then all fronts, then all
+    // plates, which is the same picture since no two cards overlap
+    module!(0, 246.0, 384.0),
+    module!(1, 347.0, 284.0),
+    module!(2, 449.0, 182.0),
+    module!(3, 624.0, 384.0),
+    module!(4, 724.0, 284.0),
+    module!(5, 826.0, 182.0),
+    // labels (:423-431), right-anchored beside each card
+    txt_end(238.0, 466.7, 17.0, Ink::Fixed(HUB_FILL), "EMAIL"),
+    txt_end(338.0, 366.3, 17.0, Ink::Fixed(HUB_FILL), "MATRIX"),
+    txt_end(440.0, 264.6, 17.0, Ink::Fixed(HUB_FILL), "BRAINDANCE"),
+    txt_end(615.0, 466.7, 17.0, Ink::Fixed(HUB_FILL), "PRIVATE"),
+    txt_end(714.0, 356.3, 17.0, Ink::Fixed(HUB_FILL), "SECURITY"),
+    txt_end(714.0, 377.9, 17.0, Ink::Fixed(HUB_FILL), "SYSTEMS"),
+    txt_end(817.0, 264.6, 17.0, Ink::Fixed(HUB_FILL), "DEVICES"),
+    // captions under each foot (:434-439)
+    Prim::At { x: 253.0, y: 723.0, prims: NCAPTION },
+    Prim::At { x: 352.0, y: 622.0, prims: NCAPTION },
+    Prim::At { x: 455.0, y: 520.0, prims: NCAPTION },
+    Prim::At { x: 630.0, y: 723.0, prims: NCAPTION },
+    Prim::At { x: 730.0, y: 622.0, prims: NCAPTION },
+    Prim::At { x: 832.0, y: 520.0, prims: NCAPTION },
+    // ==== the detail panel (:441-480) ====
+    Prim::At { x: 1170.8, y: 259.7, prims: PANEL_FRAME },
+    // the solid body (:454)
+    fill_rect(1170.8, 326.0, 230.4, 309.0, Ink::Fixed(HUB_FILL)),
+    // two dark paragraphs, six lines and two, 11 tall at 19.5 pitch (:460-469)
+    fill_rect(1181.5, 343.0, 182.0, 11.0, Ink::Fixed(HUB_DARK)),
+    fill_rect(1181.5, 362.5, 200.0, 11.0, Ink::Fixed(HUB_DARK)),
+    fill_rect(1181.5, 382.0, 195.0, 11.0, Ink::Fixed(HUB_DARK)),
+    fill_rect(1181.5, 401.5, 170.0, 11.0, Ink::Fixed(HUB_DARK)),
+    fill_rect(1181.5, 421.0, 202.0, 11.0, Ink::Fixed(HUB_DARK)),
+    fill_rect(1181.5, 440.5, 101.0, 11.0, Ink::Fixed(HUB_DARK)),
+    fill_rect(1181.5, 480.0, 202.0, 11.0, Ink::Fixed(HUB_DARK)),
+    fill_rect(1181.5, 499.5, 207.0, 11.0, Ink::Fixed(HUB_DARK)),
+    // the micro-text tape (:475-476) and the module name (:478)
+    fill_rect(1194.0, 641.2, 174.0, 4.2, Ink::Fixed(HUB_MID)),
+    fill_rect(1194.0, 647.5, 181.0, 4.2, Ink::Fixed(HUB_MID)),
+    Prim::Text { x: 1286.7, y: 692.0, size: 20.0, ink: Ink::Fixed(HUB_FILL), face: Face::SemiBold, anchor: Anchor::Middle, content: "EMAIL" },
+];
+// --- end dashboard -------------------------------------------------------
