@@ -17,9 +17,10 @@ the gallery.
 screens, each gated by `scripts/fidelity_check.sh --inventory entropism
 <screen>`, and each carries a header comment narrating its source
 region by region with measurements. Read those headers, not this file,
-for geometry. The `target-*.svg` and `dashboard.svg` files predate them
-and are app-shaped compositions; where a trace covers the same screen,
-the trace supersedes it.
+for geometry. The app-shaped `target-app.svg` and `dashboard.svg`
+compositions that predated them were deleted 2026-09-03; the notes at
+the end say what they were. `target-components.svg` remains, by-eye and
+unverified.
 
 Note the file-name swap recorded in `docs/sources.md`:
 `images/entropism-store.png` is the **module hub** (traced by
@@ -122,14 +123,6 @@ build strings) and make it the default.
   security levels, button segments, menu tiles, mail list, message
   detail, product card in both states, sampled swatches, and the
   divergence notes rendered on-sheet. Sampled across the run.
-- `target-app.svg` — the 4ST store, **superseded by `store-trace.svg`**
-  (2026-09-02) and kept only until the iced store screen is rebuilt
-  from the trace. It is a loose composite of the same photo, not a
-  measured trace: the photo grows the *first* card where this SVG grows
-  the second, every card in the photo carries a pale-filled header
-  block and the yellow PETROCHEM / BETTERLIFE TEC band this SVG has
-  neither of, and the cards are wider on a wider pitch with the fourth
-  bleeding off the right edge.
 - `bar.svg` — the status bar: host tape, workspaces, tray, the
   wired/audio/CPU/MEM modules and the clock, at the 1600x220 geometry
   the bar golden tests render. The bar has no photo source, so this is
@@ -139,17 +132,24 @@ build strings) and make it the default.
   matches `bar()`**: it is the design target and `bar.rs` has not
   followed yet (crate TODO.md § "Bar restyle"), so read the SVG's
   IMPLEMENTATION DELTA block, not the current render.
-- `dashboard.svg` — an **app-shaped composite**, not a trace: the
-  screen `screens::dashboard` assembles under entropism's
-  `Layout::TileRow` — a dim-olive top field with a boxed [A] TILE MENU
-  header, a single row of four tiles (T2 `LOCATIONS`, solid sage,
-  selected), a caption strip under each tile and a thin build-rule at
-  the foot — at the 1600x900 geometry the dashboard golden tests
-  render. That frame is *not* the material: `dashboard-trace.svg`
+
+## Deleted composites (2026-09-03)
+
+Two app-shaped drawings used to sit beside the traces; `docs/sources.md`
+keeps a row per file saying what each got wrong. In short:
+
+- `target-app.svg` — the 4ST store as a loose composite, superseded by
+  `store-trace.svg`: it grew the second card where the photo grows the
+  first, and had none of the pale header blocks or the yellow PETROCHEM
+  / BETTERLIFE TEC band.
+- `dashboard.svg` — the tile-row composite `screens::dashboard` still
+  assembles under `Layout::TileRow`: a boxed [A] TILE MENU header over
+  a single row of four tiles and a caption strip. `dashboard-trace.svg`
   measures the hub as a 3x2 grid of six tiles **with** a MESSAGE detail
-  panel and a SECURITY LEVEL badge column beside it, and the whole
-  "row of four tiles, no sidebar, no detail panel" reading came from
-  the fabricated revision of the trace.
+  panel and a SECURITY LEVEL badge column; the "row of four tiles, no
+  sidebar" reading came from a fabricated revision of the trace. Until
+  the `Layout` decision in the crate TODO.md the dashboard screen has
+  no SVG that agrees with it — G2i now compares it against the trace.
 
 ```sh
 nix shell nixpkgs#librsvg --command \

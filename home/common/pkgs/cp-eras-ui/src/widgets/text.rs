@@ -30,7 +30,8 @@ pub fn label<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a> {
 ///
 /// The published role vocabulary has one quiet colour; the reference
 /// screens use two, and collapsing them is what made entropism's store
-/// screen unreadable. In `docs/entropism/target-app.svg` the tertiary
+/// screen unreadable. In `docs/entropism/target-app.svg` (deleted
+/// 2026-09-03; `store-trace.svg` keeps the two-tone rule) the tertiary
 /// strings -- meta labels, footnote bodies, the compliance caption --
 /// are `#3d4d38`, which is `dim`; but the *structural* small text --
 /// segmented bar labels, `S T O R E`, the DPS/PNT/ACC/ROF heads and

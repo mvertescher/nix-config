@@ -570,7 +570,9 @@ pub enum Nameplate {
 /// down 8. Neokitsch's footer nameplate is a plain `rect` -- no step --
 /// but it hangs by the same 12: `x=340 w=188` against a card at
 /// `x=352 w=176`, in `docs/neokitsch/target-components.svg`, and
-/// `x=506 w=244` against a card at `x=520 w=230` in its `target-app`.
+/// `x=506 w=244` against a card at `x=520 w=230` in its `target-app`
+/// (deleted 2026-09-03; `store-trace.svg` draws the nameplate as a tab
+/// under the card's bottom edge).
 /// (An earlier reading of this called it flush with the card. It is
 /// not.) The minimalist eras have no banner at all and take the
 /// default, which draws a rectangle.
@@ -585,7 +587,10 @@ pub struct Banner {
 /// The outward wedge kitsch cuts into the top-right of a nav pill.
 ///
 /// Pill-specific rather than era-wide, and the targets are explicit
-/// about it: `docs/kitsch/target-app.svg` draws every category as
+/// about it: `docs/kitsch/target-app.svg` (deleted 2026-09-03 -- and
+/// `store-trace.svg` disagrees: the categories are 216x39 peaked chevrons
+/// on a 60px pitch, not pills; this widget is the composite's reading, see
+/// `TODO.md`) draws every category as
 /// `M172 340 h158 l18 15 v13 q0 12 -12 12 h-164 q-12 0 -12 -12 v-16
 /// q0 -12 12 -12 Z` -- a `radius: 16` pill whose top-right corner is
 /// not rounded at all but juts *out* by 18 and *down* by 15 -- while
@@ -642,8 +647,10 @@ impl Ticket {
 /// * **Neomil** -- the services table, and the one row in this table
 ///   that had to be *earned* rather than read off a sheet.
 ///
-///   Where `screens::dashboard` puts a menu, `target-app.svg` puts a
-///   table: `UNIT | MEM | UPTIME | STATE`, four rows, one of them
+///   Where `screens::dashboard` puts a menu, `target-app.svg` (both
+///   neomil sheets deleted 2026-09-03; neither sampled the run, and the
+///   hub photo has a six-module menu, not a table -- the `Layout` item
+///   in `TODO.md`) put a table: `UNIT | MEM | UPTIME | STATE`, four rows, one of them
 ///   washed and marked, under a tinted header band and beside a scroll
 ///   rail. `target-components.svg` names the same object "TABLE /
 ///   LIST" and draws it again at widget scale. Both sheets also draw
@@ -798,7 +805,9 @@ pub enum Footnotes {
 /// disagree about which side of the card outline it belongs on, and
 /// reading the targets settled a question an earlier note had backwards:
 ///
-/// * entropism (`docs/entropism/target-app.svg`) sets it *inside* the
+/// * entropism (`docs/entropism/target-app.svg`, deleted 2026-09-03;
+///   `store-trace.svg` keeps the CC35 micro-caption inside each card)
+///   sets it *inside* the
 ///   card -- `text x=538 y=642` against `rect x=520 y=320 w=270 h=360`,
 ///   so 38px above the card's own bottom edge -- and omits it from the
 ///   selected card, which spends that room on its detail block.

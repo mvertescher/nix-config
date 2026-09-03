@@ -115,12 +115,13 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   fragments unstably under the axis-aligned shape templates, so the
   verdict rides per-colour-family occupancy IoU (faithful ~0.5 vs
   0.03–0.07 for the old composites; `spec_diff.py --gate inks`).
-- [ ] **Rework `docs/kitsch/dashboard.svg` and
-  `docs/neokitsch/dashboard.svg`** — both are "original composites"
-  drawn app-first while their real source went unread; both score
-  0.03–0.07 against the material on the ink gate. They should follow
-  their era's `dashboard-trace.svg`, not the other way around
-  (`docs/PIPELINE.md`, direction of change).
+- [x] ~~**Rework `docs/kitsch/dashboard.svg` and
+  `docs/neokitsch/dashboard.svg`**~~ — **deleted instead, 2026-09-03**,
+  with the other two `dashboard.svg`. They were "original composites"
+  drawn app-first while their real source went unread (0.03–0.07 on
+  the ink gate) and reworking them would have meant redrawing the
+  trace under another name. The trace is the design; the *screen* is
+  what has to follow it, which is the `Layout` item below.
 - [ ] **Decide whether `Layout` should exist — the material now answers
   the factual half.** With all four sources finally opened (2026-09-01),
   **all four eras are the same module-hub screen in different dress**:
@@ -302,24 +303,33 @@ gap must be exact.
   conversion carries its inks as `Ink::Fixed` (#75967b / #8aac8c /
   #20281c / #799d81) and the READMEs say "under measurement".
 
-Housekeeping, blocked on decisions above:
+Housekeeping (the two deletions below landed 2026-09-03; nothing left
+here is blocked):
 
-- [ ] **Delete `docs/<era>/target-app.svg` ×4** — superseded by
-  `store-trace.svg` (neomil: by `mailbox-trace.svg` + `store-trace.svg`)
-  and marked so in `docs/sources.md`. The store screen *is* now built
-  from the trace (2026-09-03), so the only remaining reason to keep
-  them is that 12 source files (`src/{lib,palette,style}.rs`,
-  `src/eras/{kitsch,neokitsch}.rs`, `src/widgets/{chrome,glyph,menu,
-  ornament,surface,table,text}.rs`) still cite `target-app.svg` /
-  `target-components.svg` by coordinate in doc comments — those
-  references move to the traces in the same change.
-  Note `neomil/target-components.svg` samples nothing from its run
-  either; it goes at the same time or gets rebuilt from the four neomil
-  traces.
-- [ ] **`docs/<era>/dashboard.svg` ×4** are the app-shaped composites
-  and all four are known-wrong against their traces — the two kitsch/
-  neokitsch ones are the item above; neomil and entropism are the same
-  fault with a smaller number. Blocked on the `Layout` decision.
+- [x] **Delete `docs/<era>/target-app.svg` ×4** — done 2026-09-03,
+  together with `neomil/target-components.svg` (sampled nothing from its
+  run), `neomil/comparison.html` and `neomil/golden/` (one-off agent
+  artefacts). `docs/sources.md` keeps a struck-through row per deleted
+  file recording what was wrong with it. The doc comments that cited
+  them by coordinate were *not* moved to the traces — the numbers they
+  cite are the numbers the code was built to, and the traces disagree
+  with several of them (kitsch `Ticket`/`Banner`, neokitsch
+  `DeviceFrame`, the neomil table). Each citation is annotated "deleted
+  2026-09-03" with what the trace says instead, so the disagreement is
+  visible at the call site rather than papered over.
+- [x] **`docs/<era>/dashboard.svg` ×4** — deleted 2026-09-03 rather than
+  waiting on the `Layout` decision: they were the app's own layout
+  drawn back into SVG, so keeping them as "designs" let G2i report a
+  PASS for entropism/neokitsch that only meant the screen matched a
+  drawing of itself. `fidelity_check.sh` now resolves every screen to
+  `<screen>-trace.svg` (`bar.svg` for the bar), G2i and G1i on the same
+  file. **Honest dashboard G2i baseline against the traces, all four
+  eras: 0% matched area, FAIL** (captures verified non-blank; the
+  side-by-sides in `/tmp/g2i-<era>-dashboard/` show two different
+  compositions). Nothing to fix here — this is the `Layout` item's
+  number until the screen is rebuilt from the traces. Side effect:
+  `--source` now runs four screens per era instead of one (the "script
+  gap" noted under the wave findings is closed).
 
 ### Bar restyle (2026-09-02) — SVG done; `bar.rs` followed 2026-09-03
 
@@ -410,7 +420,8 @@ Open:
   above (fold OpsCharts/TileRow back to ModuleHub) — fix it there, once.
   Unverified README claims the docs pass left in place: kitsch bezel
   #f08c1e and #fcbb15, neokitsch #c78948, the neomil `dashboard.svg`
-  wordmark vs `dashboard.rs:225-234` "wordmark", the entropism
+  wordmark vs `dashboard.rs:225-234` "wordmark" (moot: the SVG is
+  deleted), the entropism
   desktop-theme paragraph, the `target-components.svg` inventories.
 
 ### SVG→iced pre-work (2026-09-02)
@@ -464,7 +475,10 @@ four bars, done in this order so the Rust is written once.
   names the missing cells where inks gives one number). `--match-iou
   0.65`, not spec_diff's 0.30: entropism/bar's menu panel matched at 0.50
   while 140px left and 67px wider than the design, and the two converged
-  pairs (entropism/dashboard 100%, neokitsch/dashboard 87%) hold to 0.90.
+  pairs (entropism/dashboard 100%, neokitsch/dashboard 87% — against
+  the since-deleted `dashboard.svg` composites, i.e. the screen against
+  a drawing of itself; that is what made them a calibration pair) hold
+  to 0.90.
   Move it only with that kind of evidence. `extract_spec.py`'s 80x45 ink
   grid used a `reshape` needing the canvas to divide evenly — 220 does
   not — replaced by index binning, bit-identical at 1600x900. Starting
@@ -524,14 +538,18 @@ four bars, done in this order so the Rust is written once.
   - Dashboard, not in the wave, gated after the merge: entropism and
     neokitsch PASS; neomil 0% (the item at the top of this file) and
     kitsch 19% — the kitsch number is identical against the
-    `a0a9274` trace, so pre-existing, not a regression.
+    `a0a9274` trace, so pre-existing, not a regression. **Superseded
+    2026-09-03:** those four numbers were against the app-shaped
+    `dashboard.svg` composites, since deleted; against the traces all
+    four dashboards score 0% (see the housekeeping item).
 
   Findings that outlive the wave, each verified by the orchestrator:
   - **Gate change:** `fidelity_check.sh --implementation` hides
     `class="photo"` elements (halos, glows) from the design render
     before comparing; `docs/PIPELINE.md` has the paragraph. XML
     comments must not contain `--`. Follow-on: `--source` mode only
-    runs `dashboard.svg` (login/mailbox/store SKIP) — script gap.
+    ran `dashboard.svg` (login/mailbox/store SKIP) — script gap, closed
+    2026-09-03 when the script moved to one design per screen.
   - **iced_wgpu canvas buckets meshes < images < text per canvas**
     regardless of draw order — a covering strip cannot hide a caption
     on the same canvas; use layers. `Frame::draft`/clip keeps the
@@ -619,6 +637,11 @@ four bars, done in this order so the Rust is written once.
 Implement the widget set mocked in `docs/target-components.svg`;
 `docs/target-app.svg` ("NEOMIL OPS") is the acceptance test — done
 when that screen assembles from library widgets. Priority order:
+
+> Both neomil sheets were deleted 2026-09-03 (see Housekeeping); the
+> acceptance test no longer exists as a file. The items below stand on
+> their own as widget work, but "NEOMIL OPS" is not a screen the
+> material has — the neomil traces are the targets now.
 
 - [ ] **Theme/Catalog first**: replace loose color consts at call
   sites with a semantic iced Theme + widget catalogs (surface/

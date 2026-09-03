@@ -12,9 +12,9 @@ measured schematics of the four sourced screens, each gated by
 `scripts/fidelity_check.sh --inventory kitsch <screen>`, and each
 carries a header comment narrating its source region by region with
 measurements. Read those headers, not this file, for geometry. The
-`target-*.svg` and `dashboard.svg` files predate them and are
-app-shaped compositions; where a trace covers the same screen, the
-trace supersedes it.
+app-shaped `target-app.svg` and `dashboard.svg` compositions that
+predated them were deleted 2026-09-03; the notes at the end say what
+they were. `target-components.svg` remains, by-eye and unverified.
 
 ## Provenance
 
@@ -156,15 +156,6 @@ the thing the toolkit abstraction should be tested against.
   page-curl container, product card in both states, fan menu, callout
   panel, mail list, device bezel, guest card, security strip, sampled
   swatches. Sampled across the run.
-- `target-app.svg` — the 4ST store screen, **superseded by
-  `store-trace.svg`** (2026-09-02) and kept only until the iced store
-  screen is rebuilt from the trace. It is the closest of the four
-  `target-app` files — right screen, right composition, right grown
-  card — but it is a loose composite: its nav rows are rounded rects
-  inside a bracket that ends in a small blob rather than chevrons above
-  a large wave, its cards are narrower on a tighter pitch with none
-  running off the frame, and its shelf band is half height with no flag
-  notch.
 - `bar.svg` — the status bar: host tape, workspaces, tray, the
   wired/audio/CPU/MEM modules and the clock, at the 1600x220 geometry
   the bar golden tests render. The bar has no photo source, so this is
@@ -175,16 +166,25 @@ the thing the toolkit abstraction should be tested against.
   design target and `bar.rs` has not followed yet (crate TODO.md §
   "Bar restyle"), so read the SVG's IMPLEMENTATION DELTA block, not the
   current render.
-- `dashboard.svg` — an **original composite with a known source it
-  ignores**, not a trace: the six-module hub `screens::dashboard`
-  assembles under `Layout::ModuleHub` — top bar, sidebar (logotype,
-  security-level badges), the era's menu over the six modules with one
-  selected, the detail panel and the footer — at the 1600x900 geometry
-  the dashboard golden tests render. It was drawn before the hub screen
-  was found: its fan widget came from the fan scenes but its chrome
-  matches the app, and it scores 0.07 on the ink gate against
-  `kitsch-dashboard.png` (a faithful trace scores 0.59). Rework it
-  against `dashboard-trace.svg`.
+
+## Deleted composites (2026-09-03)
+
+Two app-shaped drawings used to sit beside the traces; `docs/sources.md`
+keeps a row per file saying what each got wrong. In short:
+
+- `target-app.svg` — the 4ST store as a loose composite, superseded by
+  `store-trace.svg`. The closest of the four `target-app` files, but
+  its nav rows were rounded pills where the photo has 216x39 chevrons
+  above the teal wave, and its band was half height with no flag notch
+  — `src/style.rs` `Ticket` and `Banner` still carry those numbers
+  (the open kitsch item in the crate TODO.md).
+- `dashboard.svg` — the six-module hub composite `screens::dashboard`
+  still assembles under `Layout::ModuleHub`. Drawn before the hub
+  screen was found: its fan widget came from the fan scenes but its
+  chrome matched the app, and it scored 0.07 on the ink gate against
+  `kitsch-dashboard.png` (the trace scores 0.59). Until the `Layout`
+  decision in the crate TODO.md the dashboard screen has no SVG that
+  agrees with it — G2i now compares it against the trace.
 
 ```sh
 nix shell nixpkgs#librsvg --command \

@@ -17,10 +17,12 @@ All four eras were sampled from the published reference material rather
 than described from memory (`docs/<era>/README.md` records provenance,
 pixel-read palettes and observed rules). Laying the four design targets
 side by side settled the crate's architecture, because they dress **the
-same screens**. Every era's `target-app.svg` is the 4ST weapons store:
+same screens**. Every era's `store-trace.svg` is the 4ST weapons store:
 same logotype, same customer meta, same category nav with one item
 selected, same four product cards with one selected and grown, same
-footnote markers, same footer.
+footnote markers (neomil's has no header row and swaps the 4ST mark
+for MASURAO; neokitsch's has no footer -- the traces record the
+exceptions the earlier composites papered over).
 
 So an era is **data**, not a trait to implement:
 
@@ -63,8 +65,9 @@ which is the same discipline that forbids `if era ==` in `screens/`.
 Neomil's arm was a **cut-diamond hub** until the table landed, and the
 story is worth keeping because it is the shape this crate's mistakes
 take. The hub was inherited from the pre-generalisation crate and was in
-*neither* neomil sheet -- `target-app.svg` puts a services table where
-the dashboard puts its menu -- so it was kept as an admitted stand-in,
+*neither* neomil sheet -- the since-deleted `target-app.svg` composite
+put a services table where the dashboard put its menu -- so it was kept
+as an admitted stand-in,
 with both `style.rs` and the widget's own header saying it was the first
 thing to reconsider when the table arrived. It arrived; the hub is
 deleted. Nothing was lost with it: the hit-testing it was credited with
@@ -89,12 +92,16 @@ Two entries carry most of the risk:
   synthesises it (base tone, banded warp, grain lines) rather than
   shipping a raster asset, and clips the grain with `span_at` instead of
   relying on renderer path clipping.
-- **`Chrome::DeviceFrame`** — neokitsch's frame is part of the UI, not a
-  window decoration. The top and bottom rails are the stepped
-  double-gold-stroke device frame from `docs/neokitsch/target-app.svg`
-  — lit outer stroke at the top, flat frame gold at the foot, the
+- **`Chrome::DeviceFrame`** — the stepped double-gold-stroke device
+  frame — lit outer stroke at the top, flat frame gold at the foot, the
   shaded `FRAME_INNER` line inside both — with a strata wedge at the
-  foot; the meta line and the screens' contents sit inside it.
+  foot. It was drawn to neokitsch's `target-app.svg` composite, which
+  invented it: the photos have no full-screen frame, and the
+  `store-trace.svg` that superseded the composite (deleted 2026-09-03)
+  has none either. The canvas screens (store, login, mailbox) do not
+  wear it; the widget-based dashboard and the bar's mail panel still
+  do, until the widget-vs-canvas decision in `TODO.md` settles what
+  happens to the widget layer.
 
 ## Palette resolution
 
@@ -168,9 +175,10 @@ nix shell nixpkgs#librsvg --command \
   rsvg-convert -w 1600 -h 220 bar.svg -o /tmp/bar.png
 ```
 
-The dashboard gets the same treatment: `docs/<era>/dashboard.svg`
-sits at the 1600x900 frame the `dashboard.<era>` goldens render, and
-each era's README lists both alongside `target-app.svg`.
+The screens are traced rather than composed: `docs/<era>/<screen>-trace.svg`
+sits at the 1600x900 frame the `<screen>.<era>` goldens render, and
+`docs/sources.md` records which photo each one traces. The bar is the
+only screen with a composed SVG, because no photo shows a bar.
 
 The tray is both watcher and host, and lets the bus decide which is
 live: it never asks for the name with `ReplaceExisting`, so it will not
@@ -228,8 +236,10 @@ cp-eras-ui-store                # follow the desktop theme
 cp-eras-ui-store --era kitsch   # force one
 ```
 
-Comparing that against `docs/kitsch/target-app.svg` is the intended
-workflow.
+Comparing that against `docs/kitsch/store-trace.svg` is the intended
+workflow — by eye, or scripted as
+`scripts/fidelity_check.sh --implementation kitsch store` (G2i in
+`docs/PIPELINE.md`).
 
 ## Tests
 

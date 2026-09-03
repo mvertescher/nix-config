@@ -477,7 +477,9 @@ pub fn span_at(corners: Corners, ticket: Ticket, w: f32, h: f32, y: f32) -> (f32
 ///
 /// It read, if you were feeling generous, as a folded flap: the veneer
 /// showing its underside where the corner is cut. It is not one.
-/// `docs/neokitsch/target-app.svg` draws the selected card as a single
+/// `docs/neokitsch/target-app.svg` (deleted 2026-09-03; `store-trace.svg`
+/// draws card 2 solid gold across y 411..653 the same way) draws the
+/// selected card as a single
 /// path -- `M800 340 h190 l30 30 v410 ...` -- filled with veneer and
 /// grain and *nothing else*; the cut corner is empty ground. And a
 /// deliberate flap would not stop 4px short of the card's own right

@@ -8,9 +8,9 @@ TODO.md's palette-correction entry).
 **Which file is authoritative: read `docs/PIPELINE.md` and
 `docs/sources.md` first.** The four `*-trace.svg` are measured
 schematics of the four sourced screens and are what an implementation
-is built and judged against. The `target-*.svg` and `dashboard.svg`
-files predate them and are app-shaped compositions; where a trace
-covers the same screen, the trace supersedes it.
+is built and judged against. The app-shaped `target-*.svg` and
+`dashboard.svg` compositions that predated them were deleted
+2026-09-03; the section at the end says what they were.
 
 ## The traces — the material
 
@@ -44,22 +44,8 @@ Each is held to its photo by
   with bottom-left chamfers, and four MAGNUM 650 HAND GUN cards with
   the second selected and grown. Gate: PASS, 71% area.
 
-## The older composites
+## The bar — the one original
 
-- `target-components.svg` — every widget the toolkit should grow, with
-  states: buttons (primary/ghost/override/disabled/icon), text input
-  (+focus), select (+open list), slider, toggles/checkbox/radio, tab
-  bar, meters (segmented/bar/indeterminate), badges/tags/status dots,
-  toast+banner (warn/error), modal, table with selection + scrollbar,
-  key-value rows, log view, status bar, context menu, tooltip, 16px
-  icon set. Sampled across the run.
-- `target-app.svg` — "NEOMIL OPS": a services table, meters, a live
-  log, a detail panel, action buttons, a nav rail and a status bar.
-  **An original composition, not a trace** — the old "traced from
-  `img-08-main.png`" claim was false, and it is superseded by
-  `mailbox-trace.svg` and `store-trace.svg` (2026-09-02). It shares
-  only the palette and the header grammar with the material; do not
-  use it as the reference for a screen a trace covers.
 - `bar.svg` — the status bar: host tape, workspaces, tray, the
   wired/audio/CPU/MEM modules and the clock, at the 1600x220 geometry
   the bar golden tests render. The bar has no photo source, so this is
@@ -68,16 +54,25 @@ Each is held to its photo by
   header. **It no longer matches `bar()`**: it is the design target and
   `bar.rs` has not followed yet (crate TODO.md § "Bar restyle"), so
   read the SVG's IMPLEMENTATION DELTA block, not the current render.
-- `dashboard.svg` — an **app-shaped composite**, not a trace: the
-  ops-charts screen `screens::dashboard` assembles under neomil's
-  `Layout::OpsCharts` — a cold-blue top band with red crests, three
-  large red diamonds carrying chart polylines, a right rail and a
-  corner block — at the 1600x900 geometry the dashboard golden tests
-  render, which is what G2 compares against the golden. It is not the
-  material: the photo holds the six-diamond hub `dashboard-trace.svg`
-  draws, and the inventory gate scores this screen's neomil golden —
-  the same composition — at 0% of the source's shape area
-  (`src/screens/dashboard.rs`).
+
+## Deleted composites (2026-09-03)
+
+Three app-shaped drawings used to sit beside the traces; `docs/sources.md`
+keeps a row per file saying what each got wrong. In short:
+
+- `target-app.svg` — "NEOMIL OPS", a services table + sessiond panel.
+  An original composition despite its "traced from `img-08-main.png`"
+  claim; superseded by `mailbox-trace.svg` and `store-trace.svg`.
+  `src/widgets/table.rs` and `style::Menu::Table` were built to it.
+- `target-components.svg` — a widget sheet that claimed to be "sampled
+  across the run" and sampled nothing from it.
+- `dashboard.svg` — the ops-charts composite `screens::dashboard` still
+  assembles under `Layout::OpsCharts` (three red chart diamonds, a
+  right rail, a corner block). The photo holds the six-diamond hub
+  `dashboard-trace.svg` draws; the inventory gate scored the composite
+  at 0% of the source's shape area. Until the `Layout` decision in the
+  crate TODO.md, the dashboard screen has no SVG that agrees with it —
+  G2i now compares it against the trace and reports that honestly.
 
 ```sh
 nix shell nixpkgs#librsvg --command \
@@ -88,4 +83,4 @@ nix shell nixpkgs#librsvg --command \
 
 Render with Rajdhani + Orbitron available to fontconfig:
 
-    FONTCONFIG_FILE=<conf with the fonts> rsvg-convert -w 1600 -h 900 target-components.svg -o /tmp/sheet.png
+    FONTCONFIG_FILE=<conf with the fonts> rsvg-convert -w 1600 -h 900 login-trace.svg -o /tmp/sheet.png

@@ -3,8 +3,8 @@
 //! The four eras -- entropism, kitsch, neo-militarism, neokitsch -- were
 //! sampled from the published reference material rather than described
 //! from memory; see `docs/<era>/README.md` for provenance, palettes and
-//! observed rules, and `docs/<era>/target-app.svg` for the design target
-//! each is measured against.
+//! observed rules, and `docs/<era>/<screen>-trace.svg` (`bar.svg` for the
+//! bar) for the design each screen is measured against.
 //!
 //! The shape of the crate follows from one observation: all four
 //! references dress the *same screens*. So an era is data --

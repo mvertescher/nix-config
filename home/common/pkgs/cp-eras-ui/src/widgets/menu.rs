@@ -71,7 +71,8 @@ pub fn menu<'a, Message: 'static>(
 /// The columns neomil's services table is drawn with, restated against
 /// what a [`MenuItem`] actually carries.
 ///
-/// `docs/neomil/target-app.svg` runs `UNIT | MEM | UPTIME | STATE` --
+/// `docs/neomil/target-app.svg` (deleted 2026-09-03; an original
+/// composition, see `widgets::table`) ran `UNIT | MEM | UPTIME | STATE` --| MEM | UPTIME | STATE` --
 /// a name and then facts about it -- at widths of roughly `356 | 120 |
 /// 208 | 216` out of 900. A module has a name, a catalogue code and a
 /// blurb, so it is three columns in the same shape: the name wide, the

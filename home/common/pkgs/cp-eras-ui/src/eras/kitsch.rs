@@ -39,7 +39,8 @@ pub const ON_MINT: iced::Color = rgb(0x0b3b31);
 pub const SLAB: iced::Color = rgb(0x2bc4ac);
 pub const SLAB_SHADE: iced::Color = rgb(0x177a6b);
 /// The yellow one stop down: the shelf band on the *selected* card
-/// (`docs/kitsch/target-app.svg`, `M830 308 ... fill="#f0a80a"` against
+/// (`docs/kitsch/target-app.svg`, deleted 2026-09-03 -- `store-trace.svg`
+/// has card 2 amber-filled the same way; `M830 308 ... fill="#f0a80a"` against
 /// `#fcc428` on the other three) and the folded corner of the callout
 /// panel. Not reachable by mixing `YELLOW` towards `ON_YELLOW` -- it is
 /// darker *and* more saturated, and its blue channel sits below both
@@ -281,7 +282,9 @@ pub fn style() -> Style {
             },
         },
         // The shelf band hangs 12px past the card and steps its
-        // trailing corner down 8; measured off target-app.svg.
+        // trailing corner down 8; measured off the target-app.svg
+        // composite (deleted 2026-09-03). `store-trace.svg` measures a 27px
+        // flag on a 35px band -- the open item in TODO.md.
         banner: Banner {
             overhang: 12.0,
             notch: 8.0,
@@ -294,7 +297,8 @@ pub fn style() -> Style {
         compliance: Compliance::Below,
         // The nav pill's top-right juts out 18 and drops 15, on a body
         // that is otherwise the era's `radius: 16` pill. Sampled off
-        // `M172 340 h158 l18 15 ...` in target-app.svg.
+        // `M172 340 h158 l18 15 ...` in the target-app.svg composite
+        // (deleted 2026-09-03); the trace has peaked chevrons, not pills.
         ticket: Ticket {
             reach: 18.0,
             drop: 15.0,

@@ -8,6 +8,12 @@
 //! pre-generalisation crate and cited no sheet at all; see
 //! [`crate::style::Menu::Table`] for the whole of that argument.
 //!
+//! Both neomil sheets were deleted 2026-09-03: neither sampled the neomil
+//! run (`docs/sources.md`), the services table was an original composition,
+//! and no neomil trace has one -- the hub photo has a six-module menu. The
+//! figures below are kept as the record of what this widget was built to;
+//! whether it survives is the `Layout` decision in `TODO.md`.
+//!
 //! Era-agnostic like the rest of `widgets/`, and cheaply so, because a
 //! table turns out to be things this crate already has: [`Surface`] for
 //! the selected row's fill -- which is how neokitsch's veneer and

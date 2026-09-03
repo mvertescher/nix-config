@@ -23,19 +23,21 @@
 #       build of the crate.
 #
 # Usage:
-#   fidelity_check.sh                 # G2 for all eras x bar,dashboard
-#   fidelity_check.sh neomil          # G2 for neomil x bar,dashboard
+#   fidelity_check.sh                 # G2 for all eras x every screen
+#   fidelity_check.sh neomil          # G2 for neomil x every screen
 #   fidelity_check.sh neomil dashboard
 #   fidelity_check.sh --source neomil dashboard   # G1 (needs images/<src>.png)
+#   fidelity_check.sh --source neomil             # G1 for login,dashboard,mailbox,store
 #   fidelity_check.sh --inventory neomil dashboard  # G1i, exits nonzero on fail
 #   fidelity_check.sh --inventory neomil            # G1i for login,dashboard,mailbox,store
 #   fidelity_check.sh --implementation neomil bar   # G2i, exits nonzero on fail
 #   fidelity_check.sh --implementation kitsch       # G2i for every screen with a design SVG
 #   fidelity_check.sh --implementation --bin-dir /tmp/bins neomil bar
 #
-# Screens: bar, dashboard, login, mailbox, store. The SVG for a screen is
-# docs/<era>/<screen>.svg (app-shaped) or docs/<era>/<screen>-trace.svg
-# (photo-shaped); G1/G1i prefer the trace, G2 needs the app-shaped one.
+# Screens: bar, dashboard, login, mailbox, store. The design for a screen is
+# docs/<era>/<screen>-trace.svg (photo-shaped, gated against its source),
+# or docs/<era>/bar.svg for the bar, which has no photo. Every gate uses
+# the same file; there is no app-shaped composite any more.
 #
 # Needs: rsvg-convert and a python3 with Pillow. Supply them via
 # PILLOW_PYTHON=/path/to/python3 (must import PIL) and RSVG=rsvg-convert, or
@@ -47,14 +49,14 @@ set -u
 here=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 crate=$(dirname "$here")
 eras=(entropism kitsch neomil neokitsch)
-screens=(bar dashboard)
-# G1i is about traces, and every era x screen with a source has (or will
-# have) one, so the inventory gate defaults to the four sourced screens.
+# G2 and G2i are about the implementation, so they default to every screen
+# that has a design to be judged against -- the bar included, which G1/G1i
+# cannot touch because no Behance screen shows one.
+screens=(bar dashboard login mailbox store)
+g2i_screens=("${screens[@]}")
+# G1/G1i are about traces, and every era x screen with a source has one,
+# so the source gates default to the four sourced screens.
 g1i_screens=(login dashboard mailbox store)
-# G2i is about the implementation, so it defaults to every screen that
-# has a design to be judged against -- the bar included, which G1i cannot
-# touch because no Behance screen shows one.
-g2i_screens=(bar dashboard login mailbox store)
 
 # --- tool discovery ---------------------------------------------------------
 # $1 is the import list the caller needs, as a python import statement.
@@ -135,7 +137,7 @@ done
 
 selected_eras=("${eras[@]}")
 selected_screens=("${screens[@]}")
-[ "$mode" = "G1i" ] && selected_screens=("${g1i_screens[@]}")
+{ [ "$mode" = "G1" ] || [ "$mode" = "G1i" ]; } && selected_screens=("${g1i_screens[@]}")
 [ "$mode" = "G2i" ] && selected_screens=("${g2i_screens[@]}")
 if [ ${#targets[@]} -ge 2 ]; then
   selected_eras=("${targets[0]}")
@@ -157,17 +159,13 @@ echo
 overall_fail=0
 for era in "${selected_eras[@]}"; do
   for screen in "${selected_screens[@]}"; do
-    svg="$crate/docs/$era/$screen.svg"
-    # login / mailbox / store have a trace and no app-shaped composite, so
-    # in G1i the trace alone is enough for the screen to exist. G2i takes
-    # the same fallback for the same reason: without it there is no design
-    # to hold the implementation to at all, and a photo-shaped trace is a
-    # harsher but honest target -- it is what the screen is supposed to
-    # become.
-    if { [ "$mode" = "G1i" ] || [ "$mode" = "G2i" ]; } &&
-       [ ! -f "$svg" ] && [ -f "$crate/docs/$era/$screen-trace.svg" ]; then
-      svg="$crate/docs/$era/$screen-trace.svg"
-    fi
+    # One design per screen: the photo-shaped trace where the screen has a
+    # Behance source, and docs/<era>/bar.svg for the bar, which has none.
+    # The app-shaped dashboard.svg composites were deleted 2026-09-03 --
+    # every gate now holds the implementation to what the material shows,
+    # which is what the screen is supposed to become.
+    svg="$crate/docs/$era/$screen-trace.svg"
+    [ -f "$svg" ] || svg="$crate/docs/$era/$screen.svg"
     [ -f "$svg" ] || { echo "SKIP $era/$screen: no $svg"; continue; }
 
     if [ "$mode" = "G2i" ]; then
@@ -305,11 +303,7 @@ for era in "${selected_eras[@]}"; do
         echo "SKIP G1i $era/$screen: no source downloaded (see docs/sources.md)"
         continue
       fi
-      # G1 is about the trace, so prefer <screen>-trace.svg where one exists:
-      # dashboard.svg is shaped like the app, dashboard-trace.svg like the
-      # photo, and only the second is the thing the material can judge.
-      g1svg="$crate/docs/$era/$screen-trace.svg"
-      [ -f "$g1svg" ] || g1svg="$svg"
+      g1svg="$svg"
       render="$scratch/$era-$screen.png"
       $rsvg_bin -w 1600 -h 900 "$g1svg" -o "$render" 2>/dev/null || {
         echo "FAIL $era/$screen: rsvg-convert errored"; overall_fail=1; continue; }

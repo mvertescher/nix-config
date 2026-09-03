@@ -91,7 +91,11 @@ enum RailSide {
 /// One band of neokitsch's device frame: the double gold stroke with
 /// the middle section stepped out and a tab at each corner.
 ///
-/// The geometry is `docs/neokitsch/target-app.svg`:
+/// The geometry is `docs/neokitsch/target-app.svg` (deleted 2026-09-03:
+/// the full-screen frame was that sheet's invention -- the photo's only
+/// frame is the wire band `store-trace.svg` draws. Still worn by the
+/// widget-based dashboard and the bar's mail panel until the widget
+/// decision in `TODO.md`):
 /// `path d="M150 120 h300 l24 -20 h972 l24 20 h300 q30 0 30 30 v760
 /// q0 30 -30 30 h-300 l-24 20 h-972 l-24 -20 h-300 ..."` -- the
 /// corner sections sit below the top rail and above the bottom rail,
@@ -361,7 +365,7 @@ pub fn footer<'a, Message: 'static>(
         .into(),
         Chrome::DeviceFrame => column![
             // The strata wedge sits inside the frame, above its foot
-            // rail, as the target has it: `target-app.svg` runs its
+            // rail, as the (deleted) `target-app.svg` composite had it: a
             // five-line wedge at `y=856..884` against a frame foot at
             // `y=940`.
             canvas(Strata {

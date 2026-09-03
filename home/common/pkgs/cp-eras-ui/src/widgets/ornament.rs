@@ -80,7 +80,9 @@ impl<Message> canvas::Program<Message> for PageCurl {
 /// The rule down the leading edge of a column, which the page-curl at
 /// its foot then becomes.
 ///
-/// In `docs/kitsch/target-app.svg` the curl is not a sticker sitting
+/// In `docs/kitsch/target-app.svg` (deleted 2026-09-03; `store-trace.svg`
+/// measures the same gesture -- the bracket line from y 186 round to
+/// x 106.5 becoming the solid teal wave at y~580) the curl is not a sticker sitting
 /// under the nav; it is the end of the nav container's outline. The two
 /// are one gesture drawn as two paths -- `M140 306 v396 q0 34 34 34
 /// h120` for the container and `M142 736 q2 -88 88 -88 h28 ...` for the

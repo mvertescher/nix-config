@@ -189,7 +189,9 @@ impl Palette {
     /// is invisible, so both maximalist eras move it -- and they move
     /// it in opposite directions:
     ///
-    /// * kitsch darkens. `docs/kitsch/target-app.svg` fills the
+    /// * kitsch darkens. `docs/kitsch/target-app.svg` (deleted 2026-09-03;
+    ///   `store-trace.svg` has the same band, solid yellow y 277..312 with
+    ///   card 2 amber) fills the
     ///   selected card's shelf band `#f0a80a` against `#fcc428` on the
     ///   other three, ink unchanged at `#37220f`; the same `#f0a80a`
     ///   is the folded corner of the callout panel in

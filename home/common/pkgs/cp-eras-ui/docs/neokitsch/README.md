@@ -17,9 +17,9 @@ measured schematics of the four sourced screens, each gated by
 `scripts/fidelity_check.sh --inventory neokitsch <screen>`, and each
 carries a header comment narrating its source region by region with
 measurements. Read those headers, not this file, for geometry. The
-`target-*.svg` and `dashboard.svg` files predate them and are
-app-shaped compositions; where a trace covers the same screen, the
-trace supersedes it.
+app-shaped `target-app.svg` and `dashboard.svg` compositions that
+predated them were deleted 2026-09-03; the notes at the end say what
+they were. `target-components.svg` remains, by-eye and unverified.
 
 ## Sampled palette
 
@@ -56,7 +56,8 @@ Role mapping: `bg`=bg, `panel`=bloom field, `border`=frame gold,
 - **There is no device frame.** The old rule here ("the device frame is
   part of the UI: double gold stroke, stepped corner tabs top and
   bottom, strata wedge at the foot") describes an invention of
-  `target-app.svg`; the photos have no full-screen frame. The era's
+  the since-deleted `target-app.svg` composite; the photos have no
+  full-screen frame. The era's
   actual chrome is the **stacked-hairline wire band**: many fine gold
   strands running in plateaus and rising through mirrored S-bends onto
   a single bridging line — a wide trapezoid across the foot of the
@@ -125,14 +126,6 @@ Role mapping: `bg`=bg, `panel`=bloom field, `border`=frame gold,
   both states, card cascade, mail list, detail text, the device frame
   in miniature (an invention — see the era rules above), sampled
   swatches.
-- `target-app.svg` — the 4ST store screen, **superseded by
-  `store-trace.svg`** (2026-09-02) and kept only until the iced store
-  screen is rebuilt from the trace. It is the right screen but not a
-  measured trace: it invents a full-screen chamfered device frame the
-  photo does not have, its cards lack the onion outlines that are the
-  era's signature, they are far narrower than the photo's and sit in
-  the wrong span, and its "ARASAKA CONSUMER TECHNOLOGY" footer is
-  borrowed from kitsch — the neokitsch store has none.
 - `bar.svg` — the status bar: host tape, workspaces, tray, the
   wired/audio/CPU/MEM modules and the clock, at the 1600x220 geometry
   the bar golden tests render. The bar has no photo source, so this is
@@ -143,15 +136,25 @@ Role mapping: `bg`=bg, `panel`=bloom field, `border`=frame gold,
   composes it"**: it is the design target and `bar.rs` has not followed
   yet (crate TODO.md § "Bar restyle"), so read the SVG's
   IMPLEMENTATION DELTA block, not the current render.
-- `dashboard.svg` — an **original composite with a known source it
-  ignores**, not a trace: the six-module hub `screens::dashboard`
-  assembles under `Layout::ModuleHub` — top bar, sidebar (logotype,
-  security-level badges), the era's menu over the six modules with one
-  selected, the detail panel and the footer — at the 1600x900 geometry
-  the dashboard golden tests render. Its cascade widget was credited to
-  a screen that is actually a login, the real hub went unread, and it
-  scores 0.03 on the ink gate against `neokitsch-dashboard.png` (a
-  faithful trace scores 0.60). Rework it against `dashboard-trace.svg`.
+
+## Deleted composites (2026-09-03)
+
+Two app-shaped drawings used to sit beside the traces; `docs/sources.md`
+keeps a row per file saying what each got wrong. In short:
+
+- `target-app.svg` — the 4ST store as a loose composite, superseded by
+  `store-trace.svg`. Right screen, but it invented the full-screen
+  chamfered device frame (`widgets::chrome::DeviceFrame` was built to
+  it and is still worn by the widget dashboard and the bar's mail
+  panel), lacked the onion outlines that are the era's signature, and
+  borrowed kitsch's ARASAKA footer.
+- `dashboard.svg` — the six-module hub composite `screens::dashboard`
+  still assembles under `Layout::ModuleHub`. Its cascade widget was
+  credited to a screen that is actually a login, the real hub went
+  unread, and it scored 0.03 on the ink gate against
+  `neokitsch-dashboard.png` (the trace scores 0.60). Until the `Layout`
+  decision in the crate TODO.md the dashboard screen has no SVG that
+  agrees with it — G2i now compares it against the trace.
 
 ```sh
 nix shell nixpkgs#librsvg --command \

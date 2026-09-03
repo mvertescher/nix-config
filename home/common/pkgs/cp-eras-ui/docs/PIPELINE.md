@@ -26,11 +26,12 @@ original image       SVG reference          Rust iced implementation
 2. **SVG reference** — a hand-traced schematic that commits the sampled
    palette and the source's geometry to the repo. One trace per sourced
    screen — `login-trace.svg`, `dashboard-trace.svg`, `mailbox-trace.svg`,
-   `store-trace.svg`, sixteen in all — plus the app-shaped `dashboard.svg`
-   composite that G2 compares against the golden, and `bar.svg`.
-   `target-app.svg` and `target-components.svg` predate the traces and
-   are superseded where a `store-trace.svg` exists. This is what a render
-   is compared against, by eye or by script.
+   `store-trace.svg`, sixteen in all — plus `bar.svg`, the one original.
+   The app-shaped `dashboard.svg` and `target-app.svg` composites that
+   predated the traces were deleted 2026-09-03 (`docs/sources.md` keeps a
+   row per deleted file saying what was wrong with it); the three
+   remaining `target-components.svg` sheets are by-eye and unverified.
+   This is what a render is compared against, by eye or by script.
 3. **iced implementation** — `src/`. Screens, widgets and era tables
    compose from `Style`; the golden matrix renders them headless and locks
    the renders.
@@ -62,7 +63,7 @@ source, and which are originals.
       Families are paired by colour and their occupancy grids compared
       by IoU; fails under a weighted IoU of 0.45 or when a major source
       family has no counterpart. Calibrated: faithful traces score
-      ~0.5, the known-wrong app composites 0.03–0.07.
+      ~0.5, the known-wrong app composites (since deleted) 0.03–0.07.
 
 - **G1 — source → svg.** Grid statistics:
   `scripts/compare_ref.py images/<src>.png <svg render> --regions`.
