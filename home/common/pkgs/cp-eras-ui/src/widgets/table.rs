@@ -149,7 +149,7 @@ pub fn table<'a, Message: 'static>(
     let mut heads = iced_row![].spacing(0);
     for c in columns {
         heads = heads.push(
-            container(text::mid(s, c.head).size(s.metrics.text_caption + 2))
+            container(text::mid(s, c.head).size(f32::from(s.metrics.text_caption + 2)))
                 .width(Length::FillPortion(c.portion.max(1))),
         );
     }
@@ -213,11 +213,11 @@ pub fn table<'a, Message: 'static>(
             body = body.push(rule(s));
         } else {
             // Keep the pitch even where the rule is suppressed.
-            body = body.push(Space::new(Length::Fill, 1.0));
+            body = body.push(Space::new().width(Length::Fill).height(1.0));
         }
     }
 
-    col![header, Space::new(0.0, s.metrics.gap * 0.5), body]
+    col![header, Space::new().height(s.metrics.gap * 0.5), body]
         .width(Length::Fill)
         .into()
 }

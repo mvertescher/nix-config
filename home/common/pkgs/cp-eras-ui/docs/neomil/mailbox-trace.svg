@@ -1,0 +1,371 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <!-- NEOMIL mailbox-trace: schematic of images/img-08-main.png
+       (Behance c2e462118663901.60e5fa6a80470, 3840x2160 photo).
+
+       Every coordinate below is measured, not eyeballed:
+         scripts/extract_spec.py images/img-08-main.png -o /tmp/nm-src.json
+       plus row/column scans of the 1600x900 downscale for the row edges,
+       the panel border and the button row, and the trace is held to the
+       source by
+         scripts/fidelity_check.sh - -inventory neomil mailbox
+
+       What the source actually shows, top to bottom (read from the photo
+       and from 2x crops of every region, 2026-09-02):
+         - the hub/login backdrop: blue glow over near-black, gone by
+           y~420, warm vignette down the left margin; below the glow the
+           ground is a warm near-black (#0d0406..#040202, #120205 in the
+           left margin) on the left two thirds and pure black right of
+           the panel
+         - the same header as the login: CUSTOMER + LEVEL T1 badge,
+           #NC488402 over the PROTOCOL 6520-A44 block and code tape,
+           SECURITY LEVEL + four LEVEL badges with T2 filled; hairline
+           rule at y=187
+         - a tab row at y 194..216: COMPUTER SYSTEMS in a box x 241..451,
+           CONTENT in a box x 727..937; "1" and "2" margin chips at y 220
+         - LEFT: a column of eight isometric disc-cartridge icons at
+           x 133..222, one per row, the first filled solid (selected), the
+           rest outlined with a filled tile and a disc
+         - THE MESSAGE LIST: eight rows x 241..511, tops at y 313, 385,
+           455, 525, 595, 665, 735, 805 (pitch 70; row 1 is 70 tall, the rest
+           68, with bright #560d0d top and bottom edges), each with
+           a 12px bottom-left chamfer and a thin spine at x 237..240; a
+           ninth row's top edge shows at y 875. Row 1 is FILLED #e63132
+           with dark text; the rest are dark boxes with red text. Every
+           row carries a subject at the left and "Jackie" at the right;
+           rows 1-3 also carry a NEW pill (x 403..479, 14 high) at the
+           lower right. Subjects, in order: List of messages / I'm worried
+           man / Heist data sent to you / I'm worried man / Heist data sent
+           to you / I'm worried man / I'm worried man / Heist data sent to
+           you
+         - a scroll rail at x 542..548 the height of the list, thumb at
+           y 313..384; a scroll widget at x 556..578, y 691..760 (up/down
+           arrows, an R in a circle, "SCRLL 85402")
+         - RIGHT: "Urgent Information (!)" at (742,287), then a big
+           outlined panel x 729..1450, y 312..699 (8px chamfers on its
+           right corners) holding ten lines of lorem body copy in three
+           paragraphs, rotated BETTERLIFE TEC / PETROCHEM micro-text
+           inside its top-right corner, and a bright bar x 1440..1455,
+           y 415..552 riding its right edge
+         - under the panel, FOUR buttons y 702..758, 175 wide, 5 apart,
+           bottom-right chamfer 9: Switch Weapon (filled, dark text) then
+           Confirm / Jump three times (outlined)
+         - footer: "JHN 102 CKC 151 CC10 AS5" with a left arrow at
+           x 771..912, y 875; a "B" chip at x 1311..1325, y 861
+
+       Palette sampled by k-means over the photo (extract_spec.py):
+         ink   #e63132 (3.1%)  #59171b (3.0%)  #a8282b (1.9%)
+         ground #200a0b (30.6%) #070304 (26.6%) #16264e (21.3%)
+                #161f28 (8.6%)  #312b3d (4.9%)
+       Point samples: row fill flat #280c0d (rows 2-4) to #1d0708 (rows
+       7-8) with a brighter #560d0d top edge; panel fill #1c0608;
+       unselected button fill #1a0607. -->
+  <defs>
+    <linearGradient id="glowh" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0.000" stop-color="#282824"/>
+      <stop offset="0.063" stop-color="#273743"/>
+      <stop offset="0.188" stop-color="#263953"/>
+      <stop offset="0.313" stop-color="#202b56"/>
+      <stop offset="0.438" stop-color="#1b2253"/>
+      <stop offset="0.563" stop-color="#171f51"/>
+      <stop offset="0.688" stop-color="#121f51"/>
+      <stop offset="0.813" stop-color="#0d1f4e"/>
+      <stop offset="0.938" stop-color="#082447"/>
+      <stop offset="1.000" stop-color="#080b0e"/>
+    </linearGradient>
+    <linearGradient id="glowv" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.00" stop-color="#ffffff"/>
+      <stop offset="0.25" stop-color="#ffffff"/>
+      <stop offset="0.30" stop-color="#e3e3e3"/>
+      <stop offset="0.35" stop-color="#bababa"/>
+      <stop offset="0.40" stop-color="#8c8c8c"/>
+      <stop offset="0.45" stop-color="#545454"/>
+      <stop offset="0.50" stop-color="#2b2b2b"/>
+      <stop offset="0.55" stop-color="#121212"/>
+      <stop offset="0.60" stop-color="#000000"/>
+    </linearGradient>
+    <mask id="glowmask">
+      <rect width="1600" height="900" fill="url(#glowv)"/>
+    </mask>
+    <radialGradient id="vignette" cx="0.02" cy="0.60" r="0.34">
+      <stop offset="0" stop-color="#241012"/>
+      <stop offset="1" stop-color="#241012" stop-opacity="0"/>
+    </radialGradient>
+    <!-- the warm near-black wash under the list and panel, sampled at
+         y 500..850: #120205 left margin, #0d0406..#040202 mid (fading
+         downward), #020202 right of x~1460 -->
+    <linearGradient id="wash" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0.00" stop-color="#110305"/>
+      <stop offset="0.40" stop-color="#0b0304"/>
+      <stop offset="0.90" stop-color="#020202"/>
+    </linearGradient>
+    <linearGradient id="washv" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.00" stop-color="#000000"/>
+      <stop offset="0.45" stop-color="#ffffff"/>
+    </linearGradient>
+    <mask id="washmask"><rect width="1600" height="900" fill="url(#washv)"/></mask>
+
+    <path id="badge" d="M 0,0 H 59 V 57 H 15 L 0,42 Z"/>
+    <g id="chip">
+      <rect x="-21" y="3" width="8" height="1.5"/>
+      <rect x="-21" y="7" width="6" height="1.5"/>
+      <rect x="-11" y="3" width="6" height="6"/>
+      <rect x="0" y="0" width="14" height="14"/>
+    </g>
+    <!-- one list row: 270x68 with a 12px bottom-left chamfer, plus the
+         spine at x -4..-1 -->
+    <path id="row" d="M 0,0 H 270 V 68 H 12 L 0,56 Z"/>
+    <path id="row1" d="M 0,0 H 270 V 70 H 12 L 0,58 Z"/>
+    <path id="spine" d="M -4,0 H -1 V 56 H -4 Z"/>
+    <!-- the NEW pill: 76x14, rounded -->
+    <rect id="pill" x="0" y="0" width="76" height="14" rx="4"/>
+    <!-- disc-cartridge icon, origin at its top vertex. Read off a 1px
+         ink map of the row-3 icon (x 120..232, y 458..530): outline
+         corners (37,14) (-15,54) (-52,41); bright mass = a disc (centre
+         (6,23), rx 18, ry 12, tilted) over a tile whose corners are
+         (-26,28) (20,37) (-7,52) (-41,41), with dark rings on the disc. -->
+    <g id="cart" stroke-linejoin="round">
+      <path d="M 0,0 L 37,14 L -15,54 L -52,41 Z"/>
+      <path d="M 0,4.5 L 32,16 L -14,49 L -47,40 Z" stroke-width="1.2"/>
+    </g>
+    <path id="tile" d="M -26,28 L 20,37 L -7,52 L -41,41 Z"/>
+    <g id="disc">
+      <ellipse cx="6" cy="23" rx="18" ry="12" transform="rotate(-20 6 23)"/>
+    </g>
+    <g id="discrings" fill="none" stroke-width="1.5">
+      <ellipse cx="6" cy="23" rx="10" ry="6" transform="rotate(-20 6 23)"/>
+      <ellipse cx="6" cy="23" rx="4" ry="2.5" transform="rotate(-20 6 23)"/>
+    </g>
+    <!-- one action button: 175x56, bottom-right chamfer 9 -->
+    <path id="btn" d="M 0,0 H 175 V 47 L 166,56 H 0 Z"/>
+  </defs>
+
+  <rect width="1600" height="900" fill="#070304"/>
+  <rect width="1600" height="900" fill="url(#glowh)" mask="url(#glowmask)"/>
+  <rect width="1600" height="900" fill="url(#wash)" mask="url(#washmask)"/>
+  <rect width="1600" height="900" fill="url(#vignette)"/>
+
+  <!-- ==== header (as the login) ==== -->
+  <g font-family="Rajdhani" fill="#e63132">
+    <text x="124" y="90" font-size="14" letter-spacing="1.5">CUSTOMER</text>
+    <use href="#badge" x="117" y="104" fill="#59171b" stroke="#e63132" stroke-width="1.5"/>
+    <text x="125" y="121" font-size="12">LEVEL</text>
+    <text x="132" y="140" font-size="20" font-weight="700">T1</text>
+
+    <text x="256" y="90" font-size="14" letter-spacing="1.5">#NC488402</text>
+    <g fill="#a8282b">
+      <rect x="257" y="107" width="18" height="2.5"/><rect x="279" y="107" width="21" height="2.5"/>
+      <rect x="257" y="111" width="26" height="2.5"/><rect x="287" y="111" width="13" height="2.5"/>
+      <rect x="257" y="115" width="12" height="2.5"/><rect x="273" y="115" width="27" height="2.5"/>
+      <rect x="257" y="119" width="22" height="2.5"/><rect x="283" y="119" width="17" height="2.5"/>
+    </g>
+    <text x="257" y="131" font-size="9" font-weight="700" letter-spacing="1.2">PROTOCOL</text>
+    <text x="257" y="141" font-size="9" font-weight="700" letter-spacing="1.2">6520-A44</text>
+    <g font-size="6.5" fill="#a8282b">
+      <text x="305" y="108">ONLY CC35 CERTIFIED</text>
+      <text x="305" y="116.5">AND DHSF 5TH CLASS OFFICERS</text>
+      <text x="305" y="125">ARE ALLOWED TO MANIPULATE,</text>
+      <text x="305" y="133.5">ACCESS OR DISABLE THIS DEVICE.</text>
+    </g>
+    <path d="M 259,151 H 376 V 160 H 259 L 257,158 V 153 Z" fill="#e63132"/>
+    <g fill="#200a0b">
+      <rect x="261" y="153" width="1.5" height="5"/><rect x="264" y="153" width="1" height="5"/>
+      <rect x="267" y="153" width="2" height="5"/><rect x="271" y="153" width="1" height="5"/>
+      <rect x="274" y="153" width="1.5" height="5"/>
+      <text x="283" y="158" font-size="7" letter-spacing="0.6">JHN 102 CKC 151 CC10 AS5</text>
+    </g>
+
+    <text x="1141" y="90" font-size="14" letter-spacing="1.5">SECURITY LEVEL</text>
+    <g>
+      <use href="#badge" x="1133" y="104" fill="#59171b" stroke="#e63132" stroke-width="1.5"/>
+      <use href="#badge" x="1193" y="104" fill="#a8282b" stroke="#e63132" stroke-width="1.5"/>
+      <use href="#badge" x="1253" y="104" fill="#59171b" stroke="#e63132" stroke-width="1.5"/>
+      <use href="#badge" x="1313" y="104" fill="#59171b" stroke="#e63132" stroke-width="1.5"/>
+      <g font-size="12">
+        <text x="1141" y="121">LEVEL</text><text x="1201" y="121">LEVEL</text>
+        <text x="1261" y="121">LEVEL</text><text x="1321" y="121">LEVEL</text>
+      </g>
+      <g font-size="20" font-weight="700">
+        <text x="1148" y="140">T1</text><text x="1208" y="140">T2</text>
+        <text x="1268" y="140">T3</text><text x="1328" y="140">T4</text>
+      </g>
+    </g>
+  </g>
+  <rect x="42" y="187" width="1516" height="1.5" fill="#a8282b"/>
+
+  <!-- ==== tab row y 194..216 ==== -->
+  <g font-family="Rajdhani" font-size="12" letter-spacing="1.2" fill="#e63132">
+    <rect x="241.5" y="194.5" width="210" height="22" fill="#59171b" fill-opacity="0.45" stroke="#a8282b"/>
+    <text x="249" y="210">COMPUTER SYSTEMS</text>
+    <rect x="727.5" y="194.5" width="210" height="22" fill="#59171b" fill-opacity="0.45" stroke="#a8282b"/>
+    <text x="742" y="210">CONTENT</text>
+  </g>
+
+  <!-- ==== margins ==== -->
+  <g font-family="Rajdhani" font-size="11" letter-spacing="1">
+    <use href="#chip" x="60" y="220" fill="#e63132"/>
+    <text x="63" y="231" font-size="10" font-weight="700" fill="#200a0b">1</text>
+    <use href="#chip" x="1542" y="220" fill="#e63132"/>
+    <text x="1545" y="231" font-size="10" font-weight="700" fill="#200a0b">2</text>
+    <text transform="translate(58,483) rotate(-90)" textLength="88" fill="#a8282b">00032 05 54 08 CP</text>
+    <text transform="translate(58,578) rotate(-90)" textLength="88" fill="#a8282b">00032 05 54 08 CP</text>
+  </g>
+
+  <!-- ==== disc icons, one per row; top vertices at x 185, measured off
+       the bright mass (disc top = vertex + 11) ==== -->
+  <g>
+    <!-- row 1: the whole cartridge filled, tile and disc dark on it -->
+    <g transform="translate(185,323)">
+      <use href="#cart" fill="#e63132"/>
+      <use href="#tile" fill="#59171b"/>
+      <use href="#disc" fill="#59171b"/>
+      <use href="#discrings" stroke="#e63132"/>
+    </g>
+    <g fill="none" stroke="#9a2326" stroke-width="2">
+      <use href="#cart" x="185" y="395"/><use href="#cart" x="185" y="463"/>
+      <use href="#cart" x="185" y="531"/><use href="#cart" x="185" y="599"/>
+      <use href="#cart" x="185" y="668"/><use href="#cart" x="185" y="741"/>
+      <use href="#cart" x="185" y="809"/>
+    </g>
+    <g fill="#e63132" stroke="#200a0b" stroke-width="1.5">
+      <use href="#tile" x="185" y="395"/><use href="#tile" x="185" y="463"/>
+      <use href="#tile" x="185" y="531"/><use href="#tile" x="185" y="599"/>
+      <use href="#tile" x="185" y="668"/><use href="#tile" x="185" y="741"/>
+      <use href="#tile" x="185" y="809"/>
+      <use href="#disc" x="185" y="395"/><use href="#disc" x="185" y="463"/>
+      <use href="#disc" x="185" y="531"/><use href="#disc" x="185" y="599"/>
+      <use href="#disc" x="185" y="668"/><use href="#disc" x="185" y="741"/>
+      <use href="#disc" x="185" y="809"/>
+    </g>
+    <g stroke="#59171b">
+      <use href="#discrings" x="185" y="395"/><use href="#discrings" x="185" y="463"/>
+      <use href="#discrings" x="185" y="531"/><use href="#discrings" x="185" y="599"/>
+      <use href="#discrings" x="185" y="668"/><use href="#discrings" x="185" y="741"/>
+      <use href="#discrings" x="185" y="809"/>
+    </g>
+  </g>
+
+  <!-- ==== message list, x 241..511 ==== -->
+  <g font-family="Rajdhani" font-size="15">
+    <!-- row 1, selected: filled, dark text -->
+    <g transform="translate(241,313)">
+      <use href="#row1" fill="#e63132"/>
+      <use href="#spine" fill="#e63132"/>
+      <text x="8" y="26" fill="#59171b">List of messages</text>
+      <text x="263" y="26" fill="#59171b" text-anchor="end">Jackie</text>
+      <use href="#pill" x="162" y="48" fill="none" stroke="#59171b" stroke-width="1.5"/>
+      <text x="200" y="59" font-size="10" font-weight="700" letter-spacing="2" fill="#59171b" text-anchor="middle">NEW</text>
+    </g>
+    <g stroke="#500e0f" stroke-width="1.5">
+      <use href="#row" x="241" y="385" fill="#280c0d"/><use href="#row" x="241" y="455" fill="#280c0d"/>
+      <use href="#row" x="241" y="525" fill="#26090a"/><use href="#row" x="241" y="595" fill="#24090b"/>
+      <use href="#row" x="241" y="665" fill="#210809"/><use href="#row" x="241" y="735" fill="#1e0708"/>
+      <use href="#row" x="241" y="805" fill="#1d0708"/>
+    </g>
+    <g fill="#560d0d">
+      <rect x="241" y="385" width="270" height="1.5"/><rect x="241" y="455" width="270" height="1.5"/>
+      <rect x="241" y="525" width="270" height="1.5"/><rect x="241" y="595" width="270" height="1.5"/>
+      <rect x="241" y="665" width="270" height="1.5"/><rect x="241" y="735" width="270" height="1.5"/>
+      <rect x="241" y="805" width="270" height="1.5"/>
+    </g>
+    <g fill="#8a2024">
+      <use href="#spine" x="241" y="385"/><use href="#spine" x="241" y="455"/>
+      <use href="#spine" x="241" y="525"/><use href="#spine" x="241" y="595"/>
+      <use href="#spine" x="241" y="665"/><use href="#spine" x="241" y="735"/>
+      <use href="#spine" x="241" y="805"/>
+    </g>
+    <!-- the ninth row's top edge, cut by the frame -->
+    <rect x="241" y="875" width="270" height="1" fill="#8a2024"/>
+    <g fill="#e63132">
+      <text x="249" y="407">I'm worried man</text>        <text x="504" y="407" text-anchor="end">Jackie</text>
+      <text x="249" y="477">Heist data sent to you</text> <text x="504" y="477" text-anchor="end">Jackie</text>
+      <text x="249" y="547">I'm worried man</text>        <text x="504" y="547" text-anchor="end">Jackie</text>
+      <text x="249" y="617">Heist data sent to you</text> <text x="504" y="617" text-anchor="end">Jackie</text>
+      <text x="249" y="687">I'm worried man</text>        <text x="504" y="687" text-anchor="end">Jackie</text>
+      <text x="249" y="757">I'm worried man</text>        <text x="504" y="757" text-anchor="end">Jackie</text>
+      <text x="249" y="827">Heist data sent to you</text> <text x="504" y="827" text-anchor="end">Jackie</text>
+    </g>
+    <g fill="none" stroke="#e63132" stroke-width="1.5">
+      <use href="#pill" x="403" y="429" height="13"/>
+      <use href="#pill" x="403" y="499" height="13"/>
+    </g>
+    <g font-size="10" font-weight="700" letter-spacing="2" fill="#e63132" text-anchor="middle">
+      <text x="441" y="439.5">NEW</text>
+      <text x="441" y="509.5">NEW</text>
+    </g>
+  </g>
+
+  <!-- ==== scroll rail x 542..548 and the R widget ==== -->
+  <g>
+    <rect x="542" y="313" width="6" height="565" fill="#3a0f12"/>
+    <rect x="542" y="313" width="6" height="71" fill="#a8282b"/>
+    <g fill="#e63132">
+      <rect x="560" y="697" width="2" height="18"/>
+      <path d="M 556,700 L 561,691 L 566,700 Z"/>
+      <rect x="571" y="687" width="2" height="18"/>
+      <path d="M 567,706 L 572,715 L 577,706 Z"/>
+    </g>
+    <circle cx="567" cy="731" r="10.5" fill="none" stroke="#e63132" stroke-width="2"/>
+    <text x="567" y="736" font-family="Rajdhani" font-size="13" font-weight="700"
+          text-anchor="middle" fill="#e63132">R</text>
+    <g font-family="Rajdhani" font-size="6" fill="#a8282b">
+      <text x="558" y="750">SCRLL</text>
+      <text x="558" y="758">85402</text>
+    </g>
+  </g>
+
+  <!-- ==== Urgent Information panel, x 729..1450 y 312..699 ==== -->
+  <text x="742" y="287" font-family="Rajdhani" font-size="20" font-weight="600"
+        fill="#e63132">Urgent Information (!)</text>
+  <g>
+    <path d="M 729,312 H 1442 L 1450,320 V 691 L 1442,699 H 729 Z"
+          fill="#1c0608" stroke="#a8282b" stroke-width="1.2"/>
+    <!-- the bright bar riding the right edge, y 415..552, chamfered ends -->
+    <path d="M 1447,415 H 1455 V 545 L 1448,552 H 1440 V 422 Z" fill="#e63132"/>
+    <!-- rotated maker's marks inside the top-right corner -->
+    <g font-family="Rajdhani" font-size="7" fill="#a8282b" letter-spacing="0.5">
+      <text transform="translate(1440,337) rotate(90)">BETTERLIFE TEC</text>
+      <text transform="translate(1431,337) rotate(90)">PETROCHEM</text>
+      <rect x="1424" y="336" width="8" height="42" fill="none" stroke="#a8282b" stroke-width="0.8"/>
+    </g>
+    <!-- body copy: ten lines in three paragraphs (measured run boxes
+         18 high on a 21px pitch, paragraph gaps of one line) -->
+    <g font-family="Rajdhani" font-size="15" fill="#c42d2f">
+      <text x="739" y="347">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt</text>
+      <text x="739" y="368">ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation</text>
+      <text x="739" y="389">ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehen-</text>
+      <text x="739" y="410">derit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</text>
+      <text x="739" y="452">Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit</text>
+      <text x="739" y="473">anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem ac-</text>
+      <text x="739" y="494">cusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore</text>
+      <text x="739" y="515">veritatis et quasi architecto beatae vitae dicta sunt explicabo.</text>
+      <text x="739" y="557">Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia</text>
+      <text x="739" y="578">consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</text>
+    </g>
+  </g>
+
+  <!-- ==== action buttons y 702..758 ==== -->
+  <g font-family="Rajdhani" font-size="15">
+    <use href="#btn" x="728" y="702" fill="#e63132"/>
+    <text x="741" y="746" fill="#59171b">Switch Weapon</text>
+    <g fill="#1a0607" stroke="#8a2024" stroke-width="1">
+      <use href="#btn" x="908" y="702"/>
+      <use href="#btn" x="1088" y="702"/>
+      <use href="#btn" x="1267" y="702"/>
+    </g>
+    <g fill="#a8282b">
+      <text x="917" y="746">Confirm / Jump</text>
+      <text x="1097" y="746">Confirm / Jump</text>
+      <text x="1276" y="746">Confirm / Jump</text>
+    </g>
+  </g>
+
+  <!-- ==== footer ==== -->
+  <g font-family="Rajdhani" font-size="9" letter-spacing="0.8" fill="#a8282b">
+    <text x="771" y="875">JHN 102 CKC 151 CC10 AS5</text>
+    <rect x="892" y="870" width="20" height="2" fill="#e63132"/>
+    <path d="M 886,871 L 894,866 V 876 Z" fill="#e63132"/>
+    <rect x="1301" y="863" width="5" height="5" fill="#e63132"/>
+    <rect x="1311" y="861" width="14" height="14" fill="#e63132"/>
+    <text x="1314" y="872" font-size="10" font-weight="700" fill="#200a0b">B</text>
+  </g>
+</svg>

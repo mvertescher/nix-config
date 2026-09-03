@@ -9,7 +9,7 @@ use iced::widget::{text, Text};
 use iced::Color;
 
 fn base<'a>(content: impl IntoFragment<'a>, size: u16, color: Color) -> Text<'a> {
-    text(content).size(size).color(color)
+    text(content).size(f32::from(size)).color(color)
 }
 
 pub fn title<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a> {

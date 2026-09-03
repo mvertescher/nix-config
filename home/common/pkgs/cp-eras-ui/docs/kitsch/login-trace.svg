@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <!-- KITSCH login-trace: schematic of images/kitsch-login.png
+       (Behance 0bf802118663901.60e5fa669a019, screen #50 of the kitsch run
+       — the guest login). Source is 3840x2160; every coordinate here is
+       the source measured on a 1600x900 LANCZOS downscale (divide the
+       photo by 2.4), by column/row profiles of a teal ink mask plus
+         scripts/extract_spec.py images/kitsch-login.png
+       and the trace is held to the source by
+         scripts/fidelity_check.sh -\-inventory kitsch login
+
+       What the source shows, top to bottom:
+         - a rose bloom over the top of a near-black ground, brightest at
+           top centre (#a34e60 at y 10), gone by y~420; the far left of
+           the frame is a grey-green #20231f rather than black down to
+           y~550; the far right is black from y~250
+         - 10:20 PM in light mint, x 781..852, cap-height y 61..74
+         - THE BRACKET: a 1.2px mint outline (peak #80e4d0, measured
+           across the line at y 200/300/450 in the photo; an earlier
+           version drew it 2px) running the FULL HEIGHT of the
+           frame (it fades into the rose above y~130 but reaches the top
+           edge), left edge x 228.5, right edge x 611.5. At y 540 the
+           left edge breaks into a ~57-degree diagonal down-right to
+           (338,635), drops vertically to y 700, then rounds (r~30) into
+           the bottom edge at y 731, which rounds (r~30) up into the
+           right edge. NOT "from y~470", as an earlier note said: the
+           lines run from the top. The area outside the diagonal — x
+           229..338, y ~548..731 — is a dark-teal filled lobe (#0f2320),
+           rounded at its bottom-left.
+         - three GUEST 7702 cards on a 393px pitch (x 258 / 651 / 1043),
+           each: a 62x61 teal chip glyph (a dark-filled hexagon with a
+           teal slash, a hatched dark wedge top-left, small marks along
+           the bottom — see the def) at y 338;
+           GUEST 7702 at x 340, cap y 341..355; a boxed A at
+           [338,371,26,25] beside three lines of micro-text ACCESS
+           MANAGER WAS DEVE- / LOPED BY SEOCHO. SERVING / CUSTOMERS
+           SINCE 2006. at baselines 375/385/395
+         - card 1 (inside the bracket): a dark-teal input field
+           [257,413,335,51] with a mint cursor at x 267, then a SOLID
+           MINT ENTER bar y 470..497 (x 257..591) whose right two-fifths
+           step up to y 463 via a short diagonal at x 418..430; ENTER
+           in dark, letter-spaced, x 471..550
+         - cards 2 and 3: the same stepped bar in dark teal (#122724),
+           x 649..985 and 1042..1377, step at x 812..824, labelled
+           PROTECTED in mint (x 841..966 / 1234..1359)
+         - a barcode inside the bracket foot: a filled label strip at
+           x 370..377, y 632..695 with dark vertical micro-text, bars x
+           377..590 y 632..683 (the bar runs below are the measured
+           column profile, see the note there), digits 12345678123456789
+           x 420..548 y 686..695
+         - one line of BRIGHT mint micro-text centred at the foot, y
+           864..869, x 504..1094 — the same #82f0d3 as the barcode, not
+           the dimmer teal of the annotation text (an earlier version
+           drew it dim and 70px short, which the ink gate saw as the
+           mid-teal family missing its bottom row):
+           ARASAKA CONSUMER TECHNOLOGY (bold) + the CC35 notice
+
+       Palette sampled by k-means (extract_spec.py):
+         ink    #82f0d3 (1.2%)  #3d9e97 (1.5%)
+         ground #0a0907 (39%) #1b1e1c (22%) #984559 (11%) #83374d (10%)
+                #3b272e (8.5%) #642a3d (7.6%)
+       Spot samples: ENTER fill #8afada, chip glyph #1cb6ae, input field
+       #162826, PROTECTED bar #122724, lobe #0f2320. -->
+  <defs>
+    <!-- bloom: rose across the whole top edge (#a34e60 at y 10 from x 140
+         to 1450), receding to x>=400 by y 250 and gone by y~420 -->
+    <radialGradient id="bloom" cx="0.5" cy="-0.25" r="0.95">
+      <stop offset="0"    stop-color="#a84f62"/>
+      <stop offset="0.35" stop-color="#8e3b52"/>
+      <stop offset="0.6"  stop-color="#5a2236"/>
+      <stop offset="0.85" stop-color="#1e0f14"/>
+      <stop offset="1"    stop-color="#0a0907"/>
+    </radialGradient>
+    <!-- the grey-green cast down the left margin, x<300, y 150..600 -->
+    <radialGradient id="leftwash" cx="0" cy="0.5" r="0.5">
+      <stop offset="0"   stop-color="#262a24" stop-opacity="1"/>
+      <stop offset="0.6" stop-color="#262a24" stop-opacity="0.5"/>
+      <stop offset="1"   stop-color="#262a24" stop-opacity="0"/>
+    </radialGradient>
+    <!-- the bracket lines fade into the rose towards the top edge -->
+    <linearGradient id="fade" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0"    stop-color="#8af0d8" stop-opacity="0.35"/>
+      <stop offset="0.3"  stop-color="#8af0d8" stop-opacity="1"/>
+      <stop offset="1"    stop-color="#8af0d8" stop-opacity="1"/>
+    </linearGradient>
+    <!-- one guest card: chip glyph + name + boxed A + micro-text,
+         origin at the chip's top-left (258,338) -->
+    <g id="guest">
+      <!-- the chip, read off a 4x zoom of the photo (chip units = px at
+           1600): a teal square whose right two-thirds carry a DARK-FILLED
+           hexagon x 17..54, y 4..44 split by a teal slash from its
+           lower-left to its upper-right vertex; a dark wedge in the
+           top-left corner, hatched with four horizontal teal lines over
+           y 4..13 and then solid, tapering to the left edge by y~46; a
+           row of small dark marks along the bottom: two stacked squares
+           at x 1..4, a dot at x 12..14, an outlined square with a
+           diagonal at x 23..29, two stacked squares at x 30..34, a
+           speck at (34,51) and three lines of unreadable micro-text at
+           x 35..44. Mean colour over the chip: photo (29,141,138) -->
+      <rect width="62" height="61" fill="#1cb6ae"/>
+      <path d="M 36.8,3.7 L 54,13.7 V 33 L 36.8,43.7 L 17.4,33 V 13.7 Z" fill="#0e2b2a"/>
+      <path d="M 17.4,33 L 54,13.7" fill="none" stroke="#1cb6ae" stroke-width="2"/>
+      <path d="M 0,4 H 13 L 12.5,13 H 10 L 0,44 Z" fill="#0e2b2a"/>
+      <path d="M 0,6.5 H 12.6 M 0,9 H 12.4 M 0,11.5 H 12.2" fill="none" stroke="#1cb6ae" stroke-width="0.9"/>
+      <g fill="#0e2b2a">
+        <rect x="1" y="52" width="3" height="3"/><rect x="1" y="56" width="3" height="3.5"/>
+        <circle cx="13" cy="54.5" r="1.4"/>
+        <rect x="30" y="52.5" width="3.7" height="3.2"/><rect x="30" y="56.3" width="3.7" height="3"/>
+        <rect x="34.5" y="51" width="1" height="1"/>
+        <rect x="35" y="53.5" width="9" height="0.8"/><rect x="35" y="55.5" width="7" height="0.8"/><rect x="35" y="57.5" width="8" height="0.8"/>
+      </g>
+      <path d="M 23,52.6 H 29 V 59 H 23 Z M 23,52.6 L 29,59" fill="none" stroke="#0e2b2a" stroke-width="1"/>
+      <!-- name: cap-height y 341..355 in the source, i.e. baseline 17 below the chip top -->
+      <text x="82" y="17" font-family="Rajdhani" font-size="20" font-weight="600"
+            letter-spacing="0.5" fill="#a9e6df">GUEST 7702</text>
+      <rect x="80" y="33" width="26" height="25" fill="none" stroke="#7fe0c8" stroke-width="1.5"/>
+      <text x="93" y="52" font-family="Rajdhani" font-size="14" text-anchor="middle" fill="#7fe0c8">A</text>
+      <g font-family="Rajdhani" font-size="7.5" letter-spacing="0.6" fill="#7fe0c8">
+        <text x="114" y="37">ACCESS MANAGER WAS DEVE-</text>
+        <text x="114" y="47">LOPED BY SEOCHO. SERVING</text>
+        <text x="114" y="57">CUSTOMERS SINCE 2006.</text>
+      </g>
+    </g>
+  </defs>
+
+  <rect width="1600" height="900" fill="#0a0907"/>
+  <rect width="1600" height="620" fill="url(#bloom)"/>
+  <rect x="0" y="60" width="600" height="780" fill="url(#leftwash)"/>
+
+  <!-- ==== time ==== -->
+  <text x="781" y="74" font-family="Rajdhani" font-size="18" fill="#b4ece3">10:20 PM</text>
+
+  <!-- ==== the bracket ==== -->
+  <!-- lobe outside the diagonal, x 229..338, y ~548..731 -->
+  <path d="M 229,548 L 330,626 Q 338,632 338,646 V 731 H 262 Q 229,731 229,698 Z" fill="#0f2320"/>
+  <!-- outline: full height, breaking into the diagonal at y 540 -->
+  <path d="M 228.5,0 V 528 Q 228.5,547 241,556 L 324,619 Q 338,630 338,650 V 700 Q 338,731 369,731 H 581 Q 611.5,731 611.5,700 V 0"
+        fill="none" stroke="url(#fade)" stroke-width="1.3"/>
+
+  <!-- ==== the three guest cards ==== -->
+  <use href="#guest" x="258" y="338"/>
+  <use href="#guest" x="651" y="338"/>
+  <use href="#guest" x="1043" y="338"/>
+
+  <!-- card 1: input field + ENTER -->
+  <rect x="257" y="413" width="335" height="51" rx="2" fill="#162826"/>
+  <rect x="266" y="421" width="2" height="22" fill="#8af0d8"/>
+  <path d="M 257,470 H 418 L 430,463 H 591.5 V 497.5 H 257 Z" fill="#8afada"/>
+  <text x="510" y="486" font-family="Rajdhani" font-size="14" font-weight="600" letter-spacing="2.5"
+        text-anchor="middle" fill="#0f3a33">ENTER</text>
+
+  <!-- cards 2 and 3: PROTECTED bars -->
+  <g fill="#122724" stroke="#1d3f3a" stroke-width="1">
+    <path d="M 649,471 H 812 L 824,462 H 984.5 V 497.5 H 649 Z"/>
+    <path d="M 1042,471 H 1205 L 1217,462 H 1377 V 497.5 H 1042 Z"/>
+  </g>
+  <g font-family="Rajdhani" font-size="13" font-weight="600" letter-spacing="2.5" text-anchor="middle" fill="#7fe0c8">
+    <text x="904" y="486">PROTECTED</text>
+    <text x="1297" y="486">PROTECTED</text>
+  </g>
+
+  <!-- ==== barcode ==== -->
+  <g fill="#8af0d8">
+    <!-- label strip with vertical micro-text -->
+    <!-- label strip: a teal-filled tab x 370..377 carrying dark vertical
+         micro-text (sampled #16a49c between the glyphs) -->
+    <rect x="370" y="632" width="7" height="63" fill="#16a49c"/>
+    <text transform="translate(375.5 693) rotate(-90)" font-family="Rajdhani" font-size="5.5" letter-spacing="0.3" fill="#0e2b2a">0033 05 64 08 CP</text>
+    <!-- bars: column profile of G over y 640..675 at full resolution,
+         thresholded at G>120 (the bar/gap midpoint — the earlier list
+         used a lower threshold that merged neighbours into 10px blocks
+         and read as a 73%-solid slab where the photo is 49% bars):
+         50 bars, x 377.5..590 -->
+    <g transform="translate(0 632)">
+      <rect x="377.5" width="7.5" height="51"/><rect x="385.8" width="1.7" height="51"/><rect x="389.2" width="1.7" height="51"/><rect x="392.1" width="1.7" height="51"/>
+      <rect x="395.0" width="1.7" height="51"/><rect x="401.2" width="3.3" height="51"/><rect x="405.8" width="2.9" height="51"/><rect x="410.4" width="1.7" height="51"/>
+      <rect x="415.0" width="1.7" height="51"/><rect x="419.6" width="2.9" height="51"/><rect x="425.8" width="1.2" height="51"/><rect x="428.8" width="1.7" height="51"/>
+      <rect x="431.2" width="3.3" height="51"/><rect x="436.2" width="1.3" height="51"/><rect x="440.4" width="1.7" height="51"/><rect x="443.8" width="2.9" height="51"/>
+      <rect x="449.6" width="1.7" height="51"/><rect x="452.5" width="3.3" height="51"/><rect x="457.1" width="2.1" height="51"/><rect x="460.4" width="3.3" height="51"/>
+      <rect x="464.6" width="3.3" height="51"/><rect x="469.2" width="1.7" height="51"/><rect x="473.8" width="1.7" height="51"/><rect x="478.3" width="3.3" height="51"/>
+      <rect x="484.6" width="1.7" height="51"/><rect x="487.5" width="1.7" height="51"/><rect x="490.4" width="3.3" height="51"/><rect x="495.0" width="1.7" height="51"/>
+      <rect x="499.6" width="1.7" height="51"/><rect x="504.2" width="3.3" height="51"/><rect x="510.0" width="1.7" height="51"/><rect x="513.3" width="1.7" height="51"/>
+      <rect x="516.2" width="3.3" height="51"/><rect x="520.8" width="1.7" height="51"/><rect x="525.4" width="1.7" height="51"/><rect x="528.3" width="2.9" height="51"/>
+      <rect x="534.2" width="2.1" height="51"/><rect x="537.5" width="2.9" height="51"/><rect x="542.1" width="1.7" height="51"/><rect x="545.0" width="3.3" height="51"/>
+      <rect x="549.6" width="2.9" height="51"/><rect x="554.2" width="1.7" height="51"/><rect x="558.3" width="2.1" height="51"/><rect x="563.3" width="2.9" height="51"/>
+      <rect x="567.5" width="2.1" height="51"/><rect x="572.1" width="1.7" height="51"/><rect x="575.0" width="3.3" height="51"/><rect x="581.2" width="1.7" height="51"/>
+      <rect x="584.2" width="3.3" height="51"/><rect x="589.2" width="1.2" height="51"/>
+    </g>
+    <text x="420" y="696" font-family="Rajdhani" font-size="13" letter-spacing="0.5" fill="#8af0d8">12345678123456789</text>
+  </g>
+
+  <!-- ==== footer micro-text, y 864..869, x 504..1094 ==== -->
+  <g font-family="Rajdhani" font-size="9" letter-spacing="0.2" fill="#82f0d3">
+    <text x="504" y="870" font-weight="700">ARASAKA CONSUMER TECHNOLOGY</text>
+    <text x="640" y="870">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+  </g>
+</svg>

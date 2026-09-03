@@ -1,83 +1,298 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="220" viewBox="0 0 1600 220" font-family="Rajdhani">
-  <!-- KITSCH BAR reference.
-       "Style over substance": teal line-work, yellow selection, rose bloom, everything
-       rounded into pills. Sampled palette (docs/kitsch/README.md): bg #0b0b07, bloom
-       #a63355, teal #7ddec8, teal dim #4d9484, bezel #f08c1e, yellow #fcc428, on-yellow
-       #37220f. Note the inversion: yellow is selection, not alarm.
-       Golden geometry: 1600x220; bar strip 31px at top, tray menu beneath, right edge
-       at x=1480. Cells are full pills (radius clamped to half the 25px cell height). -->
+  <!-- KITSCH BAR reference (2026-09-02 restyle).
+
+       The bar has no Behance source; this is an original composition cut from the
+       chrome of the era's four measured traces, docs/kitsch/{login,dashboard,mailbox,
+       store}-trace.svg (1600x900, every coordinate a photo measurement). Nothing here
+       is a shape that no kitsch screen shows. Palette is the consts at the top of
+       src/eras/kitsch.rs only: bg #0b0b07, teal #7ddec8 (traces stroke #5fd6c2..#80e4d0),
+       teal dim #4d9484 (trace caption ink #4f9a92), teal solid #1cb39b (wave #1bb6a3 /
+       #1db5a4), mint #87f4d9 (login bracket peak #80e4d0), yellow #fcc428 (SMG #ffbe18,
+       DETAILS #e6c020, message outline #f2c825), on-yellow #37220f (#5a3a08 / #4a3a05 on
+       the solid tabs), bezel #f08c1e (the amber 02 badge, #f0a93c). Yellow is SELECTION
+       in this era (README "Observed era rules"); the tray's alert role is the same ink.
+
+       Golden geometry kept: 1600x220; the cells occupy y 3..28 inside the 31px bar; the
+       tray menu drops beneath, right-aligned to x=1480; module set and order unchanged.
+
+       What is borrowed, and from where:
+
+       1. LINE WEIGHT. Every outline is 1.25px on .5 coordinates. mailbox-trace.svg
+          measured the message body outline at 1.2px full-brightness (pixels
+          1127.1..1127.9 across the right edge at y 500) and login-trace.svg the
+          bracket at 1.2px (peak #80e4d0 at y 200/300/450); both notes record that
+          1.5px on integer coordinates rendered as two half-bright pixels and read
+          dimmer. The era's line-work is thin and bright, not thick and dim.
+
+       2. THE BRACKET (bottom-left). A mint line drops from the top edge at x 1.5, turns
+          an r8 corner and runs right along y 29.5, fading out by x 440. This is the
+          list bracket of mailbox-trace.svg (left edge x 120.5, top line y 268 "from
+          x 138 fading out by x~402", stop 0/0.6/1 gradient #fadeR) and the nav bracket
+          of store-trace.svg (left edge x 106.5, bottom line "y 718 that runs right and
+          fades by x~445"), scaled to the 3px margin the bar leaves under its cells.
+          The bracket's wave (the solid teal swell at its foot) does not fit in 3px and
+          is drawn at the foot of the tray menu instead (item 9).
+
+       3. HOST TAPE = the USER box. mailbox-trace.svg draws GUES 7702 as a box whose
+          bottom edge steps down under its first 55px through a 12px diagonal
+          (M 155,185 H 349 V 228 H 220 L 208,236 H 155 Z; dashboard-trace.svg has the
+          same box at x 155..331). The host name is the bar's USER field, so it wears
+          that silhouette: body y 3..24, the first 26px of the bottom stepping to y 28
+          through a 6px diagonal. Filled solid with the tape role (bezel orange) the way
+          the 02 security badge is a solid amber block with dark ink (mailbox-trace
+          x 1275..1331, y 190..223, fill #f0a93c, ink #7a3a1a).
+
+       4. WORKSPACES = the nav chevrons. One category list with one solid-yellow entry:
+          store-trace.svg RIFLES/SMG/SNIPER/SHOTGUN/PISTOL (216x39, #nav: left edge rises
+          to a peak, drops onto the top edge, right end chamfers back; SMG solid #ffbe18)
+          and mailbox-trace.svg DETAILS/MODS/PRICE/DAMAGE (161x46, #chev
+          "M 0,46 V 24 L 22,0 L 28,9 H 155 Q 161,9 161,14 V 24 L 139,46 Z", DETAILS
+          solid). The bar's chevron is #chev scaled 25/46 (peak at x 12, drop onto the
+          top edge at (15.2,4.9), r~3 top-right, chamfer 12 wide over the lower half)
+          on a 40px body, 6px apart (mailbox pitch 53..55 on a 46px tab = 7..9 gap).
+          Active workspace = solid yellow with dark ink, exactly SMG / DETAILS.
+
+       5. FOCUSED WINDOW = the DESCRIPTION box. The mailbox header is USER box,
+          DESCRIPTION box, SECURITY badges (mailbox-trace x 155 / 575 / 1215, y 185..236);
+          the bar's left half reads the same way: host box, workspaces, window box. The
+          window label sits in the outlined form of the same stepped box (MAILBOX,
+          M 575,185 H 769 V 228 H 640 L 628,236 H 575 Z), full teal ink: in the traces
+          dim teal is reserved for the 7.5px in-fiction captions, every readable label
+          is full teal (row titles #7fe0c8, labels #7fd4cc).
+
+       6. TRAY CELLS = the customer chip. store-trace.svg x 123..338, y 178..200, rx 8:
+          a 22px-tall rounded outline holding a label and a value, the closest thing in
+          any kitsch screen to a bar cell. r8 is also the fan card (dashboard-trace #card
+          162x50 rx 8, measured in each card's own frame) and the message body's bottom
+          corners (mailbox-trace "r~8, measured on a 6x zoom"). Three independent
+          measurements, so the cell radius is 8, not the 16 the era's cards clamp to.
+
+       7. SELECTED CELL (clock) = the EVENTS card: dashboard-trace c(731,586), a 162x50
+          r8 card filled solid yellow with dark ink, the one selected blade of the fan.
+
+       8. ALERT CELLS (SYNC, the attention icon) = the message panel's yellow outline:
+          mailbox-trace body x 576..1127, 1.25px #f2c825, the same ink for its text
+          (#f5cd2a paragraphs). Outline and label both go yellow; the shape does not
+          change, which is what README says the era does: yellow is a fill or a line,
+          never a new silhouette.
+
+       9. TRAY MENU = the message list in its bracket.
+          - panel: r8 outline (item 6), 1.25px teal; root and submenu levels 4px apart
+            (the two pieces of the selected row are split by a 2px gap in the trace;
+            abutting 1.25px outlines would read as one 3px line).
+          - selected row (open parent Devices, highlighted Enable networking) = the
+            selected message row, mailbox-trace "SOLID YELLOW in two pieces split by a
+            2px gap at x 196: an icon cell x 154..195, y 313..351 with its bottom-right
+            chamfered, and a body x 197..491, y 313..346 whose right end is chamfered
+            from (491,325) to (471,346)". Scaled to the 25.6px row: body straight for
+            its top 9.3px, then a 15.5-wide chamfer to the bottom; icon cell 26 wide
+            with a 12x4 bottom-right chamfer, then the 2px gap. The icon owns a cell, so
+            it can never sit on the label (the overlap the sibling bars have).
+          - disabled row (Disconnect) = caption ink, teal dim (#4f9a92 in every trace).
+          - separator = a full-width 1.25px teal rule, the socket-row rules of the
+            product card (store-trace "M 0,274 H 261", 1.5px teal edge to edge).
+          - the wave: the root panel carries a 20px foot in which its left edge forks
+            and the region between the branches is solid teal, mailbox-trace
+            "M 120.5,606 Q 120.5,644 158,644 H 278 Q 289,644 296,653 L 362,741
+            Q 367,748 376,748 H 180 Q 120.5,748 120.5,690 Z" fill #1db5a4 (the same
+            figure closes the store bracket, y 575..718). README: one solid teal curl
+            per screen at the foot of the container outline; the menu panel is the one
+            container the bar draws.
+
+       10. TYPE. Labels at 14px weight 500: mailbox-trace measured the yellow paragraphs
+           at weight 500 and the GUES 7702 / MAILBOX box labels at 600 (a 1.25px line
+           next to 400-weight Rajdhani reads heavier than the text). No tracking: the
+           traces' 14px boxed letters carry none.
+
+       Considered and left out: the fan ghost trail on the clock (every trail in
+       dashboard-trace recedes up-right by (+20,-20) per step; from a cell whose top is
+       y 3 that leaves the bar); the shelf-band overhang on the open parent row (needs a
+       negative margin in iced and would cross the abutting submenu); the rose bloom
+       (a full-screen ground, not a 31px strip); the boxed A/B/C markers and their
+       micro-text (content the bar has no words for); dividers (the traces separate
+       cells by air, 4..8px, never by rules except inside one card). -->
+  <defs>
+    <!-- the bracket line fades out to the right, stops as in the traces' #fadeR -->
+    <linearGradient id="fadeR" gradientUnits="userSpaceOnUse" x1="1.5" x2="440" y1="0" y2="0">
+      <stop offset="0"   stop-color="#87f4d9" stop-opacity="1"/>
+      <stop offset="0.6" stop-color="#87f4d9" stop-opacity="1"/>
+      <stop offset="1"   stop-color="#87f4d9" stop-opacity="0"/>
+    </linearGradient>
+    <!-- nav chevron, 25 tall, mailbox #chev scaled 25/46 on a 40px body.
+         #chevo is the outlined form: 39x24 on .5 coordinates so the 1.25px line
+         covers the same 40x25 footprint as the solid one. -->
+    <path id="chev"  d="M 0,25 V 13 L 12,0 L 15.2,4.9 H 36.7 Q 40,4.9 40,7.6 V 13 L 28,25 Z"/>
+    <path id="chevo" d="M 0,24 V 12.5 L 11.5,0 L 14.6,4.7 H 35.8 Q 39,4.7 39,7.3 V 12.5 L 27.5,24 Z"/>
+    <!-- tray icon placeholder: a 19px diamond standing in for the SNI pixmap the app draws as supplied -->
+    <path id="icon" d="M -9.5,0 L 0,-9.5 L 9.5,0 L 0,9.5 Z"/>
+    <!-- menu row icon placeholder, 16px -->
+    <path id="micon" d="M -8,0 L 0,-8 L 8,0 L 0,8 Z"/>
+  </defs>
+
   <rect width="1600" height="220" fill="#0b0b07"/>
 
-  <!-- ============ BAR STRIP (cells y 3..28, 25px tall, full pills rx 12.5) ============ -->
-  <g font-size="14">
+  <!-- ============ THE BRACKET: left edge from the top, r8 corner, bottom line fading right ============ -->
+  <path d="M 1.5,0 V 21.5 Q 1.5,29.5 9.5,29.5 H 440" fill="none" stroke="url(#fadeR)" stroke-width="1.25"/>
 
-    <!-- host tape: filled bezel orange, bg ink -->
-    <rect x="6" y="3" width="71" height="25" rx="12.5" fill="#f08c1e"/>
-    <text x="18" y="20" fill="#0b0b07">nomad</text>
+  <!-- ============ BAR STRIP (cells y 3..28; outlines on .5 coordinates, 1.25px) ============ -->
+  <g font-size="14" font-weight="500">
 
-    <!-- workspaces 1..6; 3 active = solid yellow, dark ink -->
-    <rect x="85" y="3" width="35" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
-    <text x="102.5" y="20" text-anchor="middle" fill="#7ddec8">1</text>
-    <rect x="128" y="3" width="35" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
-    <text x="145.5" y="20" text-anchor="middle" fill="#7ddec8">2</text>
-    <rect x="171" y="3" width="35" height="25" rx="12.5" fill="#fcc428"/>
-    <text x="188.5" y="20" text-anchor="middle" fill="#37220f">3</text>
-    <rect x="214" y="3" width="35" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
-    <text x="231.5" y="20" text-anchor="middle" fill="#7ddec8">4</text>
-    <rect x="257" y="3" width="35" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
-    <text x="274.5" y="20" text-anchor="middle" fill="#7ddec8">5</text>
-    <rect x="300" y="3" width="35" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
-    <text x="317.5" y="20" text-anchor="middle" fill="#7ddec8">6</text>
+    <!-- host tape: the USER box, solid bezel orange, dark ink; bottom steps down under the first 26px -->
+    <path d="M 10,3 H 81 V 24 H 42 L 36,28 H 10 Z" fill="#f08c1e"/>
+    <text x="21" y="19" fill="#37220f">nomad</text>
 
-    <!-- centred window label: dim teal -->
-    <text x="546.5" y="20" text-anchor="middle" fill="#4d9484">~/src/cp-eras-ui - nvim src/bar.rs</text>
+    <!-- workspaces 1..6 as nav chevrons, 40x25 at a 46px pitch; 3 active = solid yellow, dark ink -->
+    <g fill="none" stroke="#7ddec8" stroke-width="1.25">
+      <use href="#chevo" x="91.5"  y="3.5"/>
+      <use href="#chevo" x="137.5" y="3.5"/>
+      <use href="#chevo" x="229.5" y="3.5"/>
+      <use href="#chevo" x="275.5" y="3.5"/>
+      <use href="#chevo" x="321.5" y="3.5"/>
+    </g>
+    <use href="#chev" x="183" y="3" fill="#fcc428"/>
+    <g text-anchor="middle" fill="#7ddec8">
+      <text x="111" y="20">1</text>
+      <text x="157" y="20">2</text>
+      <text x="203" y="20" fill="#37220f">3</text>
+      <text x="249" y="20">4</text>
+      <text x="295" y="20">5</text>
+      <text x="341" y="20">6</text>
+    </g>
 
-    <!-- tray: FLAM icon, ELEM icon (attention -> alert stroke = yellow), BLUE label, SYNC alert -->
-    <rect x="758" y="3" width="37" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
-    <path d="M 767 15.5 L 776.5 6 L 786 15.5 L 776.5 25 Z" fill="#8800aa"/>
-    <rect x="803" y="3" width="37" height="25" rx="12.5" fill="none" stroke="#fcc428" stroke-width="1.5"/>
-    <path d="M 812 15.5 L 821.5 6 L 831 15.5 L 821.5 25 Z" fill="#ff6600"/>
-    <rect x="848" y="3" width="59" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <!-- focused window: the DESCRIPTION box, outlined, centred in the free run (361..758), full teal ink -->
+    <path d="M 437.5,3.5 H 681.5 V 23.5 H 469.5 L 463.5,27.5 H 437.5 Z" fill="none" stroke="#7ddec8" stroke-width="1.25"/>
+    <text x="559.5" y="19" text-anchor="middle" fill="#7ddec8">~/src/cp-eras-ui - nvim src/bar.rs</text>
+
+    <!-- tray: FLAM icon, ELEM icon (attention: yellow line and yellow icon), BLUE, SYNC (alert).
+         Cells are the customer chip: rx 8, 1.25px teal. Icons are placeholders for SNI
+         pixmaps; idle icon teal, attention icon yellow — the same ink as its outline. -->
+    <rect x="758.5" y="3.5" width="36" height="24" rx="8" fill="none" stroke="#7ddec8" stroke-width="1.25"/>
+    <use href="#icon" x="776.5" y="15.5" fill="#7ddec8"/>
+    <rect x="803.5" y="3.5" width="36" height="24" rx="8" fill="none" stroke="#fcc428" stroke-width="1.25"/>
+    <use href="#icon" x="821.5" y="15.5" fill="#fcc428"/>
+    <rect x="848.5" y="3.5" width="58" height="24" rx="8" fill="none" stroke="#7ddec8" stroke-width="1.25"/>
     <text x="877.5" y="20" text-anchor="middle" fill="#7ddec8">BLUE</text>
-    <rect x="915" y="3" width="59" height="25" rx="12.5" fill="none" stroke="#fcc428" stroke-width="1.5"/>
+    <rect x="915.5" y="3.5" width="58" height="24" rx="8" fill="none" stroke="#fcc428" stroke-width="1.25"/>
     <text x="944.5" y="20" text-anchor="middle" fill="#fcc428">SYNC</text>
 
-    <rect x="982" y="3" width="140" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <rect x="982.5" y="3.5" width="139" height="24" rx="8" fill="none" stroke="#7ddec8" stroke-width="1.25"/>
     <text x="1052" y="20" text-anchor="middle" fill="#7ddec8">WIFI AFTERLIFE</text>
-    <rect x="1130" y="3" width="91" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <rect x="1130.5" y="3.5" width="90" height="24" rx="8" fill="none" stroke="#7ddec8" stroke-width="1.25"/>
     <text x="1175.5" y="20" text-anchor="middle" fill="#7ddec8">VOL  62%</text>
-    <rect x="1229" y="3" width="83" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <rect x="1229.5" y="3.5" width="82" height="24" rx="8" fill="none" stroke="#7ddec8" stroke-width="1.25"/>
     <text x="1270.5" y="20" text-anchor="middle" fill="#7ddec8">CPU 12%</text>
-    <rect x="1320" y="3" width="83" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <rect x="1320.5" y="3.5" width="82" height="24" rx="8" fill="none" stroke="#7ddec8" stroke-width="1.25"/>
     <text x="1361.5" y="20" text-anchor="middle" fill="#7ddec8">MEM 47%</text>
-    <rect x="1411" y="3" width="108" height="25" rx="12.5" fill="none" stroke="#7ddec8" stroke-width="1.5"/>
+    <rect x="1411.5" y="3.5" width="107" height="24" rx="8" fill="none" stroke="#7ddec8" stroke-width="1.25"/>
     <text x="1465" y="20" text-anchor="middle" fill="#7ddec8">2026-08-23</text>
-    <rect x="1527" y="3" width="67" height="25" rx="12.5" fill="#fcc428"/>
+    <!-- clock: the selected cell, the EVENTS card — r8, solid yellow, dark ink -->
+    <rect x="1527" y="3" width="67" height="25" rx="8" fill="#fcc428"/>
     <text x="1560.5" y="20" text-anchor="middle" fill="#37220f">23:41</text>
   </g>
 
-  <!-- ============ TRAY MENU ============
-       root panel + open Devices submenu to its LEFT; panels rounded rx 16. -->
+  <!-- ============ TRAY MENU: the message list ============
+       root panel x 1281..1480 with a 20px foot for the wave; Devices submenu 4px to its left.
+       Rows 25.6 tall inset 4 from the panel sides and 6 from its top; icon column 26 wide,
+       then the 2px gap, then the body; labels 6px into the body. -->
+
   <!-- Devices submenu: Mount / Eject -->
-  <rect x="1141" y="31" width="140" height="63.2" rx="16" fill="#0b0b07" stroke="#7ddec8" stroke-width="1.5"/>
-  <g font-size="14">
-    <path d="M 1161 49.8 L 1169 41.8 L 1177 49.8 L 1169 57.8 Z" fill="#8800aa"/>
-    <text x="1175" y="55" fill="#7ddec8">Mount</text>
-    <text x="1175" y="80.6" fill="#7ddec8">Eject</text>
+  <rect x="1137.5" y="31.5" width="140" height="63" rx="8" fill="none" stroke="#7ddec8" stroke-width="1.25"/>
+  <g font-size="14" font-weight="500" fill="#7ddec8">
+    <use href="#micon" x="1154.5" y="49.8"/>
+    <text x="1175.5" y="55">Mount</text>
+    <text x="1175.5" y="80.6">Eject</text>
   </g>
 
-  <!-- root menu: Devices (open, selected) / Disconnect (dim) / rule / Enable networking (selected) / Quit -->
-  <rect x="1281" y="31" width="199" height="124" rx="16" fill="#0b0b07" stroke="#7ddec8" stroke-width="1.5"/>
-  <g font-size="14">
-    <rect x="1281" y="37" width="199" height="25.6" rx="12.8" fill="#fcc428"/>
-    <path d="M 1300 49.8 L 1308 41.8 L 1316 49.8 L 1308 57.8 Z" fill="#37220f"/>
-    <text x="1315" y="55" fill="#37220f">Devices</text>
-    <text x="1468" y="55" text-anchor="end" fill="#37220f">&lt;</text>
-    <text x="1293" y="80.6" fill="#4d9484">Disconnect</text>
-    <line x1="1291" y1="93" x2="1470" y2="93" stroke="#7ddec8" stroke-width="1.5"/>
-    <rect x="1281" y="97.7" width="199" height="25.6" rx="12.8" fill="#fcc428"/>
-    <text x="1293" y="115.7" fill="#37220f">Enable networking</text>
-    <path d="M 1300 141.3 L 1308 133.3 L 1316 141.3 L 1308 149.3 Z" fill="#7ddec8"/>
-    <text x="1315" y="147.3" fill="#7ddec8">Quit</text>
+  <!-- root panel: r8 outline; the foot below Quit carries the wave -->
+  <rect x="1281.5" y="31.5" width="198" height="144" rx="8" fill="none" stroke="#7ddec8" stroke-width="1.25"/>
+  <!-- the wave: the left edge forks at y 147.5; solid teal between the fork's upper branch
+       (r8 into a horizontal at y 155.5, then a diagonal down-right to the bottom line) and
+       the panel's own bottom-left corner. mailbox-trace y 606..748, scaled to the foot. -->
+  <path d="M 1281.5,147.5 Q 1281.5,155.5 1289.5,155.5 H 1322 Q 1329,155.5 1333,161 L 1343.5,174 Q 1344.7,175.5 1346.5,175.5 H 1289.5 Q 1281.5,175.5 1281.5,167.5 Z" fill="#1cb39b"/>
+  <path d="M 1281.5,147.5 Q 1281.5,155.5 1289.5,155.5 H 1322 Q 1329,155.5 1333,161 L 1343.5,174 Q 1344.7,175.5 1346.5,175.5" fill="none" stroke="#7ddec8" stroke-width="1.25"/>
+
+  <g font-size="14" font-weight="500">
+    <!-- Devices: open parent = selected row in two pieces (icon cell, 2px gap, chamfered body) -->
+    <path d="M 1285,37 H 1311 V 58.6 L 1299,62.6 H 1285 Z" fill="#fcc428"/>
+    <path d="M 1313,37 H 1476 V 46.3 L 1460.5,62.6 H 1313 Z" fill="#fcc428"/>
+    <use href="#micon" x="1298" y="49.8" fill="#37220f"/>
+    <text x="1319" y="55" fill="#37220f">Devices</text>
+    <text x="1466" y="55" text-anchor="end" fill="#37220f">&lt;</text>
+    <!-- Disconnect: disabled, caption ink -->
+    <text x="1319" y="80.6" fill="#4d9484">Disconnect</text>
+    <!-- separator: full-width rule -->
+    <line x1="1281.5" y1="92.5" x2="1479.5" y2="92.5" stroke="#7ddec8" stroke-width="1.25"/>
+    <!-- Enable networking: highlighted = selected row body, chamfered right end -->
+    <path d="M 1285,97.7 H 1476 V 107 L 1460.5,123.3 H 1285 Z" fill="#fcc428"/>
+    <text x="1319" y="115.7" fill="#37220f">Enable networking</text>
+    <!-- Quit: idle row with an icon in the icon column -->
+    <use href="#micon" x="1298" y="136.1" fill="#7ddec8"/>
+    <text x="1319" y="141.3" fill="#7ddec8">Quit</text>
   </g>
+
+  <!-- IMPLEMENTATION DELTA (for bar.rs / Style) — every change from the current kitsch
+       bar render (tests/golden/bar-kitsch-1600x220.png), in the order a coding model
+       would apply them. Coordinates above are the target; the app follows the SVG.
+
+       CORNERS. Bar cells and menu panels: Corner::Round radius 8 (today: Round 16,
+         clamped to a 12.5 full pill on 25px cells). Do not clamp to a pill; r8 on a
+         25px cell leaves 9px of straight edge top and bottom.
+       STROKE. 1.25px for every outline, centred on half-pixel coordinates
+         (today: metrics.stroke 1.5 on integer coordinates). Applies to idle cells,
+         alert cells, the window box, menu panels, the separator rule, the bracket.
+       TYPE. Labels 14px weight Medium (500) (today: Normal). No tracking.
+       HOST TAPE. Shape: a stepped box, not a pill. Body from the cell top to 4px above
+         the cell bottom; the first 26px of the bottom edge step down to the cell bottom
+         through a 6px diagonal: relative path M 0,0 H w V h-4 H 32 L 26,h H 0 Z for a
+         w x h cell. Fill palette.tape (#f08c1e), no stroke; ink on_select (#37220f)
+         (today: bg #0b0b07). Label baseline sits in the 21px body, i.e. 1px higher
+         than in a full-height cell. Cell starts at x 10 (today 6), width unchanged.
+       WORKSPACES. Shape: the chevron, 40x25 per workspace at a 46px pitch (today: 35x25
+         pills at 43): relative path M 0,25 V 13 L 12,0 L 15.2,4.9 H 36.7 Q 40,4.9 40,7.6
+         V 13 L 28,25 Z. Idle: 1.25px border stroke, no fill, fg ink. Active: solid
+         select (#fcc428), on_select ink (#37220f), no stroke. Digit centred at x 20.
+       FOCUSED WINDOW. Becomes a shrink-width cell, not bare text: the stepped box of
+         the host tape as an outline (1.25px border, no fill), 12px side padding, ink
+         fg (#7ddec8) (today: mid ink, no box). Body 21px + 4px step, label baseline as
+         the tape's.
+       TRAY / STATUS CELLS. r8 outlines, 1.25px; idle stroke border, fg ink. Alert cell
+         (SYNC, muted audio, attention icon): stroke alert (#fcc428) AND label/icon ink
+         alert; same shape (unchanged from today apart from radius and stroke).
+         Clock: Surface::selected — r8 solid select (#fcc428), on_select ink, no stroke.
+         Widths and the 8px gap unchanged.
+       BRACKET (new ornament, bar level). A 1.25px line in emphasis mint (#87f4d9):
+         from (1.5,0) down to (1.5,21.5), quadratic corner to (9.5,29.5), then along
+         y 29.5 to x 440 with opacity 1 until x 264 (60%) fading linearly to 0 at
+         x 440. Lives in the bar's own 3px bottom padding and 10px left margin,
+         under nothing. Draw it on a canvas beneath the cells.
+       MENU PANELS. r8 outline, 1.25px border, bg fill (today: r16, 1.5px). Levels in
+         the chain spaced 4px apart (today: abutting). Root level only: MENU_PANEL_AIR
+         at the bottom grows from 6 to 26, a 20px foot holding the wave (below).
+       MENU ROWS. Row height 25.6 unchanged; the icon column is 26px wide (icon 16 centred),
+         then a 2px gap, then the body with 6px side padding — label x = panel inner
+         left + 34 (today: icon then 6px gap then label; the icon and label overlap in
+         the sibling bars because the row's padding is not reserved for the icon).
+         Selected row (open submenu parent, Toggle(true), highlighted): solid select
+         (#fcc428) in TWO pieces when the level has icons — icon cell 26 wide with its
+         bottom-right chamfered 12 wide x 4 tall (relative M 0,0 H 26 V 21.6 L 14,25.6
+         H 0 Z), the 2px gap unfilled, then the body — and ONE piece spanning the
+         inset width when it has none. The body's right end is chamfered: straight for
+         the top 9.3px, then a 15.5px-wide diagonal to the bottom (relative
+         M 0,0 H w V 9.3 L w-15.5,25.6 H 0 Z). Ink on_select, submenu marker "<"
+         end-anchored 10px inside the body's right edge. Not a pill (today: rx 12.8).
+         Disabled row: dim ink (#4d9484), no fill (unchanged).
+         Separator: 1.25px border rule spanning the FULL panel width, edge to edge
+           (today: inset MENU_RULE_SIDE 6 and 1.5px).
+       WAVE (new ornament, root menu panel only). In the 20px foot: solid ornament teal
+         (#1cb39b) bounded by the panel's left edge and bottom edge and, on top, a
+         curve that starts on the left edge 28px above the bottom, turns an r8 corner
+         into a horizontal 20px above the bottom, runs right 32.5px, curves into a
+         diagonal down-right reaching the bottom edge 65px from the panel's left, and
+         that upper curve is stroked 1.25px border. Relative to the panel's
+         bottom-left corner (0,0) with y up: fill M 0,28 Q 0,20 8,20 H 40.5
+         Q 47.5,20 51.5,14.5 L 62,1.5 Q 63.2,0 65,0 H 8 Q 0,0 0,8 Z. The panel outline
+         is drawn unchanged over it; the wave never touches a row (the last row ends
+         6px above the foot).
+       ICONS. Tray placeholders unchanged (19px diamond, fg idle / alert attention);
+         menu row placeholders 16px, fg idle / on_select on a selected row. -->
 </svg>

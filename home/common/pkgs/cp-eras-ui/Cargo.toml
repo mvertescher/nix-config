@@ -11,13 +11,44 @@ autobins = false
 # iced is the widget and `Handle::from_rgba`. The full feature would
 # pull the `image` crate's whole codec set -- jpeg, gif, webp, tiff --
 # to decode files nothing here ever asks it to open.
-iced = { version = "0.13", features = [
+#
+# `default-features = false` exists for exactly one reason: iced 0.14
+# added `web-colors` to its default set and there is no other way to
+# take a default feature back off. `web-colors` blends in sRGB space
+# rather than linear, the way a browser does, and this crate's whole
+# vocabulary is translucent compositing -- `widgets::ground`'s bloom is
+# 26 stacked discs at alpha 0.055, `Selection::Veneer` is banded warp
+# over a base tone, and every glyph edge is a partial-coverage blend.
+# Rendered with it on, the kitsch and neokitsch blooms lose most of
+# their heat and all four eras' text goes a stop thinner: the golden
+# matrix drops to 95.7-99.9% similarity, worst on kitsch. Off, the same
+# renders come back pixel-identical to the 0.13 goldens bar 561
+# subpixels at delta <= 6 (the glyphon -> cryoglyph rasteriser change).
+# So the list below is 0.14's own default set *minus* `web-colors`,
+# restated because cargo has no subtractive form; keep it in step with
+# upstream's `default` when bumping.
+#   * wgpu, tiny-skia -- the two renderer backends, as upstream.
+#   * crisp -- 0.14's pixel-grid snapping for quads, new and default-on.
+#     Kept: it moves nothing in this crate's goldens, because the
+#     geometry is already integer-aligned.
+#   * thread-pool, linux-theme-detection, x11, wayland -- the rest of
+#     upstream's default, unchanged.
+# `fira-sans` was in 0.13's default and is not in 0.14's; it is not
+# wanted either, since every binary sets its own `default_font`.
+iced = { version = "0.14", default-features = false, features = [
+  "wgpu",
+  "tiny-skia",
+  "crisp",
+  "thread-pool",
+  "linux-theme-detection",
+  "x11",
+  "wayland",
   "advanced",
   "canvas",
   "tokio",
   "image-without-codecs",
 ] }
-iced_layershell = "0.13"
+iced_layershell = "0.19"
 sysinfo = "0.33"
 # PulseAudio client bindings for the bar's audio module. Apache-2.0,
 # and the only Rust route to a sink volume that does not shell out to
@@ -55,7 +86,10 @@ futures-lite = "2"
 #     which is worth writing down because the old licence is what search
 #     results still say. 0.46 rather than the current 0.48 because 0.47
 #     moved to tiny-skia 0.12 and would put a second copy of tiny-skia
-#     and of png in the build beside the ones iced already pins.
+#     and of png in the build beside the ones iced already pins. Still
+#     the right pair on iced 0.14, which pins the same tiny-skia 0.11.4
+#     and png 0.17.16: `cargo tree -d` lists neither, so the tree holds
+#     exactly one of each.
 #     `default-features = false` keeps `text` off: a tray icon has no
 #     text in it, and the feature drags in fontdb and a shaper.
 png = "0.17"

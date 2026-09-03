@@ -63,10 +63,10 @@ impl Login {
                         "SERVING CUSTOMERS SINCE 2006.",
                     ],
                 ),
-                Space::new(Length::Fill, Length::Shrink),
+                Space::new().width(Length::Fill).height(Length::Shrink),
                 text::caption(s, "GUEST ACCESS IS LOGGED"),
             ],
-            Space::new(0.0, s.metrics.gap),
+            Space::new().height(s.metrics.gap),
             footer(
                 s,
                 "INTERFACE LOADED",

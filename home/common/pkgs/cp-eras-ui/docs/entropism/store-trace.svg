@@ -1,0 +1,264 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <!-- ENTROPISM store-trace: schematic of images/entropism-dashboard.png
+       (the 4ST STORE — the two entropism source files are named the wrong
+       way round; see docs/sources.md. entropism-store.png is the hub and
+       is traced by dashboard-trace.svg). Behance 360994…60901b1b6119b,
+       #42. Source is 3840x2160; every coordinate here is in the 1600x900
+       frame (source / 2.4).
+
+       Every coordinate below is measured, not eyeballed:
+         scripts/extract_spec.py images/entropism-dashboard.png -o /tmp/en-src.json
+       plus row/column probes on the 1600-wide rescale for the outline-only
+       geometry (nav rows, card frames, socket-row dividers, letter boxes),
+       and the trace is held to the source by
+         scripts/fidelity_check.sh -\-inventory entropism store
+
+       What the source actually shows, top to bottom (read 2026-09-02 by
+       opening the image and cropping into it):
+         - a full-width header strip, x 49..1551, y 43..69, dividers at
+           x 467 and x 1357: DIGITAL DISTRIBUTION SOFTWAREV2 / STORE ACCESS
+           SCREEN / FLAIR TRS 5MMP
+         - the 4ST logotype, x 134..308, y 102..160: "4S" solid heavy
+           sage (extractor: 4 at [138,105,59,46], S at [202,102,52,49]),
+           the T outline-only; S T O R E letter-spaced beneath, y 160..174
+         - a CUSTOMER box, outlined, x 113..330, y 194..216, CUSTOMER left
+           and #NC488402 right-aligned; two unboxed key/value lines under
+           it: LOYALTY DISCOUNT 10% (baseline 243), LAST UPDATE 10/05/2077
+           (baseline 259)
+         - A: the category nav, outlined frame x 112..330, y 301..740,
+           rows on a ~61px pitch: RIFLES (301..358), SMG (358..421, filled
+           solid sage — the selection; extractor [112,359,218,60]), SNIPER
+           (421..482), SHOTGUN (482..544), PISTOL (544..606), then one
+           tall EMPTY cell 606..740 closing the frame
+         - B: four MAGNUM 650 HAND GUN product cards, 265 wide on a 322
+           pitch at x 461 / 783 / 1105 / 1429 (the fourth runs off the
+           right edge of the frame), all with their top at y 260. Each
+           card: title block MAGNUM 650 / HAND GUN; a YELLOW band y 315..335
+           (#eebf09, extractor [786,315,259,20]) with PETROCHEM in a dark
+           tag at the left and BETTERLIFE TEC at the right; a rifle
+           line-illustration y ~360..420; a DPS / PNT / ACC / ROF label
+           row (baseline 460) over a filled values row 86 / 30 / 5 / 5
+           (y 469..494, extractor [788,469,255,25]); a socket row y 497..546
+           split at +52 / +119 / +191: a QR-ish glyph then EMPTY SOCKET
+           x3; and a two-line micro-caption below the card (ONLY CC35
+           CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO /
+           MANIPULATE, ACCESS OR DISABLE THIS DEVICE.)
+         - the FIRST card is the grown/selected one: its whole header
+           block from y 260 down through the values row (y 494) is filled
+           solid sage (extractor [462,261,263,233]) with dark text, a dark
+           rule at y 468 between labels and values, and the card continues
+           down to y 720 with a detail block — 20 Recoil / 22 Sperad / 12
+           Range (sic), Bonus / +9 Reflexes / +2 Modules Slots — and its
+           socket row at y 672..720; its caption sits at y ~738..748
+         - bottom-left: micro-text SPARE TIME MANAGER WAS DEVELOPED BY /
+           SEOCHO. SERVING CUSTOMERS SINCE 2006. at x 126, y ~784..796,
+           and two boxed section letters A (x 294..320) and B (x 464..490)
+           at y 779..805 — the letters sit BELOW the things they label on
+           this screen
+         - a full-width footer strip, x 52..1549, y 847..873, no dividers:
+           INTERFACE LOADED / PROVIDED BY NEXUS NETWORK V10.8 / BUILD
+           6.47.48441.R15
+
+       The rifle illustrations are drawn as one schematic silhouette per
+       card (the photo has a detailed line-drawing; its outline envelope is
+       what is traced). The socket glyph is the photo's 9x9 dot matrix (see the #qr def).
+
+       Palette sampled by k-means over the photo (extract_spec.py):
+         ink    #a8d4a2 (6.0%, the solid fills)  #88b088 (bright text)
+                #70926d (outlines)  #536c4c  #35462e (dark text on sage)
+                #eebf09 (1.1%, the yellow bands)
+         ground #100b03 (58.1%)  #1e1d12 (28.7%) -->
+  <defs>
+    <radialGradient id="lift" cx="0.45" cy="0.4" r="0.8">
+      <stop offset="0"   stop-color="#1e1d12"/>
+      <stop offset="0.7" stop-color="#151207"/>
+      <stop offset="1"   stop-color="#100b03"/>
+    </radialGradient>
+    <!-- rifle envelope, local x 36..242, y 102..157 inside a card, as the
+         illustration's four blocks: receiver x 60..154 y 102..150, magazine
+         x 36..76 y 116..157, grip x 150..171 y 125..157, stock x 154..242
+         y 108..136 with its foot dropping to 157 at the right -->
+    <g id="rifle">
+      <rect x="60" y="102" width="94" height="48"/>
+      <rect x="36" y="116" width="40" height="41"/>
+      <rect x="150" y="125" width="21" height="32"/>
+      <path d="M 154,108 H 242 V 157 H 226 V 136 H 154 Z"/>
+    </g>
+    <!-- socket glyph (the "QR"): not a QR — a 9x9 dot matrix, 32x32 at
+         this scale, with the middle row AND column empty (four 4x4
+         quadrants). Measured on the photo: dots 10px on an 8.4px pitch at
+         full res (dot 4.2 on pitch 3.5 here, so diagonal neighbours
+         touch, as they visibly do in the photo); the cell pattern was
+         sampled at every dot centre on card 1 (full-res top-left
+         1132,1634) and card 2 (1905,1216) and is identical on both:
+           #..#.#..#
+           .#....#..
+           ..#.....#
+           #..#.#.#.
+           .........
+           .#.#..#.#
+           #.#..#...
+           .#.....#.
+           #..#.#..#
+         Drawn at its top-left. -->
+    <g id="qr">
+      <rect x="0" y="0" width="3.8" height="3.8"/> <rect x="10.5" y="0" width="3.8" height="3.8"/> <rect x="17.5" y="0" width="3.8" height="3.8"/> <rect x="28" y="0" width="3.8" height="3.8"/>
+      <rect x="3.5" y="3.5" width="3.8" height="3.8"/> <rect x="21" y="3.5" width="3.8" height="3.8"/>
+      <rect x="7" y="7" width="3.8" height="3.8"/> <rect x="28" y="7" width="3.8" height="3.8"/>
+      <rect x="0" y="10.5" width="3.8" height="3.8"/> <rect x="10.5" y="10.5" width="3.8" height="3.8"/> <rect x="17.5" y="10.5" width="3.8" height="3.8"/> <rect x="24.5" y="10.5" width="3.8" height="3.8"/>
+      <rect x="3.5" y="17.5" width="3.8" height="3.8"/> <rect x="10.5" y="17.5" width="3.8" height="3.8"/> <rect x="21" y="17.5" width="3.8" height="3.8"/> <rect x="28" y="17.5" width="3.8" height="3.8"/>
+      <rect x="0" y="21" width="3.8" height="3.8"/> <rect x="7" y="21" width="3.8" height="3.8"/> <rect x="17.5" y="21" width="3.8" height="3.8"/>
+      <rect x="3.5" y="24.5" width="3.8" height="3.8"/> <rect x="24.5" y="24.5" width="3.8" height="3.8"/>
+      <rect x="0" y="28" width="3.8" height="3.8"/> <rect x="10.5" y="28" width="3.8" height="3.8"/> <rect x="17.5" y="28" width="3.8" height="3.8"/> <rect x="28" y="28" width="3.8" height="3.8"/>
+    </g>
+    <!-- an outlined product card (cards 2..4) at its local origin -->
+    <g id="card" font-family="Rajdhani">
+      <rect x="0" y="0" width="265" height="237" fill="none" stroke="#70926d" stroke-width="2"/>
+      <text x="12" y="26" font-size="24" fill="#a8d4a2" letter-spacing="1">MAGNUM 650</text>
+      <text x="12" y="45" font-size="20" fill="#a8d4a2" letter-spacing="1">HAND GUN</text>
+      <rect x="3" y="55" width="259" height="20" fill="#eebf09"/>
+      <rect x="3" y="62" width="58" height="11" fill="#35462e"/>
+      <text x="6" y="71" font-size="9.5" fill="#eebf09">PETROCHEM</text>
+      <text x="259" y="71" font-size="9.5" fill="#35462e" text-anchor="end">BETTERLIFE TEC</text>
+      <use href="#rifle" fill="#88b088" stroke="#a8d4a2" stroke-width="1"/>
+      <g font-size="20" fill="#a8d4a2" text-anchor="middle" letter-spacing="1">
+        <text x="41" y="200">DPS</text><text x="102" y="200">PNT</text>
+        <text x="164" y="200">ACC</text><text x="225" y="200">ROF</text>
+      </g>
+      <rect x="5" y="209" width="255" height="25" fill="#a8d4a2"/>
+      <g font-size="22" fill="#35462e" text-anchor="middle">
+        <text x="41" y="230">86</text><text x="102" y="230">30</text>
+        <text x="164" y="230">5</text><text x="225" y="230">5</text>
+      </g>
+      <!-- socket row y 237..286, dividers at 52 / 119 / 191 -->
+      <rect x="0" y="237" width="265" height="49" fill="none" stroke="#70926d" stroke-width="2"/>
+      <path d="M 52,237 V 286 M 119,237 V 286 M 191,237 V 286" fill="none" stroke="#70926d" stroke-width="1.5"/>
+      <use href="#qr" x="10.5" y="246.5" fill="#a8d4a2"/>
+      <g font-size="12" fill="#a8d4a2" text-anchor="middle">
+        <text x="85" y="258">EMPTY</text><text x="85" y="272">SOCKET</text>
+        <text x="155" y="258">EMPTY</text><text x="155" y="272">SOCKET</text>
+        <text x="228" y="258">EMPTY</text><text x="228" y="272">SOCKET</text>
+      </g>
+      <g font-size="7.5" fill="#88b088">
+        <text x="5" y="304">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
+        <text x="5" y="314">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+      </g>
+    </g>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#lift)"/>
+
+  <!-- ==== header strip, y 43..69, dividers at x 467 and 1357 ==== -->
+  <g>
+    <rect x="49" y="43" width="1502" height="26" fill="none" stroke="#70926d" stroke-width="1.5"/>
+    <path d="M 467,43 V 69 M 1357,43 V 69" fill="none" stroke="#70926d" stroke-width="1.5"/>
+    <g font-family="Rajdhani" font-size="15" fill="#88b088" letter-spacing="1">
+      <text x="61" y="61">DIGITAL DISTRIBUTION SOFTWAREV2</text>
+      <text x="506" y="61">STORE ACCESS SCREEN</text>
+      <text x="1372" y="61">FLAIR TRS 5MMP</text>
+    </g>
+  </g>
+
+  <!-- ==== 4ST logotype + CUSTOMER block ==== -->
+  <g font-family="Rajdhani">
+    <!-- 4ST drawn as block glyphs at the extractor's bboxes: 4 [138,105,59,46],
+         S [202,102,52,49], T (outline only) [262,102,46,49] -->
+    <path d="M 170,105 H 197 V 151 H 170 V 139 H 138 V 126 L 165,105 Z M 155,126 H 170 V 114 Z"
+          fill="#a8d4a2" fill-rule="evenodd"/>
+    <path d="M 202,102 H 254 V 116 H 216 V 120 H 254 V 151 H 202 V 137 H 240 V 133 H 202 Z" fill="#a8d4a2"/>
+    <path d="M 262,102 H 308 V 114 H 292 V 151 H 278 V 114 H 262 Z" fill="none" stroke="#a8d4a2" stroke-width="2"/>
+    <text x="138" y="174" font-size="16" fill="#88b088" letter-spacing="33">STORE</text>
+
+    <rect x="113" y="194" width="217" height="22" fill="none" stroke="#70926d" stroke-width="1.5"/>
+    <g font-size="14" fill="#88b088" letter-spacing="1">
+      <text x="118" y="211">CUSTOMER</text>
+      <text x="324" y="211" text-anchor="end">#NC488402</text>
+      <text x="118" y="243">LOYALTY DISCOUNT</text>
+      <text x="324" y="243" text-anchor="end">10%</text>
+      <text x="118" y="259">LAST UPDATE</text>
+      <text x="324" y="259" text-anchor="end">10/05/2077</text>
+    </g>
+  </g>
+
+  <!-- ==== A: category nav, frame x 112..330, y 301..740, SMG filled ==== -->
+  <g font-family="Rajdhani" font-size="24" letter-spacing="1">
+    <rect x="112" y="301" width="218" height="439" fill="none" stroke="#70926d" stroke-width="2"/>
+    <text x="140" y="337" fill="#a8d4a2">RIFLES</text>
+    <rect x="112" y="358" width="218" height="63" fill="#a8d4a2"/>
+    <text x="140" y="397" fill="#35462e">SMG</text>
+    <text x="140" y="457" fill="#a8d4a2">SNIPER</text>
+    <text x="140" y="516" fill="#a8d4a2">SHOTGUN</text>
+    <text x="140" y="576" fill="#a8d4a2">PISTOL</text>
+    <path d="M 112,482 H 330 M 112,544 H 330 M 112,606 H 330" fill="none" stroke="#70926d" stroke-width="1.5"/>
+  </g>
+
+  <!-- ==== B: product cards, 265 wide on a 322 pitch, tops at y 260 ==== -->
+  <!-- card 1 (x 461): the grown/selected card, header block filled -->
+  <g transform="translate(461,260)" font-family="Rajdhani">
+    <rect x="0" y="0" width="265" height="234" fill="#a8d4a2"/>
+    <rect x="0" y="0" width="265" height="412" fill="none" stroke="#70926d" stroke-width="2"/>
+    <text x="13" y="26" font-size="24" fill="#35462e" letter-spacing="1">MAGNUM 650</text>
+    <text x="13" y="45" font-size="20" fill="#35462e" letter-spacing="1">HAND GUN</text>
+    <rect x="3" y="55" width="259" height="20" fill="#eebf09"/>
+    <rect x="3" y="62" width="58" height="11" fill="#35462e"/>
+    <text x="6" y="71" font-size="9.5" fill="#eebf09">PETROCHEM</text>
+    <text x="259" y="71" font-size="9.5" fill="#35462e" text-anchor="end">BETTERLIFE TEC</text>
+    <use href="#rifle" fill="#35462e" stroke="#536c4c" stroke-width="1"/>
+    <g font-size="20" fill="#35462e" text-anchor="middle" letter-spacing="1">
+      <text x="41" y="200">DPS</text><text x="102" y="200">PNT</text>
+      <text x="164" y="200">ACC</text><text x="225" y="200">ROF</text>
+    </g>
+    <path d="M 0,208 H 265" fill="none" stroke="#35462e" stroke-width="1.5"/>
+    <g font-size="22" fill="#35462e" text-anchor="middle">
+      <text x="41" y="230">86</text><text x="102" y="230">30</text>
+      <text x="164" y="230">5</text><text x="225" y="230">5</text>
+    </g>
+    <!-- detail block, y 494..672 -->
+    <g font-size="19" fill="#a8d4a2">
+      <text x="17" y="270">20</text><text x="51" y="270">Recoil</text>
+      <text x="17" y="291">22</text><text x="51" y="291">Sperad</text>
+      <text x="17" y="312">12</text><text x="51" y="312">Range</text>
+      <text x="17" y="348">Bonus</text>
+      <text x="17" y="368">+9 Reflexes</text>
+      <text x="17" y="390">+2 Modules Slots</text>
+    </g>
+    <!-- socket row y 672..720 local 412..460, dividers at 52 / 120 / 192 -->
+    <path d="M 0,412 H 265 M 52,412 V 460 M 120,412 V 460 M 192,412 V 460" fill="none" stroke="#70926d" stroke-width="1.5"/>
+    <rect x="0" y="412" width="265" height="48" fill="none" stroke="#70926d" stroke-width="2"/>
+    <use href="#qr" x="10.5" y="420.5" fill="#a8d4a2"/>
+    <g font-size="12" fill="#a8d4a2" text-anchor="middle">
+      <text x="86" y="433">EMPTY</text><text x="86" y="447">SOCKET</text>
+      <text x="156" y="433">EMPTY</text><text x="156" y="447">SOCKET</text>
+      <text x="228" y="433">EMPTY</text><text x="228" y="447">SOCKET</text>
+    </g>
+    <g font-size="7.5" fill="#88b088">
+      <text x="5" y="478">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
+      <text x="5" y="488">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+    </g>
+  </g>
+
+  <!-- cards 2..4, outlined; the fourth is clipped by the frame edge -->
+  <use href="#card" x="783"  y="260"/>
+  <use href="#card" x="1105" y="260"/>
+  <use href="#card" x="1429" y="260"/>
+
+  <!-- ==== bottom-left caption and the A / B letter boxes, y 779..805 ==== -->
+  <g font-family="Rajdhani">
+    <text x="126" y="787" font-size="8.5" fill="#70926d">SPARE TIME MANAGER WAS DEVELOPED BY</text>
+    <text x="126" y="796" font-size="8.5" fill="#70926d">SEOCHO. SERVING CUSTOMERS SINCE 2006.</text>
+    <rect x="294" y="779" width="26" height="26" fill="none" stroke="#88b088" stroke-width="1.5"/>
+    <text x="300" y="799" font-size="19" fill="#88b088">A</text>
+    <rect x="464" y="779" width="26" height="26" fill="none" stroke="#88b088" stroke-width="1.5"/>
+    <text x="470" y="799" font-size="19" fill="#88b088">B</text>
+  </g>
+
+  <!-- ==== footer strip, y 847..873, no dividers ==== -->
+  <g>
+    <rect x="52" y="847" width="1497" height="26" fill="none" stroke="#70926d" stroke-width="1.5"/>
+    <g font-family="Rajdhani" font-size="15" fill="#88b088" letter-spacing="1">
+      <text x="61" y="865">INTERFACE LOADED</text>
+      <text x="506" y="865">PROVIDED BY NEXUS NETWORK V10.8</text>
+      <text x="1400" y="865">BUILD 6.47.48441.R15</text>
+    </g>
+  </g>
+</svg>

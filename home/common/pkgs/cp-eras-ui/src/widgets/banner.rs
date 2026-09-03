@@ -107,7 +107,7 @@ pub fn banner<'a, Message: 'static>(
         .width(Length::Fill)
         .height(Length::Fixed(height + notch)),
         container(
-            row![lead, Space::new(Length::Fill, 0.0), tail]
+            row![lead, Space::new().width(Length::Fill), tail]
                 .align_y(iced::Alignment::Center)
                 .spacing(6)
         )
@@ -135,7 +135,7 @@ pub fn band_height(size: u16) -> f32 {
 
 /// Nothing, in a shape the band's row will accept.
 pub fn blank<'a, Message: 'static>() -> Element<'a, Message> {
-    Space::new(0.0, 0.0).into()
+    Space::new().into()
 }
 
 /// A label in the band's ink, at the band's own size.
@@ -146,5 +146,5 @@ pub fn tag<'a, Message: 'static>(
     size: u16,
 ) -> Element<'a, Message> {
     let (_, ink) = banner_colors(style, selected);
-    text::caption(style, content).size(size).color(ink).into()
+    text::caption(style, content).size(f32::from(size)).color(ink).into()
 }

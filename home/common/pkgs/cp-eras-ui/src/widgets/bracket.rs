@@ -59,7 +59,6 @@ impl<Message> canvas::Program<Message> for Bracket {
         // a container looks like.
         frame.translate(iced::Vector::new(i, i));
         let box_ = outline(
-            self.corner,
             default_corners(self.corner),
             crate::style::Ticket::default(),
             (panel_w - self.stroke).max(0.0),
@@ -114,10 +113,9 @@ pub fn bracket_panel<'a, Message: 'static>(
                 .width(Length::Fill),
         ]
         .width(Length::FillPortion((PANEL_W as u16) / 10)),
-        Space::new(
-            Length::FillPortion(((REACH - PANEL_W) as u16) / 10),
-            Length::Shrink
-        ),
+        Space::new()
+            .width(Length::FillPortion(((REACH - PANEL_W) as u16) / 10))
+            .height(Length::Shrink),
     ];
 
     layered(

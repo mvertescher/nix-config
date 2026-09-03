@@ -1,7 +1,7 @@
 //! The one primitive every era's screens are built from.
 //!
 //! A surface is a filled and/or stroked shape whose corner treatment
-//! comes from [`Corner`] and whose fill comes from [`Fill`]. Panels,
+//! comes from [`Corners`] and whose fill comes from [`Fill`]. Panels,
 //! cards, nav pills, badges and list rows are all this widget with
 //! different sizes and fills, which is what lets the store screen have a
 //! single implementation across four eras.
@@ -10,53 +10,116 @@ use crate::style::{Corner, Selection, Style, Ticket};
 use iced::advanced::widget::{Operation, Tree};
 use iced::advanced::{layout, overlay, renderer, Clipboard, Layout, Shell, Widget};
 use iced::widget::{canvas, container, stack};
-use iced::{event, mouse, Color, Element, Event, Length, Point, Rectangle, Renderer, Size, Theme};
+use iced::{mouse, Color, Element, Event, Length, Point, Rectangle, Renderer, Size, Theme};
 
-/// Which corners a corner treatment applies to.
+/// One corner's treatment.
 ///
-/// A parameter rather than a constant because the amount and the choice
-/// come from different places: the era table says *how much* to cut and
-/// the widget says *where*. In practice every caller today takes
-/// [`default_corners`] -- one era-wide answer -- and the four named
-/// constants below exist to serve it. The `Surface::corners` builder
-/// that let a widget override it was deleted in the dead-code audit
-/// along with `Corners::OPPOSED`: nothing had ever called either, and
-/// `OPPOSED`'s own doc claimed it was "the neomil info panel", which
-/// the sheet contradicts -- `M 1080 132 h 700 l 24 24 v 560 l -24 24
-/// h -700 Z` cuts both *right* corners, not two diagonally opposite
-/// ones. The field is still public, so a widget that genuinely needs
-/// its own corners sets it; it just does not get a builder and a
-/// wrong constant for free.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// A kind *and* an amount, both belonging to the corner rather than to
+/// the era: a `Chamfer` carries its own width and height, so a cut can
+/// be shallower than it is wide -- which the era table's single `cut`
+/// figure could not say at all.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Cut {
+    Square,
+    /// A diagonal cut `x` wide along the horizontal edge and `y` tall
+    /// along the vertical one.
+    Chamfer { x: f32, y: f32 },
+    Round { radius: f32 },
+}
+
+impl Cut {
+    /// This cut as it fits a `w` by `h` box: how far it eats along the
+    /// horizontal edge, and how far along the vertical one.
+    ///
+    /// No corner may eat more than half of either dimension, or two of
+    /// them meet in the middle and the outline doubles back on itself
+    /// -- the clamp the old single `amount` applied to all four at
+    /// once. Both numbers shrink by the *same* factor, so a squeezed
+    /// chamfer keeps the slope it was asked for and a squeezed radius
+    /// stays circular. That is also what makes this arithmetic a pure
+    /// refactor: with `x == y` the scaled pair is exactly the old
+    /// `min(amount, w / 2, h / 2)`.
+    fn extent(self, w: f32, h: f32) -> (f32, f32) {
+        let (x, y) = match self {
+            Cut::Square => return (0.0, 0.0),
+            Cut::Chamfer { x, y } => (x, y),
+            Cut::Round { radius } => (radius, radius),
+        };
+        if x <= 0.0 || y <= 0.0 {
+            return (0.0, 0.0);
+        }
+        let scale = 1.0f32.min(w / 2.0 / x).min(h / 2.0 / y).max(0.0);
+        (x * scale, y * scale)
+    }
+
+    fn is_round(self) -> bool {
+        matches!(self, Cut::Round { .. })
+    }
+}
+
+/// The four corners of a surface, each with its own [`Cut`].
+///
+/// Four booleans until the bar redesign: the era table said *how much*
+/// to cut and the widget picked one of four named subsets to apply it
+/// to, so everything an era drew wore one treatment at one size. The
+/// redesigned bars are not sayable that way. A neokitsch bar cell
+/// rounds three corners at `r=3` and chamfers the fourth 10 wide by 7
+/// tall; a kitsch menu foot chamfers 12 by 4; a neomil cell chamfers
+/// the bottom-*left* at 6 where the era's own default chamfers the
+/// bottom-right at 15. Mixed kinds, non-square cuts, and amounts the
+/// widget rather than the table chooses -- three things a bool cannot
+/// carry.
+///
+/// That the *choice* belongs at the call site was always true, and the
+/// sheets said so before the bars did: the neomil info panel is
+/// `M 1080 132 h 700 l 24 24 v 560 l -24 24 h -700 Z`, which cuts both
+/// *right* corners, and no era-wide rule produces that. What is new is
+/// that the amount can come from the call site too.
+/// [`default_corners`] keeps the era's declared [`Corner`] as the
+/// answer every caller took before, and still takes today.
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Corners {
-    pub top_left: bool,
-    pub top_right: bool,
-    pub bottom_right: bool,
-    pub bottom_left: bool,
+    pub top_left: Cut,
+    pub top_right: Cut,
+    pub bottom_right: Cut,
+    pub bottom_left: Cut,
 }
 
 impl Corners {
-    pub const ALL: Corners = Corners {
-        top_left: true,
-        top_right: true,
-        bottom_right: true,
-        bottom_left: true,
-    };
-    pub const NONE: Corners = Corners {
-        top_left: false,
-        top_right: false,
-        bottom_right: false,
-        bottom_left: false,
-    };
-    /// The neo-militarism default: cut the bottom-right only.
-    pub const BOTTOM_RIGHT: Corners = Corners {
-        bottom_right: true,
-        ..Corners::NONE
-    };
-    pub const TOP_RIGHT: Corners = Corners {
-        top_right: true,
-        ..Corners::NONE
-    };
+    /// The same cut on all four corners.
+    pub const fn all(cut: Cut) -> Corners {
+        Corners {
+            top_left: cut,
+            top_right: cut,
+            bottom_right: cut,
+            bottom_left: cut,
+        }
+    }
+
+    /// A plain rectangle, and the base the builders below start from.
+    pub const fn square() -> Corners {
+        Corners::all(Cut::Square)
+    }
+
+    pub fn with_top_left(mut self, cut: Cut) -> Corners {
+        self.top_left = cut;
+        self
+    }
+
+    pub fn with_top_right(mut self, cut: Cut) -> Corners {
+        self.top_right = cut;
+        self
+    }
+
+    pub fn with_bottom_right(mut self, cut: Cut) -> Corners {
+        self.bottom_right = cut;
+        self
+    }
+
+    pub fn with_bottom_left(mut self, cut: Cut) -> Corners {
+        self.bottom_left = cut;
+        self
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -75,7 +138,6 @@ pub enum Fill {
 
 #[derive(Debug, Clone, Copy)]
 pub struct Surface {
-    pub corner: Corner,
     pub corners: Corners,
     pub fill: Fill,
     pub stroke: Option<Color>,
@@ -90,7 +152,6 @@ impl Surface {
     /// An outlined surface in the era's border colour.
     pub fn outlined(style: &Style) -> Self {
         Surface {
-            corner: style.corner,
             corners: default_corners(style.corner),
             fill: Fill::None,
             stroke: Some(style.palette.border),
@@ -102,7 +163,6 @@ impl Surface {
     /// A filled surface in an arbitrary colour, unstroked.
     pub fn filled(style: &Style, color: Color) -> Self {
         Surface {
-            corner: style.corner,
             corners: default_corners(style.corner),
             fill: Fill::Solid(color),
             stroke: None,
@@ -125,7 +185,6 @@ impl Surface {
             },
         };
         Surface {
-            corner: style.corner,
             corners: default_corners(style.corner),
             fill,
             stroke: None,
@@ -173,20 +232,39 @@ impl Surface {
     /// 26px-high cell is not a rounded rectangle -- it is a full pill,
     /// which is what the stat band and the sockets had become.
     pub fn square(mut self) -> Self {
-        self.corner = Corner::Square;
-        self.corners = Corners::NONE;
+        self.corners = Corners::square();
         self
+    }
+}
+
+/// The era's one declared treatment, as a [`Cut`] a corner can wear.
+///
+/// [`Corner`] is the era table's vocabulary and stays that: four
+/// variants, one amount, no per-corner geometry. This is the bridge to
+/// the widget's vocabulary, and it is total -- an era that declares a
+/// chamfer hands the same cut to whichever corner a caller puts it on,
+/// which is what lets [`crate::widgets::charts`] ask for "the era's
+/// treatment, bottom-right only" without naming an era.
+pub fn era_cut(corner: Corner) -> Cut {
+    match corner {
+        Corner::Square => Cut::Square,
+        // Square by construction: the table carries one figure, so the
+        // diagonal it describes is at 45 degrees until a widget says
+        // otherwise.
+        Corner::Chamfer { cut } | Corner::ClipTopRight { cut } => Cut::Chamfer { x: cut, y: cut },
+        Corner::Round { radius } => Cut::Round { radius },
     }
 }
 
 /// Which corners an era treats by default. Only neo-militarism varies
 /// them per widget; the rest apply their treatment uniformly.
 pub fn default_corners(corner: Corner) -> Corners {
+    let cut = era_cut(corner);
     match corner {
-        Corner::Square => Corners::NONE,
-        Corner::Chamfer { .. } => Corners::BOTTOM_RIGHT,
-        Corner::Round { .. } => Corners::ALL,
-        Corner::ClipTopRight { .. } => Corners::TOP_RIGHT,
+        Corner::Square => Corners::square(),
+        Corner::Chamfer { .. } => Corners::square().with_bottom_right(cut),
+        Corner::Round { .. } => Corners::all(cut),
+        Corner::ClipTopRight { .. } => Corners::square().with_top_right(cut),
     }
 }
 
@@ -194,11 +272,26 @@ pub fn default_corners(corner: Corner) -> Corners {
 ///
 /// A `canvas` hands its geometry a clip rectangle of exactly the widget
 /// bounds, and `iced_wgpu` turns that into a scissor rect with
-/// `Rectangle::snap`, which *truncates*: `x` and `width` both lose their
-/// fraction. A surface laid out at `x = 1262.5` with `width = 297.5` is
-/// therefore scissored to `[1262, 1559)`, and a 1px outline whose right
-/// edge sits at 1559.5 is not dimmed by the loss -- it disappears
-/// entirely.
+/// `Rectangle::snap`. On iced 0.13 that *truncated* -- `x` and `width`
+/// both lost their fraction -- so a surface laid out at `x = 1262.5`
+/// with `width = 297.5` was scissored to `[1262, 1559)`, and a 1px
+/// outline whose right edge sat at 1559.5 was not dimmed by the loss,
+/// it disappeared entirely.
+///
+/// iced 0.14 rounds both corners to the nearest whole pixel instead,
+/// and `iced_wgpu`'s triangle pipeline translates the mesh by the same
+/// rounding delta so the canvas's own origin lands on the scissor's --
+/// which crispens every canvas hairline by up to half a pixel and is
+/// the one rendering change this crate could not hold still across the
+/// migration. The kept span became `round(start + len) - round(start)`.
+///
+/// The arithmetic below is *not* that expression, deliberately. It is
+/// always less than or equal to it, so a shape built inside it is still
+/// inside the scissor on 0.14; and being conservative by that half
+/// pixel puts the stroke closer to where 0.13 drew it than the exact
+/// span does. Measured, not assumed: on `store.neomil` the exact form
+/// scores 99.939% against the golden and this one 99.991%, and on
+/// `dashboard.kitsch` 99.703% against 99.739%.
 ///
 /// That is the whole of "the fourth card has no right border". The card
 /// does not overflow anything: it ends exactly on the content edge, and
@@ -223,8 +316,12 @@ pub fn visible(start: f32, len: f32) -> f32 {
 /// `w`, not added to it -- a widget that wants the body at its natural
 /// size asks for `body + reach` and lets this cut the difference, the
 /// same convention `Banner::overhang` uses.
-pub fn outline(corner: Corner, corners: Corners, ticket: Ticket, w: f32, h: f32) -> canvas::Path {
-    let amount = corner.inset().min(w / 2.0).min(h / 2.0);
+pub fn outline(corners: Corners, ticket: Ticket, w: f32, h: f32) -> canvas::Path {
+    let tl = corners.top_left.extent(w, h);
+    let tr = corners.top_right.extent(w, h);
+    let br = corners.bottom_right.extent(w, h);
+    let bl = corners.bottom_left.extent(w, h);
+
     // The wedge cannot eat more than the box has, and it cannot reach
     // below the bottom edge.
     let cut = ticket.is_cut() && ticket.reach < w && ticket.drop < h;
@@ -234,7 +331,7 @@ pub fn outline(corner: Corner, corners: Corners, ticket: Ticket, w: f32, h: f32)
         // sampled figures clear it comfortably (drop 15 against a
         // 34-high pill with a 16 radius); this is for the small box
         // some future caller hands it.
-        (ticket.reach, ticket.drop.min((h - amount).max(0.0)))
+        (ticket.reach, ticket.drop.min((h - br.1).max(0.0)))
     } else {
         (0.0, 0.0)
     };
@@ -242,99 +339,70 @@ pub fn outline(corner: Corner, corners: Corners, ticket: Ticket, w: f32, h: f32)
     let bw = w - reach;
 
     canvas::Path::new(|b| {
+        // One walk for every shape: down the four edges, turning each
+        // corner the way its own `Cut` says. A rounded corner is a
+        // quadratic through the box corner rather than an arc --
+        // visually identical at these radii and one less API surface
+        // to depend on -- a chamfer is the straight line between the
+        // two offsets, and a square corner is no segment at all.
+        let turn = |b: &mut canvas::path::Builder,
+                    cut: Cut,
+                    (ex, ey): (f32, f32),
+                    pivot: Point,
+                    end: Point| {
+            if ex <= 0.0 && ey <= 0.0 {
+                return;
+            }
+            if cut.is_round() {
+                b.quadratic_curve_to(pivot, end);
+            } else {
+                b.line_to(end);
+            }
+        };
+
+        b.move_to(Point::new(tl.0, 0.0));
         if cut {
-            // The kitsch nav pill, exactly: the top edge runs the body's
-            // full width with *no* top-right radius, the wedge carries
-            // the outline out and down, and the remaining three corners
-            // take the era's treatment.
+            // The kitsch nav pill, exactly: the top edge runs the
+            // body's full width with *no* top-right treatment, and the
+            // wedge carries the outline out and down in its place.
             //
             //   M172 340 h158 l18 15 v13 q0 12 -12 12 h-164 ...
-            //
-            // Only kitsch declares a ticket and kitsch is `Round`, but
-            // the walk is written for any corner amount so that an era
-            // adding one later is a table entry rather than a rewrite.
-            let round = matches!(corner, Corner::Round { .. });
-            let c = if matches!(corner, Corner::Square) {
-                0.0
-            } else {
-                amount
-            };
-            let bl = if corners.bottom_left { c } else { 0.0 };
-            let br = if corners.bottom_right { c } else { 0.0 };
-            let tl = if corners.top_left { c } else { 0.0 };
-
-            b.move_to(Point::new(tl, 0.0));
             b.line_to(Point::new(bw, 0.0));
             b.line_to(Point::new(w, drop));
-            b.line_to(Point::new(w, h - br));
-            if br > 0.0 && round {
-                b.quadratic_curve_to(Point::new(w, h), Point::new(w - br, h));
-            } else if br > 0.0 {
-                b.line_to(Point::new(w - br, h));
-            }
-            b.line_to(Point::new(bl, h));
-            if bl > 0.0 && round {
-                b.quadratic_curve_to(Point::new(0.0, h), Point::new(0.0, h - bl));
-            } else if bl > 0.0 {
-                b.line_to(Point::new(0.0, h - bl));
-            }
-            b.line_to(Point::new(0.0, tl));
-            if tl > 0.0 && round {
-                b.quadratic_curve_to(Point::new(0.0, 0.0), Point::new(tl, 0.0));
-            } else if tl > 0.0 {
-                b.line_to(Point::new(tl, 0.0));
-            }
-            b.close();
-            return;
+        } else {
+            b.line_to(Point::new(w - tr.0, 0.0));
+            turn(
+                b,
+                corners.top_right,
+                tr,
+                Point::new(w, 0.0),
+                Point::new(w, tr.1),
+            );
         }
-
-        match corner {
-            Corner::Round { .. } => {
-                let r = amount;
-                // Quadratic corners rather than arcs: visually identical
-                // at this radius and one less API surface to depend on.
-                b.move_to(Point::new(r, 0.0));
-                b.line_to(Point::new(w - r, 0.0));
-                b.quadratic_curve_to(Point::new(w, 0.0), Point::new(w, r));
-                b.line_to(Point::new(w, h - r));
-                b.quadratic_curve_to(Point::new(w, h), Point::new(w - r, h));
-                b.line_to(Point::new(r, h));
-                b.quadratic_curve_to(Point::new(0.0, h), Point::new(0.0, h - r));
-                b.line_to(Point::new(0.0, r));
-                b.quadratic_curve_to(Point::new(0.0, 0.0), Point::new(r, 0.0));
-            }
-            _ => {
-                // Square, chamfer and clip-top-right are all the same
-                // walk with per-corner cuts; square just cuts nothing.
-                let c = if matches!(corner, Corner::Square) {
-                    0.0
-                } else {
-                    amount
-                };
-                let tl = if corners.top_left { c } else { 0.0 };
-                let tr = if corners.top_right { c } else { 0.0 };
-                let br = if corners.bottom_right { c } else { 0.0 };
-                let bl = if corners.bottom_left { c } else { 0.0 };
-
-                b.move_to(Point::new(tl, 0.0));
-                b.line_to(Point::new(w - tr, 0.0));
-                if tr > 0.0 {
-                    b.line_to(Point::new(w, tr));
-                }
-                b.line_to(Point::new(w, h - br));
-                if br > 0.0 {
-                    b.line_to(Point::new(w - br, h));
-                }
-                b.line_to(Point::new(bl, h));
-                if bl > 0.0 {
-                    b.line_to(Point::new(0.0, h - bl));
-                }
-                b.line_to(Point::new(0.0, tl));
-                if tl > 0.0 {
-                    b.line_to(Point::new(tl, 0.0));
-                }
-            }
-        }
+        b.line_to(Point::new(w, h - br.1));
+        turn(
+            b,
+            corners.bottom_right,
+            br,
+            Point::new(w, h),
+            Point::new(w - br.0, h),
+        );
+        b.line_to(Point::new(bl.0, h));
+        turn(
+            b,
+            corners.bottom_left,
+            bl,
+            Point::new(0.0, h),
+            Point::new(0.0, h - bl.1),
+        );
+        b.line_to(Point::new(0.0, tl.1));
+        turn(
+            b,
+            corners.top_left,
+            tl,
+            Point::new(0.0, 0.0),
+            Point::new(tl.0, 0.0),
+        );
         b.close();
     })
 }
@@ -342,23 +410,16 @@ pub fn outline(corner: Corner, corners: Corners, ticket: Ticket, w: f32, h: f32)
 /// The shape's horizontal extent at height `y`, used to clip grain lines
 /// to a surface without needing path clipping in the renderer.
 ///
-/// All four corner treatments are convex and axis-aligned apart from a
-/// single corner, so this is exact rather than an approximation. A
+/// Every [`Cut`] is convex and eats only its own corner, so this is
+/// exact rather than an approximation -- including an asymmetric
+/// chamfer, whose hypotenuse is just a steeper or shallower line. A
 /// ticket wedge is convex too, and replaces the top-right corner's
 /// contribution rather than adding to it.
-pub fn span_at(
-    corner: Corner,
-    corners: Corners,
-    ticket: Ticket,
-    w: f32,
-    h: f32,
-    y: f32,
-) -> (f32, f32) {
-    let amount = corner.inset().min(w / 2.0).min(h / 2.0);
-    let cut = ticket.is_cut() && ticket.reach < w && ticket.drop < h;
-    if (amount <= 0.0 && !cut) || y < 0.0 || y > h {
+pub fn span_at(corners: Corners, ticket: Ticket, w: f32, h: f32, y: f32) -> (f32, f32) {
+    if y < 0.0 || y > h {
         return (0.0, w);
     }
+    let cut = ticket.is_cut() && ticket.reach < w && ticket.drop < h;
 
     let (mut x0, mut x1) = (0.0f32, w);
 
@@ -370,35 +431,33 @@ pub fn span_at(
         x1 = x1.min(bw + ticket.reach * (y / ticket.drop).clamp(0.0, 1.0));
     }
 
-    // How far in the edge is drawn at `y`, for a corner of the given
-    // treatment sitting `d` away from the shape's end.
-    let inward = |d: f32| -> f32 {
-        if d >= amount {
+    // How far in a corner's edge is drawn when the reading sits `d`
+    // away from that corner along the vertical.
+    let inward = |cut: Cut, d: f32| -> f32 {
+        let (ex, ey) = cut.extent(w, h);
+        if ey <= 0.0 || d >= ey {
             return 0.0;
         }
-        match corner {
-            Corner::Round { .. } => {
-                let dy = amount - d;
-                amount - (amount * amount - dy * dy).max(0.0).sqrt()
-            }
-            _ => amount - d,
+        if cut.is_round() {
+            // `ex == ey == r` for a round cut, so this is the circle.
+            let dy = ey - d;
+            ex - (ex * ex - dy * dy).max(0.0).sqrt()
+        } else {
+            // The chamfer's hypotenuse, in the general case where it is
+            // not at 45 degrees: full width at the corner, nothing at
+            // `ey` away from it.
+            ex * (1.0 - d / ey)
         }
     };
 
-    if corners.top_left {
-        x0 = x0.max(inward(y));
-    }
-    if corners.bottom_left {
-        x0 = x0.max(inward(h - y));
-    }
+    x0 = x0.max(inward(corners.top_left, y));
+    x0 = x0.max(inward(corners.bottom_left, h - y));
     // A ticket replaces the top-right treatment; applying both would
     // clip the wedge back off again.
-    if corners.top_right && !cut {
-        x1 = x1.min(w - inward(y));
+    if !cut {
+        x1 = x1.min(w - inward(corners.top_right, y));
     }
-    if corners.bottom_right {
-        x1 = x1.min(w - inward(h - y));
-    }
+    x1 = x1.min(w - inward(corners.bottom_right, h - y));
     (x0, x1)
 }
 
@@ -429,7 +488,6 @@ pub fn span_at(
 /// treatments and close enough for the rounded one, which is the same
 /// standard `span_at` already holds the grain lines to.
 fn band_path(
-    corner: Corner,
     corners: Corners,
     ticket: Ticket,
     w: f32,
@@ -441,7 +499,7 @@ fn band_path(
     let mut edges = Vec::with_capacity(steps + 1);
     for k in 0..=steps {
         let y = y0 + (y1 - y0) * k as f32 / steps as f32;
-        let (x0, x1) = span_at(corner, corners, ticket, w, h, y);
+        let (x0, x1) = span_at(corners, ticket, w, h, y);
         // A band can start or end outside the shape -- a corner may eat
         // the whole width at the very top -- and the shapes here are
         // convex, so the empty slices are only ever at the ends.
@@ -502,7 +560,7 @@ impl<Message> canvas::Program<Message> for Surface {
         }
         frame.translate(iced::Vector::new(inset, inset));
 
-        let path = outline(self.corner, self.corners, self.ticket, pw, ph);
+        let path = outline(self.corners, self.ticket, pw, ph);
 
         match self.fill {
             Fill::None => {}
@@ -531,7 +589,7 @@ impl<Message> canvas::Program<Message> for Surface {
                     let y1 = (i + 1) as f32 / bands as f32 * ph;
                     let tone = if i % 2 == 0 { light } else { dark };
                     if let Some(band) =
-                        band_path(self.corner, self.corners, self.ticket, pw, ph, y0, y1)
+                        band_path(self.corners, self.ticket, pw, ph, y0, y1)
                     {
                         frame.fill(
                             &band,
@@ -548,7 +606,7 @@ impl<Message> canvas::Program<Message> for Surface {
                 let mut y = 3.0;
                 let mut n = 0;
                 while y < ph {
-                    let (x0, x1) = span_at(self.corner, self.corners, self.ticket, pw, ph, y);
+                    let (x0, x1) = span_at(self.corners, self.ticket, pw, ph, y);
                     if x1 > x0 {
                         let line = canvas::Path::new(|b| {
                             b.move_to(Point::new(x0 + 1.0, y));
@@ -668,12 +726,12 @@ impl<Message> Widget<Message, Theme, Renderer> for Backdrop<'_, Message> {
     }
 
     fn layout(
-        &self,
+        &mut self,
         tree: &mut Tree,
         renderer: &Renderer,
         limits: &layout::Limits,
     ) -> layout::Node {
-        let content = self.children[Self::CONTENT].as_widget().layout(
+        let content = self.children[Self::CONTENT].as_widget_mut().layout(
             &mut tree.children[Self::CONTENT],
             renderer,
             limits,
@@ -682,7 +740,7 @@ impl<Message> Widget<Message, Theme, Renderer> for Backdrop<'_, Message> {
 
         // Min and max are the same, so the background's `Length::Fill`
         // resolves to the content's size rather than to the parent's.
-        let background = self.children[0].as_widget().layout(
+        let background = self.children[0].as_widget_mut().layout(
             &mut tree.children[0],
             renderer,
             &layout::Limits::new(size, size),
@@ -714,55 +772,58 @@ impl<Message> Widget<Message, Theme, Renderer> for Backdrop<'_, Message> {
     }
 
     fn operate(
-        &self,
+        &mut self,
         tree: &mut Tree,
         layout: Layout<'_>,
         renderer: &Renderer,
         operation: &mut dyn Operation,
     ) {
-        operation.container(None, layout.bounds(), &mut |operation| {
+        operation.container(None, layout.bounds());
+        operation.traverse(&mut |operation| {
             for ((child, state), layout) in self
                 .children
-                .iter()
+                .iter_mut()
                 .zip(&mut tree.children)
                 .zip(layout.children())
             {
-                child.as_widget().operate(state, layout, renderer, operation);
+                child
+                    .as_widget_mut()
+                    .operate(state, layout, renderer, operation);
             }
         });
     }
 
-    fn on_event(
+    fn update(
         &mut self,
         tree: &mut Tree,
-        event: Event,
+        event: &Event,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
         clipboard: &mut dyn Clipboard,
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
-    ) -> event::Status {
+    ) {
         // Topmost layer first, as `stack` does: the content is in front.
-        self.children
+        // Capture is reported through the shell now rather than
+        // returned, so stopping means asking it whether the event has
+        // been taken.
+        for ((child, state), layout) in self
+            .children
             .iter_mut()
             .rev()
             .zip(tree.children.iter_mut().rev())
             .zip(layout.children().rev())
-            .map(|((child, state), layout)| {
-                child.as_widget_mut().on_event(
-                    state,
-                    event.clone(),
-                    layout,
-                    cursor,
-                    renderer,
-                    clipboard,
-                    shell,
-                    viewport,
-                )
-            })
-            .find(|&status| status == event::Status::Captured)
-            .unwrap_or(event::Status::Ignored)
+        {
+            child.as_widget_mut().update(
+                state, event, layout, cursor, renderer, clipboard, shell,
+                viewport,
+            );
+
+            if shell.is_event_captured() {
+                return;
+            }
+        }
     }
 
     fn mouse_interaction(
@@ -790,16 +851,176 @@ impl<Message> Widget<Message, Theme, Renderer> for Backdrop<'_, Message> {
     fn overlay<'b>(
         &'b mut self,
         tree: &'b mut Tree,
-        layout: Layout<'_>,
+        layout: Layout<'b>,
         renderer: &Renderer,
+        viewport: &Rectangle,
         translation: iced::Vector,
     ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
-        overlay::from_children(&mut self.children, tree, layout, renderer, translation)
+        overlay::from_children(
+            &mut self.children,
+            tree,
+            layout,
+            renderer,
+            viewport,
+            translation,
+        )
     }
 }
 
 impl<'a, Message: 'a> From<Backdrop<'a, Message>> for Element<'a, Message> {
     fn from(backdrop: Backdrop<'a, Message>) -> Self {
         Element::new(backdrop)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    //! The shapes the redesigned bars ask for, built through the public
+    //! API and read back through [`span_at`].
+    //!
+    //! `bar.rs` cannot wear them yet -- expressing them there is a
+    //! separate change -- so this is what proves they are *sayable*
+    //! today rather than a plan. Every figure comes from an
+    //! IMPLEMENTATION DELTA block in `docs/<era>/bar.svg`.
+    //!
+    //! [`span_at`] is the right probe because it reads the same
+    //! per-corner geometry [`outline`] walks: a chamfer's hypotenuse
+    //! sampled at a height is exactly the point the path would put
+    //! there. A test that only built a `Corners` would prove the struct
+    //! compiles and nothing about the shape.
+
+    use super::*;
+    use crate::style::Corner;
+
+    /// Canvas coordinates are `f32` and the arithmetic is a couple of
+    /// multiplies deep, so compare at a tolerance a pixel could not
+    /// hide in.
+    #[track_caller]
+    fn span_eq(got: (f32, f32), want: (f32, f32)) {
+        assert!(
+            (got.0 - want.0).abs() < 1e-4 && (got.1 - want.1).abs() < 1e-4,
+            "span {got:?}, want {want:?}"
+        );
+    }
+
+    fn span(corners: Corners, w: f32, h: f32, y: f32) -> (f32, f32) {
+        span_at(corners, Ticket::default(), w, h, y)
+    }
+
+    /// neomil bar cell: chamfer on the *bottom-left* only, cut 6 on a
+    /// 25px cell -- the corner the era's own default does not cut, at
+    /// an amount the era table does not carry.
+    #[test]
+    fn neomil_bar_cell_cuts_the_bottom_left() {
+        let c = Corners::square().with_bottom_left(Cut::Chamfer { x: 6.0, y: 6.0 });
+        assert_eq!(c.bottom_right, Cut::Square);
+
+        span_eq(span(c, 35.0, 25.0, 0.0), (0.0, 35.0));
+        span_eq(span(c, 35.0, 25.0, 19.0), (0.0, 35.0));
+        span_eq(span(c, 35.0, 25.0, 22.0), (3.0, 35.0));
+        span_eq(span(c, 35.0, 25.0, 25.0), (6.0, 35.0));
+    }
+
+    /// neokitsch bar cell: rounded `r=3` on three corners and a
+    /// chamfer 10 wide by 7 tall on the fourth. Mixed kinds *and* a
+    /// non-square chamfer, which is the pair of things four booleans
+    /// and one amount could not say.
+    #[test]
+    fn neokitsch_bar_cell_mixes_round_and_a_wide_chamfer() {
+        let c = Corners::all(Cut::Round { radius: 3.0 })
+            .with_bottom_left(Cut::Chamfer { x: 10.0, y: 7.0 });
+        let (w, h) = (60.0, 25.0);
+
+        // Top edge: the two radii bite 3 in from each end.
+        span_eq(span(c, w, h, 0.0), (3.0, 57.0));
+        // Below both radii and above the chamfer: the full width.
+        span_eq(span(c, w, h, 3.0), (0.0, 60.0));
+        // Bottom edge: the chamfer's full 10 on the left, the
+        // bottom-right radius's 3 on the right.
+        span_eq(span(c, w, h, h), (10.0, 57.0));
+        // Halfway up the chamfer it has eaten half its *width*, not
+        // half its height -- the whole point of carrying two numbers.
+        span_eq(span(c, w, h, h - 3.5), (5.0, 60.0));
+    }
+
+    /// neokitsch tape and the alert plate: square but for one corner,
+    /// on opposite diagonals.
+    #[test]
+    fn neokitsch_plates_cut_one_corner_each() {
+        let tape = Corners::square().with_top_right(Cut::Chamfer { x: 10.0, y: 10.0 });
+        span_eq(span(tape, 71.0, 25.0, 0.0), (0.0, 61.0));
+        span_eq(span(tape, 71.0, 25.0, 5.0), (0.0, 66.0));
+        span_eq(span(tape, 71.0, 25.0, 10.0), (0.0, 71.0));
+        span_eq(span(tape, 71.0, 25.0, 25.0), (0.0, 71.0));
+
+        let plate = Corners::square().with_bottom_left(Cut::Chamfer { x: 10.0, y: 7.0 });
+        span_eq(span(plate, 50.0, 25.0, 0.0), (0.0, 50.0));
+        span_eq(span(plate, 50.0, 25.0, 25.0), (10.0, 50.0));
+    }
+
+    /// kitsch menu foot: a chamfer 12 wide by 4 tall on the
+    /// bottom-right -- shallow and broad, the opposite proportion to
+    /// neokitsch's.
+    #[test]
+    fn kitsch_menu_foot_chamfers_wide_and_shallow() {
+        let c = Corners::square().with_bottom_right(Cut::Chamfer { x: 12.0, y: 4.0 });
+        let (w, h) = (160.0, 25.6);
+
+        span_eq(span(c, w, h, h - 4.0), (0.0, 160.0));
+        span_eq(span(c, w, h, h - 2.0), (0.0, 154.0));
+        span_eq(span(c, w, h, h), (0.0, 148.0));
+    }
+
+    /// kitsch cells: round 8 on all four, and entropism: square. Both
+    /// were expressible before; they have to stay so.
+    #[test]
+    fn kitsch_rounds_and_entropism_squares() {
+        let round = Corners::all(Cut::Round { radius: 8.0 });
+        let (w, h) = (100.0, 25.0);
+        span_eq(span(round, w, h, 0.0), (8.0, 92.0));
+        span_eq(span(round, w, h, 8.0), (0.0, 100.0));
+        span_eq(span(round, w, h, h), (8.0, 92.0));
+        // On the circle: 8 - sqrt(64 - 48) = 4 in, at 8 - 8*sin(60) up.
+        let y = 8.0 - 8.0 * (3.0f32).sqrt() / 2.0;
+        span_eq(span(round, w, h, y), (4.0, 96.0));
+
+        let square = Corners::square();
+        for y in [0.0, 1.0, 12.5, 25.0] {
+            span_eq(span(square, w, h, y), (0.0, w));
+        }
+    }
+
+    /// The era table's [`Corner`] still says what it always said, and
+    /// [`default_corners`] puts it where it always went.
+    #[test]
+    fn default_corners_bridges_the_era_table() {
+        assert_eq!(default_corners(Corner::Square), Corners::square());
+        assert_eq!(
+            default_corners(Corner::Chamfer { cut: 15.0 }),
+            Corners::square().with_bottom_right(Cut::Chamfer { x: 15.0, y: 15.0 })
+        );
+        assert_eq!(
+            default_corners(Corner::Round { radius: 16.0 }),
+            Corners::all(Cut::Round { radius: 16.0 })
+        );
+        assert_eq!(
+            default_corners(Corner::ClipTopRight { cut: 30.0 }),
+            Corners::square().with_top_right(Cut::Chamfer { x: 30.0, y: 30.0 })
+        );
+    }
+
+    /// A cut too big for its box shrinks in *both* directions by one
+    /// factor. That is what keeps a symmetric cut symmetric under the
+    /// clamp, and so what keeps this refactor pixel-identical: neomil's
+    /// 15 on a 25-high cell is the old `min(15, w/2, h/2)` of 12.5 in
+    /// both axes, not 15 wide by 12.5 tall.
+    #[test]
+    fn an_oversized_cut_keeps_its_slope() {
+        let c = default_corners(Corner::Chamfer { cut: 15.0 });
+        span_eq(span(c, 35.0, 25.0, 25.0), (0.0, 22.5));
+        span_eq(span(c, 35.0, 25.0, 12.5), (0.0, 35.0));
+
+        // A radius stays circular for the same reason.
+        assert_eq!(Cut::Round { radius: 16.0 }.extent(60.0, 25.0), (12.5, 12.5));
     }
 }

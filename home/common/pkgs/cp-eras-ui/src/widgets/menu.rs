@@ -143,7 +143,7 @@ fn tiles<'a, Message: 'static>(
     // fill: the reference grid is ragged and the tiles stay square.
     if in_line > 0 {
         for _ in in_line..columns {
-            line = line.push(Space::new(Length::Fill, 0.0));
+            line = line.push(Space::new().width(Length::Fill));
         }
         grid = grid.push(line);
     }
@@ -166,7 +166,7 @@ fn tile<'a, Message: 'static>(
     let (name, code) = if selected {
         (
             text::on_select(s, item.label),
-            text::on_select(s, item.code).size(s.metrics.text_caption),
+            text::on_select(s, item.code).size(f32::from(s.metrics.text_caption)),
         )
     } else {
         (text::body(s, item.label), text::caption(s, item.code))
@@ -180,12 +180,12 @@ fn tile<'a, Message: 'static>(
         ))
         .width(Length::Fill)
         .height(Length::Fixed(TILE_HEIGHT)),
-        Space::new(0.0, CAPTION_GAP),
+        Space::new().height(CAPTION_GAP),
         // The hairline the caption hangs off. `rule` is the mail list's
         // separator and this is the same 1px in `dim`, so it is that
         // widget rather than a second idea of a rule.
         super::row::rule(s),
-        text::caption(s, STRIP).size(s.metrics.text_caption - 2),
+        text::caption(s, STRIP).size(f32::from(s.metrics.text_caption - 2)),
     ]
     .width(Length::Fill)
     .into()
@@ -237,22 +237,31 @@ fn cascade<'a, Message: 'static>(
         // a spacer above rather than an alignment, so the label keeps
         // its natural height when the card is short.
         let name = if is_selected {
-            text::on_select(s, item.label).size(s.metrics.text_caption + 2)
+            text::on_select(s, item.label).size(f32::from(s.metrics.text_caption + 2))
         } else {
-            text::body(s, item.label).size(s.metrics.text_caption + 2)
+            text::body(s, item.label).size(f32::from(s.metrics.text_caption + 2))
         };
 
         let card = container(surface(
             bg,
             Padding::from([12, 12]),
-            column![Space::new(0.0, Length::Fill), name],
+            column![Space::new().height(Length::Fill), name],
         ))
         .width(Length::Fill)
         .height(Length::Fixed(CASCADE_HEIGHT));
 
         deck = deck.push(
             column![
-                Space::new(0.0, if i == 0 { CASCADE_STAGGER } else { 0.0 }),
+                // `Length::Shrink` rather than a fixed 0 for the
+                // un-staggered cards: iced 0.14 drops a child whose
+                // width or height is exactly `Fixed(0.0)` out of the
+                // row or column entirely, and this spacer is meant to
+                // be present and empty, not absent.
+                Space::new().height(if i == 0 {
+                    Length::Fixed(CASCADE_STAGGER)
+                } else {
+                    Length::Shrink
+                }),
                 card,
             ]
             .width(Length::Fill),
@@ -521,8 +530,8 @@ impl<Message> canvas::Program<Message> for Fan<'_> {
                     color: ink,
                     size: (self.text_size * scale).into(),
                     font: FONT_RAJDHANI_BOLD,
-                    horizontal_alignment: iced::alignment::Horizontal::Center,
-                    vertical_alignment: iced::alignment::Vertical::Center,
+                    align_x: iced::advanced::text::Alignment::Center,
+                    align_y: iced::alignment::Vertical::Center,
                     ..Default::default()
                 });
             });

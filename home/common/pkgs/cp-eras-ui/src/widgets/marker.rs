@@ -39,7 +39,7 @@ pub fn marker<'a, Message: 'static>(
         notes = notes.push(text::caption(style, *line));
     }
 
-    row![boxed, Space::new(10.0, 0.0), notes]
+    row![boxed, Space::new().width(10.0), notes]
         .align_y(iced::Alignment::Center)
         .into()
 }

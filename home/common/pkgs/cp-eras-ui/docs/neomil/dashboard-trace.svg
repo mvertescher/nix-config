@@ -25,9 +25,17 @@
            a glyph at its centre; neighbours overlap by ~10px and are held
            apart by a dark separator, drawn here as a background-coloured
            stroke. Labels sit above row 1 and below row 2.
-         - a GO HOME info panel at x 1128..1358, y 313..756, chamfered
-           top-left (14) and bottom-left (42), with a scrollbar rail on its
-           right edge and a maker's mark at its foot
+         - a GO HOME info panel at x 1128..1366, y 314..756. Pixel scans
+           of the 1600 downscale (2026-09-02): the top-left and
+           bottom-right corners are SQUARE; the top-right is chamfered 8
+           ((1358,314)->(1366,322)) and the bottom-left 42
+           ((1128,714)->(1170,756)). The right edge sits at x 1366 from
+           the chamfer down to a filled bar x 1358..1366, y 405..515
+           (top end chamfered (1366,405)->(1358,414), bottom nearly
+           flat), and steps 8px inward to x 1358 below the bar - the
+           same bar-and-step motif as the store cards. Faint glitch
+           echoes of the edge sit 2-5px to its right; no scrollbar.
+           A maker's mark at its foot
          - rotated micro-text down both margins, and a two-cell footer tape
            at x 1209..1358, y 864
 
@@ -171,10 +179,19 @@
     <text x="822" y="721">CORPORATIONS</text>
   </g>
 
-  <!-- ==== GO HOME info panel, x 1128..1358, y 313..756 ==== -->
+  <!-- ==== GO HOME info panel, x 1128..1366, y 314..756 ==== -->
   <g>
-    <path d="M 1142,313 H 1358 V 756 H 1170 L 1128,714 V 327 Z"
+    <path d="M 1128,314 H 1358 L 1366,322 V 512 L 1358,515 V 756 H 1170 L 1128,714 Z"
           fill="#671b21" fill-opacity="0.55" stroke="#ef3333" stroke-width="1.5"/>
+    <!-- the bright bar on the right edge, y 405..515 -->
+    <path d="M 1366,405 V 512 L 1358,515 V 414 Z" fill="#ef3333"/>
+    <!-- glitch echoes of the right edge, 3px and 5px out, above and below the bar -->
+    <g fill="#671b21">
+      <rect x="1369" y="322" width="1.5" height="193"/>
+      <rect x="1371" y="322" width="1.5" height="193"/>
+      <rect x="1361" y="515" width="1.5" height="241"/>
+      <rect x="1363" y="515" width="1.5" height="241"/>
+    </g>
     <text x="1140" y="333" font-family="Rajdhani" font-size="20" font-weight="700"
           fill="#ef3333">GO HOME</text>
     <!-- body copy: five lines, blank, four lines (measured run boxes) -->
@@ -188,9 +205,6 @@
       <rect x="1140" y="516" width="186" height="12"/>
       <rect x="1140" y="537" width="193" height="12"/>
     </g>
-    <!-- scrollbar rail on the panel's right edge, thumb y 408..504 -->
-    <rect x="1362" y="324" width="7" height="376" fill="#671b21"/>
-    <rect x="1362" y="408" width="7" height="96" fill="#ef3333"/>
     <!-- maker's mark at the foot -->
     <path d="M 1208,722 V 683 h 11 l 12 18 12,-18 h 11 v 39 h -11 v -20 l -12,16 -12,-16 v 20 Z"
           fill="#ef3333"/>

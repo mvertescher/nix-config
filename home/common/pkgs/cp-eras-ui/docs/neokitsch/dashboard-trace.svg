@@ -40,6 +40,9 @@
          - the EMAIL selection card carries NO onion rings (it stands
            alone with a glow); the T2 badge is an outlined mini-card
            with rings holding LEVEL and T2, not a solid fill
+         - every glyph and outline sits on a soft vertically-smeared glow
+           (the #3b2416 family); drawn once as a blurred copy of the
+           content group under the crisp content, as on the other screens
 
        Palette sampled by k-means (extract_spec.py):
          ink   #f2b463 (6.2%, fills)  #bd8951  #7e5836  #3b2416
@@ -130,12 +133,22 @@
       <rect x="0" y="24" width="88" height="5"/>
       <rect x="0" y="32" width="38" height="5"/>
     </g>
+    <!-- the halo: every glyph and outline in the source sits on a soft
+         vertically-smeared glow (the #3b2416 family by k-means). Drawn once
+         as a blurred, darkened copy of the content group under the crisp
+         content — the same construction and values as login/mailbox/store. -->
+    <filter id="halo" x="-5%" y="-10%" width="110%" height="120%">
+      <feGaussianBlur stdDeviation="1.5 4.5"/>
+      <feColorMatrix type="matrix" values="0.43 0 0 0 0  0 0.32 0 0 0  0 0 0.21 0 0  0 0 0 1.45 0"/>
+    </filter>
   </defs>
 
   <rect width="1600" height="900" fill="#0e0a0d"/>
   <rect width="1600" height="900" fill="url(#haze)"/>
   <rect width="1600" height="560" fill="url(#hazeblue)" mask="url(#bluemask)"/>
 
+  <use href="#content" filter="url(#halo)"/>
+  <g id="content">
   <!-- ==== header ==== -->
   <g font-family="Rajdhani" fill="#bd8951">
     <text x="120" y="42" font-size="15" letter-spacing="1.5">CUSTOMER #NC488402</text>
@@ -337,5 +350,6 @@
     </g>
     <text x="1286" y="700" font-family="Rajdhani" font-size="24" font-weight="600"
           letter-spacing="3" fill="#f2b463" text-anchor="middle">EMAIL</text>
+  </g>
   </g>
 </svg>

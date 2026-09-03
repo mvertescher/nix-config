@@ -65,7 +65,7 @@ pub use ornament::{column_rule, page_curl};
 pub use pill::{badge, pill};
 pub use row::{mail_row, Mail};
 pub use silhouette::silhouette;
-pub use surface::{layered, surface, Corners, Fill, Surface};
+pub use surface::{layered, surface, Corners, Cut, Fill, Surface};
 pub use table::{table, Column, Row};
 
 pub use floppy_icon::{floppy_icon, FloppyIcon};

@@ -216,7 +216,7 @@ impl BarWindow {
             // group on the right. `Fill` rather than a computed offset
             // so this holds at whatever width the harness renders.
             row![
-                Space::new(Length::Fill, Length::Shrink),
+                Space::new().width(Length::Fill).height(Length::Shrink),
                 tray_menu(
                     &self.style,
                     &self.menu,
@@ -224,13 +224,13 @@ impl BarWindow {
                     Message::Entry,
                     Message::Submenu,
                 ),
-                Space::new(Length::Fixed(MENU_MARGIN), Length::Shrink),
+                Space::new().width(Length::Fixed(MENU_MARGIN)).height(Length::Shrink),
             ],
             // The bar and its menu do not fill 220px. The empty ground
             // under them is what makes a capture legible as a desktop
             // edge, and it also puts the era's background role in the
             // diff.
-            container(Space::new(Length::Fill, Length::Fill)).height(Length::Fill),
+            container(Space::new().width(Length::Fill).height(Length::Fill)).height(Length::Fill),
         ]
         .into()
     }
@@ -243,22 +243,25 @@ fn main() -> iced::Result {
     let style = style::resolve();
     let bg = style.palette.bg;
     let fg = style.palette.fg;
-    let state = BarWindow {
-        style,
-        readings: sample(),
-        menu: sample_menu(),
-    };
-
-    iced::application(BarWindow::title, BarWindow::update, BarWindow::view)
-        .font(cp_eras_ui::fonts::RAJDHANI_REGULAR)
-        .font(cp_eras_ui::fonts::RAJDHANI_MEDIUM)
-        .font(cp_eras_ui::fonts::RAJDHANI_BOLD)
-        .default_font(cp_eras_ui::fonts::FONT_RAJDHANI_REGULAR)
-        .style(move |_state, _theme| iced::application::Appearance {
-            background_color: bg,
-            text_color: fg,
-        })
-        .window_size((1600.0, 220.0))
-        .antialiasing(true)
-        .run_with(move || (state, iced::Task::none()))
+    iced::application(
+        move || BarWindow {
+            style,
+            readings: sample(),
+            menu: sample_menu(),
+        },
+        BarWindow::update,
+        BarWindow::view,
+    )
+    .title(BarWindow::title)
+    .font(cp_eras_ui::fonts::RAJDHANI_REGULAR)
+    .font(cp_eras_ui::fonts::RAJDHANI_MEDIUM)
+    .font(cp_eras_ui::fonts::RAJDHANI_BOLD)
+    .default_font(cp_eras_ui::fonts::FONT_RAJDHANI_REGULAR)
+    .style(move |_state, _theme| iced::theme::Style {
+        background_color: bg,
+        text_color: fg,
+    })
+    .window_size((1600.0, 220.0))
+    .antialiasing(true)
+    .run()
 }

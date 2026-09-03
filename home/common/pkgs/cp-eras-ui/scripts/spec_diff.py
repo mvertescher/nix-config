@@ -11,7 +11,10 @@ the same things the source does", which is what a trace has to mean.
 Shapes are matched greedily by bounding-box IoU, best pair first, so the
 result does not depend on input order. A matched pair whose class differs is
 reported as a reclass, not a match: a diamond redrawn as a rectangle is a
-trace error even though it occupies the same box.
+trace error even though it occupies the same box. The one exception is
+rect <-> chamfer, which is counted as a match: that corner detail is what
+a photo's glow erases, so it separates photo from render, not right from
+wrong.
 
 Two gate modes, chosen with --gate:
 
@@ -88,10 +91,17 @@ def main():
     ap.add_argument("--match-iou", type=float, default=0.3)
     ap.add_argument("--min-area-match", type=float, default=0.60,
                     help="fail below this share of source shape area matched")
-    ap.add_argument("--min-class-area", type=float, default=1500,
-                    help="a class whose total source area is below this is "
-                         "reported but does not gate (text-sized artifacts "
-                         "sometimes fit a small diamond or chamfer)")
+    ap.add_argument("--min-class-share", type=float, default=0.10,
+                    help="a class holding under this share of source shape "
+                         "area may be absent from the candidate without "
+                         "gating. Calibrated 2026-09-02 on the twelve "
+                         "login/mailbox/store traces: the extractor fits "
+                         "faces in portrait photos, logotype glyphs and "
+                         "badge glow as small diamonds and chamfers (3-9%% "
+                         "of a screen), which a trace rightly does not draw; "
+                         "a class that carries the screen, like the neomil "
+                         "hub's diamonds at 89%%, is also caught by the area "
+                         "rule when it is missing")
     ap.add_argument("--ignore-blobs", action="store_true", default=True,
                     help="skip shapes that fitted no template (default on)")
     ap.add_argument("--strict", action="store_true",
@@ -116,14 +126,15 @@ def main():
     classes = sorted({s["class"] for s in ss} | {s["class"] for s in cs})
     missing_class = []
     count_diff = False
+    src_area = area(ss) or 1
     for cl in classes:
         n_s = sum(1 for s in ss if s["class"] == cl)
         n_c = sum(1 for s in cs if s["class"] == cl)
         cl_area = area([s for s in ss if s["class"] == cl])
         verdict = ""
         if n_s and not n_c:
-            if cl_area < a.min_class_area:
-                verdict = "absent, but tiny (%dpx) — not gating" % cl_area
+            if cl_area / src_area < a.min_class_share:
+                verdict = "absent, but %.0f%% of source area — not gating" % (100 * cl_area / src_area)
             else:
                 verdict = "ABSENT — source has %d, candidate draws none" % n_s
                 missing_class.append(cl)
@@ -133,8 +144,16 @@ def main():
         print("  %-10s %8d %10d   %s" % (cl, n_s, n_c, verdict))
 
     pairs, miss, spurious = match(ss, cs, a.match_iou)
-    reclass = [(v, s, c) for v, s, c in pairs if s["class"] != c["class"]]
-    good = [(v, s, c) for v, s, c in pairs if s["class"] == c["class"]]
+    # rect <-> chamfer is not a reclass: the corner detail that separates
+    # the two templates is exactly what a photo's glow erases (a rounded
+    # outline fits as a chamfer in the source and as a rect in a clean
+    # render). Every other class change — a diamond redrawn as a rect, a
+    # rule as a box — is a trace error and stays one.
+    soft = {frozenset(("rect", "chamfer"))}
+    same = lambda s, c: s["class"] == c["class"] or frozenset((s["class"], c["class"])) in soft
+    reclass = [(v, s, c) for v, s, c in pairs if not same(s, c)]
+    good = [(v, s, c) for v, s, c in pairs if same(s, c)]
+    softened = [(v, s, c) for v, s, c in good if s["class"] != c["class"]]
 
     matched_area = area([s for _, s, _ in good])
     total_area = area(ss) or 1
@@ -148,6 +167,8 @@ def main():
                        (centre(s["bbox"])[1] - centre(c["bbox"])[1]) ** 2) ** 0.5
                       for _, s, c in good)
         print("  centre error median %.1fpx, worst %.1fpx" % (errs[len(errs) // 2], errs[-1]))
+    if softened:
+        print("  rect/chamfer swaps counted as matches: %d" % len(softened))
     if reclass:
         print("  reclassified %d (same box, different shape):" % len(reclass))
         for v, s, c in reclass[:10]:

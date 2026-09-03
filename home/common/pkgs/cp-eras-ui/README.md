@@ -136,8 +136,8 @@ src/
 ## The bar
 
 `cp-eras-ui-bar` is a wlr-layer-shell status bar built on
-`iced_layershell` 0.13, which targets the same iced generation this
-crate already pins -- no 0.14 migration needed.
+`iced_layershell` 0.19, which is the release line that targets iced
+0.14 -- the same generation this crate pins.
 
 It exists because neither waybar nor ashell can draw the eras. waybar
 styles with CSS and ashell with a closed `Islands | Solid | Gradient`
@@ -183,11 +183,15 @@ plus whatever items ship themselves -- `--icon-theme` picks another.
 
 Right-click draws the item's `com.canonical.dbusmenu`, submenus and row
 icons included, on a **second `Overlay` layer surface anchored to all
-four edges** with `exclusive_zone: Some(0)`. That shape is forced:
-`layershellev` 0.13.7 never calls `xdg_popup.grab()` and the bar takes
-no keyboard focus, so a popup or a menu-sized surface could only ever be
-dismissed by being clicked. Output-sized gives real click-outside
-dismissal *and* placement below every bar without this code asking where
+four edges** with `exclusive_zone: Some(0)`. That shape was forced when
+it was written: `layershellev` 0.13.7 never called `xdg_popup.grab()`
+and the bar takes no keyboard focus, so a popup or a menu-sized
+surface could only ever be dismissed by being clicked. That is no
+longer true on 0.19.1 -- `NewPopUp` takes the last button serial and
+grabs (`iced_layershell/src/multi_window.rs:832`, `layershellev/src/lib.rs:2769`;
+`NewMenu` still passes no serial) -- so a proper popup with
+click-outside dismissal is now available and untried. Output-sized
+still gives click-outside dismissal *and* placement below every bar without this code asking where
 any bar is. A submenu chain is drawn *inline in that same surface*
 rather than stacking another -- a second overlay would cover the parent
 and stop its rows answering -- and it opens leftwards, because the tray
@@ -195,14 +199,18 @@ is the last group on the right. Childless `Submenu` rows still answer a
 click, since for a lazily-populated menu that click is what sends
 `AboutToShow`.
 
-Two known gaps are upstream in `iced_layershell` 0.13.7 rather than
-here: middle click arrives as `Activate`, because every button but right
-maps to `Button::Left`; and the scroll *sign* is unverified -- not
-because the axis is forwarded raw, which an earlier version of this file
-claimed and which is wrong (0.13.7 negates on all four paths and already
-matches iced's convention), but because nothing on this desktop acts on
-`Scroll` at all. There is no hover-to-open and no keyboard navigation,
-both deliberate on a surface with no grab.
+One known gap is left. Middle click used to arrive as `Activate`,
+because `iced_layershell` up to 0.13.7 mapped every button but right to
+`Button::Left`; 0.19.1's `src/event.rs` maps `274` to `Button::Middle`,
+so `TrayAction::Secondary` is reachable on a layer surface now and that
+gap closed with the upgrade -- untested against a live item, which is
+the honest state of it. What remains is the scroll *sign*, still
+unverified -- not because the axis is forwarded raw, which an earlier
+version of this file claimed and which is wrong (0.19.1 negates on all
+four paths, as 0.13.7 did, and already matches iced's convention), but
+because nothing on this desktop acts on `Scroll` at all. There is no
+hover-to-open and no keyboard navigation, both deliberate on a surface
+with no grab.
 
 The readings split by cost. Clock, CPU, memory and Hyprland's two
 socket round trips are taken inline on the tick; audio and network get

@@ -75,9 +75,9 @@ impl MailBox {
             ),
             row![
                 container(self.list()).width(Length::FillPortion(4)),
-                Space::new(s.metrics.gap * 2.0, 0.0),
+                Space::new().width(s.metrics.gap * 2.0),
                 container(self.message()).width(Length::FillPortion(6)),
-                Space::new(s.metrics.gap * 2.0, 0.0),
+                Space::new().width(s.metrics.gap * 2.0),
                 container(self.levels()).width(Length::Fixed(180.0)),
             ]
             .height(Length::Fill),
@@ -94,7 +94,7 @@ impl MailBox {
 
     fn list(&self) -> Element<'_, Message> {
         let s = &self.style;
-        let mut list = column![self.heading("A", "MAIL BOX"), Space::new(0.0, s.metrics.gap)]
+        let mut list = column![self.heading("A", "MAIL BOX"), Space::new().height(s.metrics.gap)]
             .spacing(0);
 
         for (i, mail) in inbox().iter().enumerate() {
@@ -105,7 +105,7 @@ impl MailBox {
             }
         }
 
-        list = list.push(Space::new(0.0, s.metrics.gap * 2.0));
+        list = list.push(Space::new().height(s.metrics.gap * 2.0));
         list = list.push(marker(
             s,
             "C",
@@ -120,15 +120,15 @@ impl MailBox {
     fn message(&self) -> Element<'_, Message> {
         let s = &self.style;
         let mut body = column![
-            text::title(s, "URGENT INFORMATION (!)").size(s.metrics.text_title - 3),
+            text::title(s, "URGENT INFORMATION (!)").size(f32::from(s.metrics.text_title - 3)),
             text::caption(s, "FROM: MOM"),
-            Space::new(0.0, s.metrics.gap),
+            Space::new().height(s.metrics.gap),
         ]
         .spacing(2);
 
         for para in BODY {
             body = body.push(text::body(s, para));
-            body = body.push(Space::new(0.0, 10.0));
+            body = body.push(Space::new().height(10.0));
         }
 
         let mut actions = row![].spacing(s.metrics.gap * 0.5);
@@ -144,9 +144,9 @@ impl MailBox {
                 Surface::outlined(s)
             };
             let label = if last {
-                text::on_select(s, *action).size(s.metrics.text_caption + 3)
+                text::on_select(s, *action).size(f32::from(s.metrics.text_caption + 3))
             } else {
-                text::body(s, *action).size(s.metrics.text_caption + 3)
+                text::body(s, *action).size(f32::from(s.metrics.text_caption + 3))
             };
             actions = actions.push(
                 container(surface(bg, Padding::from([5, 8]), label))
@@ -157,10 +157,10 @@ impl MailBox {
 
         column![
             self.heading("B", "MESSAGE"),
-            Space::new(0.0, s.metrics.gap),
+            Space::new().height(s.metrics.gap),
             container(surface(Surface::outlined(s), s.metrics.pad, body))
                 .height(Length::Fill),
-            Space::new(0.0, s.metrics.gap),
+            Space::new().height(s.metrics.gap),
             actions,
         ]
         .spacing(0)
@@ -182,7 +182,7 @@ impl MailBox {
 
         column![
             self.heading("D", "ENCRYPTION LEVEL"),
-            Space::new(0.0, s.metrics.gap),
+            Space::new().height(s.metrics.gap),
             grid,
         ]
         .into()

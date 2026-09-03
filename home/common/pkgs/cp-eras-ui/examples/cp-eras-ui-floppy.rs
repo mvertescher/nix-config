@@ -18,7 +18,8 @@ pub fn main() -> iced::Result {
         iced::window::Settings::default()
     };
 
-    iced::application("NEOMIL // FLOPPY ICON TEST", App::update, App::view)
+    iced::application(App::default, App::update, App::view)
+        .title("NEOMIL // FLOPPY ICON TEST")
         .font(fonts::ORBITRON_REGULAR)
         .font(fonts::ORBITRON_BOLD)
         .default_font(iced::Font {
@@ -34,7 +35,7 @@ pub fn main() -> iced::Result {
         // following the desktop.
         .style(|_state, _theme| {
             let palette = Era::Neomil.style().palette;
-            iced::application::Appearance {
+            iced::theme::Style {
                 background_color: palette.bg,
                 // The sampled off-white, not a literal white.
                 text_color: palette.tape,
@@ -81,7 +82,7 @@ impl App {
         // 1x Section (50x50)
         let unselected_1x = column![
             floppy_icon(color_accent, false, 1.0),
-            Space::with_height(5),
+            Space::new().height(5),
             text("UNSELECTED (1x)")
                 .font(fonts::FONT_ORBITRON_REGULAR)
                 .size(11)
@@ -91,7 +92,7 @@ impl App {
 
         let selected_1x = column![
             floppy_icon(color_accent, true, 1.0),
-            Space::with_height(5),
+            Space::new().height(5),
             text("SELECTED (1x)")
                 .font(fonts::FONT_ORBITRON_BOLD)
                 .size(11)
@@ -101,7 +102,7 @@ impl App {
 
         let row_1x = row![
             unselected_1x,
-            Space::with_width(40),
+            Space::new().width(40),
             selected_1x,
         ]
         .align_y(iced::Alignment::Center);
@@ -110,7 +111,7 @@ impl App {
         // 3x Section (150x150)
         let unselected_3x = column![
             floppy_icon(color_accent, false, 3.0),
-            Space::with_height(10),
+            Space::new().height(10),
             text("UNSELECTED (3x)")
                 .font(fonts::FONT_ORBITRON_REGULAR)
                 .size(12)
@@ -120,7 +121,7 @@ impl App {
 
         let selected_3x = column![
             floppy_icon(color_accent, true, 3.0),
-            Space::with_height(10),
+            Space::new().height(10),
             text("SELECTED (3x)")
                 .font(fonts::FONT_ORBITRON_BOLD)
                 .size(12)
@@ -130,7 +131,7 @@ impl App {
 
         let row_3x = row![
             unselected_3x,
-            Space::with_width(60),
+            Space::new().width(60),
             selected_3x,
         ]
         .align_y(iced::Alignment::Center);
@@ -141,7 +142,7 @@ impl App {
             canvas(FloppyIcon { color: color_accent, is_selected: false, scale: 4.63 })
                 .width(Length::Fixed(240.0))
                 .height(Length::Fixed(220.0)),
-            Space::with_height(10),
+            Space::new().height(10),
             text("UNSELECTED (DESIGN SIZE 4.63x)")
                 .font(fonts::FONT_ORBITRON_REGULAR)
                 .size(13)
@@ -153,7 +154,7 @@ impl App {
             canvas(FloppyIcon { color: color_accent, is_selected: true, scale: 4.63 })
                 .width(Length::Fixed(240.0))
                 .height(Length::Fixed(220.0)),
-            Space::with_height(10),
+            Space::new().height(10),
             text("SELECTED (DESIGN SIZE 4.63x)")
                 .font(fonts::FONT_ORBITRON_BOLD)
                 .size(13)
@@ -163,7 +164,7 @@ impl App {
 
         let row_design = row![
             unselected_design,
-            Space::with_width(80),
+            Space::new().width(80),
             selected_design,
         ]
         .align_y(iced::Alignment::Center);
@@ -175,11 +176,11 @@ impl App {
                 .font(fonts::FONT_ORBITRON_BOLD)
                 .size(20)
                 .color(palette.tape),
-            Space::with_height(30),
+            Space::new().height(30),
             row_1x,
-            Space::with_height(30),
+            Space::new().height(30),
             row_3x,
-            Space::with_height(30),
+            Space::new().height(30),
             row_design,
         ]
         .align_x(iced::Alignment::Center);

@@ -97,14 +97,15 @@ pub enum TrayAction {
     Activate,
     /// `SecondaryActivate`. Middle button.
     ///
-    /// Wired, and unreachable on a layer surface today:
-    /// `iced_layershell` 0.13.7 maps every Wayland button code except
+    /// Reachable on a layer surface as of `iced_layershell` 0.19. Up to
+    /// 0.13.7 that crate mapped every Wayland button code except
     /// `BTN_RIGHT` to `mouse::Button::Left` (`src/event.rs`), so a
-    /// middle click on `cp-eras-ui-bar` arrives as
-    /// [`Activate`](TrayAction::Activate). Left wired rather than
-    /// removed because `bar()` is not a layer-shell function -- it is
-    /// correct in an ordinary window today, and correct everywhere once
-    /// that map grows a third arm.
+    /// middle click on `cp-eras-ui-bar` arrived as
+    /// [`Activate`](TrayAction::Activate); this was wired anyway
+    /// because `bar()` is not a layer-shell function and was correct in
+    /// an ordinary window even then. 0.19.1's `src/event.rs` maps `274`
+    /// to `mouse::Button::Middle`, which is the third arm that comment
+    /// was waiting for. Still unexercised against a running item.
     Secondary,
     /// `ContextMenu`. Right button.
     Context,
@@ -120,12 +121,13 @@ pub enum TrayAction {
     ///
     /// An earlier version of this comment claimed the two hosts of
     /// `bar()` disagree, on the grounds that `iced_layershell` forwards
-    /// the raw `wl_pointer` axis. **That is wrong.** 0.13.7's
-    /// `src/event.rs` negates on all four paths -- `-vertical.discrete`,
+    /// the raw `wl_pointer` axis. **That is wrong.** Its `src/event.rs`
+    /// negates on all four paths -- `-vertical.discrete`,
     /// `-vertical.absolute` and the horizontal pair -- so it already
     /// matches iced's own `ScrollDelta` convention, positive away from
-    /// the user. What remains unverified is only whether a real item
-    /// interprets a detent the way we send it.
+    /// the user. That was true of 0.13.7 and is still true of 0.19.1.
+    /// What remains unverified is only whether a real item interprets a
+    /// detent the way we send it.
     Scroll(i32),
 }
 
@@ -401,10 +403,11 @@ fn menu_row<'a, Message: Clone + 'static>(
         // width it declares, with air either side.
         let border = style.palette.border;
         return container(
-            container(Space::new(
-                Length::Fill,
-                Length::Fixed(style.metrics.stroke),
-            ))
+            container(
+                Space::new()
+                    .width(Length::Fill)
+                    .height(Length::Fixed(style.metrics.stroke)),
+            )
             .style(move |_: &iced::Theme| container::Style {
                 background: Some(border.into()),
                 ..container::Style::default()
@@ -442,7 +445,10 @@ fn menu_row<'a, Message: Clone + 'static>(
                 // alias it.
                 .filter_method(image::FilterMethod::Linear)
                 .into(),
-            None => Space::new(Length::Fixed(size), Length::Shrink).into(),
+            None => Space::new()
+                .width(Length::Fixed(size))
+                .height(Length::Shrink)
+                .into(),
         };
         container(slot)
             .width(Length::Fixed(size + MENU_ICON_GAP))
@@ -452,13 +458,13 @@ fn menu_row<'a, Message: Clone + 'static>(
     let trailing: Element<'a, Message> = match entry.kind {
         MenuKind::Submenu if selected => text::on_select(style, MENU_SUBMENU_MARKER).into(),
         MenuKind::Submenu => text::mid(style, MENU_SUBMENU_MARKER).into(),
-        _ => Space::new(Length::Shrink, Length::Shrink).into(),
+        _ => Space::new().width(Length::Shrink).height(Length::Shrink).into(),
     };
 
     let inner = row![]
-        .push_maybe(leading)
+        .extend(leading)
         .push(text)
-        .push(Space::new(Length::Fill, Length::Shrink))
+        .push(Space::new().width(Length::Fill).height(Length::Shrink))
         .push(trailing)
         .align_y(iced::Alignment::Center)
         .width(Length::Fill)
@@ -590,8 +596,13 @@ pub fn tray_menu<'a, Message: Clone + 'static>(
         // prefix that actually got followed.
         let panel = menu_panel(style, level, &open[..depth], on_entry, on_submenu);
         chain = chain.push(
-            iced::widget::column![Space::new(Length::Shrink, Length::Fixed(level.top)), panel]
-                .height(Length::Shrink),
+            iced::widget::column![
+                Space::new()
+                    .width(Length::Shrink)
+                    .height(Length::Fixed(level.top)),
+                panel
+            ]
+            .height(Length::Shrink),
         );
     }
     chain.height(Length::Shrink).into()
@@ -888,7 +899,7 @@ pub fn bar<'a, Message: Clone + 'static>(
     }
 
     let centre: Element<'a, Message> = if r.window.is_empty() {
-        Space::new(Length::Shrink, Length::Shrink).into()
+        Space::new().width(Length::Shrink).height(Length::Shrink).into()
     } else {
         container(text::label(style, r.window.as_str()))
             .center_y(Length::Fill)
@@ -920,9 +931,9 @@ pub fn bar<'a, Message: Clone + 'static>(
     container(
         row![
             left,
-            Space::new(Length::Fill, Length::Shrink),
+            Space::new().width(Length::Fill).height(Length::Shrink),
             centre,
-            Space::new(Length::Fill, Length::Shrink),
+            Space::new().width(Length::Fill).height(Length::Shrink),
             right,
         ]
         .align_y(iced::Alignment::Center)

@@ -1,83 +1,330 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="220" viewBox="0 0 1600 220" font-family="Rajdhani">
-  <!-- NEOMIL BAR reference.
-       "Substance over style": three reds on near-black, chamfered surfaces (bottom-right
-       cut), stencil labelling. Sampled palette (docs/neomil/README.md): bg #050304, glow
-       #001a33, red deep #5e1112, red mid #a32226, red fill #de2e2e, red hot #ff3b45,
-       off-white #dedede. Chamfer 15 clamped to 12.5 on 25px cells.
-       Golden geometry: 1600x220; bar strip 31px at top, tray menu beneath, right edge
-       at x=1480. -->
+  <!-- NEOMIL BAR reference (restyled 2026-09-02).
+
+       The bar has no Behance source; it is an original composition. Every
+       decision below is borrowed from a measured feature of one of the four
+       neomil traces (docs/neomil/{login,dashboard,mailbox,store}-trace.svg,
+       1600x900, themselves held to images/img-06..09 by G1i), read from the
+       trace renders and 2x/3x crops of the photos. The goal: the bar should
+       look cut from the same screens.
+
+       Golden geometry (contract with bar.rs): 1600x220; the bar is 31px tall
+       and its cells occupy y 3..28; the tray menu drops beneath it,
+       right-aligned to x=1480. Module set and order unchanged.
+
+       WHAT IS BORROWED, FROM WHERE
+       - The band. Every neomil screen puts its header chrome on the cold
+         blue glow (login/dashboard/mailbox traces: #glowh, sampled at y=90 of
+         img-07, left #2a3a51 running to #101f3d at the right; the consts
+         BAND_TOP/BAND_BOTTOM in src/eras/neomil.rs restate those two stops).
+         The bar is that header band compressed to 31px: y 0..31 filled with
+         the same left-to-right gradient. Red chrome on that blue is the
+         era's most recognisable frame (CUSTOMER / SECURITY LEVEL at y 90).
+       - The hairline rule. Login/mailbox/dashboard all close the header with
+         a full-width 1.5-2px rule in the mid red (login-trace y=188,
+         x 42..1558, #ae2729). Here it is the band's bottom edge, y 29.5..31,
+         x 6..1594, RED_MID, i.e. under the cells and above the menu.
+       - The cell. The SECURITY LEVEL badge row (login-trace #badge at
+         x 1133/1193/1253/1313, y 104..161: 59x57, BOTTOM-LEFT chamfer 15,
+         fill #691d21 (translucent dark red over the glow), stroke #f63333
+         1.5, badges 1px apart, the second one filled). Same geometry on the
+         mailbox rows (12px bottom-left chamfer on 68px, x 241..511) and the
+         store nav (16px on 62px, x 153..361): the era chamfers the
+         bottom-LEFT corner of a cell, never the bottom-right the old bar
+         used. Scaled to a 25px cell: chamfer 6 (15/57 * 25 = 6.6; 12/68 and
+         16/62 give 4.4 and 6.5). Idle fill RED_DEEP #5e1112 (the palette's
+         nearest to #691d21), stroke RED_FILL 1.5, label RED_FILL 14px. Cells
+         in a group abut at 2px, like the badges' 1px on a 60 pitch, so the
+         chamfers leave the same small dark notch at each joint's foot.
+       - Selected cell (workspace 3, the clock). The store's VIDEO row
+         (store-trace x 153..361 y 248..315: solid #df3131, dark #4a0f10
+         ink, no separate stroke) and mailbox row 1 (x 241..511 y 313..383,
+         #e63132 with #59171b text): the era's selected surface is solid
+         fill red with dark ink, which is what palette.select/on_select
+         already say. The T2 badge (mid fill, bright text) was the other
+         candidate; rejected on legibility, see the delta.
+       - Bold digits. The badges set their tier in bold (login-trace
+         "T1".."T4", font-weight 700 at 20px over a 12px "LEVEL"); the
+         workspace numbers and the clock are the bar's tiers and are bold.
+       - Host tape = the code tape (login-trace x 257..376 y 151..160:
+         "M 259,151 H 376 V 160 H 259 L 257,158 V 153 Z", i.e. a filled
+         #f63333 strip whose LEFT end is cut 2px on both corners into a
+         blunt point, carrying five dark #420f10 barcode ticks at x 261..275
+         and dark text). Scaled to 25px: left corners cut 5, five ticks
+         (w 2/1.5/3/1.5/2, 13 tall) at x 15..33, then the host name, all in
+         the on_select ink #1a0405 on RED_FILL. The bar's old off-white tape
+         appears on no neomil screen (the four traces sample no white at
+         all), so the tape wears the tape red of the material instead.
+       - Focused-window label = the tab box (mailbox-trace x 241..451
+         y 194..216: 22px tall, fill #59171b at 0.45, stroke #a8282b 1;
+         dashboard-trace x 475..686 y 237..258 with the label centred).
+         Square corners, fill CARD_DARK, stroke RED_MID 1, RED_FILL text
+         centred, sized to the label. Deliberately NOT a chamfered cell:
+         in both traces the tab row is a different, plainer shape from the
+         badge row above it, and the title is not a reading.
+       - Alert (SYNC, the second tray icon). The material's loudest ink is
+         its brightest red: the "NEW" pills (mailbox-trace x 403..479,
+         stroke #e63132 1.5 on rows whose text is the same ink) and the
+         margin chips and arrows (#df3131 in store-trace x 752..776 and
+         977..1000, y 31..47). The
+         cell keeps its silhouette and moves stroke and label to RED_HOT,
+         as bar.rs already does; nothing else changes.
+       - Tray icon placeholders: diamonds, from the dashboard's six-diamond
+         menu (dashboard-trace #cell at (334,460) etc.), in RED_FILL, or
+         RED_HOT when the item is in attention. They stand in for SNI
+         pixmaps the app draws as supplied.
+       - Menu panel = the GO HOME panel (dashboard-trace x 1128..1366
+         y 314..756: fill #671b21 at 0.55 over black (= #380f12, i.e.
+         CARD_DARK #350e10), stroke #ef3333 1.5, top-right chamfer 8,
+         bottom-left chamfer 42 on 442 (here 12, as the mailbox rows), a
+         filled bar on its right edge x 1358..1366 y 405..515 (the store
+         cards carry the same bar, store-trace "M 721,266 V 404 L 709,416
+         V 278 Z", a parallelogram with 12px slanted ends), the edge then
+         stepping 8px inward below the bar, and two 1.5px glitch echoes of
+         the edge 3px and 5px out in #671b21 (x 1361/1363, y 515..756)).
+         Root panel: x 1281..1480 y 31..155, bar x 1472..1480 y 62..100
+         (~25% down, ~30% long, as measured on all three panels), edge at
+         1472 below it, echoes at x 1475 and 1477 y 100..155 in RED_DEEP,
+         inside the x=1480 contract. The submenu panel to its left shares
+         the silhouette minus the bar (its right edge is the joint).
+       - Menu rows = the store nav rows (store-trace x 153..361: VIDEO
+         solid #df3131 with #4a0f10 ink, a 3px spine at x 148..151 running
+         from the row's top to its chamfer knee (y 248..299 on 248..315),
+         bottom-left chamfer 16; the idle rows outlined #96282d on #2e1012
+         with a #96282d spine). The two highlighted rows here (Devices,
+         the open parent; Enable networking, the hovered one) are that
+         VIDEO row: solid RED_FILL, dark ink, chamfer 6, spine 3px at
+         x-5..x-2 in RED_FILL down to the knee. Idle rows are bare text on
+         the panel fill, like the GO HOME panel's body lines; a disabled
+         row is RED_MID text, the login trace's dimmest label ink
+         (card 3's #ae2729 caption). The separator is the header hairline
+         again (RED_MID 1.5), which is also the card-2 divider at
+         login-trace y 569.
+       - Submenu marker: the left-pointing arrow glyph the era puts after a
+         code string (store-trace x 977..1000 y 35..45: a 17x2 shaft and an
+         8-wide, 10-tall head; mailbox-trace x 886..912 y 866..876). The
+         submenu opens leftwards, and this is the era's own "that way".
+       - Icon / text gap in menu rows: 8px between the 16px icon and the
+         label (old file had them touching at x 1315/1316).
+
+       Palette: only src/eras/neomil.rs consts and the traces' sampled
+       inks: BG #050304, BAND_TOP #2a3a51, BAND_BOTTOM #101f3d, RED_DEEP
+       #5e1112, RED_MID #a32226, RED_FILL #de2e2e, RED_HOT #ff3b45,
+       CARD_DARK #350e10, on_select #1a0405. -->
+  <defs>
+    <!-- the header glow, BAND_TOP at the left running to BAND_BOTTOM at
+         the right; see the header comment -->
+    <linearGradient id="band" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2a3a51"/>
+      <stop offset="1" stop-color="#101f3d"/>
+    </linearGradient>
+    <!-- bar cell: 25 tall, bottom-left chamfer 6; width per use via the
+         path, so no <use> here -->
+    <!-- 16px menu icon placeholder and the 19px bar icon placeholder -->
+    <path id="dia16" d="M -8,0 L 0,-8 L 8,0 L 0,8 Z"/>
+    <path id="dia19" d="M -9.5,0 L 0,-9.5 L 9.5,0 L 0,9.5 Z"/>
+    <!-- the era's left arrow: 17x2 shaft, 8x10 head (store-trace 977..1000) -->
+    <g id="arrow-left">
+      <rect x="6" y="-1" width="17" height="2"/>
+      <path d="M 0,0 L 8,-5 V 5 Z"/>
+    </g>
+  </defs>
+
   <rect width="1600" height="220" fill="#050304"/>
 
-  <!-- ============ BAR STRIP (cells y 3..28, 25px tall, chamfer bottom-right) ============ -->
+  <!-- ============ THE BAND: y 0..31, glow + hairline rule ============ -->
+  <rect x="0" y="0" width="1600" height="31" fill="url(#band)"/>
+  <rect x="6" y="29.5" width="1588" height="1.5" fill="#a32226"/>
+
+  <!-- ============ BAR STRIP (cells y 3..28, 25px tall, chamfer bottom-left 6) ============ -->
   <g font-size="14">
 
-    <!-- host tape: filled off-white, bg ink -->
-    <path d="M 6 3 H 77 V 15.5 L 71 28 H 6 Z" fill="#dedede"/>
-    <text x="18" y="20" fill="#050304">nomad</text>
+    <!-- host tape: the code tape. Left end cut 5 on both corners, five
+         barcode ticks, dark ink. x 6..88 -->
+    <path d="M 11 3 H 88 V 28 H 11 L 6 23 V 8 Z" fill="#de2e2e"/>
+    <g fill="#1a0405">
+      <rect x="15" y="9" width="2" height="13"/>
+      <rect x="19" y="9" width="1.5" height="13"/>
+      <rect x="22.5" y="9" width="3" height="13"/>
+      <rect x="27.5" y="9" width="1.5" height="13"/>
+      <rect x="31" y="9" width="2" height="13"/>
+      <text x="38" y="20">nomad</text>
+    </g>
 
-    <!-- workspaces 1..6; 3 active = solid red fill, dark ink -->
-    <path d="M 83.4 3 H 118.4 V 15.5 L 112.9 28 H 83.4 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
-    <text x="100.9" y="20" text-anchor="middle" fill="#de2e2e">1</text>
-    <path d="M 124.8 3 H 159.8 V 15.5 L 154.3 28 H 124.8 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
-    <text x="142.3" y="20" text-anchor="middle" fill="#de2e2e">2</text>
-    <path d="M 166.2 3 H 201.2 V 15.5 L 195.7 28 H 166.2 Z" fill="#de2e2e"/>
-    <text x="183.7" y="20" text-anchor="middle" fill="#1a0405">3</text>
-    <path d="M 207.6 3 H 242.6 V 15.5 L 237.1 28 H 207.6 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
-    <text x="225.1" y="20" text-anchor="middle" fill="#de2e2e">4</text>
-    <path d="M 249 3 H 284 V 15.5 L 278.5 28 H 249 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
-    <text x="266.5" y="20" text-anchor="middle" fill="#de2e2e">5</text>
-    <path d="M 290.4 3 H 325.4 V 15.5 L 319.9 28 H 290.4 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
-    <text x="307.9" y="20" text-anchor="middle" fill="#de2e2e">6</text>
+    <!-- workspaces 1..6: the badge row. 35 wide on a 37 pitch (2px gap),
+         x 100..320; 3 selected = solid fill, dark ink -->
+    <g stroke="#de2e2e" stroke-width="1.5" fill="#5e1112">
+      <path d="M 100 3 H 135 V 28 H 106 L 100 22 Z"/>
+      <path d="M 137 3 H 172 V 28 H 143 L 137 22 Z"/>
+      <path d="M 174 3 H 209 V 28 H 180 L 174 22 Z" fill="#de2e2e"/>
+      <path d="M 211 3 H 246 V 28 H 217 L 211 22 Z"/>
+      <path d="M 248 3 H 283 V 28 H 254 L 248 22 Z"/>
+      <path d="M 285 3 H 320 V 28 H 291 L 285 22 Z"/>
+    </g>
+    <g font-weight="700" text-anchor="middle" fill="#de2e2e">
+      <text x="117.5" y="20">1</text>
+      <text x="154.5" y="20">2</text>
+      <text x="191.5" y="20" fill="#1a0405">3</text>
+      <text x="228.5" y="20">4</text>
+      <text x="265.5" y="20">5</text>
+      <text x="302.5" y="20">6</text>
+    </g>
 
-    <!-- centred window label: dim = red mid -->
-    <text x="548.9" y="20" text-anchor="middle" fill="#a32226">~/src/cp-eras-ui - nvim src/bar.rs</text>
+    <!-- focused window: the tab box, centred in the free span 320..812.
+         Square corners, 1px mid stroke, dark fill, bright label -->
+    <rect x="446.5" y="3.5" width="239" height="24" fill="#350e10" stroke="#a32226" stroke-width="1"/>
+    <text x="566" y="20" text-anchor="middle" fill="#de2e2e">~/src/cp-eras-ui - nvim src/bar.rs</text>
 
-    <!-- tray: FLAM icon, ELEM icon (attention -> alert stroke = red hot), BLUE label, SYNC alert -->
-    <path d="M 772.4 3 H 809.4 V 15.5 L 803.9 28 H 772.4 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
-    <path d="M 781.4 15.5 L 790.9 6 L 800.4 15.5 L 790.9 25 Z" fill="#8800aa"/>
-    <path d="M 815.8 3 H 852.8 V 15.5 L 847.3 28 H 815.8 Z" fill="none" stroke="#ff3b45" stroke-width="1.5"/>
-    <path d="M 824.8 15.5 L 834.3 6 L 843.8 15.5 L 834.3 25 Z" fill="#ff6600"/>
-    <path d="M 859.2 3 H 918.2 V 15.5 L 912.7 28 H 859.2 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
-    <text x="888.7" y="20" text-anchor="middle" fill="#de2e2e">BLUE</text>
-    <path d="M 924.6 3 H 983.6 V 15.5 L 978.1 28 H 924.6 Z" fill="none" stroke="#ff3b45" stroke-width="1.5"/>
-    <text x="954.1" y="20" text-anchor="middle" fill="#ff3b45">SYNC</text>
-
-    <path d="M 990 3 H 1130 V 15.5 L 1124.5 28 H 990 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
-    <text x="1060" y="20" text-anchor="middle" fill="#de2e2e">WIFI AFTERLIFE</text>
-    <path d="M 1136.4 3 H 1227.4 V 15.5 L 1221.9 28 H 1136.4 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
-    <text x="1181.9" y="20" text-anchor="middle" fill="#de2e2e">VOL  62%</text>
-    <path d="M 1233.8 3 H 1316.8 V 15.5 L 1311.3 28 H 1233.8 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
-    <text x="1275.3" y="20" text-anchor="middle" fill="#de2e2e">CPU 12%</text>
-    <path d="M 1323.2 3 H 1406.2 V 15.5 L 1400.7 28 H 1323.2 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
-    <text x="1364.7" y="20" text-anchor="middle" fill="#de2e2e">MEM 47%</text>
-    <path d="M 1412.6 3 H 1520.6 V 15.5 L 1515.1 28 H 1412.6 Z" fill="none" stroke="#5e1112" stroke-width="1.5"/>
-    <text x="1466.6" y="20" text-anchor="middle" fill="#de2e2e">2026-08-23</text>
-    <path d="M 1527 3 H 1594 V 15.5 L 1588.5 28 H 1527 Z" fill="#de2e2e"/>
-    <text x="1560.5" y="20" text-anchor="middle" fill="#1a0405">23:41</text>
+    <!-- tray: one badge row, right-aligned to x 1594, cells 2px apart.
+         icon (37) | icon, attention (37) | BLUE (59) | SYNC alert (59) |
+         WIFI AFTERLIFE (140) | VOL (91) | CPU (83) | MEM (83) | date (108) |
+         clock (67, selected) -->
+    <g stroke="#de2e2e" stroke-width="1.5" fill="#5e1112">
+      <path d="M 812 3 H 849 V 28 H 818 L 812 22 Z"/>
+      <path d="M 851 3 H 888 V 28 H 857 L 851 22 Z" stroke="#ff3b45"/>
+      <path d="M 890 3 H 949 V 28 H 896 L 890 22 Z"/>
+      <path d="M 951 3 H 1010 V 28 H 957 L 951 22 Z" stroke="#ff3b45"/>
+      <path d="M 1012 3 H 1152 V 28 H 1018 L 1012 22 Z"/>
+      <path d="M 1154 3 H 1245 V 28 H 1160 L 1154 22 Z"/>
+      <path d="M 1247 3 H 1330 V 28 H 1253 L 1247 22 Z"/>
+      <path d="M 1332 3 H 1415 V 28 H 1338 L 1332 22 Z"/>
+      <path d="M 1417 3 H 1525 V 28 H 1423 L 1417 22 Z"/>
+      <path d="M 1527 3 H 1594 V 28 H 1533 L 1527 22 Z" fill="#de2e2e"/>
+    </g>
+    <!-- SNI icon placeholders -->
+    <use href="#dia19" x="830.5" y="15.5" fill="#de2e2e"/>
+    <use href="#dia19" x="869.5" y="15.5" fill="#ff3b45"/>
+    <g text-anchor="middle" fill="#de2e2e">
+      <text x="919.5" y="20">BLUE</text>
+      <text x="980.5" y="20" fill="#ff3b45">SYNC</text>
+      <text x="1082" y="20">WIFI AFTERLIFE</text>
+      <text x="1199.5" y="20">VOL  62%</text>
+      <text x="1288.5" y="20">CPU 12%</text>
+      <text x="1373.5" y="20">MEM 47%</text>
+      <text x="1471" y="20">2026-08-23</text>
+      <text x="1560.5" y="20" font-weight="700" fill="#1a0405">23:41</text>
+    </g>
   </g>
 
   <!-- ============ TRAY MENU ============
-       root panel + open Devices submenu to its LEFT; panels chamfered bottom-right. -->
+       root panel x 1281..1480 y 31..155 and the open Devices submenu to its
+       LEFT, x 1141..1281 y 31..94. GO HOME silhouette: TR chamfer 8, BL
+       chamfer 12, fill CARD_DARK, stroke RED_FILL 1.5. Rows on a 25.6 pitch
+       from y 37; row boxes inset to x+9 .. right-14 with the spine at
+       x+4..x+7; icon column 16px at x+17, label at x+41. -->
+
   <!-- Devices submenu: Mount / Eject -->
-  <path d="M 1141 31 H 1281 V 84.2 L 1275.5 94.2 H 1141 Z" fill="#050304" stroke="#5e1112" stroke-width="1.5"/>
-  <g font-size="14">
-    <path d="M 1161 49.8 L 1169 41.8 L 1177 49.8 L 1169 57.8 Z" fill="#8800aa"/>
-    <text x="1175" y="55" fill="#de2e2e">Mount</text>
-    <text x="1175" y="80.6" fill="#de2e2e">Eject</text>
+  <path d="M 1141 31 H 1273 L 1281 39 V 94.2 H 1153 L 1141 82.2 Z" fill="#350e10" stroke="#de2e2e" stroke-width="1.5"/>
+  <g font-size="14" fill="#de2e2e">
+    <use href="#dia16" x="1166" y="49.8"/>
+    <text x="1182" y="54.8">Mount</text>
+    <text x="1182" y="80.4">Eject</text>
   </g>
 
-  <!-- root menu: Devices (open, selected) / Disconnect (dim) / rule / Enable networking (selected) / Quit -->
-  <path d="M 1281 31 H 1480 V 145 L 1474.5 155 H 1281 Z" fill="#050304" stroke="#5e1112" stroke-width="1.5"/>
+  <!-- root menu: Devices (open parent, highlighted) / Disconnect (disabled) /
+       rule / Enable networking (highlighted) / Quit -->
+  <path d="M 1281 31 H 1472 L 1480 39 V 92 L 1472 100 V 155 H 1293 L 1281 143 Z" fill="#350e10" stroke="#de2e2e" stroke-width="1.5"/>
+  <!-- the bright bar riding the right edge, slanted ends, then the edge
+       steps 8px inward and its glitch echoes follow it down -->
+  <path d="M 1480 62 V 92 L 1472 100 V 70 Z" fill="#de2e2e"/>
+  <rect x="1475" y="100" width="1.5" height="54.5" fill="#5e1112"/>
+  <rect x="1477" y="100" width="1.5" height="54.5" fill="#5e1112"/>
   <g font-size="14">
-    <rect x="1281" y="37" width="199" height="25.6" fill="#de2e2e"/>
-    <path d="M 1300 49.8 L 1308 41.8 L 1316 49.8 L 1308 57.8 Z" fill="#1a0405"/>
-    <text x="1315" y="55" fill="#1a0405">Devices</text>
-    <text x="1468" y="55" text-anchor="end" fill="#1a0405">&lt;</text>
-    <text x="1293" y="80.6" fill="#a32226">Disconnect</text>
-    <line x1="1291" y1="93" x2="1470" y2="93" stroke="#5e1112" stroke-width="1.5"/>
-    <rect x="1281" y="97.7" width="199" height="25.6" fill="#de2e2e"/>
-    <text x="1293" y="115.7" fill="#1a0405">Enable networking</text>
-    <path d="M 1300 141.3 L 1308 133.3 L 1316 141.3 L 1308 149.3 Z" fill="#de2e2e"/>
-    <text x="1315" y="147.3" fill="#de2e2e">Quit</text>
+    <!-- Devices: highlighted row = the nav VIDEO row -->
+    <rect x="1285" y="37" width="3" height="19.6" fill="#de2e2e"/>
+    <path d="M 1290 37 H 1466 V 62.6 H 1296 L 1290 56.6 Z" fill="#de2e2e"/>
+    <use href="#dia16" x="1306" y="49.8" fill="#1a0405"/>
+    <text x="1322" y="54.8" fill="#1a0405">Devices</text>
+    <use href="#arrow-left" x="1435" y="49.8" fill="#1a0405"/>
+    <!-- Disconnect: disabled -->
+    <text x="1322" y="80.4" fill="#a32226">Disconnect</text>
+    <!-- separator: the header hairline -->
+    <rect x="1290" y="92.2" width="176" height="1.5" fill="#a32226"/>
+    <!-- Enable networking: highlighted -->
+    <rect x="1285" y="97.7" width="3" height="19.6" fill="#de2e2e"/>
+    <path d="M 1290 97.7 H 1466 V 123.3 H 1296 L 1290 117.3 Z" fill="#de2e2e"/>
+    <text x="1322" y="115.5" fill="#1a0405">Enable networking</text>
+    <!-- Quit -->
+    <use href="#dia16" x="1306" y="136.1" fill="#de2e2e"/>
+    <text x="1322" y="141.1" fill="#de2e2e">Quit</text>
   </g>
+
+  <!-- IMPLEMENTATION DELTA (for bar.rs / Style)
+       The SVG is the target; bar.rs follows it. Every item is a change from
+       what tests/golden/bar-neomil-1600x220.png shows today. Coordinates
+       are in the 1600x220 golden frame; "cell" means every bar module
+       (workspaces, readings, tray icons) unless named.
+
+       1. Corner. Cells chamfer the BOTTOM-LEFT corner, cut 6px on the 25px
+          cell (path: M x0,3 H x1 V 28 H x0+6 L x0,22 Z). Today the
+          neomil Corner::Chamfer cuts the bottom-right. Either the Surface
+          chamfer arm learns which corner the era cuts, or neomil's
+          Corner variant carries it; the cut stays clamped as now, but the
+          target is 6 at this height, not 12.5.
+       2. Bar background. The 31px bar row is filled with a horizontal
+          linear gradient BAND_TOP (#2a3a51, x=0) -> BAND_BOTTOM (#101f3d,
+          x=1600), not palette.bg. A 1.5px bottom border in RED_MID
+          (#a32226) runs x 6..1594 at y 29.5..31 (i.e. the bar's own
+          bottom 1.5px, inside the 31; the cells stay in y 3..28).
+       3. Idle cell: fill RED_DEEP #5e1112, stroke RED_FILL #de2e2e 1.5,
+          label RED_FILL 14px. (Today: no fill, stroke RED_DEEP.)
+       4. Selected cell (active workspace, clock): fill RED_FILL, stroke
+          RED_FILL 1.5, label on_select #1a0405. Same as today's Selected
+          surface plus the stroke, so the outline runs unbroken through
+          the row like the badge row's.
+       5. Alert cell (muted sink, no route, attention tray item): fill
+          RED_DEEP, stroke RED_HOT #ff3b45 1.5, label/icon RED_HOT. Same
+          as today except the fill.
+       6. Bold: the workspace digits and the clock label at font-weight
+          700; every other label regular.
+       7. Spacing. Cells in a group abut at 2px (today 6.4). Groups:
+          tape x 6..88, then 12px, workspaces from x 100 on a 37 pitch (35
+          wide); the tray is one right-aligned run ending at x 1594 with
+          the same 2px gaps and the same widths as width_for() gives today
+          (icon cells 37; BLUE/SYNC 59; WIFI AFTERLIFE 140; VOL 91; CPU/MEM
+          83; date 108; clock 67).
+       8. Host tape: RED_FILL fill (not palette.tape / OFF_WHITE), shape
+          M 11,3 H 88 V 28 H 11 L 6,23 V 8 Z (the left two corners cut 5,
+          right corners square, no chamfer), five barcode ticks in
+          on_select ink at x 15/19/22.5/27.5/31 (widths 2/1.5/3/1.5/2,
+          y 9..22), then the host name in on_select ink from x 38. Width =
+          38 - 6 + label + 10. Only the bar's tape changes; palette.tape
+          stays for other surfaces.
+       9. Focused-window label: a box, not bare text. Square corners,
+          fill CARD_DARK #350e10, stroke RED_MID 1.0, y 3.5..27.5, width =
+          label + 16, centred in the free span; label RED_FILL 14px
+          centred. (Today: centred RED_MID text on nothing.)
+      10. Tray icons: unchanged placeholders (pixmaps drawn as supplied);
+          only the cell around them changes per 3/5.
+      11. Menu panel: fill CARD_DARK (not palette.bg), stroke RED_FILL 1.5
+          (not RED_DEEP). Outline for the root (outermost) panel of width
+          W, height H, at (x,y): M x,y H x+W-8 L x+W,y+8 V y+61 L x+W-8,
+          y+69 V y+H H x+12 L x,y+H-12 Z, i.e. top-right chamfer 8, a
+          filled RED_FILL parallelogram bar on the right edge x+W-8..x+W
+          from y+31 to y+69 with 8px slanted ends (M x+W,y+31 V y+61
+          L x+W-8,y+69 V y+39 Z), the right edge stepping 8px inward below
+          the bar, bottom-right square, bottom-left chamfer 12. Two 1.5px
+          RED_DEEP hairlines at x+W-5 and x+W-3 from the bar's foot to the
+          panel bottom. All of it inside the panel's own width, so the
+          chain width arithmetic does not change. A submenu panel (any
+          level whose right edge is a joint) gets the same outline without
+          the bar/step/echoes: top-right chamfer 8, bottom-left 12.
+      12. Menu rows: 25.6 pitch from y+6 as now. Idle row: bare text
+          RED_FILL on the panel fill. Disabled row: RED_MID text. Selected
+          / hovered row: a solid RED_FILL box inset 9px from the panel's
+          left edge and 14px from its right edge (i.e. ending 6px short of
+          the stepped edge), bottom-left chamfer 6, label on_select; plus
+          a 3px RED_FILL spine at x+4..x+7 from the row's top down 19.6px
+          (to the chamfer knee). Separator row: RED_MID 1.5px rule spanning
+          the same inset as the highlight box.
+      13. Menu icon column: 16px icons at x+17..x+33, label at x+41 - an
+          8px gap between icon and text (today they touch).
+      14. Submenu marker: the era's left arrow (a 17x2 shaft plus an 8-wide
+          10-tall triangular head, drawn right-aligned 8px in from the
+          highlight box) in the row's ink, in place of the "<" text.
+      15. Not reachable and accepted as drift: none. Letter-spacing on
+          labels was considered (the traces track their stencil caps at
+          1..1.5) and dropped because iced 0.13 has no tracking and it
+          would also change every cell width.
+  -->
 </svg>

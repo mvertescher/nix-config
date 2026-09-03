@@ -1,0 +1,368 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <!-- NEOKITSCH mailbox-trace: schematic of images/neokitsch-mail.png
+       (Behance f1104d118663901.60e5fa6e2fce8, screen #71 of the neokitsch
+       run — the mail screen). Source is 3840x2160; every coordinate here
+       is the source divided by 2.4, measured, not eyeballed:
+         scripts/extract_spec.py images/neokitsch-mail.png
+       plus row/column scans of the red channel for rules, tabs, icons and
+       button edges, and held to the source by
+         scripts/fidelity_check.sh -\-inventory neokitsch mailbox
+       (the inks gate).
+
+       What the source shows, top to bottom:
+         - the run's violet-over-black haze (pixel-identical to the
+           dashboard's; the lobe below is dashboard-trace's, measured)
+         - THE SAME HEADER AS THE DASHBOARD, pixel for pixel (mean abs
+           diff 2.7/255 over y 0..200, i.e. film grain): CUSTOMER
+           #NC488402 and LEVEL T1 at the left, SECURITY LEVEL and LEVEL
+           T1/T2/T3/T4 at the right with T2 as the ringed folder badge,
+           and the eight-strand wire band converging to y~87 with the A
+           and B letter boxes and their SPARE TIME MANAGER annotations.
+           That block is carried over from dashboard-trace.svg verbatim
+         - left: a SEVEN-ROW MESSAGE LIST on a 60.2 pitch from y 309.
+           Each row: a title (x 193, 18px), a FROM: line beneath, an
+           envelope glyph at x 429..445 (open-flap on rows 1, 3, 7;
+           closed on the rest), and a hairline rule x 35..483 under the
+           row carrying a small filled trapezoid tab at x 422..452.
+           Row 2 is THE SELECTION: a gold bar [35,315]..[512,370] with a
+           22px chamfer on its top-right corner, mid-brown text (glyph
+           cores #7b5438 / #895f3b, the envelope #865c39 — a mid tone,
+           not the near-black the other screens put on gold), and a dark
+           outlined notch cut into its bottom edge at x 420..457. The bar
+           is WOOD VENEER, not a flat fill: dense wavy grain lines in a
+           darker gold (#c19867 by k-means, 1.6% of the canvas — its own
+           ink family) over the light base, ~4px pitch in the source
+           (1.7px at this scale), a vertical book-match seam at x~273
+           the lines chevron into, a swirl at the far left edge and
+           arcs bending up into the top-right chamfer. At 1600 the
+           source bar averages to #eab26e, and 92% of its pixels classify
+           with the bright family — the grain lines themselves sample
+           #e6ae6b on a #f8c678 base at 3840, and only where they bunch
+           (the left swirl, the seam, the top-right arcs) do they
+           resolve as the darker #c19867. Drawn that way: 32 hairlines
+           on the measured 1.7 pitch in #e6ae6b, clipped to the bar, plus
+           the bunched dark lines on top.
+           Titles: You'll regret that / Urgent information (!) / Heist
+           data sent to you / I'm worried man / Special offer to you! /
+           I'm worried man / Special offer to you!; senders JACKIE, MOM,
+           805000451, RACHEL ROSS, JINX JINX STORE, RACHEL ROSS, RACHEL ROSS
+         - right: the message as PLAIN TEXT with no panel outline:
+           URGENT INFORMATION (!) bold at (738,277), FROM: MOM, then
+           three lorem paragraphs at 17px on a 21.5 line pitch, x 738,
+           lines 2 / 5 / 3, widest ~600px (to x~1322)
+         - four outlined RIFLES buttons, 184x39 at y 684..723, x from
+           735 on a 192 pitch, each with a bottom-left chamfer and a
+           filled tab on its bottom edge
+         - letter boxes C (139,777) and D (735,777) with annotation
+           micro-text in the foot
+         - every glyph and stroke sits on a soft vertically-smeared glow
+           (the #39281b family, 3.7% of the canvas — as much ink as the
+           gold itself); drawn once as a blurred copy of the content
+           group under the crisp content
+         - no cascade cards, no detail panel, no footer line
+
+       Palette sampled by k-means (extract_spec.py):
+         ink   #f0bf7b (2.7%, the selection bar and text)
+               #c19867 (1.6%, the veneer grain and text mid-tones)
+               #86694b  #39281b (glow)
+         ground #0f0b0d (67%) #3b3953 / #5b466c (violet haze) #1a2637 -->
+  <defs>
+    <radialGradient id="hazeblue" gradientUnits="userSpaceOnUse"
+        cx="900" cy="-120" r="1030"
+        gradientTransform="rotate(2 900 -120) translate(900 -120) scale(1 0.515) translate(-900 120)">
+      <stop offset="0"    stop-color="#223350" stop-opacity="0"/>
+      <stop offset="0.60" stop-color="#223350" stop-opacity="0"/>
+      <stop offset="0.68" stop-color="#223350" stop-opacity="0.85"/>
+      <stop offset="0.76" stop-color="#1a2c46" stop-opacity="0.80"/>
+      <stop offset="0.84" stop-color="#101d30" stop-opacity="0"/>
+    </radialGradient>
+    <!-- The blue is right-weighted: on the left the violet stays on top of
+         the shared annulus (source shows only a thin arm there, and none at
+         all before x~200), so the blue layer is faded out leftward by a
+         luminance mask rather than by its own gradient. -->
+    <linearGradient id="hazebluefade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"    stop-color="#000000"/>
+      <stop offset="0.12" stop-color="#1a1a1a"/>
+      <stop offset="0.22" stop-color="#7a7a7a"/>
+      <stop offset="0.40" stop-color="#ffffff"/>
+      <stop offset="1"    stop-color="#ffffff"/>
+    </linearGradient>
+    <mask id="bluemask">
+      <rect width="1600" height="900" fill="url(#hazebluefade)"/>
+    </mask>
+    <radialGradient id="haze" gradientUnits="userSpaceOnUse"
+        cx="825" cy="-120" r="1030"
+        gradientTransform="rotate(1.3 825 -120) translate(825 -120) scale(1 0.515) translate(-825 120)">
+      <stop offset="0"     stop-color="#574568"/>
+      <stop offset="0.258" stop-color="#574568"/>
+      <stop offset="0.572" stop-color="#3a3853"/>
+      <stop offset="0.873" stop-color="#16121a"/>
+      <stop offset="1"     stop-color="#0e0a0d"/>
+    </radialGradient>
+    <!-- boxed section letter: 26x26 rounded plate, folded bottom-right
+         corner (the era's mini-SIM motif) -->
+    <g id="letterbox" fill="none" stroke-width="1.4">
+      <path d="M 3,0 H 23 Q 26,0 26,3 V 17 L 19,24 Q 17,26 14,26 H 3
+               Q 0,26 0,23 V 3 Q 0,0 3,0 Z"/>
+      <path d="M 26,17 H 21 Q 19,17 19,19 V 24" stroke-width="1"/>
+    </g>
+    <!-- the selection bar silhouette, used to clip its veneer grain -->
+    <clipPath id="selclip">
+      <path d="M 35,315 H 490 L 512,337 V 366 Q 512,370 508,370 H 35 Z"/>
+    </clipPath>
+    <!-- the halo: every glyph and outline in the source sits on a soft
+         vertically-smeared glow (~#39281b, 3.7% of the canvas by
+         k-means). Drawn once as a blurred, darkened copy of the content
+         group under the crisp content. -->
+    <filter id="halo" x="-5%" y="-10%" width="110%" height="120%">
+      <feGaussianBlur stdDeviation="1.5 4.5"/>
+      <feColorMatrix type="matrix" values="0.43 0 0 0 0  0 0.32 0 0 0  0 0 0.21 0 0  0 0 0 1.45 0"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" fill="#0e0a0d"/>
+  <rect width="1600" height="900" fill="url(#haze)"/>
+  <rect width="1600" height="560" fill="url(#hazeblue)" mask="url(#bluemask)"/>
+
+  <use href="#content" filter="url(#halo)"/>
+  <g id="content">
+  <!-- ==== header ==== -->
+  <!-- glyph cores sampled at 3840: CUSTOMER/LEVEL/T-marks ~#dca97b (the
+       header reads #dcae98 where it sits on the violet), the wire strands
+       #cb9a64, the A/B annotations #cfa78c on violet, the C/D ones
+       #deb689, the FROM: lines #f4c587 — all the #c19867 k-means family
+       at 1600, so they are drawn at their measured brightness rather
+       than at the dimmer #bd8951 / #a97c48 the dashboard trace uses. -->
+  <g font-family="Rajdhani" fill="#dcaa78">
+    <text x="120" y="42" font-size="15" letter-spacing="1.5">CUSTOMER #NC488402</text>
+    <text x="120" y="70" font-size="12" letter-spacing="2">LEVEL</text>
+    <text x="126" y="90" font-size="21" font-weight="600">T1</text>
+
+    <text x="1131" y="68" font-size="12" letter-spacing="2">SECURITY</text>
+    <text x="1131" y="83" font-size="12" letter-spacing="2">LEVEL</text>
+    <g font-size="12" letter-spacing="1.5">
+      <text x="1229" y="63">LEVEL</text><text x="1354" y="63">LEVEL</text>
+      <text x="1417" y="63">LEVEL</text>
+    </g>
+    <g font-size="20" font-weight="600">
+      <text x="1236" y="86">T1</text><text x="1361" y="86">T3</text>
+      <text x="1424" y="86">T4</text>
+    </g>
+    <!-- T2: a FOLDER icon — low shelf on the left, a rounded diagonal
+         riser to the raised tab on the RIGHT. Front outline measured at
+         (1287,55)-(1338,104), tab top y~37, riser x~1310-1318. Seven
+         hairline rings: shelf tops fan widely (~13), tab tops just enough
+         to resolve as separate lines at render scale (drawn ~5 against a
+         measured ~3 — tighter overpaints into a fat border), right edges
+         spill out, all converging at the bottom. A solid gold trapezoid
+         tab points UP from the inside bottom edge. -->
+    <g fill="none" stroke="#a97c48" stroke-width="0.7">
+      <path d="M 1286.8,40.3 H 1302 Q 1314.6,42.4 1317.6,37.4 L 1320.6,41.1 Q 1322.6,32.1 1329.6,32.1 H 1344.2 Q 1349.2,32.1 1349.2,37.1 V 101.8 Q 1349.2,105.8 1345.2,105.8 H 1286.8 Q 1282.8,105.8 1282.8,101.8 V 46.4 Q 1282.8,42.4 1286.8,42.4 Z" stroke-opacity="0.55"/>
+      <path d="M 1287.4,42.4 H 1302 Q 1313.8,44.2 1316.8,39.2 L 1319.8,41.8 Q 1321.8,32.8 1328.8,32.8 H 1342.6 Q 1347.6,32.8 1347.6,37.8 V 101.5 Q 1347.6,105.5 1343.6,105.5 H 1287.4 Q 1283.4,105.5 1283.4,101.5 V 48.2 Q 1283.4,44.2 1287.4,44.2 Z" stroke-opacity="0.60"/>
+      <path d="M 1288.0,44.5 H 1302 Q 1313.0,46.0 1316.0,41.0 L 1319.0,42.5 Q 1321.0,33.5 1328.0,33.5 H 1341.0 Q 1346.0,33.5 1346.0,38.5 V 101.2 Q 1346.0,105.2 1342.0,105.2 H 1288.0 Q 1284.0,105.2 1284.0,101.2 V 50.0 Q 1284.0,46.0 1288.0,46.0 Z" stroke-opacity="0.65"/>
+      <path d="M 1288.6,46.6 H 1302 Q 1312.2,47.8 1315.2,42.8 L 1318.2,43.2 Q 1320.2,34.2 1327.2,34.2 H 1339.4 Q 1344.4,34.2 1344.4,39.2 V 101.0 Q 1344.4,105.0 1340.4,105.0 H 1288.6 Q 1284.6,105.0 1284.6,101.0 V 51.8 Q 1284.6,47.8 1288.6,47.8 Z" stroke-opacity="0.70"/>
+      <path d="M 1289.2,48.7 H 1302 Q 1311.4,49.6 1314.4,44.6 L 1317.4,43.9 Q 1319.4,34.9 1326.4,34.9 H 1337.8 Q 1342.8,34.9 1342.8,39.9 V 100.8 Q 1342.8,104.8 1338.8,104.8 H 1289.2 Q 1285.2,104.8 1285.2,100.8 V 53.6 Q 1285.2,49.6 1289.2,49.6 Z" stroke-opacity="0.75"/>
+      <path d="M 1289.8,50.8 H 1302 Q 1310.6,51.4 1313.6,46.4 L 1316.6,44.6 Q 1318.6,35.6 1325.6,35.6 H 1336.2 Q 1341.2,35.6 1341.2,40.6 V 100.5 Q 1341.2,104.5 1337.2,104.5 H 1289.8 Q 1285.8,104.5 1285.8,100.5 V 55.4 Q 1285.8,51.4 1289.8,51.4 Z" stroke-opacity="0.80"/>
+      <path d="M 1290.4,52.9 H 1302 Q 1309.8,53.2 1312.8,48.2 L 1315.8,45.3 Q 1317.8,36.3 1324.8,36.3 H 1334.6 Q 1339.6,36.3 1339.6,41.3 V 100.2 Q 1339.6,104.2 1335.6,104.2 H 1290.4 Q 1286.4,104.2 1286.4,100.2 V 57.2 Q 1286.4,53.2 1290.4,53.2 Z" stroke-opacity="0.85"/>
+    </g>
+    <path d="M 1291.0,55.0 H 1302 Q 1309.0,55.0 1312.0,50.0 L 1315.0,46.0 Q 1317.0,37.0 1324.0,37.0 H 1333.0 Q 1338.0,37.0 1338.0,42.0 V 100.0 Q 1338.0,104.0 1334.0,104.0 H 1291.0 Q 1287.0,104.0 1287.0,100.0 V 59.0 Q 1287.0,55.0 1291.0,55.0 Z" fill="none" stroke="#e8c186" stroke-width="1.1"/>
+    <path d="M 1293,104.5 L 1297,100 H 1322 L 1326,104.5 Z" fill="#f2b463"/>
+    <text x="1295" y="71" font-size="12" letter-spacing="1.2" fill="#d9a877">LEVEL</text>
+    <text x="1296" y="95" font-size="21" font-weight="600" fill="#e8c186">T2</text>
+  </g>
+
+  <!-- the wire band, measured: an eight-strand bundle enters low at the
+       left (y 122..145), sweeps up and CONVERGES into a tight line at
+       y~87 (the A box and annotations hang below it, uncrossed), runs to
+       x~950, fans back out into the ribbon at y 123..136 that passes
+       under the security badges, and ends ~x1560 curling down. -->
+  <g fill="none" stroke="#cb9a64" stroke-width="1.1">
+    <path d="M 30,122.0 H 52 C 84,122.0 100,86.40 130,86.40 H 1040 C 1075,86.40 1090,123.0 1125,123.0 H 1535 Q 1562,123.0 1568,145.0 L 1570,153.0"/>
+    <path d="M 30,124.9 H 52 C 84,124.9 100,86.56 130,86.56 H 1040 C 1075,86.56 1090,124.8 1125,124.8 H 1535 Q 1562,124.8 1568,146.8 L 1570,154.8"/>
+    <path d="M 30,127.8 H 52 C 84,127.8 100,86.72 130,86.72 H 1040 C 1075,86.72 1090,126.6 1125,126.6 H 1535 Q 1562,126.6 1568,148.6 L 1570,156.6"/>
+    <path d="M 30,130.7 H 52 C 84,130.7 100,86.88 130,86.88 H 1040 C 1075,86.88 1090,128.4 1125,128.4 H 1535 Q 1562,128.4 1568,150.4 L 1570,158.4"/>
+    <path d="M 30,133.6 H 52 C 84,133.6 100,87.04 130,87.04 H 1040 C 1075,87.04 1090,130.2 1125,130.2 H 1535 Q 1562,130.2 1568,152.2 L 1570,160.2"/>
+    <path d="M 30,136.5 H 52 C 84,136.5 100,87.20 130,87.20 H 1040 C 1075,87.20 1090,132.0 1125,132.0 H 1535 Q 1562,132.0 1568,154.0 L 1570,162.0"/>
+    <path d="M 30,139.4 H 52 C 84,139.4 100,87.36 130,87.36 H 1040 C 1075,87.36 1090,133.8 1125,133.8 H 1535 Q 1562,133.8 1568,155.8 L 1570,163.8"/>
+    <path d="M 30,142.3 H 52 C 84,142.3 100,87.52 130,87.52 H 1040 C 1075,87.52 1090,135.6 1125,135.6 H 1535 Q 1562,135.6 1568,157.6 L 1570,165.6"/>
+  </g>
+  <!-- boxed letters A/B hang under the tight line (boxes 26x26 at y98,
+       interiors masking the strands) -->
+  <g font-family="Rajdhani" font-size="15">
+    <g fill="#4c3f5f">
+      <rect x="238" y="98" width="26" height="26" rx="3"/>
+      <rect x="1011" y="98" width="26" height="26" rx="3"/>
+    </g>
+    <g stroke="#bd8951">
+      <use href="#letterbox" x="238" y="98"/>
+      <use href="#letterbox" x="1011" y="98"/>
+    </g>
+    <g fill="#d9a877" text-anchor="middle">
+      <text x="250" y="117">A</text><text x="1023" y="117">B</text>
+    </g>
+    <g font-size="8" fill="#d9a877" letter-spacing="0.4">
+      <text x="288" y="106">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+      <text x="288" y="116">SERVING CUSTOMERS SINCE 2006.</text>
+      <text x="1000" y="106" text-anchor="end">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+      <text x="1000" y="116" text-anchor="end">SERVING CUSTOMERS SINCE 2006.</text>
+    </g>
+  </g>
+
+  <!-- ==== the message list ==== -->
+  <!-- seven rows on a 60.2 pitch: a rule at y 309+60.2k (k=0..6,
+       x 35..483; core ~3.5px at 3840, so 1.5 here) with a 5px filled
+       trapezoid tab (#fdcf8c, the brightest ink on the screen) on top of
+       each at x 422..452; the k=1 rule is the selection bar's bottom edge -->
+  <g stroke="#e0b67a" stroke-width="1.5" fill="#fdcf8c">
+    <line x1="35" y1="309.0" x2="483" y2="309.0"/>
+    <path d="M 421.5,309.0 L 425,304.0 H 449 L 452.5,309.0 Z" stroke="none"/>
+    <line x1="35" y1="429.4" x2="483" y2="429.4"/>
+    <path d="M 421.5,429.4 L 425,424.4 H 449 L 452.5,429.4 Z" stroke="none"/>
+    <line x1="35" y1="489.6" x2="483" y2="489.6"/>
+    <path d="M 421.5,489.6 L 425,484.6 H 449 L 452.5,489.6 Z" stroke="none"/>
+    <line x1="35" y1="549.8" x2="483" y2="549.8"/>
+    <path d="M 421.5,549.8 L 425,544.8 H 449 L 452.5,549.8 Z" stroke="none"/>
+    <line x1="35" y1="610.0" x2="483" y2="610.0"/>
+    <path d="M 421.5,610.0 L 425,605.0 H 449 L 452.5,610.0 Z" stroke="none"/>
+    <line x1="35" y1="670.2" x2="483" y2="670.2"/>
+    <path d="M 421.5,670.2 L 425,665.2 H 449 L 452.5,670.2 Z" stroke="none"/>
+  </g>
+  <!-- the selection: solid gold bar [35,315]..[512,370], 22px chamfer on
+       the top-RIGHT corner only, a dark outlined notch cut into its
+       bottom edge at x 420..457 (the tab motif, inverted) -->
+  <path d="M 35,315 H 490 L 512,337 V 366 Q 512,370 508,370 H 35 Z" fill="#f8c678"/>
+  <!-- the veneer grain: 32 hairlines on the measured 1.7 pitch in the darker
+       gold, pinched toward the bar centre at the left edge, chevroned
+       into the seam at x 273, arcing up into the chamfer past x~430 -->
+  <g clip-path="url(#selclip)" fill="none" stroke="#e6ae6b" stroke-width="0.7">
+      <path d="M 35.0,327.9 C 39.7,327.9 43.3,326.0 48.0,326.0 S 64.5,318.9 74.0,318.9 S 90.5,318.3 100.0,318.3 S 116.5,314.7 126.0,314.7 S 142.5,317.1 152.0,317.1 S 168.5,314.7 178.0,314.7 S 194.5,317.1 204.0,317.1 S 220.5,314.7 230.0,314.7 S 246.5,317.1 256.0,317.1 S 272.5,313.7 282.0,313.7 S 298.5,317.1 308.0,317.1 S 324.5,314.7 334.0,314.7 S 350.5,317.1 360.0,317.1 S 376.5,314.7 386.0,314.7 S 402.5,317.1 412.0,317.1 S 428.5,314.7 438.0,314.7 S 454.5,317.0 464.0,317.0 S 480.5,314.4 490.0,314.4 S 504.0,316.5 512.0,316.5"/>
+      <path d="M 35.0,329.6 C 38.1,329.6 40.4,328.5 43.4,328.5 S 60.0,320.6 69.4,320.6 S 86.0,320.7 95.4,320.7 S 112.0,316.1 121.4,316.1 S 138.0,319.2 147.4,319.2 S 164.0,316.0 173.4,316.0 S 190.0,319.2 199.4,319.2 S 216.0,316.0 225.4,316.0 S 242.0,319.2 251.4,319.2 S 268.0,314.2 277.4,314.2 S 294.0,319.2 303.4,319.2 S 320.0,316.0 329.4,316.0 S 346.0,319.2 355.4,319.2 S 372.0,316.0 381.4,316.0 S 398.0,319.2 407.4,319.2 S 424.0,316.0 433.4,316.0 S 450.0,319.0 459.4,319.0 S 476.0,315.4 485.4,315.4 S 502.3,317.8 512.0,317.8"/>
+      <path d="M 35.0,331.2 C 36.4,331.2 37.5,330.6 38.9,330.6 S 55.4,322.5 64.9,322.5 S 81.4,322.8 90.9,322.8 S 107.4,317.8 116.9,317.8 S 133.4,321.0 142.9,321.0 S 159.4,317.6 168.9,317.6 S 185.4,321.0 194.9,321.0 S 211.4,317.6 220.9,317.6 S 237.4,321.0 246.9,321.0 S 263.4,315.1 272.9,315.1 S 289.4,321.0 298.9,321.0 S 315.4,317.6 324.9,317.6 S 341.4,321.0 350.9,321.0 S 367.4,317.6 376.9,317.6 S 393.4,321.0 402.9,321.0 S 419.4,317.6 428.9,317.6 S 445.4,320.8 454.9,320.8 S 471.4,316.7 480.9,316.7 S 497.4,318.9 506.9,318.9 S 510.1,318.3 512.0,318.3"/>
+      <path d="M 35.0,332.1 C 44.2,332.1 51.1,324.8 60.3,324.8 S 76.9,324.5 86.3,324.5 S 102.9,319.9 112.3,319.9 S 128.9,322.4 138.3,322.4 S 154.9,319.6 164.3,319.6 S 180.9,322.4 190.3,322.4 S 206.9,319.6 216.3,319.6 S 232.9,322.4 242.3,322.4 S 258.9,317.9 268.3,317.9 S 284.9,322.4 294.3,322.4 S 310.9,319.6 320.3,319.6 S 336.9,322.4 346.3,322.4 S 362.9,319.6 372.3,319.6 S 388.9,322.4 398.3,322.4 S 414.9,319.6 424.3,319.6 S 440.9,322.2 450.3,322.2 S 466.9,318.5 476.3,318.5 S 492.9,319.8 502.3,319.8 S 508.5,318.3 512.0,318.3"/>
+      <path d="M 35.0,332.4 C 42.6,332.4 48.2,327.2 55.8,327.2 S 72.3,326.0 81.8,326.0 S 98.3,322.2 107.8,322.2 S 124.3,323.7 133.8,323.7 S 150.3,321.7 159.8,321.7 S 176.3,323.7 185.8,323.7 S 202.3,321.7 211.8,321.7 S 228.3,323.7 237.8,323.7 S 254.3,320.8 263.8,320.8 S 280.3,323.7 289.8,323.7 S 306.3,321.7 315.8,321.7 S 332.3,323.7 341.8,323.7 S 358.3,321.7 367.8,321.7 S 384.3,323.7 393.8,323.7 S 410.3,321.7 419.8,321.7 S 436.3,323.5 445.8,323.5 S 462.3,320.6 471.8,320.6 S 488.3,320.8 497.8,320.8 S 506.8,318.3 512.0,318.3"/>
+      <path d="M 35.0,332.8 C 40.9,332.8 45.3,329.3 51.2,329.3 S 67.8,327.6 77.2,327.6 S 93.8,324.3 103.2,324.3 S 119.8,325.1 129.2,325.1 S 145.8,323.7 155.2,323.7 S 171.8,325.1 181.2,325.1 S 197.8,323.7 207.2,323.7 S 223.8,325.1 233.2,325.1 S 249.8,323.5 259.2,323.5 S 275.8,324.7 285.2,324.7 S 301.8,323.7 311.2,323.7 S 327.8,325.1 337.2,325.1 S 353.8,323.7 363.2,323.7 S 379.8,325.1 389.2,325.1 S 405.8,323.7 415.2,323.7 S 431.8,325.0 441.2,325.0 S 457.8,322.6 467.2,322.6 S 483.8,322.0 493.2,322.0 S 505.2,318.8 512.0,318.8"/>
+      <path d="M 35.0,333.4 C 39.3,333.4 42.4,331.0 46.7,331.0 S 63.2,329.6 72.7,329.6 S 89.2,326.1 98.7,326.1 S 115.2,326.9 124.7,326.9 S 141.2,325.3 150.7,325.3 S 167.2,326.9 176.7,326.9 S 193.2,325.3 202.7,325.3 S 219.2,326.9 228.7,326.9 S 245.2,325.3 254.7,325.3 S 271.2,325.7 280.7,325.7 S 297.2,325.3 306.7,325.3 S 323.2,326.9 332.7,326.9 S 349.2,325.3 358.7,325.3 S 375.2,326.9 384.7,326.9 S 401.2,325.3 410.7,325.3 S 427.2,326.9 436.7,326.9 S 453.2,324.3 462.7,324.3 S 479.2,323.8 488.7,323.8 S 503.5,319.2 512.0,319.2"/>
+      <path d="M 35.0,333.6 C 37.6,333.6 39.5,332.2 42.1,332.2 S 58.7,331.8 68.1,331.8 S 84.7,327.5 94.1,327.5 S 110.7,329.1 120.1,329.1 S 136.7,326.6 146.1,326.6 S 162.7,329.0 172.1,329.0 S 188.7,326.6 198.1,326.6 S 214.7,329.0 224.1,329.0 S 240.7,326.6 250.1,326.6 S 266.7,327.0 276.1,327.0 S 292.7,326.6 302.1,326.6 S 318.7,329.0 328.1,329.0 S 344.7,326.6 354.1,326.6 S 370.7,329.0 380.1,329.0 S 396.7,326.6 406.1,326.6 S 422.7,329.0 432.1,329.0 S 448.7,325.8 458.1,325.8 S 474.7,325.9 484.1,325.9 S 501.9,319.6 512.0,319.6"/>
+      <path d="M 35.0,333.8 C 45.4,333.8 53.2,334.0 63.6,334.0 S 80.1,329.0 89.6,329.0 S 106.1,331.2 115.6,331.2 S 132.1,327.9 141.6,327.9 S 158.1,331.1 167.6,331.1 S 184.1,327.9 193.6,327.9 S 210.1,331.1 219.6,331.1 S 236.1,327.9 245.6,327.9 S 262.1,328.8 271.6,328.8 S 288.1,327.9 297.6,327.9 S 314.1,331.1 323.6,331.1 S 340.1,327.9 349.6,327.9 S 366.1,331.1 375.6,331.1 S 392.1,327.9 401.6,327.9 S 418.1,331.1 427.6,331.1 S 444.1,327.2 453.6,327.2 S 470.1,328.2 479.6,328.2 S 496.1,321.1 505.6,321.1 S 509.7,320.4 512.0,320.4"/>
+      <path d="M 35.0,334.6 C 43.8,334.6 50.3,335.7 59.0,335.7 S 75.6,330.7 85.0,330.7 S 101.6,333.1 111.0,333.1 S 127.6,329.5 137.0,329.5 S 153.6,332.9 163.0,332.9 S 179.6,329.5 189.0,329.5 S 205.6,332.9 215.0,332.9 S 231.6,329.5 241.0,329.5 S 257.6,331.4 267.0,331.4 S 283.6,329.5 293.0,329.5 S 309.6,332.9 319.0,332.9 S 335.6,329.5 345.0,329.5 S 361.6,332.9 371.0,332.9 S 387.6,329.5 397.0,329.5 S 413.6,332.9 423.0,332.9 S 439.6,329.0 449.0,329.0 S 465.6,330.2 475.0,330.2 S 491.6,322.8 501.0,322.8 S 508.0,321.9 512.0,321.9"/>
+      <path d="M 35.0,336.2 C 42.1,336.2 47.4,337.0 54.5,337.0 S 71.0,332.7 80.5,332.7 S 97.0,334.6 106.5,334.6 S 123.0,331.5 132.5,331.5 S 149.0,334.3 158.5,334.3 S 175.0,331.5 184.5,331.5 S 201.0,334.3 210.5,334.3 S 227.0,331.5 236.5,331.5 S 253.0,333.6 262.5,333.6 S 279.0,331.5 288.5,331.5 S 305.0,334.3 314.5,334.3 S 331.0,331.5 340.5,331.5 S 357.0,334.3 366.5,334.3 S 383.0,331.5 392.5,331.5 S 409.0,334.3 418.5,334.3 S 435.0,331.2 444.5,331.2 S 461.0,331.9 470.5,331.9 S 487.0,325.0 496.5,325.0 S 506.3,323.5 512.0,323.5"/>
+      <path d="M 35.0,337.9 C 40.4,337.9 44.5,338.1 49.9,338.1 S 66.5,334.8 75.9,334.8 S 92.5,335.9 101.9,335.9 S 118.5,333.6 127.9,333.6 S 144.5,335.6 153.9,335.6 S 170.5,333.6 179.9,333.6 S 196.5,335.6 205.9,335.6 S 222.5,333.6 231.9,333.6 S 248.5,335.6 257.9,335.6 S 274.5,333.0 283.9,333.0 S 300.5,335.6 309.9,335.6 S 326.5,333.6 335.9,333.6 S 352.5,335.6 361.9,335.6 S 378.5,333.6 387.9,333.6 S 404.5,335.6 413.9,335.6 S 430.5,333.5 439.9,333.5 S 456.5,333.5 465.9,333.5 S 482.5,327.5 491.9,327.5 S 504.7,324.6 512.0,324.6"/>
+      <path d="M 35.0,339.3 C 38.8,339.3 41.6,339.2 45.4,339.2 S 61.9,336.7 71.4,336.7 S 87.9,337.3 97.4,337.3 S 113.9,335.6 123.4,335.6 S 139.9,337.0 149.4,337.0 S 165.9,335.6 175.4,335.6 S 191.9,337.0 201.4,337.0 S 217.9,335.6 227.4,335.6 S 243.9,337.0 253.4,337.0 S 269.9,334.2 279.4,334.2 S 295.9,337.0 305.4,337.0 S 321.9,335.6 331.4,335.6 S 347.9,337.0 357.4,337.0 S 373.9,335.6 383.4,335.6 S 399.9,337.0 409.4,337.0 S 425.9,335.5 435.4,335.5 S 451.9,335.3 461.4,335.3 S 477.9,329.9 487.4,329.9 S 503.0,325.3 512.0,325.3"/>
+      <path d="M 35.0,340.6 C 37.1,340.6 38.7,340.6 40.8,340.6 S 57.4,338.1 66.8,338.1 S 83.4,339.1 92.8,339.1 S 109.4,337.2 118.8,337.2 S 135.4,338.8 144.8,338.8 S 161.4,337.2 170.8,337.2 S 187.4,338.8 196.8,338.8 S 213.4,337.2 222.8,337.2 S 239.4,338.8 248.8,338.8 S 265.4,335.0 274.8,335.0 S 291.4,338.8 300.8,338.8 S 317.4,337.2 326.8,337.2 S 343.4,338.8 352.8,338.8 S 369.4,337.2 378.8,337.2 S 395.4,338.8 404.8,338.8 S 421.4,337.2 430.8,337.2 S 447.4,337.5 456.8,337.5 S 473.4,331.9 482.8,331.9 S 499.4,327.1 508.8,327.1 S 510.8,326.1 512.0,326.1"/>
+      <path d="M 35.0,342.2 C 44.9,342.2 52.3,339.1 62.3,339.1 S 78.8,341.2 88.3,341.2 S 104.8,338.5 114.3,338.5 S 130.8,340.9 140.3,340.9 S 156.8,338.5 166.3,338.5 S 182.8,340.9 192.3,340.9 S 208.8,338.5 218.3,338.5 S 234.8,340.9 244.3,340.9 S 260.8,336.4 270.3,336.4 S 286.8,340.9 296.3,340.9 S 312.8,338.5 322.3,338.5 S 338.8,340.9 348.3,340.9 S 364.8,338.5 374.3,338.5 S 390.8,340.9 400.3,340.9 S 416.8,338.5 426.3,338.5 S 442.8,339.9 452.3,339.9 S 468.8,333.8 478.3,333.8 S 494.8,329.8 504.3,329.8 S 509.2,326.8 512.0,326.8"/>
+      <path d="M 35.0,343.4 C 43.3,343.4 49.4,340.1 57.7,340.1 S 74.3,343.1 83.7,343.1 S 100.3,339.8 109.7,339.8 S 126.3,343.0 135.7,343.0 S 152.3,339.8 161.7,339.8 S 178.3,343.0 187.7,343.0 S 204.3,339.8 213.7,339.8 S 230.3,343.0 239.7,343.0 S 256.3,338.5 265.7,338.5 S 282.3,343.0 291.7,343.0 S 308.3,339.8 317.7,339.8 S 334.3,343.0 343.7,343.0 S 360.3,339.8 369.7,339.8 S 386.3,343.0 395.7,343.0 S 412.3,339.8 421.7,339.8 S 438.3,342.3 447.7,342.3 S 464.3,335.7 473.7,335.7 S 490.3,332.5 499.7,332.5 S 507.5,327.0 512.0,327.0"/>
+      <path d="M 35.0,343.8 C 41.6,343.8 46.6,341.2 53.2,341.2 S 69.7,344.7 79.2,344.7 S 95.7,341.4 105.2,341.4 S 121.7,344.8 131.2,344.8 S 147.7,341.4 157.2,341.4 S 173.7,344.8 183.2,344.8 S 199.7,341.4 209.2,341.4 S 225.7,344.8 235.2,344.8 S 251.7,340.9 261.2,340.9 S 277.7,344.6 287.2,344.6 S 303.7,341.4 313.2,341.4 S 329.7,344.8 339.2,344.8 S 355.7,341.4 365.2,341.4 S 381.7,344.8 391.2,344.8 S 407.7,341.4 417.2,341.4 S 433.7,344.4 443.2,344.4 S 459.7,337.9 469.2,337.9 S 485.7,335.0 495.2,335.0 S 505.9,326.9 512.0,326.9"/>
+      <path d="M 35.0,343.9 C 40.0,343.9 43.7,342.6 48.6,342.6 S 65.1,345.8 74.6,345.8 S 91.1,343.3 100.6,343.3 S 117.1,346.2 126.6,346.2 S 143.1,343.4 152.6,343.4 S 169.1,346.2 178.6,346.2 S 195.1,343.4 204.6,343.4 S 221.1,346.2 230.6,346.2 S 247.1,343.4 256.6,343.4 S 273.1,345.3 282.6,345.3 S 299.1,343.4 308.6,343.4 S 325.1,346.2 334.6,346.2 S 351.1,343.4 360.6,343.4 S 377.1,346.2 386.6,346.2 S 403.1,343.4 412.6,343.4 S 429.1,346.0 438.6,346.0 S 455.1,340.5 464.6,340.5 S 481.1,337.2 490.6,337.2 S 504.2,327.2 512.0,327.2"/>
+      <path d="M 35.0,344.3 C 38.3,344.3 40.8,344.1 44.1,344.1 S 60.6,346.7 70.1,346.7 S 86.6,345.3 96.1,345.3 S 112.6,347.5 122.1,347.5 S 138.6,345.5 148.1,345.5 S 164.6,347.5 174.1,347.5 S 190.6,345.5 200.1,345.5 S 216.6,347.5 226.1,347.5 S 242.6,345.5 252.1,345.5 S 268.6,345.8 278.1,345.8 S 294.6,345.5 304.1,345.5 S 320.6,347.5 330.1,347.5 S 346.6,345.5 356.1,345.5 S 372.6,347.5 382.1,347.5 S 398.6,345.5 408.1,345.5 S 424.6,347.4 434.1,347.4 S 450.6,343.2 460.1,343.2 S 476.6,339.4 486.1,339.4 S 502.6,328.2 512.0,328.2"/>
+      <path d="M 35.0,345.0 C 36.6,345.0 37.9,345.2 39.5,345.2 S 56.0,347.7 65.5,347.7 S 82.0,347.1 91.5,347.1 S 108.0,348.9 117.5,348.9 S 134.0,347.5 143.5,347.5 S 160.0,348.9 169.5,348.9 S 186.0,347.5 195.5,347.5 S 212.0,348.9 221.5,348.9 S 238.0,347.5 247.5,347.5 S 264.0,346.5 273.5,346.5 S 290.0,347.5 299.5,347.5 S 316.0,348.9 325.5,348.9 S 342.0,347.5 351.5,347.5 S 368.0,348.9 377.5,348.9 S 394.0,347.5 403.5,347.5 S 420.0,348.9 429.5,348.9 S 446.0,345.7 455.5,345.7 S 472.0,341.7 481.5,341.7 S 498.0,331.2 507.5,331.2 S 510.4,329.3 512.0,329.3"/>
+      <path d="M 35.0,345.7 C 44.5,345.7 51.5,349.0 61.0,349.0 S 77.5,348.4 87.0,348.4 S 103.5,350.6 113.0,350.6 S 129.5,349.1 139.0,349.1 S 155.5,350.7 165.0,350.7 S 181.5,349.1 191.0,349.1 S 207.5,350.7 217.0,350.7 S 233.5,349.1 243.0,349.1 S 259.5,348.9 269.0,348.9 S 285.5,349.1 295.0,349.1 S 311.5,350.7 321.0,350.7 S 337.5,349.1 347.0,349.1 S 363.5,350.7 373.0,350.7 S 389.5,349.1 399.0,349.1 S 415.5,350.7 425.0,350.7 S 441.5,347.8 451.0,347.8 S 467.5,344.4 477.0,344.4 S 493.5,333.9 503.0,333.9 S 508.7,330.3 512.0,330.3"/>
+      <path d="M 35.0,346.5 C 42.8,346.5 48.6,350.4 56.4,350.4 S 72.9,349.3 82.4,349.3 S 98.9,352.6 108.4,352.6 S 124.9,350.4 134.4,350.4 S 150.9,352.8 160.4,352.8 S 176.9,350.4 186.4,350.4 S 202.9,352.8 212.4,352.8 S 228.9,350.4 238.4,350.4 S 254.9,351.8 264.4,351.8 S 280.9,350.4 290.4,350.4 S 306.9,352.8 316.4,352.8 S 332.9,350.4 342.4,350.4 S 358.9,352.8 368.4,352.8 S 384.9,350.4 394.4,350.4 S 410.9,352.8 420.4,352.8 S 436.9,349.6 446.4,349.6 S 462.9,347.4 472.4,347.4 S 488.9,336.4 498.4,336.4 S 507.1,331.6 512.0,331.6"/>
+      <path d="M 35.0,347.7 C 41.1,347.7 45.7,351.6 51.9,351.6 S 68.4,350.2 77.9,350.2 S 94.4,354.5 103.9,354.5 S 120.4,351.7 129.9,351.7 S 146.4,354.9 155.9,354.9 S 172.4,351.7 181.9,351.7 S 198.4,354.9 207.9,354.9 S 224.4,351.7 233.9,351.7 S 250.4,354.6 259.9,354.6 S 276.4,351.3 285.9,351.3 S 302.4,354.9 311.9,354.9 S 328.4,351.7 337.9,351.7 S 354.4,354.9 363.9,354.9 S 380.4,351.7 389.9,351.7 S 406.4,354.9 415.9,354.9 S 432.4,351.3 441.9,351.3 S 458.4,350.4 467.9,350.4 S 484.4,338.9 493.9,338.9 S 505.4,333.2 512.0,333.2"/>
+      <path d="M 35.0,349.5 C 39.5,349.5 42.8,352.4 47.3,352.4 S 63.8,351.3 73.3,351.3 S 89.8,356.1 99.3,356.1 S 115.8,353.3 125.3,353.3 S 141.8,356.7 151.3,356.7 S 167.8,353.3 177.3,353.3 S 193.8,356.7 203.3,356.7 S 219.8,353.3 229.3,353.3 S 245.8,356.7 255.3,356.7 S 271.8,352.2 281.3,352.2 S 297.8,356.7 307.3,356.7 S 323.8,353.3 333.3,353.3 S 349.8,356.7 359.3,356.7 S 375.8,353.3 385.3,353.3 S 401.8,356.7 411.3,356.7 S 427.8,353.1 437.3,353.1 S 453.8,353.1 463.3,353.1 S 479.8,341.8 489.3,341.8 S 503.7,334.5 512.0,334.5"/>
+      <path d="M 35.0,351.1 C 37.8,351.1 39.9,352.7 42.8,352.7 S 59.3,352.7 68.8,352.7 S 85.3,357.2 94.8,357.2 S 111.3,355.2 120.8,355.2 S 137.3,358.1 146.8,358.1 S 163.3,355.3 172.8,355.3 S 189.3,358.1 198.8,358.1 S 215.3,355.3 224.8,355.3 S 241.3,358.1 250.8,358.1 S 267.3,353.4 276.8,353.4 S 293.3,358.1 302.8,358.1 S 319.3,355.3 328.8,355.3 S 345.3,358.1 354.8,358.1 S 371.3,355.3 380.8,355.3 S 397.3,358.1 406.8,358.1 S 423.3,355.3 432.8,355.3 S 449.3,355.3 458.8,355.3 S 475.3,345.1 484.8,345.1 S 502.1,335.1 512.0,335.1"/>
+      <path d="M 35.0,352.1 C 36.2,352.1 37.0,352.7 38.2,352.7 S 54.7,354.0 64.2,354.0 S 80.7,358.1 90.2,358.1 S 106.7,357.3 116.2,357.3 S 132.7,359.4 142.2,359.4 S 158.7,357.4 168.2,357.4 S 184.7,359.4 194.2,359.4 S 210.7,357.4 220.2,357.4 S 236.7,359.4 246.2,359.4 S 262.7,355.1 272.2,355.1 S 288.7,359.4 298.2,359.4 S 314.7,357.4 324.2,357.4 S 340.7,359.4 350.2,359.4 S 366.7,357.4 376.2,357.4 S 392.7,359.4 402.2,359.4 S 418.7,357.4 428.2,357.4 S 444.7,357.3 454.2,357.3 S 470.7,348.5 480.2,348.5 S 496.7,338.7 506.2,338.7 S 509.9,335.3 512.0,335.3"/>
+      <path d="M 35.0,352.9 C 44.0,352.9 50.7,355.1 59.7,355.1 S 76.2,359.1 85.7,359.1 S 102.2,359.1 111.7,359.1 S 128.2,360.8 137.7,360.8 S 154.2,359.4 163.7,359.4 S 180.2,360.8 189.7,360.8 S 206.2,359.4 215.7,359.4 S 232.2,360.8 241.7,360.8 S 258.2,357.8 267.7,357.8 S 284.2,360.8 293.7,360.8 S 310.2,359.4 319.7,359.4 S 336.2,360.8 345.7,360.8 S 362.2,359.4 371.7,359.4 S 388.2,360.8 397.7,360.8 S 414.2,359.4 423.7,359.4 S 440.2,359.4 449.7,359.4 S 466.2,351.7 475.7,351.7 S 492.2,341.9 501.7,341.9 S 508.2,335.5 512.0,335.5"/>
+      <path d="M 35.0,353.7 C 42.3,353.7 47.8,355.6 55.1,355.6 S 71.6,360.3 81.1,360.3 S 97.6,360.5 107.1,360.5 S 123.6,362.6 133.1,362.6 S 149.6,361.0 159.1,361.0 S 175.6,362.6 185.1,362.6 S 201.6,361.0 211.1,361.0 S 227.6,362.6 237.1,362.6 S 253.6,360.1 263.1,360.1 S 279.6,362.6 289.1,362.6 S 305.6,361.0 315.1,361.0 S 331.6,362.6 341.1,362.6 S 357.6,361.0 367.1,361.0 S 383.6,362.6 393.1,362.6 S 409.6,361.0 419.1,361.0 S 435.6,361.8 445.1,361.8 S 461.6,354.5 471.1,354.5 S 487.6,345.4 497.1,345.4 S 506.6,335.9 512.0,335.9"/>
+      <path d="M 35.0,354.4 C 40.7,354.4 44.9,355.7 50.5,355.7 S 67.1,361.7 76.5,361.7 S 93.1,361.5 102.5,361.5 S 119.1,364.7 128.5,364.7 S 145.1,362.3 154.5,362.3 S 171.1,364.7 180.5,364.7 S 197.1,362.3 206.5,362.3 S 223.1,364.7 232.5,364.7 S 249.1,362.2 258.5,362.2 S 275.1,364.2 284.5,364.2 S 301.1,362.3 310.5,362.3 S 327.1,364.7 336.5,364.7 S 353.1,362.3 362.5,362.3 S 379.1,364.7 388.5,364.7 S 405.1,362.3 414.5,362.3 S 431.1,364.3 440.5,364.3 S 457.1,357.0 466.5,357.0 S 483.1,349.2 492.5,349.2 S 504.9,336.0 512.0,336.0"/>
+      <path d="M 35.0,354.6 C 39.0,354.6 42.0,355.6 46.0,355.6 S 62.5,363.0 72.0,363.0 S 88.5,362.4 98.0,362.4 S 114.5,366.8 124.0,366.8 S 140.5,363.6 150.0,363.6 S 166.5,366.8 176.0,366.8 S 192.5,363.6 202.0,363.6 S 218.5,366.8 228.0,366.8 S 244.5,363.6 254.0,363.6 S 270.5,365.5 280.0,365.5 S 296.5,363.6 306.0,363.6 S 322.5,366.8 332.0,366.8 S 348.5,363.6 358.0,363.6 S 374.5,366.8 384.0,366.8 S 400.5,363.6 410.0,363.6 S 426.5,366.7 436.0,366.7 S 452.5,359.4 462.0,359.4 S 478.5,353.0 488.0,353.0 S 503.3,336.0 512.0,336.0"/>
+      <path d="M 35.0,354.7 C 37.3,354.7 39.1,355.7 41.4,355.7 S 58.0,363.8 67.4,363.8 S 84.0,363.6 93.4,363.6 S 110.0,368.4 119.4,368.4 S 136.0,365.2 145.4,365.2 S 162.0,368.6 171.4,368.6 S 188.0,365.2 197.4,365.2 S 214.0,368.6 223.4,368.6 S 240.0,365.2 249.4,365.2 S 266.0,366.5 275.4,366.5 S 292.0,365.2 301.4,365.2 S 318.0,368.6 327.4,368.6 S 344.0,365.2 353.4,365.2 S 370.0,368.6 379.4,368.6 S 396.0,365.2 405.4,365.2 S 422.0,368.6 431.4,368.6 S 448.0,362.0 457.4,362.0 S 474.0,356.5 483.4,356.5 S 501.6,336.8 512.0,336.8"/>
+      <path d="M 35.0,355.5 C 45.2,355.5 52.7,364.1 62.9,364.1 S 79.4,365.0 88.9,365.0 S 105.4,369.7 114.9,369.7 S 131.4,367.2 140.9,367.2 S 157.4,370.0 166.9,370.0 S 183.4,367.2 192.9,367.2 S 209.4,370.0 218.9,370.0 S 235.4,367.2 244.9,367.2 S 261.4,367.8 270.9,367.8 S 287.4,367.2 296.9,367.2 S 313.4,370.0 322.9,370.0 S 339.4,367.2 348.9,367.2 S 365.4,370.0 374.9,370.0 S 391.4,367.2 400.9,367.2 S 417.4,370.0 426.9,370.0 S 443.4,364.9 452.9,364.9 S 469.4,359.5 478.9,359.5 S 495.4,342.6 504.9,342.6 S 509.4,338.2 512.0,338.2"/>
+    <!-- the darker grain that still resolves at 1600: the bunched lines
+         of the left swirl, the book-match seam and the arcs into the
+         top-right chamfer (sampled #c19867; everywhere else the grain
+         averages back into the bright base) -->
+    <g stroke="#c19867" stroke-width="0.9">
+      <path d="M 35,334.3 C 60,334.3 75,319.0 110,319.0"/>
+      <path d="M 35,337.3 C 60,337.3 75,327.6 110,327.6"/>
+      <path d="M 35,340.3 C 60,340.3 75,336.2 110,336.2"/>
+      <path d="M 35,343.3 C 60,343.3 75,344.8 110,344.8"/>
+      <path d="M 35,346.3 C 60,346.3 75,353.4 110,353.4"/>
+      <path d="M 35,349.3 C 60,349.3 75,362.0 110,362.0"/>
+      <path d="M 425,326.0 C 445,326.0 458,319.4 470.0,315"/>
+      <path d="M 425,333.0 C 445,333.0 458,322.2 478.0,315"/>
+      <path d="M 425,340.0 C 445,340.0 458,325.0 486.0,315"/>
+      <path d="M 425,347.0 C 445,347.0 458,327.8 494.0,315"/>
+      <path d="M 425,354.0 C 445,354.0 458,330.6 502.0,315"/>
+    <line x1="273" y1="315" x2="273" y2="370" stroke-width="0.8"/>
+    </g>
+  </g>
+  <path d="M 420,370 L 424,365 H 453 L 457,370 V 373 H 420 Z" fill="#0f0b0d" stroke="#e0b67a" stroke-width="1"/>
+  <g font-family="Rajdhani">
+    <text x="193" y="276.0" font-size="18" font-weight="600" fill="#e6b878">You'll regret that</text>
+    <text x="193" y="297.0" font-size="11.5" letter-spacing="1" font-weight="600" fill="#e6b878">FROM: JACKIE</text>
+    <text x="193" y="336.2" font-size="18" font-weight="600" fill="#7b5438">Urgent information (!)</text>
+    <text x="193" y="357.2" font-size="11.5" letter-spacing="1" font-weight="600" fill="#895f3b">FROM: MOM</text>
+    <text x="193" y="396.4" font-size="18" font-weight="600" fill="#e6b878">Heist data sent to you</text>
+    <text x="193" y="417.4" font-size="11.5" letter-spacing="1" font-weight="600" fill="#e6b878">FROM: 805000451</text>
+    <text x="193" y="456.6" font-size="18" font-weight="600" fill="#e6b878">I'm worried man</text>
+    <text x="193" y="477.6" font-size="11.5" letter-spacing="1" font-weight="600" fill="#e6b878">FROM: RACHEL ROSS</text>
+    <text x="193" y="516.8" font-size="18" font-weight="600" fill="#e6b878">Special offer to you!</text>
+    <text x="193" y="537.8" font-size="11.5" letter-spacing="1" font-weight="600" fill="#e6b878">FROM: JINX JINX STORE</text>
+    <text x="193" y="577.0" font-size="18" font-weight="600" fill="#e6b878">I'm worried man</text>
+    <text x="193" y="598.0" font-size="11.5" letter-spacing="1" font-weight="600" fill="#e6b878">FROM: RACHEL ROSS</text>
+    <text x="193" y="637.2" font-size="18" font-weight="600" fill="#e6b878">Special offer to you!</text>
+    <text x="193" y="658.2" font-size="11.5" letter-spacing="1" font-weight="600" fill="#e6b878">FROM: RACHEL ROSS</text>
+  </g>
+  <!-- envelope glyphs at x 429..445: rows 1,3,7 OPEN (flap raised, 14.5
+       tall), the rest CLOSED (10.5 tall); the selected row's in dark -->
+  <g fill="none" stroke-width="1">
+    <g stroke="#f0bf7b" transform="translate(429 271.7)"><path d="M 0,4 L 8,0 L 16,4 V 14.5 H 0 Z"/><path d="M 0,4 L 8,9.5 L 16,4"/></g>
+    <g stroke="#865c39" transform="translate(429 335.4)"><rect x="0" y="0" width="16" height="10.5"/><path d="M 0,0 L 8,6 L 16,0"/></g>
+    <g stroke="#f0bf7b" transform="translate(429 392.1)"><path d="M 0,4 L 8,0 L 16,4 V 14.5 H 0 Z"/><path d="M 0,4 L 8,9.5 L 16,4"/></g>
+    <g stroke="#f0bf7b" transform="translate(429 455.8)"><rect x="0" y="0" width="16" height="10.5"/><path d="M 0,0 L 8,6 L 16,0"/></g>
+    <g stroke="#f0bf7b" transform="translate(429 516.0)"><rect x="0" y="0" width="16" height="10.5"/><path d="M 0,0 L 8,6 L 16,0"/></g>
+    <g stroke="#f0bf7b" transform="translate(429 576.2)"><rect x="0" y="0" width="16" height="10.5"/><path d="M 0,0 L 8,6 L 16,0"/></g>
+    <g stroke="#f0bf7b" transform="translate(429 632.9)"><path d="M 0,4 L 8,0 L 16,4 V 14.5 H 0 Z"/><path d="M 0,4 L 8,9.5 L 16,4"/></g>
+  </g>
+
+  <!-- ==== the message body: plain text, no panel ==== -->
+  <g font-family="Rajdhani" fill="#f0bf7b">
+    <text x="738" y="277" font-size="15" font-weight="700" letter-spacing="0.5">URGENT INFORMATION (!)</text>
+    <text x="740" y="297" font-size="11.5" letter-spacing="1" font-weight="600" fill="#e6b878">FROM: MOM</text>
+    <g font-size="17" font-weight="600" fill="#e6b878">
+      <text x="738" y="333">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod</text>
+      <text x="738" y="354">tempor incididunt ut labore et dolore magna aliqua.</text>
+      <text x="738" y="397">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut</text>
+      <text x="738" y="418.5">aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in vo-</text>
+      <text x="738" y="440">luptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat</text>
+      <text x="738" y="461.5">cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est la-</text>
+      <text x="738" y="483">borum.</text>
+      <text x="738" y="525">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium do-</text>
+      <text x="738" y="546.5">loremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore</text>
+      <text x="738" y="568">veritatis et quasi architecto beatae vitae dicta sunt explicabo.</text>
+    </g>
+  </g>
+
+  <!-- ==== four RIFLES buttons ==== -->
+  <!-- outlined in the DARKER gold (#c29a65 sampled, ~4px at 3840, 1.7
+       here — only the tabs are the bright #fdcf8c), 184x39 at y 684..723
+       on a 192 pitch from x 735; rounded
+       corners, the bottom-LEFT one cut by a 13x10 chamfer; a filled
+       trapezoid tab sits on the bottom edge at x 866..903 -->
+  <g id="rifles" font-family="Rajdhani">
+    <path d="M 740,684 H 914 Q 919,684 919,689 V 718 Q 919,723 914,723 H 748 L 735,713 V 689 Q 735,684 740,684 Z" fill="none" stroke="#c29a65" stroke-width="1.7"/>
+    <path d="M 866,723 L 870,716 H 899 L 903,723 Z" fill="#fdcf8c"/>
+    <text x="757" y="710" font-size="15" font-weight="600" letter-spacing="1" fill="#f5c689">RIFLES</text>
+  </g>
+  <use href="#rifles" x="192"/>
+  <use href="#rifles" x="385"/>
+  <use href="#rifles" x="575"/>
+
+  <!-- ==== foot: C and D letter boxes with their annotations ==== -->
+  <g font-family="Rajdhani">
+    <g stroke="#bd8951">
+      <use href="#letterbox" x="139" y="777"/>
+      <use href="#letterbox" x="735" y="777"/>
+    </g>
+    <g font-size="15" fill="#d9a877" text-anchor="middle">
+      <text x="151" y="796">C</text><text x="747" y="796">D</text>
+    </g>
+    <g font-size="8" fill="#deb689" letter-spacing="0.4">
+      <text x="183" y="783">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+      <text x="183" y="792">SERVING CUSTOMERS SINCE 2006.</text>
+      <text x="771" y="783">MAPS ARE PROVIDED BY SEOCHO. SATELITE SERVICES</text>
+      <text x="771" y="792">SINCE 2006.</text>
+    </g>
+  </g>
+  </g>
+</svg>

@@ -1,0 +1,259 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <!-- ENTROPISM mailbox-trace: schematic of images/entropism-mail.png
+       (Behance 48e1d6…60e5fa6098aa5, #41). Source is 3840x2160; every
+       coordinate here is in the 1600x900 frame (source / 2.4).
+
+       Every coordinate below is measured, not eyeballed:
+         scripts/extract_spec.py images/entropism-mail.png -o /tmp/en-src.json
+       plus row/column probes on the 1600-wide rescale for the outline-only
+       geometry (list frame and row dividers, panel frame, button
+       dividers, badge outlines), and the trace is held to the source by
+         scripts/fidelity_check.sh -\-inventory entropism mailbox
+
+       What the source actually shows, top to bottom (read 2026-09-02 by
+       opening the image and cropping into it):
+         - a full-width header strip, x 49..1547, y 43..69, dividers at
+           x 465 and x 1353: RIPPERDOC SURGICAL SOFTWAREV2 / STORE ACCESS
+           SCREEN / FLAIR TRS 5MMP
+         - three boxed section letters (26x26, y 98..124) with labels:
+           A MAIL BOX (box x 100..126), B MESSAGE (x 556..582),
+           C ENCRIPTION LEVEL (x 1347..1373, label on two lines — the
+           source really spells it ENCRIPTION). Under MAIL BOX, two lines
+           of micro-text: SPARE TIME MANAGER WAS DEVELOPED BY / SEOCHO.
+           SERVING CUSTOMERS SINCE 2006.
+         - A: the MAIL BOX list, an outlined frame x 84..451, y 205..686,
+           holding SEVEN rows on a 62px pitch starting 21px below the top
+           edge: row 1 (y 226..288) filled solid sage — the selection —
+           then dividers at y 349 / 411 / 473 / 535 / 596 / 658, and 28px
+           of empty frame below the last row. Each row: an envelope glyph
+           at x 102..118, a title (baseline top+30) and a FROM: line
+           (baseline top+48):
+             YOU'LL REGRET THAT / FROM: JACKIE          (filled)
+             URGENT INFORMATION (!) / FROM: MOM         (open-envelope glyph)
+             HEIST DATA SENT TO YOU / FROM: 805000451
+             I'M WORRIED MAN / FROM: RACHEL ROSS
+             SPECIAL OFFER TO YOU! / FROM: JINX JINX STORE
+             I'M WORRIED MAN / FROM: BIALA ROBERTSON
+             SPECIAL OFFER TO YOU! / FROM: LARIX & BETULA
+         - B: the MESSAGE panel, outlined frame x 529..1279, y 205..686
+           (same top and bottom as the list), with a filled title bar
+           x 531..1277, y 227..288 (extractor: [531,227,746,61]) carrying
+           URGENT INFORMATION (!) and "from: Mom" in dark text; below it
+           three lorem paragraphs (4 + 4 + 2 lines, pitch ~21.7, x 557,
+           lines up to ~690 wide)
+         - under the panel, a button row y 694..746 split at x 716 / 903 /
+           1091: REPLY / FORWARD / DELETE outlined, REPORT SPAM filled
+           solid (extractor: [1091,694,188,52]) with dark text
+         - C: a 2x2 badge grid of 69x69 boxes, columns x 1341 and 1418,
+           rows y 227 and 305, read T1 T3 over T2 T4; T2 (bottom-left)
+           filled solid (extractor: [1342,306,68,68])
+         - a full-width footer strip, x 49..1547, y 847..873, no dividers:
+           INTERFACE LOADED / PROVIDED BY NEXUS NETWORK V10.8 / BUILD
+           6.47.48441.R15
+
+       Edge profile of every outlined frame, measured on the 1600-wide
+       rescale (column probes at x=400 through the list frame's top and
+       bottom edges, row probes at y=400 through its sides, and the same
+       on panel B, the button row, the T1 badge, the header and footer):
+         - the stroke itself is 2px, #67937d/#557257 (mean ~#5e8268)
+         - a 1px near-black undershoot hugs it (#050500..#0a0900), on the
+           inside on most edges
+         - a faint sage overshoot 2..4px further out, 2px wide, #1e2417 /
+           #232d1f / #1d1f14 / #2a3427 (the photo's #25281d family), outside the frame
+           on the left/top/bottom and just inside on the right — a ghost
+           ring around every bright edge in the material, incl. the row
+           dividers (y 347..348 above the 349 rule) and the badge boxes.
+       It is drawn here as three concentric strokes on the same geometry:
+       7px #25281d, 4px #0a0a02, 2px #709174 — bright at +-1, dark at
+       1..2, dim at 2..3.5, within 1px of the measured profile on every
+       side. The row dividers measure 2px like the frame, not 1.5.
+       The ring is how the material photographs (a sharpening/scaling
+       halo around every bright edge), so a trace of the photo carries
+       it; it is not a designed glow — README.md's "no glow" rule stands
+       for the iced implementation, which should draw the 2px stroke only.
+
+       Palette sampled by k-means over the photo (extract_spec.py):
+         ink    #a6d2a8 (5.8%, the solid fills)  #8aaf8d (bright text)
+                #709174 (outlines)  #577057  #3d4b38  #25281d (dark text
+                on sage)
+         ground #100a03 (59.4%)  #1c1b11 (21.8%) -->
+  <defs>
+    <!-- outlined chrome, one path per section, each drawn three times
+         (halo / undershoot / stroke) — see the edge-profile note above -->
+    <path id="hdr-chrome" d="M 49,43 H 1547 V 69 H 49 Z M 465,43 V 69 M 1353,43 V 69"/>
+    <path id="ftr-chrome" d="M 49,847 H 1547 V 873 H 49 Z"/>
+    <path id="a-chrome"   d="M 84,205 H 451 V 686 H 84 Z M 85,349 H 451 M 85,411 H 451 M 85,473 H 451 M 85,535 H 451 M 85,596 H 451 M 85,658 H 451"/>
+    <path id="b-chrome"   d="M 529,205 H 1279 V 686 H 529 Z"/>
+    <path id="btn-chrome" d="M 529,694 H 1279 V 746 H 529 Z M 716,694 V 746 M 903,694 V 746"/>
+    <path id="c-chrome"   d="M 1341,227 h 69 v 69 h -69 Z M 1418,227 h 69 v 69 h -69 Z M 1418,305 h 69 v 69 h -69 Z"/>
+    <radialGradient id="lift" cx="0.45" cy="0.4" r="0.8">
+      <stop offset="0"   stop-color="#1c1b11"/>
+      <stop offset="0.7" stop-color="#151207"/>
+      <stop offset="1"   stop-color="#100a03"/>
+    </radialGradient>
+    <!-- envelope glyphs, drawn at their top-left. Measured on the photo
+         (10x crops at full res, threshold+trim per row on the rescale):
+         every glyph is 17px wide at x 102..119; the closed one is 11 tall
+         and is the classic outline — rect, a flap V from the top corners
+         down to (8.5,7.5), and the two back-fold lines from the bottom
+         corners up to the flap arms; the open one (row 2) is 16 tall:
+         the same body with the flap drawn as a diamond that peaks 4.5px
+         above the body's top edge. Row y's are each glyph's measured top:
+         244 / 305 / 370 / 431 / 492 / 553 / 614 (the photo's glyphs drift
+         1..3px against the 62px row pitch; the measured values are used). -->
+    <g id="env" fill="none" stroke-width="1.2" stroke-linejoin="round">
+      <rect x="0" y="0" width="17" height="11"/>
+      <path d="M 0,0 L 8.5,7.5 L 17,0 M 0,11 L 5.5,4.9 M 17,11 L 11.5,4.9"/>
+    </g>
+    <g id="env-open" fill="none" stroke-width="1.2" stroke-linejoin="round">
+      <rect x="0" y="4.5" width="17" height="11.5"/>
+      <path d="M 0,4.5 L 8.5,0 L 17,4.5 L 8.5,10.5 Z"/>
+    </g>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#lift)"/>
+
+  <!-- ==== header strip, y 43..69, dividers at x 465 and 1353 ==== -->
+  <g>
+    <g fill="none">
+      <use href="#hdr-chrome" stroke="#25281d" stroke-width="7"/>
+      <use href="#hdr-chrome" stroke="#0a0a02" stroke-width="4"/>
+      <use href="#hdr-chrome" stroke="#709174" stroke-width="2"/>
+    </g>
+    <g font-family="Rajdhani" font-size="15" fill="#8aaf8d" letter-spacing="1">
+      <text x="61" y="61">RIPPERDOC SURGICAL SOFTWAREV2</text>
+      <text x="521" y="61">STORE ACCESS SCREEN</text>
+      <text x="1382" y="61">FLAIR TRS 5MMP</text>
+    </g>
+  </g>
+
+  <!-- ==== section headings, boxes y 98..124 ==== -->
+  <g font-family="Rajdhani" fill="#8aaf8d">
+    <rect x="100" y="98" width="26" height="26" fill="none" stroke="#8aaf8d" stroke-width="1.5"/>
+    <text x="106" y="118" font-size="19">A</text>
+    <text x="139" y="119" font-size="22" letter-spacing="1">MAIL BOX</text>
+    <text x="102" y="145" font-size="8.5" fill="#709174">SPARE TIME MANAGER WAS DEVELOPED BY</text>
+    <text x="102" y="155" font-size="8.5" fill="#709174">SEOCHO. SERVING CUSTOMERS SINCE 2006.</text>
+
+    <rect x="556" y="98" width="26" height="26" fill="none" stroke="#8aaf8d" stroke-width="1.5"/>
+    <text x="562" y="118" font-size="19">B</text>
+    <text x="592" y="119" font-size="22" letter-spacing="1">MESSAGE</text>
+
+    <rect x="1347" y="98" width="26" height="26" fill="none" stroke="#8aaf8d" stroke-width="1.5"/>
+    <text x="1353" y="118" font-size="19">C</text>
+    <text x="1383" y="119" font-size="22" letter-spacing="1">ENCRIPTION</text>
+    <text x="1383" y="144" font-size="22" letter-spacing="1">LEVEL</text>
+  </g>
+
+  <!-- ==== A: MAIL BOX list, frame x 84..451, y 205..686, 62px rows ==== -->
+  <g font-family="Rajdhani">
+    <g fill="none">
+      <use href="#a-chrome" stroke="#25281d" stroke-width="7"/>
+      <use href="#a-chrome" stroke="#0a0a02" stroke-width="4"/>
+      <use href="#a-chrome" stroke="#709174" stroke-width="2"/>
+    </g>
+
+    <!-- row 1, the selection: solid fill y 226..288, dark ink -->
+    <rect x="85" y="226" width="366" height="62" fill="#a6d2a8"/>
+    <use href="#env" x="102" y="244" stroke="#25281d"/>
+    <text x="138" y="256" font-size="20" fill="#25281d" letter-spacing="1">YOU'LL REGRET THAT</text>
+    <text x="138" y="274" font-size="14" fill="#25281d">FROM: JACKIE</text>
+
+    <!-- rows 2..7 outlined by the dividers at 349 411 473 535 596 658,
+         drawn with the frame in #a-chrome -->
+    <g font-size="20" fill="#a6d2a8" letter-spacing="1">
+      <text x="138" y="318">URGENT INFORMATION (!)</text>
+      <text x="138" y="379">HEIST DATA SENT TO YOU</text>
+      <text x="138" y="441">I'M WORRIED MAN</text>
+      <text x="138" y="503">SPECIAL OFFER TO YOU!</text>
+      <text x="138" y="565">I'M WORRIED MAN</text>
+      <text x="138" y="626">SPECIAL OFFER TO YOU!</text>
+    </g>
+    <g font-size="14" fill="#8aaf8d">
+      <text x="138" y="336">FROM: MOM</text>
+      <text x="138" y="397">FROM: 805000451</text>
+      <text x="138" y="459">FROM: RACHEL ROSS</text>
+      <text x="138" y="521">FROM: JINX JINX STORE</text>
+      <text x="138" y="583">FROM: BIALA ROBERTSON</text>
+      <text x="138" y="644">FROM: LARIX &amp; BETULA</text>
+    </g>
+    <g stroke="#8aaf8d">
+      <use href="#env-open" x="102" y="305"/>
+      <use href="#env" x="102" y="370"/>
+      <use href="#env" x="102" y="431"/>
+      <use href="#env" x="102" y="492"/>
+      <use href="#env" x="102" y="553"/>
+      <use href="#env" x="102" y="614"/>
+    </g>
+  </g>
+
+  <!-- ==== B: MESSAGE panel, frame x 529..1279, y 205..686 ==== -->
+  <g font-family="Rajdhani">
+    <g fill="none">
+      <use href="#b-chrome" stroke="#25281d" stroke-width="7"/>
+      <use href="#b-chrome" stroke="#0a0a02" stroke-width="4"/>
+      <use href="#b-chrome" stroke="#709174" stroke-width="2"/>
+    </g>
+    <!-- filled title bar y 227..288 -->
+    <rect x="531" y="227" width="746" height="61" fill="#a6d2a8"/>
+    <text x="557" y="253" font-size="22" fill="#25281d" letter-spacing="1">URGENT INFORMATION (!)</text>
+    <text x="557" y="279" font-size="17" fill="#25281d">from: Mom</text>
+
+    <!-- body: 4 + 4 + 2 lines, pitch ~21.7, widths measured per line -->
+    <g font-size="17" fill="#8aaf8d" lengthAdjust="spacingAndGlyphs">
+      <text x="557" y="325" textLength="679">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incidi-</text>
+      <text x="557" y="347" textLength="691">dunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitati-</text>
+      <text x="557" y="368" textLength="682">on ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in re-</text>
+      <text x="557" y="390" textLength="559">prehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</text>
+      <text x="557" y="429" textLength="683">Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit</text>
+      <text x="557" y="451" textLength="679">anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem ac-</text>
+      <text x="557" y="472" textLength="697">cusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore</text>
+      <text x="557" y="494" textLength="475">veritatis et quasi architecto beatae vitae dicta sunt explicabo.</text>
+      <text x="557" y="535" textLength="670">Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia</text>
+      <text x="557" y="556" textLength="559">consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</text>
+    </g>
+  </g>
+
+  <!-- ==== button row, y 694..746, cells at x 529 / 716 / 903 / 1091 / 1279 ==== -->
+  <g font-family="Rajdhani" font-size="22" letter-spacing="1">
+    <g fill="none">
+      <use href="#btn-chrome" stroke="#25281d" stroke-width="7"/>
+      <use href="#btn-chrome" stroke="#0a0a02" stroke-width="4"/>
+      <use href="#btn-chrome" stroke="#709174" stroke-width="2"/>
+    </g>
+    <text x="549" y="719" fill="#a6d2a8">REPLY</text>
+    <text x="736" y="719" fill="#a6d2a8">FORWARD</text>
+    <text x="923" y="719" fill="#a6d2a8">DELETE</text>
+    <!-- REPORT SPAM: the filled button -->
+    <rect x="1091" y="694" width="188" height="52" fill="#a6d2a8"/>
+    <text x="1111" y="719" fill="#25281d">REPORT SPAM</text>
+  </g>
+
+  <!-- ==== C: ENCRIPTION LEVEL 2x2 badges, 69x69, T2 filled ==== -->
+  <g font-family="Rajdhani" font-size="26" font-weight="bold" letter-spacing="1" text-anchor="middle">
+    <g fill="none">
+      <use href="#c-chrome" stroke="#25281d" stroke-width="7"/>
+      <use href="#c-chrome" stroke="#0a0a02" stroke-width="4"/>
+      <use href="#c-chrome" stroke="#709174" stroke-width="2"/>
+    </g>
+    <text x="1375" y="271" fill="#a6d2a8">T1</text>
+    <text x="1452" y="271" fill="#a6d2a8">T3</text>
+    <rect x="1341" y="305" width="69" height="69" fill="#a6d2a8"/>
+    <text x="1375" y="349" fill="#25281d">T2</text>
+    <text x="1452" y="349" fill="#a6d2a8">T4</text>
+  </g>
+
+  <!-- ==== footer strip, y 847..873, no dividers ==== -->
+  <g>
+    <g fill="none">
+      <use href="#ftr-chrome" stroke="#25281d" stroke-width="7"/>
+      <use href="#ftr-chrome" stroke="#0a0a02" stroke-width="4"/>
+      <use href="#ftr-chrome" stroke="#709174" stroke-width="2"/>
+    </g>
+    <g font-family="Rajdhani" font-size="15" fill="#8aaf8d" letter-spacing="1">
+      <text x="61" y="865">INTERFACE LOADED</text>
+      <text x="517" y="865">PROVIDED BY NEXUS NETWORK V10.8</text>
+      <text x="1382" y="865">BUILD 6.47.48441.R15</text>
+    </g>
+  </g>
+</svg>

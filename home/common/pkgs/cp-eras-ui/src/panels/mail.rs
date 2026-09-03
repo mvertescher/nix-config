@@ -61,8 +61,8 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
     selected_id: Option<usize>,
     on_select: impl Fn(usize) -> Message + Clone + 'static,
     on_delete: impl Fn(usize) -> Message + Clone + 'static,
-    list_scrollable_id: scrollable::Id,
-    content_scrollable_id: scrollable::Id,
+    list_scrollable_id: iced::widget::Id,
+    content_scrollable_id: iced::widget::Id,
     focus: MailFocus,
 ) -> Element<'a, Message> {
     let s = style;
@@ -93,7 +93,7 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
 
     let left = column![
         pane_heading(s, "MESSAGES", list_ink, list_line),
-        Space::new(0.0, s.metrics.gap),
+        Space::new().height(s.metrics.gap),
         scrollable(container(list).padding(Padding {
             top: 0.0,
             right: 14.0,
@@ -134,7 +134,7 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
                     .height(Length::Fill),
             ))
             .height(Length::Fill),
-            Space::new(0.0, s.metrics.gap),
+            Space::new().height(s.metrics.gap),
             actions(s, (on_delete.clone())(email.id)),
         ]
         .into(),
@@ -156,7 +156,7 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
 
     let right = column![
         pane_heading(s, "CONTENT", content_ink, content_line),
-        Space::new(0.0, s.metrics.gap),
+        Space::new().height(s.metrics.gap),
         body,
     ]
     .width(Length::FillPortion(6))
@@ -169,7 +169,7 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
         ),
         row![
             left,
-            Space::new(s.metrics.gap * 2.0, 0.0),
+            Space::new().width(s.metrics.gap * 2.0),
             right,
         ]
         .height(Length::Fill),
@@ -280,7 +280,7 @@ fn message_row<'a, Message: 'static + Clone>(
     let flag: Element<'a, Message> = if email.is_new {
         text::caption(s, "NEW").color(title_ink).into()
     } else {
-        Space::new(0.0, 0.0).into()
+        Space::new().into()
     };
 
     let content = row![
@@ -288,14 +288,14 @@ fn message_row<'a, Message: 'static + Clone>(
             text::body(s, email.title.as_str()).color(title_ink),
             row![
                 text::caption(s, email.sender.as_str()).color(meta_ink),
-                Space::new(Length::Fill, Length::Shrink),
+                Space::new().width(Length::Fill).height(Length::Shrink),
                 text::caption(s, email.timestamp.as_str()).color(meta_ink),
             ]
             .width(Length::Fill),
         ]
         .spacing(2)
         .width(Length::Fill),
-        Space::new(8.0, 0.0),
+        Space::new().width(8.0),
         flag,
     ]
     .align_y(Alignment::Center);
@@ -361,7 +361,7 @@ fn thread<'a, Message: 'static>(
         row![
             text::body(s, "FROM: ").color(ink),
             text::body(s, sender).color(ink),
-            Space::new(Length::Fill, Length::Shrink),
+            Space::new().width(Length::Fill).height(Length::Shrink),
             text::caption(s, stamp).color(quiet),
         ]
         .align_y(Alignment::Center)
@@ -373,10 +373,10 @@ fn thread<'a, Message: 'static>(
     col = col.push(
         column![
             text::title(s, email.title.as_str())
-                .size(s.metrics.text_title - 3)
+                .size(f32::from(s.metrics.text_title - 3))
                 .color(ink),
             head(email.sender.as_str(), email.timestamp.as_str()),
-            Space::new(0.0, 8.0),
+            Space::new().height(8.0),
             markdown(s, email.body.as_str(), ink),
         ]
         .width(Length::Fill),
@@ -388,7 +388,7 @@ fn thread<'a, Message: 'static>(
             s.metrics.pad * 0.75,
             column![
                 head(reply.sender.as_str(), reply.timestamp.as_str()),
-                Space::new(0.0, 8.0),
+                Space::new().height(8.0),
                 markdown(s, reply.body.as_str(), ink),
             ]
             .width(Length::Fill),
@@ -397,7 +397,7 @@ fn thread<'a, Message: 'static>(
 
         // Replies are indented, the way a quoted chain is in every
         // reference set.
-        col = col.push(row![Space::new(s.metrics.gap, 0.0), card].width(Length::Fill));
+        col = col.push(row![Space::new().width(s.metrics.gap), card].width(Length::Fill));
     }
 
     col.into()
@@ -492,7 +492,7 @@ fn table<'a, Message: 'static>(
                 Surface::filled(s, band).stroke(Palette::faded(ink, 0.35)),
                 Padding::from([5, 6]),
                 text::caption(s, header)
-                    .size(s.metrics.text_caption + 2)
+                    .size(f32::from(s.metrics.text_caption + 2))
                     .color(ink),
             ))
             .width(Length::FillPortion(1))
@@ -513,7 +513,7 @@ fn table<'a, Message: 'static>(
                     Surface::outlined(s).stroke(Palette::faded(ink, 0.15)),
                     Padding::from([5, 6]),
                     text::caption(s, values.get(i).copied().unwrap_or(""))
-                        .size(s.metrics.text_caption + 2)
+                        .size(f32::from(s.metrics.text_caption + 2))
                         .color(ink),
                 ))
                 .width(Length::FillPortion(1))
@@ -547,7 +547,7 @@ fn list<'a, Message: 'static>(
         col = col.push(
             row![
                 text::body(style, "•").color(ink),
-                Space::new(8.0, 0.0),
+                Space::new().width(8.0),
                 text::body(style, content).color(ink),
             ]
             .align_y(Alignment::Center),
@@ -563,7 +563,11 @@ fn list<'a, Message: 'static>(
 fn rail(
     line: Color,
 ) -> impl Fn(&iced::Theme, scrollable::Status) -> scrollable::Style {
-    move |_, _| scrollable::Style {
+    // `auto_scroll` is iced 0.14's middle-click autoscroll overlay and
+    // has no era reading, so it is left at whatever the built-in theme
+    // draws rather than invented here; everything this crate has an
+    // opinion about is still written out.
+    move |theme, status| scrollable::Style {
         container: container::Style::default(),
         vertical_rail: scrollable::Rail {
             background: Some(Palette::faded(line, 0.05).into()),
@@ -573,7 +577,7 @@ fn rail(
                 radius: 0.0.into(),
             },
             scroller: scrollable::Scroller {
-                color: Palette::faded(line, 0.5),
+                background: Palette::faded(line, 0.5).into(),
                 border: iced::Border {
                     color: Color::TRANSPARENT,
                     width: 0.0,
@@ -585,10 +589,11 @@ fn rail(
             background: None,
             border: iced::Border::default(),
             scroller: scrollable::Scroller {
-                color: Color::TRANSPARENT,
+                background: Color::TRANSPARENT.into(),
                 border: iced::Border::default(),
             },
         },
         gap: None,
+        ..scrollable::default(theme, status)
     }
 }

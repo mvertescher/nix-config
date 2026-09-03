@@ -98,7 +98,7 @@ pub fn mail_row<'a, Message: 'static>(
         text::body(style, mail.subject)
     };
     let from = if selected {
-        text::on_select(style, mail.from).size(style.metrics.text_caption)
+        text::on_select(style, mail.from).size(f32::from(style.metrics.text_caption))
     } else {
         text::caption(style, mail.from)
     };
@@ -121,7 +121,7 @@ pub fn mail_row<'a, Message: 'static>(
         Padding::from([6, 10]),
         row![
             column![subject, from].spacing(1),
-            Space::new(Length::Fill, Length::Shrink),
+            Space::new().width(Length::Fill).height(Length::Shrink),
             glyph,
         ]
         .align_y(iced::Alignment::Center),
@@ -134,7 +134,7 @@ pub fn mail_row<'a, Message: 'static>(
 /// The rule drawn under an unselected row.
 pub fn rule<'a, Message: 'static>(style: &Style) -> Element<'a, Message> {
     let color = style.palette.border;
-    container(Space::new(Length::Fill, 1.0))
+    container(Space::new().width(Length::Fill).height(1.0))
         .style(move |_: &iced::Theme| container::Style {
             background: Some(iced::Background::Color(color)),
             ..Default::default()

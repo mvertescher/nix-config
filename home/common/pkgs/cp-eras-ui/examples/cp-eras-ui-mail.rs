@@ -36,7 +36,8 @@ pub fn main() -> iced::Result {
         None => Style::from_desktop(),
     };
 
-    iced::application(App::title, App::update, App::view)
+    iced::application(move || App::new(style), App::update, App::view)
+        .title(App::title)
         .font(fonts::ORBITRON_REGULAR)
         .font(fonts::ORBITRON_MEDIUM)
         .font(fonts::ORBITRON_SEMIBOLD)
@@ -50,7 +51,7 @@ pub fn main() -> iced::Result {
         .window_size(WINDOW_SIZE)
         .antialiasing(true)
         .subscription(App::subscription)
-        .run_with(move || (App::new(style), Task::none()))
+        .run()
 }
 
 fn era_from_args() -> Option<Era> {
@@ -70,8 +71,8 @@ struct App {
     style: Style,
     emails: Vec<Email>,
     selected_id: Option<usize>,
-    list_scrollable_id: iced::widget::scrollable::Id,
-    content_scrollable_id: iced::widget::scrollable::Id,
+    list_scrollable_id: iced::widget::Id,
+    content_scrollable_id: iced::widget::Id,
     focus: MailFocus,
 }
 
@@ -300,8 +301,8 @@ impl Default for App {
             style: Style::from_desktop(),
             emails,
             selected_id: Some(1),
-            list_scrollable_id: iced::widget::scrollable::Id::unique(),
-            content_scrollable_id: iced::widget::scrollable::Id::unique(),
+            list_scrollable_id: iced::widget::Id::unique(),
+            content_scrollable_id: iced::widget::Id::unique(),
             focus: MailFocus::List,
         }
     }
@@ -336,7 +337,7 @@ impl App {
                 let center_offset = target_y - (viewport_height / 2.0) + (item_height / 2.0);
                 let final_y = center_offset.clamp(0.0, max_scroll);
 
-                iced::widget::scrollable::scroll_to(
+                iced::widget::operation::scroll_to(
                     self.list_scrollable_id.clone(),
                     iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: final_y },
                 )
@@ -439,13 +440,13 @@ impl App {
                             let ctrl = modifiers.control();
                             match c.as_str() {
                                 "f" if ctrl => {
-                                    return iced::widget::scrollable::scroll_by(
+                                    return iced::widget::operation::scroll_by(
                                         self.content_scrollable_id.clone(),
                                         iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: 400.0 },
                                     );
                                 }
                                 "b" if ctrl => {
-                                    return iced::widget::scrollable::scroll_by(
+                                    return iced::widget::operation::scroll_by(
                                         self.content_scrollable_id.clone(),
                                         iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: -400.0 },
                                     );
@@ -491,7 +492,7 @@ impl App {
                                             }
                                         }
                                         MailFocus::Content => {
-                                            return iced::widget::scrollable::scroll_by(
+                                            return iced::widget::operation::scroll_by(
                                                 self.content_scrollable_id.clone(),
                                                 iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: 30.0 },
                                             );
@@ -519,7 +520,7 @@ impl App {
                                             }
                                         }
                                         MailFocus::Content => {
-                                            return iced::widget::scrollable::scroll_by(
+                                            return iced::widget::operation::scroll_by(
                                                 self.content_scrollable_id.clone(),
                                                 iced::widget::scrollable::AbsoluteOffset { x: 0.0, y: -30.0 },
                                             );

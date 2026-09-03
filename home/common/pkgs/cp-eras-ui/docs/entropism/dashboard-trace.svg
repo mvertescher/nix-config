@@ -157,12 +157,20 @@
   </g>
 
   <!-- ==== footer strip, y 847..872 ==== -->
+  <!-- text runs measured on the 1600-wide rescale (threshold+trim over the
+       strip interior; identical on the mailbox source, it is the same
+       footer): INTERFACE LOADED x 61..192, PROVIDED BY NEXUS NETWORK
+       V10.8 x 519..769, BUILD 6.47.48441.R15 x 1383..1525. The middle
+       string is left-anchored at the same x as on the mailbox screen, not
+       right-aligned; the build string ends 22px inside the frame's right
+       edge (1547), so it is anchored at its end. Cap height 12px ->
+       font-size 15, as in mailbox-trace.svg. -->
   <g>
     <rect x="49" y="847" width="1498" height="25" fill="none" stroke="#739676" stroke-width="1.5"/>
-    <g font-family="Rajdhani" font-size="14" fill="#87b08d" letter-spacing="1">
-      <text x="60" y="864">INTERFACE LOADED</text>
-      <text x="700" y="864">PROVIDED BY NEXUS NETWORK V10.8</text>
-      <text x="1400" y="864">BUILD 6.47.48441.R15</text>
+    <g font-family="Rajdhani" font-size="15" fill="#87b08d" letter-spacing="1">
+      <text x="61" y="865">INTERFACE LOADED</text>
+      <text x="517" y="865">PROVIDED BY NEXUS NETWORK V10.8</text>
+      <text x="1525" y="865" text-anchor="end">BUILD 6.47.48441.R15</text>
     </g>
   </g>
 </svg>

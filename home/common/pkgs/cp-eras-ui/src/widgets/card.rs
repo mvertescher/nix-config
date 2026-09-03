@@ -88,12 +88,12 @@ fn nameplate<'a, Message: 'static>(
     let (name, class) = if selected {
         (
             text::on_select(style, product.name),
-            text::on_select(style, product.class).size(style.metrics.text_caption + 2),
+            text::on_select(style, product.class).size(f32::from(style.metrics.text_caption + 2)),
         )
     } else {
         (
             text::title(style, product.name),
-            text::label(style, product.class).size(style.metrics.text_caption + 2),
+            text::label(style, product.class).size(f32::from(style.metrics.text_caption + 2)),
         )
     };
     column![name, class].spacing(2).into()
@@ -139,12 +139,12 @@ fn stats_row<'a, Message: 'static>(
         // 2.1:1 against 5.5:1 -- the difference between a label and a
         // smudge.
         let h = if selected {
-            text::on_select(style, head).size(style.metrics.text_caption + 3)
+            text::on_select(style, head).size(f32::from(style.metrics.text_caption + 3))
         } else {
-            text::mid(style, head).size(style.metrics.text_caption + 3)
+            text::mid(style, head).size(f32::from(style.metrics.text_caption + 3))
         };
         let v = text::body(style, value)
-            .size(style.metrics.text_title - 2)
+            .size(f32::from(style.metrics.text_title - 2))
             .color(figure_ink);
         heads = heads.push(container(h).center_x(Length::Fill));
         values = values.push(container(v).center_x(Length::Fill));
@@ -204,12 +204,12 @@ fn sockets_row<'a, Message: 'static>(
         };
         let label = if selected {
             text::caption(style, "EMPTY SOCKET")
-                .size(size)
+                .size(f32::from(size))
                 .color(style.palette.on_select)
         } else {
             // `#728f76` in entropism, `fg` in the other two: the label
             // is small, not quiet.
-            text::mid(style, "EMPTY SOCKET").size(size)
+            text::mid(style, "EMPTY SOCKET").size(f32::from(size))
         };
         r = r.push(
             container(super::surface::surface(
@@ -259,7 +259,7 @@ pub fn product_card<'a, Message: 'static>(
 
     let brand: Element<'a, Message> = if selected {
         text::on_select(style, product.brand)
-            .size(style.metrics.text_caption)
+            .size(f32::from(style.metrics.text_caption))
             .into()
     } else {
         text::caption(style, product.brand).into()
@@ -307,7 +307,7 @@ pub fn product_card<'a, Message: 'static>(
                 .spacing(4),
             );
         }
-        detail = detail.push(Space::new(0.0, 6.0));
+        detail = detail.push(Space::new().height(6.0));
         detail = detail.push(text::on_select(style, "Bonus"));
         for line in product.bonus {
             detail = detail.push(text::on_select(style, *line));
@@ -322,7 +322,7 @@ pub fn product_card<'a, Message: 'static>(
     // clear of a card ending at 680, and the selected card in the same
     // target carries none.
     if style.compliance == Compliance::Inside && !selected {
-        body = body.push(Space::new(0.0, 10.0));
+        body = body.push(Space::new().height(10.0));
         body = body.push(inner(notice(style, product)));
     }
 
@@ -339,7 +339,7 @@ pub fn product_card<'a, Message: 'static>(
                 row![
                     text::body(style, product.name).color(mark),
                     text::body(style, product.class)
-                        .size(style.metrics.text_caption + 2)
+                        .size(f32::from(style.metrics.text_caption + 2))
                         .color(mark),
                 ]
                 .spacing(8)

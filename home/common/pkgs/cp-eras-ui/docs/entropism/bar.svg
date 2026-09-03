@@ -1,86 +1,276 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="220" viewBox="0 0 1600 220" font-family="Rajdhani">
-  <!-- ENTROPISM BAR reference.
-       "Necessity over style": one sage hue, square everything, 1px strokes.
-       Sampled palette (docs/entropism/README.md): bg #110c07, sage solid #9cb795,
-       sage text #94bb94, mid #728f76, outline #5d7752, dim #3d4d38, on-solid #1f2a1c.
-       Golden geometry: 1600x220; bar strip 31px at top, tray menu beneath, right edge
-       at x=1480 (120px margin). Layout mirrors src/bar.rs + examples/cp-eras-ui-bar-window.rs
-       (sample readings): host tape, six workspaces (3 active), centred window label
-       (dim), tray (FLAM icon, ELEM icon w/ alert stroke, BLUE, SYNC alert),
-       WIFI AFTERLIFE, VOL 62%, CPU 12%, MEM 47%, date, clock (filled sage). -->
+  <!-- ENTROPISM BAR reference — the status bar drawn as the era's header strip.
+
+       The bar has no Behance source (docs/PIPELINE.md, docs/sources.md). It is
+       an original composition, and every decision below is borrowed from a
+       measured feature of one of the four entropism traces
+       (docs/entropism/{login,dashboard,mailbox,store}-trace.svg, all in the
+       1600x900 frame of their 3840x2160 sources). Read 2026-09-02 by
+       rendering the traces and cropping the photos (images/entropism-mail.png
+       header y 80..200, button row y 1640..1820, badges x 3180.., list rows
+       y 480..780) before drawing.
+
+       What is borrowed, from where:
+
+       1. THE BAR IS THE HEADER STRIP. Every entropism screen opens with one
+          full-width outlined strip, x 49..1547, y 43..69 (26px tall), cut by
+          two vertical dividers at x 465 and x 1353 into a left string, a long
+          centre string and a right string (login-trace.svg #hdr, mailbox-trace
+          #hdr-chrome "M 49,43 H 1547 V 69 H 49 Z M 465,43 V 69 M 1353,43 V 69",
+          dashboard-trace and store-trace the same at x 467/1357). The bar
+          strip here is 25px tall, the same proportion, so it is drawn as that
+          strip: ONE outlined frame x 6..1594, y 3..28, with 2px dividers
+          between modules, a left group (host, workspaces), a long open centre
+          segment (the focused window) and a right group (tray, modules,
+          clock). Cells no longer float with gaps between them; they are
+          segments of one frame, like RIPPERDOC / STORE ACCESS SCREEN / FLAIR.
+       2. STROKE 2px, SQUARE. mailbox-trace.svg's header measures the designed
+          stroke of every outlined frame at 2px (#5e8268 mean, drawn there as
+          #709174 inside a photographic halo). Only the 2px stroke is drawn
+          here — no halo, no undershoot: README.md's "no glow" rule for the
+          implementation. Stroke ink is OUTLINE #5d7752, the palette const
+          nearest the measured mean. Frame and dividers sit on integer
+          coordinates so the 2px lines rasterise crisp. Nothing is rounded or
+          chamfered anywhere (all four traces: every corner is a right angle).
+       3. TEXT INSET 12px. The header strings start 12px inside their segment
+          (mailbox/login: x 61 in a frame at 49; dashboard: 477 after the
+          divider at 465). Every segment label here is set 12px in, and the
+          centre string is LEFT-aligned after its divider, exactly as STORE
+          ACCESS SCREEN is, rather than centred in the run.
+       4. SEGMENTED ROW WITH ONE FILLED SEGMENT = the button row.
+          mailbox-trace y 694..746, one frame split at x 716 / 903 / 1091:
+          REPLY / FORWARD / DELETE outlined, REPORT SPAM (the LAST segment,
+          x 1091..1279) filled solid with dark ink. The workspace run is that
+          row with six equal segments and the active one (3) filled; the
+          clock is REPORT SPAM — the filled last segment of the right run.
+          Fills are inset inside the stroke, as the trace draws them
+          (fill rect x 1091 w 188 under the 2px chrome; list selection
+          x 85..451 inside the frame at 84/451).
+       5. NUMBERED SQUARES, ONE FILLED = the T1..T4 badges and the boxed
+          letters. mailbox-trace C: 69x69 squares at x 1341/1418, y 227/305,
+          T2 filled; the [A] [B] [C] boxes are 26x26 (y 98..124). The
+          workspace segments are 28px wide in the 25px strip — a run of
+          near-square numbered cells, one solid — and carry a single centred
+          character like the boxed letters.
+       6. HOST TAPE = the solid band. login-trace.svg y 765..880 is the one
+          large solid fill in the era, carrying identity/build text in dark
+          ink along its edge (#20281c on #8aac8c). The host segment is the
+          strip's one band: filled in the palette's tape role MID #728f76
+          (the dimmer of the era's two sage fills, so it does not read as a
+          selection next to workspace 3) with ON_SOLID #1f2a1c ink, the dark
+          text-on-fill of every filled surface in the traces (login NEXT,
+          mailbox title bar, REPORT SPAM, T2, nav SMG).
+       7. ALERT = the "(!)" MARKER, NOT AN INK CHANGE. The only urgency mark
+          in the material is a literal " (!)" suffix on the label, in the
+          SAME ink as its neighbours: mailbox-trace list row 2 "URGENT
+          INFORMATION (!)" (x 138, y 318, #a6d2a8 like the rows around it)
+          and the message title bar (x 557, y 253). SYNC in alert state reads
+          "SYNC (!)"; the attention-state icon cell carries "(!)" beside its
+          pixmap. No stroke or ink moves — the era says alarm in words.
+       8. SECONDARY INK = MID. The centre window label is MID #728f76,
+          README.md's "top-bar text, secondary" and the micro-caption ink of
+          mailbox-trace (x 102, y 145/155, #709174 ≈ MID). Legible at 14px on
+          the ground, unlike the DIM label it replaces.
+       9. DISABLED = OUTLINE ink. Nothing in the material is disabled; the
+          quietest text on any screen is the dashboard tile caption strip
+          (dashboard-trace #caption, bars in #59755b ≈ OUTLINE #5d7752), so a
+          disabled menu row is set in OUTLINE. DIM #3d4d38 is the faint-rule
+          tone and is not legible at 14px.
+      10. TRAY MENU = the category nav / the mail list. store-trace A: an
+          outlined frame x 112..330, y 301..740, rows on a 61px pitch
+          separated by dividers, SMG (y 358..421) filled solid sage — the
+          selection — and an EMPTY cell (y 606..740) closing the frame;
+          mailbox-trace A: frame x 84..451 with 2px row dividers at
+          y 349/411/473/535/596/658, row 1 filled, and a 21px empty band
+          above the first row. So: each menu panel is an outlined 2px frame,
+          every row is separated from the next by a 2px divider, a selected
+          or highlighted row is a solid sage fill inset inside the chrome
+          with ON_SOLID ink, and a dbusmenu separator is an 8px EMPTY CELL
+          between two dividers rather than a floating rule. Rows are 24px
+          inside a 26px pitch, labels 12px in (header inset) after a 16px
+          icon column + 8px gap. The submenu opens leftwards and shares the
+          root frame's left edge as its own right edge, the way adjacent
+          segments of the button row share a divider.
+
+       Not borrowed, deliberately: the header strings' 1px letter-spacing
+       (the bar's labels are mixed-case system strings and iced 0.13 exposes
+       no tracking); the photographic edge halo; the trace's radial ground
+       lift (the golden ground is flat BG). No ornament is added — this is
+       the "necessity over style" era; the chrome is the ornament.
+
+       Palette: only src/eras/entropism.rs consts — BG #110c07, SAGE_SOLID
+       #9cb795, SAGE_TEXT #94bb94, MID #728f76, OUTLINE #5d7752, ON_SOLID
+       #1f2a1c. DIM #3d4d38 is no longer used on this surface.
+
+       Golden geometry kept: 1600x220; strip y 3..28 (bar height 31); tray
+       menu beneath, right edge x 1480; modules and order as bar.rs composes
+       them from the example's sample readings. The diamonds stand in for
+       StatusNotifierItem pixmaps, which the app draws as supplied (the
+       golden's are the example's purple/orange test icons); they wear
+       palette inks here and G2 will differ on exactly those four glyphs. -->
   <rect width="1600" height="220" fill="#110c07"/>
 
-  <!-- ============ BAR STRIP (cells y 3..28, 25px tall, square corners) ============ -->
+  <!-- ============ BAR STRIP: one frame x 6..1594, y 3..28, 2px chrome ============
+       Frame rect at 7,4 1586x23 with a 2px stroke covers y 3..5 and 26..28;
+       interior is x 8..1592, y 5..26 (21px). Segment boundaries below are
+       divider centres; fills are inset 1px inside the chrome.
+
+       left:    nomad 7..72 | 1 72..100 | 2 ..128 | 3 ..156 | 4 ..184 | 5 ..212 | 6 ..240
+       centre:  240..784  focused window, MID, left-aligned at +12
+       right:   icon 784..821 | icon(!) ..888 | BLUE ..945 | SYNC (!) ..1034 |
+                WIFI AFTERLIFE ..1172 | VOL  62% ..1261 | CPU 12% ..1342 |
+                MEM 47% ..1423 | 2026-08-23 ..1528 | 23:41 ..1593 (filled)
+       widths: 14px x 0.58 per character + 2 x 12 inset; icon cells 9 + 19 + 9,
+       the attention cell 9 + 19 + 6 + "(!)" + 9. -->
   <g font-size="14">
+    <!-- fills first, inset inside the chrome -->
+    <rect x="8"    y="5" width="63" height="21" fill="#728f76"/>   <!-- host tape: the band, MID -->
+    <rect x="129"  y="5" width="26" height="21" fill="#9cb795"/>   <!-- workspace 3, active -->
+    <rect x="1529" y="5" width="63" height="21" fill="#9cb795"/>   <!-- clock: the filled last segment -->
 
-    <!-- host tape: filled mid, bg ink -->
-    <rect x="6" y="3" width="71" height="25" fill="#728f76"/>
-    <text x="18" y="20" fill="#110c07">nomad</text>
+    <!-- chrome: the strip and its dividers, 2px OUTLINE, square -->
+    <rect x="7" y="4" width="1586" height="23" fill="none" stroke="#5d7752" stroke-width="2"/>
+    <path fill="none" stroke="#5d7752" stroke-width="2"
+          d="M 72,4 V 27 M 100,4 V 27 M 128,4 V 27 M 156,4 V 27 M 184,4 V 27 M 212,4 V 27 M 240,4 V 27
+             M 784,4 V 27 M 821,4 V 27 M 888,4 V 27 M 945,4 V 27 M 1034,4 V 27 M 1172,4 V 27
+             M 1261,4 V 27 M 1342,4 V 27 M 1423,4 V 27 M 1528,4 V 27"/>
 
-    <!-- workspaces 1..6; 3 active = solid sage fill, dark ink -->
-    <rect x="82.6" y="3" width="35" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
-    <text x="100.1" y="20" text-anchor="middle" fill="#94bb94">1</text>
-    <rect x="123.2" y="3" width="35" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
-    <text x="140.7" y="20" text-anchor="middle" fill="#94bb94">2</text>
-    <rect x="163.8" y="3" width="35" height="25" fill="#9cb795"/>
-    <text x="181.3" y="20" text-anchor="middle" fill="#1f2a1c">3</text>
-    <rect x="204.4" y="3" width="35" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
-    <text x="221.9" y="20" text-anchor="middle" fill="#94bb94">4</text>
-    <rect x="245.0" y="3" width="35" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
-    <text x="262.5" y="20" text-anchor="middle" fill="#94bb94">5</text>
-    <rect x="285.6" y="3" width="35" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
-    <text x="303.1" y="20" text-anchor="middle" fill="#94bb94">6</text>
+    <!-- left group -->
+    <text x="19" y="20" fill="#1f2a1c">nomad</text>
+    <text x="86"  y="20" text-anchor="middle" fill="#94bb94">1</text>
+    <text x="114" y="20" text-anchor="middle" fill="#94bb94">2</text>
+    <text x="142" y="20" text-anchor="middle" fill="#1f2a1c">3</text>
+    <text x="170" y="20" text-anchor="middle" fill="#94bb94">4</text>
+    <text x="198" y="20" text-anchor="middle" fill="#94bb94">5</text>
+    <text x="226" y="20" text-anchor="middle" fill="#94bb94">6</text>
 
-    <!-- centred window label: dim -->
-    <text x="550.1" y="20" text-anchor="middle" fill="#3d4d38">~/src/cp-eras-ui - nvim src/bar.rs</text>
+    <!-- centre segment: the long open string, secondary ink, left-aligned -->
+    <text x="252" y="20" fill="#728f76">~/src/cp-eras-ui - nvim src/bar.rs</text>
 
-    <!-- tray: FLAM icon, ELEM icon (attention -> alert stroke), BLUE label, SYNC alert -->
-    <rect x="779.6" y="3" width="37" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
-    <path d="M 788.6 15.5 L 798.1 6 L 807.6 15.5 L 798.1 25 Z" fill="#8800aa"/>
-    <rect x="822.2" y="3" width="37" height="25" fill="none" stroke="#728f76" stroke-width="1"/>
-    <path d="M 831.2 15.5 L 840.7 6 L 850.2 15.5 L 840.7 25 Z" fill="#ff6600"/>
-    <rect x="864.8" y="3" width="59" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
-    <text x="894.3" y="20" text-anchor="middle" fill="#94bb94">BLUE</text>
-    <rect x="929.4" y="3" width="59" height="25" fill="none" stroke="#728f76" stroke-width="1"/>
-    <text x="958.9" y="20" text-anchor="middle" fill="#728f76">SYNC</text>
-
-    <rect x="994" y="3" width="140" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
-    <text x="1064" y="20" text-anchor="middle" fill="#94bb94">WIFI AFTERLIFE</text>
-    <rect x="1139.6" y="3" width="91" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
-    <text x="1185.1" y="20" text-anchor="middle" fill="#94bb94">VOL  62%</text>
-    <rect x="1236.2" y="3" width="83" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
-    <text x="1277.7" y="20" text-anchor="middle" fill="#94bb94">CPU 12%</text>
-    <rect x="1324.8" y="3" width="83" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
-    <text x="1366.3" y="20" text-anchor="middle" fill="#94bb94">MEM 47%</text>
-    <rect x="1413.4" y="3" width="108" height="25" fill="none" stroke="#5d7752" stroke-width="1"/>
-    <text x="1467.4" y="20" text-anchor="middle" fill="#94bb94">2026-08-23</text>
-    <rect x="1527" y="3" width="67" height="25" fill="#9cb795"/>
+    <!-- right group: tray first -->
+    <path d="M 793 15.5 L 802.5 6 L 812 15.5 L 802.5 25 Z" fill="#94bb94"/>
+    <path d="M 830 15.5 L 839.5 6 L 849 15.5 L 839.5 25 Z" fill="#94bb94"/>
+    <text x="855" y="20" fill="#94bb94">(!)</text>
+    <text x="916.5"  y="20" text-anchor="middle" fill="#94bb94">BLUE</text>
+    <text x="989.5"  y="20" text-anchor="middle" fill="#94bb94">SYNC (!)</text>
+    <text x="1103"   y="20" text-anchor="middle" fill="#94bb94">WIFI AFTERLIFE</text>
+    <text x="1216.5" y="20" text-anchor="middle" fill="#94bb94">VOL  62%</text>
+    <text x="1301.5" y="20" text-anchor="middle" fill="#94bb94">CPU 12%</text>
+    <text x="1382.5" y="20" text-anchor="middle" fill="#94bb94">MEM 47%</text>
+    <text x="1475.5" y="20" text-anchor="middle" fill="#94bb94">2026-08-23</text>
     <text x="1560.5" y="20" text-anchor="middle" fill="#1f2a1c">23:41</text>
   </g>
 
-  <!-- ============ TRAY MENU ============
-       root panel filled bg, outlined; selected rows solid sage.
-       open chain: row 0 (Devices) submenu -> panel to its LEFT (chain grows left). -->
+  <!-- ============ TRAY MENU: outlined frames with row dividers ============
+       Root panel x 1281..1480 (right edge 1480), rows 24px on a 26px pitch
+       from the frame's top edge (store-trace nav: RIFLES starts at the frame
+       top, y 301), 2px dividers between rows, the separator an 8px empty
+       cell. Icon column: 16px glyph at +12..+28, label at +36 — every row
+       shares the label x whether or not it has an icon (bar.rs reserves the
+       column per panel), which is also the fix for the old icon/text overlap.
+       The submenu chain grows LEFT: panel x 1141..1281, its right edge on the
+       root's left edge, top aligned with the parent row (row 0 -> y 31). -->
+
   <!-- Devices submenu: Mount / Eject -->
-  <rect x="1141" y="31" width="140" height="63.2" fill="#110c07" stroke="#5d7752" stroke-width="1"/>
   <g font-size="14">
-    <path d="M 1161 49.8 L 1169 41.8 L 1177 49.8 L 1169 57.8 Z" fill="#8800aa"/>
-    <text x="1175" y="55" fill="#94bb94">Mount</text>
-    <text x="1175" y="80.6" fill="#94bb94">Eject</text>
+    <rect x="1141" y="31" width="140" height="52" fill="#110c07" stroke="#5d7752" stroke-width="2"/>
+    <path d="M 1142,57 H 1280" fill="none" stroke="#5d7752" stroke-width="2"/>
+    <path d="M 1153 44 L 1161 36 L 1169 44 L 1161 52 Z" fill="#94bb94"/>
+    <text x="1177" y="49" fill="#94bb94">Mount</text>
+    <text x="1177" y="75" fill="#94bb94">Eject</text>
   </g>
 
-  <!-- root menu: Devices (open, selected) / Disconnect (dim) / rule / Enable networking (selected) / Quit -->
-  <rect x="1281" y="31" width="199" height="124" fill="#110c07" stroke="#5d7752" stroke-width="1"/>
+  <!-- root menu: Devices (open parent, solid) / Disconnect (disabled, OUTLINE ink)
+       / empty separator cell / Enable networking (highlighted, solid) / Quit -->
   <g font-size="14">
-    <rect x="1281" y="37" width="199" height="25.6" fill="#9cb795"/>
-    <path d="M 1300 49.8 L 1308 41.8 L 1316 49.8 L 1308 57.8 Z" fill="#1f2a1c"/>
-    <text x="1315" y="55" fill="#1f2a1c">Devices</text>
-    <text x="1468" y="55" text-anchor="end" fill="#1f2a1c">&lt;</text>
-    <text x="1293" y="80.6" fill="#3d4d38">Disconnect</text>
-    <line x1="1291" y1="93" x2="1470" y2="93" stroke="#5d7752" stroke-width="1"/>
-    <rect x="1281" y="97.7" width="199" height="25.6" fill="#9cb795"/>
-    <text x="1293" y="115.7" fill="#1f2a1c">Enable networking</text>
-    <path d="M 1300 141.3 L 1308 133.3 L 1316 141.3 L 1308 149.3 Z" fill="#94bb94"/>
-    <text x="1315" y="147.3" fill="#94bb94">Quit</text>
+    <rect x="1281" y="31" width="199" height="114" fill="#110c07" stroke="#5d7752" stroke-width="2"/>
+    <!-- solid rows, inset inside the chrome -->
+    <rect x="1282" y="32" width="197" height="24" fill="#9cb795"/>
+    <rect x="1282" y="94" width="197" height="24" fill="#9cb795"/>
+    <!-- row dividers: after Devices, after Disconnect, after the empty cell, after Enable networking -->
+    <path d="M 1282,57 H 1479 M 1282,83 H 1479 M 1282,93 H 1479 M 1282,119 H 1479"
+          fill="none" stroke="#5d7752" stroke-width="2"/>
+
+    <path d="M 1293 44 L 1301 36 L 1309 44 L 1301 52 Z" fill="#1f2a1c"/>
+    <text x="1317" y="49" fill="#1f2a1c">Devices</text>
+    <text x="1468" y="49" text-anchor="end" fill="#1f2a1c">&lt;</text>
+
+    <text x="1317" y="75" fill="#5d7752">Disconnect</text>
+
+    <text x="1317" y="111" fill="#1f2a1c">Enable networking</text>
+
+    <path d="M 1293 132 L 1301 124 L 1309 132 L 1301 140 Z" fill="#94bb94"/>
+    <text x="1317" y="137" fill="#94bb94">Quit</text>
   </g>
+
+  <!-- IMPLEMENTATION DELTA (for bar.rs / Style) — every change from the
+       current bar.rs rendering, in the order a coding model would apply it.
+       The SVG above is the target; bar.rs follows it.
+
+       CORNERS   Square everywhere (Corner::Square already). Nothing else.
+
+       STRIP     The bar is one outlined frame, not a row of outlined cells.
+                 Outer frame 2px OUTLINE (#5d7752) at x 6..1594, y 3..28 (the
+                 bar's [3,6] padding, stroke inside it). Cells have NO
+                 individual outline and NO spacing (gap 0 instead of
+                 metrics.gap*0.4); adjacent cells are separated by one 2px
+                 vertical OUTLINE divider spanning the frame's full inner
+                 height (y 5..26). The left run (tape + workspaces) and the
+                 right run (tray .. clock) are contiguous; the window label
+                 sits in the open centre segment between the two dividers
+                 that close each run (x 240 and x 784 in the golden layout).
+
+       STROKE    2px for the bar frame and every divider and menu panel
+                 stroke (mailbox-trace measures the designed stroke at 2px
+                 on all frames). Either raise entropism metrics.stroke to
+                 2.0 (the screens' traces measure the same 2px) or give
+                 Bar/menu their own stroke; the bar must not draw 1px here.
+
+       INSET     Text inset 12px from a segment's divider (cell padding
+                 [2,12], width_for = chars x 0.58em + 24). Workspace cells
+                 are 28px wide with the digit centred. Icon cells are
+                 9 + icon + 9 wide (icon_size unchanged: 19px).
+
+       FILLS     idle: none (ground BG shows through the frame).
+                 active/selected (workspace, clock): SAGE_SOLID #9cb795,
+                   inset 1px inside the stroke (x from divider+1 to next
+                   divider-1, y 5..26), ink ON_SOLID #1f2a1c.
+                 tape (host): MID #728f76 fill, same inset, ink ON_SOLID
+                   #1f2a1c (was BG ink) — the login band's dark-on-sage.
+                 alert (alert_cell, icon attention): fill none, stroke and
+                   ink UNCHANGED from idle (SAGE_TEXT); the state is spelt as
+                   a " (!)" suffix on the label ("SYNC (!)", "MUT  62% (!)",
+                   "NET (!)" for the offline label, dashes kept); an attention icon cell draws "(!)" in body
+                   ink 6px after the pixmap. palette.alert is therefore
+                   unused by the bar in this era; leave it MID for screens.
+                 disabled (menu): ink OUTLINE #5d7752 (was DIM #3d4d38).
+                 window label: ink MID #728f76 (was DIM), left-aligned 12px
+                   after the left run's closing divider, not centred.
+
+       DIVIDERS  2px OUTLINE, integer x, full inner height. One between every
+                 pair of adjacent cells in a run, and one closing each run
+                 against the centre segment. No divider is drawn on the
+                 frame's own edge.
+
+       TAPE      Not a separate shape: the first segment of the left run,
+                 65px wide for "nomad" (12px inset each side + 4 extra as
+                 today), filled MID inside the frame like any other segment.
+                 No cut, no chamfer, no notch.
+
+       MENU      Panel: 2px OUTLINE stroke, BG fill, no inner padding
+                 (MENU_PANEL_AIR 0, MENU_PANEL_SIDE 0) — rows start at the
+                 frame's inner edge. Row: 24px tall (14px text + 5px air top
+                 and bottom), label at +36 (12 inset + 16 icon + 8 gap) for
+                 every row in a panel that has any icon, +12 otherwise; icon
+                 16px square at +12..+28, vertically centred. A 2px OUTLINE
+                 divider follows every row except the last, so the pitch is
+                 26. Separator: an empty 8px cell between two dividers (no
+                 side air, no floating rule). Highlight/selected row: fill
+                 SAGE_SOLID inset 1px inside the chrome, ink ON_SOLID;
+                 marker "<" 12px from the right edge in the row's ink (MID
+                 when not selected). Submenu: same construction, right edge
+                 coincident with the parent panel's left edge, top aligned
+                 to the parent row. Panel widths unchanged (199 / 140).
+
+       ORNAMENT  None added. No glow, no halo, no gradient, no tracking. -->
 </svg>

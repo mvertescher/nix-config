@@ -1,0 +1,246 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <!-- KITSCH mailbox-trace: schematic of images/kitsch-mail.png
+       (Behance fd108d118663901.60e5fa669a7cd, screen #51 of the kitsch run
+       — the MAILBOX). Source is 3840x2160; every coordinate here is the
+       source measured on a 1600x900 LANCZOS downscale (photo / 2.4), by
+       column/row profiles of teal and yellow ink masks plus
+         scripts/extract_spec.py images/kitsch-mail.png
+       and the trace is held to the source by
+         scripts/fidelity_check.sh -\-inventory kitsch mailbox
+
+       What the source shows, top to bottom:
+         - a rose bloom over the top of a near-black ground, brightest
+           at top centre (#ae4f62 at y 10), gone by y~420 and dark
+           before the right edge (x>1500 is black even at y 10); the
+           left margin is grey-green rather than black to y~550
+         - header, three columns: boxed letters A (x 164..189, y
+           105..130) / B (586..610) / C (1216..1241) with three lines of
+           in-fiction micro-text beside each (baselines 110/119/128);
+           labels USER (x 166..203) / DESCRIPTION (587..682) /
+           SECURITY LEVEL (1218..1334) at cap y 151..158; then
+           USER: a box x 155..349 whose bottom is stepped — y 228 on
+           the right, y 236 under the first 55px, joined by a short
+           diagonal at x 208..220 — holding GUES 7702 (cap y 199..213);
+           DESCRIPTION: the same box at x 575..769 holding MAILBOX;
+           SECURITY LEVEL: four 56x34 boxes at x 1215/1275/1336/1396,
+           y 190..223, the second FILLED AMBER (#d88d3c sampled over
+           the digits; the flat fill reads #f0a93c)
+         - THE LIST BRACKET: a 2px teal outline, top edge y 268 from
+           x 138 fading out by x~402, top-left corner r~20, left edge
+           x 120.5 from y 288 down. At y~600 the left edge FORKS: one
+           branch rounds right into a horizontal at y 644 (to x 282)
+           and then a ~37-degree diagonal down-right to (374,748); the
+           other continues down and rounds (r~60) into a bottom line
+           at y 748 that runs right, fading by x~451. The region between
+           the two branches is SOLID TEAL (#1db5a4) — the wave.
+         - five message rows at a 60px pitch inside the bracket, each an
+           outlined envelope glyph at x 166..185 and a teal title at
+           x 220 (cap ~15px) over a smaller "from:" line 20px below:
+             YOU'LL REGRET THAT / from: Jackie   (selected, y 313..351)
+             URGENT INFORMATION (!) / from: Mom
+             HEIST DATA SENT TO YOU / from: 805000451
+             I'M WORRIED MAN / from: Rachel Ross
+             SPECIAL OFFER TO YOU! / from: JINX JINX STORE
+           the selected row is SOLID YELLOW in two pieces split by a
+           2px gap at x 196: an icon cell x 154..195, y 313..351 with
+           its bottom-right chamfered, and a body x 197..491, y 313..346
+           whose right end is chamfered from (491,325) to (471,346)
+         - the message panel, yellow: a SOLID tab x 575..1127, y
+           313..349, top-right chamfered (1105,313)->(1127,337); below
+           it an outlined "flag" band — a diagonal from the tab's left
+           edge (575,327) out to (540,363), down to y 384, then a rule
+           at y 384 from x 541 to 1104 that chamfers up to the right
+           edge at (1127,361) — holding two lines of CC35 micro-text
+           at x 578; the body outline x 576..1127 from y 384 to 748
+           (bottom corners r~8, measured on a 6x zoom of the corner)
+           holding three lorem paragraphs at x 592, line pitch 19,
+           baselines 411..487 / 525,544 / 582..620. The outline is a
+           1.2px line at full tab brightness (peak (248,200,5) across
+           the right edge at y 500 — pixels 1127.1..1127.9 at 1600
+           scale — and the same across the bottom edge and the y 384
+           rule); an earlier version drew it 1.5px on integer
+           coordinates, which renders as two half-bright pixels and
+           reads as a dimmer yellow. The paragraphs are heavier and
+           wider than Rajdhani 15: line 1 spans x 592..1083 and lines
+           3/8 reach x 1096 in the photo, ascender-to-descender ~12px,
+           ink fraction of the line band 0.21..0.25 (0.19 for the old
+           Rajdhani 15/400 text), pixel mean (215,170,41) with the
+           bright 90th percentile at (255,208) — i.e. the same yellow
+           as the tab, so the text is drawn font-size 16.8 weight 500
+           in #f5cd2a, which reproduces the line extents to ~1px
+         - right column, four 161px-wide chevron tabs at x 1216..1377,
+           y 306 / 359 / 414 / 468 (46 tall): the left edge rises into
+           a peak at x~1239 and steps down onto the top edge; the right
+           end chamfers back from (1377,383) to (1355,405). DETAILS is
+           solid yellow; MODS / PRICE / DAMAGE are teal outlines
+         - one line of BRIGHT mint micro-text centred at the foot, y
+           864..869, x 504..1095 (pixel p90 (127,240,209), so #82f0d3
+           at font-size 9 — an earlier version used size 8 #5fc9b5,
+           which ended at x 1023 and was too dim)
+
+       Palette sampled by k-means (extract_spec.py):
+         ink    #f2c825 (3.5%)  #44bdab (2.7%)
+         ground #0e0d0c (47%) #221f1b (14%) #a2495a (10%) #8e384f (9%)
+                #6d303d (7%) #45282b (7%)
+       Spot samples: panel tab #fed82e, selected row #ccad19 (a deeper
+       yellow than the tab), DETAILS #dfb715, wave #1db5a4. -->
+  <defs>
+    <radialGradient id="bloom" cx="0.5" cy="-0.25" r="0.9">
+      <stop offset="0"    stop-color="#b05064"/>
+      <stop offset="0.35" stop-color="#933b53"/>
+      <stop offset="0.6"  stop-color="#5c2236"/>
+      <stop offset="0.85" stop-color="#1e0f14"/>
+      <stop offset="1"    stop-color="#0e0d0c"/>
+    </radialGradient>
+    <radialGradient id="leftwash" cx="0" cy="0.5" r="0.5">
+      <stop offset="0"   stop-color="#2a2e2a" stop-opacity="1"/>
+      <stop offset="0.6" stop-color="#2a2e2a" stop-opacity="0.5"/>
+      <stop offset="1"   stop-color="#2a2e2a" stop-opacity="0"/>
+    </radialGradient>
+    <!-- the bracket's top and bottom lines fade out to the right -->
+    <linearGradient id="fadeR" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0"   stop-color="#5fd6c2" stop-opacity="1"/>
+      <stop offset="0.6" stop-color="#5fd6c2" stop-opacity="1"/>
+      <stop offset="1"   stop-color="#5fd6c2" stop-opacity="0"/>
+    </linearGradient>
+    <!-- one chevron tab, 161x46, origin at its bbox top-left -->
+    <path id="chev" d="M 0,46 V 24 L 22,0 L 28,9 H 155 Q 161,9 161,14 V 24 L 139,46 Z"/>
+    <!-- outlined envelope glyph, 20x13, origin top-left -->
+    <path id="env" d="M 0,0 H 20 V 13 H 0 Z M 0,0 L 10,8 L 20,0"/>
+    <rect id="badge" width="56" height="34" rx="2"/>
+  </defs>
+
+  <rect width="1600" height="900" fill="#0e0d0c"/>
+  <rect width="1600" height="620" fill="url(#bloom)"/>
+  <rect x="0" y="60" width="600" height="780" fill="url(#leftwash)"/>
+
+  <!-- ==== header: boxed letters, annotations, labels ==== -->
+  <g font-family="Rajdhani" fill="#7fd4cc">
+    <g font-size="7.5" letter-spacing="0.6" fill="#4f9a92">
+      <text x="205" y="110">SPARE TIME MANAGER WAS DEVELO-</text>
+      <text x="205" y="119">PED BY SEOCHO. SERVING CUSTO-</text>
+      <text x="205" y="128">MERS SINCE 2006.</text>
+      <text x="625" y="110">MAPS ARE PROVIDED BY SEOCHO.</text>
+      <text x="625" y="119">SATELITE SERVICES SINCE 2006.</text>
+      <text x="1257" y="110">SPARE TIME MANAGER WAS DEVELO-</text>
+      <text x="1257" y="119">PED BY SEOCHO. SERVING CUSTO-</text>
+      <text x="1257" y="128">MERS SINCE 2006.</text>
+    </g>
+    <rect x="164" y="105" width="25" height="25" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
+    <text x="176.5" y="123" font-size="14" text-anchor="middle">A</text>
+    <text x="166" y="159" font-size="12" letter-spacing="1.5">USER</text>
+    <rect x="586" y="105" width="24" height="24" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
+    <text x="598" y="123" font-size="14" text-anchor="middle">B</text>
+    <text x="587" y="159" font-size="12" letter-spacing="1.5">DESCRIPTION</text>
+    <rect x="1216" y="105" width="25" height="25" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
+    <text x="1228.5" y="123" font-size="14" text-anchor="middle">C</text>
+    <text x="1218" y="159" font-size="12" letter-spacing="1.5">SECURITY LEVEL</text>
+  </g>
+
+  <!-- USER / DESCRIPTION boxes: stepped bottom edge, y 228 right / 236 left -->
+  <g fill="none" stroke="#7fd4cc" stroke-width="2">
+    <path d="M 155,185 H 349 V 228 H 220 L 208,236 H 155 Z"/>
+    <path d="M 575,185 H 769 V 228 H 640 L 628,236 H 575 Z"/>
+  </g>
+  <g font-family="Rajdhani" font-size="20" font-weight="600" letter-spacing="0.5" fill="#a9e6df">
+    <text x="166" y="213">GUES 7702</text>
+    <text x="588" y="213">MAILBOX</text>
+  </g>
+
+  <!-- security badges, y 190..223, 02 filled amber -->
+  <g font-family="Rajdhani" font-size="16" font-weight="600" text-anchor="middle">
+    <use href="#badge" x="1215" y="190" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
+    <text x="1243" y="212" fill="#7fd4cc">01</text>
+    <use href="#badge" x="1275" y="190" fill="#f0a93c"/>
+    <text x="1303" y="212" fill="#7a3a1a">02</text>
+    <use href="#badge" x="1336" y="190" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
+    <text x="1364" y="212" fill="#7fd4cc">03</text>
+    <use href="#badge" x="1396" y="190" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
+    <text x="1424" y="212" fill="#7fd4cc">04</text>
+  </g>
+
+  <!-- ==== the list bracket and its wave ==== -->
+  <!-- the wave: solid teal between the two branches of the left edge -->
+  <path d="M 120.5,606 Q 120.5,644 158,644 H 278 Q 289,644 296,653 L 362,741 Q 367,748 376,748 H 180 Q 120.5,748 120.5,690 Z"
+        fill="#1db5a4"/>
+  <!-- outline: top edge (fading right), corner, left edge, the two branches -->
+  <path d="M 402,268 H 140 Q 120.5,268 120.5,288 V 606 Q 120.5,644 158,644 H 278 Q 289,644 296,653 L 362,741 Q 367,748 376,748 H 451"
+        fill="none" stroke="url(#fadeR)" stroke-width="2"/>
+  <path d="M 120.5,606 V 690 Q 120.5,748 180,748" fill="none" stroke="#5fd6c2" stroke-width="2"/>
+
+  <!-- selected row: icon cell + body, solid yellow, split by a 2px gap at x 196 -->
+  <g fill="#e8c21f">
+    <path d="M 154,313 H 195 V 345 L 176,351 H 154 Z"/>
+    <path d="M 197,313 H 491 V 325 L 471,346 H 197 Z"/>
+  </g>
+  <use href="#env" x="165" y="325" fill="none" stroke="#4a3a05" stroke-width="1.5"/>
+  <text x="220" y="340" font-family="Rajdhani" font-size="17" letter-spacing="0.5" fill="#4a3a05">YOU'LL REGRET THAT</text>
+  <text x="220" y="362" font-family="Rajdhani" font-size="11" fill="#f2c825">from: Jackie</text>
+
+  <!-- the four unselected rows -->
+  <g fill="none" stroke="#5fd6c2" stroke-width="1.5">
+    <use href="#env" x="166" y="385"/>
+    <use href="#env" x="166" y="445"/>
+    <use href="#env" x="166" y="505"/>
+    <use href="#env" x="166" y="564"/>
+  </g>
+  <g font-family="Rajdhani" fill="#7fe0c8">
+    <g font-size="18" letter-spacing="0.5">
+      <text x="220" y="399">URGENT INFORMATION (!)</text>
+      <text x="220" y="459">HEIST DATA SENT TO YOU</text>
+      <text x="220" y="518">I'M WORRIED MAN</text>
+      <text x="220" y="578">SPECIAL OFFER TO YOU!</text>
+    </g>
+    <g font-size="11">
+      <text x="220" y="421">from: Mom</text>
+      <text x="220" y="481">from: 805000451</text>
+      <text x="220" y="541">from: Rachel Ross</text>
+      <text x="220" y="601">from: JINX JINX STORE</text>
+    </g>
+  </g>
+
+  <!-- ==== message panel ==== -->
+  <!-- solid tab, top-right chamfered -->
+  <path d="M 578,313 H 1105 L 1127,337 V 349 H 575 V 316 Z" fill="#fbd42c"/>
+  <text x="590" y="340" font-family="Rajdhani" font-size="17" letter-spacing="0.5" fill="#5a4a14">YOU'LL REGRET THAT</text>
+  <!-- flag band + body outline: 1.25px on half-pixel coordinates so the line renders as one bright pixel, as in the photo -->
+  <path d="M 575,327 L 540,363 V 384.2 H 1104 L 1127.5,360.7 M 1127.5,337 V 739.5 Q 1127.5,747.5 1119.5,747.5 H 584.5 Q 576.5,747.5 576.5,739.5 V 384.2"
+        fill="none" stroke="#f2c825" stroke-width="1.25"/>
+  <g font-family="Rajdhani" font-size="6" letter-spacing="0.3" fill="#e3bd20">
+    <text x="578" y="365">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE</text>
+    <text x="578" y="373">ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+  </g>
+  <!-- body: three lorem paragraphs, x 592, pitch 19; size/weight/colour measured, see header -->
+  <g font-family="Rajdhani" font-size="16.8" font-weight="500" fill="#f5cd2a">
+    <text x="592" y="411">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod</text>
+    <text x="592" y="430">tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim</text>
+    <text x="592" y="449">veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea com-</text>
+    <text x="592" y="468">modo consequat. Duis aute irure dolor in reprehenderit in voluptate velit</text>
+    <text x="592" y="487">esse cillum dolore eu fugiat nulla pariatur.</text>
+    <text x="592" y="525">Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia de-</text>
+    <text x="592" y="544">serunt mollit anim id est laborum.</text>
+    <text x="592" y="582">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium</text>
+    <text x="592" y="601">doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inven-</text>
+    <text x="592" y="620">tore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</text>
+  </g>
+
+  <!-- ==== right column: DETAILS (solid) over MODS / PRICE / DAMAGE ==== -->
+  <use href="#chev" x="1216" y="306" fill="#e6c020"/>
+  <g fill="none" stroke="#5fd6c2" stroke-width="1.5">
+    <use href="#chev" x="1216" y="359"/>
+    <use href="#chev" x="1216" y="414"/>
+    <use href="#chev" x="1216" y="468"/>
+  </g>
+  <g font-family="Rajdhani" font-size="16" letter-spacing="1">
+    <text x="1243" y="339" fill="#5a4a14">DETAILS</text>
+    <text x="1243" y="393" fill="#7fe0c8">MODS</text>
+    <text x="1243" y="447" fill="#7fe0c8">PRICE</text>
+    <text x="1243" y="501" fill="#7fe0c8">DAMAGE</text>
+  </g>
+
+  <!-- ==== footer micro-text, y 864..869, x 503..1095 ==== -->
+  <g font-family="Rajdhani" font-size="9" letter-spacing="0.2" fill="#82f0d3">
+    <text x="503" y="870" font-weight="700">ARASAKA CONSUMER TECHNOLOGY</text>
+    <text x="640" y="870">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+  </g>
+</svg>

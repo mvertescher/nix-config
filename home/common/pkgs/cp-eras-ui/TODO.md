@@ -137,6 +137,329 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   deliberate original compositions. Settle this before rebuilding any
   dashboard arm, and do not touch `tests/golden/` until it is settled.
 
+### Trace improvements (2026-09-02)
+
+**Uncommitted in `public/` as of 2026-09-02:** the twelve
+`{login,mailbox,store}-trace.svg` files (untracked — `git add` them or
+nix will not see them), every `dashboard-trace.svg` and `bar.svg`,
+`docs/PIPELINE.md`, `docs/sources.md`, `scripts/fidelity_check.sh`
+(per-process scratch dir, 16-entry source map, `--inventory <era>`
+runs all four screens, pinned fontconfig) and `scripts/spec_diff.py`
+(rect↔chamfer soft match, `--min-class-share`).
+
+All 16 era × screen traces exist and every one was checked by eye
+against its source (`images/compare/<era>-<screen>-{trace,overlay}.png`,
+regenerate with rsvg-convert + `magick`). Gate results are in
+`docs/sources.md` § G1. **Every item here needs a vision-capable
+model** (standing rule above).
+
+**Second pass, same day** — one vision agent per era, file-disjoint on
+`docs/<era>/`, every claim re-gated and overlaid by the orchestrator
+before ticking. All 16 now PASS. What the pass found is as useful as
+what it fixed: **five of the twelve first-pass items below had a false
+premise**, each one written from memory of the overlay
+rather than from a measurement. Corrected in place rather than deleted,
+so the next list-writer sees the pattern: measure before you file.
+
+Gate fails — all cleared:
+
+- [x] **`neomil/store-trace.svg` — FAIL 55% → PASS 71%.** Rifles
+  redrawn as four layered symbols (body / hatched forend / highlights /
+  detail lines) measured on a 10px grid; card 2's is solid and 14px
+  further left as in the photo. Kanji is real Noto CJK text on the
+  slanted band. Card 4 ends in a plain cut at x 1557 — the chamfer and
+  right-edge bar the trace had there were invented. Premises corrected:
+  there are four rifle drawings, not two; only card 4 ever had a
+  clipPath, so there was nothing to check on the other three.
+- [x] **`entropism/mailbox-trace.svg` — FAIL 60% → PASS 88%.** Every
+  outlined frame in the material photographs as 2px stroke + 1px
+  near-black undershoot + faint sage overshoot 2–4px out; drawn as
+  three concentric strokes per section and labelled in the header as a
+  photographic halo, not a designed glow, so the iced side keeps the
+  README's "no glow" rule. Envelope glyphs rebuilt from 10x crops.
+  Premise corrected: the extractor's "second fit of the frame" was a
+  text-halo blob spanning rows 2..7, not an outer ring; the ring is
+  still real, and the gate now pairs the two by bbox coincidence.
+- [x] **`neokitsch/mailbox-trace.svg` — FAIL 0.61 → PASS 0.68, all
+  four source families paired.** The source's gold is three-tiered
+  (bright bar/tabs, mid text cores, dark outlines) and the trace was
+  one flat bright gold — so k-means never spent a centroid on the dark
+  tier. Selection bar is now wood veneer (32 fine strokes, seam at x
+  273), RIFLES outlines dark gold, list titles mid gold.
+
+Things a viewer notices — all done:
+
+- [x] **`neomil/dashboard-trace.svg` detail panel** — premise
+  corrected: the source chamfers only TR (8px) and BL (42px); TL and
+  BR are square, and the old trace's 14px TL chamfer was the real
+  error. Redrawn from row/column scans, bright right-edge bar and
+  glitch hairlines added, invented scrollbar rail removed. 94% → 94%.
+- [x] **`entropism/dashboard-trace.svg` footer** — premise corrected:
+  only BUILD is right-anchored (at 1525); PROVIDED BY is left-anchored
+  at 519 exactly as on the mailbox, and the trace had it 180px too far
+  right. 92% → 92%.
+- [x] **Kitsch ghost cards** — premise **false**: measured in each
+  card's own frame, every ghost has the same 162px long axis as the
+  solid card. The real errors were the card itself (drawn 190x60 r14,
+  photo 162x50 r8), the ghost step (+20,−20 in screen space for every
+  stack), the counts (6/7/6/6/5/6) and two hub centres. Also the
+  footer had been drawn yellow; it is mint on all four kitsch screens.
+  0.54 → 0.59. `store-trace.svg` has no ghost stacks at all.
+- [x] **Neokitsch halo ported into `dashboard-trace.svg`** verbatim
+  from login. 0.54 → 0.60. The glow family's centroid moved +221px
+  (halo is now everywhere content is; the source's glow weights left)
+  — reported, not tuned.
+- [x] **Font pinning** — `fidelity_check.sh` now writes a private
+  `fonts.conf` (system config + `fonts/`) and exports
+  `FONTCONFIG_FILE`. Premise half-wrong: the neokitsch "4S T" logotype
+  gap persists with fonts pinned, so it is glyph spacing in the SVG
+  (see below), not fallback.
+
+Texture — done where cheap:
+
+- [x] Rifles: neomil store (line art, above); kitsch store (silhouette
+  from the mint-mask column profiles with evenodd holes for port,
+  magazine well and trigger guard; card 2's gun sits 14px higher).
+- [x] ~~QR glyphs (neomil login, entropism login)~~ — premise false
+  twice: **neither login has a QR**. The neomil store's socket glyph
+  is a 24-cell noise scatter (was drawn as a finder-square code — the
+  schematic was the fabrication); the entropism store's is a 9x9 dot
+  matrix with the middle row and column empty. Both now traced as
+  measured.
+- [x] Kitsch store band glyphs redrawn as distinct marks (cert square,
+  disc-in-square, C-in-C, warning triangle, micro-text rules) at
+  measured positions — they were also 5px too high.
+- [x] Neokitsch wood grain on SMG, card 2 and basket (~2.1px pitch,
+  seams at SMG x 192.5 / basket x 1374, card 2's fan-in stripe at y
+  531). Gate 0.63 → 0.60 because k-means re-partitioned the glow
+  family; accepted — overlay is closer. Revert is
+  `/tmp/store-trace.svg.bak` if the number is preferred.
+- [x] Entropism envelope glyphs (above); kitsch login chip glyph
+  (hexagon, slash, wedge, bottom marks from a 6x zoom). Kitsch login
+  also got its barcode regenerated from the column profile (50 bars;
+  the old list merged neighbours) and the bracket at the measured
+  1.3px. 0.47 → 0.54. Kitsch mailbox: body text to the measured line
+  extents, outline 1.25px on .5 coordinates. 0.46 → 0.62.
+- [x] Bar tray icons, all four `bar.svg`: they were `#8800aa` /
+  `#ff6600` everywhere. Now era ink for idle, era alert colour for
+  attention (neomil #de2e2e/#ff3b45, entropism #94bb94/#728f76,
+  kitsch #7ddec8/#fcc428, neokitsch #e7c686/#fcc474). G2 will report
+  the drift against the goldens on exactly those diamonds — expected;
+  the goldens follow when the Rust bar is restyled.
+
+Still open after the second pass (each measured, none gating):
+
+- [ ] **Neokitsch "4S T" logotype gap** (`store-trace.svg`, also the
+  kitsch one's letter-spacing and "MAGNUM 650" title width) — the S–T
+  gap is in the SVG's glyph spacing, not font fallback. Measure the
+  source's advance and set `letter-spacing` / explicit x per glyph.
+- [ ] **Entropism `dashboard-trace.svg` header strip** — strings ~8%
+  short and ~40px left (font-size 14 vs the mailbox's 15); same fix
+  shape as the footer: size 15, x 61 / 517 / 1382.
+- [ ] **Entropism halo consistency** — only `mailbox-trace.svg` carries
+  the measured three-stroke edge profile; the other three entropism
+  traces draw a plain 2px stroke. Either port the profile (same
+  numbers) or leave, since it is photographic and the iced side
+  ignores it either way. Same question for line widths generally: the
+  kitsch pass found 2px where the photo has 1.2px and dim/short
+  footers on every kitsch screen; the other eras were not checked for
+  this.
+- [ ] **Neokitsch mailbox halo is ~2.4x too abundant around body text**
+  (9983 vs 4116 glow pixels in a 592x40 crop; between-line rows ~(39,
+  30,32) vs source ~(20,18,22)); around rules it matches. Removing the
+  halo split the gold correctly on its own, so the halo is what steals
+  the centroid. Probably a smaller x-blur for text than for rules.
+- [ ] Neokitsch violet haze is larger than the source's on all three
+  new screens (ground ~54–59% vs 61–67%); the source typeface is wider
+  than Rajdhani (FROM: JACKIE 82px vs 77px); card QR glyphs are
+  coarser than the source's 9x9.
+- [ ] Neomil: store card 4's title is ghosted/duplicated in the photo
+  (glitch treatment); mailbox has small QR-like glyphs beside the
+  panel the trace simplifies; dashboard glitch echoes are two hairline
+  pairs where the photo has a few more fragments.
+- [ ] Entropism mailbox T1–T4 glyphs are ~26px against the source's
+  ~30; `bar.svg` menu icons overlap the row text (icon to 1177, text
+  at 1175) — pre-existing, the golden has a gap.
+- [ ] Kitsch store card 2's band is a full thin outline with a
+  chamfered right end ~3px above the two rules the trace draws;
+  PETROCHEM box ~2px left.
+- [ ] Kitsch mailbox yellow family sits at 0.46 IoU because the
+  extractor hole-fills the photo's closed panel outline into a solid
+  block while the render's antialiased rounded corners break the ring;
+  not a trace fault, do not square the corners.
+
+Housekeeping, blocked on decisions above:
+
+- [ ] **Delete `docs/<era>/target-app.svg` ×4** — superseded by
+  `store-trace.svg` (neomil: by `mailbox-trace.svg` + `store-trace.svg`)
+  and marked so in `docs/sources.md`. Kept only until the iced store
+  screen is rebuilt from the trace, and because `src/style.rs`,
+  `src/palette.rs` and `src/widgets/ornament.rs` still cite
+  `target-app.svg` / `target-components.svg` by coordinate in their doc
+  comments — those references move to the traces in the same change.
+  Note `neomil/target-components.svg` samples nothing from its run
+  either; it goes at the same time or gets rebuilt from the four neomil
+  traces.
+- [ ] **`docs/<era>/dashboard.svg` ×4** are the app-shaped composites
+  and all four are known-wrong against their traces — the two kitsch/
+  neokitsch ones are the item above; neomil and entropism are the same
+  fault with a smaller number. Blocked on the `Layout` decision.
+
+### Bar restyle (2026-09-02) — SVG done, `bar.rs` has not followed
+
+The four `docs/<era>/bar.svg` were one skeleton with a palette swap.
+Each was redrawn by a vision agent from its era's four verified
+traces — the bar has no photo source, so the traces' chrome is the
+only legitimate vocabulary — with every decision cited by file and
+coordinate in the header, and an **IMPLEMENTATION DELTA** block at the
+foot written for a coding model (no images needed). Rendered and
+checked at 1x and 2x: legible, no overlaps, palette-only. G2 drift is
+the point, not a regression: neomil 0.989/0.890/0.966 →
+0.741/0.729/0.694, entropism 0.986/0.904/0.942 → 0.843/0.667/0.942,
+kitsch 0.973/0.893/0.956 → 0.934/0.860/0.923, neokitsch
+0.981/0.904/0.937 → 0.554/0.782/0.747.
+
+- [x] neomil: the SECURITY LEVEL badge row — bottom-**left** chamfer 6
+  on 25px cells (no neomil cell cuts BR; the old bar did), RED_DEEP
+  fill / RED_FILL 1.5 stroke, bold digits, BAND_TOP→BAND_BOTTOM glow
+  band with the 1.5px RED_MID rule under it, barcode host tape, GO HOME
+  panel's right-edge bar + echoes on the menu, arrow submenu marker.
+- [x] entropism: the bar *is* the header strip — one 2px outlined frame
+  x 6..1594 with 2px dividers, no cell gaps, one filled segment per run
+  (workspace 3, clock), solid MID tape with ON_SOLID ink, alert = the
+  source's `(!)` suffix with no ink change, disabled = OUTLINE ink.
+- [x] kitsch: chevron workspaces (store nav, 40 wide on 46 pitch),
+  stepped USER/DESCRIPTION boxes for tape and window label, r8 chips
+  at 1.25px on .5 coordinates, weight 500, mint bracket fading along
+  the bar foot (opacity 1 to x 264, 0 at 440), teal wave in the menu
+  foot, chamfered two-piece selected rows.
+- [x] neokitsch: violet haze ground clipped to y 0..31, r3 cells with a
+  10x7 BL cut and a 22/16/4 VENEER_LIGHT tab, veneer + grain + seam for
+  selection and tape, solid AMBER square alert plate, 8-strand wire
+  band bridging the centre gap, unboxed 18px clock, chamfer-22 menu
+  cards with four onion rings clipped at y 31.
+
+Open:
+
+- [x] **Decide the bar's corner before touching `bar.rs`.** Decided
+  2026-09-02: per-corner cuts, see "SVG→iced pre-work". Three of
+  four deltas want a corner the era's screens do not use (neomil BL
+  chamfer vs `Corner::Chamfer` cutting one fixed corner; neokitsch r3+BL
+  cut vs `ClipTopRight 30`; kitsch r8 unclamped vs pill). Either `Bar`
+  in `style.rs` grows its own corner field, or `Corner` learns per-side
+  cuts — the neomil agent notes the material cuts different corners per
+  widget on every screen (badges BL, login cards TR 46 + BL 22, buttons
+  BR 9, panels TR 8 + BL), so the second is the honest fix and affects
+  every neomil screen, not just the bar.
+- [ ] **Neomil idle label contrast**: RED_FILL on RED_DEEP is faithful
+  to the badges but the dimmest strip of the four at 14px. Lift the
+  idle ink (OFF_WHITE or RED_HOT) if it is hard to read on the real
+  monitor; the SVG is the place to decide, then the delta.
+- [ ] **`bar.rs` follows the four deltas**, one era at a time, re-taking
+  `tests/golden/bar-<era>-1600x220.png` per the `tests/bar.nix`
+  procedure only once the render matches the SVG by eye. Neokitsch's
+  band and haze are the most work (a `Ground::Bloom` strip and a canvas
+  ornament); entropism's is mostly gap 0 + stroke 2 + dividers.
+- [ ] Stale claims the bar agents hit, all read-only for them: the era
+  READMEs still describe `dashboard.svg` as the invented composites
+  (neomil "three red chart cards", entropism "a single row of four
+  tiles ... no detail panel"), and `docs/kitsch/README.md` says
+  `bar.svg` is "exactly as `bar()` composes it"; `src/eras/kitsch.rs`
+  cites `target-app.svg` overhang numbers (12/18) where
+  `store-trace.svg` measures 27 on a 35px band; `src/eras/entropism.rs`
+  repeats the tile-row misreading around `Layout::TileRow`. Also an
+  entropism-wide question the agent raised: the traces sample outline
+  ink at ~#709174 (≈ MID) while OUTLINE is #5d7752, and the README's
+  "1px strokes" rule disagrees with the measured 2px designed stroke.
+
+### SVG→iced pre-work (2026-09-02)
+
+What has to exist before coding agents convert the sixteen traces and
+four bars, done in this order so the Rust is written once.
+
+- [x] **iced 0.13 → 0.14.0, iced_layershell 0.13.7 → 0.19.1.** One
+  chosen deviation from upstream defaults and it matters: 0.14 turned
+  `web-colors` (sRGB blending) on by default, which drains the kitsch
+  and neokitsch blooms and thins every glyph — 95.7% on the kitsch
+  screens. `Cargo.toml` restates 0.14's default set minus that feature;
+  keep the list in step with upstream's `default` on the next bump.
+  Everything else is forced and recorded in the commit: `application(boot,
+  update, view)`, `Widget::update` replacing `on_event`, zero-sized
+  `Space` children now *dropped* by `Row`/`Column` (`is_void`, ~56 call
+  sites — caught only by the goldens), `Pixels: From<u16>` gone, canvas
+  text `align_x/align_y`, `scrollable::Id` → `widget::Id` +
+  mandatory `auto_scroll`, `Subscription::run_with` needing a `Hash`
+  handle (the bar's `MenuStream` newtype), and layershell losing
+  `remove_id` in favour of `window::Event::Closed`. tiny-skia/png still
+  single-copy (0.11.4 / 0.17.16), so resvg 0.46 stays.
+  Goldens: 20 of 21 within 99.9 on the 0.14 build; the residue is
+  `Rectangle::snap` now rounding (canvas hairlines lose their leading
+  antialias row; `surface::visible()` documents the two fixes tried and
+  measured worse) plus the glyphon → cryoglyph rasteriser.
+  `dashboard/kitsch` is at 99.739 — the `Menu::Fan` blade edges, all
+  rotated; geometry and fills byte-identical. Goldens are re-taken
+  after the corner refactor below, which resolves it.
+  **Unverified until a switch:** `cp-eras-ui-bar` as a layer surface
+  (weston headless has no `zwlr_layer_shell_v1`): exclusive zone, the
+  tray-menu overlay, `Message::Closed`, the `MenuStream` subscription,
+  and the now-reachable middle click (`TrayAction::Secondary`).
+  Also new and untried: 0.19.1's `NewPopUp` grabs with the last button
+  serial (`multi_window.rs:832`), so the tray menu no longer *has* to be
+  an output-sized overlay to get click-outside dismissal — the agent's
+  README edit claimed the opposite and was corrected; README §bar has
+  the citation.
+- [x] **`scripts/render.sh`** — the golden matrix's recipe outside the
+  sandbox, ~7s a capture, settle 3s (byte-identical to 15s, also under
+  six concurrent renders; 0–2s matched too, so 3 is headroom). Era
+  palette published into a scratch HOME via `nix eval` of
+  `themes/<era>/scheme.nix`. Runs binaries through a `buildEnv` of
+  weston+mesa+the crate's runtime libs because `nix shell nixpkgs#weston`
+  sets PATH only and iced dlopens libvulkan/libxkbcommon/wayland.
+  Untracked until committed: `git add -N` it first.
+- [x] **G2i** — `fidelity_check.sh --implementation <era> [screen]
+  [--bin-dir DIR]`: design SVG render vs `render.sh` capture, as shape
+  inventories, pass/fail. Shapes gate for every era (the `inks`
+  fallback is about photos; both sides here are clean renders — and it
+  names the missing cells where inks gives one number). `--match-iou
+  0.65`, not spec_diff's 0.30: entropism/bar's menu panel matched at 0.50
+  while 140px left and 67px wider than the design, and the two converged
+  pairs (entropism/dashboard 100%, neokitsch/dashboard 87%) hold to 0.90.
+  Move it only with that kind of evidence. `extract_spec.py`'s 80x45 ink
+  grid used a `reshape` needing the canvas to divide evenly — 220 does
+  not — replaced by index binning, bit-identical at 1600x900. Starting
+  line on the 0.13 binaries: bars FAIL at 11/5/35/7% matched area
+  (neomil/entropism/kitsch/neokitsch), logins at 0% — the app's login is
+  a different composition from every trace, not a gate fault.
+- [x] **Per-corner cuts** — `Corners` becomes four `Cut`s
+  (`Square | Chamfer { x, y } | Round { radius }`); the era-level
+  `Corner` stays and supplies `default_corners`. Decided over a
+  `Bar`-only corner field because the neokitsch cell (r3 ×3 + 10x7 BL
+  chamfer) is mixed treatments no single field expresses, and neomil
+  cuts a different corner per widget on every screen. Pure refactor,
+  proved: all 21 captures byte-identical before/after, 7 unit tests in
+  `widgets::surface::tests` build the six bar shapes and read them back
+  through `span_at`. `Cut::extent` scales x and y by one factor rather
+  than clamping each — independent clamping would have widened neomil's
+  15px chamfer on a 25x35 cell from 12.5x12.5 to 15x12.5. `Surface::corner`
+  is gone; `Surface::corners` is a public field with no builder, so a
+  redressed bar cell sets it after construction (add a builder if
+  bar.rs ends up doing that at all eight sites). `src/bar.rs:5` still
+  says the bar "cannot express a chamfered or clipped corner" — false
+  now, rewrite with the redress.
+- [x] **Re-take all 21 goldens** on the 0.14 build after the corner
+  refactor, per the `tests/bar.nix` procedure (threshold 0, matrix,
+  copy, threshold back). This is the baseline the conversion wave diffs
+  against; it retires the `dashboard/kitsch` 99.739. The pre-0.14
+  goldens are one commit back if the edge-pixel residue ever needs
+  re-examining.
+- [ ] Then the conversion wave: one coding agent per screen file, the
+  four SVGs of that screen as spec, G2i PASS ×4 eras as done, a vision
+  pass on `/tmp/g2i-*/side-by-side.png` before goldens move. Order bar
+  → login → mailbox, store (parallel) → dashboard (blocked on `Layout`).
+  `src/eras/<era>.rs` and `widgets/` are the contention points: add
+  era values in a delimited per-screen block; use widgets, don't edit
+  them — report what is missing.
+
 ## Toolkit infrastructure
 
 - [x] **Visual regression, landed 2026-08-22** as `tests.visual`
@@ -184,8 +507,9 @@ when that screen assembles from library widgets. Priority order:
   sites with a semantic iced Theme + widget catalogs (surface/
   primary/dim/danger...) so every later widget styles against tokens.
   Everything below is written twice if this comes second.
-- [ ] **Migrate to iced 0.14** (0.13 pinned; 0.14 is stable now) —
-  before the widget build-out, not after.
+- [x] **Migrate to iced 0.14** — done 2026-09-02, before the build-out;
+  record under "SVG→iced pre-work" above (the `web-colors` opt-out is
+  the part to know about).
 - [ ] **Form controls** (style iced built-ins, don't hand-canvas):
   button (primary/ghost/override-hatch/disabled/icon), text_input
   with focus treatment, checkbox/toggle/radio, pick_list + menu,

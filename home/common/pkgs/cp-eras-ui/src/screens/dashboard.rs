@@ -202,11 +202,11 @@ impl Dashboard {
             ),
             row![
                 container(self.sidebar()).width(Length::Fixed(260.0)),
-                Space::new(s.metrics.gap * 2.0, 0.0),
+                Space::new().width(s.metrics.gap * 2.0),
                 container(self.modules())
                     .width(Length::FillPortion(6))
                     .height(Length::Fill),
-                Space::new(s.metrics.gap * 2.0, 0.0),
+                Space::new().width(s.metrics.gap * 2.0),
                 container(self.detail()).width(Length::FillPortion(5)),
             ]
             .height(Length::Fill),
@@ -278,7 +278,7 @@ impl Dashboard {
         let meta = |k: &'static str, v: &'static str| {
             row![
                 text::label(s, k),
-                Space::new(Length::Fill, Length::Shrink),
+                Space::new().width(Length::Fill).height(Length::Shrink),
                 text::body(s, v),
             ]
         };
@@ -296,15 +296,15 @@ impl Dashboard {
         column![
             text::title(s, "next").size(52),
             text::label(s, "T E C H N O L O G Y"),
-            Space::new(0.0, s.metrics.gap),
+            Space::new().height(s.metrics.gap),
             meta("CUSTOMER", "#NC488402"),
             meta("CLEARANCE", "T2"),
             meta("LAST UPDATE", "10/05/2077"),
-            Space::new(0.0, s.metrics.gap * 1.5),
+            Space::new().height(s.metrics.gap * 1.5),
             self.heading("A", "SECURITY LEVEL"),
-            Space::new(0.0, s.metrics.gap),
+            Space::new().height(s.metrics.gap),
             grid,
-            Space::new(0.0, s.metrics.gap * 2.0),
+            Space::new().height(s.metrics.gap * 2.0),
             marker(s, "B", &NOTE),
         ]
         .spacing(4)
@@ -326,7 +326,7 @@ impl Dashboard {
 
         column![
             self.heading("C", "COMPUTER SYSTEMS"),
-            Space::new(0.0, s.metrics.gap),
+            Space::new().height(s.metrics.gap),
             container(menu(s, &MODULES, SELECTED_MODULE)).height(Length::Fill),
         ]
         .height(Length::Fill)
@@ -340,31 +340,31 @@ impl Dashboard {
         let module = &MODULES[SELECTED_MODULE];
 
         let mut body = column![
-            text::title(s, module.label).size(s.metrics.text_title - 3),
+            text::title(s, module.label).size(f32::from(s.metrics.text_title - 3)),
             text::caption(s, module.code),
-            Space::new(0.0, s.metrics.gap),
+            Space::new().height(s.metrics.gap),
         ]
         .spacing(2);
 
         for para in DETAIL {
             body = body.push(text::body(s, para));
-            body = body.push(Space::new(0.0, 10.0));
+            body = body.push(Space::new().height(10.0));
         }
 
         // Key-value rows under the prose, as every era's detail panel
         // has: the panel is the tall element on this screen and prose
         // alone leaves it reading as an empty box.
-        body = body.push(Space::new(0.0, s.metrics.gap));
+        body = body.push(Space::new().height(s.metrics.gap));
         for (k, v) in SPEC {
             body = body.push(
                 row![
                     text::label(s, k),
-                    Space::new(Length::Fill, Length::Shrink),
+                    Space::new().width(Length::Fill).height(Length::Shrink),
                     text::body(s, v),
                 ]
                 .width(Length::Fill),
             );
-            body = body.push(Space::new(0.0, 6.0));
+            body = body.push(Space::new().height(6.0));
         }
 
         // `layered` rather than `backdrop`: the latter runs its content
@@ -382,9 +382,9 @@ impl Dashboard {
 
         column![
             self.heading("D", "DESCRIPTION"),
-            Space::new(0.0, s.metrics.gap),
+            Space::new().height(s.metrics.gap),
             container(surface(Surface::outlined(s), s.metrics.pad, body)).height(Length::Fill),
-            Space::new(0.0, s.metrics.gap),
+            Space::new().height(s.metrics.gap),
             vendors,
         ]
         .spacing(0)
@@ -581,8 +581,8 @@ impl<Message> canvas::Program<Message> for OpsTrim<'_> {
             color: s.palette.tape,
             size: (0.036 * h).into(),
             font: crate::fonts::FONT_RAJDHANI_BOLD,
-            horizontal_alignment: iced::alignment::Horizontal::Center,
-            vertical_alignment: iced::alignment::Vertical::Center,
+            align_x: iced::advanced::text::Alignment::Center,
+            align_y: iced::alignment::Vertical::Center,
             ..Default::default()
         });
 
@@ -690,8 +690,8 @@ impl<Message> canvas::Program<Message> for TileRowBackdrop<'_> {
                 color: s.palette.fg,
                 size: size.into(),
                 font: crate::fonts::FONT_RAJDHANI_REGULAR,
-                horizontal_alignment: iced::alignment::Horizontal::Center,
-                vertical_alignment: iced::alignment::Vertical::Center,
+                align_x: iced::advanced::text::Alignment::Center,
+                align_y: iced::alignment::Vertical::Center,
                 ..Default::default()
             });
         };
@@ -763,7 +763,7 @@ impl<Message> canvas::Program<Message> for TileRowBackdrop<'_> {
                 color: text::mid_ink(s),
                 size: ((s.metrics.text_caption - 2) as f32).into(),
                 font: crate::fonts::FONT_RAJDHANI_REGULAR,
-                vertical_alignment: iced::alignment::Vertical::Center,
+                align_y: iced::alignment::Vertical::Center,
                 ..Default::default()
             });
         }

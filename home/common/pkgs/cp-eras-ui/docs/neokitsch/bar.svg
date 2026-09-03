@@ -1,91 +1,457 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="220" viewBox="0 0 1600 220" font-family="Rajdhani">
-  <!-- NEOKITSCH BAR reference.
-       "Substance and style": gold line-work on true black, top-right corners clipped,
-       selection is a material (wood veneer). Sampled palette (docs/neokitsch/README.md):
-       bg #0a0a0a, bloom #34344c, frame #916424, gold text #e7c686, champagne #d3b279,
-       veneer #e3af5f (+ light #f4c474 dark #d8a558 grain #b98a44), on-veneer #3a2410,
-       amber #fcc474, dim #8a7048. Clip cut 30 clamped to 12.5 on 25px cells.
-       Golden geometry: 1600x220; bar strip 31px at top, tray menu beneath, right edge
-       at x=1480. Selected cells fill with the synthesised veneer (banded warp + grain). -->
+  <!-- NEOKITSCH BAR reference (design target; bar.rs follows this file, not the reverse).
+
+       The bar has no Behance source. Everything below is borrowed from a measured
+       feature of one of the era's four traces (docs/neokitsch/*-trace.svg, 1600x900,
+       source/2.4), scaled to the 25px cell (y 3..28) of the 1600x220 golden frame.
+       The bar strip sits where the top of every neokitsch screen sits, so it wears
+       that region's chrome: the violet haze, the header wire band, the tabbed
+       buttons, and a veneer plate for whatever is selected.
+
+       WHAT IS BORROWED, FROM WHERE
+       1. GROUND — store-trace.svg <radialGradient id="haze"> (measured in
+          dashboard-trace: lobe centred (825,-120), r 1030, y-scale 0.515, stops
+          #574568 / #3a3853 / #16121a / #0e0a0d) plus the blue annulus and its
+          left fade mask, copied verbatim and CLIPPED to the strip y 0..31. At
+          y<31 this is violet across x~200..1460 and near-black at both ends —
+          the top strip of every screen in the run. Nothing below y 31 is the bar.
+       2. OUTLINED CELL — store-trace nav buttons x 93..293.5, 39 tall (RIFLES,
+          SNIPER, SHOTGUN, PISTOL): r4 corners, a bottom-LEFT cut (93,385)-(108,396.5)
+          i.e. 15x11.6, stroke #dab176 1.3; and mailbox-trace RIFLES buttons
+          184x39 at y 684..723, stroke #c29a65 1.7, cut 13x10. Scaled 39->25:
+          r3, cut 10 wide x 7 tall, stroke 1.6 (kept), outline FRAME_LIT #c69a55
+          (the store card outline sample #c5965a; brighter than FRAME #916424,
+          which the source never uses for a button). Labels are LEFT-aligned
+          (RIFLES at x+22 of 184; store nav at x+22 of 200) and the right end of
+          the button is the tab's alone — here label at x0+12 and the last 38px
+          (8 gap + 22 tab + 8 inset) reserved, so no label ever sits on a tab.
+       3. TAB — the filled trapezoid every neokitsch button and rule carries on its
+          bottom edge: mailbox RIFLES (866,723)-(903,716): base 37, top 29, 7 tall,
+          #fdcf8c "the brightest ink on the screen"; store nav 241.7..275.5 x
+          394.1..397.5; mailbox list rules x 422..452 (5 tall); the T2 badge's
+          (1293,104.5)-(1326,100). Scaled: base 22 / top 16 / 4 tall, right end
+          inset 8 from the cell's right edge (base 14 / top 8 on the 38px
+          workspace cells and the 44px icon cell), fill VENEER_LIGHT #f4c474. It
+          sits INSIDE the outline on the bottom stroke, as on RIFLES.
+       4. SELECTION = VENEER PLATE — store-trace SMG (97,418.6)-(293.5,457.2):
+          the same button silhouette (r4, bottom-left cut, tab kept) filled with
+          wood veneer, dark label #3a2010; mailbox-trace selection bar
+          [35,315]..[512,370] with a 22px chamfer on the top-RIGHT only and a Q4
+          bottom-right, 32 hairlines at 1.7 pitch chevroning into a book-match
+          seam at the bar's midpoint (x 273 of 35..512; SMG seam 192.5 of
+          93..293.5). Here: workspace 3 = the SMG button; the host tape = the
+          mailbox bar (chamfer 22/55 -> 10 on 25, Q4, seam at the plate midpoint);
+          grain = 14 hairlines at 1.7 pitch in GRAIN #b98a44 at 0.5 opacity over
+          the VENEER_LIGHT->VENEER->VENEER_DARK gradient so the average stays near
+          the sampled #eab26e; seam a 0.9 GRAIN line; text ON_VENEER #3a2410.
+       5. ALERT = CTA PLATE — login-trace ENTER / LOGIN bar [417,414]..[761,441]:
+          solid #fbc171, square corners, ONLY a bottom-left chamfer (16x13 on 27
+          tall), dark text #6b3f1e in a wide light face. The README's rule: amber
+          is the one strong CTA. Here: SYNC and the attention-state SNI icon =
+          AMBER #fcc474 plate, cut 10x7, no radius, no tab, text ON_VENEER,
+          letter-spacing 2 (ENTER / LOGIN is spaced 3 at 14px).
+       6. WIRE BAND — store-trace header: 8 strands at 3.2 pitch on the low outer
+          runs (y 160.4+3.2i, x 35..290 and 1290..1562), each rising through one
+          S-bend (x 290 -> 349, "C 322,ys 316,yb 349,yb") onto ONE bridge line at
+          y 124.2 spanning 349..1230, with the annotation text hanging under the
+          bridge (baselines 148/155 under 124.2); both ends curl down 10px into a
+          vertical at x 35 / 1562, which login-trace notes "overlap into one bright
+          edge". Here it fills the empty centre between the workspace group and
+          the tray: low runs x 354..386 and 633..665 (8 strands, pitch 2.0, y
+          13.5..27.5, opacity 0.35 -> 1.0 top to bottom as measured), S-bends 32
+          wide (386 -> 418, 601 -> 633), bridge y 5 spanning 418..601, vertical
+          end edges at x 354 and 665, y 13.5..27.5. The focused-window label is
+          the annotation under the bridge (CHAMPAGNE, weight 400, baseline 20,
+          centred at 509.5). Stroke CHAMPAGNE #d3b279 1.0 (sample #e0b67a).
+       7. CLOCK = PLAIN TEXT — login-trace 10:10 PM at (1293,87), 28px weight 500
+          letter-spacing 1, no box; the only clock in the run and it is unboxed.
+          Here 18px weight 500, spacing 1, GOLD_TEXT, right-aligned to 1594.
+       8. TEXT TIERS — mailbox-trace k-means: #f0bf7b bright (bar, tabs), #c19867
+          mid (outlines, grain), #86694b dim, #39281b glow. Labels GOLD_TEXT
+          #e7c686 weight 600 letter-spacing 0.8 (RIFLES: 15px 600 spacing 1;
+          store nav 17px spacing 1); disabled DIM #8a7048 (sample #86694b).
+       9. HALO — every trace: "every glyph and stroke sits on a soft vertical
+          glow", filter feGaussianBlur stdDeviation 1.5 4.5 + the mailbox colour
+          matrix, drawn once as a blurred copy of the content group underneath.
+          Applied here to the strip and menu content; at 14px it is a faint brown
+          smear under each glyph (checked at 2x), never a fill behind text.
+      10. MENU PANEL — dashboard-trace cascade card <path id="ncard"> 93x327:
+          chamfer 32 top-right and bottom-left, Q6 top-left and bottom-right, and
+          the "onion rings": concentric offsets of the silhouette at 3.5 pitch
+          fading 0.85 .73 .61 .49 .37 .25 (stroke #bd8951 1), which the
+          unselected cards carry (also the detail panel at (1168,253), 6 rings,
+          outline 1.8). Here both panels take the card silhouette with the
+          mailbox bar's 22 chamfer (the card's 32 is a third of its 93 width; 22
+          is the panel-scale chamfer the detail panel and the mail bar both
+          measure), outline FRAME_LIT 1.6, fill BG, and 4 rings at 3.5 pitch
+          (0.85 .61 .37 .25) clipped to y >= 31 — the menu overlay is drawn below
+          the bar surface in the app, so nothing of it may rise into the strip.
+      11. MENU ROWS — highlighted row = the mailbox selection bar (item 4): veneer
+          with the 10px top-right chamfer, seam, dark text. The OPEN submenu parent
+          (Devices) = the mailbox/dashboard T2 badge (1287,55)-(1338,104): an
+          outlined r3 mini-card in the bright gold (#e8c186 1.1) with a solid tab
+          on its inside bottom edge — outlined = current, veneer = highlighted.
+          Separator = a mailbox list rule (x 35..483, 1.5, #e0b67a) with its
+          filled tab (x 422..452, 5 tall). Disabled = DIM text, no chrome.
+          Row icons sit in a 16px column at panel x+10 and the text starts at
+          x+34, so icon and label no longer overlap (the sibling bars' bug).
+
+       KEPT: 1600x220 frame; strip y 3..28 (31px bar); the module set and order;
+       the two-level tray menu right-aligned to x 1480; SNI icons are placeholder
+       diamonds for pixmaps the app draws as supplied. Cell x-extents are NOT the
+       ones bar.rs computes today: left-aligned labels plus the reserved tab zone
+       widen every outlined cell (the tray now starts at x 672, the workspace
+       cells are 38 wide on a 45.2 pitch); the tray stays right-aligned.
+
+       Palette: consts from src/eras/neokitsch.rs (BG #0a0a0a, FRAME_LIT #c69a55,
+       GOLD_TEXT #e7c686, CHAMPAGNE #d3b279, VENEER #e3af5f, VENEER_LIGHT #f4c474,
+       VENEER_DARK #d8a558, GRAIN #b98a44, AMBER #fcc474, ON_VENEER #3a2410,
+       DIM #8a7048) plus the traces' measured haze stops. -->
   <defs>
+    <!-- 1. ground: the measured haze, verbatim from store/dashboard-trace -->
+    <radialGradient id="haze" gradientUnits="userSpaceOnUse"
+        cx="825" cy="-120" r="1030"
+        gradientTransform="rotate(1.3 825 -120) translate(825 -120) scale(1 0.515) translate(-825 120)">
+      <stop offset="0"     stop-color="#574568"/>
+      <stop offset="0.258" stop-color="#574568"/>
+      <stop offset="0.572" stop-color="#3a3853"/>
+      <stop offset="0.873" stop-color="#16121a"/>
+      <stop offset="1"     stop-color="#0e0a0d"/>
+    </radialGradient>
+    <radialGradient id="hazeblue" gradientUnits="userSpaceOnUse"
+        cx="900" cy="-120" r="1030"
+        gradientTransform="rotate(2 900 -120) translate(900 -120) scale(1 0.515) translate(-900 120)">
+      <stop offset="0"    stop-color="#223350" stop-opacity="0"/>
+      <stop offset="0.60" stop-color="#223350" stop-opacity="0"/>
+      <stop offset="0.68" stop-color="#223350" stop-opacity="0.85"/>
+      <stop offset="0.76" stop-color="#1a2c46" stop-opacity="0.80"/>
+      <stop offset="0.84" stop-color="#101d30" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="hazebluefade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"    stop-color="#000000"/>
+      <stop offset="0.12" stop-color="#1a1a1a"/>
+      <stop offset="0.22" stop-color="#7a7a7a"/>
+      <stop offset="0.40" stop-color="#ffffff"/>
+      <stop offset="1"    stop-color="#ffffff"/>
+    </linearGradient>
+    <mask id="bluemask"><rect width="1600" height="900" fill="url(#hazebluefade)"/></mask>
+    <clipPath id="stripclip"><rect x="0" y="0" width="1600" height="31"/></clipPath>
+    <!-- 4. veneer: the palette's three stops; grain hairlines are clipped to each plate -->
     <linearGradient id="veneer" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#f4c474"/>
       <stop offset="0.45" stop-color="#e3af5f"/>
       <stop offset="1" stop-color="#d8a558"/>
     </linearGradient>
+    <clipPath id="hostclip"><path d="M 6,3 H 67 L 77,13 V 24 Q 77,28 73,28 H 6 Z"/></clipPath>
+    <clipPath id="ws3clip"><path d="M 177.6,3 H 209.6 Q 212.6,3 212.6,6 V 25 Q 212.6,28 209.6,28 H 184.6 L 174.6,21 V 6 Q 174.6,3 177.6,3 Z"/></clipPath>
+    <clipPath id="rowclip"><path d="M 1281,97.7 H 1478 L 1488,107.7 V 119.3 Q 1488,123.3 1484,123.3 H 1281 Z"/></clipPath>
+    <!-- 10. menu rings must not rise into the bar strip -->
+    <clipPath id="belowbar"><rect x="0" y="31" width="1600" height="189"/></clipPath>
+    <!-- 9. the halo, as in mailbox-trace -->
+    <filter id="halo" x="-5%" y="-10%" width="110%" height="120%">
+      <feGaussianBlur stdDeviation="1.5 4.5"/>
+      <feColorMatrix type="matrix" values="0.43 0 0 0 0  0 0.32 0 0 0  0 0 0.21 0 0  0 0 0 1.45 0"/>
+    </filter>
+    <!-- 3. the tab, wide and narrow, origin at its bottom-right corner -->
+    <path id="tab" d="M -22,0 L -19,-4 H -3 L 0,0 Z" fill="#f4c474"/>
+    <path id="tabn" d="M -14,0 L -11,-4 H -3 L 0,0 Z" fill="#f4c474"/>
   </defs>
+
   <rect width="1600" height="220" fill="#0a0a0a"/>
-
-  <!-- ============ BAR STRIP (cells y 3..28, 25px tall, top-right clip) ============ -->
-  <g font-size="14">
-
-    <!-- host tape: filled veneer, bg ink -->
-    <path d="M 6 3 H 65.5 L 77 14.5 V 28 H 6 Z" fill="url(#veneer)"/>
-    <text x="18" y="20" fill="#0a0a0a">nomad</text>
-
-    <!-- workspaces 1..6; 3 active = veneer material fill, on-veneer ink -->
-    <path d="M 84.2 3 H 107.7 L 119.2 14.5 V 28 H 84.2 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
-    <text x="101.7" y="20" text-anchor="middle" fill="#e7c686">1</text>
-    <path d="M 126.4 3 H 149.9 L 161.4 14.5 V 28 H 126.4 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
-    <text x="143.9" y="20" text-anchor="middle" fill="#e7c686">2</text>
-    <path d="M 168.6 3 H 192.1 L 203.6 14.5 V 28 H 168.6 Z" fill="url(#veneer)"/>
-    <text x="186.1" y="20" text-anchor="middle" fill="#3a2410">3</text>
-    <path d="M 210.8 3 H 234.3 L 245.8 14.5 V 28 H 210.8 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
-    <text x="228.3" y="20" text-anchor="middle" fill="#e7c686">4</text>
-    <path d="M 253 3 H 276.5 L 288 14.5 V 28 H 253 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
-    <text x="270.5" y="20" text-anchor="middle" fill="#e7c686">5</text>
-    <path d="M 295.2 3 H 318.7 L 330.2 14.5 V 28 H 295.2 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
-    <text x="312.7" y="20" text-anchor="middle" fill="#e7c686">6</text>
-
-    <!-- centred window label: dim -->
-    <text x="547.7" y="20" text-anchor="middle" fill="#8a7048">~/src/cp-eras-ui - nvim src/bar.rs</text>
-
-    <!-- tray: FLAM icon, ELEM icon (attention -> alert stroke = amber), BLUE label, SYNC alert -->
-    <path d="M 765.2 3 H 788.7 L 800.2 14.5 V 28 H 765.2 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
-    <path d="M 774.2 15.5 L 783.7 6 L 793.2 15.5 L 783.7 25 Z" fill="#8800aa"/>
-    <path d="M 809.4 3 H 832.9 L 844.4 14.5 V 28 H 809.4 Z" fill="none" stroke="#fcc474" stroke-width="1.6"/>
-    <path d="M 818.4 15.5 L 827.9 6 L 837.4 15.5 L 827.9 25 Z" fill="#ff6600"/>
-    <path d="M 853.6 3 H 899.1 L 910.6 14.5 V 28 H 853.6 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
-    <text x="883.1" y="20" text-anchor="middle" fill="#e7c686">BLUE</text>
-    <path d="M 919.8 3 H 965.3 L 976.8 14.5 V 28 H 919.8 Z" fill="none" stroke="#fcc474" stroke-width="1.6"/>
-    <text x="949.3" y="20" text-anchor="middle" fill="#fcc474">SYNC</text>
-
-    <path d="M 986 3 H 1112.5 L 1124 14.5 V 28 H 986 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
-    <text x="1056" y="20" text-anchor="middle" fill="#e7c686">WIFI AFTERLIFE</text>
-    <path d="M 1133.2 3 H 1210.7 L 1222.2 14.5 V 28 H 1133.2 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
-    <text x="1178.7" y="20" text-anchor="middle" fill="#e7c686">VOL  62%</text>
-    <path d="M 1231.4 3 H 1300.9 L 1312.4 14.5 V 28 H 1231.4 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
-    <text x="1272.9" y="20" text-anchor="middle" fill="#e7c686">CPU 12%</text>
-    <path d="M 1321.6 3 H 1391.1 L 1402.6 14.5 V 28 H 1321.6 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
-    <text x="1363.1" y="20" text-anchor="middle" fill="#e7c686">MEM 47%</text>
-    <path d="M 1411.8 3 H 1506.3 L 1517.8 14.5 V 28 H 1411.8 Z" fill="none" stroke="#916424" stroke-width="1.6"/>
-    <text x="1465.8" y="20" text-anchor="middle" fill="#e7c686">2026-08-23</text>
-    <path d="M 1527 3 H 1582.5 L 1594 14.5 V 28 H 1527 Z" fill="url(#veneer)"/>
-    <text x="1560.5" y="20" text-anchor="middle" fill="#3a2410">23:41</text>
+  <!-- 1. the bar's own ground: the top 31px of the run's haze -->
+  <g clip-path="url(#stripclip)">
+    <rect width="1600" height="31" fill="#0e0a0d"/>
+    <rect width="1600" height="900" fill="url(#haze)"/>
+    <rect width="1600" height="560" fill="url(#hazeblue)" mask="url(#bluemask)"/>
   </g>
 
-  <!-- ============ TRAY MENU ============
-       root panel + open Devices submenu to its LEFT; panels clipped top-right. -->
+  <use href="#content" filter="url(#halo)"/>
+  <g id="content">
+  <!-- ============ BAR STRIP (cells y 3..28) ============ -->
+  <g font-size="14" font-weight="600" letter-spacing="0.8">
+
+    <!-- host tape: the mailbox selection bar in miniature (item 4) -->
+    <path d="M 6,3 H 67 L 77,13 V 24 Q 77,28 73,28 H 6 Z" fill="url(#veneer)"/>
+    <g clip-path="url(#hostclip)" fill="none" stroke="#b98a44" stroke-width="0.6" stroke-opacity="0.5">
+      <path d="M 6.0,3.9 l 5.0,0.8 5.0,-0.5 5.0,-0.2 5.0,-0.8 5.0,0.9 5.0,0.0 5.0,0.1 5.0,0.1 5.0,-0.2 5.0,-0.8 5.0,0.6 5.0,0.1 5.0,0.6 5.0,-0.9 1.0,0.0"/>
+      <path d="M 6.0,5.6 l 5.0,0.1 5.0,0.7 5.0,-0.6 5.0,-0.4 5.0,-0.0 5.0,0.4 5.0,0.6 5.0,-0.6 5.0,-0.1 5.0,-0.5 5.0,0.7 5.0,0.3 5.0,-0.5 5.0,-0.2 1.0,0.0"/>
+      <path d="M 6.0,7.3 l 5.0,-0.2 5.0,0.5 5.0,-0.1 5.0,0.0 5.0,-0.9 5.0,0.7 5.0,0.1 5.0,-0.1 5.0,-0.7 5.0,0.8 5.0,0.0 5.0,0.3 5.0,-1.0 5.0,0.2 1.0,-0.1"/>
+      <path d="M 6.0,9.0 l 5.0,0.0 5.0,-0.4 5.0,0.9 5.0,-0.2 5.0,-0.4 5.0,-0.2 5.0,0.2 5.0,-0.0 5.0,-0.2 5.0,0.8 5.0,0.1 5.0,-0.6 5.0,-0.1 5.0,-0.0 1.0,0.1"/>
+      <path d="M 6.0,10.7 l 5.0,0.0 5.0,-0.5 5.0,0.6 5.0,0.1 5.0,0.2 5.0,-1.0 5.0,0.5 5.0,-0.4 5.0,0.9 5.0,-0.1 5.0,0.1 5.0,-1.0 5.0,0.5 5.0,0.3 1.0,0.2"/>
+      <path d="M 6.0,12.4 l 5.0,0.1 5.0,-0.1 5.0,-0.5 5.0,0.9 5.0,0.0 5.0,-0.4 5.0,-0.4 5.0,0.1 5.0,0.8 5.0,-0.2 5.0,-0.6 5.0,0.1 5.0,0.2 5.0,0.8 1.0,-0.1"/>
+      <path d="M 6.0,14.1 l 5.0,0.6 5.0,-0.5 5.0,-0.6 5.0,0.5 5.0,0.2 5.0,0.5 5.0,-1.0 5.0,0.9 5.0,-0.3 5.0,-0.0 5.0,-0.8 5.0,0.8 5.0,0.2 5.0,-0.1 1.0,-0.3"/>
+      <path d="M 6.0,15.8 l 5.0,0.5 5.0,-0.4 5.0,-0.0 5.0,-0.7 5.0,0.8 5.0,0.3 5.0,-0.2 5.0,0.4 5.0,-0.5 5.0,-0.5 5.0,0.3 5.0,0.2 5.0,0.5 5.0,-1.0 1.0,-0.0"/>
+      <path d="M 6.0,17.5 l 5.0,-0.3 5.0,0.7 5.0,-0.2 5.0,-0.7 5.0,0.3 5.0,0.1 5.0,0.7 5.0,-0.6 5.0,-0.1 5.0,-0.6 5.0,0.9 5.0,0.0 5.0,-0.2 5.0,-0.5 1.0,0.1"/>
+      <path d="M 6.0,19.2 l 5.0,-0.7 5.0,1.1 5.0,-0.2 5.0,0.1 5.0,-0.9 5.0,0.5 5.0,0.4 5.0,-0.5 5.0,-0.3 5.0,0.5 5.0,0.2 5.0,0.3 5.0,-1.0 5.0,0.4 1.0,-0.0"/>
+      <path d="M 6.0,20.9 l 5.0,-0.4 5.0,0.0 5.0,0.8 5.0,0.1 5.0,-0.7 5.0,0.1 5.0,-0.0 5.0,0.1 5.0,-0.4 5.0,1.0 5.0,-0.2 5.0,-0.3 5.0,-0.4 5.0,0.3 1.0,0.0"/>
+      <path d="M 6.0,22.6 l 5.0,-0.2 5.0,-0.5 5.0,0.9 5.0,-0.0 5.0,0.3 5.0,-1.0 5.0,0.3 5.0,-0.2 5.0,0.6 5.0,0.1 5.0,0.0 5.0,-1.0 5.0,0.7 5.0,0.1 1.0,0.2"/>
+      <path d="M 6.0,24.3 l 5.0,-0.3 5.0,0.0 5.0,-0.2 5.0,0.6 5.0,0.4 5.0,-0.7 5.0,-0.1 5.0,-0.1 5.0,1.0 5.0,-0.5 5.0,-0.3 5.0,-0.2 5.0,0.4 5.0,0.6 1.0,0.1"/>
+      <path d="M 6.0,26.0 l 5.0,0.0 5.0,0.1 5.0,-0.8 5.0,0.7 5.0,0.1 5.0,0.5 5.0,-0.9 5.0,0.7 5.0,-0.1 5.0,-0.1 5.0,-0.8 5.0,0.9 5.0,0.0 5.0,0.2 1.0,-0.3"/>
+      <path d="M 6.0,27.7 l 5.0,0.1 5.0,-0.1 5.0,-0.1 5.0,-0.5 5.0,0.5 5.0,0.6 5.0,-0.5 5.0,0.6 5.0,-0.8 5.0,-0.2 5.0,0.0 5.0,0.5 5.0,0.3 5.0,-0.9 1.0,-0.2"/>
+      <line x1="41.5" y1="3" x2="41.5" y2="28" stroke-width="0.9" stroke-opacity="0.8"/>
+    </g>
+    <text x="16" y="20" fill="#3a2410">nomad</text>
+
+    <!-- workspaces 1..6: store nav buttons, 38 wide (items 2 + 3); 3 = the SMG selection (item 4).
+         The digit sits in the left 25px, the narrow tab owns the right end. -->
+    <g fill="none" stroke="#c69a55" stroke-width="1.6">
+      <path d="M 87.2,3 H 119.2 Q 122.2,3 122.2,6 V 25 Q 122.2,28 119.2,28 H 94.2 L 84.2,21 V 6 Q 84.2,3 87.2,3 Z"/>
+      <path d="M 132.4,3 H 164.4 Q 167.4,3 167.4,6 V 25 Q 167.4,28 164.4,28 H 139.4 L 129.4,21 V 6 Q 129.4,3 132.4,3 Z"/>
+      <path d="M 222.8,3 H 254.8 Q 257.8,3 257.8,6 V 25 Q 257.8,28 254.8,28 H 229.8 L 219.8,21 V 6 Q 219.8,3 222.8,3 Z"/>
+      <path d="M 268,3 H 300 Q 303,3 303,6 V 25 Q 303,28 300,28 H 275 L 265,21 V 6 Q 265,3 268,3 Z"/>
+      <path d="M 313.2,3 H 345.2 Q 348.2,3 348.2,6 V 25 Q 348.2,28 345.2,28 H 320.2 L 310.2,21 V 6 Q 310.2,3 313.2,3 Z"/>
+    </g>
+    <path d="M 177.6,3 H 209.6 Q 212.6,3 212.6,6 V 25 Q 212.6,28 209.6,28 H 184.6 L 174.6,21 V 6 Q 174.6,3 177.6,3 Z" fill="url(#veneer)"/>
+    <g clip-path="url(#ws3clip)" fill="none" stroke="#b98a44" stroke-width="0.6" stroke-opacity="0.5">
+      <path d="M 174.6,3.9 l 5.0,-0.3 5.0,0.4 5.0,0.2 5.0,0.4 5.0,-0.8 5.0,-0.1 5.0,-0.3 3.0,0.7"/>
+      <path d="M 174.6,5.6 l 5.0,0.1 5.0,-0.2 5.0,-0.0 5.0,0.5 5.0,-0.5 5.0,-0.5 5.0,0.9 3.0,0.1"/>
+      <path d="M 174.6,7.3 l 5.0,0.7 5.0,-1.2 5.0,0.3 5.0,-0.1 5.0,0.0 5.0,-0.1 5.0,0.8 3.0,-0.3"/>
+      <path d="M 174.6,9.0 l 5.0,0.7 5.0,-0.7 5.0,-0.2 5.0,-0.0 5.0,-0.2 5.0,0.9 5.0,-0.2 3.0,0.1"/>
+      <path d="M 174.6,10.7 l 5.0,0.3 5.0,0.4 5.0,-1.0 5.0,0.2 5.0,0.1 5.0,0.7 5.0,-0.4 3.0,-0.1"/>
+      <path d="M 174.6,12.4 l 5.0,0.2 5.0,0.4 5.0,-0.5 5.0,-0.4 5.0,0.9 5.0,-0.5 5.0,-0.1 3.0,-0.6"/>
+      <path d="M 174.6,14.1 l 5.0,-0.1 5.0,0.0 5.0,0.7 5.0,-0.7 5.0,0.5 5.0,-0.6 5.0,-0.4 3.0,-0.1"/>
+      <path d="M 174.6,15.8 l 5.0,-0.6 5.0,0.4 5.0,0.6 5.0,0.2 5.0,-0.7 5.0,-0.1 5.0,-0.4 3.0,0.8"/>
+      <path d="M 174.6,17.5 l 5.0,-0.5 5.0,0.3 5.0,-0.0 5.0,0.7 5.0,-0.8 5.0,-0.2 5.0,0.6 3.0,0.4"/>
+      <path d="M 174.6,19.2 l 5.0,0.2 5.0,-0.7 5.0,0.1 5.0,0.1 5.0,0.0 5.0,-0.2 5.0,1.0 3.0,-0.4"/>
+      <path d="M 174.6,20.9 l 5.0,0.4 5.0,-0.7 5.0,0.1 5.0,-0.3 5.0,0.1 5.0,0.6 5.0,-0.0 3.0,-0.2"/>
+      <path d="M 174.6,22.6 l 5.0,-0.1 5.0,0.5 5.0,-0.7 5.0,0.1 5.0,-0.0 5.0,0.9 5.0,-0.7 3.0,0.1"/>
+      <path d="M 174.6,24.3 l 5.0,-0.4 5.0,1.0 5.0,-0.6 5.0,-0.1 5.0,0.6 5.0,-0.2 5.0,-0.2 3.0,-0.4"/>
+      <path d="M 174.6,26.0 l 5.0,-0.5 5.0,0.4 5.0,0.7 5.0,-0.6 5.0,0.7 5.0,-0.9 5.0,-0.1 3.0,-0.3"/>
+      <path d="M 174.6,27.7 l 5.0,-0.8 5.0,0.3 5.0,1.0 5.0,-0.1 5.0,-0.4 5.0,-0.2 5.0,-0.4 3.0,0.6"/>
+      <line x1="193.6" y1="3" x2="193.6" y2="28" stroke-width="0.9" stroke-opacity="0.8"/>
+    </g>
+    <use href="#tabn" x="114.2" y="28"/><use href="#tabn" x="159.4" y="28"/><use href="#tabn" x="204.6" y="28"/><use href="#tabn" x="249.8" y="28"/><use href="#tabn" x="295" y="28"/><use href="#tabn" x="340.2" y="28"/>
+    <g fill="#e7c686" text-anchor="middle">
+      <text x="96.7" y="20">1</text>
+      <text x="141.9" y="20">2</text>
+      <text x="187.1" y="20" fill="#3a2410">3</text>
+      <text x="232.3" y="20">4</text>
+      <text x="277.5" y="20">5</text>
+      <text x="322.7" y="20">6</text>
+    </g>
+
+    <!-- 6. the wire band across the empty centre: low runs 354..386 and 633..665,
+         S-bends 32 wide, bridge y 5 spanning 418..601 -->
+    <g fill="none" stroke="#d3b279" stroke-width="1">
+      <path d="M 354,16.5 Q 354,13.5 357,13.5 H 386 C 403,13.5 401,5 418,5 H 601 C 618,5 616,13.5 633,13.5 H 662 Q 665,13.5 665,16.5" stroke-opacity="0.35"/>
+      <path d="M 354,18.5 Q 354,15.5 357,15.5 H 386 C 403,15.5 401,5 418,5 H 601 C 618,5 616,15.5 633,15.5 H 662 Q 665,15.5 665,18.5" stroke-opacity="0.44"/>
+      <path d="M 354,20.5 Q 354,17.5 357,17.5 H 386 C 403,17.5 401,5 418,5 H 601 C 618,5 616,17.5 633,17.5 H 662 Q 665,17.5 665,20.5" stroke-opacity="0.54"/>
+      <path d="M 354,22.5 Q 354,19.5 357,19.5 H 386 C 403,19.5 401,5 418,5 H 601 C 618,5 616,19.5 633,19.5 H 662 Q 665,19.5 665,22.5" stroke-opacity="0.63"/>
+      <path d="M 354,24.5 Q 354,21.5 357,21.5 H 386 C 403,21.5 401,5 418,5 H 601 C 618,5 616,21.5 633,21.5 H 662 Q 665,21.5 665,24.5" stroke-opacity="0.72"/>
+      <path d="M 354,26.5 Q 354,23.5 357,23.5 H 386 C 403,23.5 401,5 418,5 H 601 C 618,5 616,23.5 633,23.5 H 662 Q 665,23.5 665,26.5" stroke-opacity="0.81"/>
+      <path d="M 354,27.5 Q 354,25.5 356,25.5 H 386 C 403,25.5 401,5 418,5 H 601 C 618,5 616,25.5 633,25.5 H 663 Q 665,25.5 665,27.5" stroke-opacity="0.91"/>
+      <path d="M 354,27.5 H 386 C 403,27.5 401,5 418,5 H 601 C 618,5 616,27.5 633,27.5 H 665" stroke-opacity="1"/>
+      <!-- the strands' hooks overlap into one bright vertical edge at each end -->
+      <path d="M 354,13.5 V 27.5 M 665,13.5 V 27.5" stroke-width="1.2"/>
+    </g>
+    <!-- focused window: the annotation hanging under the bridge -->
+    <text x="509.5" y="20" text-anchor="middle" fill="#d3b279" font-weight="400" letter-spacing="0">~/src/cp-eras-ui - nvim src/bar.rs</text>
+
+    <!-- tray: SNI icon (idle cell), SNI icon (attention = CTA plate, item 5), BLUE,
+         SYNC (alert = CTA plate). Outlined cells: label left at x0+12, the right
+         38px reserved for the tab (8 gap + 22 tab + 8 inset). Plates centre their
+         label, as ENTER / LOGIN does. -->
+    <path d="M 675,3 H 713 Q 716,3 716,6 V 25 Q 716,28 713,28 H 682 L 672,21 V 6 Q 672,3 675,3 Z" fill="none" stroke="#c69a55" stroke-width="1.6"/>
+    <use href="#tabn" x="708" y="28"/>
+    <path d="M 678,14.5 L 686,6.5 L 694,14.5 L 686,22.5 Z" fill="#e7c686"/>
+    <path d="M 725,3 H 760 V 28 H 735 L 725,21 Z" fill="#fcc474"/>
+    <path d="M 734.5,14.5 L 742.5,6.5 L 750.5,14.5 L 742.5,22.5 Z" fill="#3a2410"/>
+    <path d="M 772,3 H 849 Q 852,3 852,6 V 25 Q 852,28 849,28 H 779 L 769,21 V 6 Q 769,3 772,3 Z" fill="none" stroke="#c69a55" stroke-width="1.6"/>
+    <use href="#tab" x="844" y="28"/>
+    <text x="781" y="20" fill="#e7c686">BLUE</text>
+    <path d="M 861,3 H 925 V 28 H 871 L 861,21 Z" fill="#fcc474"/>
+    <text x="893" y="20" text-anchor="middle" fill="#3a2410" letter-spacing="2">SYNC</text>
+
+    <!-- readouts: store nav buttons -->
+    <g fill="none" stroke="#c69a55" stroke-width="1.6">
+      <path d="M 937,3 H 1078 Q 1081,3 1081,6 V 25 Q 1081,28 1078,28 H 944 L 934,21 V 6 Q 934,3 937,3 Z"/>
+      <path d="M 1093,3 H 1184 Q 1187,3 1187,6 V 25 Q 1187,28 1184,28 H 1100 L 1090,21 V 6 Q 1090,3 1093,3 Z"/>
+      <path d="M 1199,3 H 1291 Q 1294,3 1294,6 V 25 Q 1294,28 1291,28 H 1206 L 1196,21 V 6 Q 1196,3 1199,3 Z"/>
+      <path d="M 1306,3 H 1405 Q 1408,3 1408,6 V 25 Q 1408,28 1405,28 H 1313 L 1303,21 V 6 Q 1303,3 1306,3 Z"/>
+      <path d="M 1420,3 H 1537 Q 1540,3 1540,6 V 25 Q 1540,28 1537,28 H 1427 L 1417,21 V 6 Q 1417,3 1420,3 Z"/>
+    </g>
+    <use href="#tab" x="1073" y="28"/><use href="#tab" x="1179" y="28"/><use href="#tab" x="1286" y="28"/><use href="#tab" x="1400" y="28"/><use href="#tab" x="1532" y="28"/>
+    <g fill="#e7c686">
+      <text x="946" y="20">WIFI AFTERLIFE</text>
+      <text x="1102" y="20">VOL  62%</text>
+      <text x="1208" y="20">CPU 12%</text>
+      <text x="1315" y="20">MEM 47%</text>
+      <text x="1429" y="20">2026-08-23</text>
+    </g>
+    <!-- 7. the clock: plain, larger, unboxed, as on the login screen -->
+    <text x="1594" y="21" text-anchor="end" fill="#e7c686" font-size="18" font-weight="500" letter-spacing="1">23:41</text>
+  </g>
+
+  <!-- ============ TRAY MENU (item 10, 11) ============
+       root panel right-aligned to 1480; Devices submenu opens to its LEFT.
+       Both are the cascade-card silhouette: chamfer 22 top-right and bottom-left,
+       Q6 top-left and bottom-right, four onion rings outside, clipped at y 31. -->
+  <g clip-path="url(#belowbar)" fill="none" stroke="#c69a55" stroke-width="1">
+    <!-- submenu rings -->
+    <path d="M 1143.5,27.5 H 1259 L 1284.5,53 V 91.5 Q 1284.5,97.7 1278.3,97.7 H 1163 L 1137.5,72.2 V 33.7 Q 1137.5,27.5 1143.5,27.5 Z" stroke-opacity="0.85"/>
+    <path d="M 1140,24 H 1259 L 1288,53 V 95 Q 1288,101.2 1281.8,101.2 H 1163 L 1134,72.2 V 30.2 Q 1134,24 1140,24 Z" stroke-opacity="0.61"/>
+    <path d="M 1136.5,20.5 H 1259 L 1291.5,53 V 98.5 Q 1291.5,104.7 1285.3,104.7 H 1163 L 1130.5,72.2 V 26.7 Q 1130.5,20.5 1136.5,20.5 Z" stroke-opacity="0.37"/>
+    <path d="M 1133,17 H 1259 L 1295,53 V 102 Q 1295,108.2 1288.8,108.2 H 1163 L 1127,72.2 V 23.2 Q 1127,17 1133,17 Z" stroke-opacity="0.25"/>
+    <!-- root rings -->
+    <path d="M 1283.5,27.5 H 1458 L 1483.5,53 V 152.5 Q 1483.5,158.5 1477.5,158.5 H 1303 L 1277.5,133 V 33.5 Q 1277.5,27.5 1283.5,27.5 Z" stroke-opacity="0.85"/>
+    <path d="M 1280,24 H 1458 L 1487,53 V 156 Q 1487,162 1481,162 H 1303 L 1274,133 V 30 Q 1274,24 1280,24 Z" stroke-opacity="0.61"/>
+    <path d="M 1276.5,20.5 H 1458 L 1490.5,53 V 159.5 Q 1490.5,165.5 1484.5,165.5 H 1303 L 1270.5,133 V 26.5 Q 1270.5,20.5 1276.5,20.5 Z" stroke-opacity="0.37"/>
+    <path d="M 1273,17 H 1458 L 1494,53 V 163 Q 1494,169 1488,169 H 1303 L 1267,133 V 23 Q 1267,17 1273,17 Z" stroke-opacity="0.25"/>
+  </g>
+
   <!-- Devices submenu: Mount / Eject -->
-  <path d="M 1141 31 H 1267.5 L 1281 44.5 V 94.2 H 1141 Z" fill="#0a0a0a" stroke="#916424" stroke-width="1.6"/>
-  <g font-size="14">
-    <path d="M 1161 49.8 L 1169 41.8 L 1177 49.8 L 1169 57.8 Z" fill="#8800aa"/>
+  <path d="M 1147,31 H 1259 L 1281,53 V 88 Q 1281,94 1275,94 H 1163 L 1141,72 V 37 Q 1141,31 1147,31 Z" fill="#0a0a0a" stroke="#c69a55" stroke-width="1.6"/>
+  <g font-size="14" font-weight="600" letter-spacing="0.8">
+    <!-- row icon column x+10..x+26, text at x+34 -->
+    <path d="M 1151,49.8 L 1159,41.8 L 1167,49.8 L 1159,57.8 Z" fill="#e7c686"/>
     <text x="1175" y="55" fill="#e7c686">Mount</text>
     <text x="1175" y="80.6" fill="#e7c686">Eject</text>
   </g>
 
-  <!-- root menu: Devices (open, selected) / Disconnect (dim) / rule / Enable networking (selected) / Quit -->
-  <path d="M 1281 31 H 1466.5 L 1480 44.5 V 155 H 1281 Z" fill="#0a0a0a" stroke="#916424" stroke-width="1.6"/>
-  <g font-size="14">
-    <rect x="1281" y="37" width="199" height="25.6" fill="url(#veneer)"/>
-    <path d="M 1300 49.8 L 1308 41.8 L 1316 49.8 L 1308 57.8 Z" fill="#3a2410"/>
-    <text x="1315" y="55" fill="#3a2410">Devices</text>
-    <text x="1468" y="55" text-anchor="end" fill="#3a2410">&lt;</text>
-    <text x="1293" y="80.6" fill="#8a7048">Disconnect</text>
-    <line x1="1291" y1="93" x2="1470" y2="93" stroke="#916424" stroke-width="1.6"/>
-    <rect x="1281" y="97.7" width="199" height="25.6" fill="url(#veneer)"/>
-    <text x="1293" y="115.7" fill="#3a2410">Enable networking</text>
-    <path d="M 1300 141.3 L 1308 133.3 L 1316 141.3 L 1308 149.3 Z" fill="#e7c686"/>
+  <!-- root menu: Devices (open parent = T2 outlined badge) / Disconnect (disabled) /
+       rule with tab / Enable networking (highlighted = veneer bar) / Quit -->
+  <path d="M 1287,31 H 1458 L 1480,53 V 149 Q 1480,155 1474,155 H 1303 L 1281,133 V 37 Q 1281,31 1287,31 Z" fill="#0a0a0a" stroke="#c69a55" stroke-width="1.6"/>
+  <g font-size="14" font-weight="600" letter-spacing="0.8">
+    <!-- Devices: outlined mini-card with the tab on its inside bottom edge -->
+    <path d="M 1290,37 H 1455 Q 1458,37 1458,40 V 59.6 Q 1458,62.6 1455,62.6 H 1290 Q 1287,62.6 1287,59.6 V 40 Q 1287,37 1290,37 Z" fill="none" stroke="#e7c686" stroke-width="1.1"/>
+    <path d="M 1426,62.6 L 1430,58 H 1448 L 1452,62.6 Z" fill="#f4c474"/>
+    <path d="M 1291,49.8 L 1299,41.8 L 1307,49.8 L 1299,57.8 Z" fill="#e7c686"/>
+    <text x="1315" y="55" fill="#e7c686">Devices</text>
+    <text x="1417" y="55" text-anchor="end" fill="#e7c686" font-weight="400">&lt;</text>
+    <text x="1315" y="80.6" fill="#8a7048">Disconnect</text>
+    <line x1="1287" y1="93" x2="1474" y2="93" stroke="#d3b279" stroke-width="1.5"/>
+    <path d="M 1432,93 L 1435.5,88 H 1458.5 L 1462,93 Z" fill="#f4c474"/>
+    <!-- the highlight bar runs 8 past the panel edge, as the mail bar runs past its rules (483 -> 512) -->
+    <path d="M 1281,97.7 H 1478 L 1488,107.7 V 119.3 Q 1488,123.3 1484,123.3 H 1281 Z" fill="url(#veneer)"/>
+    <g clip-path="url(#rowclip)" fill="none" stroke="#b98a44" stroke-width="0.6" stroke-opacity="0.5">
+      <path d="M 1281.0,98.6 l 5.0,0.3 5.0,-0.1 5.0,0.4 5.0,-0.6 5.0,-0.4 5.0,0.5 5.0,0.2 5.0,0.3 5.0,-1.1 5.0,0.4 5.0,0.1 5.0,0.6 5.0,-0.5 5.0,-0.5 5.0,0.4 5.0,0.2 5.0,0.5 5.0,-1.0 5.0,0.2 5.0,0.0 5.0,0.6 5.0,-0.7 5.0,-0.0 5.0,0.7 5.0,-0.1 5.0,-0.0 5.0,-0.9 5.0,0.8 5.0,0.1 5.0,0.3 5.0,-0.7 5.0,-0.2 5.0,0.6 5.0,0.1 5.0,0.1 5.0,-1.0 5.0,0.6 5.0,0.1 5.0,0.4 5.0,-0.7 5.0,-0.3 2.0,-0.1"/>
+      <path d="M 1281.0,100.3 l 5.0,-0.0 5.0,-0.2 5.0,0.8 5.0,-0.5 5.0,-0.1 5.0,-0.6 5.0,0.9 5.0,0.1 5.0,-0.2 5.0,-0.5 5.0,-0.1 5.0,0.9 5.0,-0.4 5.0,-0.0 5.0,-0.8 5.0,0.8 5.0,0.2 5.0,-0.1 5.0,-0.5 5.0,-0.2 5.0,0.1 5.0,0.2 5.0,-0.1 5.0,0.9 5.0,-0.6 5.0,-0.3 5.0,-0.0 5.0,0.4 5.0,0.5 5.0,-0.9 5.0,0.1 5.0,-0.2 5.0,1.0 5.0,-0.4 5.0,-0.4 5.0,-0.2 5.0,0.4 5.0,0.6 5.0,-0.8 5.0,-0.0 5.0,-0.3 2.0,0.5"/>
+      <path d="M 1281.0,102.0 l 5.0,-0.2 5.0,0.1 5.0,0.0 5.0,0.7 5.0,-0.4 5.0,-0.6 5.0,0.3 5.0,0.2 5.0,0.6 5.0,-1.0 5.0,0.1 5.0,-0.0 5.0,0.8 5.0,-0.3 5.0,-0.6 5.0,0.2 5.0,0.2 5.0,0.7 5.0,-0.9 5.0,0.0 5.0,-0.3 5.0,0.3 5.0,0.7 5.0,-0.3 5.0,-0.2 5.0,-0.7 5.0,0.9 5.0,-0.0 5.0,0.1 5.0,-0.8 5.0,0.1 5.0,0.7 5.0,-0.1 5.0,-0.1 5.0,-0.8 5.0,0.8 5.0,0.1 5.0,0.2 5.0,-0.8 5.0,-0.0 5.0,0.6 2.0,0.3"/>
+      <path d="M 1281.0,103.7 l 5.0,0.4 5.0,-0.6 5.0,-0.3 5.0,0.9 5.0,-0.3 5.0,0.0 5.0,-0.8 5.0,0.7 5.0,0.3 5.0,-0.0 5.0,-0.5 5.0,-0.3 5.0,0.9 5.0,-0.1 5.0,0.1 5.0,-0.9 5.0,0.6 5.0,0.3 5.0,0.1 5.0,-0.5 5.0,-0.0 5.0,0.1 5.0,0.7 5.0,-0.8 5.0,-0.2 5.0,0.2 5.0,0.5 5.0,0.2 5.0,-0.9 5.0,0.3 5.0,-0.0 5.0,0.9 5.0,-0.7 5.0,-0.3 5.0,0.0 5.0,0.5 5.0,0.4 5.0,-0.9 5.0,0.1 5.0,-0.1 5.0,1.0 2.0,-0.3"/>
+      <path d="M 1281.0,105.4 l 5.0,0.8 5.0,-1.1 5.0,-0.0 5.0,-0.1 5.0,0.8 5.0,-0.1 5.0,-0.7 5.0,0.1 5.0,0.1 5.0,0.8 5.0,-0.9 5.0,-0.0 5.0,-0.2 5.0,0.8 5.0,0.0 5.0,-0.6 5.0,-0.0 5.0,0.0 5.0,0.9 5.0,-0.7 5.0,0.0 5.0,0.5 5.0,-0.5 5.0,-0.2 5.0,-0.5 5.0,1.0 5.0,-0.2 5.0,-0.1 5.0,-0.7 5.0,0.4 5.0,0.6 5.0,-0.3 5.0,-0.2 5.0,-0.6 5.0,1.0 5.0,-0.1 5.0,0.0 5.0,-0.8 5.0,0.3 5.0,0.6 5.0,-0.1 2.0,-0.2"/>
+      <path d="M 1281.0,107.1 l 5.0,0.4 5.0,-0.1 5.0,-0.5 5.0,-0.5 5.0,0.9 5.0,-0.1 5.0,0.2 5.0,-1.0 5.0,0.5 5.0,0.4 5.0,0.2 5.0,-0.4 5.0,-0.6 5.0,0.8 5.0,0.0 5.0,0.3 5.0,-1.0 5.0,0.3 5.0,0.3 5.0,0.3 5.0,-0.3 5.0,0.5 5.0,-1.0 5.0,0.0 5.0,0.3 5.0,0.4 5.0,-0.1 5.0,-0.9 5.0,0.5 5.0,0.1 5.0,0.7 5.0,-0.9 5.0,-0.1 5.0,0.2 5.0,0.5 5.0,0.1 5.0,-0.9 5.0,0.3 5.0,0.0 5.0,0.8 5.0,-0.8 2.0,0.1"/>
+      <path d="M 1281.0,108.8 l 5.0,-0.2 5.0,0.9 5.0,-0.8 5.0,-0.1 5.0,-0.3 5.0,0.8 5.0,0.1 5.0,-0.6 5.0,-0.1 5.0,-0.1 5.0,1.0 5.0,-0.6 5.0,-0.1 5.0,-0.4 5.0,0.7 5.0,0.3 5.0,-0.6 5.0,-0.2 5.0,-0.2 5.0,1.0 5.0,-0.1 5.0,-0.6 5.0,-0.1 5.0,-0.2 5.0,1.0 5.0,-0.5 5.0,-0.1 5.0,-0.5 5.0,0.6 5.0,0.4 5.0,-0.5 5.0,-0.2 5.0,-0.3 5.0,1.1 5.0,-0.3 5.0,-0.1 5.0,-0.6 5.0,0.5 5.0,0.5 5.0,-0.4 5.0,-0.2 2.0,-0.1"/>
+      <path d="M 1281.0,110.5 l 5.0,-0.2 5.0,0.4 5.0,0.2 5.0,-0.3 5.0,-0.7 5.0,0.7 5.0,0.0 5.0,0.4 5.0,-1.0 5.0,0.2 5.0,0.3 5.0,0.3 5.0,-0.2 5.0,-0.8 5.0,0.6 5.0,0.1 5.0,0.5 5.0,-1.0 5.0,0.0 5.0,0.3 5.0,0.5 5.0,-1.0 5.0,0.3 5.0,0.4 5.0,0.2 5.0,-0.3 5.0,-0.7 5.0,0.7 5.0,0.1 5.0,0.4 5.0,-1.0 5.0,0.1 5.0,0.3 5.0,0.4 5.0,-0.2 5.0,-0.8 5.0,0.6 5.0,0.1 5.0,0.6 5.0,-1.0 5.0,0.0 2.0,-0.2"/>
+      <path d="M 1281.0,112.2 l 5.0,-0.3 5.0,-0.1 5.0,1.0 5.0,-0.5 5.0,-0.1 5.0,-0.5 5.0,0.6 5.0,0.4 5.0,-0.5 5.0,-0.2 5.0,-0.3 5.0,1.1 5.0,-0.4 5.0,-0.1 5.0,-0.6 5.0,0.5 5.0,0.5 5.0,-0.4 5.0,-0.2 5.0,-0.5 5.0,0.3 5.0,0.0 5.0,0.0 5.0,0.9 5.0,-0.7 5.0,-0.1 5.0,-0.3 5.0,0.7 5.0,0.2 5.0,-0.6 5.0,-0.1 5.0,-0.1 5.0,1.0 5.0,-0.6 5.0,-0.1 5.0,-0.5 5.0,0.7 5.0,0.3 5.0,-0.5 5.0,-0.2 5.0,-0.2 2.0,0.3"/>
+      <path d="M 1281.0,113.9 l 5.0,-0.5 5.0,0.1 5.0,0.4 5.0,0.4 5.0,-0.1 5.0,-0.9 5.0,0.5 5.0,0.1 5.0,0.6 5.0,-0.9 5.0,-0.1 5.0,0.2 5.0,0.5 5.0,0.0 5.0,-0.9 5.0,0.4 5.0,0.0 5.0,0.8 5.0,-0.8 5.0,-0.2 5.0,-0.3 5.0,0.6 5.0,0.3 5.0,0.1 5.0,-0.4 5.0,-0.5 5.0,0.9 5.0,-0.1 5.0,0.2 5.0,-1.0 5.0,0.4 5.0,0.4 5.0,0.2 5.0,-0.4 5.0,-0.6 5.0,0.8 5.0,0.0 5.0,0.3 5.0,-1.0 5.0,0.3 5.0,0.3 2.0,0.5"/>
+      <path d="M 1281.0,115.6 l 5.0,-0.1 5.0,-0.1 5.0,-0.4 5.0,1.1 5.0,-0.3 5.0,-0.1 5.0,-0.7 5.0,0.4 5.0,0.6 5.0,-0.3 5.0,-0.2 5.0,-0.6 5.0,1.0 5.0,-0.1 5.0,0.0 5.0,-0.7 5.0,0.3 5.0,0.6 5.0,-0.2 5.0,-0.2 5.0,-0.2 5.0,0.2 5.0,0.7 5.0,-0.9 5.0,0.0 5.0,-0.1 5.0,0.8 5.0,-0.1 5.0,-0.7 5.0,0.1 5.0,0.1 5.0,0.9 5.0,-0.8 5.0,-0.1 5.0,-0.2 5.0,0.8 5.0,0.0 5.0,-0.6 5.0,-0.1 5.0,-0.0 5.0,1.0 2.0,-0.2"/>
+      <path d="M 1281.0,117.3 l 5.0,0.4 5.0,-0.7 5.0,-0.1 5.0,0.2 5.0,0.4 5.0,0.2 5.0,-0.9 5.0,0.3 5.0,0.0 5.0,0.8 5.0,-0.7 5.0,-0.3 5.0,0.1 5.0,0.5 5.0,0.3 5.0,-0.9 5.0,0.2 5.0,-0.1 5.0,0.9 5.0,-0.6 5.0,0.1 5.0,0.2 5.0,-0.1 5.0,-0.5 5.0,-0.2 5.0,0.9 5.0,-0.2 5.0,0.0 5.0,-0.9 5.0,0.7 5.0,0.3 5.0,0.0 5.0,-0.5 5.0,-0.4 5.0,0.9 5.0,-0.1 5.0,0.1 5.0,-1.0 5.0,0.5 5.0,0.3 5.0,0.2 2.0,-0.4"/>
+      <path d="M 1281.0,119.0 l 5.0,0.2 5.0,-0.1 5.0,-0.1 5.0,-0.7 5.0,1.0 5.0,-0.1 5.0,0.0 5.0,-0.8 5.0,0.2 5.0,0.7 5.0,-0.1 5.0,-0.1 5.0,-0.8 5.0,0.9 5.0,0.0 5.0,0.2 5.0,-0.8 5.0,0.0 5.0,0.7 5.0,0.0 5.0,-0.1 5.0,0.5 5.0,-1.0 5.0,0.2 5.0,0.1 5.0,0.7 5.0,-0.4 5.0,-0.6 5.0,0.3 5.0,0.2 5.0,0.6 5.0,-1.0 5.0,0.1 5.0,-0.1 5.0,0.8 5.0,-0.2 5.0,-0.6 5.0,0.1 5.0,0.2 5.0,0.8 5.0,-0.9 2.0,-0.0"/>
+      <path d="M 1281.0,120.7 l 5.0,-0.6 5.0,1.1 5.0,-0.5 5.0,-0.3 5.0,0.0 5.0,0.4 5.0,0.5 5.0,-0.9 5.0,0.1 5.0,-0.1 5.0,1.0 5.0,-0.5 5.0,-0.4 5.0,-0.1 5.0,0.4 5.0,0.6 5.0,-0.8 5.0,0.0 5.0,-0.3 5.0,1.0 5.0,-0.2 5.0,-0.3 5.0,-0.4 5.0,0.0 5.0,0.9 5.0,-0.5 5.0,-0.1 5.0,-0.7 5.0,0.9 5.0,0.1 5.0,-0.2 5.0,-0.5 5.0,-0.1 5.0,0.9 5.0,-0.3 5.0,-0.0 5.0,-0.8 5.0,0.8 5.0,0.2 5.0,-0.0 5.0,-0.5 2.0,0.1"/>
+      <path d="M 1281.0,122.4 l 5.0,-0.8 5.0,1.0 5.0,0.0 5.0,-0.1 5.0,-0.9 5.0,0.8 5.0,0.1 5.0,0.2 5.0,-0.8 5.0,-0.1 5.0,0.7 5.0,0.0 5.0,0.1 5.0,-1.0 5.0,0.7 5.0,0.1 5.0,0.4 5.0,-0.7 5.0,-0.3 5.0,0.6 5.0,0.4 5.0,-1.0 5.0,0.5 5.0,0.1 5.0,0.5 5.0,-0.6 5.0,-0.4 5.0,0.5 5.0,0.2 5.0,0.4 5.0,-1.1 5.0,0.3 5.0,0.1 5.0,0.7 5.0,-0.5 5.0,-0.5 5.0,0.3 5.0,0.2 5.0,0.5 5.0,-1.0 5.0,0.2 2.0,-0.2"/>
+      <line x1="1384.5" y1="97.7" x2="1384.5" y2="123.3" stroke-width="0.9" stroke-opacity="0.8"/>
+    </g>
+    <text x="1315" y="115.7" fill="#3a2410">Enable networking</text>
+    <path d="M 1291,141.3 L 1299,133.3 L 1307,141.3 L 1299,149.3 Z" fill="#e7c686"/>
     <text x="1315" y="147.3" fill="#e7c686">Quit</text>
   </g>
+  </g>
+
+  <!-- IMPLEMENTATION DELTA (for bar.rs / Style) — every change from the current
+       neokitsch bar rendering, in plain text; the SVG above is the target.
+
+       GROUND
+       - Bar strip background: the era's Ground::Bloom (BLOOM #34344c lobe from
+         top-centre, radius 0.75) instead of flat BG #0a0a0a. The strip is the top
+         31px of the screen, and every trace is violet there and black at the ends.
+
+       CELL (idle: workspaces 1,2,4,5,6; idle SNI icon; BLUE; WIFI; VOL; CPU; MEM; date)
+       - Corner: rounded r=3 on top-left, top-right, bottom-right; the bottom-LEFT
+         corner is a chamfer 10 wide x 7 tall. (Replaces ClipTopRight cut 30.)
+       - Outline: stroke 1.6 (unchanged) in FRAME_LIT #c69a55 (was FRAME #916424).
+         No fill.
+       - Tab: a filled trapezoid inside the cell on its bottom edge, fill
+         VENEER_LIGHT #f4c474: base 22 wide, top 16 wide, 4 tall (y 24..28),
+         base right end 8px in from the cell's right edge. Workspace and icon
+         cells use base 14 / top 8. Every outlined cell carries one; plates
+         (below) do not, except the active workspace.
+       - Label: GOLD_TEXT #e7c686 14px weight 600 letter-spacing 0.8,
+         LEFT-aligned at x0+12, baseline 20 (cap centred on y 15.5).
+       - Width: 12 + text width + 38 (8 gap + 22 tab + 8 inset). Gap between
+         cells 9 (7.2 between workspaces). Workspace cells are 38 wide with the
+         digit centred at x0+12.5; the idle SNI icon cell is 44 wide with the
+         16px pixmap centred at x0+14. Attention icon plate stays 35 wide.
+       - No dividers (unchanged).
+
+       ACTIVE (workspace 3)
+       - Same silhouette and tab as an idle cell, no outline, filled with the
+         veneer: gradient VENEER_LIGHT (top) -> VENEER (45%) -> VENEER_DARK
+         (bottom) plus 14 hairlines at 1.7px pitch across the plate, GRAIN
+         #b98a44, width 0.6, opacity 0.5, wobbling +-0.9px, mirrored about a
+         vertical seam at the plate's x-midpoint (a 0.9 GRAIN line, opacity 0.8).
+         Label ON_VENEER #3a2410.
+
+       HOST TAPE
+       - Shape: square left edge and square top-left; top-RIGHT chamfer 10x10;
+         bottom-right rounded r=4; y 3..28, x 6..77. Filled with the same veneer
+         + grain + midpoint seam as above; no tab; text ON_VENEER at x 16. (Was
+         the clipped-corner tape.)
+
+       ALERT (SYNC; SNI icon in attention state)
+       - A solid AMBER #fcc474 plate: square corners, only a bottom-left chamfer
+         10x7, no outline, no tab. Label ON_VENEER #3a2410, letter-spacing 2,
+         CENTRED (width 12 + text + 12). The icon pixmap is drawn as supplied on
+         the plate. (Was amber outline + amber text.)
+
+       DISABLED (menu row Disconnect): text DIM #8a7048, no chrome (unchanged).
+
+       FOCUSED WINDOW LABEL
+       - CHAMPAGNE #d3b279, 14px weight 400, no tracking, centred in the gap
+         between the workspace group and the tray (here x 509.5), baseline 20
+         (was DIM #8a7048).
+
+       WIRE BAND (new ornament, drawn by the bar, not by a cell)
+       - Spans the gap between the last workspace cell and the first tray cell,
+         inset 6 from each: here x 354..665. Low runs 32 wide at each end
+         (354..386, 633..665), S-bends 32 wide (386..418, 601..633), bridge
+         between (418..601). 8 strands, stroke CHAMPAGNE #d3b279 width 1.0, at
+         y 13.5 + 2.0*i (i = 0..7), stroke opacity 0.35 0.44 0.54 0.63 0.72 0.81
+         0.91 1.00 from top to bottom. Each strand: along its y on the left run,
+         then a cubic S-bend "C (x+17,ys) (x+15,5) (x+32,5)" onto the bridge at
+         y 5, straight across, then the mirror "C (x+17,5) (x+15,ys) (x+32,ys)"
+         back down, straight to the right end. Strands 0..6 start and end with
+         a 3px quarter curve down (they enter from y ys+3 at the run's outer
+         end). A 1.2 vertical in the same colour at both outer ends from y 13.5
+         to 27.5 (the overlapped end hooks). The label sits centred on the
+         bridge; if the gap is narrower than the label + 2*64, drop the band and
+         draw only the label.
+
+       CLOCK
+       - Plain text, no cell: GOLD_TEXT 18px weight 500 letter-spacing 1,
+         right-aligned to the bar's right padding (x 1594), baseline 21.
+
+       MENU PANELS (root and submenu)
+       - Silhouette: chamfer 22 on top-right and bottom-left, rounded r=6 on
+         top-left and bottom-right. Fill BG #0a0a0a, outline FRAME_LIT #c69a55
+         1.6. Root: x 1281..1480, y 31..155. Submenu: x 1141..1281, y 31..94,
+         opening leftwards, touching the root's left edge.
+       - Rings: 4 concentric copies of the silhouette offset outward by 3.5, 7,
+         10.5, 14 (chamfer endpoints kept on their axes), stroke FRAME_LIT 1.0,
+         opacity 0.85 0.61 0.37 0.25, drawn under the panels and clipped so
+         nothing rises above y 31 (the overlay is below the bar surface).
+
+       MENU ROWS (25.6 tall, first at y 37)
+       - Icon column: 16px wide starting at panel x+10 (icons x 1291..1307 in
+         the root, 1151..1167 in the submenu); label starts at panel x+34
+         (x 1315 / x 1175). This is the icon/label overlap fix.
+       - Label: GOLD_TEXT 14px weight 600 letter-spacing 0.8.
+       - Open submenu parent (Devices): an outlined r=3 rounded rect inset 6 from
+         the panel sides (x 1287..1458, y 37..62.6), stroke GOLD_TEXT 1.1, no
+         fill, with a VENEER_LIGHT tab (base 26, top 18, 4.6 tall) on its inside
+         bottom edge, right end 6 in from the outline; the "<" glyph weight 400
+         right-aligned at x 1417 so it clears the tab.
+       - Highlighted row (Enable networking): a veneer bar from the panel's
+         left edge to 8 PAST its right edge (x 1281..1488; the mail bar runs
+         past its list rules), top-RIGHT chamfer 10x10, bottom-right r=4, square
+         elsewhere, veneer gradient + 15 grain hairlines at 1.7 pitch + midpoint
+         seam as above; text ON_VENEER, drawn over the panel outline.
+       - Separator: a 1.5 rule in CHAMPAGNE from panel x+6 to x-6 at the row
+         boundary (y 93), carrying a VENEER_LIGHT tab (base 30, top 23, 5 tall)
+         standing on it, right end 18 in from the panel's right edge.
+       - Submenu chevron and Quit/Mount icons: GOLD_TEXT diamonds as placeholders.
+
+       HALO (optional)
+       - A blurred (sigma 1.5 x 4.5), darkened (RGB x0.43/0.32/0.21, alpha x1.45)
+         copy of the strip and menu content drawn beneath it. Purely additive;
+         if the renderer has no blur, skip it — no geometry above depends on it. -->
 </svg>

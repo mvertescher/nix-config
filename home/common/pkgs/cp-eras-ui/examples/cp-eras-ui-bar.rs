@@ -29,7 +29,8 @@
 //!
 //!   * An `xdg_popup` on the bar (`NewMenu`) is positioned by the
 //!     compositor at the pointer, which is exactly what a menu wants --
-//!     but `layershellev` 0.13.7 never calls `xdg_popup.grab()`, so
+//!     but `layershellev` never calls `xdg_popup.grab()` -- checked
+//!     again on 0.19.1, and still true -- so
 //!     nothing tells us when the user clicks somewhere else, and the
 //!     bar takes no keyboard focus to lose either. The menu would only
 //!     ever close by being clicked.
@@ -108,9 +109,11 @@ use cp_eras_ui::bar::{
 use cp_eras_ui::Style;
 use iced::widget::{column, container, mouse_area, row, Space};
 use iced::{Element, Length, Task, Theme};
-use iced_layershell::build_pattern::{daemon, MainSettings};
-use iced_layershell::reexport::{Anchor, KeyboardInteractivity, Layer, NewLayerShellSettings};
-use iced_layershell::settings::LayerShellSettings;
+use iced_layershell::build_pattern::daemon;
+use iced_layershell::reexport::{
+    Anchor, KeyboardInteractivity, Layer, NewLayerShellSettings, OutputOption,
+};
+use iced_layershell::settings::{LayerShellSettings, Settings};
 use iced_layershell::to_layer_message;
 use std::time::Duration;
 
@@ -193,6 +196,29 @@ enum Message {
     Submenu(MenuPath),
     /// Anywhere else on the screen was clicked.
     Dismiss,
+    /// The compositor destroyed a surface. Only ever the menu's: the
+    /// bar's own surface outlives the process.
+    ///
+    /// Was `daemon`'s `remove_id` callback until iced_layershell 0.19
+    /// dropped it in favour of broadcasting the window event.
+    Closed(iced::window::Id),
+}
+
+/// The tray's menu stream, and the identity iced keys its subscription
+/// on.
+///
+/// `Subscription::run_with` wants one value that is both, and an
+/// `async_channel::Receiver` is not `Hash` -- nor would hashing a
+/// channel handle be right, since a fresh clone on every `view` would
+/// then look like a different subscription and restart the stream. So
+/// the hash is a constant: the same id `run_with_id` was given before.
+#[derive(Debug, Clone)]
+struct MenuStream(async_channel::Receiver<tray::Opened>);
+
+impl std::hash::Hash for MenuStream {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        std::hash::Hash::hash("cp-eras-ui-bar-tray-menus", state);
+    }
 }
 
 impl BarApp {
@@ -222,10 +248,6 @@ impl BarApp {
         };
         app.refresh();
         app
-    }
-
-    fn namespace(&self) -> String {
-        format!("cp-eras-ui-bar ({})", self.style.era.name())
     }
 
     fn update(&mut self, message: Message) -> Task<Message> {
@@ -295,7 +317,7 @@ impl BarApp {
                 let Some(pending) = self.pending.take() else {
                     return Task::none();
                 };
-                let (window, message) = Message::layershell_open(NewLayerShellSettings {
+                let (window, open_surface) = Message::layershell_open(NewLayerShellSettings {
                     // Anchored on all four edges with a zero size, the
                     // compositor hands back whatever area is left.
                     size: Some((0, 0)),
@@ -316,8 +338,12 @@ impl BarApp {
                     // menu that took the keyboard would take it from
                     // whatever the person was typing in.
                     keyboard_interactivity: KeyboardInteractivity::None,
-                    use_last_output: true,
+                    // Was `use_last_output: true` before
+                    // iced_layershell 0.19 widened the choice to an
+                    // enum; `LastOutput` is the same answer.
+                    output_option: OutputOption::LastOutput,
                     events_transparent: false,
+                    namespace: None,
                 });
                 self.open = Some(Open {
                     window,
@@ -326,7 +352,7 @@ impl BarApp {
                     path: MenuPath::new(),
                     x: pending.x,
                 });
-                return Task::done(message);
+                return open_surface;
             }
             Message::Entry(entry) => {
                 if let Some(open) = &self.open {
@@ -359,6 +385,14 @@ impl BarApp {
                 }
             }
             Message::Dismiss => return self.dismiss(),
+            // The compositor destroyed a surface. Only ever the menu's:
+            // the bar's own surface outlives the process, and a
+            // `Closed` naming any other window falls through.
+            Message::Closed(id)
+                if self.open.as_ref().is_some_and(|open| open.window == id) =>
+            {
+                self.open = None;
+            }
             _ => {}
         }
         Task::none()
@@ -372,14 +406,6 @@ impl BarApp {
         };
         self.tray.closed(&open.key);
         iced::window::close(open.window)
-    }
-
-    /// The compositor destroyed a surface. Only ever the menu's: the
-    /// bar's own surface outlives the process.
-    fn remove_id(&mut self, id: iced::window::Id) {
-        if self.open.as_ref().is_some_and(|open| open.window == id) {
-            self.open = None;
-        }
     }
 
     fn view(&self, window: iced::window::Id) -> Element<'_, Message, Theme, iced::Renderer> {
@@ -430,7 +456,7 @@ impl BarApp {
         // bars end, which is where a menu hanging off a bar belongs.
         mouse_area(
             column![row![
-                Space::new(Length::Fixed(left), Length::Shrink),
+                Space::new().width(Length::Fixed(left)).height(Length::Shrink),
                 tray_menu(
                     &self.style,
                     &open.menu,
@@ -451,12 +477,15 @@ impl BarApp {
         .into()
     }
 
-    fn style(&self, _theme: &Theme) -> iced_layershell::Appearance {
+    // `iced_layershell::Appearance` was an alias for iced's own
+    // `theme::Style` and stopped being public in 0.19; the type is the
+    // same one, named where it comes from.
+    fn style(&self, _theme: &Theme) -> iced::theme::Style {
         // Transparent, not the era's ground: the runtime paints one
         // colour for every surface this application owns, and the menu
         // surface covers the whole output. The bar paints its own in
         // `view`.
-        iced_layershell::Appearance {
+        iced::theme::Style {
             background_color: iced::Color::TRANSPARENT,
             text_color: self.style.palette.fg,
         }
@@ -471,9 +500,16 @@ impl BarApp {
             // `bar()` reports which cell was clicked and not where,
             // which is right -- a cell index is what the tray can act
             // on, and a pixel is only ever this.
-            iced::event::listen_with(|event, _status, _window| match event {
+            // ... and, on the same listener, the compositor destroying
+            // a surface. iced_layershell 0.19 dropped `daemon`'s
+            // `remove_id` hook and broadcasts a window `Closed` event
+            // instead, so this is where the menu's id is forgotten.
+            iced::event::listen_with(|event, _status, window| match event {
                 iced::Event::Mouse(iced::mouse::Event::CursorMoved { position }) => {
                     Some(Message::Pointer(position.x))
+                }
+                iced::Event::Window(iced::window::Event::Closed) => {
+                    Some(Message::Closed(window))
                 }
                 _ => None,
             }),
@@ -481,10 +517,16 @@ impl BarApp {
             // rather than a snapshot read on the tick, because a menu
             // that turns up as much as a second after the click is a
             // menu that feels broken.
-            iced::Subscription::run_with_id(
-                "cp-eras-ui-bar-tray-menus",
-                futures_lite::StreamExt::map(self.tray.opened(), Message::Opened),
-            ),
+            //
+            // 0.14 replaced `run_with_id(id, stream)` with
+            // `run_with(data, fn(&data) -> stream)`, where `data` is
+            // both the stream's source and the subscription's identity.
+            // [`MenuStream`] is that pair: a receiver handle that
+            // hashes as one constant id, so the subscription is the
+            // same one across every rebuild of the view.
+            iced::Subscription::run_with(MenuStream(self.tray.opened()), |menus| {
+                futures_lite::StreamExt::map(menus.0.clone(), Message::Opened)
+            }),
         ])
     }
 
@@ -547,15 +589,21 @@ fn main() -> Result<(), iced_layershell::Error> {
     let style = style::resolve();
     let height = style.bar.height;
 
+    // 0.19's `daemon` boots the state itself, as iced's own builders
+    // do, and has no `remove_id` slot -- see `Message::Closed`. Its
+    // namespace is taken before the state exists rather than off it,
+    // so it is built here from the same resolved `Style`.
+    let namespace = format!("cp-eras-ui-bar ({})", style.era.name());
+
     daemon(
-        BarApp::namespace,
+        move || BarApp::new(style),
+        move || namespace.clone(),
         BarApp::update,
         BarApp::view,
-        BarApp::remove_id,
     )
     .style(BarApp::style)
     .subscription(BarApp::subscription)
-    .settings(MainSettings {
+    .settings(Settings {
         layer_settings: LayerShellSettings {
             // Top rather than Overlay: the bar should sit above windows
             // but never above a lock screen or a fullscreen prompt.
@@ -578,6 +626,7 @@ fn main() -> Result<(), iced_layershell::Error> {
         antialiasing: true,
         id: Some("cp-eras-ui-bar".to_string()),
         virtual_keyboard_support: None,
+        with_connection: None,
     })
-    .run_with(move || (BarApp::new(style), Task::none()))
+    .run()
 }

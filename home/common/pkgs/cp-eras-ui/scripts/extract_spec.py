@@ -326,6 +326,29 @@ def components(raw, ink, canvas, family):
     return out, small
 
 
+def occupancy(mask, h, w, rows, cols):
+    """Mean of `mask` over a rows x cols grid, for any canvas size.
+
+    This used to be `mask.reshape(rows, h // rows, cols, w // cols).mean()`,
+    which needs the canvas to divide evenly by the grid. 1600x900 does;
+    the bar's 1600x220 does not, and G2i compares a bar render against a
+    bar SVG at their own size rather than stretching both to 900 tall
+    (a 4x vertical stretch turns every diamond and chamfer into
+    something the shape templates no longer fit, on both sides at once,
+    which loses the inventory the gate is there to compare). Binning by
+    index instead is the same arithmetic whenever the old form applied —
+    for 1600x900 the bins are exactly the 20x20 blocks it took — so no
+    existing spec moves.
+    """
+    ri = (np.arange(h) * rows) // h
+    ci = (np.arange(w) * cols) // w
+    cell = (ri[:, None] * cols + ci[None, :]).ravel()
+    n = rows * cols
+    total = np.bincount(cell, weights=mask.ravel().astype(np.float64), minlength=n)
+    count = np.bincount(cell, minlength=n)
+    return (total / np.maximum(count, 1)).reshape(rows, cols)
+
+
 def extract(path, canvas_wh, k=8):
     w, h = canvas_wh
     im = Image.open(path).convert("RGB")
@@ -352,7 +375,7 @@ def extract(path, canvas_wh, k=8):
         # rotated and translucent geometry — two renders of the same design
         # fragment differently but ink the same cells.
         cw_, ch_ = 80, 45
-        occ = ink.reshape(ch_, h // ch_, cw_, w // cw_).mean((1, 3)) >= 0.15
+        occ = occupancy(ink, h, w, ch_, cw_) >= 0.15
         ys, xs = np.where(ink)
         if len(xs):
             entry["ink_bbox"] = [int(xs.min()), int(ys.min()),

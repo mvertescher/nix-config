@@ -80,7 +80,7 @@ impl Store {
                 container(
                     row![
                         marker(s, "A", &NOTE_A),
-                        Space::new(Length::Fill, 0.0),
+                        Space::new().width(Length::Fill),
                         marker(s, "C", &NOTE_B),
                     ]
                     .align_y(iced::Alignment::Center),
@@ -110,7 +110,7 @@ impl Store {
         page = page.push(
             row![
                 container(self.sidebar()).width(Length::Fixed(SIDEBAR)),
-                Space::new(s.metrics.gap * 2.0, 0.0),
+                Space::new().width(s.metrics.gap * 2.0),
                 self.shelf(),
             ]
             .height(Length::Fill),
@@ -147,7 +147,7 @@ impl Store {
         let meta = |k: &'static str, v: &'static str| {
             row![
                 text::label(s, k),
-                Space::new(Length::Fill, Length::Shrink),
+                Space::new().width(Length::Fill).height(Length::Shrink),
                 text::body(s, v),
             ]
         };
@@ -173,16 +173,16 @@ impl Store {
             .into()
         };
 
-        let mut side = column![customer, Space::new(0.0, s.metrics.gap * 1.5)].spacing(4);
+        let mut side = column![customer, Space::new().height(s.metrics.gap * 1.5)].spacing(4);
 
         // Where the markers go is era-owned: an earlier pass had one
         // rule for all four and matched none of them.
         match s.footnotes {
             Footnotes::UnderNav => {
                 side = side.push(nav);
-                side = side.push(Space::new(0.0, s.metrics.gap * 2.0));
+                side = side.push(Space::new().height(s.metrics.gap * 2.0));
                 side = side.push(marker(s, "A", &NOTE_A));
-                side = side.push(Space::new(0.0, 10.0));
+                side = side.push(Space::new().height(10.0));
                 side = side.push(marker(s, "B", &NOTE_B));
             }
             Footnotes::MidColumn => {
@@ -199,11 +199,11 @@ impl Store {
                             left: s.metrics.gap + 4.0,
                             ..Padding::ZERO
                         }),
-                        Space::new(0.0, s.metrics.gap),
+                        Space::new().height(s.metrics.gap),
                         page_curl(s, 76.0),
                     ],
                 ));
-                side = side.push(Space::new(0.0, s.metrics.gap));
+                side = side.push(Space::new().height(s.metrics.gap));
                 side = side.push(marker(s, "A", &NOTE_A));
             }
             // The markers are on the rail; the column ends at the nav.
@@ -239,7 +239,7 @@ impl Store {
                 // band starts at 506.
                 column![
                     product_card(s, &product, selected),
-                    Space::new(0.0, s.metrics.gap * 0.6),
+                    Space::new().height(s.metrics.gap * 0.6),
                     container(card_notice(s, &product)).padding(Padding {
                         left: if s.banded() { s.banner.overhang } else { 0.0 },
                         ..Padding::ZERO
@@ -258,7 +258,7 @@ impl Store {
             // opposite the one under the page-curl.
             Footnotes::MidColumn => column![
                 shelf,
-                Space::new(0.0, s.metrics.gap),
+                Space::new().height(s.metrics.gap),
                 container(marker(s, "C", &NOTE_B))
                     .width(Length::Fill)
                     .align_x(iced::alignment::Horizontal::Right),
@@ -266,7 +266,7 @@ impl Store {
             .into(),
             Footnotes::TopRail => column![
                 shelf,
-                Space::new(0.0, s.metrics.gap),
+                Space::new().height(s.metrics.gap),
                 marker(s, "B", &NOTE_A),
             ]
             .into(),

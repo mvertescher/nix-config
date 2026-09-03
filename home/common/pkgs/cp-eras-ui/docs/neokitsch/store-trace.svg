@@ -1,0 +1,602 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <!-- NEOKITSCH store-trace: schematic of images/neokitsch-store.png
+       (Behance, the 4ST STORE weapon-shop screen of the neokitsch run).
+       Source is 3840x2160; every coordinate here is the source divided
+       by 2.4, measured, not eyeballed:
+         scripts/extract_spec.py images/neokitsch-store.png
+       plus row/column scans of the red channel for card edges, echo
+       strands, band strands, dividers and text extents, and held to the
+       source by
+         scripts/fidelity_check.sh -\-inventory neokitsch store
+       (the inks gate).
+
+       What the source shows, top to bottom:
+         - the run's violet-over-black haze (same lobe geometry as the
+           dashboard-trace; carried over)
+         - top-left: the 4ST logotype — a very heavy face, "4S" solid
+           (x 109..234, y 66..117) and the "T" drawn as an OUTLINE only
+           (x 237..277); under it S T O R E letter-spaced ~39 per glyph
+           (x 113..275, cap 126..138)
+         - top-right: the BASKET plate, a solid gold slab [1292,20]..
+           [1496,105] with its bottom-left corner cut (1292,90)-(1307,105).
+           A dark hairline at y=60 splits it: above, BASKET centred at
+           x~1369 and a QR-glyph cell x 1455..1496 behind a vertical
+           hairline; below, a darker strand-textured band carrying two
+           lines of dark micro text (ONLY CC35 CERTIFIED ... / ALLOWED TO
+           MANIPULATE ...)
+         - the header WIRE BAND: 8 strands y 160.4 + 3.2 i on the outer
+           runs (x 35..290 and 1290..1562), all rising through one S-bend
+           (x 290 -> 349, mirrored 1230 -> 1290) onto ONE line at y=124.2
+           that bridges x 349..1230; both ends curl down ~10px at x=35 /
+           x=1562. Flanking the bridge on the low runs: letter box A at
+           (360,143) with SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO. /
+           SERVING CUSTOMERS SINCE 2006. to its right (x 401, baselines
+           148 / 155); box C at (1178,143) with the same two lines to
+           its LEFT (x 1012)
+         - left nav column: CUSTOMER ... #NC488402 (cap 243..252, right
+           edge 289), LOYALTY DISCOUNT ... 10% (275..283), LAST UPDATE ...
+           10/05/2077 (291..299); then five outlined buttons x 93..293.5,
+           39 tall, pitch 60.7 from y 357.9: RIFLES, SMG, SNIPER, SHOTGUN,
+           PISTOL. Each has r~4 corners, a bottom-left cut (93,385)-
+           (108,396.5) and a small solid tab x 242..275 under the
+           bottom-right. SMG is the selection: solid gold, dark label
+         - four weapon cards. Cards 1, 3, 4 are one template at x0 =
+           360.8 / 978.8 / 1288.8 (widths 262): left edge single line
+           from a r~13 top-left corner; top edge y=345 to x0+136, a
+           37-degree step up to y=314.6 at x0+176, on to a r~18 top-right
+           corner and the right edge x0+262; bottom y=640.4 with a
+           bottom-left cut (x0+19,640)-(x0,618) and a r~8 bottom-right
+           corner. Four ECHO strands (pitch 3, fading) shadow the outline
+           from the step, round the top-right, down the right side and
+           along the bottom, dying on the bottom-left cut. Inside: the
+           rifle illustration (x0+37..x0+220, y 384..438; drawn here as a
+           simplified filled silhouette — the source is a hatched line
+           drawing), labels DPS PNT ACC ROF (cap 470..485 at x0+22,
+           +86, +137, +192), values 620 (large) 30 5 5 (cap top 501), a
+           socket row between hairlines y 532.9 and 580.8 with dividers at
+           x0+51.3, +118.8, +190.4 — a 9x9 QR glyph in the first cell,
+           EMPTY / SOCKET in the other three — then MAGNUM 650 (bold)
+           HAND GUN (cap 598..615) and a solid tab x0+99..x0+163 under
+           the bottom edge (y 633..641)
+         - card 2 (x0 = 667.1) is the EXPANDED/SELECTED one: the same
+           template stretched — top part shifted up 81.7 (top edge
+           263.3, step to 233.3), bottom part shifted down 70.9 (bottom
+           711.3, socket row 605..652.9, name cap 670..685) — and the
+           span y 411.2..652.9 SOLID GOLD across the full width, carrying
+           the values row and six extra dark lines: 20 Recoil / 22 Sperad
+           / 12 Range / Bonus / +9 Reflexes / +2 Modules Slots (x 673,
+           baselines 468 488 509 539 560 580)
+         - foot: letter box B at (675,775) with the SPARE TIME MANAGER
+           two-liner to its right (x 715, baselines 780.5 / 787)
+         - every glyph and stroke sits on a soft vertical glow (the
+           #38261a ink family); drawn once as a blurred copy of the
+           content group under the crisp content
+
+       Palette sampled by k-means (extract_spec.py) and spot samples:
+         ink   #f5c379 (bright: BASKET plate, SMG, card-2 body, tabs)
+               #c5965a (strands, card outlines)  #795c3c  #38261a (glow)
+         fills #fbb86c plate  #f4c078 SMG  #f6c27a card-2 body  #eea666
+               basket band — each of the last three is WOOD VENEER in the
+               source (fine wavy grain at ~5px pitch, seams, arcs), drawn
+               here as clipped 0.7 strokes in a mid gold over the fill so
+               the average stays at the sampled mean, plus a few darker
+               (#a86e33 / #b57f46 / #b47a4a) strands at measured positions
+         ground #0e0a0d (65%) #383852 / #59456b (violet haze) #182535 -->
+  <defs>
+    <radialGradient id="hazeblue" gradientUnits="userSpaceOnUse"
+        cx="900" cy="-120" r="1030"
+        gradientTransform="rotate(2 900 -120) translate(900 -120) scale(1 0.515) translate(-900 120)">
+      <stop offset="0"    stop-color="#223350" stop-opacity="0"/>
+      <stop offset="0.60" stop-color="#223350" stop-opacity="0"/>
+      <stop offset="0.68" stop-color="#223350" stop-opacity="0.85"/>
+      <stop offset="0.76" stop-color="#1a2c46" stop-opacity="0.80"/>
+      <stop offset="0.84" stop-color="#101d30" stop-opacity="0"/>
+    </radialGradient>
+    <!-- The blue is right-weighted: on the left the violet stays on top of
+         the shared annulus (source shows only a thin arm there, and none at
+         all before x~200), so the blue layer is faded out leftward by a
+         luminance mask rather than by its own gradient. -->
+    <linearGradient id="hazebluefade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"    stop-color="#000000"/>
+      <stop offset="0.12" stop-color="#1a1a1a"/>
+      <stop offset="0.22" stop-color="#7a7a7a"/>
+      <stop offset="0.40" stop-color="#ffffff"/>
+      <stop offset="1"    stop-color="#ffffff"/>
+    </linearGradient>
+    <mask id="bluemask">
+      <rect width="1600" height="900" fill="url(#hazebluefade)"/>
+    </mask>
+    <radialGradient id="haze" gradientUnits="userSpaceOnUse"
+        cx="825" cy="-120" r="1030"
+        gradientTransform="rotate(1.3 825 -120) translate(825 -120) scale(1 0.515) translate(-825 120)">
+      <stop offset="0"     stop-color="#574568"/>
+      <stop offset="0.258" stop-color="#574568"/>
+      <stop offset="0.572" stop-color="#3a3853"/>
+      <stop offset="0.873" stop-color="#16121a"/>
+      <stop offset="1"     stop-color="#0e0a0d"/>
+    </radialGradient>
+    <!-- wood-veneer grain clips: the three solid gold fills (SMG selection,
+         card-2 body, BASKET lower band) are veneer in the source -->
+    <clipPath id="smgclip"><path d="M 97,418.6 H 289.5 Q 293.5,418.6 293.5,422.6 V 453.2 Q 293.5,457.2 289.5,457.2 H 108 L 92.9,445.6 V 422.6 Q 92.9,418.6 97,418.6 Z"/></clipPath>
+    <clipPath id="card2clip"><rect x="667.1" y="411.2" width="262.1" height="241.7"/></clipPath>
+    <clipPath id="basketclip"><path d="M 1291.7,60 H 1496.3 V 105 H 1307 L 1291.7,90 Z"/></clipPath>
+    <!-- boxed section letter: 26x26 rounded plate, folded bottom-right
+         corner (the era's mini-SIM motif) -->
+    <g id="letterbox" fill="none" stroke-width="1.4">
+      <path d="M 3,0 H 23 Q 26,0 26,3 V 17 L 19,24 Q 17,26 14,26 H 3
+               Q 0,26 0,23 V 3 Q 0,0 3,0 Z"/>
+      <path d="M 26,17 H 21 Q 19,17 19,19 V 24" stroke-width="1"/>
+    </g>
+    <!-- soft vertical glow under every stroke and glyph (the source's
+         #38261a family) -->
+    <filter id="halo" x="-5%" y="-10%" width="110%" height="120%">
+      <feGaussianBlur stdDeviation="1.5 4.5"/>
+      <feColorMatrix type="matrix" values="0.40 0 0 0 0  0 0.30 0 0 0  0 0 0.20 0 0  0 0 0 1.7 0"/>
+    </filter>
+    <!-- 9x9 QR glyph, cell 3.55, as read off card 1 (x 370.6, y 542.2) -->
+    <g id="qr">
+      <rect x="0.0" y="0.0" width="13.8" height="13.8"/>
+      <rect x="10.6" y="0.0" width="3.1" height="3.1"/>
+      <rect x="17.8" y="0.0" width="6.7" height="6.7"/>
+      <rect x="28.4" y="0.0" width="3.1" height="3.1"/>
+      <rect x="24.8" y="7.1" width="6.7" height="6.7"/>
+      <rect x="0.0" y="10.6" width="3.1" height="3.1"/>
+      <rect x="17.8" y="10.6" width="3.1" height="3.1"/>
+      <rect x="0.0" y="17.8" width="13.8" height="13.8"/>
+      <rect x="17.8" y="17.8" width="6.7" height="6.7"/>
+      <rect x="28.4" y="17.8" width="3.1" height="3.1"/>
+      <rect x="24.8" y="24.8" width="6.7" height="6.7"/>
+      <rect x="10.6" y="28.4" width="3.1" height="3.1"/>
+      <rect x="17.8" y="28.4" width="3.1" height="3.1"/>
+    </g>
+  </defs>
+
+  <rect width="1600" height="900" fill="#0e0a0d"/>
+  <rect width="1600" height="900" fill="url(#haze)"/>
+  <rect width="1600" height="560" fill="url(#hazeblue)" mask="url(#bluemask)"/>
+
+  <use href="#content" filter="url(#halo)"/>
+  <g id="content">
+  <!-- ==== logotype ==== -->
+  <g font-family="Rajdhani" font-weight="700">
+    <text x="109" y="117" font-size="70" textLength="121" lengthAdjust="spacingAndGlyphs" fill="#fdcd9d" stroke="#fdcd9d" stroke-width="4" stroke-linejoin="round">4S</text>
+    <text x="237" y="117" font-size="72" textLength="40" lengthAdjust="spacingAndGlyphs" fill="none" stroke="#f0c48a" stroke-width="1.4">T</text>
+    <text x="113" y="138" font-size="16.5" letter-spacing="29" textLength="162" fill="#e9bd7a">STORE</text>
+  </g>
+
+  <!-- ==== BASKET plate ==== -->
+  <path d="M 1291.7,19.6 H 1496.3 V 105 H 1307 L 1291.7,90 Z" fill="#fbb86c"/>
+  <path d="M 1291.7,60 H 1496.3 V 105 H 1307 L 1291.7,90 Z" fill="#eea666"/>
+  <!-- veneer grain on the lower band: ~5px pitch at 3840 (2.1 here), a
+       seam at x=1374 (source 3298) where the lines chevron, and the
+       lines bending down into the cut corner at the left end. Sampled
+       dark strand ~#b47a4a between bright #fdbe73 -->
+  <g clip-path="url(#basketclip)" fill="none" stroke="#c9844c" stroke-width="0.7">
+    <path d="M 1291.7,60.2 l 5,0 5,.4 5,.5 5,.5 5,.2 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,.4 5,.5 5,.5 5,.2 5,-.8 5,-1.5 5,-.5 5,.7 5,.5 5,.4 5,.5 5,.5 5,.2 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,.4 5,.5 5,.5 5,.2 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,.4 5,.5 5,.5 4.6,.2"/>
+    <path d="M 1291.7,62.3 l 5,.5 5,.7 5,.6 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 5,.5 5,.8 5,.7 5,.2 5,-.3 5,-1.2 5,-1.8 5,-.4 5,1.1 5,1 5,.8 5,.7 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 5,.5 5,.8 5,.7 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 5,.5 5,.8 5,.7 5,.2 4.6,-.3"/>
+    <path d="M 1291.7,65.1 l 5,.7 5,.6 5,.2 5,-.4 5,-.8 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.3 5,-.8 5,-1.4 5,-1.5 5,.1 5,1.6 5,1.3 5,.7 5,.2 5,-.3 5,-.8 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.3 5,-.8 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.3 4.6,-.7"/>
+    <path d="M 1291.7,68.2 l 5,.3 5,0 5,-.4 5,-.7 5,-.7 5,-.4 5,0 5,.5 5,.7 5,.6 5,.2 5,-.3 5,-.6 5,-.7 5,-.9 5,-1 5,.6 5,1.7 5,1 5,.2 5,-.3 5,-.6 5,-.7 5,-.4 5,0 5,.5 5,.7 5,.6 5,.2 5,-.3 5,-.6 5,-.7 5,-.4 5,0 5,.5 5,.7 5,.6 5,.2 5,-.3 5,-.6 4.6,-.6"/>
+    <path d="M 1291.7,70.7 l 5,-.2 5,-.4 5,-.5 5,-.5 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.2 5,-.4 5,-.4 5,-.2 5,-.5 5,-.7 5,.5 5,1.3 5,.6 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.2 5,-.4 5,-.4 4.6,-.2"/>
+    <path d="M 1291.7,72.9 l 5,-.5 5,-.5 5,-.4 5,-.2 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,-.4 5,-.8 5,.3 5,1.1 5,.4 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.2 5,-.2 5,-.1 4.6,0"/>
+    <path d="M 1291.7,75.2 l 5,-.8 5,-.7 5,-.4 5,-.1 5,.2 5,.3 5,.3 5,.1 5,-.1 5,-.3 5,-.3 5,-.2 5,0 5,.2 5,-.2 5,-.7 5,.2 5,.9 5,.2 5,-.3 5,-.2 5,0 5,.2 5,.3 5,.3 5,.1 5,-.1 5,-.3 5,-.3 5,-.2 5,0 5,.2 5,.3 5,.3 5,.1 5,-.1 5,-.3 5,-.3 5,-.2 5,0 4.6,.2"/>
+    <path d="M 1291.7,77.2 l 5,-1.2 5,-.8 5,-.2 5,.3 5,.5 5,.5 5,.1 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,.4 5,.5 5,-.1 5,-.9 5,-.1 5,.5 5,-.1 5,-.3 5,0 5,.4 5,.5 5,.5 5,.1 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,.4 5,.5 5,.5 5,.1 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,.4 4.6,.5"/>
+    <path d="M 1291.7,78.8 l 5,-1.2 5,-.5 5,.2 5,.7 5,.7 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 5,-.3 5,-1.3 5,-.6 5,.2 5,0 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 5,.6 5,.8 4.6,.6"/>
+    <path d="M 1291.7,80.6 l 5,-.7 5,0 5,.5 5,.6 5,.2 5,-.4 5,-.8 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.9 5,-1.8 5,-.7 5,.5 5,.5 5,.6 5,.8 5,.7 5,.2 5,-.4 5,-.8 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.4 5,-.8 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 4.6,.2"/>
+    <path d="M 1291.7,83.2 l 5,-.4 5,0 5,.2 5,0 5,-.3 5,-.6 5,-.7 5,-.4 5,.1 5,.5 5,.7 5,.6 5,.2 5,-.3 5,-1.1 5,-1.7 5,-.3 5,1.1 5,.9 5,.7 5,.6 5,.2 5,-.3 5,-.6 5,-.7 5,-.4 5,.1 5,.5 5,.7 5,.6 5,.2 5,-.3 5,-.6 5,-.7 5,-.4 5,.1 5,.5 5,.7 5,.6 5,.2 4.6,-.2"/>
+    <path d="M 1291.7,86.1 l 5,-.6 5,-.4 5,-.3 5,-.3 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.2 5,-.4 5,-.9 5,-1.2 5,.1 5,1.3 5,.9 5,.3 5,.1 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.2 4.6,-.3"/>
+    <path d="M 1291.7,88.8 l 5,-.9 5,-.7 5,-.6 5,-.4 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.2 5,-.2 5,-.7 5,-1 5,.3 5,1.2 5,.7 5,.1 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.2 4.6,-.2"/>
+    <path d="M 1291.7,91.4 l 5,-1.1 5,-1 5,-.8 5,-.5 5,-.2 5,0 5,.2 5,.3 5,.3 5,.1 5,-.1 5,-.3 5,-.3 5,-.2 5,-.5 5,-.8 5,.4 5,1.3 5,.5 5,-.1 5,-.3 5,-.3 5,-.2 5,0 5,.2 5,.3 5,.3 5,.1 5,-.1 5,-.3 5,-.3 5,-.2 5,0 5,.2 5,.3 5,.3 5,.1 5,-.1 5,-.3 5,-.3 4.6,-.2"/>
+    <path d="M 1291.7,94.1 l 5,-1.5 5,-1.4 5,-1.1 5,-.5 5,0 5,.4 5,.6 5,.5 5,.1 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,-.1 5,-.4 5,.5 5,1.1 5,.2 5,-.5 5,-.5 5,-.3 5,0 5,.4 5,.6 5,.5 5,.1 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,.4 5,.6 5,.5 5,.1 5,-.2 5,-.5 5,-.5 5,-.3 4.6,0"/>
+    <path d="M 1291.7,96.4 l 5,-2.1 5,-1.7 5,-1 5,-.1 5,.6 5,.8 5,.6 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 5,.6 5,.3 5,-.4 5,.3 5,.7 5,-.3 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.6 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.6 5,.2 5,-.3 5,-.7 5,-.8 5,-.5 5,.1 4.6,.5"/>
+    <path d="M 1291.7,98.0 l 5,-2.2 5,-1.5 5,-.5 5,.4 5,.8 5,.7 5,.2 5,-.4 5,-.8 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.1 5,-.8 5,-.3 5,.2 5,-.4 5,-.5 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.4 5,-.8 5,-.8 5,-.5 5,.1 5,.6 5,.8 5,.7 5,.2 5,-.4 5,-.8 5,-.8 5,-.5 5,.1 5,.6 4.6,.8"/>
+    <path d="M 1291.7,99.6 l 5,-1.9 5,-1 5,-.2 5,.4 5,.5 5,.2 5,-.3 5,-.6 5,-.6 5,-.4 5,.1 5,.5 5,.7 5,.5 5,-.4 5,-1.3 5,-.5 5,.4 5,.1 5,.1 5,.5 5,.7 5,.5 5,.2 5,-.3 5,-.6 5,-.6 5,-.4 5,.1 5,.5 5,.7 5,.5 5,.2 5,-.3 5,-.6 5,-.6 5,-.4 5,.1 5,.5 5,.7 4.6,.5"/>
+    <path d="M 1291.7,101.9 l 5,-1.6 5,-.9 5,-.3 5,.1 5,.1 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.7 5,-1.4 5,-.3 5,.8 5,.5 5,.3 5,.4 5,.3 5,.1 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 4.6,.1"/>
+    <path d="M 1291.7,104.5 l 5,-1.5 5,-1 5,-.5 5,-.2 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.8 5,-1.2 5,-.1 5,1 5,.6 5,.2 5,.2 5,.1 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 4.6,-.1"/>
+    <path d="M 1291.7,106.9 l 5,-1.5 5,-1 5,-.7 5,-.4 5,-.3 5,-.3 5,-.2 5,0 5,.2 5,.3 5,.3 5,.1 5,-.1 5,-.3 5,-.8 5,-1.2 5,.1 5,1.2 5,.8 5,.3 5,.1 5,-.1 5,-.3 5,-.3 5,-.2 5,0 5,.2 5,.3 5,.3 5,.1 5,-.1 5,-.3 5,-.3 5,-.2 5,0 5,.2 5,.3 5,.3 5,.1 5,-.1 4.6,-.3"/>
+    <g stroke="#b47a4a" stroke-width="0.9">
+      <line x1="1374" y1="60" x2="1374" y2="105"/>
+      <path d="M 1291.7,72 C 1300,72 1306,78 1312,83"/>
+      <path d="M 1291.7,80 C 1298,80 1302,86 1307,92"/>
+    </g>
+  </g>
+  <g fill="none" stroke="#5a3418" stroke-width="0.8">
+    <path d="M 1291.7,60 H 1496.3"/>
+    <path d="M 1455.5,19.6 V 60"/>
+  </g>
+  <text x="1369" y="50" font-family="Rajdhani" font-size="15" letter-spacing="1.5" text-anchor="middle" fill="#5a3418">BASKET</text>
+  <!-- QR glyph cell (schematic: the source has a dense 8x8-ish code) -->
+  <g fill="#5a3418">
+    <rect x="1463" y="28" width="7" height="7"/><rect x="1472" y="28" width="4" height="4"/><rect x="1478" y="28" width="6" height="6"/><rect x="1486" y="28" width="6" height="6"/>
+    <rect x="1469" y="35" width="4" height="4"/><rect x="1483" y="33" width="4" height="4"/>
+    <rect x="1463" y="38" width="4" height="4"/><rect x="1472" y="38" width="6" height="6"/><rect x="1481" y="39" width="4" height="4"/><rect x="1488" y="38" width="4" height="4"/>
+    <rect x="1463" y="45" width="6" height="6"/><rect x="1471" y="46" width="4" height="4"/><rect x="1478" y="45" width="6" height="6"/><rect x="1486" y="46" width="6" height="6"/>
+    <rect x="1469" y="53" width="4" height="4"/><rect x="1476" y="53" width="7" height="4"/><rect x="1486" y="53" width="4" height="4"/>
+  </g>
+  <g font-family="Rajdhani" font-size="8" fill="#5a3418">
+    <text x="1307" y="73" textLength="178" lengthAdjust="spacingAndGlyphs">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE</text>
+    <text x="1307" y="82" textLength="172" lengthAdjust="spacingAndGlyphs">ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+  </g>
+
+  <!-- ==== header wire band: 8 strands rising to one bridge line ==== -->
+  <g fill="none" stroke="#e0b67a" stroke-width="1.2">
+    <path d="M 35,170.4 Q 35,160.4 45,160.4 H 290 C 322,160.4 316,124.2 349,124.2 H 1230 C 1264,124.2 1258,160.4 1290,160.4 H 1552 Q 1562,160.4 1562,170.4" stroke-opacity="0.35"/>
+    <path d="M 35,173.6 Q 35,163.6 45,163.6 H 290 C 322,163.6 316,124.2 349,124.2 H 1230 C 1264,124.2 1258,163.6 1290,163.6 H 1552 Q 1562,163.6 1562,173.6" stroke-opacity="0.44"/>
+    <path d="M 35,176.8 Q 35,166.8 45,166.8 H 290 C 322,166.8 316,124.2 349,124.2 H 1230 C 1264,124.2 1258,166.8 1290,166.8 H 1552 Q 1562,166.8 1562,176.8" stroke-opacity="0.54"/>
+    <path d="M 35,180.0 Q 35,170.0 45,170.0 H 290 C 322,170.0 316,124.2 349,124.2 H 1230 C 1264,124.2 1258,170.0 1290,170.0 H 1552 Q 1562,170.0 1562,180.0" stroke-opacity="0.63"/>
+    <path d="M 35,183.2 Q 35,173.2 45,173.2 H 290 C 322,173.2 316,124.2 349,124.2 H 1230 C 1264,124.2 1258,173.2 1290,173.2 H 1552 Q 1562,173.2 1562,183.2" stroke-opacity="0.72"/>
+    <path d="M 35,186.4 Q 35,176.4 45,176.4 H 290 C 322,176.4 316,124.2 349,124.2 H 1230 C 1264,124.2 1258,176.4 1290,176.4 H 1552 Q 1562,176.4 1562,186.4" stroke-opacity="0.81"/>
+    <path d="M 35,189.6 Q 35,179.6 45,179.6 H 290 C 322,179.6 316,124.2 349,124.2 H 1230 C 1264,124.2 1258,179.6 1290,179.6 H 1552 Q 1562,179.6 1562,189.6" stroke-opacity="0.91"/>
+    <path d="M 35,192.8 Q 35,182.8 45,182.8 H 290 C 322,182.8 316,124.2 349,124.2 H 1230 C 1264,124.2 1258,182.8 1290,182.8 H 1552 Q 1562,182.8 1562,192.8" stroke-opacity="1.00"/>
+  </g>
+  <!-- letter boxes A / C on the low runs and their annotations -->
+  <g stroke="#e0b67a" fill="none">
+    <use href="#letterbox" x="360" y="143"/>
+    <use href="#letterbox" x="1178" y="143"/>
+    <text x="368" y="163" font-family="Rajdhani" font-size="17" font-weight="600" fill="#e0b67a" stroke="none">A</text>
+    <text x="1186" y="163" font-family="Rajdhani" font-size="17" font-weight="600" fill="#e0b67a" stroke="none">C</text>
+  </g>
+  <g font-family="Rajdhani" font-size="6.5" fill="#d9a877">
+    <text x="401" y="148" textLength="155" lengthAdjust="spacingAndGlyphs">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+    <text x="401" y="155" textLength="100" lengthAdjust="spacingAndGlyphs">SERVING CUSTOMERS SINCE 2006.</text>
+    <text x="1012" y="148" textLength="155" lengthAdjust="spacingAndGlyphs">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+    <text x="1012" y="155" textLength="100" lengthAdjust="spacingAndGlyphs">SERVING CUSTOMERS SINCE 2006.</text>
+  </g>
+
+  <!-- ==== nav column ==== -->
+  <g font-family="Rajdhani" font-size="11.5" fill="#e9bd7a">
+    <text x="96" y="252">CUSTOMER</text><text x="289" y="252" text-anchor="end">#NC488402</text>
+    <text x="96" y="283">LOYALTY DISCOUNT</text><text x="288" y="283" text-anchor="end">10%</text>
+    <text x="96" y="299">LAST UPDATE</text><text x="288" y="299" text-anchor="end">10/05/2077</text>
+  </g>
+  <path d="M 97,357.9 H 289.5 Q 293.5,357.9 293.5,361.9 V 392.5 Q 293.5,396.5 289.5,396.5 H 108 L 92.9,384.9 V 361.9 Q 92.9,357.9 97,357.9 Z" fill="none" stroke="#dab176" stroke-width="1.3"/>
+  <path d="M 241.7,394.1 H 275.5 L 272.5,397.5 H 244.7 Z" fill="#f7cc8c"/>
+  <text x="115" y="384.4" font-family="Rajdhani" font-size="17" letter-spacing="1" fill="#f5c689">RIFLES</text>
+  <path d="M 97,418.6 H 289.5 Q 293.5,418.6 293.5,422.6 V 453.2 Q 293.5,457.2 289.5,457.2 H 108 L 92.9,445.6 V 422.6 Q 92.9,418.6 97,418.6 Z" fill="#f4c078"/>
+  <!-- SMG veneer grain: ~5px pitch at 3840 (2.1 here); the lines pinch
+       into nested arcs at the left end (x<113), chevron on a seam at
+       x=192.5 (source 462) and sweep up toward the top-right corner past
+       x~272. Source mean #e6b16e, dark strand ~#b57f46, bright #fed18e -->
+  <g clip-path="url(#smgclip)" fill="none" stroke="#d0975a" stroke-width="0.7">
+    <path d="M 93.0,429.5 l 5,-4.1 5,-2.7 5,-1.7 5,-.8 5,-.4 5,-.5 5,-.4 5,-.1 5,.2 5,.5 5,.5 5,.3 5,0 5,-.3 5,-.5 5,-.5 5,-.3 5,-.4 5,-.5 5,-.2 5,1.3 5,1.1 5,.1 5,-.4 5,-.5 5,-.4 5,-.2 5,.2 5,.4 5,.5 5,.4 5,.1 5,-.2 5,-.5 5,-.5 5,-.3 5,0 5,.3 5,.5 5,.5 0.5,0"/>
+    <path d="M 93.0,430.8 l 5,-3.4 5,-2.4 5,-1.8 5,-1.2 5,-.7 5,-.5 5,-.1 5,.4 5,.7 5,.7 5,.5 5,0 5,-.4 5,-.7 5,-.7 5,-.4 5,.1 5,.1 5,-.1 5,0 5,1.1 5,.7 5,-.3 5,-.7 5,-.6 5,-.2 5,.3 5,.6 5,.7 5,.5 5,.1 5,-.4 5,-.7 5,-.7 5,-.5 5,0 5,.4 5,.7 5,.6 5,.3 0.5,0"/>
+    <path d="M 93.0,432.0 l 5,-3 5,-2.5 5,-2 5,-1.3 5,-.5 5,-.1 5,.4 5,.7 5,.8 5,.5 5,0 5,-.5 5,-.8 5,-.7 5,-.4 5,.1 5,.6 5,.4 5,-.2 5,-.4 5,.6 5,.2 5,-.5 5,-.6 5,-.2 5,.3 5,.7 5,.8 5,.5 5,.1 5,-.4 5,-.7 5,-.8 5,-.5 5,0 5,.5 5,.7 5,.7 5,.3 5,-.3 0.5,-.1"/>
+    <path d="M 93.0,432.9 l 5,-2.8 5,-2.4 5,-1.8 5,-.8 5,0 5,.4 5,.6 5,.6 5,.4 5,0 5,-.4 5,-.6 5,-.6 5,-.3 5,.1 5,.5 5,.6 5,.1 5,-.6 5,-.9 5,.3 5,.2 5,-.2 5,-.1 5,.3 5,.6 5,.6 5,.4 5,0 5,-.4 5,-.6 5,-.6 5,-.4 5,0 5,.4 5,.6 5,.5 5,.2 5,-.3 5,-.7 0.5,-.1"/>
+    <path d="M 93.0,433.6 l 5,-2.5 5,-2 5,-1.3 5,-.4 5,.2 5,.4 5,.4 5,.2 5,0 5,-.3 5,-.4 5,-.3 5,-.2 5,.1 5,.3 5,.4 5,.3 5,-.3 5,-1 5,-1 5,.4 5,.6 5,.2 5,.2 5,.4 5,.4 5,.2 5,0 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.3 5,.4 5,.3 5,.1 5,-.2 5,-.5 5,-.7 0.5,-.1"/>
+    <path d="M 93.0,434.4 l 5,-2 5,-1.5 5,-.8 5,-.1 5,.2 5,.2 5,.1 5,0 5,-.2 5,-.2 5,-.2 5,-.1 5,.1 5,.2 5,.2 5,.2 5,.1 5,-.5 5,-1 5,-.9 5,.7 5,.8 5,.4 5,.2 5,.2 5,.1 5,0 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,.2 5,.1 5,-.1 5,-.4 5,-.5 5,-.5 0.5,-.1"/>
+    <path d="M 93.0,435.2 l 5,-1.5 5,-1 5,-.4 5,.1 5,.3 5,.1 5,-.1 5,-.2 5,-.3 5,-.2 5,-.1 5,.1 5,.2 5,.3 5,.2 5,.1 5,-.1 5,-.7 5,-1.1 5,-.9 5,.8 5,1 5,.5 5,.3 5,.2 5,0 5,-.2 5,-.3 5,-.3 5,-.1 5,.1 5,.2 5,.3 5,.2 5,.1 5,-.1 5,-.3 5,-.5 5,-.5 5,-.5 0.5,0"/>
+    <path d="M 93.0,435.9 l 5,-1 5,-.4 5,.1 5,.3 5,.2 5,-.1 5,-.4 5,-.5 5,-.4 5,-.1 5,.2 5,.4 5,.5 5,.4 5,.1 5,-.3 5,-.5 5,-.9 5,-1.2 5,-.7 5,1.1 5,1.3 5,.7 5,.3 5,-.1 5,-.4 5,-.5 5,-.5 5,-.2 5,.1 5,.4 5,.5 5,.4 5,.1 5,-.2 5,-.4 5,-.6 5,-.6 5,-.4 5,-.2 0.5,0"/>
+    <path d="M 93.0,436.8 l 5,-.2 5,.3 5,.5 5,.2 5,-.2 5,-.6 5,-.7 5,-.6 5,-.2 5,.3 5,.7 5,.7 5,.5 5,.1 5,-.4 5,-.7 5,-.7 5,-.8 5,-.8 5,-.2 5,1.6 5,1.5 5,.6 5,-.1 5,-.5 5,-.7 5,-.6 5,-.3 5,.2 5,.6 5,.7 5,.6 5,.2 5,-.3 5,-.7 5,-.7 5,-.6 5,-.3 5,0 5,.1 0.5,0"/>
+    <path d="M 93.0,438.0 l 5,.6 5,.7 5,.4 5,-.2 5,-.7 5,-.8 5,-.6 5,-.1 5,.4 5,.7 5,.8 5,.5 5,0 5,-.5 5,-.8 5,-.7 5,-.4 5,-.4 5,-.3 5,.1 5,1.5 5,1.2 5,.1 5,-.6 5,-.8 5,-.7 5,-.2 5,.3 5,.7 5,.8 5,.6 5,.1 5,-.4 5,-.7 5,-.8 5,-.5 5,-.2 5,.2 5,.3 5,.1 0.5,0"/>
+    <path d="M 93.0,439.3 l 5,1.1 5,.7 5,.1 5,-.4 5,-.6 5,-.4 5,-.1 5,.3 5,.6 5,.6 5,.4 5,0 5,-.4 5,-.6 5,-.6 5,-.3 5,.1 5,0 5,-.2 5,-.1 5,1.1 5,.7 5,-.3 5,-.6 5,-.5 5,-.2 5,.2 5,.5 5,.6 5,.4 5,.1 5,-.3 5,-.6 5,-.6 5,-.4 5,0 5,.3 5,.3 5,.1 5,-.4 0.5,-.1"/>
+    <path d="M 93.0,440.3 l 5,1.3 5,.8 5,.2 5,-.2 5,-.3 5,0 5,.2 5,.4 5,.4 5,.2 5,0 5,-.2 5,-.4 5,-.3 5,-.2 5,.1 5,.3 5,0 5,-.5 5,-.5 5,.7 5,.5 5,-.1 5,-.3 5,-.1 5,.2 5,.3 5,.4 5,.3 5,0 5,-.2 5,-.4 5,-.4 5,-.2 5,0 5,.2 5,.2 5,0 5,-.4 5,-.8 0.5,-.1"/>
+    <path d="M 93.0,441.2 l 5,1.7 5,1 5,.5 5,.1 5,0 5,.1 5,.2 5,.2 5,.1 5,0 5,-.2 5,-.2 5,-.2 5,-.1 5,.1 5,.2 5,.2 5,-.2 5,-.8 5,-.7 5,.6 5,.6 5,.1 5,0 5,.1 5,.2 5,.2 5,.1 5,0 5,-.1 5,-.2 5,-.2 5,-.1 5,0 5,.2 5,.2 5,0 5,-.3 5,-.7 5,-1 0.5,-.1"/>
+    <path d="M 93.0,442.1 l 5,2.1 5,1.3 5,.7 5,.3 5,.2 5,.3 5,.3 5,.1 5,0 5,-.2 5,-.3 5,-.3 5,-.1 5,.1 5,.2 5,.3 5,.2 5,-.3 5,-.9 5,-.9 5,.5 5,.6 5,.2 5,.1 5,.3 5,.3 5,.2 5,0 5,-.2 5,-.3 5,-.3 5,-.1 5,0 5,.2 5,.3 5,.2 5,-.1 5,-.5 5,-.9 5,-1.2 0.5,-.1"/>
+    <path d="M 93.0,442.9 l 5,2.3 5,1.6 5,1.1 5,.7 5,.5 5,.5 5,.2 5,-.1 5,-.4 5,-.5 5,-.4 5,-.2 5,.2 5,.4 5,.5 5,.4 5,.1 5,-.6 5,-1.3 5,-1.2 5,.5 5,.8 5,.5 5,.5 5,.5 5,.3 5,0 5,-.3 5,-.5 5,-.5 5,-.2 5,.1 5,.4 5,.5 5,.4 5,.2 5,-.3 5,-.9 5,-1.2 5,-1.4 0.5,-.1"/>
+    <path d="M 93.0,443.5 l 5,2.7 5,2.1 5,1.7 5,1.2 5,.7 5,.3 5,-.2 5,-.6 5,-.7 5,-.6 5,-.2 5,.3 5,.6 5,.7 5,.5 5,.1 5,-.3 5,-1.1 5,-1.6 5,-1.1 5,.8 5,1.3 5,1 5,.7 5,.4 5,-.1 5,-.5 5,-.7 5,-.7 5,-.3 5,.2 5,.6 5,.7 5,.6 5,.2 5,-.3 5,-.8 5,-1.2 5,-1.3 5,-1.2 0.5,-.1"/>
+    <path d="M 93.0,444.2 l 5,3.5 5,2.9 5,2.3 5,1.2 5,.3 5,-.2 5,-.6 5,-.8 5,-.6 5,-.2 5,.3 5,.7 5,.8 5,.6 5,.1 5,-.4 5,-.7 5,-1.2 5,-1.3 5,-.7 5,1.3 5,1.6 5,1 5,.4 5,-.1 5,-.6 5,-.8 5,-.7 5,-.3 5,.2 5,.6 5,.8 5,.6 5,.2 5,-.3 5,-.7 5,-1 5,-1.1 5,-.9 5,-.7 0.5,-.1"/>
+    <path d="M 93.0,445.3 l 5,4.3 5,3.5 5,2.3 5,.8 5,-.2 5,-.5 5,-.6 5,-.5 5,-.1 5,.3 5,.6 5,.6 5,.4 5,0 5,-.3 5,-.6 5,-.6 5,-.8 5,-.8 5,-.3 5,1.4 5,1.4 5,.5 5,-.1 5,-.5 5,-.6 5,-.5 5,-.2 5,.2 5,.5 5,.6 5,.5 5,.1 5,-.3 5,-.6 5,-.6 5,-.6 5,-.6 5,-.5 5,-.6 0.5,-.1"/>
+    <g stroke="#b57f46" stroke-width="0.9">
+      <line x1="192.5" y1="418.6" x2="192.5" y2="457.2" stroke-width="0.8"/>
+    </g>
+  </g>
+  <path d="M 241.7,454.8 H 275.5 L 272.5,458.2 H 244.7 Z" fill="#f7cc8c"/>
+  <text x="115" y="445.1" font-family="Rajdhani" font-size="17" letter-spacing="1" fill="#3a2010">SMG</text>
+  <path d="M 97,479.3 H 289.5 Q 293.5,479.3 293.5,483.3 V 513.9 Q 293.5,517.9 289.5,517.9 H 108 L 92.9,506.3 V 483.3 Q 92.9,479.3 97,479.3 Z" fill="none" stroke="#dab176" stroke-width="1.3"/>
+  <path d="M 241.7,515.5 H 275.5 L 272.5,518.9 H 244.7 Z" fill="#f7cc8c"/>
+  <text x="115" y="505.8" font-family="Rajdhani" font-size="17" letter-spacing="1" fill="#f5c689">SNIPER</text>
+  <path d="M 97,540.0 H 289.5 Q 293.5,540.0 293.5,544.0 V 574.6 Q 293.5,578.6 289.5,578.6 H 108 L 92.9,567.0 V 544.0 Q 92.9,540.0 97,540.0 Z" fill="none" stroke="#dab176" stroke-width="1.3"/>
+  <path d="M 241.7,576.2 H 275.5 L 272.5,579.6 H 244.7 Z" fill="#f7cc8c"/>
+  <text x="115" y="566.5" font-family="Rajdhani" font-size="17" letter-spacing="1" fill="#f5c689">SHOTGUN</text>
+  <path d="M 97,600.7 H 289.5 Q 293.5,600.7 293.5,604.7 V 635.3 Q 293.5,639.3 289.5,639.3 H 108 L 92.9,627.7 V 604.7 Q 92.9,600.7 97,600.7 Z" fill="none" stroke="#dab176" stroke-width="1.3"/>
+  <path d="M 241.7,636.9 H 275.5 L 272.5,640.3 H 244.7 Z" fill="#f7cc8c"/>
+  <text x="115" y="627.2" font-family="Rajdhani" font-size="17" letter-spacing="1" fill="#f5c689">PISTOL</text>
+
+  <!-- ==== weapon cards ==== -->
+  <g><!-- card x0=360.8 -->
+    <path d="M 360.8,618.0 V 358.0 Q 360.8,345.0 373.8,345.0 H 497.0 L 537.0,314.6 H 604.9 Q 622.9,314.6 622.9,332.6 V 632.4 Q 622.9,640.4 614.9,640.4 H 380.0 L 380.0,640.4 Z"
+          fill="none" stroke="#dab176" stroke-width="1.3"/>
+    <path d="M 502.1,345.0 L 538.8,317.0 H 604.9 Q 619.9,317.0 619.9,332.0 V 632.4 Q 619.9,637.4 614.9,637.4 H 377.4"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.55"/>
+    <path d="M 507.2,345.0 L 540.7,319.5 H 604.9 Q 616.8,319.5 616.8,331.4 V 632.4 Q 616.8,634.3 614.9,634.3 H 374.8"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.40"/>
+    <path d="M 512.3,345.0 L 542.5,321.9 H 604.9 Q 613.8,321.9 613.8,330.8 V 629.8 Q 613.8,631.2 612.3,631.2 H 372.2"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.28"/>
+    <path d="M 517.3,345.0 L 544.3,324.4 H 604.9 Q 610.7,324.4 610.7,330.2 V 626.7 Q 610.7,628.2 609.2,628.2 H 369.5"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.18"/>
+    <path d="M 459.8,632.9 H 524.3 L 520.8,641.4 H 462.8 Z" fill="#fed08d"/>
+    <g transform="translate(398.0,384.0)" fill="#f2c06e" stroke="#2d2518" stroke-width="0.8">
+      <rect x="0" y="0" width="162" height="9"/>
+      <path d="M 0,9 H 70 V 43 Q 70,47 66,47 H 4 Q 0,47 0,43 Z"/>
+      <path d="M 70,9 H 117 V 28 H 102 L 95,43 H 85 L 82,28 H 70 Z"/>
+      <path d="M 117,9 H 162 L 187,20 V 53 H 175 L 167,28 L 162,26 H 117 Z"/>
+      <g fill="none" stroke="#2d2518" stroke-width="0.6"><path d="M 6,16 H 64 M 6,23 H 64 M 6,30 H 64 M 6,37 H 64"/></g>
+    </g>
+    <g font-family="Rajdhani" font-size="16.5" fill="#f5c689">
+      <text x="382.8" y="485.0">DPS</text>
+      <text x="446.8" y="485.0">PNT</text>
+      <text x="497.8" y="485.0">ACC</text>
+      <text x="552.8" y="485.0">ROF</text>
+    </g>
+    <g font-family="Rajdhani" fill="#f5c689">
+      <text x="375.8" y="522.0" font-size="27" font-weight="600">620</text>
+      <text x="448.8" y="519.0" font-size="21">30</text>
+      <text x="507.8" y="519.0" font-size="21">5</text>
+      <text x="560.8" y="519.0" font-size="21">5</text>
+    </g>
+    <g fill="none" stroke="#c5965a" stroke-width="1.1">
+      <path d="M 360.8,532.9 H 622.9 M 360.8,580.8 H 622.9"/>
+      <path d="M 412.1,532.9 V 580.8 M 479.6,532.9 V 580.8 M 551.2,532.9 V 580.8"/>
+    </g>
+    <use href="#qr" x="370.6" y="542.2" fill="#e9bd7a"/>
+    <g font-family="Rajdhani" font-size="11.5" text-anchor="middle" fill="#e9bd7a">
+      <text x="445.9" y="553.4">EMPTY</text><text x="445.9" y="568.9">SOCKET</text>
+      <text x="515.4" y="553.4">EMPTY</text><text x="515.4" y="568.9">SOCKET</text>
+      <text x="587.1" y="553.4">EMPTY</text><text x="587.1" y="568.9">SOCKET</text>
+    </g>
+    <text x="384.8" y="613.0" font-family="Rajdhani" font-size="19" fill="#f5c689"><tspan font-weight="700">MAGNUM 650</tspan> HAND GUN</text>
+  </g>
+  <g><!-- card x0=667.1 -->
+    <path d="M 667.1,688.9 V 276.3 Q 667.1,263.3 680.1,263.3 H 803.3 L 843.3,232.9 H 911.2 Q 929.2,232.9 929.2,250.9 V 703.3 Q 929.2,711.3 921.2,711.3 H 686.3 L 686.3,711.3 Z"
+          fill="none" stroke="#dab176" stroke-width="1.3"/>
+    <path d="M 808.4,263.3 L 845.1,235.3 H 911.2 Q 926.2,235.3 926.2,250.3 V 703.3 Q 926.2,708.2 921.2,708.2 H 683.7"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.55"/>
+    <path d="M 813.5,263.3 L 847.0,237.8 H 911.2 Q 923.1,237.8 923.1,249.7 V 703.3 Q 923.1,705.2 921.2,705.2 H 681.1"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.40"/>
+    <path d="M 818.6,263.3 L 848.8,240.2 H 911.2 Q 920.1,240.2 920.1,249.1 V 700.6 Q 920.1,702.1 918.6,702.1 H 678.5"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.28"/>
+    <path d="M 823.6,263.3 L 850.6,242.7 H 911.2 Q 917.0,242.7 917.0,248.5 V 697.6 Q 917.0,699.1 915.5,699.1 H 675.8"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.18"/>
+    <path d="M 766.1,703.8 H 830.6 L 827.1,712.3 H 769.1 Z" fill="#fed08d"/>
+    <path d="M 667.1,411.2 H 929.2 V 652.9 H 667.1 Z" fill="#f6c27a"/>
+    <!-- card-2 veneer grain: wavy horizontals at ~2.4 pitch; right of
+         x~781 the lines within ~48px of y=531 fan into ONE dark stripe
+         (source y 1275, x 1875..2215) that runs out to the right edge; a
+         vertical pinch band at x~864 (source 2075); bottom-left lines
+         droop into the corner. Source mean #e9b269, dark strand
+         ~#a86e33, bright #ffd28a -->
+    <g clip-path="url(#card2clip)" fill="none" stroke="#cd9553" stroke-width="0.7">
+      <path d="M 667.0,412.6 l 8,.3 8,-.3 8,-.7 8,-.6 8,-.2 8,.4 8,.7 8,.5 8,0 8,-.5 8,-.7 8,-.4 8,.2 8,.6 8,.7 8,.3 8,-.3 8,-.7 8,-.6 8,-.2 8,.4 8,.7 8,.5 8,-.8 8,-.8 8,.3 8,-.4 8,.2 8,.6 8,.7 8,.3 8,-.3 6.5,-.6"/>
+      <path d="M 667.0,415.6 l 8,-.3 8,-.9 8,-.9 8,-.3 8,.5 8,1 8,.8 8,.1 8,-.7 8,-1 8,-.7 8,.1 8,.8 8,1 8,.5 8,-.3 8,-.9 8,-.9 8,-.3 8,.5 8,1 8,.8 8,.1 8,-1.4 8,-1.3 8,.3 8,.1 8,.8 8,1 8,.5 8,-.3 8,-.9 6.5,-.8"/>
+      <path d="M 667.0,417.9 l 8,-.9 8,-1.1 8,-.5 8,.4 8,1 8,1 8,.3 8,-.6 8,-1.1 8,-.9 8,-.1 8,.8 8,1.1 8,.7 8,-.2 8,-.9 8,-1.1 8,-.5 8,.4 8,1 8,1 8,.3 8,-.6 8,-1.8 8,-1.2 8,1 8,.8 8,1.1 8,.7 8,-.2 8,-.9 8,-1.1 6.5,-.5"/>
+      <path d="M 667.0,419.5 l 8,-.9 8,-.5 8,.2 8,.8 8,.8 8,.4 8,-.4 8,-.8 8,-.8 8,-.2 8,.5 8,.9 8,.7 8,0 8,-.7 8,-.9 8,-.5 8,.2 8,.8 8,.8 8,.4 8,-.4 8,-.8 8,-1.5 8,-.5 8,1.6 8,.9 8,.7 8,0 8,-.7 8,-.9 8,-.5 6.5,.1"/>
+      <path d="M 667.0,421.3 l 8,-.4 8,0 8,.5 8,.6 8,.3 8,-.2 8,-.5 8,-.5 8,-.2 8,.3 8,.6 8,.5 8,.1 8,-.4 8,-.6 8,-.4 8,0 8,.5 8,.6 8,.3 8,-.2 8,-.5 8,-.5 8,-.9 8,0 8,1.6 8,.5 8,.1 8,-.4 8,-.6 8,-.4 8,0 6.5,.3"/>
+      <path d="M 667.0,423.6 l 8,0 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.4 8,-.2 8,.1 8,.3 8,.3 8,.1 8,-.2 8,-.4 8,-.3 8,0 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.4 8,-.2 8,-.6 8,0 8,1.4 8,.1 8,-.2 8,-.4 8,-.3 8,0 8,.3 6.5,.3"/>
+      <path d="M 667.0,425.9 l 8,.3 8,.4 8,.3 8,0 8,-.3 8,-.4 8,-.3 8,.1 8,.4 8,.4 8,.2 8,-.2 8,-.4 8,-.4 8,-.1 8,.3 8,.4 8,.3 8,0 8,-.3 8,-.4 8,-.3 8,.1 8,-.4 8,.1 8,1.2 8,-.2 8,-.4 8,-.4 8,-.1 8,.3 8,.4 6.5,.3"/>
+      <path d="M 667.0,428.3 l 8,.7 8,.6 8,.1 8,-.5 8,-.7 8,-.5 8,.1 8,.6 8,.7 8,.4 8,-.2 8,-.7 8,-.7 8,-.2 8,.4 8,.7 8,.6 8,.1 8,-.5 8,-.7 8,-.5 8,.1 8,.6 8,0 8,.1 8,.8 8,-.7 8,-.7 8,-.2 8,.4 8,.7 8,.6 6.5,.1"/>
+      <path d="M 667.0,431.3 l 8,.9 8,.3 8,-.6 8,-1 8,-.8 8,-.1 8,.7 8,1 8,.6 8,-.2 8,-.9 8,-1 8,-.5 8,.4 8,1 8,.9 8,.3 8,-.6 8,-1 8,-.8 8,-.1 8,.7 8,1 8,-.1 8,-.5 8,.2 8,-1 8,-.5 8,.4 8,1 8,.9 8,.3 6.5,-.4"/>
+      <path d="M 667.0,434.5 l 8,.4 8,-.5 8,-1 8,-.9 8,-.2 8,.7 8,1.1 8,.8 8,0 8,-.8 8,-1.1 8,-.6 8,.2 8,1 8,1 8,.4 8,-.5 8,-1 8,-.9 8,-.2 8,.7 8,1.1 8,.8 8,-.8 8,-1.1 8,0 8,-.6 8,.2 8,1 8,1 8,.4 8,-.5 6.5,-.8"/>
+      <path d="M 667.0,437.1 l 8,-.3 8,-.8 8,-.8 8,-.3 8,.4 8,.9 8,.7 8,.1 8,-.6 8,-.9 8,-.6 8,.1 8,.7 8,.9 8,.5 8,-.3 8,-.8 8,-.8 8,-.3 8,.4 8,.9 8,.7 8,.1 8,-1.3 8,-1.2 8,.4 8,.1 8,.7 8,.9 8,.5 8,-.3 8,-.8 6.5,-.7"/>
+      <path d="M 667.0,439.0 l 8,-.5 8,-.5 8,-.3 8,.2 8,.5 8,.5 8,.1 8,-.3 8,-.6 8,-.4 8,0 8,.4 8,.6 8,.4 8,-.1 8,-.5 8,-.5 8,-.3 8,.2 8,.5 8,.5 8,.1 8,-.3 8,-1.3 8,-.7 8,1 8,.4 8,.6 8,.4 8,-.1 8,-.5 8,-.5 6.5,-.2"/>
+      <path d="M 667.0,440.9 l 8,-.4 8,-.2 8,.1 8,.3 8,.4 8,.1 8,-.2 8,-.4 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,0 8,-.3 8,-.4 8,-.2 8,.1 8,.3 8,.4 8,.1 8,-.2 8,-.4 8,-1.1 8,-.4 8,1.3 8,.4 8,.3 8,0 8,-.3 8,-.4 8,-.2 6.5,0"/>
+      <path d="M 667.0,443.0 l 8,-.3 8,0 8,.4 8,.4 8,.2 8,-.1 8,-.4 8,-.4 8,-.1 8,.2 8,.4 8,.4 8,.1 8,-.3 8,-.5 8,-.3 8,0 8,.4 8,.4 8,.2 8,-.1 8,-.4 8,-.4 8,-.9 8,-.1 8,1.5 8,.4 8,.1 8,-.3 8,-.5 8,-.3 8,0 6.5,.3"/>
+      <path d="M 667.0,444.8 l 8,0 8,.5 8,.7 8,.5 8,-.1 8,-.6 8,-.7 8,-.3 8,.3 8,.7 8,.7 8,.2 8,-.4 8,-.7 8,-.6 8,0 8,.5 8,.7 8,.5 8,-.1 8,-.6 8,-.7 8,-.3 8,-.5 8,.4 8,1.7 8,.2 8,-.4 8,-.7 8,-.6 8,0 8,.5 6.5,.6"/>
+      <path d="M 667.0,446.8 l 8,.6 8,1 8,.7 8,0 8,-.8 8,-1 8,-.6 8,.2 8,.9 8,1 8,.4 8,-.4 8,-1 8,-.9 8,-.2 8,.6 8,1 8,.7 8,0 8,-.8 8,-1 8,-.6 8,.2 8,.2 8,.7 8,1.4 8,-.4 8,-1 8,-.9 8,-.2 8,.6 8,1 6.5,.7"/>
+      <path d="M 667.0,449.6 l 8,1.1 8,.9 8,.1 8,-.7 8,-1.1 8,-.7 8,.1 8,.9 8,1.1 8,.5 8,-.3 8,-1 8,-1 8,-.3 8,.5 8,1.1 8,.9 8,.1 8,-.7 8,-1.1 8,-.7 8,.1 8,.9 8,.3 8,.2 8,.7 8,-1 8,-1 8,-.3 8,.5 8,1.1 8,.9 6.5,.2"/>
+      <path d="M 667.0,452.9 l 8,.8 8,.2 8,-.5 8,-.9 8,-.7 8,0 8,.6 8,.9 8,.5 8,-.1 8,-.7 8,-.8 8,-.4 8,.3 8,.8 8,.8 8,.2 8,-.5 8,-.9 8,-.7 8,0 8,.6 8,.9 8,-.2 8,-.4 8,.3 8,-.8 8,-.4 8,.3 8,.8 8,.8 8,.2 6.5,-.4"/>
+      <path d="M 667.0,455.7 l 8,.2 8,-.2 8,-.5 8,-.5 8,-.1 8,.3 8,.6 8,.4 8,0 8,-.4 8,-.6 8,-.3 8,.1 8,.5 8,.5 8,.2 8,-.2 8,-.5 8,-.5 8,-.1 8,.3 8,.6 8,.4 8,-.8 8,-.7 8,.5 8,-.3 8,.1 8,.5 8,.5 8,.2 8,-.2 6.5,-.4"/>
+      <path d="M 667.0,458.1 l 8,-.1 8,-.3 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,0 8,-.2 8,-.4 8,-.2 8,0 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,0 8,-1 8,-.7 8,.8 8,0 8,.3 8,.4 8,.2 8,-.1 8,-.3 6.5,-.3"/>
+      <path d="M 667.0,460.5 l 8,-.4 8,-.4 8,-.2 8,.2 8,.4 8,.4 8,.1 8,-.3 8,-.5 8,-.3 8,0 8,.3 8,.5 8,.3 8,-.1 8,-.4 8,-.4 8,-.2 8,.2 8,.4 8,.4 8,.1 8,-.3 8,-1.2 8,-.6 8,1 8,.3 8,.5 8,.3 8,-.1 8,-.4 8,-.4 6.5,-.2"/>
+      <path d="M 667.0,462.7 l 8,-.7 8,-.4 8,.2 8,.7 8,.7 8,.3 8,-.3 8,-.7 8,-.6 8,-.1 8,.5 8,.7 8,.5 8,0 8,-.6 8,-.7 8,-.4 8,.2 8,.7 8,.7 8,.3 8,-.3 8,-.7 8,-1.4 8,-.4 8,1.5 8,.7 8,.5 8,0 8,-.6 8,-.7 8,-.4 6.5,.1"/>
+      <path d="M 667.0,464.3 l 8,-.7 8,.1 8,.8 8,1 8,.5 8,-.3 8,-.9 8,-.9 8,-.3 8,.5 8,1 8,.8 8,.1 8,-.7 8,-1 8,-.7 8,.1 8,.8 8,1 8,.5 8,-.3 8,-.9 8,-.9 8,-1.1 8,.2 8,2.1 8,.8 8,.1 8,-.7 8,-1 8,-.7 8,.1 6.5,.6"/>
+      <path d="M 667.0,466.0 l 8,0 8,.8 8,1.1 8,.7 8,-.2 8,-.9 8,-1 8,-.5 8,.4 8,1 8,1 8,.3 8,-.6 8,-1.1 8,-.8 8,0 8,.8 8,1.1 8,.7 8,-.2 8,-.9 8,-1 8,-.5 8,-.3 8,.7 8,2 8,.3 8,-.6 8,-1.1 8,-.8 8,0 8,.8 6.5,.9"/>
+      <path d="M 667.0,468.6 l 8,.5 8,.9 8,.6 8,0 8,-.7 8,-.9 8,-.5 8,.2 8,.8 8,.8 8,.3 8,-.4 8,-.8 8,-.7 8,-.1 8,.5 8,.9 8,.6 8,0 8,-.7 8,-.9 8,-.5 8,.2 8,0 8,.5 8,1.4 8,-.4 8,-.8 8,-.7 8,-.1 8,.5 8,.9 6.5,.5"/>
+      <path d="M 667.0,471.6 l 8,.5 8,.4 8,.1 8,-.4 8,-.6 8,-.4 8,.1 8,.5 8,.5 8,.3 8,-.2 8,-.5 8,-.5 8,-.2 8,.3 8,.5 8,.4 8,.1 8,-.4 8,-.6 8,-.4 8,.1 8,.5 8,-.2 8,0 8,.9 8,-.5 8,-.5 8,-.2 8,.3 8,.5 8,.4 6.5,.1"/>
+      <path d="M 667.0,474.4 l 8,.3 8,.1 8,-.2 8,-.4 8,-.3 8,0 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.4 8,-.2 8,.1 8,.4 8,.3 8,.1 8,-.2 8,-.4 8,-.3 8,0 8,.3 8,.4 8,-.5 8,-.4 8,.7 8,-.4 8,-.2 8,.1 8,.4 8,.3 8,.1 6.5,-.2"/>
+      <path d="M 667.0,477.2 l 8,.2 8,-.2 8,-.4 8,-.4 8,-.1 8,.3 8,.5 8,.3 8,0 8,-.4 8,-.5 8,-.3 8,.1 8,.4 8,.4 8,.2 8,-.2 8,-.4 8,-.4 8,-.1 8,.3 8,.5 8,.3 8,-.8 8,-.7 8,.6 8,-.3 8,.1 8,.4 8,.4 8,.2 8,-.2 6.5,-.4"/>
+      <path d="M 667.0,480.1 l 8,-.2 8,-.7 8,-.7 8,-.2 8,.4 8,.7 8,.6 8,.1 8,-.5 8,-.8 8,-.5 8,.1 8,.6 8,.7 8,.4 8,-.2 8,-.7 8,-.7 8,-.2 8,.4 8,.7 8,.6 8,.1 8,-1.3 8,-1.1 8,.6 8,.1 8,.6 8,.7 8,.4 8,-.2 8,-.7 6.5,-.6"/>
+      <path d="M 667.0,482.6 l 8,-.9 8,-1 8,-.4 8,.4 8,1 8,.9 8,.2 8,-.6 8,-1 8,-.8 8,0 8,.8 8,1 8,.6 8,-.2 8,-.9 8,-1 8,-.4 8,.4 8,1 8,.9 8,.2 8,-.6 8,-1.8 8,-1.1 8,1 8,.8 8,1 8,.6 8,-.2 8,-.9 8,-1 6.5,-.4"/>
+      <path d="M 667.0,484.3 l 8,-1.1 8,-.6 8,.3 8,1 8,1 8,.4 8,-.5 8,-1 8,-.9 8,-.2 8,.7 8,1.1 8,.8 8,-.1 8,-.8 8,-1.1 8,-.6 8,.3 8,1.1 8,1.3 8,.6 8,-.5 8,-1.3 8,-1.9 8,-.5 8,1.9 8,1.6 8,1.2 8,0 8,-1.2 8,-1.7 8,-.8 6.5,.2"/>
+      <path d="M 667.0,485.9 l 8,-.6 8,.1 8,.7 8,.8 8,.4 8,-.3 8,-.8 8,-.8 8,-.2 8,.5 8,.9 8,.7 8,.1 8,-.6 8,-.8 8,-.5 8,.2 8,.9 8,1.1 8,.6 8,-.2 8,-.9 8,-.9 8,-1 8,.4 8,2.3 8,1.1 8,.3 8,-.7 8,-1.2 8,-.8 8,.3 6.5,.9"/>
+      <path d="M 667.0,488.2 l 8,0 8,.4 8,.5 8,.3 8,-.1 8,-.5 8,-.5 8,-.2 8,.2 8,.5 8,.5 8,.1 8,-.3 8,-.5 8,-.3 8,.2 8,.6 8,.8 8,.6 8,.1 8,-.3 8,-.4 8,-.1 8,-.3 8,.6 8,1.9 8,.4 8,-.2 8,-.6 8,-.4 8,.2 8,.8 6.5,.7"/>
+      <path d="M 667.0,490.8 l 8,.2 8,.4 8,.3 8,0 8,-.3 8,-.4 8,-.2 8,.1 8,.3 8,.3 8,.1 8,-.2 8,-.4 8,-.3 8,.1 8,.5 8,.7 8,.6 8,.3 8,-.1 8,-.2 8,0 8,.4 8,-.1 8,.4 8,1.5 8,.1 8,-.2 8,-.2 8,.2 8,.6 8,.8 6.5,.3"/>
+      <path d="M 667.0,493.3 l 8,.5 8,.4 8,0 8,-.3 8,-.5 8,-.3 8,.1 8,.4 8,.5 8,.2 8,-.2 8,-.4 8,-.4 8,-.1 8,.5 8,.8 8,.7 8,.4 8,0 8,-.2 8,0 8,.4 8,.8 8,.1 8,.3 8,1.2 8,-.2 8,-.2 8,.1 8,.6 8,.9 8,.8 6.5,.1"/>
+      <path d="M 667.0,496.1 l 8,.7 8,.2 8,-.4 8,-.8 8,-.6 8,0 8,.6 8,.8 8,.5 8,-.2 8,-.7 8,-.7 8,-.3 8,.3 8,1 8,1.1 8,.6 8,-.1 8,-.4 8,-.3 8,.4 8,1 8,1.2 8,.2 8,-.1 8,.6 8,-.5 8,0 8,.8 8,1.3 8,1.2 8,.6 6.5,-.4"/>
+      <path d="M 667.0,499.3 l 8,.4 8,-.5 8,-1 8,-.9 8,-.1 8,.7 8,1 8,.7 8,-.1 8,-.8 8,-1 8,-.6 8,.3 8,.9 8,1.3 8,.8 8,-.1 8,-.6 8,-.5 8,.2 8,1.1 8,1.6 8,1.2 8,-.4 8,-.8 8,.3 8,-.3 8,.7 8,1.5 8,1.6 8,.9 8,-.2 6.5,-1"/>
+      <path d="M 667.0,502.1 l 8,-.4 8,-1 8,-1 8,-.3 8,.6 8,1.1 8,.9 8,.1 8,-.7 8,-1.1 8,-.7 8,.1 8,.9 8,1 8,.8 8,.1 8,-.6 8,-.6 8,.1 8,1 8,1.6 8,1.4 8,.5 8,-1.1 8,-1.1 8,.7 8,.6 8,1.5 8,1.6 8,1 8,0 8,-.7 6.5,-1"/>
+      <path d="M 667.0,504.1 l 8,-.7 8,-.8 8,-.3 8,.4 8,.8 8,.7 8,.2 8,-.5 8,-.9 8,-.6 8,0 8,.6 8,.9 8,.5 8,.2 8,-.3 8,-.4 8,.1 8,.8 8,1.3 8,1.2 8,.7 8,-.1 8,-1.2 8,-.5 8,1.5 8,1.2 8,1.4 8,1 8,.3 8,-.3 8,-.5 6.5,-.4"/>
+      <path d="M 667.0,505.8 l 8,-.5 8,-.3 8,.2 8,.5 8,.5 8,.2 8,-.3 8,-.5 8,-.4 8,-.1 8,.4 8,.5 8,.4 8,0 8,-.1 8,-.1 8,.2 8,.6 8,1 8,1 8,.7 8,.2 8,-.1 8,-.7 8,.1 8,1.9 8,1 8,.9 8,.4 8,0 8,-.1 8,.2 6.5,.1"/>
+      <path d="M 667.0,507.8 l 8,-.2 8,.1 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,0 8,-.3 8,0 8,.2 8,.5 8,.8 8,.8 8,.6 8,.3 8,.1 8,.1 8,-.4 8,.4 8,1.9 8,.8 8,.5 8,.2 8,.1 8,.2 8,.5 6.5,.2"/>
+      <path d="M 667.0,509.9 l 8,0 8,.4 8,.5 8,.3 8,-.1 8,-.4 8,-.4 8,-.2 8,.2 8,.4 8,.4 8,.1 8,-.3 8,-.5 8,0 8,.5 8,.8 8,.9 8,.7 8,.4 8,.1 8,0 8,.3 8,-.1 8,.6 8,1.9 8,.5 8,.2 8,0 8,.1 8,.5 8,.8 6.5,.3"/>
+      <path d="M 667.0,511.9 l 8,.5 8,.8 8,.5 8,-.1 8,-.6 8,-.8 8,-.4 8,.2 8,.7 8,.7 8,.3 8,-.4 8,-.7 8,-.6 8,.2 8,.9 8,1.2 8,1 8,.4 8,-.1 8,-.3 8,.1 8,.7 8,.3 8,.8 8,1.7 8,.1 8,-.2 8,-.1 8,.4 8,.9 8,1.1 6.5,.4"/>
+      <path d="M 667.0,514.5 l 8,1 8,.8 8,.1 8,-.7 8,-1 8,-.7 8,.2 8,.9 8,1 8,.5 8,-.4 8,-1 8,-.9 8,-.3 8,.9 8,1.4 8,1.2 8,.5 8,-.3 8,-.5 8,-.2 8,.6 8,1.2 8,.5 8,.5 8,1.1 8,-.4 8,-.4 8,.2 8,.9 8,1.2 8,1 6.5,.1"/>
+      <path d="M 667.0,517.8 l 8,.9 8,.2 8,-.6 8,-1.1 8,-.8 8,0 8,.8 8,1.1 8,.6 8,-.2 8,-.9 8,-1 8,-.4 8,.5 8,1.3 8,1.3 8,.6 8,-.2 8,-.6 8,-.3 8,.4 8,1.1 8,1.3 8,.1 8,-.1 8,.7 8,-.4 8,.1 8,.7 8,1.2 8,1 8,.5 6.5,-.3"/>
+      <path d="M 667.0,520.8 l 8,.3 8,-.4 8,-.8 8,-.7 8,-.1 8,.6 8,.9 8,.6 8,-.1 8,-.7 8,-.8 8,-.4 8,.2 8,.8 8,1 8,.6 8,-.1 8,-.4 8,-.3 8,.3 8,.8 8,1.1 8,.8 8,-.5 8,-.5 8,.7 8,0 8,.5 8,.9 8,.8 8,.5 8,.1 6.5,-.4"/>
+      <path d="M 667.0,523.1 l 8,-.2 8,-.5 8,-.5 8,-.1 8,.3 8,.5 8,.4 8,0 8,-.4 8,-.5 8,-.3 8,.1 8,.5 8,.5 8,.4 8,.1 8,-.2 8,-.2 8,.2 8,.5 8,.7 8,.6 8,.3 8,-.8 8,-.4 8,1.1 8,.4 8,.6 8,.6 8,.4 8,.2 8,0 6.5,-.2"/>
+      <path d="M 667.0,525.2 l 8,-.3 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,.1 8,-.2 8,-.4 8,-.3 8,0 8,.3 8,.4 8,.2 8,.1 8,-.1 8,-.1 8,.1 8,.4 8,.5 8,.5 8,.3 8,0 8,-.8 8,-.3 8,1.3 8,.4 8,.4 8,.3 8,.2 8,0 8,0 6.5,-.1"/>
+      <path d="M 667.0,527.3 l 8,-.5 8,-.2 8,.1 8,.4 8,.4 8,.2 8,-.2 8,-.5 8,-.4 8,-.1 8,.3 8,.5 8,.3 8,0 8,-.3 8,-.3 8,-.1 8,.3 8,.5 8,.5 8,.2 8,-.1 8,-.2 8,-.9 8,-.2 8,1.4 8,.4 8,.3 8,.1 8,-.1 8,-.1 8,0 6.5,0"/>
+      <path d="M 667.0,529.2 l 8,-.5 8,.1 8,.7 8,.7 8,.3 8,-.3 8,-.7 8,-.7 8,-.2 8,.4 8,.8 8,.6 8,0 8,-.6 8,-.7 8,-.4 8,.2 8,.6 8,.7 8,.3 8,-.2 8,-.5 8,-.4 8,-.8 8,0 8,1.6 8,.4 8,0 8,-.2 8,-.3 8,-.1 8,.1 6.5,.2"/>
+      <path d="M 667.0,530.8 l 8,0 8,.8 8,1 8,.6 8,-.2 8,-.9 8,-1 8,-.4 8,.4 8,1 8,.9 8,.2 8,-.6 8,-1 8,-.8 8,0 8,.7 8,.9 8,.4 8,-.3 8,-.8 8,-.7 8,-.3 8,-.5 8,.3 8,1.5 8,0 8,-.4 8,-.5 8,-.3 8,0 8,.3 6.5,.3"/>
+      <path d="M 667.0,533.1 l 8,.7 8,1.1 8,.7 8,-.1 8,-.9 8,-1.1 8,-.5 8,.3 8,1 8,1 8,.3 8,-.5 8,-1.1 8,-.9 8,-.2 8,.6 8,.9 8,.5 8,-.3 8,-.9 8,-.9 8,-.5 8,.1 8,-.2 8,.2 8,1.1 8,-.5 8,-.7 8,-.5 8,-.1 8,.2 8,.3 6.5,.3"/>
+      <path d="M 667.0,536.2 l 8,.8 8,.7 8,0 8,-.6 8,-.8 8,-.5 8,.1 8,.7 8,.8 8,.4 8,-.3 8,-.8 8,-.8 8,-.2 8,.3 8,.6 8,.4 8,-.2 8,-.8 8,-.9 8,-.6 8,-.1 8,.3 8,-.4 8,-.3 8,.6 8,-.7 8,-.6 8,-.3 8,.1 8,.2 8,.1 6.5,0"/>
+      <path d="M 667.0,539.3 l 8,.5 8,.1 8,-.3 8,-.5 8,-.4 8,0 8,.4 8,.5 8,.3 8,-.1 8,-.5 8,-.5 8,-.2 8,.2 8,.3 8,.2 8,-.2 8,-.6 8,-.7 8,-.6 8,-.2 8,.1 8,.1 8,-.8 8,-.7 8,.4 8,-.6 8,-.4 8,-.1 8,0 8,0 8,-.2 6.5,-.1"/>
+      <path d="M 667.0,541.9 l 8,.1 8,-.2 8,-.4 8,-.3 8,0 8,.2 8,.4 8,.2 8,0 8,-.3 8,-.4 8,-.2 8,.1 8,.3 8,.1 8,-.2 8,-.5 8,-.7 8,-.6 8,-.4 8,-.1 8,0 8,-.1 8,-1.1 8,-.9 8,.5 8,-.5 8,-.2 8,-.1 8,-.1 8,-.3 8,-.4 6.5,-.2"/>
+      <path d="M 667.0,544.6 l 8,-.2 8,-.4 8,-.4 8,-.1 8,.3 8,.5 8,.4 8,0 8,-.3 8,-.5 8,-.3 8,.1 8,.4 8,.5 8,-.1 8,-.6 8,-.8 8,-.8 8,-.5 8,-.1 8,0 8,-.1 8,-.4 8,-1.4 8,-1.1 8,.5 8,-.3 8,-.1 8,0 8,-.2 8,-.5 8,-.7 6.5,-.2"/>
+      <path d="M 667.0,547.2 l 8,-.7 8,-.7 8,-.3 8,.3 8,.8 8,.7 8,.1 8,-.5 8,-.8 8,-.6 8,0 8,.6 8,.8 8,.4 8,-.5 8,-1.1 8,-1.1 8,-.7 8,-.1 8,.3 8,.2 8,-.3 8,-.9 8,-1.8 8,-1.2 8,.7 8,.1 8,.2 8,-.1 8,-.6 8,-1 8,-1 6.5,-.2"/>
+      <path d="M 667.0,549.1 l 8,-1 8,-.5 8,.3 8,1 8,1 8,.3 8,-.5 8,-1 8,-.8 8,-.1 8,.7 8,1 8,.7 8,-.1 8,-1.2 8,-1.4 8,-.9 8,-.1 8,.5 8,.5 8,-.1 8,-.9 8,-1.4 8,-1.9 8,-.8 8,1.2 8,.5 8,.2 8,-.6 8,-1.2 8,-1.3 8,-.8 6.5,.2"/>
+      <path d="M 667.0,550.6 l 8,-.7 8,.2 8,.9 8,1 8,.5 8,-.4 8,-1 8,-.9 8,-.3 8,.6 8,1.1 8,.8 8,0 8,-.8 8,-1.4 8,-1.1 8,-.3 8,.4 8,.5 8,0 8,-.9 8,-1.4 8,-1.3 8,-1.4 8,-.2 8,1.6 8,.3 8,-.4 8,-1.2 8,-1.4 8,-1 8,-.3 6.5,.6"/>
+      <path d="M 667.0,552.6 l 8,0 8,.6 8,.8 8,.5 8,-.2 8,-.7 8,-.8 8,-.3 8,.4 8,.8 8,.7 8,.1 8,-.5 8,-.8 8,-1 8,-.4 8,.2 8,.4 8,0 8,-.7 8,-1.2 8,-1.2 8,-.8 8,-.9 8,0 8,1.3 8,-.3 8,-1 8,-1.3 8,-1 8,-.4 8,.1 6.5,.7"/>
+      <path d="M 667.0,555.4 l 8,.4 8,.5 8,.4 8,-.1 8,-.4 8,-.5 8,-.3 8,.2 8,.5 8,.5 8,.2 8,-.3 8,-.5 8,-.4 8,-.4 8,-.1 8,.1 8,-.1 8,-.5 8,-.9 8,-1 8,-.7 8,-.3 8,-.7 8,-.3 8,.7 8,-.7 8,-1 8,-.9 8,-.5 8,-.1 8,.1 6.5,.3"/>
+      <path d="M 667.0,558.2 l 8,.4 8,.3 8,0 8,-.3 8,-.4 8,-.2 8,.1 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.3 8,-.1 8,-.1 8,-.1 8,-.2 8,-.5 8,-.7 8,-.8 8,-.7 8,-.4 8,-.1 8,-.8 8,-.6 8,.4 8,-.8 8,-.8 8,-.6 8,-.2 8,-.1 8,-.2 6.5,0"/>
+      <path d="M 667.0,563.4 l 8,-1 8,-.8 8,-.5 8,-.5 8,-.3 8,0 8,.4 8,.5 8,.3 8,-.1 8,-.4 8,-.5 8,-.2 8,.2 8,.1 8,0 8,-.4 8,-.8 8,-.9 8,-.8 8,-.4 8,-.1 8,.1 8,-.9 8,-.9 8,.1 8,-1 8,-.6 8,-.2 8,.1 8,0 8,-.3 6.5,-.3"/>
+      <path d="M 667.0,566.4 l 8,-1.2 8,-1.2 8,-1 8,-.6 8,-.1 8,.5 8,.8 8,.5 8,-.1 8,-.6 8,-.8 8,-.4 8,.3 8,.7 8,.4 8,-.2 8,-.8 8,-1.2 8,-1.1 8,-.5 8,.1 8,.4 8,.2 8,-1.3 8,-1.4 8,-.3 8,-.9 8,-.1 8,.4 8,.5 8,-.1 8,-.9 6.5,-.8"/>
+      <path d="M 667.0,569.4 l 8,-1.8 8,-1.8 8,-1.2 8,-.2 8,.6 8,1 8,.8 8,0 8,-.8 8,-1 8,-.6 8,.2 8,.9 8,1 8,.2 8,-.8 8,-1.4 8,-1.4 8,-.7 8,.3 8,.8 8,.5 8,-.3 8,-2 8,-1.9 8,-.1 8,-.2 8,.7 8,.9 8,.2 8,-.9 8,-1.7 6.5,-1"/>
+      <path d="M 667.0,571.5 l 8,-2.4 8,-1.8 8,-.6 8,.5 8,1 8,.9 8,.2 8,-.7 8,-1.1 8,-.8 8,.1 8,.8 8,1.1 8,.6 8,-.5 8,-1.3 8,-1.4 8,-.8 8,.2 8,.8 8,.7 8,-.1 8,-1.1 8,-2.4 8,-1.6 8,.8 8,.7 8,1 8,.5 8,-.7 8,-1.6 8,-1.7 6.5,-.5"/>
+      <path d="M 667.0,573.1 l 8,-2.3 8,-1.2 8,0 8,.8 8,.8 8,.2 8,-.4 8,-.8 8,-.7 8,-.1 8,.6 8,.8 8,.5 8,-.1 8,-.9 8,-1.1 8,-.7 8,0 8,.6 8,.6 8,0 8,-.8 8,-1.3 8,-1.9 8,-.7 8,1.5 8,.8 8,.5 8,-.4 8,-1.2 8,-1.4 8,-.9 6.5,.2"/>
+      <path d="M 667.0,575.0 l 8,-1.7 8,-.7 8,.2 8,.5 8,.2 8,-.2 8,-.5 8,-.5 8,-.1 8,.3 8,.5 8,.4 8,0 8,-.4 8,-.7 8,-.6 8,-.1 8,.3 8,.4 8,.1 8,-.4 8,-.8 8,-.8 8,-1.1 8,-.1 8,1.5 8,.3 8,-.2 8,-.7 8,-1 8,-.7 8,-.1 6.5,.5"/>
+      <path d="M 667.0,577.3 l 8,-1.4 8,-.5 8,.1 8,.2 8,-.1 8,-.3 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,.1 8,-.2 8,-.4 8,-.4 8,-.1 8,.2 8,.3 8,.1 8,-.2 8,-.5 8,-.6 8,-.3 8,-.7 8,0 8,1.3 8,0 8,-.5 8,-.7 8,-.5 8,-.1 8,.3 6.5,.5"/>
+      <path d="M 667.0,579.5 l 8,-1.1 8,-.3 8,.1 8,-.1 8,-.4 8,-.5 8,-.2 8,.2 8,.5 8,.4 8,.1 8,-.3 8,-.5 8,-.4 8,-.1 8,.3 8,.5 8,.3 8,-.1 8,-.5 8,-.6 8,-.4 8,.1 8,-.2 8,.3 8,1.2 8,-.4 8,-.8 8,-.7 8,-.1 8,.5 8,.7 6.5,.5"/>
+      <path d="M 667.0,582.0 l 8,-.6 8,-.2 8,-.2 8,-.6 8,-.8 8,-.5 8,.2 8,.7 8,.8 8,.3 8,-.3 8,-.8 8,-.7 8,-.2 8,.5 8,.8 8,.6 8,0 8,-.6 8,-.8 8,-.5 8,.2 8,.7 8,0 8,0 8,.7 8,-.8 8,-.7 8,-.2 8,.5 8,.8 8,.6 6.5,.1"/>
+      <path d="M 667.0,585.1 l 8,-.6 8,-.7 8,-.9 8,-1.1 8,-.7 8,.1 8,.8 8,1 8,.6 8,-.3 8,-.9 8,-1 8,-.4 8,.5 8,1 8,.9 8,.2 8,-.7 8,-1.1 8,-.7 8,.1 8,.8 8,1 8,-.2 8,-.6 8,.1 8,-1 8,-.4 8,.5 8,1 8,.9 8,.2 6.5,-.5"/>
+      <path d="M 667.0,588.3 l 8,-1.1 8,-1.4 8,-1.3 8,-.8 8,-.1 8,.7 8,1.1 8,.7 8,-.1 8,-.9 8,-1 8,-.5 8,.4 8,1 8,1 8,.3 8,-.6 8,-1.1 8,-.8 8,-.1 8,.7 8,1.1 8,.7 8,-.9 8,-1.2 8,0 8,-.5 8,.4 8,1 8,1 8,.3 8,-.6 6.5,-.8"/>
+      <path d="M 667.0,590.7 l 8,-1.8 8,-1.6 8,-1 8,-.2 8,.5 8,.8 8,.6 8,0 8,-.6 8,-.8 8,-.5 8,.2 8,.7 8,.8 8,.3 8,-.3 8,-.8 8,-.7 8,-.2 8,.5 8,.8 8,.6 8,0 8,-1.4 8,-1.1 8,.6 8,.2 8,.7 8,.8 8,.3 8,-.3 8,-.8 6.5,-.6"/>
+      <path d="M 667.0,592.6 l 8,-1.9 8,-1.3 8,-.4 8,.2 8,.5 8,.4 8,.1 8,-.3 8,-.5 8,-.4 8,0 8,.4 8,.5 8,.3 8,-.1 8,-.5 8,-.5 8,-.2 8,.2 8,.5 8,.4 8,.1 8,-.3 8,-1.3 8,-.7 8,1.1 8,.4 8,.5 8,.3 8,-.1 8,-.5 8,-.5 6.5,-.2"/>
+      <path d="M 667.0,594.6 l 8,-1.8 8,-1 8,-.1 8,.3 8,.3 8,.1 8,-.2 8,-.4 8,-.3 8,0 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.4 8,-.2 8,.1 8,.3 8,.3 8,.1 8,-.2 8,-.4 8,-1 8,-.3 8,1.3 8,.4 8,.2 8,-.1 8,-.3 8,-.4 8,-.2 6.5,.1"/>
+      <path d="M 667.0,596.6 l 8,-1.7 8,-.7 8,.2 8,.5 8,.2 8,-.2 8,-.5 8,-.4 8,-.1 8,.3 8,.5 8,.4 8,0 8,-.4 8,-.5 8,-.3 8,.1 8,.4 8,.5 8,.2 8,-.2 8,-.5 8,-.4 8,-.9 8,0 8,1.5 8,.4 8,0 8,-.4 8,-.5 8,-.3 8,.1 6.5,.3"/>
+      <path d="M 667.0,598.4 l 8,-1.4 8,-.2 8,.6 8,.4 8,-.2 8,-.7 8,-.7 8,-.3 8,.4 8,.8 8,.7 8,.1 8,-.5 8,-.8 8,-.6 8,.1 8,.6 8,.8 8,.4 8,-.2 8,-.7 8,-.7 8,-.3 8,-.4 8,.5 8,1.7 8,.1 8,-.5 8,-.8 8,-.6 8,.1 8,.6 6.5,.7"/>
+      <path d="M 667.0,600.5 l 8,-.7 8,.2 8,.4 8,-.2 8,-.9 8,-1 8,-.5 8,.4 8,1 8,.9 8,.3 8,-.6 8,-1 8,-.8 8,-.1 8,.7 8,1.1 8,.7 8,-.2 8,-.9 8,-1 8,-.5 8,.4 8,.2 8,.6 8,1.3 8,-.6 8,-1 8,-.8 8,-.1 8,.7 8,1.1 6.5,.6"/>
+      <path d="M 667.0,603.5 l 8,-.4 8,0 8,-.2 8,-.8 8,-1.1 8,-.6 8,.2 8,.9 8,1 8,.4 8,-.4 8,-1 8,-.9 8,-.2 8,.6 8,1.1 8,.8 8,0 8,-.8 8,-1.1 8,-.6 8,.2 8,.9 8,.3 8,.1 8,.6 8,-1 8,-.9 8,-.2 8,.6 8,1.1 8,.8 6.5,.1"/>
+      <path d="M 667.0,606.7 l 8,-.8 8,-.7 8,-.8 8,-.8 8,-.6 8,.1 8,.7 8,.8 8,.4 8,-.2 8,-.7 8,-.8 8,-.3 8,.4 8,.8 8,.7 8,.1 8,-.5 8,-.8 8,-.6 8,.1 8,.7 8,.8 8,-.3 8,-.5 8,.3 8,-.8 8,-.3 8,.4 8,.8 8,.7 8,.1 6.5,-.4"/>
+      <path d="M 667.0,609.4 l 8,-1.3 8,-1.1 8,-.7 8,-.4 8,0 8,.4 8,.5 8,.3 8,-.1 8,-.4 8,-.5 8,-.2 8,.2 8,.5 8,.5 8,.1 8,-.3 8,-.5 8,-.4 8,0 8,.4 8,.5 8,.3 8,-.8 8,-.7 8,.6 8,-.2 8,.2 8,.5 8,.5 8,.1 8,-.3 6.5,-.4"/>
+      <path d="M 667.0,611.8 l 8,-1.6 8,-1.2 8,-.5 8,-.1 8,.2 8,.4 8,.3 8,0 8,-.3 8,-.4 8,-.2 8,.1 8,.3 8,.3 8,.1 8,-.2 8,-.3 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,0 8,-1 8,-.7 8,.8 8,.1 8,.3 8,.3 8,.1 8,-.2 8,-.3 6.5,-.3"/>
+      <path d="M 667.0,614.2 l 8,-1.9 8,-1.3 8,-.4 8,.2 8,.5 8,.4 8,.1 8,-.3 8,-.5 8,-.3 8,0 8,.4 8,.5 8,.3 8,-.1 8,-.4 8,-.5 8,-.2 8,.2 8,.5 8,.4 8,.1 8,-.3 8,-1.2 8,-.6 8,1.1 8,.4 8,.5 8,.3 8,-.1 8,-.4 8,-.5 6.5,-.2"/>
+      <path d="M 667.0,616.3 l 8,-2.2 8,-1.2 8,.1 8,.8 8,.7 8,.2 8,-.4 8,-.8 8,-.6 8,0 8,.6 8,.8 8,.5 8,-.1 8,-.7 8,-.8 8,-.4 8,.3 8,.8 8,.7 8,.2 8,-.4 8,-.8 8,-1.4 8,-.3 8,1.6 8,.8 8,.5 8,-.1 8,-.7 8,-.8 8,-.4 6.5,.2"/>
+      <path d="M 667.0,617.8 l 8,-2 8,-.6 8,.7 8,1 8,.4 8,-.4 8,-1 8,-.9 8,-.2 8,.6 8,1.1 8,.8 8,0 8,-.8 8,-1.1 8,-.6 8,.2 8,.9 8,1 8,.4 8,-.4 8,-1 8,-.9 8,-1 8,.3 8,2.1 8,.8 8,0 8,-.8 8,-1.1 8,-.6 8,.2 6.5,.7"/>
+      <path d="M 667.0,619.7 l 8,-1.3 8,0 8,.8 8,.5 8,-.3 8,-1 8,-1 8,-.3 8,.5 8,1 8,.9 8,.1 8,-.7 8,-1.1 8,-.7 8,.1 8,.9 8,1 8,.5 8,-.3 8,-1 8,-1 8,-.3 8,-.2 8,.7 8,1.9 8,.1 8,-.7 8,-1.1 8,-.7 8,.1 8,.9 6.5,.9"/>
+      <path d="M 667.0,622.4 l 8,-.9 8,0 8,.3 8,-.1 8,-.7 8,-.8 8,-.4 8,.3 8,.8 8,.7 8,.2 8,-.4 8,-.8 8,-.6 8,0 8,.6 8,.8 8,.5 8,-.1 8,-.7 8,-.8 8,-.4 8,.3 8,0 8,.4 8,1.3 8,-.4 8,-.8 8,-.6 8,0 8,.6 8,.8 6.5,.5"/>
+      <path d="M 667.0,625.4 l 8,-.9 8,-.5 8,-.2 8,-.4 8,-.5 8,-.3 8,.1 8,.4 8,.5 8,.2 8,-.2 8,-.5 8,-.4 8,-.1 8,.3 8,.5 8,.4 8,0 8,-.4 8,-.5 8,-.3 8,.1 8,.4 8,-.3 8,-.1 8,.8 8,-.5 8,-.4 8,-.1 8,.3 8,.5 8,.4 6.5,0"/>
+      <path d="M 667.0,628.2 l 8,-1.1 8,-.8 8,-.5 8,-.4 8,-.2 8,0 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,0 8,-.2 8,-.4 8,-.2 8,0 8,.3 8,.4 8,-.6 8,-.4 8,.7 8,-.3 8,-.1 8,.2 8,.4 8,.3 8,0 6.5,-.2"/>
+      <path d="M 667.0,631.0 l 8,-1.3 8,-1.1 8,-.7 8,-.4 8,0 8,.4 8,.5 8,.3 8,-.1 8,-.4 8,-.5 8,-.2 8,.2 8,.5 8,.4 8,.1 8,-.3 8,-.5 8,-.4 8,0 8,.4 8,.5 8,.3 8,-.8 8,-.7 8,.6 8,-.2 8,.2 8,.5 8,.4 8,.1 8,-.3 6.5,-.4"/>
+      <path d="M 667.0,633.9 l 8,-1.8 8,-1.6 8,-.9 8,-.1 8,.5 8,.8 8,.6 8,0 8,-.6 8,-.8 8,-.5 8,.2 8,.7 8,.8 8,.3 8,-.4 8,-.8 8,-.7 8,-.1 8,.5 8,.8 8,.6 8,0 8,-1.4 8,-1.1 8,.6 8,.2 8,.7 8,.8 8,.3 8,-.4 8,-.8 6.5,-.6"/>
+      <path d="M 667.0,636.3 l 8,-2.4 8,-1.8 8,-.6 8,.5 8,1 8,.9 8,.1 8,-.7 8,-1.1 8,-.7 8,.1 8,.9 8,1 8,.5 8,-.3 8,-1 8,-1 8,-.3 8,.5 8,1 8,.9 8,.1 8,-.7 8,-1.8 8,-1 8,1.2 8,.9 8,1 8,.5 8,-.3 8,-1 8,-1 6.5,-.3"/>
+      <path d="M 667.0,637.9 l 8,-2.5 8,-1.3 8,.2 8,1 8,.9 8,.3 8,-.6 8,-1.1 8,-.8 8,0 8,.8 8,1.1 8,.7 8,-.2 8,-.9 8,-1 8,-.5 8,.4 8,1 8,.9 8,.3 8,-.6 8,-1.1 8,-1.6 8,-.3 8,1.8 8,1.1 8,.7 8,-.2 8,-.9 8,-1 8,-.5 6.5,.3"/>
+      <path d="M 667.0,639.6 l 8,-1.9 8,-.6 8,.5 8,.8 8,.3 8,-.4 8,-.8 8,-.7 8,-.1 8,.5 8,.8 8,.6 8,0 8,-.6 8,-.8 8,-.5 8,.2 8,.7 8,.8 8,.3 8,-.4 8,-.8 8,-.7 8,-.9 8,.2 8,1.9 8,.6 8,0 8,-.6 8,-.8 8,-.5 8,.2 6.5,.6"/>
+      <path d="M 667.0,641.9 l 8,-1.4 8,-.4 8,.3 8,.3 8,-.2 8,-.5 8,-.5 8,-.2 8,.3 8,.5 8,.4 8,.1 8,-.3 8,-.5 8,-.3 8,.1 8,.4 8,.5 8,.3 8,-.2 8,-.5 8,-.5 8,-.2 8,-.5 8,.2 8,1.5 8,.1 8,-.3 8,-.5 8,-.3 8,.1 8,.4 6.5,.4"/>
+      <path d="M 667.0,644.5 l 8,-1.2 8,-.5 8,0 8,-.1 8,-.3 8,-.4 8,-.2 8,.1 8,.3 8,.3 8,.1 8,-.2 8,-.4 8,-.3 8,0 8,.3 8,.4 8,.2 8,-.1 8,-.3 8,-.4 8,-.2 8,.1 8,-.4 8,0 8,1.1 8,-.2 8,-.4 8,-.3 8,0 8,.3 8,.4 6.5,.2"/>
+      <path d="M 667.0,647.0 l 8,-.9 8,-.5 8,-.3 8,-.4 8,-.5 8,-.3 8,.1 8,.4 8,.5 8,.2 8,-.2 8,-.5 8,-.4 8,-.1 8,.3 8,.5 8,.4 8,0 8,-.4 8,-.5 8,-.3 8,.1 8,.4 8,-.3 8,-.1 8,.8 8,-.5 8,-.4 8,-.1 8,.3 8,.5 8,.4 6.5,0"/>
+      <path d="M 667.0,649.9 l 8,-.8 8,-.8 8,-.8 8,-.8 8,-.5 8,.1 8,.7 8,.8 8,.4 8,-.3 8,-.7 8,-.7 8,-.2 8,.4 8,.8 8,.7 8,.1 8,-.6 8,-.8 8,-.5 8,.1 8,.7 8,.8 8,-.3 8,-.6 8,.3 8,-.7 8,-.2 8,.4 8,.8 8,.7 8,.1 6.5,-.4"/>
+      <path d="M 667.0,653.1 l 8,-1.2 8,-1.4 8,-1.3 8,-.8 8,0 8,.8 8,1.1 8,.6 8,-.2 8,-.9 8,-1 8,-.5 8,.4 8,1 8,.9 8,.2 8,-.6 8,-1.1 8,-.8 8,0 8,.8 8,1.1 8,.6 8,-.9 8,-1.2 8,0 8,-.5 8,.4 8,1 8,.9 8,.2 8,-.6 6.5,-.9"/>
+      <path d="M 667.0,655.8 l 8,-1.9 8,-1.9 8,-1.1 8,-.2 8,.7 8,1.1 8,.8 8,0 8,-.8 8,-1 8,-.6 8,.3 8,.9 8,1 8,.4 8,-.5 8,-1 8,-.9 8,-.2 8,.7 8,1.1 8,.8 8,0 8,-1.6 8,-1.3 8,.5 8,.3 8,.9 8,1 8,.4 8,-.5 8,-1 6.5,-.8"/>
+      <g stroke="#a86e33" stroke-width="0.9">
+        <path d="M 781,531 H 929.2" stroke-width="1.4"/>
+        <path d="M 800,527 C 850,528.5 900,530 929.2,530.5"/>
+        <path d="M 800,535 C 850,533.5 900,532 929.2,531.5"/>
+        <line x1="864" y1="411.2" x2="864" y2="652.9" stroke-width="0.7" stroke-opacity="0.7"/>
+      </g>
+    </g>
+    <g transform="translate(704.3,302.3)" fill="#f2c06e" stroke="#2d2518" stroke-width="0.8">
+      <rect x="0" y="0" width="162" height="9"/>
+      <path d="M 0,9 H 70 V 43 Q 70,47 66,47 H 4 Q 0,47 0,43 Z"/>
+      <path d="M 70,9 H 117 V 28 H 102 L 95,43 H 85 L 82,28 H 70 Z"/>
+      <path d="M 117,9 H 162 L 187,20 V 53 H 175 L 167,28 L 162,26 H 117 Z"/>
+      <g fill="none" stroke="#2d2518" stroke-width="0.6"><path d="M 6,16 H 64 M 6,23 H 64 M 6,30 H 64 M 6,37 H 64"/></g>
+    </g>
+    <g font-family="Rajdhani" font-size="16.5" fill="#f5c689">
+      <text x="689.1" y="403.3">DPS</text>
+      <text x="753.1" y="403.3">PNT</text>
+      <text x="804.1" y="403.3">ACC</text>
+      <text x="859.1" y="403.3">ROF</text>
+    </g>
+    <g font-family="Rajdhani" fill="#3a2010">
+      <text x="682.1" y="440.3" font-size="27" font-weight="600">620</text>
+      <text x="755.1" y="437.3" font-size="21">30</text>
+      <text x="814.1" y="437.3" font-size="21">5</text>
+      <text x="867.1" y="437.3" font-size="21">5</text>
+    </g>
+    <g font-family="Rajdhani" font-size="19" fill="#3a2010">
+      <text x="673" y="468">20</text><text x="700" y="468">Recoil</text>
+      <text x="673" y="488">22</text><text x="700" y="488">Sperad</text>
+      <text x="673" y="509">12</text><text x="700" y="509">Range</text>
+      <text x="673" y="539">Bonus</text>
+      <text x="673" y="560">+9 Reflexes</text>
+      <text x="673" y="580">+2 Modules Slots</text>
+    </g>
+    <g fill="none" stroke="#3a2010" stroke-width="1.1">
+      <path d="M 667.1,603.8 H 929.2 M 667.1,651.7 H 929.2"/>
+      <path d="M 718.4,603.8 V 651.7 M 785.9,603.8 V 651.7 M 857.5,603.8 V 651.7"/>
+    </g>
+    <use href="#qr" x="676.9" y="613.1" fill="#3a2010"/>
+    <g font-family="Rajdhani" font-size="11.5" text-anchor="middle" fill="#3a2010">
+      <text x="752.2" y="624.3">EMPTY</text><text x="752.2" y="639.8">SOCKET</text>
+      <text x="821.7" y="624.3">EMPTY</text><text x="821.7" y="639.8">SOCKET</text>
+      <text x="893.4" y="624.3">EMPTY</text><text x="893.4" y="639.8">SOCKET</text>
+    </g>
+    <text x="691.1" y="683.9" font-family="Rajdhani" font-size="19" fill="#f5c689"><tspan font-weight="700">MAGNUM 650</tspan> HAND GUN</text>
+  </g>
+  <g><!-- card x0=978.8 -->
+    <path d="M 978.8,618.0 V 358.0 Q 978.8,345.0 991.8,345.0 H 1115.0 L 1155.0,314.6 H 1222.9 Q 1240.9,314.6 1240.9,332.6 V 632.4 Q 1240.9,640.4 1232.9,640.4 H 998.0 L 998.0,640.4 Z"
+          fill="none" stroke="#dab176" stroke-width="1.3"/>
+    <path d="M 1120.1,345.0 L 1156.8,317.0 H 1222.9 Q 1237.9,317.0 1237.9,332.0 V 632.4 Q 1237.9,637.4 1232.9,637.4 H 995.4"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.55"/>
+    <path d="M 1125.2,345.0 L 1158.7,319.5 H 1222.9 Q 1234.8,319.5 1234.8,331.4 V 632.4 Q 1234.8,634.3 1232.9,634.3 H 992.8"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.40"/>
+    <path d="M 1130.3,345.0 L 1160.5,321.9 H 1222.9 Q 1231.8,321.9 1231.8,330.8 V 629.8 Q 1231.8,631.2 1230.2,631.2 H 990.2"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.28"/>
+    <path d="M 1135.3,345.0 L 1162.3,324.4 H 1222.9 Q 1228.7,324.4 1228.7,330.2 V 626.7 Q 1228.7,628.2 1227.2,628.2 H 987.5"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.18"/>
+    <path d="M 1077.8,632.9 H 1142.3 L 1138.8,641.4 H 1080.8 Z" fill="#fed08d"/>
+    <g transform="translate(1016.0,384.0)" fill="#f2c06e" stroke="#2d2518" stroke-width="0.8">
+      <rect x="0" y="0" width="162" height="9"/>
+      <path d="M 0,9 H 70 V 43 Q 70,47 66,47 H 4 Q 0,47 0,43 Z"/>
+      <path d="M 70,9 H 117 V 28 H 102 L 95,43 H 85 L 82,28 H 70 Z"/>
+      <path d="M 117,9 H 162 L 187,20 V 53 H 175 L 167,28 L 162,26 H 117 Z"/>
+      <g fill="none" stroke="#2d2518" stroke-width="0.6"><path d="M 6,16 H 64 M 6,23 H 64 M 6,30 H 64 M 6,37 H 64"/></g>
+    </g>
+    <g font-family="Rajdhani" font-size="16.5" fill="#f5c689">
+      <text x="1000.8" y="485.0">DPS</text>
+      <text x="1064.8" y="485.0">PNT</text>
+      <text x="1115.8" y="485.0">ACC</text>
+      <text x="1170.8" y="485.0">ROF</text>
+    </g>
+    <g font-family="Rajdhani" fill="#f5c689">
+      <text x="993.8" y="522.0" font-size="27" font-weight="600">620</text>
+      <text x="1066.8" y="519.0" font-size="21">30</text>
+      <text x="1125.8" y="519.0" font-size="21">5</text>
+      <text x="1178.8" y="519.0" font-size="21">5</text>
+    </g>
+    <g fill="none" stroke="#c5965a" stroke-width="1.1">
+      <path d="M 978.8,532.9 H 1240.9 M 978.8,580.8 H 1240.9"/>
+      <path d="M 1030.1,532.9 V 580.8 M 1097.6,532.9 V 580.8 M 1169.2,532.9 V 580.8"/>
+    </g>
+    <use href="#qr" x="988.6" y="542.2" fill="#e9bd7a"/>
+    <g font-family="Rajdhani" font-size="11.5" text-anchor="middle" fill="#e9bd7a">
+      <text x="1063.9" y="553.4">EMPTY</text><text x="1063.9" y="568.9">SOCKET</text>
+      <text x="1133.4" y="553.4">EMPTY</text><text x="1133.4" y="568.9">SOCKET</text>
+      <text x="1205.1" y="553.4">EMPTY</text><text x="1205.1" y="568.9">SOCKET</text>
+    </g>
+    <text x="1002.8" y="613.0" font-family="Rajdhani" font-size="19" fill="#f5c689"><tspan font-weight="700">MAGNUM 650</tspan> HAND GUN</text>
+  </g>
+  <g><!-- card x0=1288.8 -->
+    <path d="M 1288.8,618.0 V 358.0 Q 1288.8,345.0 1301.8,345.0 H 1425.0 L 1465.0,314.6 H 1532.9 Q 1550.9,314.6 1550.9,332.6 V 632.4 Q 1550.9,640.4 1542.9,640.4 H 1308.0 L 1308.0,640.4 Z"
+          fill="none" stroke="#dab176" stroke-width="1.3"/>
+    <path d="M 1430.1,345.0 L 1466.8,317.0 H 1532.9 Q 1547.9,317.0 1547.9,332.0 V 632.4 Q 1547.9,637.4 1542.9,637.4 H 1305.4"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.55"/>
+    <path d="M 1435.2,345.0 L 1468.7,319.5 H 1532.9 Q 1544.8,319.5 1544.8,331.4 V 632.4 Q 1544.8,634.3 1542.9,634.3 H 1302.8"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.40"/>
+    <path d="M 1440.3,345.0 L 1470.5,321.9 H 1532.9 Q 1541.8,321.9 1541.8,330.8 V 629.8 Q 1541.8,631.2 1540.2,631.2 H 1300.2"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.28"/>
+    <path d="M 1445.3,345.0 L 1472.3,324.4 H 1532.9 Q 1538.7,324.4 1538.7,330.2 V 626.7 Q 1538.7,628.2 1537.2,628.2 H 1297.5"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.18"/>
+    <path d="M 1387.8,632.9 H 1452.3 L 1448.8,641.4 H 1390.8 Z" fill="#fed08d"/>
+    <g transform="translate(1326.0,384.0)" fill="#f2c06e" stroke="#2d2518" stroke-width="0.8">
+      <rect x="0" y="0" width="162" height="9"/>
+      <path d="M 0,9 H 70 V 43 Q 70,47 66,47 H 4 Q 0,47 0,43 Z"/>
+      <path d="M 70,9 H 117 V 28 H 102 L 95,43 H 85 L 82,28 H 70 Z"/>
+      <path d="M 117,9 H 162 L 187,20 V 53 H 175 L 167,28 L 162,26 H 117 Z"/>
+      <g fill="none" stroke="#2d2518" stroke-width="0.6"><path d="M 6,16 H 64 M 6,23 H 64 M 6,30 H 64 M 6,37 H 64"/></g>
+    </g>
+    <g font-family="Rajdhani" font-size="16.5" fill="#f5c689">
+      <text x="1310.8" y="485.0">DPS</text>
+      <text x="1374.8" y="485.0">PNT</text>
+      <text x="1425.8" y="485.0">ACC</text>
+      <text x="1480.8" y="485.0">ROF</text>
+    </g>
+    <g font-family="Rajdhani" fill="#f5c689">
+      <text x="1303.8" y="522.0" font-size="27" font-weight="600">620</text>
+      <text x="1376.8" y="519.0" font-size="21">30</text>
+      <text x="1435.8" y="519.0" font-size="21">5</text>
+      <text x="1488.8" y="519.0" font-size="21">5</text>
+    </g>
+    <g fill="none" stroke="#c5965a" stroke-width="1.1">
+      <path d="M 1288.8,532.9 H 1550.9 M 1288.8,580.8 H 1550.9"/>
+      <path d="M 1340.1,532.9 V 580.8 M 1407.6,532.9 V 580.8 M 1479.2,532.9 V 580.8"/>
+    </g>
+    <use href="#qr" x="1298.6" y="542.2" fill="#e9bd7a"/>
+    <g font-family="Rajdhani" font-size="11.5" text-anchor="middle" fill="#e9bd7a">
+      <text x="1373.9" y="553.4">EMPTY</text><text x="1373.9" y="568.9">SOCKET</text>
+      <text x="1443.4" y="553.4">EMPTY</text><text x="1443.4" y="568.9">SOCKET</text>
+      <text x="1515.1" y="553.4">EMPTY</text><text x="1515.1" y="568.9">SOCKET</text>
+    </g>
+    <text x="1312.8" y="613.0" font-family="Rajdhani" font-size="19" fill="#f5c689"><tspan font-weight="700">MAGNUM 650</tspan> HAND GUN</text>
+  </g>
+
+  <!-- ==== foot ==== -->
+  <g stroke="#e0b67a" fill="none">
+    <use href="#letterbox" x="675" y="775"/>
+    <text x="683" y="795" font-family="Rajdhani" font-size="17" font-weight="600" fill="#e0b67a" stroke="none">B</text>
+  </g>
+  <g font-family="Rajdhani" font-size="6.5" fill="#d9a877">
+    <text x="715" y="780.5" textLength="155" lengthAdjust="spacingAndGlyphs">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+    <text x="715" y="787" textLength="100" lengthAdjust="spacingAndGlyphs">SERVING CUSTOMERS SINCE 2006.</text>
+  </g>
+  </g>
+</svg>

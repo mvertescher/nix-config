@@ -22,7 +22,8 @@ fn main() -> iced::Result {
         None => Style::from_desktop(),
     };
 
-    iced::application(Login::title, Login::update, Login::view)
+    iced::application(move || Login::new(style), Login::update, Login::view)
+        .title(Login::title)
         .font(cp_eras_ui::fonts::RAJDHANI_REGULAR)
         .font(cp_eras_ui::fonts::RAJDHANI_MEDIUM)
         .font(cp_eras_ui::fonts::RAJDHANI_BOLD)
@@ -31,7 +32,7 @@ fn main() -> iced::Result {
         .default_font(cp_eras_ui::fonts::FONT_RAJDHANI_REGULAR)
         .window_size((1600.0, 900.0))
         .antialiasing(true)
-        .run_with(move || (Login::new(style), iced::Task::none()))
+        .run()
 }
 
 fn era_from_args() -> Option<Era> {

@@ -24,9 +24,13 @@ original image       SVG reference          Rust iced implementation
    of truth for *shapes* and *palette*; nothing downstream may invent
    geometry the material does not show.
 2. **SVG reference** — a hand-traced schematic that commits the sampled
-   palette and the source's geometry to the repo. One per surface:
-   `bar.svg`, `dashboard.svg`, `target-app.svg`, `target-components.svg`.
-   This is what a render is compared against, by eye or by script.
+   palette and the source's geometry to the repo. One trace per sourced
+   screen — `login-trace.svg`, `dashboard-trace.svg`, `mailbox-trace.svg`,
+   `store-trace.svg`, sixteen in all — plus the app-shaped `dashboard.svg`
+   composite that G2 compares against the golden, and `bar.svg`.
+   `target-app.svg` and `target-components.svg` predate the traces and
+   are superseded where a `store-trace.svg` exists. This is what a render
+   is compared against, by eye or by script.
 3. **iced implementation** — `src/`. Screens, widgets and era tables
    compose from `Style`; the golden matrix renders them headless and locks
    the renders.
@@ -67,15 +71,56 @@ source, and which are originals.
   against a "unrelated scenes" baseline of ~0.15. Mass in roughly the
   right place is not the same as drawing the right things. Read it
   alongside G1i and the overlays, never on its own.
+- **G2i — svg → iced, measured.** *The gate an SVG→iced conversion
+  iterates against, and the second one here with a pass/fail.* What G1i
+  is to G1: the design SVG and a live headless capture of the matching
+  binary, put through `extract_spec.py` and diffed by `spec_diff.py`
+  design→implementation. Run it as
+  `scripts/fidelity_check.sh --implementation <era> [screen]`, with
+  `--bin-dir DIR` to name where the binaries are (default `target/debug`).
+  Unlike G1i this uses the **shapes** verdict for every era, kitsch and
+  neokitsch included: the `inks` exception there is about the *photo*,
+  whose glow fragments rotated geometry differently from a clean render,
+  and both sides here are clean renders of our own. Two knobs differ from
+  G1i's defaults and the reasoning is in the script: shapes are matched at
+  IoU 0.65 rather than 0.30, because two renders have no glow to excuse a
+  loose box, and the pairs that have actually converged hold their score
+  to 0.90. It also writes `compare_ref.py`'s overlays plus both inputs to
+  `/tmp/g2i-<era>-<screen>/`, because "unmatched in source" names a
+  bounding box and only the picture says what was in it.
 - **G2 — svg → iced.** The implementation matches the reference:
   rasterise the SVG (`rsvg-convert`) and
   `scripts/compare_ref.py <svg render> tests/golden/<screen>-<era>-...png`.
-  The golden matrix already locks iced-vs-iced (G0, byte-identical); this
+  The golden matrix already locks iced-vs-iced (G0: byte-identical run to
+  run for one build — a toolkit bump can still move it, as iced 0.14 did
+  by a few edge pixels on every screen); this
   gate locks iced-vs-reference. A schematic is expected to reach
   ~0.65+ layout / 0.85+ palette against its own golden; text rasterization
   and the hand-drawn gap keep edge correlation below the perfect-1.0 that
-  G0 holds.
-- Run either with `scripts/fidelity_check.sh [era [screen]]`.
+  G0 holds. G2 has no verdict and moves smoothly; where G2i can run,
+  it is the one to iterate against and G2 is the sanity read beside it.
+- Run any of them with `scripts/fidelity_check.sh [--source|--inventory|--implementation] [era [screen]]`.
+
+## Rendering one screen by hand
+
+`scripts/render.sh` is the golden matrix's recipe — headless weston,
+pixman, a lavapipe ICD, `WGPU_BACKEND=vulkan`, the era's palette
+published into a scratch `HOME` — pointed at a binary already on disk
+instead of at a nix build of the crate:
+
+```
+scripts/render.sh --era neomil --size 1600x220 --out /tmp/bar.png cp-eras-ui-bar-window
+scripts/render.sh --era kitsch --out /tmp/login.png cp-eras-ui-login   # 1600x900 default
+scripts/render.sh --era none  --bin /path/to/cp-eras-ui-login ...      # compiled fallback
+```
+
+It is what G2i captures the implementation with, and it takes about ten
+seconds against a warm nix store. It does not build anything: use
+`nix-shell shell.nix --run 'cargo build --bin <name>'` first, or pass
+`--bin`. The capture is faithful — `cp-eras-ui-login` in neomil comes out
+byte-identical to `tests/golden/login-neomil-1600x900.png` — but it is
+not hermetic, so `scripts/run_test_matrix.sh` remains what gates a
+change.
 
 ## Iteration loop
 

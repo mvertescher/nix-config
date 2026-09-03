@@ -298,9 +298,9 @@ pub fn top_bar<'a, Message: 'static>(
             ))
             .width(Length::Fixed(320.0))
             .height(Length::Fixed(24.0)),
-            Space::new(12.0, 0.0),
+            Space::new().width(12.0),
             container(text::label(style, segments[1])).center_y(Length::Fixed(24.0)),
-            Space::new(Length::Fill, Length::Shrink),
+            Space::new().width(Length::Fill).height(Length::Shrink),
             container(text::label(style, segments[2])).center_y(Length::Fixed(24.0)),
         ]
         .into(),
@@ -308,7 +308,7 @@ pub fn top_bar<'a, Message: 'static>(
         // device frame's top rail, the meta line beneath it.
         Chrome::Caption => row![
             text::caption(style, segments[0]),
-            Space::new(Length::Fill, Length::Shrink),
+            Space::new().width(Length::Fill).height(Length::Shrink),
             text::caption(style, segments[2]),
         ]
         .into(),
@@ -318,7 +318,7 @@ pub fn top_bar<'a, Message: 'static>(
                 .height(Length::Fixed(RAIL)),
             row![
                 text::caption(style, segments[0]),
-                Space::new(Length::Fill, Length::Shrink),
+                Space::new().width(Length::Fill).height(Length::Shrink),
                 text::caption(style, segments[2]),
             ]
             .padding(Padding::from([2, 0])),
@@ -341,16 +341,16 @@ pub fn footer<'a, Message: 'static>(
     // target, same as the segmented bar above it: small print, but not
     // the tertiary ink the footnote bodies are set in.
     let line = row![
-        text::mid(style, left).size(style.metrics.text_caption + 2),
-        Space::new(Length::Fill, Length::Shrink),
-        text::mid(style, middle).size(style.metrics.text_caption + 2),
-        Space::new(Length::Fill, Length::Shrink),
-        text::mid(style, right).size(style.metrics.text_caption + 2),
+        text::mid(style, left).size(f32::from(style.metrics.text_caption + 2)),
+        Space::new().width(Length::Fill).height(Length::Shrink),
+        text::mid(style, middle).size(f32::from(style.metrics.text_caption + 2)),
+        Space::new().width(Length::Fill).height(Length::Shrink),
+        text::mid(style, right).size(f32::from(style.metrics.text_caption + 2)),
     ];
 
     match style.chrome {
         Chrome::Segmented => column![
-            container(Space::new(Length::Fill, 1.0)).style(move |_: &Theme| {
+            container(Space::new().width(Length::Fill).height(1.0)).style(move |_: &Theme| {
                 container::Style {
                     background: Some(iced::Background::Color(border)),
                     ..Default::default()
@@ -379,7 +379,7 @@ pub fn footer<'a, Message: 'static>(
         Chrome::Caption => container(
             row![
                 text::caption(style, middle)
-                    .size(style.metrics.text_caption + 2)
+                    .size(f32::from(style.metrics.text_caption + 2))
                     .color(style.palette.fg),
             ]
             .spacing(6),

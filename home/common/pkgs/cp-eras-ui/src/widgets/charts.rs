@@ -18,7 +18,7 @@
 //! wears it today, but a second era adopting that layout is a table
 //! entry, not a rewrite.
 
-use super::surface::{outline, Corners};
+use super::surface::{era_cut, outline, Corners};
 use crate::style::{Style, Ticket};
 use iced::widget::canvas;
 use iced::{mouse, Element, Length, Point, Rectangle, Renderer, Size, Theme, Vector};
@@ -125,7 +125,12 @@ impl<Message> canvas::Program<Message> for ChartCard<'_> {
         // builds the walk in local coordinates, so translate to the
         // card's origin.
         let cut = s.corner.inset().min(cw / 2.0).min(ch / 2.0);
-        let card = outline(s.corner, Corners::BOTTOM_RIGHT, Ticket::default(), cw, ch);
+        let card = outline(
+            Corners::square().with_bottom_right(era_cut(s.corner)),
+            Ticket::default(),
+            cw,
+            ch,
+        );
         frame.with_save(|frame| {
             frame.translate(Vector::new(x0, y0));
             frame.fill(&card, s.palette.select);

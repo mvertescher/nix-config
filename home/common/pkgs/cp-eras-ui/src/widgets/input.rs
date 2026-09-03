@@ -55,10 +55,10 @@ pub fn labelled_field<'a, Message: 'static>(
 ) -> Element<'a, Message> {
     column![
         text::body(style, label),
-        Space::new(0.0, 6.0),
+        Space::new().height(6.0),
         row![
             field(style, value, 300.0),
-            Space::new(style.metrics.gap * 0.5, 0.0),
+            Space::new().width(style.metrics.gap * 0.5),
             cta(style, action, 110.0),
         ],
     ]
