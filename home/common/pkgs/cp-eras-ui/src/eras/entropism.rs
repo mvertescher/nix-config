@@ -1,8 +1,28 @@
 //! Entropism -- "necessity over style".
 //!
 //! One hue. Sage green on a warm dark olive-brown ground, square
-//! everything, 1px strokes, no glow and no gradients. Selection is a
-//! solid sage fill. Sampled from Behance Part 1, doc #24-32.
+//! everything, no glow. Selection is a solid sage fill. Sampled from
+//! Behance Part 1, gallery positions 34-42 (title card 33) per
+//! `docs/sources.md`; the "doc #24-32" this comment used to give came
+//! from an earlier, smaller scrape and is shifted by ten.
+//!
+//! Strokes: the traces measure 1.25px on login, dashboard and store
+//! (`docs/entropism/login-trace.svg` header rect at 49,43 1498x26,
+//! `stroke-width="1.25"`; `dashboard-trace.svg` same rect;
+//! `store-trace.svg` card frame 265x237) and 2px on the mailbox
+//! (`mailbox-trace.svg` `#hdr-chrome` / `#a-chrome`, `stroke-width="2"`).
+//! `metrics.stroke` below is still 1.0 -- the canvas arms pass their
+//! widths explicitly, so the metric only reaches a widget that inherits
+//! it (surface, menu, chrome, bracket, ornament), and those are bar /
+//! dashboard consumers; see `ERAS-DELTA.md`.
+//!
+//! Ground: the traces are not flat. All four sit on a radial lift
+//! (`login-trace.svg` `<radialGradient id="lift" cx="0.45" cy="0.4"
+//! r="0.8">` #1a1810 / #141107 / #0f0a04; mailbox #1c1b11 / #151207 /
+//! #100a03; store #1e1d12 / #151207 / #100b03; dashboard #1c1a10 /
+//! #141107 / #0f0a03). `ground: Ground::Flat` stands as a deliberate
+//! choice (the mailbox block below reads the lift as the photograph's
+//! falloff, on the trace's own instruction).
 //!
 //! The predecessor crate (`entropism-ui`) carried twelve colours --
 //! including cybr's red, cyan, mint, violet, orange and gold -- and a
@@ -241,6 +261,10 @@ pub fn style() -> Style {
         store_selection: (1, 0),
         // --- end store ---
         metrics: Metrics {
+            // Traces measure 1.25 (login/dashboard/store) and 2.0
+            // (mailbox); see the module doc. Left at 1.0 because the
+            // only readers are bar/dashboard widgets and the fold is
+            // undecided -- ERAS-DELTA.md.
             stroke: 1.0,
             gap: 14.0,
             pad: 14.0,

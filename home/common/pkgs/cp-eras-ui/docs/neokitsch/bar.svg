@@ -75,15 +75,19 @@
           matrix, drawn once as a blurred copy of the content group underneath.
           Applied here to the strip and menu content; at 14px it is a faint brown
           smear under each glyph (checked at 2x), never a fill behind text.
-      10. MENU PANEL — dashboard-trace cascade card <path id="ncard"> 93x327:
-          chamfer 32 top-right and bottom-left, Q6 top-left and bottom-right, and
-          the "onion rings": concentric offsets of the silhouette at 3.5 pitch
-          fading 0.85 .73 .61 .49 .37 .25 (stroke #bd8951 1), which the
-          unselected cards carry (also the detail panel at (1168,253), 6 rings,
-          outline 1.8). Here both panels take the card silhouette with the
-          mailbox bar's 22 chamfer (the card's 32 is a third of its 93 width; 22
-          is the panel-scale chamfer the detail panel and the mail bar both
-          measure), outline FRAME_LIT 1.6, fill BG, and 4 rings at 3.5 pitch
+      10. MENU PANEL — dashboard-trace cascade card <path id="ncard">, as it was
+          when this bar was drawn (2026-09-02): 93x327, chamfer 32 top-right and
+          bottom-left, Q6 top-left and bottom-right, and the "onion rings":
+          concentric offsets of the silhouette at 3.5 pitch fading 0.85 .73 .61
+          .49 .37 .25 (stroke #bd8951 1), which the unselected cards carry (also
+          the detail panel at (1168,253), 6 rings, outline 1.8). The card was
+          re-measured 2026-09-03: 91.7x328, top-right chamfer 42.5, a single 45
+          degree diagonal across the whole foot, rings nested inside the card
+          rather than offset outward. The bar's panel geometry below was chosen
+          against the old numbers and has not been revisited. Here both panels
+          take the card silhouette with the mailbox bar's 22 chamfer (22 is the
+          panel-scale chamfer the detail panel and the mail bar both measure),
+          outline FRAME_LIT 1.6, fill BG, and 4 rings at 3.5 pitch
           (0.85 .61 .37 .25) clipped to y >= 31 — the menu overlay is drawn below
           the bar surface in the app, so nothing of it may rise into the strip.
       11. MENU ROWS — highlighted row = the mailbox selection bar (item 4): veneer

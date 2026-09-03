@@ -19,8 +19,11 @@
          - a tab row at y=237: COMPUTER SYSTEMS centre, DESCRIPTION right,
            and a small chip marker at each margin
          - THE MENU IS SIX DIAMONDS in a staggered 3+3 lattice, half-diagonal
-           103, centres (334,460) (530,460) (725,460) / (431,593) (628,592)
-           (822,592) — x pitch 195.5, row pitch 132, row 2 offset +96.5.
+           104 (the four unoccluded side tips read 102.2..104.6 on the
+           photo, half-maximum mean 103.7; inside the glow blur, so 104
+           is used here and in #cell alike), centres (334,460) (530,460)
+           (725,460) / (431,593) (628,592) (822,592) — x pitch 195.5, row
+           pitch 132..133, row 2 offset +97 (97, 98, 97 as drawn).
            Each carries a thin inset diamond outline at half-diagonal 68 and
            a glyph at its centre; neighbours overlap by ~10px and are held
            apart by a dark separator, drawn here as a background-coloured
@@ -34,7 +37,7 @@
            (top end chamfered (1366,405)->(1358,414), bottom nearly
            flat), and steps 8px inward to x 1358 below the bar - the
            same bar-and-step motif as the store cards. Faint glitch
-           echoes of the edge sit 2-5px to its right; no scrollbar.
+           echoes of the edge sit 3 and 5px to its right; no scrollbar.
            A maker's mark at its foot
          - rotated micro-text down both margins, and a two-cell footer tape
            at x 1209..1358, y 864
@@ -87,7 +90,8 @@
     </radialGradient>
 
     <!-- One menu cell. Half-diagonal 104, measured off the unoccluded tips
-         (D1's left, D3's right, D6's lower-right all read 103-106). The
+         (D1 and D4 left, D3 and D6 right: 102.2..104.6 by solid fill,
+         103.7 mean by half-maximum, re-read 2026-09-03). The
          diamonds are NOT outlined: outer tips run full, and only same-row
          neighbours overlap at all — L1 distance 195.5 against a diameter of
          208, so the rows merely interlock and never touch. The 16px dark

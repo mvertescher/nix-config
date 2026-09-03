@@ -32,7 +32,7 @@
        chart cards and a rail; the store screen has NO header row at all
        and wears the MASURAO / KIROSHI logotype where the other three
        screens put CUSTOMER + SECURITY LEVEL; and the era's chamfer is
-       not one 15px cut but a measured inventory from 8 to 46 whose
+       not one 15px cut but a measured inventory from 8 to 51 whose
        CORNER depends on the widget class (cells cut bottom-left, cards
        cut top-right, buttons cut bottom-right).
 
@@ -102,8 +102,9 @@
       <rect x="-11" y="3" width="6" height="6"/>
       <rect x="0" y="0" width="14" height="14"/>
     </g>
-    <!-- login-trace.svg #notch: 15 deep, y 392..497, chamfered ends -->
-    <path id="notch" d="M 0,392 L 15,402 V 486 L 0,497 Z"/>
+    <!-- login-trace.svg #notch: 15 deep, y 390..496, ends cut 15 (top)
+         and 13 (bottom); re-measured on the photo 2026-09-03 -->
+    <path id="notch" d="M 0,390 L 15,405 V 483 L 0,496 Z"/>
     <!-- login-trace.svg card fills, translucent over the blue backdrop -->
     <linearGradient id="card2" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#74272c"/>
@@ -798,10 +799,12 @@
   <text x="30" y="566" font-family="Rajdhani" font-size="13" letter-spacing="4.5" fill="#df3131">3 // CARDS AND PANELS</text>
 
   <!-- USER CARD, ACTIVE. login-trace.svg x 372..625, y 313..709: a
-       SOLID #f63333 block y 313..572 with a top-RIGHT chamfer 46
-       ((579,313) to (625,359)); the notch every card carries cut into
-       its left edge, 15 deep, y 392..497, ends chamfered 10, filled
-       with the ground and edged by a 1.5x105 #ae2729 line; an avatar
+       SOLID #f63333 block y 313..572 with a top-RIGHT chamfer 51
+       ((574,313) to (625,364); the trace carried 46 until 2026-09-03,
+       when the photo was re-measured at 50.8..52.1); the notch every
+       card carries cut into its left edge, 15 deep, y 390..496, ends
+       chamfered 15 top and 13 bottom, filled with the ground and edged
+       by a 1.5x106 #ae2729 line; an avatar
        box x 452..546 y 386..487, a 94x94 square in #c72a2b under a
        46x7 tab whose right end is cut, with a hexagon glyph stroked
        #200506 3 and its satellites; USER 01 centred at (499,530) in
@@ -813,9 +816,9 @@
        and two 7.5px notice lines at y 700 and 709.
        Translated by (-342,+261). -->
   <g transform="translate(-342,261)">
-    <path d="M 372,313 H 579 L 625,359 V 572 H 372 Z" fill="#f63333"/>
+    <path d="M 372,313 H 574 L 625,364 V 572 H 372 Z" fill="#f63333"/>
     <use href="#notch" x="372" fill="#080405"/>
-    <rect x="372" y="392" width="1.5" height="105" fill="#ae2729"/>
+    <rect x="372" y="390" width="1.5" height="106" fill="#ae2729"/>
     <path d="M 452,386 H 492 L 498,393 H 452 Z" fill="#c72a2b"/>
     <rect x="452" y="393" width="94" height="94" fill="#c72a2b"/>
     <g fill="none" stroke="#200506" stroke-width="3">
@@ -845,8 +848,8 @@
     </g>
   </g>
   <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.2" fill="#96282d">
-    <text x="30" y="982">USER CARD, ACTIVE (login) . 253 wide, block y 313..572, chamfer TOP-RIGHT 46, solid #f63333</text>
-    <text x="30" y="991">notch 15 deep x 105 tall at y +79, ends cut 10, ground filled, 1.5 edge line #ae2729</text>
+    <text x="30" y="982">USER CARD, ACTIVE (login) . 253 wide, block y 313..572, chamfer TOP-RIGHT 51, solid #f63333</text>
+    <text x="30" y="991">notch 15 deep x 106 tall at y +77, ends cut 15 top / 13 bottom, ground filled, 1.5 edge line #ae2729</text>
     <text x="30" y="1000">avatar 94x94 #c72a2b + a 46x7 tab, right end cut 6 . name 18 ls 1.5 centred, ink #420f10</text>
     <text x="30" y="1009">INPUT FIELD 252x32, fill #430e0f, stroke #ae2729 1, mask 12 ls 3 . label 14 above it</text>
     <text x="30" y="1018">CTA 253x48, chamfer BOTTOM-RIGHT 9, fill #a52223, label 17 ink #420f10, 2x15 caret</text>
@@ -856,8 +859,9 @@
   <!-- USER CARD, IDLE. login-trace.svg x 692..947 y 315..655: the
        same silhouette in a translucent fill (#74272c to #5e1516 down
        the card, sampled through the backdrop) stroked #ae2729 1.5,
-       top-RIGHT chamfer 47 and, unlike the active card, a bottom-LEFT
-       chamfer 22; the same left notch; a bright #f63333 avatar box
+       top-RIGHT chamfer 51 (was 47 until the 2026-09-03 re-measure)
+       and, unlike the active card, a bottom-LEFT chamfer 22; the same
+       left notch; a bright #f63333 avatar box
        96x94 carrying the photographed portrait; USER 01 in the bright
        ink; a 1px #ae2729 divider at y 568.5 with a darker #461012
        lower section under it carrying the two notice lines. Card 3 of
@@ -865,11 +869,11 @@
        (fill #52242c to #481012, lower #2f0b0c, stroke #8a2027, notice
        ink #ae2729): the "protected" state. Translated by (-379,+259). -->
   <g transform="translate(-379,259)">
-    <path d="M 692,315 H 900 L 947,362 V 655 H 714 L 692,633 Z"
+    <path d="M 692,315 H 896 L 947,366 V 655 H 714 L 692,633 Z"
           fill="url(#card2)" stroke="#ae2729" stroke-width="1.5"/>
     <path d="M 692,569 H 947 V 655 H 714 L 692,633 Z" fill="#461012"/>
     <use href="#notch" x="692" fill="#080405"/>
-    <rect x="692" y="392" width="1.5" height="105" fill="#ae2729"/>
+    <rect x="692" y="390" width="1.5" height="106" fill="#ae2729"/>
     <path d="M 772,386 H 818 L 824,393 H 772 Z" fill="#f63333"/>
     <rect x="772" y="393" width="96" height="94" fill="#f63333"/>
     <g fill="#4f1a1e">
@@ -886,7 +890,7 @@
     </g>
   </g>
   <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.2" fill="#96282d">
-    <text x="313" y="924">USER CARD, IDLE (login) . 255x340 . chamfer TOP-RIGHT 47 and BOTTOM-LEFT 22</text>
+    <text x="313" y="924">USER CARD, IDLE (login) . 255x340 . chamfer TOP-RIGHT 51 and BOTTOM-LEFT 22</text>
     <text x="313" y="932">fill #74272c to #5e1516 (translucent over the glow), stroke #ae2729 1.5</text>
     <text x="313" y="940">1px divider at +254, lower section #461012 . the third card is this one darker:</text>
     <text x="313" y="948">#52242c to #481012, lower #2f0b0c, stroke #8a2027, notice ink #ae2729</text>
@@ -1125,17 +1129,18 @@
   </g>
 
   <!-- CARD NOTCH, profile. login-trace.svg #notch, cut into the LEFT
-       edge of all three user cards: 15 deep, 105 tall, both ends
-       chamfered 10, filled with the ground colour, and the card's own
-       left edge redrawn over it as a 1.5x105 line in the mid red. -->
+       edge of all three user cards: 15 deep, 106 tall, ends chamfered
+       15 (top) and 13 (bottom), filled with the ground colour, and the
+       card's own left edge redrawn over it as a 1.5x106 line in the mid
+       red. -->
   <g>
-    <rect x="1186" y="838" width="40" height="105" fill="#f63333"/>
+    <rect x="1186" y="836" width="40" height="106" fill="#f63333"/>
     <g transform="translate(1186,446)"><use href="#notch" fill="#080405"/></g>
-    <rect x="1186" y="838" width="1.5" height="105" fill="#ae2729"/>
+    <rect x="1186" y="836" width="1.5" height="106" fill="#ae2729"/>
   </g>
   <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.2" fill="#96282d">
-    <text x="1178" y="955">CARD NOTCH 15x105</text>
-    <text x="1178" y="963">ends cut 10, at y +79</text>
+    <text x="1178" y="955">CARD NOTCH 15x106</text>
+    <text x="1178" y="963">ends cut 15 / 13, at y +77</text>
   </g>
 
   <!-- CHAMFER INVENTORY: every cut measured in the four traces, with
@@ -1146,7 +1151,7 @@
     <text x="1178" y="996">nav row BL 16 on 62</text>
     <text x="1178" y="1005">list row BL 12 on 68</text>
     <text x="1178" y="1014">button BR 9 on 56</text>
-    <text x="1178" y="1023">card TR 46 (login),</text>
+    <text x="1178" y="1023">card TR 51 (login),</text>
     <text x="1178" y="1032">13 (store), card 2 BL 22</text>
     <text x="1178" y="1041">panel TR 8, BL 42</text>
     <text x="1178" y="1050">tab: none, square</text>
@@ -1278,7 +1283,7 @@
   <text x="1570" y="852" font-family="Rajdhani" font-size="13" letter-spacing="4.5" fill="#df3131">7 // ERA RULES (OBSERVED)</text>
   <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.1" fill="#a8282b">
     <text x="1570" y="868">1 . Cells cut the BOTTOM-LEFT corner (badge 15/57, nav 16/62, list row 12/68);</text>
-    <text x="1570" y="877">cards cut the TOP-RIGHT (46 login, 13 store); buttons cut the BOTTOM-RIGHT (9).</text>
+    <text x="1570" y="877">cards cut the TOP-RIGHT (51 login, 13 store); buttons cut the BOTTOM-RIGHT (9).</text>
     <text x="1570" y="886">2 . Selection is a solid red fill with dark ink, never an outline, never white.</text>
     <text x="1570" y="895">3 . A card or panel that matters carries a bright parallelogram bar on its right</text>
     <text x="1570" y="904">edge with cut ends, and the edge steps 8 to 12 inward below the bar's foot.</text>
@@ -1295,7 +1300,7 @@
   <text x="1570" y="982" font-family="Rajdhani" font-size="13" letter-spacing="4.5" fill="#df3131">8 // IMPLEMENTATION DELTA</text>
   <g font-family="Rajdhani" font-size="6" letter-spacing="0.1" fill="#96282d">
     <text x="1570" y="996">Corner::Chamfer { cut: 15.0 } is one value on one corner; the traces measure 8, 9, 12, 13,</text>
-    <text x="1570" y="1005">15, 16, 22, 24, 42, 46, and which corner is cut depends on the widget class.</text>
+    <text x="1570" y="1005">15, 16, 22, 24, 42, 51, and which corner is cut depends on the widget class.</text>
     <text x="1570" y="1014">fg RED_FILL #de2e2e is darker than every trace bright ink; dim RED_MID #a32226 and border</text>
     <text x="1570" y="1023">RED_DEEP #5e1112 likewise . tape OFF_WHITE #dedede: the traces sample no white at all.</text>
     <text x="1570" y="1032">panel and bloom GLOW #001a33 against the measured #14244e..#19274e and the band #2a3a51 to #101f3d.</text>

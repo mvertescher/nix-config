@@ -1,7 +1,19 @@
 //! Neokitsch -- "substance and style".
 //!
-//! Gold line-work on true black under a violet haze, with the device
-//! frame itself part of the UI. Sampled from Behance Part 1, doc #54-62.
+//! Gold line-work on true black under a violet haze. Sampled from
+//! Behance Part 1, gallery positions 64-72 (title card 63) per
+//! `docs/sources.md`; the "doc #54-62" this comment used to give came
+//! from an earlier, smaller scrape and is shifted by ten.
+//!
+//! This comment used to add "with the device frame itself part of the
+//! UI". No trace has a full-screen frame: the four
+//! `docs/neokitsch/*-trace.svg` files draw the haze, the wire band and
+//! per-widget outlines, never a double gold stroke around the screen
+//! (`docs/neokitsch/README.md`, "There is no device frame"). The frame
+//! was an invention of the deleted `target-app.svg` composite.
+//! `chrome: Chrome::DeviceFrame` below stands because its only readers
+//! are the bar / dashboard chrome widgets and the mail example panel,
+//! and the `Layout` fold is undecided; see `ERAS-DELTA.md`.
 //!
 //! Its defining rule is that selection is a *material*, not a colour:
 //! the chosen tab, pill, card or mail row fills with wood veneer. That
@@ -36,10 +48,25 @@ pub const AMBER: iced::Color = rgb(0xfcc474);
 pub const FIELD: iced::Color = rgb(0x2c1c14);
 pub const ON_VENEER: iced::Color = rgb(0x3a2410);
 pub const DIM: iced::Color = rgb(0x8a7048);
-/// Top stop of the device frame's outer stroke -- the lit side of the
-/// bevel, against `FRAME_INNER` as its shaded one.
+/// Lit side of the relief bevel, against `FRAME_INNER` as its shaded
+/// one. Originally "top stop of the device frame's outer stroke"; no
+/// trace has a device frame (module doc), but this is the era const
+/// nearest the traced outlines -- `store-trace.svg` card outline
+/// `#c5965a`, `dashboard-trace.svg` strokes `#bd8951` / `#a97c48`,
+/// `#dab176` and `#e0b67a` elsewhere -- and `docs/neokitsch/bar.svg`
+/// draws its outlines in it (`stroke="#c69a55" stroke-width="1.6"`)
+/// for that reason. `FRAME #916424` and `FRAME_INNER #5e3414` are
+/// sampled by nothing in the traces.
 pub const FRAME_LIT: iced::Color = rgb(0xc69a55);
-/// The fine lines of a strata divider, bunching into a wedge.
+/// Originally "the fine lines of a strata divider, bunching into a
+/// wedge". No trace has a strata divider: the era's layered fine lines
+/// are the wire band and the onion rings (`docs/neokitsch/README.md`,
+/// "stacked-hairline wire band"), and `#634427` is sampled by nothing in
+/// the four traces. Still consumed as `ornaments.ornament`: the one
+/// reader this era reaches is `Chrome::DeviceFrame` in `widgets::chrome`
+/// (dashboard top bar / footer; the bar's other reader is
+/// `PanelEcho::Wave`, which is kitsch's echo, not this era's). The
+/// gated renders override it from `home/themes/neokitsch/palettes.nix`.
 pub const STRATA: iced::Color = rgb(0x634427);
 
 /// The four stops of the violet haze every screen in the run sits in,

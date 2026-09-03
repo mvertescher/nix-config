@@ -27,9 +27,15 @@
            dashes to its left; rotated micro-text down both margins
            ("00032 05 54 08 CP" left; a down-arrow, "JHN 102 CKC 151 CC10
            AS5" and "KIROSHI" right)
-         - THREE USER CARDS in a row, all 254 wide, tops at y 313..315,
-           each with a 46px top-right chamfer and a dark notch cut into
-           its left edge at y 392..497 (14px deep, chamfered ends):
+         - THREE USER CARDS in a row, 253..255 wide as drawn below (the
+           photo reads 253.3 for all three), tops at y 313..315,
+           each with a 51px top-right chamfer and a dark notch cut into
+           its left edge at y 390..496 (15px deep; the ends are cut at
+           ~45 degrees, 15 tall at the top and 13 at the bottom). Both
+           numbers re-measured on the 3840px photo 2026-09-03: the
+           chamfer reads 50.8..52.1 on the three cards (this file had
+           46, a miss, not a rounding); the notch depth reads 14.8, 15.2,
+           15.0 (this prose had 14 against a path that drew 15):
              card 1 (x 372..625): the ACTIVE one. A solid #f63333 block
                y 313..572 holding a darker avatar box x 452..546
                y 386..487 (tab at top-left, hexagon glyph inside) and
@@ -98,9 +104,10 @@
     </linearGradient>
     <!-- header badge: 59x57, bottom-left chamfer 15 (same as the hub) -->
     <path id="badge" d="M 0,0 H 59 V 57 H 15 L 0,42 Z"/>
-    <!-- the notch every card carries on its left edge: 14 deep, y 392..497,
-         chamfered top and bottom (measured on card 2 at x 692..707) -->
-    <path id="notch" d="M 0,392 L 15,402 V 486 L 0,497 Z"/>
+    <!-- the notch every card carries on its left edge: 15 deep, y 390..496,
+         chamfered top and bottom (column scans across cards 2 and 3 at
+         photo scale, 2026-09-03: outer 389.7..496.0, inner 405..483) -->
+    <path id="notch" d="M 0,390 L 15,405 V 483 L 0,496 Z"/>
     <!-- margin chip: dashes, a dot, a filled square with a digit -->
     <g id="chip">
       <rect x="-21" y="3" width="8" height="1.5"/>
@@ -186,10 +193,10 @@
 
   <!-- ==== card 1: the active user, x 372..625 ==== -->
   <g>
-    <!-- solid red block y 313..572, top-right chamfer 46 -->
-    <path d="M 372,313 H 579 L 625,359 V 572 H 372 Z" fill="#f63333"/>
+    <!-- solid red block y 313..572, top-right chamfer 51 -->
+    <path d="M 372,313 H 574 L 625,364 V 572 H 372 Z" fill="#f63333"/>
     <use href="#notch" x="372" fill="#080405"/>
-    <rect x="372" y="392" width="1.5" height="105" fill="#ae2729"/>
+    <rect x="372" y="390" width="1.5" height="106" fill="#ae2729"/>
     <!-- avatar box: tab x 452..498 y 386..393 over a square y 393..487 -->
     <path d="M 452,386 H 492 L 498,393 H 452 Z" fill="#c72a2b"/>
     <rect x="452" y="393" width="94" height="94" fill="#c72a2b"/>
@@ -226,11 +233,11 @@
 
   <!-- ==== card 2, x 692..947 y 315..655 ==== -->
   <g>
-    <path d="M 692,315 H 900 L 947,362 V 655 H 714 L 692,633 Z"
+    <path d="M 692,315 H 896 L 947,366 V 655 H 714 L 692,633 Z"
           fill="url(#card2)" stroke="#ae2729" stroke-width="1.5"/>
     <path d="M 692,569 H 947 V 655 H 714 L 692,633 Z" fill="#461012"/>
     <use href="#notch" x="692" fill="#080405"/>
-    <rect x="692" y="392" width="1.5" height="105" fill="#ae2729"/>
+    <rect x="692" y="390" width="1.5" height="106" fill="#ae2729"/>
     <!-- avatar photo: tab + bright square, portrait dark -->
     <path d="M 772,386 H 818 L 824,393 H 772 Z" fill="#f63333"/>
     <rect x="772" y="393" width="96" height="94" fill="#f63333"/>
@@ -252,11 +259,11 @@
 
   <!-- ==== card 3, x 982..1236 y 315..655: the same card, darker ==== -->
   <g>
-    <path d="M 982,315 H 1189 L 1236,362 V 655 H 1004 L 982,633 Z"
+    <path d="M 982,315 H 1185 L 1236,366 V 655 H 1004 L 982,633 Z"
           fill="url(#card3)" stroke="#8a2027" stroke-width="1.5"/>
     <path d="M 982,569 H 1236 V 655 H 1004 L 982,633 Z" fill="#2f0b0c"/>
     <use href="#notch" x="982" fill="#080405"/>
-    <rect x="982" y="392" width="1.5" height="105" fill="#8a2027"/>
+    <rect x="982" y="390" width="1.5" height="106" fill="#8a2027"/>
     <path d="M 1061,386 H 1107 L 1113,393 H 1061 Z" fill="#f63333"/>
     <rect x="1061" y="393" width="96" height="94" fill="#f63333"/>
     <g fill="#4f1a1e">

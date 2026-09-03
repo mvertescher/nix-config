@@ -71,13 +71,16 @@ Role mapping: `bg`=bg, `panel`=bloom field, `border`=frame gold,
   raster asset in any era, and the stress test the repo TODO flags for
   the toolkit abstraction.
 - Corners are cut per widget rather than by one rule: the hub's cascade
-  cards chamfer top-right *and* bottom-left, the store's product cards
+  cards chamfer top-right and run a 45-degree diagonal across the whole
+  foot (re-measured 2026-09-03; the traces used to draw it as a second
+  chamfer), the store's product cards
   round their top-left and top-right around a stepped top edge and cut
   the bottom-left, and the nav and RIFLES buttons take a small
   bottom-left cut. Product cards carry their name at the card's foot,
   not in a header, with a solid tab under the bottom edge.
 - Outlines come in onion layers: the hub's cascade cards and detail
-  panel trail concentric outline copies, and the store's cards are
+  panel carry echo outlines (nested inside the card edge on the hub,
+  stepping down and inward as they fade), and the store's cards are
   shadowed by four fading echo strands round the step, the top-right,
   the right side and the bottom.
 - Boxed letter markers (A/B/C/D) sit beside the wire band and in the
@@ -105,23 +108,23 @@ Role mapping: `bg`=bg, `panel`=bloom field, `border`=frame gold,
   T1–T4 with T2 as a ringed badge, the wire band with boxed A and B),
   **six cascade cards in two staircase triplets** (EMAIL solid gold as
   the selection, then MATRIX, BRAINDANCE, PRIVATE, SECURITY SYSTEMS,
-  DEVICES) each trailing concentric onion outlines, a mirrored detail
+  DEVICES) each carrying nested onion outlines, a mirrored detail
   panel with a solid gold body, and boxed C and D in the foot. Gate:
-  PASS, inks 0.60.
+  PASS, inks 0.67.
 - `mailbox-trace.svg` — `images/neokitsch-mail.png` (#71): the hub's
   header block verbatim; a seven-row message list with a rule and small
   tab under each row and row 2 the selection as a wood-veneer bar with
   a top-right chamfer and a notched bottom edge; the message as **plain
   text with no panel outline**; four outlined RIFLES buttons with a
   bottom-left chamfer and a filled tab; boxed C and D in the foot; no
-  footer line. Gate: PASS, inks 0.68.
+  footer line. Gate: PASS, inks 0.73.
 - `store-trace.svg` — `images/neokitsch-store.png` (#72): the 4ST
   logotype over S T O R E, the BASKET plate at the top right, the
   header wire band bridging the width with boxed A and C beside it, the
   customer / loyalty / last-update lines, five outlined nav buttons with
   SMG the veneer selection, and four weapon cards with echo strands,
   the second expanded and solid gold across its middle. Gate: PASS,
-  inks 0.60. Supersedes `target-app.svg`.
+  inks 0.66 (third pass 2026-09-03; was 0.60). Supersedes `target-app.svg`.
 - `components.svg` — the widget sheet, rebuilt 2026-09-03 from the
   four traces and `bar.svg` (it was `target-components.svg`, drawn by
   eye: a device-frame miniature, a strata divider, step-notch pills and

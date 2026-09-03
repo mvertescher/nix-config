@@ -26,8 +26,11 @@
            x 133..222, one per row, the first filled solid (selected), the
            rest outlined with a filled tile and a disc
          - THE MESSAGE LIST: eight rows x 241..511, tops at y 313, 385,
-           455, 525, 595, 665, 735, 805 (pitch 70; row 1 is 70 tall, the rest
-           68, with bright #560d0d top and bottom edges), each with
+           455, 525, 595, 665, 735, 805 (row 1 is 70 tall, then rows of 68
+           on a 70 pitch from y 385, so the first top-to-top is 72; every
+           row is followed by a 2px gap and has bright #560d0d top and
+           bottom edges. Tops re-read on the photo 2026-09-03: 313.3, 385,
+           455, 525, 595, 665, 735, 805, 875, all within 0.3), each with
            a 12px bottom-left chamfer and a thin spine at x 237..240; a
            ninth row's top edge shows at y 875. Row 1 is FILLED #e63132
            with dark text; the rest are dark boxes with red text. Every

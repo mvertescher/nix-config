@@ -20,16 +20,25 @@
            a small filled card; a decorative multi-line wire band
            sweeping the width, carrying boxed letters A (x~249) and
            B (x~1021) with in-fiction annotation text
-         - SIX CASCADE CARDS, 91x327 each, chamfered top-right and
-           bottom-left, in two staircase triplets stepping (+102,-100):
-             EMAIL (244,383) MATRIX (347,284) BRAINDANCE (449,182)
+         - SIX CASCADE CARDS, 91.7x327.9 each to the outer edge (the
+           #ncard path is the 90.5x327 stroke centre; re-measured
+           2026-09-03, the first pass wrote "91x327" here over an
+           83-wide body with a 10-wide tab well), a 42.5 chamfer at the
+           top-right and a 45-degree diagonal for the whole foot, from
+           the bottom-right corner up to the left edge at y 241.5, in
+           two staircase triplets stepping (+102,-100), positions being
+           the left edge / top edge of the outline:
+             EMAIL (246,384) MATRIX (347,284) BRAINDANCE (449,182)
              PRIVATE (624,384) SECURITY SYSTEMS (724,284) DEVICES (826,182)
            EMAIL is filled solid gold — the selection (its measured
-           centre (293,533), area 25.7k). Every card trails a stack of
-           concentric outline copies stepping up-right, and carries a
-           five-line micro-text caption under its foot and a label at
-           its upper left (plain text; every card carries a small
-           bright tab plate on its left edge)
+           centre (293,533), area 25.7k). Every outlined card carries
+           six echo outlines NESTED INSIDE it, sharing its left edge
+           and foot diagonal, the top edge stepping down 3.7 and the
+           right edge in 2.4 per ring and fading inward; a five-line
+           micro-text caption under its foot; a label at its upper
+           left (plain text); and a solid bright 6x38.3 tab plate on
+           its left edge at local y 54.6. EMAIL's plate is smaller
+           (4.6x32.1) and sits in a 5-deep well cut into its edge
          - a detail panel at (1168,259)..(1400,725): the same card
            family mirrored (chamfer top-LEFT), onion outlines, a solid
            gold body at [1171,326,231,309] holding two dark paragraphs,
@@ -107,26 +116,53 @@
       <stop offset="0.873" stop-color="#16121a"/>
       <stop offset="1"     stop-color="#0e0a0d"/>
     </radialGradient>
-    <!-- one cascade card: 93x327 including the left-edge tab (y 60..135);
-         body 83 wide, chamfer 32 top-right and bottom-left, rounded
-         top-left and bottom-right -->
-    <path id="ncard" d="M 16,0 H 61 L 93,32 V 321 Q 93,327 87,327 H 48
-                         L 10,289 V 93 H 2 Q 0,93 0,91 V 62 Q 0,60 2,60
-                         H 10 V 6 Q 10,0 16,0 Z"/>
+    <!-- one cascade card, re-measured on the photo 2026-09-03 (the first
+         pass drew an 83-wide body with a 10-wide tab well, 32 chamfers
+         and outward concentric rings; none of that is in the photo).
+         Stroke-centre silhouette, origin at the left edge / top edge:
+         90.5 wide (91.7 outer edge: EMAIL's fill spans source x
+         590..811, MATRIX's outline 832..1052) x 327 tall (outer 327.9:
+         source y 921..1708); r6.5 top-left corner; a 45-degree chamfer
+         from (48,0) to the right edge at y 42.5 (source line y = x +
+         215 through (720,935) and (800,1015)); the right edge down to
+         322.3; an r4 fillet into the era's signature: a 45-degree
+         diagonal running the whole foot from the bottom-right corner
+         back to the LEFT edge at y 241.5 (source y = x + 913 through
+         (600,1513) and (760,1673); on MATRIX y = x + 427.5). No tab
+         well: the plate sits ON the left edge (see #nplate below). -->
+    <path id="ncard" d="M 0,6.5 Q 0,0 6.5,0 H 48 L 90.5,42.5 V 322.3
+                         A 4 4 0 0 1 83.7,325.2 L 0,241.5 Z"/>
+    <!-- the selected card's silhouette: the same, with the plate's well
+         cut into the left edge (edge steps 5 in from y 54.2 to 94.2 by
+         two shallow cuts, source x 590 -> 602 over y 1051..1058 and
+         1140..1147); only EMAIL has this, the outlined cards' left edge
+         is unbroken -->
+    <path id="ncardsel" d="M 0,6.5 Q 0,0 6.5,0 H 48 L 90.5,42.5 V 322.3
+                            A 4 4 0 0 1 83.7,325.2 L 0,241.5 V 94.2 L 5,90.8
+                            V 57.1 L 0,54.2 Z"/>
     <!-- the detail panel: same family mirrored, 232x472, chamfer 42 top-left -->
     <path id="npanel" d="M 0,462 V 31 Q 0,25 6,25 H 51 L 73,0 H 222
                           Q 232,0 232,10 V 462 Q 232,472 222,472 H 10
                           Q 0,472 0,462 Z"/>
-    <!-- onion rings: concentric 45-degree offsets of the card silhouette
-         (a 45-degree chamfer offset keeps its axis intercepts, so the
-         chamfer endpoints stay at x=61/y=32 and x=48/y=289 while the
-         edges move outward). No tab — that lives on the front card only. -->
-    <path id="nring1" d="M 12.5,-3.5 H 61 L 96.5,32 V 324.5 Q 96.5,330.5 90.5,330.5 H 48 L 6.5,289 V 2.5 Q 6.5,-3.5 12.5,-3.5 Z"/>
-    <path id="nring2" d="M 9.0,-7.0 H 61 L 100.0,32 V 328.0 Q 100.0,334.0 94.0,334.0 H 48 L 3.0,289 V -1.0 Q 3.0,-7.0 9.0,-7.0 Z"/>
-    <path id="nring3" d="M 5.5,-10.5 H 61 L 103.5,32 V 331.5 Q 103.5,337.5 97.5,337.5 H 48 L -0.5,289 V -4.5 Q -0.5,-10.5 5.5,-10.5 Z"/>
-    <path id="nring4" d="M 2.0,-14.0 H 61 L 107.0,32 V 335.0 Q 107.0,341.0 101.0,341.0 H 48 L -4.0,289 V -8.0 Q -4.0,-14.0 2.0,-14.0 Z"/>
-    <path id="nring5" d="M -1.5,-17.5 H 61 L 110.5,32 V 338.5 Q 110.5,344.5 104.5,344.5 H 48 L -7.5,289 V -11.5 Q -7.5,-17.5 -1.5,-17.5 Z"/>
-    <path id="nring6" d="M -5.0,-21.0 H 61 L 114.0,32 V 342.0 Q 114.0,348.0 108.0,348.0 H 48 L -11.0,289 V -15.0 Q -11.0,-21.0 -5.0,-21.0 Z"/>
+    <!-- onion rings (re-measured 2026-09-03): six echo outlines NESTED
+         INSIDE the card, not around it. They share the card's left edge
+         and its foot diagonal; each ring's top edge steps DOWN 3.7 and
+         its right edge steps IN 2.4 (source pitches 8.9 and 5.8 px:
+         MATRIX top lines at y 682 691 700 709 717.5 726.5 736, right
+         lines at x 1050 1044 1038 1032.5 1027 1021 1014.5), so the
+         chamfer keeps its 45 degrees and its start x=48 while its lower
+         end climbs 1.3 per ring, and the r4 foot fillet slides up the
+         shared diagonal. Drawn open: from the left edge round the top,
+         down the right edge, and onto the diagonal; the front card
+         draws the shared left edge and diagonal once. Fading inward
+         (measured peak R 251 218 197 157 158 109 68 on the right edge)
+         at the opacities on the <use>s. -->
+    <path id="nring1" d="M 0,10.2 Q 0,3.7 6.5,3.7 H 48 L 88.1,43.8 V 319.9 A 4 4 0 0 1 81.3,322.8"/>
+    <path id="nring2" d="M 0,13.9 Q 0,7.4 6.5,7.4 H 48 L 85.7,45.1 V 317.5 A 4 4 0 0 1 78.9,320.4"/>
+    <path id="nring3" d="M 0,17.6 Q 0,11.1 6.5,11.1 H 48 L 83.3,46.4 V 315.1 A 4 4 0 0 1 76.5,318.0"/>
+    <path id="nring4" d="M 0,21.3 Q 0,14.8 6.5,14.8 H 48 L 80.9,47.7 V 312.7 A 4 4 0 0 1 74.1,315.6"/>
+    <path id="nring5" d="M 0,25.0 Q 0,18.5 6.5,18.5 H 48 L 78.5,49.0 V 310.3 A 4 4 0 0 1 71.7,313.2"/>
+    <path id="nring6" d="M 0,28.7 Q 0,22.2 6.5,22.2 H 48 L 76.1,50.3 V 307.9 A 4 4 0 0 1 69.3,310.8"/>
     <!-- boxed section letter: 26x26 rounded plate, folded bottom-right
          corner (the era's mini-SIM motif) -->
     <g id="letterbox" fill="none" stroke-width="1.4">
@@ -295,18 +331,25 @@
     <use href="#ncard" x="724" y="284"/>
     <use href="#ncard" x="826" y="182"/>
   </g>
-  <!-- bright tab plates on every card's left edge -->
-  <g fill="none" stroke="#e8c186" stroke-width="1.4">
-    <rect x="346" y="341" width="12" height="36" rx="3"/>
-    <rect x="448" y="239" width="12" height="36" rx="3"/>
-    <rect x="623" y="441" width="12" height="36" rx="3"/>
-    <rect x="723" y="341" width="12" height="36" rx="3"/>
-    <rect x="825" y="239" width="12" height="36" rx="3"/>
+  <!-- tab plates: SOLID bright gold (source (252,190,109)), 6x38.3 r1.5,
+       sitting on the left edge from local y 54.6 (source MATRIX plate x
+       832..846, y 813..905; re-measured 2026-09-03, the first pass had
+       them as 12x36 outlines a pixel outside the edge) -->
+  <g fill="#fcbe6d">
+    <rect x="346.4" y="338.6" width="6" height="38.3" rx="1.5"/>
+    <rect x="448.4" y="236.6" width="6" height="38.3" rx="1.5"/>
+    <rect x="623.4" y="438.6" width="6" height="38.3" rx="1.5"/>
+    <rect x="723.4" y="338.6" width="6" height="38.3" rx="1.5"/>
+    <rect x="825.4" y="236.6" width="6" height="38.3" rx="1.5"/>
   </g>
-  <!-- EMAIL: the selection, solid gold, bright tab plate on its edge -->
-  <use href="#ncard" x="244" y="383" fill="#f2b463"/>
-  <rect x="243" y="438" width="12" height="38" rx="3" fill="#f2b463"
-        stroke="#ffe2ae" stroke-width="1.4"/>
+  <!-- EMAIL: the selection, solid gold (filled AND stroked so its outer
+       edge lands where the outlined cards' stroke edge does: source fill
+       x 590..811, y 921..1708 = 245.8..337.9 x 383.75..711.7), with the
+       plate well cut into its left edge and a smaller 4.6x32.1 plate
+       standing 1.25 proud of the edge inside it (source x 587..598, y
+       1061..1138), the ground showing as a dark gap round it -->
+  <use href="#ncardsel" x="246" y="384" fill="#f2b463" stroke="#f2b463" stroke-width="1.2"/>
+  <rect x="244.75" y="442.3" width="4.6" height="32.1" rx="1.5" fill="#fcbe6d"/>
 
   <!-- labels: at each card's upper left; EMAIL's in a small box -->
   <g font-family="Rajdhani" font-size="17" letter-spacing="1.5" fill="#f2b463" text-anchor="end">

@@ -1,8 +1,11 @@
 //! Neo-militarism -- "substance over style".
 //!
 //! Three reds on near-black with a cold blue ambient glow, chamfered
-//! surfaces, stencil labelling. Sampled from Behance Part 1, doc #44-52
-//! and the shipped game HUD it became (the reference side panel notes
+//! surfaces, stencil labelling. Sampled from Behance Part 1, gallery
+//! positions 53-62 per `docs/sources.md` (the run opens black with no
+//! title card; the "doc #44-52" this comment used to give came from an
+//! earlier, smaller scrape and is shifted by ten), and the shipped game
+//! HUD it became (the reference side panel notes
 //! the HUD "evolved from and is based on this style").
 //!
 //! Unlike the other three eras, this one already had an implementation
@@ -24,6 +27,17 @@ use crate::style::{
 // --- end login ---
 
 pub const BG: iced::Color = rgb(0x050304);
+/// The cold blue behind the reds. As a palette role it is unconsumed as
+/// of 2026-09-03: `bloom` is read only by `widgets::ground` under
+/// `Ground::Bloom` (this era is `Ground::Flat`), and `panel` only as the
+/// `Ink::Inset` fallback, which no neomil arm uses. The const itself is
+/// still read by `widgets::floppy_vector` (the floppy example, no
+/// golden). Trace value would be the `glowh` gradient every neomil trace
+/// carries -- stops `#282824` / `#273743` / `#263953` / `#202b56` /
+/// `#1b2253` / `#171f51` / `#121f51` / `#0d1f4e` (identical in
+/// `login-`, `dashboard-`, `mailbox-` and `store-trace.svg`), probed
+/// on the ground as `#14244e` (dashboard) and `#19274e` (store) -- not
+/// the single `#001a33`.
 pub const GLOW: iced::Color = rgb(0x001a33);
 pub const RED_DEEP: iced::Color = rgb(0x5e1112);
 pub const RED_MID: iced::Color = rgb(0xa32226);

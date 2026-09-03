@@ -348,33 +348,109 @@ traces. Renders viewed at 1920 wide, no rsvg warnings, no `--` in
 comments. The sheets are derived from the traces and are **not gated**;
 `fidelity_check.sh` never reads them.
 
-Findings the rebuild surfaced, none fixed here:
+Findings the rebuild surfaced; the follow-up wave (same day, four
+file-disjoint agents, every claim spot-checked against the files and
+renders) resolved them as follows:
 
-- [ ] **Trace prose disagrees with trace path** (vision work; fix the
-  header text to the path, or the path to the photo, after measuring):
-  neokitsch `mailbox-trace.svg` header describes a notch at x 420..457
-  that no path draws; neokitsch `dashboard-trace.svg` prose "91x327" vs
-  the 93-wide `#ncard`; neomil `login-trace.svg` prose notch "14px" vs
-  path 15 (`M 0,392 L 15,402`), chamfer "46" vs 46/47; neomil
-  `dashboard-trace.svg` header half-diagonal 103 vs `#cell` 104; neomil
-  `mailbox-trace.svg` "pitch 70" vs a first gap of 72. The sheets
-  follow the paths.
-- [ ] **`src/eras/*.rs` vs traces** — now enumerated per era in each
-  sheet's IMPLEMENTATION DELTA box rather than scattered through doc
-  comments. Do not fix blindly: entropism (stroke 1.0, palette,
-  OUTLINE/BG, TileRow) and neomil (global Chamfer 15, RED consts, white
-  tape, `Ground::Flat`, OpsCharts, `Menu::Table`) feed the OUTLINE and
-  `Layout` decisions above; neokitsch (DeviceFrame, ClipTopRight 30,
-  FRAME/STRATA unsampled, Bloom, the "#54-62" doc) and kitsch (Round
-  16, "no chamfers", Ticket 18/15, Banner 12/8, top-right Bloom, stroke
-  1.5, SLAB/BEZEL, YELLOW_SHADE #f0a80a unsampled) are the conversion
-  wave's inputs. The `src/` doc comments that cited the old sheet by
-  coordinate were annotated, not moved — those numbers are what the
-  code was built to.
-- [x] **`docs/sources.md` neomil trace rows had the wrong numbers**
-  (dashboard panel, login card x-ranges/chamfer/notch, mailbox panel and
-  button geometry — written from memory, not the file). Corrected to
-  the traces' own geometry and marked "corrected 2026-09-03". Same
+- [x] **Trace prose disagrees with trace path** — resolved against the
+  photos, not against either text, all five gates re-run and PASS
+  (neomil login 79% / dashboard 94% / mailbox 86% unchanged; neokitsch
+  mailbox 0.73 unchanged, dashboard 0.60 → 0.67). The item as written
+  understated two of the five: it framed the neomil login chamfer as
+  46-vs-47 when the photo reads 50.8..52.1 — *both* prose and paths were
+  ~5px short (now 51, notch `M 0,390 L 15,405 V 483 L 0,496`, ends cut
+  15 top / 13 bottom); and the neokitsch `#ncard` was not "91 vs 93" but
+  an 83 body plus a 10 tab well with a 32 chamfer where the photo has
+  91.7x328, chamfer 42.5, one 45° diagonal across the whole foot and
+  the six onion rings nested *inside* the card, not offset outward (new
+  `#ncard`/`#ncardsel`/`#nring1..6`). The neokitsch mailbox notch exists
+  in the photo and is now drawn (gold tab to y 372 under a dark
+  trapezoid to y 366). Neomil dashboard 104 and mailbox "row 1 is 70
+  tall, then 68 on a 70 pitch" were prose-only fixes; the paths were
+  right. `components.svg` copies and captions updated for both eras;
+  `sources.md` rows and G1 tables too. Renders/overlays were in
+  `/tmp/followup/nm/` and `/tmp/nkfix/` (gone on reboot).
+- [ ] **Neomil dashboard diamonds are truncated at their outward tips**
+  (vision work). Row 1's three top tips and row 2's three bottom tips
+  are cut flat in the photo — a 30px plateau at y 370.8 (x 319.6..349.2
+  etc.) and 28..29px at y 682.9 — consistent with a 104 half-diagonal
+  diamond cut 14..15 short of the tip; the inner 68 outline is cut the
+  same way; inward tips run full. `dashboard-trace.svg:95` says "outer
+  tips run full", the opposite of the photo, and `#cell` draws six full
+  diamonds. Needs two cell variants or a clip, propagates to
+  `components.svg` and to the iced diamond; may move the G1i template
+  fit. Measured 2026-09-03, seen in a crop, not fixed.
+- [ ] **Neokitsch dashboard detail panel geometry** (vision work).
+  `dashboard-trace.svg` prose "(1168,259)..(1400,725)" is closer than
+  the `<use href="#npanel" x="1168" y="253">`: photo top 259.8, left
+  1170.8, shoulder y 290 (path 278), chamfer 30 wide (path 22; the defs
+  comment says 42). Its six rings are drawn as outward offsets −3..−18
+  while the photo nests them inward like the cards (top lines 623.5 /
+  630.5 / 638 at 3840). Reshape the panel and re-derive the rings in
+  one measured pass; the overlay shows the doubling clearly. Also the
+  card labels sit ~8px low (MATRIX baseline 358 vs ~350) and the front
+  stroke reads 1.25 wide / (251,194,98), trace 1.6 / #bd8951.
+- [ ] **Small trace prose/path residue, measured and left** (fix in the
+  next pass of each file, not worth a gate run each): neomil login
+  `#chip` def 14x14 vs photo ~12.3x12.5 (prose right, def 2px big,
+  shared with mailbox and the sheet); neomil dashboard footer tape third
+  cell ends 1354 vs photo 1358.8; neomil mailbox scroll widget prose
+  y 691..760 vs paths from 687, fourth button pitch 179 vs "5 apart";
+  neomil login card 1 y 313..572 vs photo 315.8..569.4 (inside the
+  glow); entropism `store-trace.svg` 4ST prose bbox 134..308/102..160 vs
+  glyph paths 138..308/102..151; neokitsch `mailbox-trace.svg:383-385`
+  RIFLES comment says #c29a65 1.7 / "192 pitch", path is #ecbe82 1.25
+  at +192/+385/+575; neokitsch `login-trace.svg:250-251` last two
+  strands overshoot "to y~812" by up to 5px. **`neokitsch/bar.svg` §10
+  chose its menu-panel chamfer against the old `#ncard` numbers**; the
+  citation is annotated as historical, the panel geometry not revisited.
+- [x] **`src/eras/*.rs` vs traces — triaged, not applied.** Every
+  delta-box line is classified in **`ERAS-DELTA.md`** by consumer:
+  (a) read by a gated screen, (b) dashboard/bar only, (c) dead, (d) doc
+  only; counts a/b/c/d entropism 5/2/0/3, kitsch 1/4/3/3, neokitsch
+  6/5/0/3, neomil 2/4/1/1. Applied: class (d) doc corrections and class
+  (c) "unconsumed as of 2026-09-03; trace value would be X" annotations
+  in all four era files — comments only, `cargo build` all bins and
+  `cargo test --no-run` clean. No value changed. Two things the triage
+  established that change how to read the boxes:
+  - **Gated renders overlay `home/themes/<era>/palettes.nix` via
+    `Palette::with_roles`** (`src/palette.rs:138`, `default.nix`,
+    `tests/visual.nix`, the examples): `bg/panel/border/dim/fg/alert/
+    tape` and the declared extras come from nix, and only `select`,
+    `on_select`, `cta`, `bloom`, `banner_selected` survive from the era
+    table. So entropism `OUTLINE`/`SAGE_TEXT`, neokitsch
+    `FRAME`/`STRATA`/`FIELD`/`GOLD_TEXT`, neomil `RED_MID`/`RED_DEEP`/
+    `OFF_WHITE`, kitsch `SLAB`/`BEZEL` are inert in every golden unless
+    nix moves too. The OUTLINE decision above is therefore a *nix*
+    change as much as a Rust one.
+  - **Kitsch `Ticket`, `Banner`, `banner_selected` are dead**: their
+    only readers (`widgets/pill.rs` `pill()`, `widgets/banner.rs:97`,
+    `widgets/card.rs:246`) have no callers in `src/`, `examples/` or
+    `tests/`. Candidates for deletion in the toolkit-infrastructure
+    pass, not here.
+  - Wrong in the boxes/this item as written: `YELLOW_SHADE`'s doc
+    claimed `store-trace.svg` has `#f0a80a` — it is in no trace (the
+    grown card fills `#ffc233`, the band `#fec32f`); the neomil box's
+    "band #2a3a51 to #101f3d" is the code's own BAND consts, not a
+    measurement (the traces' glow is the `glowh` gradient); the module
+    docs' Behance run numbers were ten low in all four eras (`sources.md`
+    canonical positions), not just kitsch/neokitsch — fixed in all four.
+  - "Ready to apply once the Layout decision lands" (15 rows) and "Would
+    change a passing golden" (14 rows, goldens named) are the two
+    closing sections of `ERAS-DELTA.md`.
+- [x] **`docs/sources.md` trace rows had the wrong numbers** — first
+  the three neomil rows (dashboard panel, login card x-ranges/chamfer/
+  notch, mailbox panel and button geometry — written from memory, not
+  the file), then an audit of the other 13 trace rows and 4 bar rows:
+  **9 of 13 wrong somewhere**, mostly gate numbers superseded by the
+  traces' own 2026-09-03 pass notes (kitsch 0.63/0.69/0.67/0.73,
+  neokitsch login 0.77 / store 0.66) and "still open" notes already
+  closed, plus off-by-one-to-four coordinates (519→518, 403→402,
+  164→165, 155→151, 350→354, 93..278→92..272) and two wrong
+  descriptions (kitsch ghosts "−50°" vs −45°; neokitsch rings "stepping
+  up-left" vs symmetric, and on unselected cards only). The four bar
+  rows and four trace rows were right. Every fix is marked "corrected
+  2026-09-03"; the G1 tables were brought to the same numbers. Same
   pattern as the five false-premise items under Trace improvements:
   measure before you file.
 

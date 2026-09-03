@@ -1,8 +1,21 @@
 //! Kitsch -- "style over substance".
 //!
 //! Teal line-work and yellow selection over a rose bloom on warm black.
-//! Everything rounded, no chamfers anywhere. Sampled from Behance Part
-//! 1, doc #34-42.
+//! Sampled from Behance Part 1, gallery positions 44-52 (title card 43)
+//! per `docs/sources.md`; the "doc #34-42" this comment used to give is
+//! from an earlier, smaller scrape and is entropism's run.
+//!
+//! This comment used to say "everything rounded, no chamfers anywhere".
+//! The traces disagree: `docs/kitsch/store-trace.svg` `#card` is r6 at
+//! the top-left and a 24px chamfer at the top-right (`M 6.5,0.5 H 237
+//! L 261.5,24.5 ...`), its yellow band ends in a 45-degree chamfer
+//! (`V 71.5 L 235.5,94 Z`), the nav is a peaked chevron
+//! (`M 0,39 V 19 L 18,0 L 27,3 H 214 ... V 11 L 190,39 Z`), and
+//! `mailbox-trace.svg` chamfers its row ends ((491,325)->(471,346)) and
+//! its tab's top-right ((1105,313)->(1127,337)). Rounding survives at
+//! r8 (fan cards, chips), r6 and r2 (badges), not the r16 of
+//! `Corner::Round` below, which only bar/dashboard widgets read; see
+//! `ERAS-DELTA.md`.
 //!
 //! Note the inversion the era forces on the role vocabulary: yellow is
 //! *selection*, not alarm. Failure states are essentially absent from
@@ -38,16 +51,32 @@ pub const ON_MINT: iced::Color = rgb(0x0b3b31);
 /// the old `docs/kitsch/target-components.svg`, "EXTRUDED FAN MENU" (the
 /// by-eye sheet replaced 2026-09-03 by `components.svg`, rebuilt from the
 /// traces; `dashboard-trace.svg` has 162x50 r8 cards with ghosts fading
-/// 0.58 to 0.12, not extruded slabs).
+/// 0.58 to 0.12, not extruded slabs). The trace fills those cards
+/// `#2c9798` under a 1.8px `#a9e6df` stroke (`<use href="#card"
+/// fill="#2c9798" stroke="#a9e6df" stroke-width="1.8"/>`); `SLAB` stays
+/// `#2bc4ac` because its only reader is `relief` -> `Palette::relief()`,
+/// consumed by bar / menu / chrome widgets, and in every gated render
+/// `home/themes/kitsch/palettes.nix` overrides `bevel`/`shade` anyway.
 pub const SLAB: iced::Color = rgb(0x2bc4ac);
 pub const SLAB_SHADE: iced::Color = rgb(0x177a6b);
-/// The yellow one stop down: the shelf band on the *selected* card
-/// (`docs/kitsch/target-app.svg`, deleted 2026-09-03 -- `store-trace.svg`
-/// has card 2 amber-filled the same way; `M830 308 ... fill="#f0a80a"` against
-/// `#fcc428` on the other three) and the folded corner of the callout
-/// panel. Not reachable by mixing `YELLOW` towards `ON_YELLOW` -- it is
-/// darker *and* more saturated, and its blue channel sits below both
-/// endpoints.
+/// The yellow one stop down: the shelf band on the *selected* card and
+/// the folded corner of the callout panel, as drawn in
+/// `docs/kitsch/target-app.svg` (deleted 2026-09-03). Not reachable by
+/// mixing `YELLOW` towards `ON_YELLOW` -- it is darker *and* more
+/// saturated, and its blue channel sits below both endpoints.
+///
+/// An earlier version of this comment claimed `store-trace.svg` carried
+/// `M830 308 ... fill="#f0a80a"`. It does not: `#f0a80a` appears in no
+/// trace. The grown card in `store-trace.svg` (group at translate(804
+/// 218), `M 6,0 H 237 L 261,24 V 239 ...`) fills `#ffc233`, the plain cards' band is `#fec32f`, and the
+/// grown card's band is a 1.1px `#a4583a` outline rather than a darker
+/// fill.
+///
+/// Unconsumed as of 2026-09-03: the only reader is `banner_selected`
+/// (below), which reaches `Palette::banner_on_select` -> the
+/// `widgets::banner` / `widgets::card` helpers, none of which any screen
+/// or bar calls. Trace value would be `#ffc233` (grown-card fill) if the
+/// band-on-selected pair is ever wired up.
 pub const YELLOW_SHADE: iced::Color = rgb(0xf0a80a);
 
 pub fn palette() -> Palette {
@@ -286,8 +315,16 @@ pub fn style() -> Style {
         },
         // The shelf band hangs 12px past the card and steps its
         // trailing corner down 8; measured off the target-app.svg
-        // composite (deleted 2026-09-03). `store-trace.svg` measures a 27px
-        // flag on a 35px band -- the open item in TODO.md.
+        // composite (deleted 2026-09-03).
+        //
+        // Unconsumed as of 2026-09-03: `style.banner` is read only by
+        // `widgets::banner::banner` and `widgets::card::product_card`,
+        // which nothing calls (the store is a canvas program). Trace
+        // value would be a 35px band with a 27px flag, no notch, and a
+        // 45-degree chamfer at the right end -- `store-trace.svg` `#card`
+        // band `M -27,94 V 72 L -3,50 V 59 H 256 Q 258,59 258,61 V 71.5
+        // L 235.5,94 Z` (local y 59..94 on a card whose right edge is
+        // x 261.5): overhang 27 on the left, none on the right.
         banner: Banner {
             overhang: 12.0,
             notch: 8.0,
@@ -301,7 +338,15 @@ pub fn style() -> Style {
         // The nav pill's top-right juts out 18 and drops 15, on a body
         // that is otherwise the era's `radius: 16` pill. Sampled off
         // `M172 340 h158 l18 15 ...` in the target-app.svg composite
-        // (deleted 2026-09-03); the trace has peaked chevrons, not pills.
+        // (deleted 2026-09-03).
+        //
+        // Unconsumed as of 2026-09-03: `style.ticket` is read only by
+        // `widgets::pill::pill`, which nothing calls. Trace value would
+        // be a peaked chevron, not a pill -- `store-trace.svg` `#nav`
+        // `M 0,39 V 19 L 18,0 L 27,3 H 214 Q 216,3 216,5 V 11 L 190,39 Z`
+        // (216x39; the left edge stops 20 short of the top and the peak
+        // is 18 in from it; 26x28 chamfer at the right), which
+        // `Ticket { reach, drop }` cannot describe.
         ticket: Ticket {
             reach: 18.0,
             drop: 15.0,

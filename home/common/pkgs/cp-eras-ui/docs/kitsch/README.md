@@ -130,7 +130,7 @@ the thing the toolkit abstraction should be tested against.
   glyph, name, boxed A + micro-text) with card 1 carrying an input
   field and a solid mint stepped ENTER bar while cards 2 and 3 read
   PROTECTED in dark teal, a barcode in the bracket foot, and the mint
-  footer line. Gate: PASS, inks 0.54.
+  footer line. Gate: PASS, inks 0.63 (third pass 2026-09-03; was 0.54).
 - `dashboard-trace.svg` — `images/kitsch-dashboard.png` (#49), the
   **module hub**: boxed A USER / C SECURITY LEVEL / D DESCRIPTION
   headers, a notched GUES 7702 box, four badges with the second filled
@@ -138,21 +138,21 @@ the thing the toolkit abstraction should be tested against.
   (VEHICLES, WEAPONS, PRODUCTS / PRODUCTS, EVENTS, LOCATIONS) with
   EVENTS solid yellow as the selection and a ghost stack behind each
   blade, and the BRAINDANCE detail panel under a yellow header tab.
-  Gate: PASS, inks 0.59.
+  Gate: PASS, inks 0.69 (third pass 2026-09-03; was 0.59).
 - `mailbox-trace.svg` — `images/kitsch-mail.png` (#51): the header's
   three boxed letters with stepped USER / DESCRIPTION boxes and the
   four security badges, the list bracket forking into its solid teal
   wave, five message rows with the first selected as a two-piece solid
   yellow row, the yellow message panel (solid tab, flag band, outlined
   body, three lorem paragraphs) and four chevron tabs at the right with
-  DETAILS solid. Gate: PASS, inks 0.62.
+  DETAILS solid. Gate: PASS, inks 0.67 (third pass 2026-09-03; was 0.62).
 - `store-trace.svg` — `images/kitsch-store.png` (#52): the logotype
   block, the customer chip and loyalty lines, the nav bracket wrapping
   the customer block and ending in the wave, five chevron nav tabs with
   SMG solid yellow, and four product cards (yellow flag band, mint gun
   drawing, stat row, solid mint values bar, socket row) with the second
   amber-filled, grown, and continued in an amber outline. Gate: PASS,
-  inks 0.57. Supersedes `target-app.svg`.
+  inks 0.73 (third pass 2026-09-03; was 0.57). Supersedes `target-app.svg`.
 - `components.svg` — the widget sheet, rebuilt 2026-09-03 from the
   four traces and `bar.svg` (it was `target-components.svg`, drawn by
   eye: 160-wide rounded pills where the traces have 216x39 peaked
