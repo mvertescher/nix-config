@@ -5,6 +5,14 @@
 //!
 //! See examples/cp-eras-ui-store.rs for the reasoning behind the
 //! --era handling; it is the same here.
+//!
+//! The screen's *content* -- how many accounts are offered, what they
+//! are called, which one is live, and every string on the page -- is
+//! era table data (`Style::access`), transcribed from
+//! `docs/<era>/login-trace.svg`. So this file only picks the era,
+//! loads the faces and opens a 1600x900 window, which is the frame the
+//! traces are measured in and the one `scripts/fidelity_check.sh
+//! --implementation <era> login` captures.
 
 use cp_eras_ui::screens::login::{Message, Login};
 use cp_eras_ui::{Era, Style};
@@ -24,6 +32,13 @@ fn main() -> iced::Result {
 
     iced::application(move || Login::new(style), Login::update, Login::view)
         .title(Login::title)
+        // The access screen sets text at four weights: neokitsch's
+        // ENTER / LOGIN bar is a light face, the guest names and the
+        // clocks are medium, the badge digits and the compliance
+        // brand are bold, and everything else regular. A weight the
+        // application has not loaded falls back to the regular face
+        // and the run comes out the wrong width.
+        .font(cp_eras_ui::fonts::RAJDHANI_LIGHT)
         .font(cp_eras_ui::fonts::RAJDHANI_REGULAR)
         .font(cp_eras_ui::fonts::RAJDHANI_MEDIUM)
         .font(cp_eras_ui::fonts::RAJDHANI_BOLD)

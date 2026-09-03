@@ -11,12 +11,16 @@
 //! Collecting the readings is the binary's job, which keeps this file
 //! testable and keeps the layer-shell dependency out of the library.
 
-use crate::style::Style;
-use crate::widgets::surface::{backdrop, surface, Surface};
-use crate::widgets::text;
+use crate::style::{
+    BarChrome, BarGround, BarOrnament, Dress, Face, Ink, MenuMarker, MenuRule, PanelEcho,
+    Selection, Style, Tab, Ticket,
+};
+use crate::widgets::surface::{layered, outline, span_at, Corners, Cut, Fill, Surface};
+use iced::widget::canvas::{Frame, Path, Stroke};
 use iced::widget::image;
-use iced::widget::{container, mouse_area, row, Space};
-use iced::{mouse, Element, Length, Padding};
+use iced::widget::{canvas, container, mouse_area, row, stack, Space};
+use iced::{mouse, Color, Element, Length, Padding, Point, Rectangle, Renderer, Size, Theme};
+
 
 /// One workspace as the compositor reports it.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -218,32 +222,727 @@ pub type MenuPath = Vec<usize>;
 /// just looking untidy.
 const MENU_LABEL_CHARS: usize = 40;
 
-/// Air above and below a row's content, and either side of it.
+/// Air above and below a separator, which is a rule rather than a row.
 ///
-/// Constants rather than literals at the one call site because
-/// [`row_height`] has to agree with what [`menu_row`] draws, to the
-/// pixel: that arithmetic is the whole of submenu placement, and a
-/// child panel landing a row and a half below its parent would be the
-/// visible result of the two drifting apart. `tests.bar.<era>` renders
-/// a chain with one submenu open for exactly that reason.
-const MENU_ROW_AIR: f32 = 3.0;
-const MENU_ROW_SIDE: f32 = 8.0;
-
-/// The same, for a separator, which is a rule rather than a row.
+/// The one figure in the menu that is still a constant: all four
+/// designs put their rule 4px clear of the rows either side, so there
+/// is nothing for the era table to disagree about. Everything else a
+/// row measures now comes from [`crate::style::BarMenu`].
 const MENU_RULE_AIR: f32 = 4.0;
-const MENU_RULE_SIDE: f32 = 6.0;
 
-/// Air inside a panel, around its whole column of rows.
-const MENU_PANEL_AIR: f32 = 6.0;
-const MENU_PANEL_SIDE: f32 = 4.0;
+/// Resolve a named ink, falling back to the era's body colour.
+///
+/// [`Ink::None`] is the caller's problem rather than this function's:
+/// it means "draw nothing", and everywhere it can appear the drawing
+/// code asks [`Style::ink`] directly and matches on the `Option`.
+fn ink_of(style: &Style, ink: Ink) -> Color {
+    style.ink(ink).unwrap_or(style.palette.fg)
+}
 
-/// Gap between a row's icon and its label, and between its label and
-/// its submenu marker.
-const MENU_ICON_GAP: f32 = 6.0;
+/// The font one of the era's bar labels is set in.
+fn era_face(style: &Style, bold: bool) -> iced::Font {
+    use crate::fonts::{FONT_RAJDHANI_BOLD, FONT_RAJDHANI_MEDIUM, FONT_RAJDHANI_REGULAR};
+    if bold {
+        return FONT_RAJDHANI_BOLD;
+    }
+    match style.bar.face {
+        Face::Regular => FONT_RAJDHANI_REGULAR,
+        Face::Medium => FONT_RAJDHANI_MEDIUM,
+        // `fonts.rs` publishes no semibold `Font`, and naming the
+        // weight and letting the shaper choose resolved it to *Bold*
+        // on both bar binaries -- a whole stop heavy. Medium is the
+        // closest published face; an era wanting a true 600 needs the
+        // constant, which is not this file's to add.
+        Face::SemiBold => FONT_RAJDHANI_MEDIUM,
+        Face::Bold => FONT_RAJDHANI_BOLD,
+    }
+}
 
-/// The marker on a row that has a submenu, pointing the way that
-/// submenu opens. See [`tray_menu`] for why that is leftwards.
-const MENU_SUBMENU_MARKER: &str = "<";
+/// A bar label, in the era's face and one of its inks.
+fn ink_text<'a>(
+    style: &Style,
+    ink: Ink,
+    bold: bool,
+    label: impl Into<String>,
+) -> iced::widget::Text<'a> {
+    iced::widget::text(label.into())
+        .size(f32::from(style.metrics.text_body))
+        .color(ink_of(style, ink))
+        .font(era_face(style, bold))
+}
+
+/// The [`Surface`] a [`Dress`] describes.
+///
+/// [`Ink::Select`] goes through [`Surface::selected`] rather than
+/// through [`Style::ink`], which is what keeps neokitsch's veneer out
+/// of this file: an era whose selection is a material says so once, in
+/// [`crate::style::Selection`], and every dress that names `Select`
+/// gets it.
+fn face_of(style: &Style, dress: &Dress) -> Surface {
+    let fill = match dress.fill {
+        Ink::None => Fill::None,
+        Ink::Select => Surface::selected(style).fill,
+        ink => Fill::Solid(ink_of(style, ink)),
+    };
+    Surface {
+        corners: dress.corners,
+        fill,
+        stroke: style.ink(dress.stroke),
+        stroke_width: style.bar.stroke,
+        ticket: Ticket::default(),
+    }
+}
+
+/// The trapezoid tab of [`crate::style::Tab`], standing on the bottom
+/// edge of a box `w` by `h`.
+fn tab_path(tab: Tab, w: f32, h: f32, stroke: f32) -> Path {
+    let (base, top) = if w < tab.narrow_below {
+        (tab.narrow_base, tab.narrow_top)
+    } else {
+        (tab.base, tab.top)
+    };
+    let right = (w - tab.inset).min(w);
+    let left = right - base;
+    let shoulder = (base - top) / 2.0;
+    // Inside the outline and standing on the bottom stroke, as on the
+    // store nav's RIFLES: the base sits on the stroke's *inner* edge,
+    // so the outline stays an unbroken loop under it.
+    let y1 = h - stroke;
+    let y0 = y1 - tab.height;
+    Path::new(|b| {
+        b.move_to(Point::new(left, y1));
+        b.line_to(Point::new(left + shoulder, y0));
+        b.line_to(Point::new(right - shoulder, y0));
+        b.line_to(Point::new(right, y1));
+        b.close();
+    })
+}
+
+/// A module whose bottom edge steps, which [`Surface`] cannot draw.
+///
+/// Only kitsch asks for one, and only for its two boxes -- the USER
+/// tape and the DESCRIPTION window label -- both of which are a flat
+/// fill or a flat outline, so nothing here has to know about veneer.
+/// `widgets/surface.rs` is not ours to grow a step on; see the report.
+#[derive(Debug, Clone, Copy)]
+struct Stepped {
+    /// `(run, rise)`.
+    step: (f32, f32),
+    fill: Option<Color>,
+    stroke: Option<Color>,
+    stroke_width: f32,
+}
+
+impl<Message> canvas::Program<Message> for Stepped {
+    type State = ();
+
+    fn draw(
+        &self,
+        _state: &Self::State,
+        renderer: &Renderer,
+        _theme: &Theme,
+        bounds: Rectangle,
+        _cursor: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        const DIAGONAL: f32 = 6.0;
+        let mut frame = Frame::new(renderer, bounds.size());
+        let inset = if self.stroke.is_some() {
+            self.stroke_width / 2.0
+        } else {
+            0.0
+        };
+        let (w, h) = (bounds.width - inset * 2.0, bounds.height - inset * 2.0);
+        if w <= 0.0 || h <= 0.0 {
+            return vec![frame.into_geometry()];
+        }
+        frame.translate(iced::Vector::new(inset, inset));
+
+        let (run, rise) = self.step;
+        let run = run.min((w - DIAGONAL).max(0.0));
+        let path = Path::new(|b| {
+            b.move_to(Point::new(0.0, 0.0));
+            b.line_to(Point::new(w, 0.0));
+            b.line_to(Point::new(w, h - rise));
+            b.line_to(Point::new(run + DIAGONAL, h - rise));
+            b.line_to(Point::new(run, h));
+            b.line_to(Point::new(0.0, h));
+            b.close();
+        });
+        if let Some(fill) = self.fill {
+            frame.fill(&path, fill);
+        }
+        if let Some(color) = self.stroke {
+            frame.stroke(
+                &path,
+                Stroke::default()
+                    .with_color(color)
+                    .with_width(self.stroke_width),
+            );
+        }
+        vec![frame.into_geometry()]
+    }
+}
+
+/// The canvas that paints a module's silhouette, whichever of the two
+/// shapes it is.
+fn face_canvas<'a, Message: 'static>(style: &Style, dress: &Dress) -> Element<'a, Message> {
+    match dress.step {
+        None => canvas(face_of(style, dress))
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .into(),
+        Some(step) => canvas(Stepped {
+            step,
+            fill: match dress.fill {
+                Ink::None => None,
+                ink => Some(ink_of(style, ink)),
+            },
+            stroke: style.ink(dress.stroke),
+            stroke_width: style.bar.stroke,
+        })
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .into(),
+    }
+}
+
+/// The trim a module carries on top of its surface: neokitsch's tab and
+/// neomil's barcode ticks.
+///
+/// A second canvas rather than part of [`Surface`], because neither is
+/// a property of the *shape* -- the tab rides the outline it is given
+/// and the ticks are cargo. `widgets/surface.rs` is not ours to grow a
+/// tab field on, so this is the bar-local version; see the report.
+#[derive(Debug, Clone, Copy)]
+struct Trim {
+    tab: Option<(Tab, Color)>,
+    /// The five ticks of the neomil code tape, in this ink.
+    ticks: Option<Color>,
+    /// Neokitsch's book-match grain: hairlines at 1.7px pitch and a
+    /// seam down the plate's midpoint, clipped to the silhouette.
+    ///
+    /// On top of the veneer [`Surface`] already synthesises, not
+    /// instead of it: that one is a warp gradient with grain at a 5px
+    /// pitch, and the design measures 14 lines on a 25px plate. The
+    /// dense pass is what makes a plate read as a plank at bar scale
+    /// rather than as a brown fill.
+    grain: Option<(Corners, Color)>,
+    stroke: f32,
+}
+
+impl Trim {
+    fn is_empty(&self) -> bool {
+        self.tab.is_none() && self.ticks.is_none() && self.grain.is_none()
+    }
+
+    /// Whether this dress is a plate of the era's selection material.
+    fn grain_of(style: &Style, dress: &Dress) -> Option<(Corners, Color)> {
+        match (style.selection, dress.fill) {
+            (Selection::Veneer, Ink::Select) => Some((
+                dress.corners,
+                style.palette.relief().0,
+            )),
+            _ => None,
+        }
+    }
+}
+
+impl<Message> canvas::Program<Message> for Trim {
+    type State = ();
+
+    fn draw(
+        &self,
+        _state: &Self::State,
+        renderer: &Renderer,
+        _theme: &Theme,
+        bounds: Rectangle,
+        _cursor: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        let mut frame = Frame::new(renderer, bounds.size());
+        let (w, h) = (bounds.width, bounds.height);
+        if w <= 0.0 || h <= 0.0 {
+            return vec![frame.into_geometry()];
+        }
+
+        if let Some((tab, color)) = self.tab {
+            frame.fill(&tab_path(tab, w, h, self.stroke), color);
+        }
+
+        if let Some((corners, ink)) = self.grain {
+            const PITCH: f32 = 1.7;
+            let mut y = PITCH;
+            let mut n = 0u32;
+            while y < h {
+                // The wobble is deterministic: a plank is not a ruled
+                // page, and a golden has to be byte-identical run to
+                // run.
+                let wobble = ((n * 7 % 5) as f32 - 2.0) * 0.45;
+                let yy = (y + wobble).clamp(0.0, h);
+                let (x0, x1) = span_at(corners, Ticket::default(), w, h, yy);
+                if x1 - x0 > 2.0 {
+                    frame.stroke(
+                        &Path::new(|b| {
+                            b.move_to(Point::new(x0 + 1.0, yy));
+                            b.line_to(Point::new(x1 - 1.0, yy));
+                        }),
+                        Stroke::default()
+                            .with_color(Color { a: 0.5, ..ink })
+                            .with_width(0.6),
+                    );
+                }
+                y += PITCH;
+                n += 1;
+            }
+            // The book-match seam at the plate's midpoint, which is
+            // where the mailbox bar's 32 hairlines chevron into each
+            // other. The trace draws it 0.9 wide; rsvg puts that on one
+            // pixel and an antialiased canvas spreads it over two at
+            // half strength, which on a grained plank is nothing at
+            // all -- so it is drawn at 1.5, the width that lands a
+            // whole pixel on the line.
+            frame.stroke(
+                &Path::new(|b| {
+                    b.move_to(Point::new(w / 2.0, 0.0));
+                    b.line_to(Point::new(w / 2.0, h));
+                }),
+                Stroke::default()
+                    .with_color(Color { a: 0.8, ..ink })
+                    .with_width(1.5),
+            );
+        }
+
+        if let Some(color) = self.ticks {
+            // login-trace's code tape, scaled to 25: five ticks of
+            // 2 / 1.5 / 3 / 1.5 / 2 starting 9 in, 13 tall.
+            for &(x, tw) in &[(9.0, 2.0), (13.0, 1.5), (16.5, 3.0), (21.5, 1.5), (25.0, 2.0)] {
+                frame.fill(
+                    &Path::rectangle(Point::new(x, 6.0), Size::new(tw, (h - 12.0).max(1.0))),
+                    color,
+                );
+            }
+        }
+
+        vec![frame.into_geometry()]
+    }
+}
+
+/// The strip itself: its ground, its chrome, and whatever ornament the
+/// era hangs on it. Drawn on one canvas beneath every module.
+///
+/// It is handed the run of module widths rather than measuring them,
+/// because a divider sits *on* a module boundary and iced has already
+/// forgotten where those were by the time anything is drawn. The left
+/// run accumulates from the strip's left padding and the right run from
+/// its right, which is also what makes the tray keep a fixed distance
+/// from the edge of the screen.
+#[derive(Debug, Clone)]
+struct Strip {
+    ground: BarGround,
+    chrome: BarChrome,
+    ornament: BarOrnament,
+    chrome_ink: Color,
+    ornament_ink: Color,
+    stroke: f32,
+    pad_left: f32,
+    pad_right: f32,
+    pad_y: f32,
+    /// `(gap before, width)` per module, in document order.
+    left: Vec<(f32, f32)>,
+    right: Vec<(f32, f32)>,
+}
+
+/// The colour a stop list reaches at `t`.
+fn stop_at(stops: &[(f32, Color); 5], t: f32) -> Color {
+    if t <= stops[0].0 {
+        return stops[0].1;
+    }
+    for pair in stops.windows(2) {
+        let (t0, c0) = pair[0];
+        let (t1, c1) = pair[1];
+        if t <= t1 {
+            let span = (t1 - t0).max(f32::EPSILON);
+            return mix(c0, c1, (t - t0) / span);
+        }
+    }
+    stops[4].1
+}
+
+/// Linear blend, for the one gradient the bar draws.
+fn mix(a: Color, b: Color, t: f32) -> Color {
+    Color {
+        r: a.r + (b.r - a.r) * t,
+        g: a.g + (b.g - a.g) * t,
+        b: a.b + (b.b - a.b) * t,
+        a: a.a + (b.a - a.a) * t,
+    }
+}
+
+impl<Message> canvas::Program<Message> for Strip {
+    type State = ();
+
+    fn draw(
+        &self,
+        _state: &Self::State,
+        renderer: &Renderer,
+        _theme: &Theme,
+        bounds: Rectangle,
+        _cursor: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        let mut frame = Frame::new(renderer, bounds.size());
+        let (w, h) = (bounds.width, bounds.height);
+        if w <= 0.0 || h <= 0.0 {
+            return vec![frame.into_geometry()];
+        }
+
+        if let BarGround::Haze {
+            cx,
+            cy,
+            r,
+            squash,
+            stops,
+        } = self.ground
+        {
+            // Rings rather than a renderer gradient, as
+            // `widgets::ground` stacks discs and for the same reason.
+            // The lobe's centre is above the strip and its radius is
+            // thirty times the strip's height, so what lands here is
+            // the top slice of the screen's own haze and nothing else.
+            frame.fill(
+                &Path::rectangle(Point::ORIGIN, Size::new(w, h)),
+                stops[4].1,
+            );
+            frame.push_transform();
+            frame.translate(iced::Vector::new(cx, cy));
+            frame.scale_nonuniform(iced::Vector::new(1.0, squash));
+            let steps = 64;
+            for i in (0..steps).rev() {
+                let t = (i + 1) as f32 / steps as f32;
+                frame.fill(&Path::circle(Point::ORIGIN, r * t), stop_at(&stops, t));
+            }
+            frame.pop_transform();
+        }
+
+        if let BarGround::Band {
+            left,
+            right,
+            rule: _,
+            rule_width,
+        } = self.ground
+        {
+            // Bands rather than a renderer gradient, for the reason
+            // `widgets::ground` stacks discs: the falloff is smooth
+            // enough at this size and it keeps the crate off
+            // gradient support that varies by backend.
+            let steps = 128;
+            let step = w / steps as f32;
+            for i in 0..steps {
+                let t = (i as f32 + 0.5) / steps as f32;
+                frame.fill(
+                    &Path::rectangle(Point::new(i as f32 * step, 0.0), Size::new(step + 1.0, h)),
+                    mix(left, right, t),
+                );
+            }
+            frame.fill(
+                &Path::rectangle(
+                    Point::new(self.pad_left, h - rule_width),
+                    Size::new((w - self.pad_left - self.pad_right).max(0.0), rule_width),
+                ),
+                self.chrome_ink,
+            );
+        }
+
+        let stroke = Stroke::default()
+            .with_color(self.chrome_ink)
+            .with_width(self.stroke);
+
+        if let BarChrome::Frame = self.chrome {
+            let half = self.stroke / 2.0;
+            let x0 = self.pad_left + half;
+            let y0 = self.pad_y + half;
+            let x1 = w - self.pad_right - half;
+            let y1 = h - self.pad_y - half;
+            frame.stroke(
+                &Path::rectangle(Point::new(x0, y0), Size::new(x1 - x0, y1 - y0)),
+                stroke,
+            );
+
+            let mut divider = |x: f32| {
+                if x > self.pad_left && x < w - self.pad_right {
+                    frame.stroke(
+                        &Path::new(|b| {
+                            b.move_to(Point::new(x, self.pad_y));
+                            b.line_to(Point::new(x, h - self.pad_y));
+                        }),
+                        stroke,
+                    );
+                }
+            };
+            // One on the trailing edge of every module in the left run
+            // -- which closes that run against the open centre segment
+            // -- and one on the leading edge of every module in the
+            // right, which does the same from the other side.
+            let mut x = self.pad_left;
+            for &(gap, width) in &self.left {
+                x += gap + width;
+                divider(x);
+            }
+            let mut x = w - self.pad_right;
+            for &(gap, width) in self.right.iter().rev() {
+                x -= width;
+                divider(x);
+                x -= gap;
+            }
+        }
+
+        match self.ornament {
+            BarOrnament::None => {}
+            BarOrnament::Bracket => self.bracket(&mut frame, w, h),
+            BarOrnament::Wire => self.wire(&mut frame, w, h),
+        }
+
+        vec![frame.into_geometry()]
+    }
+}
+
+impl Strip {
+    /// Where the left run ends and where the right run begins.
+    fn span(&self, w: f32) -> (f32, f32) {
+        let left: f32 = self
+            .left
+            .iter()
+            .map(|&(gap, width)| gap + width)
+            .sum::<f32>()
+            + self.pad_left;
+        let right = w
+            - self.pad_right
+            - self
+                .right
+                .iter()
+                .map(|&(gap, width)| gap + width)
+                .sum::<f32>();
+        (left, right)
+    }
+
+    /// Kitsch's bracket: mailbox-trace's list bracket scaled into the
+    /// 3px the bar leaves under its cells. Down the left edge, an r8
+    /// corner, then right along the foot at full strength to 60% of its
+    /// run and fading to nothing at the end of it.
+    fn bracket(&self, frame: &mut Frame, _w: f32, h: f32) {
+        const X: f32 = 1.5;
+        const RADIUS: f32 = 8.0;
+        const REACH: f32 = 440.0;
+        const SOLID: f32 = 0.6;
+
+        let y = h - 1.5;
+        let stroke = |color: Color| Stroke::default().with_color(color).with_width(self.stroke);
+        frame.stroke(
+            &Path::new(|b| {
+                b.move_to(Point::new(X, 0.0));
+                b.line_to(Point::new(X, y - RADIUS));
+                b.quadratic_curve_to(Point::new(X, y), Point::new(X + RADIUS, y));
+                b.line_to(Point::new(X + RADIUS + (REACH - X - RADIUS) * SOLID, y));
+            }),
+            stroke(self.ornament_ink),
+        );
+
+        // The fade, as steps: the ramp is 176px long and a canvas
+        // stroke takes one colour.
+        let start = X + RADIUS + (REACH - X - RADIUS) * SOLID;
+        let steps = 24;
+        for i in 0..steps {
+            let t0 = i as f32 / steps as f32;
+            let t1 = (i + 1) as f32 / steps as f32;
+            let alpha = 1.0 - (t0 + t1) / 2.0;
+            frame.stroke(
+                &Path::new(|b| {
+                    b.move_to(Point::new(start + (REACH - start) * t0, y));
+                    b.line_to(Point::new(start + (REACH - start) * t1 + 0.5, y));
+                }),
+                stroke(Color {
+                    a: alpha,
+                    ..self.ornament_ink
+                }),
+            );
+        }
+    }
+
+    /// Neokitsch's header wire band, bridging the empty centre: eight
+    /// strands on a low run at each end, each rising through one S-bend
+    /// onto a single bridge line, brightening downward.
+    ///
+    /// Dropped entirely when the gap cannot hold it, which is the
+    /// design's own instruction -- a band squeezed to nothing would be
+    /// a smear behind the window label.
+    fn wire(&self, frame: &mut Frame, w: f32, _h: f32) {
+        const INSET: f32 = 6.0;
+        const RUN: f32 = 32.0;
+        const BEND: f32 = 32.0;
+        const STRANDS: usize = 8;
+        const PITCH: f32 = 2.0;
+        const TOP: f32 = 13.5;
+        const BRIDGE: f32 = 5.0;
+        const FOOT: f32 = 27.5;
+
+        let (left, right) = self.span(w);
+        let (x0, x1) = (left + INSET, right - INSET);
+        if x1 - x0 < 2.0 * (RUN + BEND) + 120.0 {
+            return;
+        }
+
+        for i in 0..STRANDS {
+            let ys = TOP + PITCH * i as f32;
+            let alpha = 0.35 + (1.0 - 0.35) * i as f32 / (STRANDS - 1) as f32;
+            let path = Path::new(|b| {
+                b.move_to(Point::new(x0, ys));
+                b.line_to(Point::new(x0 + RUN, ys));
+                b.bezier_curve_to(
+                    Point::new(x0 + RUN + 17.0, ys),
+                    Point::new(x0 + RUN + 15.0, BRIDGE),
+                    Point::new(x0 + RUN + BEND, BRIDGE),
+                );
+                b.line_to(Point::new(x1 - RUN - BEND, BRIDGE));
+                b.bezier_curve_to(
+                    Point::new(x1 - RUN - 15.0, BRIDGE),
+                    Point::new(x1 - RUN - 17.0, ys),
+                    Point::new(x1 - RUN, ys),
+                );
+                b.line_to(Point::new(x1, ys));
+            });
+            frame.stroke(
+                &path,
+                Stroke::default()
+                    .with_color(Color {
+                        a: alpha,
+                        ..self.ornament_ink
+                    })
+                    .with_width(1.0),
+            );
+        }
+
+        // The end hooks overlap into one bright vertical edge, which
+        // login-trace records and store-trace draws.
+        frame.stroke(
+            &Path::new(|b| {
+                b.move_to(Point::new(x0, TOP));
+                b.line_to(Point::new(x0, FOOT));
+                b.move_to(Point::new(x1, TOP));
+                b.line_to(Point::new(x1, FOOT));
+            }),
+            Stroke::default()
+                .with_color(self.ornament_ink)
+                .with_width(1.2),
+        );
+    }
+}
+
+/// Width a label needs, in pixels.
+///
+/// A [`Surface`] paints the box it is handed and its canvas fills
+/// whatever space it is given, so in a shrink-width row the cells
+/// collapse and clip their own text -- a five-character hostname came
+/// out as three.
+/// Sizing from the label is also the better behaviour for a bar: cells
+/// stop reflowing every time CPU% ticks from 9 to 10.
+///
+/// `pad_x` is the leading air and `trail` the trailing, which are only
+/// the same number in three of the four eras: a neokitsch cell reserves
+/// its last 38px for the tab, and no label may sit on one.
+///
+/// So the reserve follows the *tab* rather than the era. A module that
+/// carries none has nothing to keep its label off, which is why the
+/// neokitsch CTA plate is `12 + text + 12` where the button beside it
+/// is `12 + text + 38`.
+fn width_for(style: &Style, label: &str, dress: &Dress) -> f32 {
+    let b = &style.bar;
+    let trail = if dress.tab { b.trail } else { b.pad_x };
+    text_width(style, label) + b.pad_x + trail
+}
+
+/// A label's own measure, in pixels.
+///
+/// Spaces are counted at their own advance rather than at a letter's:
+/// three of the four designs sized their cells by counting characters
+/// flat and get `space_em == em` for it, and the fourth measured, so
+/// this is one arithmetic with an era's answer in it rather than two.
+fn text_width(style: &Style, label: &str) -> f32 {
+    let b = &style.bar;
+    let size = style.metrics.text_body as f32;
+    let spaces = label.chars().filter(|c| *c == ' ').count() as f32;
+    let letters = label.chars().count() as f32 - spaces;
+    (letters * size * b.em + spaces * size * b.space_em).ceil()
+}
+
+/// A dressed module of the bar: the era's silhouette, its trim, and a
+/// label or an icon inside it.
+fn plate<'a, Message: 'static>(
+    style: &Style,
+    dress: &Dress,
+    width: f32,
+    lead: Option<f32>,
+    ticks: bool,
+    content: Element<'a, Message>,
+) -> Element<'a, Message> {
+    let b = &style.bar;
+    let trim = Trim {
+        tab: dress
+            .tab
+            .then_some(b.tab)
+            .flatten()
+            .map(|tab| (tab, ink_of(style, tab.fill))),
+        ticks: ticks.then(|| ink_of(style, dress.ink)),
+        grain: Trim::grain_of(style, dress),
+        stroke: b.stroke,
+    };
+
+    let body: Element<'a, Message> = if let Some(lead) = lead {
+        container(content)
+            .padding(Padding::ZERO.left(lead))
+            .center_y(Length::Fill)
+            .width(Length::Fill)
+            .into()
+    } else {
+        container(content)
+            .center_x(Length::Fill)
+            .center_y(Length::Fill)
+            .into()
+    };
+
+    let mut layers = stack![face_canvas(style, dress)];
+    if !trim.is_empty() {
+        layers = layers.push(canvas(trim).width(Length::Fill).height(Length::Fill));
+    }
+    container(layers.push(body))
+        .width(Length::Fixed(width))
+        .height(Length::Fill)
+        .into()
+}
+
+/// One module of the bar, with the width the strip has to know about.
+struct Slot<'a, Message> {
+    gap: f32,
+    width: f32,
+    element: Element<'a, Message>,
+}
+
+/// A run of modules, as a row and as the measurements [`Strip`] draws
+/// its chrome from.
+fn run<'a, Message: 'static>(
+    slots: Vec<Slot<'a, Message>>,
+) -> (Element<'a, Message>, Vec<(f32, f32)>) {
+    let metrics: Vec<(f32, f32)> = slots.iter().map(|slot| (slot.gap, slot.width)).collect();
+    let mut row = row![].height(Length::Fill).align_y(iced::Alignment::Center);
+    for slot in slots {
+        if slot.gap > 0.0 {
+            row = row.push(
+                Space::new()
+                    .width(Length::Fixed(slot.gap))
+                    .height(Length::Fill),
+            );
+        }
+        row = row.push(slot.element);
+    }
+    (row.into(), metrics)
+}
 
 /// How large a menu row's icon is drawn, in pixels.
 ///
@@ -278,9 +977,44 @@ fn menu_line(style: &Style) -> f32 {
 /// height rather than asked for it.
 fn row_height(style: &Style, entry: &MenuEntry) -> f32 {
     match entry.kind {
-        MenuKind::Separator => style.metrics.stroke + MENU_RULE_AIR * 2.0,
-        _ => menu_line(style) + MENU_ROW_AIR * 2.0,
+        MenuKind::Separator => match style.bar.menu.rule {
+            // Entropism has no floating rule anywhere: a break between
+            // groups is an empty cell between two of the row dividers
+            // the panel already draws.
+            MenuRule::Empty { height } => height,
+            _ => style.bar.stroke + MENU_RULE_AIR * 2.0,
+        },
+        _ => menu_line(style) + style.bar.menu.row_air * 2.0,
     }
+}
+
+/// The same, plus the divider that follows it where the era draws one.
+/// This is the figure submenu placement is arithmetic on.
+fn row_pitch(style: &Style, entry: &MenuEntry) -> f32 {
+    row_height(style, entry)
+        + if style.bar.menu.row_divider {
+            style.bar.stroke
+        } else {
+            0.0
+        }
+}
+
+/// How tall a whole panel is drawn. Needed by the chain's ornament
+/// canvas, which has to know the boxes it is ringing before iced has
+/// laid any of them out.
+fn panel_height(style: &Style, entries: &[MenuEntry], root: bool) -> f32 {
+    let m = &style.bar.menu;
+    let mut height = m.air * 2.0;
+    for (index, entry) in entries.iter().enumerate() {
+        height += row_height(style, entry);
+        if m.row_divider && index + 1 < entries.len() {
+            height += style.bar.stroke;
+        }
+    }
+    if root {
+        height += m.foot;
+    }
+    height
 }
 
 /// Whether a panel reserves the icon column.
@@ -298,7 +1032,8 @@ fn has_icons(entries: &[MenuEntry]) -> bool {
 /// a menu that resizes itself per era's `Corner` is one that lands
 /// somewhere different per era.
 fn level_width(style: &Style, entries: &[MenuEntry]) -> f32 {
-    let per_char = style.metrics.text_body as f32 * 0.58;
+    let m = &style.bar.menu;
+    let per_char = style.metrics.text_body as f32 * style.bar.em;
     let widest = entries
         .iter()
         .map(|entry| entry.label.chars().count().min(MENU_LABEL_CHARS))
@@ -308,7 +1043,7 @@ fn level_width(style: &Style, entries: &[MenuEntry]) -> f32 {
     // Both columns are reserved by the whole panel as soon as one row
     // wants them, for the reason in `has_icons`.
     let gutter = if has_icons(entries) {
-        menu_icon_size(style) + MENU_ICON_GAP
+        m.icon_col + m.icon_gap
     } else {
         0.0
     };
@@ -316,7 +1051,7 @@ fn level_width(style: &Style, entries: &[MenuEntry]) -> f32 {
         .iter()
         .any(|entry| matches!(entry.kind, MenuKind::Submenu))
     {
-        per_char * MENU_SUBMENU_MARKER.chars().count() as f32 + MENU_ICON_GAP
+        per_char + m.icon_gap
     } else {
         0.0
     };
@@ -324,7 +1059,7 @@ fn level_width(style: &Style, entries: &[MenuEntry]) -> f32 {
     // The floor is what keeps a menu of `OK` from being a stamp; the
     // ceiling is `MENU_LABEL_CHARS` worth of the largest era's body
     // text, so the clip above is what bounds this and not the clamp.
-    ((widest as f32 * per_char).ceil() + gutter + marker + 24.0).clamp(140.0, 460.0)
+    ((widest as f32 * per_char).ceil() + gutter + marker + m.level_pad).clamp(140.0, 460.0)
 }
 
 /// One panel of the open chain: its rows, how far its top edge sits
@@ -364,14 +1099,26 @@ fn levels<'a>(style: &Style, menu: &'a TrayMenu, open: &[usize]) -> Vec<Level<'a
 
         // The child's first row lines up with the row that opened it,
         // and both panels carry the same top padding -- so the padding
-        // cancels and this is a sum of row heights and nothing else.
+        // cancels and this is a sum of row pitches and nothing else.
         top += entries[..index]
             .iter()
-            .map(|entry| row_height(style, entry))
+            .map(|entry| row_pitch(style, entry))
             .sum::<f32>();
         entries = &entries[index].children;
         depth += 1;
     }
+}
+
+/// How much of the chain's trailing edge is ornament rather than panel.
+///
+/// The chain is the panels *plus* whatever the era draws outside them,
+/// and neokitsch's onion rings run past the root panel on every side
+/// but the top. Whoever pins the chain against an edge -- the live
+/// bar's overlay, or the golden harness -- wants the *panel* there and
+/// not the rings, so this is the offset that puts it there. Zero in
+/// the three eras that draw no echo, which is why nothing else moved.
+pub fn menu_edge_pad(style: &Style) -> f32 {
+    style.bar.menu.echo_pad
 }
 
 /// How wide the whole open chain is, in pixels.
@@ -382,10 +1129,345 @@ fn levels<'a>(style: &Style, menu: &'a TrayMenu, open: &[usize]) -> Vec<Level<'a
 /// *right* edge is what goes under the pointer, so this width is the
 /// offset that puts it there.
 pub fn menu_chain_width(style: &Style, menu: &TrayMenu, open: &[usize]) -> f32 {
-    levels(style, menu, open)
+    let m = &style.bar.menu;
+    let levels = levels(style, menu, open);
+    let panels: f32 = levels
         .iter()
         .map(|level| level_width(style, level.entries))
-        .sum()
+        .sum();
+    panels + m.level_gap * (levels.len() as f32 - 1.0).max(0.0) + m.echo_pad * 2.0
+}
+
+/// A corner's cut as a pair, for the paths that walk one by hand.
+fn cut_xy(cut: Cut) -> (f32, f32) {
+    match cut {
+        Cut::Square => (0.0, 0.0),
+        Cut::Chamfer { x, y } => (x, y),
+        Cut::Round { radius } => (radius, radius),
+    }
+}
+
+/// A menu panel's silhouette, and whatever the era draws inside it.
+///
+/// Not a [`Surface`]: neomil's root panel is not a corner-treated box
+/// at all -- its right edge carries a filled bar on slanted ends and
+/// then steps 8px inward for the rest of its height -- and kitsch's
+/// closes on a solid curl. Both live inside the panel's own width, so
+/// they cost the chain arithmetic nothing.
+#[derive(Debug, Clone, Copy)]
+struct Panel {
+    corners: Corners,
+    fill: Option<Color>,
+    stroke: Option<Color>,
+    stroke_width: f32,
+    echo: PanelEcho,
+    echo_ink: Color,
+    accent: Color,
+    root: bool,
+}
+
+impl Panel {
+    /// The outline, including neomil's stepped right edge.
+    fn path(&self, w: f32, h: f32) -> Path {
+        let PanelEcho::EdgeBar { step, top, len } = self.echo else {
+            return outline(self.corners, Ticket::default(), w, h);
+        };
+        if !self.root {
+            return outline(self.corners, Ticket::default(), w, h);
+        }
+        let tr = cut_xy(self.corners.top_right);
+        let bl = cut_xy(self.corners.bottom_left);
+        Path::new(|b| {
+            b.move_to(Point::new(0.0, 0.0));
+            b.line_to(Point::new(w - tr.0, 0.0));
+            b.line_to(Point::new(w, tr.1));
+            b.line_to(Point::new(w, top + len - step));
+            b.line_to(Point::new(w - step, top + len));
+            b.line_to(Point::new(w - step, h));
+            b.line_to(Point::new(bl.0, h));
+            b.line_to(Point::new(0.0, h - bl.1));
+            b.close();
+        })
+    }
+
+    /// The curl kitsch closes its one container with, as `(fill,
+    /// crest)`: mailbox-trace's wave scaled into the panel's foot.
+    fn wave(h: f32) -> (Path, Path) {
+        let crest = |b: &mut canvas::path::Builder| {
+            b.move_to(Point::new(0.0, h - 28.0));
+            b.quadratic_curve_to(Point::new(0.0, h - 20.0), Point::new(8.0, h - 20.0));
+            b.line_to(Point::new(40.5, h - 20.0));
+            b.quadratic_curve_to(Point::new(47.5, h - 20.0), Point::new(51.5, h - 14.5));
+            b.line_to(Point::new(62.0, h - 1.5));
+            b.quadratic_curve_to(Point::new(63.2, h), Point::new(65.0, h));
+        };
+        (
+            Path::new(|b| {
+                crest(b);
+                b.line_to(Point::new(8.0, h));
+                b.quadratic_curve_to(Point::new(0.0, h), Point::new(0.0, h - 8.0));
+                b.close();
+            }),
+            Path::new(crest),
+        )
+    }
+}
+
+impl<Message> canvas::Program<Message> for Panel {
+    type State = ();
+
+    fn draw(
+        &self,
+        _state: &Self::State,
+        renderer: &Renderer,
+        _theme: &Theme,
+        bounds: Rectangle,
+        _cursor: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        let mut frame = Frame::new(renderer, bounds.size());
+        let inset = if self.stroke.is_some() {
+            self.stroke_width / 2.0
+        } else {
+            0.0
+        };
+        let (w, h) = (bounds.width - inset * 2.0, bounds.height - inset * 2.0);
+        if w <= 0.0 || h <= 0.0 {
+            return vec![frame.into_geometry()];
+        }
+        frame.translate(iced::Vector::new(inset, inset));
+
+        let path = self.path(w, h);
+        if let Some(fill) = self.fill {
+            frame.fill(&path, fill);
+        }
+
+        // The curl goes under the outline, which is drawn over it
+        // unchanged -- mailbox-trace's wave sits inside the container
+        // it closes.
+        if let (PanelEcho::Wave, true) = (self.echo, self.root) {
+            let (body, crest) = Panel::wave(h);
+            frame.fill(&body, self.echo_ink);
+            frame.stroke(
+                &crest,
+                Stroke::default()
+                    .with_color(self.accent)
+                    .with_width(self.stroke_width),
+            );
+        }
+
+        if let Some(color) = self.stroke {
+            frame.stroke(
+                &path,
+                Stroke::default()
+                    .with_color(color)
+                    .with_width(self.stroke_width),
+            );
+        }
+
+        // The bright bar riding the right edge, and the two glitch
+        // echoes trailing it to the panel's foot.
+        if let (PanelEcho::EdgeBar { step, top, len }, true) = (self.echo, self.root) {
+            let bar = Path::new(|b| {
+                b.move_to(Point::new(w, top));
+                b.line_to(Point::new(w, top + len - step));
+                b.line_to(Point::new(w - step, top + len));
+                b.line_to(Point::new(w - step, top + step));
+                b.close();
+            });
+            frame.fill(&bar, self.accent);
+            for dx in [5.0f32, 3.0] {
+                frame.fill(
+                    &Path::rectangle(
+                        Point::new(w - dx, top + len),
+                        Size::new(self.stroke_width, (h - top - len).max(0.0)),
+                    ),
+                    self.echo_ink,
+                );
+            }
+        }
+
+        vec![frame.into_geometry()]
+    }
+}
+
+/// Neokitsch's onion rings: concentric copies of each panel's
+/// silhouette, drawn once for the whole chain because they run outside
+/// the panels they belong to and a canvas cannot draw past its own box.
+///
+/// Clipped at the top by that same box, which is the design's own
+/// instruction -- the menu overlay sits below the bar surface, so
+/// nothing of it may rise into the strip.
+#[derive(Debug, Clone)]
+struct ChainEcho {
+    boxes: Vec<(Rectangle, Corners)>,
+    count: usize,
+    pitch: f32,
+    ink: Color,
+    stroke_width: f32,
+}
+
+impl<Message> canvas::Program<Message> for ChainEcho {
+    type State = ();
+
+    fn draw(
+        &self,
+        _state: &Self::State,
+        renderer: &Renderer,
+        _theme: &Theme,
+        bounds: Rectangle,
+        _cursor: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        const FADE: [f32; 4] = [0.85, 0.61, 0.37, 0.25];
+        let mut frame = Frame::new(renderer, bounds.size());
+        for &(rect, corners) in &self.boxes {
+            for ring in 1..=self.count {
+                let out = ring as f32 * self.pitch;
+                let path = outline(
+                    corners,
+                    Ticket::default(),
+                    rect.width + out * 2.0,
+                    rect.height + out * 2.0,
+                );
+                let shift = iced::Vector::new(rect.x - out, rect.y - out);
+                frame.translate(shift);
+                frame.stroke(
+                    &path,
+                    Stroke::default()
+                        .with_color(Color {
+                            a: FADE[(ring - 1).min(FADE.len() - 1)],
+                            ..self.ink
+                        })
+                        .with_width(self.stroke_width),
+                );
+                frame.translate(iced::Vector::new(-shift.x, -shift.y));
+            }
+        }
+        vec![frame.into_geometry()]
+    }
+}
+
+/// A menu row's own trim: the spine neomil runs down a highlighted row,
+/// and the separate icon cell kitsch splits one into.
+#[derive(Debug, Clone, Copy)]
+struct RowTrim {
+    /// `(x, width, length, ink)`.
+    spine: Option<(f32, f32, f32, Color)>,
+    /// `(x, width, corners, ink)`.
+    split: Option<(f32, f32, Corners, Color)>,
+}
+
+impl RowTrim {
+    fn is_empty(&self) -> bool {
+        self.spine.is_none() && self.split.is_none()
+    }
+}
+
+impl<Message> canvas::Program<Message> for RowTrim {
+    type State = ();
+
+    fn draw(
+        &self,
+        _state: &Self::State,
+        renderer: &Renderer,
+        _theme: &Theme,
+        bounds: Rectangle,
+        _cursor: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        let mut frame = Frame::new(renderer, bounds.size());
+        if let Some((x, width, len, ink)) = self.spine {
+            frame.fill(
+                &Path::rectangle(Point::new(x, 0.0), Size::new(width, len)),
+                ink,
+            );
+        }
+        if let Some((x, width, corners, ink)) = self.split {
+            let path = outline(corners, Ticket::default(), width, bounds.height);
+            frame.translate(iced::Vector::new(x, 0.0));
+            frame.fill(&path, ink);
+        }
+        vec![frame.into_geometry()]
+    }
+}
+
+/// A separator, in whichever shape the era says a break between groups
+/// is -- and the row divider, which entropism draws on every boundary.
+#[derive(Debug, Clone, Copy)]
+struct Rule {
+    inset: (f32, f32),
+    width: f32,
+    ink: Color,
+    /// Neokitsch stands a tab on its list rules.
+    tab: Option<(Tab, Color)>,
+}
+
+impl<Message> canvas::Program<Message> for Rule {
+    type State = ();
+
+    fn draw(
+        &self,
+        _state: &Self::State,
+        renderer: &Renderer,
+        _theme: &Theme,
+        bounds: Rectangle,
+        _cursor: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        let mut frame = Frame::new(renderer, bounds.size());
+        let (w, h) = (bounds.width, bounds.height);
+        let y = ((h - self.width) / 2.0).max(0.0);
+        let x0 = self.inset.0;
+        let x1 = (w - self.inset.1).max(x0);
+        frame.fill(
+            &Path::rectangle(Point::new(x0, y), Size::new(x1 - x0, self.width)),
+            self.ink,
+        );
+        if let Some((tab, ink)) = self.tab {
+            // Standing on the rule rather than hanging off a box, so
+            // the rule's own top edge is the tab's baseline.
+            frame.fill(&tab_path(tab, x1 - 12.0, y, 0.0), ink);
+        }
+        vec![frame.into_geometry()]
+    }
+}
+
+/// The era's left arrow, for the submenu marker of an era that has one.
+#[derive(Debug, Clone, Copy)]
+struct Arrow {
+    ink: Color,
+}
+
+impl<Message> canvas::Program<Message> for Arrow {
+    type State = ();
+
+    fn draw(
+        &self,
+        _state: &Self::State,
+        renderer: &Renderer,
+        _theme: &Theme,
+        bounds: Rectangle,
+        _cursor: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        let mut frame = Frame::new(renderer, bounds.size());
+        let (w, h) = (bounds.width, bounds.height);
+        let mid = h / 2.0;
+        let head = h * 0.8;
+        frame.fill(
+            &Path::new(|b| {
+                b.move_to(Point::new(0.0, mid));
+                b.line_to(Point::new(head, 0.0));
+                b.line_to(Point::new(head, h));
+                b.close();
+            }),
+            self.ink,
+        );
+        frame.fill(
+            &Path::rectangle(
+                Point::new(head * 0.75, mid - 1.0),
+                Size::new((w - head * 0.75).max(0.0), 2.0),
+            ),
+            self.ink,
+        );
+        vec![frame.into_geometry()]
+    }
 }
 
 /// One menu row.
@@ -398,40 +1480,29 @@ fn menu_row<'a, Message: Clone + 'static>(
     on_entry: fn(i32) -> Message,
     on_submenu: fn(MenuPath) -> Message,
 ) -> Element<'a, Message> {
+    let m = &style.bar.menu;
+
     if let MenuKind::Separator = entry.kind {
-        // A rule, not a row: the era's border colour at the stroke
-        // width it declares, with air either side.
-        let border = style.palette.border;
-        return container(
-            container(
-                Space::new()
-                    .width(Length::Fill)
-                    .height(Length::Fixed(style.metrics.stroke)),
-            )
-            .style(move |_: &iced::Theme| container::Style {
-                background: Some(border.into()),
-                ..container::Style::default()
-            })
-            .width(Length::Fill),
-        )
-        .padding(Padding::from([MENU_RULE_AIR, MENU_RULE_SIDE]))
-        .width(Length::Fill)
-        .into();
+        return separator_row(style, entry);
     }
 
     let label = clip(&entry.label, MENU_LABEL_CHARS);
-    // The parent of an open submenu wears the era's selection, the
-    // same ink a set toggle does. Unambiguous because a row is one
-    // kind or the other and never both, and it costs no new widget:
-    // "the one you are looking at" is what selection already means.
-    let selected = matches!(entry.kind, MenuKind::Toggle(true)) || open;
-
-    let text = if selected {
-        text::on_select(style, label)
-    } else if entry.enabled {
-        text::body(style, label)
+    // The parent of an open submenu wears the era's own mark for "the
+    // one you are looking at", which is not always its selection:
+    // three eras fill it and neokitsch outlines it, because a material
+    // means "chosen" there and an outline means "current".
+    let dressed = if open {
+        Some((m.open, m.open_inset))
+    } else if matches!(entry.kind, MenuKind::Toggle(true)) {
+        Some((m.row, m.row_inset))
     } else {
-        text::body(style, label).color(style.palette.dim)
+        None
+    };
+
+    let ink = match (dressed, entry.enabled) {
+        (Some((dress, _)), _) => dress.ink,
+        (None, false) => m.disabled,
+        (None, true) => Ink::Fg,
     };
 
     let size = menu_icon_size(style);
@@ -451,19 +1522,28 @@ fn menu_row<'a, Message: Clone + 'static>(
                 .into(),
         };
         container(slot)
-            .width(Length::Fixed(size + MENU_ICON_GAP))
+            .center_x(Length::Fixed(m.icon_col))
+            .width(Length::Fixed(m.icon_col + m.icon_gap))
             .into()
     });
 
-    let trailing: Element<'a, Message> = match entry.kind {
-        MenuKind::Submenu if selected => text::on_select(style, MENU_SUBMENU_MARKER).into(),
-        MenuKind::Submenu => text::mid(style, MENU_SUBMENU_MARKER).into(),
-        _ => Space::new().width(Length::Shrink).height(Length::Shrink).into(),
+    let trailing: Element<'a, Message> = match (entry.kind, m.marker) {
+        (MenuKind::Submenu, MenuMarker::Arrow { w, h }) => canvas(Arrow {
+            ink: ink_of(style, ink),
+        })
+        .width(Length::Fixed(w))
+        .height(Length::Fixed(h))
+        .into(),
+        (MenuKind::Submenu, MenuMarker::Text) => ink_text(style, ink, false, "<").into(),
+        _ => Space::new()
+            .width(Length::Shrink)
+            .height(Length::Shrink)
+            .into(),
     };
 
     let inner = row![]
         .extend(leading)
-        .push(text)
+        .push(ink_text(style, ink, false, label))
         .push(Space::new().width(Length::Fill).height(Length::Shrink))
         .push(trailing)
         .align_y(iced::Alignment::Center)
@@ -472,14 +1552,75 @@ fn menu_row<'a, Message: Clone + 'static>(
         // renderer gets told about.
         .height(Length::Fixed(menu_line(style)));
 
-    // `backdrop` rather than `surface`: a bar cell pins its own height
-    // and a menu row does not, and a `surface` whose caller does not
-    // pin one grows to whatever the column offers it.
-    let padding = Padding::from([MENU_ROW_AIR, MENU_ROW_SIDE]);
-    let face: Element<'a, Message> = if selected {
-        backdrop(Surface::selected(style), padding, inner)
-    } else {
-        container(inner).padding(padding).into()
+    let padded = container(inner)
+        .padding(Padding {
+            top: m.row_air,
+            right: m.row_side,
+            bottom: m.row_air,
+            left: m.row_side,
+        })
+        .width(Length::Fill);
+
+    let face: Element<'a, Message> = match dressed {
+        None => padded.into(),
+        Some((dress, inset)) => {
+            // Kitsch splits a selected row in two -- an icon cell, a
+            // 2px gap, then the chamfered body -- but only where the
+            // row has an icon to put in one.
+            let split = m
+                .row_split
+                .filter(|_| entry.icon.is_some())
+                .map(|(width, corners)| (inset.0, width, corners, ink_of(style, dress.fill)));
+            let body_left = inset.0 + split.map(|(_, width, _, _)| width + 2.0).unwrap_or(0.0);
+
+            let trim = RowTrim {
+                spine: (m.spine > 0.0).then(|| {
+                    (
+                        (inset.0 - 5.0).max(0.0),
+                        m.spine,
+                        // Down to the knee of the row's own chamfer,
+                        // which is where store-trace stops the nav
+                        // row's spine.
+                        row_height(style, entry) - cut_xy(dress.corners.bottom_left).1,
+                        ink_of(style, dress.fill),
+                    )
+                }),
+                split,
+            };
+
+            let mut plate = stack![face_canvas(style, &dress)];
+            let row_trim = Trim {
+                tab: dress
+                    .tab
+                    .then_some(style.bar.tab)
+                    .flatten()
+                    .map(|tab| (tab, ink_of(style, tab.fill))),
+                ticks: None,
+                grain: Trim::grain_of(style, &dress),
+                stroke: style.bar.stroke,
+            };
+            if !row_trim.is_empty() {
+                plate = plate.push(
+                    canvas(row_trim).width(Length::Fill).height(Length::Fill),
+                );
+            }
+
+            let mut background = stack![container(plate)
+                .padding(Padding {
+                    top: 0.0,
+                    right: inset.1,
+                    bottom: 0.0,
+                    left: body_left,
+                })
+                .width(Length::Fill)
+                .height(Length::Fill)];
+            if !trim.is_empty() {
+                background =
+                    background.push(canvas(trim).width(Length::Fill).height(Length::Fill));
+            }
+
+            layered(background, padded)
+        }
     };
 
     // Sending `clicked` to a row an application has greyed is asking
@@ -507,14 +1648,58 @@ fn menu_row<'a, Message: Clone + 'static>(
         .into()
 }
 
+/// A break between groups, in the era's own shape.
+fn separator_row<'a, Message: 'static>(style: &Style, entry: &MenuEntry) -> Element<'a, Message> {
+    let m = &style.bar.menu;
+    let height = row_height(style, entry);
+    if let MenuRule::Empty { .. } = m.rule {
+        return Space::new()
+            .width(Length::Fill)
+            .height(Length::Fixed(height))
+            .into();
+    }
+    let inset = match m.rule {
+        MenuRule::Inset => m.row_inset,
+        MenuRule::Tabbed => (6.0, 6.0),
+        _ => (0.0, 0.0),
+    };
+    canvas(Rule {
+        inset,
+        width: style.bar.stroke,
+        ink: ink_of(style, m.rule_ink),
+        tab: match m.rule {
+            MenuRule::Tabbed => style.bar.tab.map(|tab| (tab, ink_of(style, tab.fill))),
+            _ => None,
+        },
+    })
+    .width(Length::Fill)
+    .height(Length::Fixed(height))
+    .into()
+}
+
+/// The rule entropism puts on every row boundary inside a panel.
+fn row_divider<'a, Message: 'static>(style: &Style) -> Element<'a, Message> {
+    canvas(Rule {
+        inset: (0.0, 0.0),
+        width: style.bar.stroke,
+        ink: ink_of(style, style.bar.menu.panel.stroke),
+        tab: None,
+    })
+    .width(Length::Fill)
+    .height(Length::Fixed(style.bar.stroke))
+    .into()
+}
+
 /// One panel of the chain, filled and stroked.
 fn menu_panel<'a, Message: Clone + 'static>(
     style: &Style,
     level: &Level<'_>,
     prefix: &[usize],
+    root: bool,
     on_entry: fn(i32) -> Message,
     on_submenu: fn(MenuPath) -> Message,
 ) -> Element<'a, Message> {
+    let m = &style.bar.menu;
     let gutter = has_icons(level.entries);
     let mut rows = iced::widget::column![].width(Length::Fill);
     for (index, entry) in level.entries.iter().enumerate() {
@@ -529,12 +1714,37 @@ fn menu_panel<'a, Message: Clone + 'static>(
             on_entry,
             on_submenu,
         ));
+        if m.row_divider && index + 1 < level.entries.len() {
+            rows = rows.push(row_divider(style));
+        }
     }
 
-    container(backdrop(
-        Surface::filled(style, style.palette.bg).stroke(style.palette.border),
-        Padding::from([MENU_PANEL_AIR, MENU_PANEL_SIDE]),
-        rows,
+    let panel = Panel {
+        corners: m.panel.corners,
+        fill: style.ink(m.panel.fill),
+        stroke: style.ink(m.panel.stroke),
+        stroke_width: style.bar.stroke,
+        echo: m.echo,
+        // The two ornaments that live inside a panel take their ink
+        // from the era rather than from the panel's stroke: neomil's
+        // glitch echoes are the deep red under the fill red, and
+        // kitsch's curl is the era's one solid decoration colour.
+        echo_ink: match m.echo {
+            PanelEcho::Wave => style.ornament(),
+            _ => style.palette.border,
+        },
+        accent: ink_of(style, m.panel.stroke),
+        root,
+    };
+
+    container(layered(
+        canvas(panel).width(Length::Fill).height(Length::Fill),
+        container(rows).padding(Padding {
+            top: m.air,
+            right: m.side,
+            bottom: m.air + if root { m.foot } else { 0.0 },
+            left: m.side,
+        }),
     ))
     .width(Length::Fixed(level_width(style, level.entries)))
     .height(Length::Shrink)
@@ -572,7 +1782,7 @@ fn menu_panel<'a, Message: Clone + 'static>(
 /// new to dismiss -- one click outside destroys the one surface and
 /// the whole chain with it, rather than unwinding a stack of them.
 ///
-/// The chain grows **leftwards**, which is why `MENU_SUBMENU_MARKER`
+/// The chain grows **leftwards**, which is why the submenu marker
 /// points that way. The tray is the last group on the right-hand side
 /// of the bar, so the root panel is already hard against the right
 /// edge of the screen; a submenu opening rightwards would be a submenu
@@ -586,15 +1796,37 @@ pub fn tray_menu<'a, Message: Clone + 'static>(
     on_entry: fn(i32) -> Message,
     on_submenu: fn(MenuPath) -> Message,
 ) -> Element<'a, Message> {
+    let m = &style.bar.menu;
     let levels = levels(style, menu, open);
 
     // Deepest first, so that the root panel ends up rightmost and the
     // chain grows away from the edge of the screen.
     let mut chain = row![].align_y(iced::Alignment::Start);
+    let mut boxes: Vec<(Rectangle, Corners)> = Vec::new();
+    let mut x = m.echo_pad;
     for (depth, level) in levels.iter().enumerate().rev() {
+        if depth + 1 < levels.len() && m.level_gap > 0.0 {
+            chain = chain.push(
+                Space::new()
+                    .width(Length::Fixed(m.level_gap))
+                    .height(Length::Fixed(1.0)),
+            );
+            x += m.level_gap;
+        }
         // `depth` never runs past the walk, so this slice is the
         // prefix that actually got followed.
-        let panel = menu_panel(style, level, &open[..depth], on_entry, on_submenu);
+        let panel = menu_panel(style, level, &open[..depth], depth == 0, on_entry, on_submenu);
+        let width = level_width(style, level.entries);
+        boxes.push((
+            Rectangle {
+                x,
+                y: level.top,
+                width,
+                height: panel_height(style, level.entries, depth == 0),
+            },
+            m.panel.corners,
+        ));
+        x += width;
         chain = chain.push(
             iced::widget::column![
                 Space::new()
@@ -605,7 +1837,44 @@ pub fn tray_menu<'a, Message: Clone + 'static>(
             .height(Length::Shrink),
         );
     }
-    chain.height(Length::Shrink).into()
+
+    // The rings run outside the panels, so they cannot be drawn by a
+    // panel's own canvas; the chain reserves room on the left and at
+    // the foot and draws them all at once. Nothing is reserved above
+    // or to the right on purpose: the top is where the design clips
+    // them (the overlay sits below the bar surface) and the right edge
+    // is the chain's contract with whoever placed it.
+    let chain: Element<'a, Message> = container(chain)
+        .padding(Padding {
+            top: 0.0,
+            right: m.echo_pad,
+            bottom: m.echo_pad,
+            left: m.echo_pad,
+        })
+        .height(Length::Shrink)
+        .into();
+
+    match m.echo {
+        PanelEcho::Rings { count, pitch } => layered(
+            canvas(ChainEcho {
+                boxes,
+                count,
+                pitch,
+                ink: ink_of(style, m.panel.stroke),
+                // The design draws the rings at 1; rsvg renders that
+                // as one solid pixel and an antialiased canvas as two
+                // half-lit ones, which reads as a fainter ring than
+                // the trace has. 1.5 puts a whole pixel on the line;
+                // the era's full stroke was tried and is no better on
+                // the gate and heavier by eye.
+                stroke_width: 1.5,
+            })
+            .width(Length::Fill)
+            .height(Length::Fill),
+            chain,
+        ),
+        _ => chain,
+    }
 }
 
 /// How the bar reports a pointer event on a tray cell to its host.
@@ -644,63 +1913,76 @@ pub struct Readings {
     pub date: String,
 }
 
-/// Width a label needs, in pixels.
+/// Which of the era's dresses a module wears.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Wear {
+    Idle,
+    Selected,
+    /// The reading is a warning: the sink is muted, there is no route
+    /// out, or an item is asking to be looked at.
+    Alert,
+}
+
+fn dress_for(style: &Style, wear: Wear) -> Dress {
+    match wear {
+        Wear::Idle => style.bar.idle,
+        Wear::Selected => style.bar.selected,
+        Wear::Alert => style.bar.alert,
+    }
+}
+
+/// The label an era puts on a module in `wear`.
 ///
-/// A [`Surface`] paints the box it is handed and its canvas fills
-/// whatever space it is given, so in a shrink-width row the cells
-/// collapse and clip their own text -- a five-character hostname came
-/// out as three.
-/// Sizing from the label is also the better behaviour for a bar: cells
-/// stop reflowing every time CPU% ticks from 9 to 10.
-fn width_for(style: &Style, label: &str) -> f32 {
-    let per_char = style.metrics.text_body as f32 * 0.58;
-    (label.chars().count() as f32 * per_char).ceil() + 26.0
+/// Entropism is the reason this is not just the reading: the only
+/// urgency mark anywhere in its material is a literal " (!)" suffix in
+/// the *same* ink as its neighbours, so the era says alarm in words and
+/// `palette.alert` goes unused on this surface.
+fn worn_label(style: &Style, label: String, wear: Wear) -> String {
+    match (wear, style.bar.alert_suffix) {
+        (Wear::Alert, Some(suffix)) => format!("{label}{suffix}"),
+        _ => label,
+    }
 }
 
-/// A bar module: outlined, in the era's own silhouette.
-fn cell<'a, Message: 'static>(
+/// A bar module carrying a label.
+fn text_cell<'a, Message: 'static>(
     style: &Style,
+    wear: Wear,
     label: impl Into<String>,
-    filled: bool,
-) -> Element<'a, Message> {
-    let label: String = label.into();
-    let width = width_for(style, &label);
-
-    let bg = if filled {
-        Surface::selected(style)
-    } else {
-        Surface::outlined(style)
-    };
-    let content = if filled {
-        text::on_select(style, label)
-    } else {
-        text::body(style, label)
-    };
-    container(surface(bg, Padding::from([2, 10]), content))
-        .width(Length::Fixed(width))
-        .height(Length::Fill)
-        .into()
+    bold: bool,
+    width: Option<f32>,
+) -> Slot<'a, Message> {
+    worn_cell(style, dress_for(style, wear), wear, label, bold, width)
 }
 
-/// A module whose reading is a warning: the sink is muted, or there is
-/// no route out. Same silhouette as [`cell`] -- only the ink moves, to
-/// the era's published `alert` role, so this stays era-agnostic and a
-/// fifth era gets its own idea of alarm for free.
-fn alert_cell<'a, Message: 'static>(
+/// The same, in a dress the caller has already adjusted -- which is
+/// only ever the workspace run, and only in the era whose workspaces
+/// are a different shape from its readouts.
+fn worn_cell<'a, Message: 'static>(
     style: &Style,
+    dress: Dress,
+    wear: Wear,
     label: impl Into<String>,
-) -> Element<'a, Message> {
-    let label: String = label.into();
-    let width = width_for(style, &label);
-
-    container(surface(
-        Surface::outlined(style),
-        Padding::from([2, 10]),
-        text::body(style, label).color(style.palette.alert),
-    ))
-    .width(Length::Fixed(width))
-    .height(Length::Fill)
-    .into()
+    bold: bool,
+    width: Option<f32>,
+) -> Slot<'a, Message> {
+    let label = worn_label(style, label.into(), wear);
+    let track = if wear == Wear::Alert {
+        label.chars().count() as f32 * style.bar.alert_track
+    } else {
+        0.0
+    };
+    let width = width.unwrap_or_else(|| width_for(style, &label, &dress) + track);
+    // The label is set against the leading edge because the trailing
+    // end belongs to the tab; a plate with no tab centres it, the way
+    // ENTER / LOGIN does.
+    let lead = (style.bar.label_left && dress.tab).then_some(style.bar.pad_x);
+    let content = ink_text(style, dress.ink, bold, label).into();
+    Slot {
+        gap: style.bar.gap,
+        width,
+        element: plate(style, &dress, width, lead, false, content),
+    }
 }
 
 /// Clip to `max` characters, counting characters rather than bytes so a
@@ -718,15 +2000,15 @@ fn clip(text: &str, max: usize) -> String {
 /// `VOL` and `MUT` rather than a speaker glyph: the icon set is still a
 /// to-do, and three characters either way means the cell keeps its
 /// width when the sink is muted, so nothing to its left reflows.
-fn audio_cell<'a, Message: 'static>(style: &Style, audio: &Audio) -> Element<'a, Message> {
+fn audio_cell<'a, Message: 'static>(style: &Style, audio: &Audio) -> Slot<'a, Message> {
     // Three digits covers PulseAudio's amplification range without the
     // cell growing; past that the number is not the interesting fact.
     let volume = audio.volume.min(999);
 
     if audio.muted {
-        alert_cell(style, format!("MUT {volume:>3}%"))
+        text_cell(style, Wear::Alert, format!("MUT {volume:>3}%"), false, None)
     } else {
-        cell(style, format!("VOL {volume:>3}%"), false)
+        text_cell(style, Wear::Idle, format!("VOL {volume:>3}%"), false, None)
     }
 }
 
@@ -748,42 +2030,56 @@ pub fn icon_size(style: &Style) -> f32 {
 ///
 /// The icon is handed over already decoded and composited, so all this
 /// decides is the box around it -- which is the whole argument for
-/// having built this bar: a tray icon is a [`cell`], so it wears the
-/// era's corner for free.
+/// having built this bar: a tray icon is a module, so it wears the
+/// era's silhouette, tab and trim for free.
 fn icon_cell<'a, Message: 'static>(
     style: &Style,
     icon: &image::Handle,
     attention: bool,
-) -> Element<'a, Message> {
+) -> Slot<'a, Message> {
     let size = icon_size(style);
+    let wear = if attention { Wear::Alert } else { Wear::Idle };
+    let dress = dress_for(style, wear);
 
-    // An item shouting has usually swapped its own icon for
-    // `AttentionIcon*` already, but many define none -- so the cell
-    // says it too, in the era's published `alert` role, the same ink
-    // `alert_cell` moves for a muted sink.
-    let bg = if attention {
-        Surface::outlined(style).stroke(style.palette.alert)
-    } else {
-        Surface::outlined(style)
+    // Same reserve as a label's, for the same reason.
+    let mut width = size
+        + if dress.tab {
+            style.bar.icon_pad
+        } else {
+            style.bar.pad_x * 2.0
+        };
+    let pixmap: Element<'a, Message> = image(icon.clone())
+        .width(Length::Fixed(size))
+        .height(Length::Fixed(size))
+        // Nearest would alias a 22px item icon scaled to 14;
+        // these are photographs as far as the bar is concerned.
+        .filter_method(image::FilterMethod::Linear)
+        .into();
+
+    // An era that spells alarm as a word says it here too, beside the
+    // pixmap, rather than moving an ink the era never moves.
+    let content: Element<'a, Message> = match (attention, style.bar.alert_suffix) {
+        (true, Some(suffix)) => {
+            let suffix = suffix.trim().to_string();
+            width += width_for(style, &suffix, &dress) - style.bar.pad_x;
+            row![
+                pixmap,
+                Space::new()
+                    .width(Length::Fixed(style.bar.menu.icon_gap))
+                    .height(Length::Shrink),
+                ink_text(style, dress.ink, false, suffix)
+            ]
+            .align_y(iced::Alignment::Center)
+            .into()
+        }
+        _ => pixmap,
     };
 
-    container(surface(
-        bg,
-        Padding::from([2, 6]),
-        container(
-            image(icon.clone())
-                .width(Length::Fixed(size))
-                .height(Length::Fixed(size))
-                // Nearest would alias a 22px item icon scaled to 14;
-                // these are photographs as far as the bar is concerned.
-                .filter_method(image::FilterMethod::Linear),
-        )
-        .center_x(Length::Fill)
-        .center_y(Length::Fill),
-    ))
-    .width(Length::Fixed(size + 18.0))
-    .height(Length::Fill)
-    .into()
+    Slot {
+        gap: style.bar.gap,
+        width,
+        element: plate(style, &dress, width, None, false, content),
+    }
 }
 
 /// One tray item, and the pointer events it answers to.
@@ -792,35 +2088,36 @@ fn tray_cell<'a, Message: Clone + 'static>(
     item: &TrayItem,
     index: usize,
     on_tray: Option<OnTray<Message>>,
-) -> Element<'a, Message> {
-    let face = match &item.icon {
+) -> Slot<'a, Message> {
+    let wear = if item.attention {
+        Wear::Alert
+    } else {
+        Wear::Idle
+    };
+    let slot = match &item.icon {
         Some(icon) => icon_cell(style, icon, item.attention),
         // Clipped for the same reason the SSID is: a label is whatever
         // the application chose to call itself, and one long one must
         // not push the clock off the screen.
-        None => {
-            let label = clip(&item.label, 6);
-            if item.attention {
-                alert_cell(style, label)
-            } else {
-                cell(style, label, false)
-            }
-        }
+        None => text_cell(style, wear, clip(&item.label, 6), false, None),
     };
 
     let Some(on_tray) = on_tray else {
-        return face;
+        return slot;
     };
 
-    mouse_area(face)
-        .on_press(on_tray(index, TrayAction::Activate))
-        .on_middle_press(on_tray(index, TrayAction::Secondary))
-        .on_right_press(on_tray(index, TrayAction::Context))
-        .on_scroll(move |delta| on_tray(index, TrayAction::Scroll(detents(delta))))
-        // The one cell on the bar that does anything, so it is the one
-        // cell that should look like it does.
-        .interaction(mouse::Interaction::Pointer)
-        .into()
+    Slot {
+        element: mouse_area(slot.element)
+            .on_press(on_tray(index, TrayAction::Activate))
+            .on_middle_press(on_tray(index, TrayAction::Secondary))
+            .on_right_press(on_tray(index, TrayAction::Context))
+            .on_scroll(move |delta| on_tray(index, TrayAction::Scroll(detents(delta))))
+            // The one cell on the bar that does anything, so it is the
+            // one cell that should look like it does.
+            .interaction(mouse::Interaction::Pointer)
+            .into(),
+        ..slot
+    }
 }
 
 /// A wheel movement as whole detents, keeping the delta's own sign.
@@ -848,31 +2145,84 @@ fn detents(delta: mouse::ScrollDelta) -> i32 {
 fn network_cell<'a, Message: 'static>(
     style: &Style,
     network: &Network,
-) -> Option<Element<'a, Message>> {
+) -> Option<Slot<'a, Message>> {
     match network {
         Network::Unknown => None,
-        Network::Offline => Some(alert_cell(style, "NET --")),
-        Network::Wired { interface } => {
-            Some(cell(style, format!("NET {}", clip(interface, 12)), false))
-        }
+        Network::Offline => Some(text_cell(style, Wear::Alert, "NET --", false, None)),
+        Network::Wired { interface } => Some(text_cell(
+            style,
+            Wear::Idle,
+            format!("NET {}", clip(interface, 12)),
+            false,
+            None,
+        )),
         Network::Wireless { interface, ssid } => {
             let name = if ssid.is_empty() { interface } else { ssid };
-            Some(cell(style, format!("WIFI {}", clip(name, 16)), false))
+            Some(text_cell(
+                style,
+                Wear::Idle,
+                format!("WIFI {}", clip(name, 16)),
+                false,
+                None,
+            ))
         }
     }
 }
 
-/// The hostname tape at the far left. Uses `tape`, the role that exists
-/// precisely for improvised labelling.
-fn host_tape<'a, Message: 'static>(style: &Style, host: &'a str) -> Element<'a, Message> {
-    container(surface(
-        Surface::filled(style, style.palette.tape).no_stroke(),
-        Padding::from([2, 12]),
-        text::body(style, host).color(style.palette.bg),
-    ))
-    .width(Length::Fixed(width_for(style, host) + 4.0))
-    .height(Length::Fill)
-    .into()
+/// The hostname tape at the far left.
+///
+/// Not a [`Wear`]: three eras give the tape a silhouette no other
+/// module has -- neomil's blunt-pointed code tape with its barcode
+/// ticks, kitsch's stepped USER box, neokitsch's veneer plate with a
+/// chamfered top-right -- and its label is set against the leading edge
+/// rather than centred, because that is where the ticks leave room.
+fn host_tape<'a, Message: 'static>(style: &Style, host: &str) -> Slot<'a, Message> {
+    let b = &style.bar;
+    let per_char = style.metrics.text_body as f32 * b.em;
+    let width = (host.chars().count() as f32 * per_char).ceil() + b.pad_x * 2.0 + b.tape_extra;
+    // The ticks own the first 26px of the plate, so the name starts
+    // after them rather than at the ordinary inset.
+    let lead = if b.tape_ticks { 32.0 } else { b.pad_x };
+    let content = ink_text(style, b.tape.ink, false, host.to_string()).into();
+    Slot {
+        gap: 0.0,
+        width,
+        element: plate(style, &b.tape, width, Some(lead), b.tape_ticks, content),
+    }
+}
+
+/// The focused window's title, in whatever the era makes of it.
+fn window_label<'a, Message: 'static>(style: &Style, window: &str) -> Element<'a, Message> {
+    let w = style.bar.window;
+    let text = ink_text(style, w.ink, false, window.to_string());
+    match w.dress {
+        // Bare text: entropism's long open centre string, and
+        // neokitsch's annotation hanging under the wire bridge.
+        None => container(text)
+            .padding(Padding::ZERO.left(if w.leading { w.pad_x } else { 0.0 }))
+            .center_y(Length::Fill)
+            .into(),
+        // A box: neomil's tab box and kitsch's DESCRIPTION box, both a
+        // plainer shape than the modules either side of them.
+        //
+        // Sized by the text rather than by `width_for`'s estimate,
+        // which is the one place on the bar where that is right: a
+        // module keeps a fixed width so the row does not reflow when a
+        // reading ticks, and a window title is not a reading. It is
+        // also what the designs measured -- neomil's box is 239 wide
+        // for a label the per-character estimate calls 276.
+        Some(dress) => {
+            let height = style.bar.height as f32 - style.bar.pad_y * 2.0;
+            container(layered(
+                face_canvas(style, &dress),
+                container(text)
+                    .padding(Padding::from([0.0, w.pad_x]))
+                    .center_y(Length::Fixed(height)),
+            ))
+            .center_y(Length::Fill)
+            .into()
+        }
+    }
 }
 
 /// The whole bar. `height` should match `Style::bar.height`, which is
@@ -888,61 +2238,175 @@ pub fn bar<'a, Message: Clone + 'static>(
     r: &'a Readings,
     on_tray: Option<OnTray<Message>>,
 ) -> Element<'a, Message> {
-    let gap = style.metrics.gap * 0.4;
+    let b = &style.bar;
 
-    let mut left = row![].spacing(gap).height(Length::Fill);
-    if style.bar.host_tape && !r.host.is_empty() {
-        left = left.push(host_tape(style, &r.host));
+    let mut left: Vec<Slot<'a, Message>> = Vec::new();
+    let tape = b.host_tape && !r.host.is_empty();
+    if tape {
+        left.push(host_tape(style, &r.host));
     }
-    for ws in &r.workspaces {
-        left = left.push(cell(style, ws.id.to_string(), ws.active));
+    for (index, ws) in r.workspaces.iter().enumerate() {
+        let wear = if ws.active {
+            Wear::Selected
+        } else {
+            Wear::Idle
+        };
+        let mut dress = dress_for(style, wear);
+        if let Some(corners) = b.ws_corners {
+            dress.corners = corners;
+        }
+        let mut slot = worn_cell(
+            style,
+            dress,
+            wear,
+            ws.id.to_string(),
+            b.bold_tiers,
+            Some(b.ws_width),
+        );
+        slot.gap = if index == 0 && tape {
+            b.ws_lead
+        } else {
+            b.ws_gap
+        };
+        left.push(slot);
     }
-
-    let centre: Element<'a, Message> = if r.window.is_empty() {
-        Space::new().width(Length::Shrink).height(Length::Shrink).into()
-    } else {
-        container(text::label(style, r.window.as_str()))
-            .center_y(Length::Fill)
-            .into()
-    };
 
     // Built by pushing rather than as a literal, because the audio and
     // network modules are absent -- not blank -- when their subsystem
     // has nothing to say.
-    let mut right = row![].spacing(gap).height(Length::Fill);
+    let mut right: Vec<Slot<'a, Message>> = Vec::new();
     // Tray first, so the modules that are always present keep a fixed
     // distance from the right edge; an application starting up should
     // not move the clock.
     for (index, item) in r.tray.iter().enumerate() {
-        right = right.push(tray_cell(style, item, index, on_tray));
+        right.push(tray_cell(style, item, index, on_tray));
     }
     if let Some(network) = network_cell(style, &r.network) {
-        right = right.push(network);
+        right.push(network);
     }
     if let Some(audio) = &r.audio {
-        right = right.push(audio_cell(style, audio));
+        right.push(audio_cell(style, audio));
     }
-    let right = right
-        .push(cell(style, format!("CPU {:>2}%", r.cpu), false))
-        .push(cell(style, format!("MEM {:>2}%", r.memory), false))
-        .push(cell(style, r.date.as_str(), false))
-        .push(cell(style, r.clock.as_str(), true));
+    right.push(text_cell(
+        style,
+        Wear::Idle,
+        format!("CPU {:>2}%", r.cpu),
+        false,
+        None,
+    ));
+    right.push(text_cell(
+        style,
+        Wear::Idle,
+        format!("MEM {:>2}%", r.memory),
+        false,
+        None,
+    ));
+    right.push(text_cell(style, Wear::Idle, r.date.as_str(), false, None));
+    right.push(match b.clock_plain {
+        // Neokitsch's clock is the login screen's: larger, lighter and
+        // in no box at all, the only clock anywhere in the run.
+        Some(size) => {
+            let label = r.clock.clone();
+            let width = text_width(style, &label) * f32::from(size)
+                / style.metrics.text_body as f32;
+            Slot {
+                gap: b.gap,
+                width,
+                // Pinned to the same estimate the run is measured
+                // with. A shrink-width clock would let the face's own
+                // advance decide where the whole tray starts, and the
+                // run is right-anchored, so every module left of it
+                // would move with the hour.
+                element: container(
+                    ink_text(style, b.idle.ink, b.bold_tiers, label).size(f32::from(size)),
+                )
+                .width(Length::Fixed(width))
+                .center_y(Length::Fill)
+                .into(),
+            }
+        }
+        None => text_cell(
+            style,
+            Wear::Selected,
+            r.clock.as_str(),
+            b.bold_tiers,
+            None,
+        ),
+    });
 
-    container(
+    if let Some(first) = left.first_mut() {
+        first.gap = 0.0;
+    }
+    if let Some(first) = right.first_mut() {
+        first.gap = 0.0;
+    }
+
+    let (left_row, left_metrics) = run(left);
+    let (right_row, right_metrics) = run(right);
+
+    let centre: Element<'a, Message> = if r.window.is_empty() {
+        Space::new()
+            .width(Length::Shrink)
+            .height(Length::Shrink)
+            .into()
+    } else {
+        window_label(style, &r.window)
+    };
+
+    let modules = if b.window.leading {
         row![
-            left,
+            left_row,
+            centre,
+            Space::new().width(Length::Fill).height(Length::Shrink),
+            right_row,
+        ]
+    } else {
+        row![
+            left_row,
             Space::new().width(Length::Fill).height(Length::Shrink),
             centre,
             Space::new().width(Length::Fill).height(Length::Shrink),
-            right,
+            right_row,
         ]
-        .align_y(iced::Alignment::Center)
-        .height(Length::Fill),
-    )
-    .padding(Padding::from([3, 6]))
-    .width(Length::Fill)
-    .height(Length::Fill)
-    .into()
+    };
+
+    let strip = Strip {
+        ground: b.ground,
+        chrome: b.chrome,
+        ornament: b.ornament,
+        chrome_ink: match b.ground {
+            BarGround::Band { rule, .. } => ink_of(style, rule),
+            _ => ink_of(style, b.menu.panel.stroke),
+        },
+        ornament_ink: match b.ornament {
+            BarOrnament::Bracket => ink_of(style, Ink::Emphasis),
+            _ => ink_of(style, Ink::Banner),
+        },
+        stroke: b.stroke,
+        pad_left: b.pad_left,
+        pad_right: b.pad_right,
+        pad_y: b.pad_y,
+        left: left_metrics,
+        right: right_metrics,
+    };
+
+    let mut layers = stack![canvas(strip).width(Length::Fill).height(Length::Fill)];
+    layers = layers.push(
+        container(modules.align_y(iced::Alignment::Center).height(Length::Fill))
+            .padding(Padding {
+                top: b.pad_y,
+                right: b.pad_right,
+                bottom: b.pad_y,
+                left: b.pad_left,
+            })
+            .width(Length::Fill)
+            .height(Length::Fill),
+    );
+
+    container(layers)
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .into()
 }
 
 #[cfg(test)]
@@ -1010,7 +2474,7 @@ mod tests {
         assert_eq!(levels(&style, &menu, &[]).len(), 1);
         assert_eq!(
             menu_chain_width(&style, &menu, &[]),
-            level_width(&style, &menu.entries)
+            level_width(&style, &menu.entries) + style.bar.menu.echo_pad * 2.0
         );
     }
 
@@ -1027,7 +2491,10 @@ mod tests {
 
         assert_eq!(
             menu_chain_width(&style, &menu, &open),
-            level_width(&style, &menu.entries) + level_width(&style, &menu.entries[2].children)
+            level_width(&style, &menu.entries)
+                + level_width(&style, &menu.entries[2].children)
+                + style.bar.menu.level_gap
+                + style.bar.menu.echo_pad * 2.0
         );
     }
 
@@ -1039,7 +2506,7 @@ mod tests {
 
         // The two rows above the submenu, and nothing else: both
         // panels carry the same top padding, so it cancels.
-        let expected = row_height(&style, &menu.entries[0]) + row_height(&style, &menu.entries[1]);
+        let expected = row_pitch(&style, &menu.entries[0]) + row_pitch(&style, &menu.entries[1]);
         assert_eq!(levels[0].top, 0.0);
         assert_eq!(levels[1].top, expected);
     }
@@ -1069,7 +2536,28 @@ mod tests {
 
         assert_eq!(
             level_width(&style, &iconned) - level_width(&style, &plain),
-            menu_icon_size(&style) + MENU_ICON_GAP
+            style.bar.menu.icon_col + style.bar.menu.icon_gap
         );
+    }
+
+    /// Every era's bar is the same drawing wearing a different table,
+    /// so the table is the thing worth asserting on: four eras, four
+    /// silhouettes, and not one `if era ==` in this file.
+    #[test]
+    fn the_four_eras_dress_a_module_differently() {
+        use crate::widgets::surface::Cut;
+
+        let cell = |era: Era| crate::eras::style(era).bar.idle.corners;
+        assert_eq!(cell(Era::Entropism), Corners::square());
+        assert_eq!(
+            cell(Era::Neomil).bottom_left,
+            Cut::Chamfer { x: 6.0, y: 6.0 }
+        );
+        assert_eq!(cell(Era::Kitsch), Corners::all(Cut::Round { radius: 8.0 }));
+        assert_eq!(
+            cell(Era::Neokitsch).bottom_left,
+            Cut::Chamfer { x: 10.0, y: 7.0 }
+        );
+        assert_eq!(cell(Era::Neokitsch).top_left, Cut::Round { radius: 3.0 });
     }
 }

@@ -31,10 +31,13 @@
 # bar also puts the era's background role into the diff.
 #
 # To regenerate the goldens after a deliberate change: add
-# `threshold = "0";` below, build the four `tests.bar.<era>` cases, copy
-# each `$out/render.png` over `golden/bar-<era>-1600x220.png`, and take
-# the line out again. There is no lower-friction path on purpose -- a
-# golden that is easy to overwrite is a golden nobody reads.
+# `threshold = "0";` below AND pass `1` as the fifth argument to
+# `check_similarity.py` in visual.nix (the stray-pixel limit is a second
+# gate; threshold 0 alone still fails a moved screen), build the four
+# `tests.bar.<era>` cases, copy each `$out/render.png` over
+# `golden/bar-<era>-1600x220.png`, and take both edits out again. There
+# is no lower-friction path on purpose -- a golden that is easy to
+# overwrite is a golden nobody reads.
 {
   lib,
   runCommand,

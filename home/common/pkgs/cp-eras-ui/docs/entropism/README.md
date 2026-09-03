@@ -1,86 +1,161 @@
 # Entropism design targets
 
 Sampled from the Behance Part 1 entropism run: the nine screens after
-the "ENTROPISM — NECESSITY OVER STYLE" title card (doc #24–32 in
-gallery document order — logins, mailbox tile menu, message view, 4ST
-store). See neomil-ui/docs/kitsch/README.md for how the four era runs
-were recovered from the gallery.
+the "ENTROPISM — NECESSITY OVER STYLE" title card — logins, the module
+hub, the mail screen and the 4ST store. An earlier revision numbered
+the run "doc #24–32"; those positions come from a smaller scrape and
+are shifted by ten. `docs/sources.md` holds the canonical positions
+(title card 33, screens 34–42) and the Behance ids, and is where each
+SVG's source is recorded.
+See `../kitsch/README.md` for how the four era runs were recovered from
+the gallery.
+
+**Which file is authoritative: read `docs/PIPELINE.md` and
+`docs/sources.md` first.** The four `*-trace.svg` —
+`login-trace.svg`, `dashboard-trace.svg`, `mailbox-trace.svg`,
+`store-trace.svg` — are measured schematics of the four sourced
+screens, each gated by `scripts/fidelity_check.sh --inventory entropism
+<screen>`, and each carries a header comment narrating its source
+region by region with measurements. Read those headers, not this file,
+for geometry. The `target-*.svg` and `dashboard.svg` files predate them
+and are app-shaped compositions; where a trace covers the same screen,
+the trace supersedes it.
+
+Note the file-name swap recorded in `docs/sources.md`:
+`images/entropism-store.png` is the **module hub** (traced by
+`dashboard-trace.svg`) and `images/entropism-dashboard.png` is the
+**4ST store** (screen #42, traced by `store-trace.svg`).
 
 ## Sampled palette
 
-Pixel reads off the 1400px modules (`p1-086` login, `p1-036` store):
+Sampled off the reference and carried as the era consts in
+`src/eras/entropism.rs`:
 
 ```
 bg          #110c07   warm dark olive-brown (#1a140c upper, #0d0603 lower)
 sage solid  #9cb795   selection fills, footer band
 sage text   #94bb94   labels, titles
 mid         #728f76   top-bar text, secondary
-outline     #5d7752   1px strokes
+outline     #5d7752   frame strokes
 dim         #3d4d38   faint rules, captions
 on-solid    #1f2a1c   dark text on sage fills
 ```
 
-**One hue.** The era is a single sage green on a warm dark ground —
-a monochrome terminal that somebody keeps repairing.
+The traces' own k-means samples run brighter than these (see each
+trace header's palette block); which value the outline ink should take
+is under measurement and is deliberately not settled here.
+
+**One hue, with one exception.** The era is a single sage green on a
+warm dark ground — a monochrome terminal that somebody keeps repairing
+— except on the store, where each product card carries a yellow
+PETROCHEM / BETTERLIFE TEC band (`store-trace.svg` samples it at
+`#eebf09`, 1.1% of the canvas: the only non-sage ink in the run).
 
 ## Observed era rules
 
-- Square everything; 1px strokes; no glow, no gradients, no rounding.
-- Selection is a solid sage fill — tiles, rows, buttons, T-levels.
-- Segmented top bar of outlined boxes; a build-string footer on every
-  screen (`INTERFACE LOADED · PROVIDED BY NEXUS NETWORK V10.8 ·
-  BUILD 6.47.48441.R15`); login screens swap the footer for one huge
-  solid band.
-- Boxed-letter section headers ([A] MAIL BOX, [B] MESSAGE …).
-- Menu tiles carry tiny caption strips beneath them.
+- Square everything; no rounding, no chamfers, no gradients.
+- **The designed stroke is 2px**, not 1px: `mailbox-trace.svg` measures
+  every outlined frame and every row divider at 2px. What the photo
+  adds around each bright edge — a 1px near-black undershoot and a
+  faint sage overshoot a few px out — is a photographic halo, so the
+  trace draws it and the iced implementation draws the 2px stroke only.
+  The "no glow" rule stands for the implementation.
+- Selection is a solid sage fill — tiles, list rows, nav rows, buttons,
+  T-levels.
+- One full-width outlined header strip on every screen, cut by two
+  dividers into a left, a centre and a right string (RIPPERDOC SURGICAL
+  SOFTWAREV2 / STORE ACCESS SCREEN / FLAIR TRS 5MMP; the store's left
+  string reads DIGITAL DISTRIBUTION SOFTWAREV2).
+- A build-string footer on every screen (`INTERFACE LOADED · PROVIDED
+  BY NEXUS NETWORK V10.8 · BUILD 6.47.48441.R15`), drawn as a thin
+  outlined strip on the hub, mail and store screens; the login swaps it
+  for one tall solid sage band with no outline.
+- Boxed-letter section headers ([A] MAIL BOX, [B] MESSAGE …); on the
+  store the letters sit *below* the things they label.
+- Menu tiles carry two-cell caption strips at their foot.
 - Dense small maintenance captions throughout.
 
-## Toolkit divergence (handoff)
+## Toolkit divergence (handoff) — historical
 
-The crate in this directory does not match the era it is named for:
-
-- `src/colors.rs` carries **twelve** colours, including cybr's red
-  `#F75049`, cyan `#5EF6FF`, mint `#1DED83`, violet, orange and gold.
-  The reference has one hue. `COLOR_GREEN_ACCENT #8CBC88` is close to
-  the sampled `#94bb94` and is the only keeper.
-- `src/glow.rs` implements a radial glow. The reference has none —
-  flatness is the aesthetic.
-- The desktop theme (`home/themes/entropism`) diverges too: its
-  default `burn-in` variant is amber, an invention; of its three
-  variants only `salvage-phosphor` is near the reference, and it is
-  still cooler and darker than the sampled sage. Suggest adding a
-  reference-sampled variant (working name `nexus`, after the build
-  strings) and making it the default.
-- When this crate folds into `cp-eras-ui`, reduce it to the one-hue
-  system; the extra colours are not "entropism with more range", they
-  are a different era's palette.
+This section was written when entropism lived in its own crate. The
+fold into `cp-eras-ui` has happened and the one-hue reduction it asked
+for was done: neither `src/colors.rs` nor `src/glow.rs` exists any
+more, and `src/eras/entropism.rs` carries the seven consts above and no
+glow. What remains open is the desktop theme (`home/themes/entropism`):
+its default `burn-in` variant is amber, an invention; of its three
+variants only `salvage-phosphor` is near the reference, and it is still
+cooler and darker than the sampled sage. Suggested then and still
+open: add a reference-sampled variant (working name `nexus`, after the
+build strings) and make it the default.
 
 ## Files
 
+- `login-trace.svg` — `images/entropism-login.png` (#39): the header
+  strip, an empty upper two thirds, a `USERNAME:` label over an
+  outlined masked field with a caret and a filled NEXT button, and the
+  tall solid sage footer band. Gate: PASS, 83% area.
+- `dashboard-trace.svg` — `images/entropism-store.png`, the **module
+  hub**: the header strip, boxed A MAIL BOX / B MESSAGE / C SECURITY
+  LEVEL letters, a **3x2 grid of six tiles** (BRAINDANCE filled solid
+  sage, the selection) each with a two-cell caption strip at its foot,
+  a MESSAGE detail panel beside the grid, a four-badge SECURITY LEVEL
+  column with T2 filled, and the outlined footer strip. Gate: PASS, 92%
+  area. It replaces a fabricated revision that named the wrong source
+  and claimed the grid, sidebar and detail panel were not in the frame.
+- `mailbox-trace.svg` — `images/entropism-mail.png` (#41): the header
+  strip; A MAIL BOX / B MESSAGE / C ENCRIPTION LEVEL (the source really
+  spells it that way); an outlined seven-row list with row 1 filled and
+  an envelope glyph per row; the MESSAGE panel with a filled title bar
+  over three lorem paragraphs; a four-segment button row with REPORT
+  SPAM filled; a 2x2 badge grid reading T1 T3 / T2 T4 with T2 filled;
+  the footer strip. Gate: PASS, 88% area. Its header also carries the
+  measured edge profile every entropism frame photographs with.
+- `store-trace.svg` — `images/entropism-dashboard.png` (#42, the store
+  despite the name): the header strip; the 4ST logotype over S T O R E;
+  an outlined CUSTOMER box with LOYALTY DISCOUNT / LAST UPDATE lines; a
+  five-row category nav (SMG filled) closed by one tall empty cell;
+  four MAGNUM 650 HAND GUN cards, the **first** grown and filled solid
+  sage through its values row with the recoil/spread/range and bonus
+  block beneath; boxed A and B letters in the foot; the footer strip.
+  Gate: PASS, 80% area. Supersedes `target-app.svg`.
 - `target-components.svg` — login, footer strips, boxed headers,
   security levels, button segments, menu tiles, mail list, message
   detail, product card in both states, sampled swatches, and the
-  divergence notes rendered on-sheet.
-- `target-app.svg` — the 4ST store (tracking `p1-036`). Acceptance
-  test: when this can be built from library widgets, entropism is
-  feature-complete.
-- `bar.svg` — the status bar exactly as `bar()` composes it: host
-  tape, workspaces, tray, the wired/audio/CPU/MEM modules and the
-  clock, at the 1600x220 geometry the bar golden tests render.
-- `dashboard.svg` — the ops dashboard exactly as `screens::dashboard`
-  assembles it under entropism's `Layout::TileRow`: a dim-olive top
-  field with a boxed [A] TILE MENU header, a single row of four tiles
-  (T2 `LOCATIONS`, solid sage, selected), a caption strip under each
-  tile carrying the module's catalogue code and blurb, and a thin
-  build-rule at the foot, at the 1600x900 geometry the dashboard
-  golden tests render. The frame comes from `dashboard-trace.svg`
-  (Behance screen #42): no sidebar, no detail panel, no footer band.
+  divergence notes rendered on-sheet. Sampled across the run.
+- `target-app.svg` — the 4ST store, **superseded by `store-trace.svg`**
+  (2026-09-02) and kept only until the iced store screen is rebuilt
+  from the trace. It is a loose composite of the same photo, not a
+  measured trace: the photo grows the *first* card where this SVG grows
+  the second, every card in the photo carries a pale-filled header
+  block and the yellow PETROCHEM / BETTERLIFE TEC band this SVG has
+  neither of, and the cards are wider on a wider pitch with the fourth
+  bleeding off the right edge.
+- `bar.svg` — the status bar: host tape, workspaces, tray, the
+  wired/audio/CPU/MEM modules and the clock, at the 1600x220 geometry
+  the bar golden tests render. The bar has no photo source, so this is
+  an original composition, redrawn 2026-09-02 from the four traces'
+  chrome — the bar *is* the era's header strip: one outlined frame with
+  dividers, no cell gaps, one filled segment per run. **It no longer
+  matches `bar()`**: it is the design target and `bar.rs` has not
+  followed yet (crate TODO.md § "Bar restyle"), so read the SVG's
+  IMPLEMENTATION DELTA block, not the current render.
+- `dashboard.svg` — an **app-shaped composite**, not a trace: the
+  screen `screens::dashboard` assembles under entropism's
+  `Layout::TileRow` — a dim-olive top field with a boxed [A] TILE MENU
+  header, a single row of four tiles (T2 `LOCATIONS`, solid sage,
+  selected), a caption strip under each tile and a thin build-rule at
+  the foot — at the 1600x900 geometry the dashboard golden tests
+  render. That frame is *not* the material: `dashboard-trace.svg`
+  measures the hub as a 3x2 grid of six tiles **with** a MESSAGE detail
+  panel and a SECURITY LEVEL badge column beside it, and the whole
+  "row of four tiles, no sidebar, no detail panel" reading came from
+  the fabricated revision of the trace.
 
 ```sh
 nix shell nixpkgs#librsvg --command \
   rsvg-convert -w 1600 -h 220 bar.svg -o /tmp/en-bar.png
 nix shell nixpkgs#librsvg --command \
-  rsvg-convert -w 1600 -h 900 dashboard.svg -o /tmp/en-dash.png
+  rsvg-convert -w 1600 -h 900 dashboard-trace.svg -o /tmp/en-dash.png
 nix shell nixpkgs#librsvg --command \
-  rsvg-convert -w 1600 target-app.svg -o /tmp/en-app.png
+  rsvg-convert -w 1600 store-trace.svg -o /tmp/en-store.png
 ```

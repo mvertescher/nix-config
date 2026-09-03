@@ -13,19 +13,29 @@
            at top centre (#ae4f62 at y 10), gone by y~420 and dark
            before the right edge (x>1500 is black even at y 10); the
            left margin is grey-green rather than black to y~550
-         - header, three columns: boxed letters A (x 164..189, y
-           105..130) / B (586..610) / C (1216..1241) with three lines of
-           in-fiction micro-text beside each (baselines 110/119/128);
-           labels USER (x 166..203) / DESCRIPTION (587..682) /
-           SECURITY LEVEL (1218..1334) at cap y 151..158; then
-           USER: a box x 155..349 whose bottom is stepped — y 228 on
-           the right, y 236 under the first 55px, joined by a short
+         - header, three columns: boxed letters A / B / C — ~24x24
+           squares with a 2px stroke, centrelines x 165.2..189.3 /
+           586.2..610.4 / 1216.6..1241, y 106.2..130, each a wide heavy
+           cap 15.8 x 11.7 at y 113.8..125.5 — with three lines of
+           BRIGHT bold, wide in-fiction micro-text beside each (x 205..357
+           / 625..767 / 1259..1410, cap rows 105.8..109.9 / 114.9..119.1
+           / 124.1..128.2; ink p90 the same #82f0d3 as the foot line);
+           bold wide section labels USER (x 166..205) / DESCRIPTION
+           (587..683) / SECURITY LEVEL (1217..1335) at cap y 151..159;
+           then
+           USER: a ~1.2px box x 155.5..349.5, y 185.5 (FWHM 0.8..1.1 /
+           eqw 1.3..1.45) whose bottom is stepped — y 228.5 on the
+           right, y 236.5 under the first 55px, joined by a short
            diagonal at x 208..220 — holding GUES 7702 (cap y 199..213);
            DESCRIPTION: the same box at x 575..769 holding MAILBOX;
-           SECURITY LEVEL: four 56x34 boxes at x 1215/1275/1336/1396,
-           y 190..223, the second FILLED AMBER (#d88d3c sampled over
-           the digits; the flat fill reads #f0a93c)
-         - THE LIST BRACKET: a 2px teal outline, top edge y 268 from
+           SECURITY LEVEL: four 56x34 boxes at x 1215.5/1275/1336.5/
+           1396.5, y 190.5..224, ~1px outlines (eqw 0.95..1.05), the
+           second FILLED AMBER (#d88d3c sampled over the digits; the
+           flat fill reads #f0a93c); the digits are cap 15 (y 200..215,
+           01 spanning x 1234..1253)
+         - THE LIST BRACKET: a ~1.2px teal outline (FWHM 0.8 / eqw 1.5
+           across the top and left edges; drawn 1.25 on .5 coordinates
+           like the panel outline), top edge y 268.5 from
            x 138 fading out by x~402, top-left corner r~20, left edge
            x 120.5 from y 288 down. At y~600 the left edge FORKS: one
            branch rounds right into a horizontal at y 644 (to x 282)
@@ -83,7 +93,29 @@
          ground #0e0d0c (47%) #221f1b (14%) #a2495a (10%) #8e384f (9%)
                 #6d303d (7%) #45282b (7%)
        Spot samples: panel tab #fed82e, selected row #ccad19 (a deeper
-       yellow than the tab), DETAILS #dfb715, wave #1db5a4. -->
+       yellow than the tab), DETAILS #dfb715, wave #1db5a4.
+
+       Notes, 2026-09-03 pass (vision, against 1600x900 crops of the photo):
+         - header notes: Rajdhani 600 size 8 stretched 1.3x in #82f0d3
+           at the measured rows (was 7.5 regular ls 0.6 in #4f9a92:
+           20-30% short and a fifth of the photo's ink); section labels
+           Rajdhani 600 12.3 stretched 1.37x (were 12 regular ls 1.5:
+           25% narrow, a quarter of the ink); boxed A/B/C redrawn at
+           the measured 24x24 2px squares (were 25x25 / 24x24 at 1.5px,
+           ~1px left and high) with size-18 letters stretched 1.7x
+         - every teal outline that was 1.5 or 2 -> 1.25 on .5
+           coordinates (USER / DESCRIPTION boxes with rounded joins,
+           the list bracket and its fades, the five envelopes, the
+           MODS / PRICE / DAMAGE chevrons with rounded joins); the
+           security badges -> 1.0 at .5 (eqw 0.95..1.05 in the photo);
+           badge digits 23 (were 16: 10 tall vs the photo's 15)
+         - foot line: both runs Rajdhani 700, ls 0.25 / 0.24 from x 503
+           and 641 (the notice was regular; coverage 0.116 -> 0.169 vs
+           the photo's 0.17, extent unchanged)
+         - the yellow family's 0.46 is the extractor hole-filling the
+           closed panel outline against the render's antialiased
+           rounded corners; not a trace fault, corners left rounded
+         - G1i inks 0.62 -> 0.67 (teal 0.81 -> 0.93, yellow 0.46 -> 0.46) -->
   <defs>
     <radialGradient id="bloom" cx="0.5" cy="-0.25" r="0.9">
       <stop offset="0"    stop-color="#b05064"/>
@@ -116,31 +148,50 @@
 
   <!-- ==== header: boxed letters, annotations, labels ==== -->
   <g font-family="Rajdhani" fill="#7fd4cc">
-    <g font-size="7.5" letter-spacing="0.6" fill="#4f9a92">
-      <text x="205" y="110">SPARE TIME MANAGER WAS DEVELO-</text>
-      <text x="205" y="119">PED BY SEOCHO. SERVING CUSTO-</text>
-      <text x="205" y="128">MERS SINCE 2006.</text>
-      <text x="625" y="110">MAPS ARE PROVIDED BY SEOCHO.</text>
-      <text x="625" y="119">SATELITE SERVICES SINCE 2006.</text>
-      <text x="1257" y="110">SPARE TIME MANAGER WAS DEVELO-</text>
-      <text x="1257" y="119">PED BY SEOCHO. SERVING CUSTO-</text>
-      <text x="1257" y="128">MERS SINCE 2006.</text>
+    <!-- the notes are BRIGHT bold, wide, tracked micro-text (the same #82f0d3 as the foot line, not dim): x 205..357 /
+         625..767 / 1259..1410, cap rows 105.8..109.9 / 114.9..119.1 / 124.1..128.2 -->
+    <g font-size="8" font-weight="600" fill="#82f0d3">
+      <g transform="translate(205 0) scale(1.3 1)">
+        <text x="0" y="110">SPARE TIME MANAGER WAS DEVELO-</text>
+        <text x="0" y="119.1">PED BY SEOCHO. SERVING CUSTO-</text>
+        <text x="0" y="128.2">MERS SINCE 2006.</text>
+      </g>
+      <g transform="translate(624.6 0) scale(1.3 1)">
+        <text x="0" y="110">MAPS ARE PROVIDED BY SEOCHO.</text>
+        <text x="0" y="119.1">SATELITE SERVICES SINCE 2006.</text>
+      </g>
+      <g transform="translate(1259.1 0) scale(1.3 1)">
+        <text x="0" y="110">SPARE TIME MANAGER WAS DEVELO-</text>
+        <text x="0" y="119.1">PED BY SEOCHO. SERVING CUSTO-</text>
+        <text x="0" y="128.2">MERS SINCE 2006.</text>
+      </g>
     </g>
-    <rect x="164" y="105" width="25" height="25" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
-    <text x="176.5" y="123" font-size="14" text-anchor="middle">A</text>
-    <text x="166" y="159" font-size="12" letter-spacing="1.5">USER</text>
-    <rect x="586" y="105" width="24" height="24" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
-    <text x="598" y="123" font-size="14" text-anchor="middle">B</text>
-    <text x="587" y="159" font-size="12" letter-spacing="1.5">DESCRIPTION</text>
-    <rect x="1216" y="105" width="25" height="25" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
-    <text x="1228.5" y="123" font-size="14" text-anchor="middle">C</text>
-    <text x="1218" y="159" font-size="12" letter-spacing="1.5">SECURITY LEVEL</text>
+    <!-- boxed A / B / C: ~24x24 squares with a 2px stroke (centrelines x 165.2..189.3 / 586.2..610.4 / 1216.6..1241,
+         y 106.2..130), each holding a wide heavy cap 15.8 x 11.7 at y 113.8..125.5 -->
+    <g fill="none" stroke="#82f0d3" stroke-width="2">
+      <rect x="165.2" y="106.2" width="24.1" height="23.8"/>
+      <rect x="586.2" y="106.2" width="24.2" height="23.8"/>
+      <rect x="1216.6" y="106.2" width="24.4" height="23.8"/>
+    </g>
+    <g font-size="18" font-weight="600" text-anchor="middle" fill="#82f0d3">
+      <text transform="translate(177.25 125.5) scale(1.7 1)">A</text>
+      <text transform="translate(598.3 125.5) scale(1.7 1)">B</text>
+      <text transform="translate(1228.8 125.5) scale(1.7 1)">C</text>
+    </g>
+    <!-- section labels: the same bold wide face as the notes, cap y 151..159, USER x 166..205 / DESCRIPTION
+         587..683 / SECURITY LEVEL 1217..1335 (were Rajdhani 12 regular ls 1.5: 25% narrow and a quarter of the ink) -->
+    <g font-size="12.3" font-weight="600" letter-spacing="0.6" fill="#82f0d3">
+      <text transform="translate(166 159) scale(1.37 1)">USER</text>
+      <text transform="translate(587 159) scale(1.37 1)">DESCRIPTION</text>
+      <text transform="translate(1217 159) scale(1.37 1)">SECURITY LEVEL</text>
+    </g>
   </g>
 
   <!-- USER / DESCRIPTION boxes: stepped bottom edge, y 228 right / 236 left -->
-  <g fill="none" stroke="#7fd4cc" stroke-width="2">
-    <path d="M 155,185 H 349 V 228 H 220 L 208,236 H 155 Z"/>
-    <path d="M 575,185 H 769 V 228 H 640 L 628,236 H 575 Z"/>
+  <!-- ~1.2px lines (FWHM 0.8..1.1, equivalent width 1.3..1.45 across the top/left edges), on .5 coordinates -->
+  <g fill="none" stroke="#7fd4cc" stroke-width="1.25" stroke-linejoin="round">
+    <path d="M 155.5,185.5 H 349.5 V 228.5 H 220 L 208,236.5 H 155.5 Z"/>
+    <path d="M 575.5,185.5 H 769.5 V 228.5 H 640 L 628,236.5 H 575.5 Z"/>
   </g>
   <g font-family="Rajdhani" font-size="20" font-weight="600" letter-spacing="0.5" fill="#a9e6df">
     <text x="166" y="213">GUES 7702</text>
@@ -148,15 +199,16 @@
   </g>
 
   <!-- security badges, y 190..223, 02 filled amber -->
-  <g font-family="Rajdhani" font-size="16" font-weight="600" text-anchor="middle">
-    <use href="#badge" x="1215" y="190" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
-    <text x="1243" y="212" fill="#7fd4cc">01</text>
+  <!-- digits cap y 200..215, 01 spans x 1234..1253 (was drawn 16px: 10 tall, 12 wide) -->
+  <g font-family="Rajdhani" font-size="23" font-weight="600" text-anchor="middle">
+    <use href="#badge" x="1215.5" y="190.5" fill="none" stroke="#7fd4cc" stroke-width="1"/>
+    <text x="1243" y="215" fill="#7fd4cc">01</text>
     <use href="#badge" x="1275" y="190" fill="#f0a93c"/>
-    <text x="1303" y="212" fill="#7a3a1a">02</text>
-    <use href="#badge" x="1336" y="190" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
-    <text x="1364" y="212" fill="#7fd4cc">03</text>
-    <use href="#badge" x="1396" y="190" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
-    <text x="1424" y="212" fill="#7fd4cc">04</text>
+    <text x="1303" y="215" fill="#7a3a1a">02</text>
+    <use href="#badge" x="1336.5" y="190.5" fill="none" stroke="#7fd4cc" stroke-width="1"/>
+    <text x="1364" y="215" fill="#7fd4cc">03</text>
+    <use href="#badge" x="1396.5" y="190.5" fill="none" stroke="#7fd4cc" stroke-width="1"/>
+    <text x="1424" y="215" fill="#7fd4cc">04</text>
   </g>
 
   <!-- ==== the list bracket and its wave ==== -->
@@ -164,25 +216,25 @@
   <path d="M 120.5,606 Q 120.5,644 158,644 H 278 Q 289,644 296,653 L 362,741 Q 367,748 376,748 H 180 Q 120.5,748 120.5,690 Z"
         fill="#1db5a4"/>
   <!-- outline: top edge (fading right), corner, left edge, the two branches -->
-  <path d="M 402,268 H 140 Q 120.5,268 120.5,288 V 606 Q 120.5,644 158,644 H 278 Q 289,644 296,653 L 362,741 Q 367,748 376,748 H 451"
-        fill="none" stroke="url(#fadeR)" stroke-width="2"/>
-  <path d="M 120.5,606 V 690 Q 120.5,748 180,748" fill="none" stroke="#5fd6c2" stroke-width="2"/>
+  <path d="M 402,268.5 H 140 Q 120.5,268.5 120.5,288 V 606 Q 120.5,644 158,644 H 278 Q 289,644 296,653 L 362,741 Q 367,748.5 376,748.5 H 451"
+        fill="none" stroke="url(#fadeR)" stroke-width="1.25"/>
+  <path d="M 120.5,606 V 690 Q 120.5,748.5 180,748.5" fill="none" stroke="#5fd6c2" stroke-width="1.25"/>
 
   <!-- selected row: icon cell + body, solid yellow, split by a 2px gap at x 196 -->
   <g fill="#e8c21f">
     <path d="M 154,313 H 195 V 345 L 176,351 H 154 Z"/>
     <path d="M 197,313 H 491 V 325 L 471,346 H 197 Z"/>
   </g>
-  <use href="#env" x="165" y="325" fill="none" stroke="#4a3a05" stroke-width="1.5"/>
+  <use href="#env" x="165.5" y="325.5" fill="none" stroke="#4a3a05" stroke-width="1.25"/>
   <text x="220" y="340" font-family="Rajdhani" font-size="17" letter-spacing="0.5" fill="#4a3a05">YOU'LL REGRET THAT</text>
   <text x="220" y="362" font-family="Rajdhani" font-size="11" fill="#f2c825">from: Jackie</text>
 
   <!-- the four unselected rows -->
-  <g fill="none" stroke="#5fd6c2" stroke-width="1.5">
-    <use href="#env" x="166" y="385"/>
-    <use href="#env" x="166" y="445"/>
-    <use href="#env" x="166" y="505"/>
-    <use href="#env" x="166" y="564"/>
+  <g fill="none" stroke="#5fd6c2" stroke-width="1.25">
+    <use href="#env" x="166.5" y="385.5"/>
+    <use href="#env" x="166.5" y="445.5"/>
+    <use href="#env" x="166.5" y="505.5"/>
+    <use href="#env" x="166.5" y="564.5"/>
   </g>
   <g font-family="Rajdhani" fill="#7fe0c8">
     <g font-size="18" letter-spacing="0.5">
@@ -226,10 +278,10 @@
 
   <!-- ==== right column: DETAILS (solid) over MODS / PRICE / DAMAGE ==== -->
   <use href="#chev" x="1216" y="306" fill="#e6c020"/>
-  <g fill="none" stroke="#5fd6c2" stroke-width="1.5">
-    <use href="#chev" x="1216" y="359"/>
-    <use href="#chev" x="1216" y="414"/>
-    <use href="#chev" x="1216" y="468"/>
+  <g fill="none" stroke="#5fd6c2" stroke-width="1.25" stroke-linejoin="round">
+    <use href="#chev" x="1216.5" y="359.5"/>
+    <use href="#chev" x="1216.5" y="414.5"/>
+    <use href="#chev" x="1216.5" y="468.5"/>
   </g>
   <g font-family="Rajdhani" font-size="16" letter-spacing="1">
     <text x="1243" y="339" fill="#5a4a14">DETAILS</text>
@@ -239,8 +291,10 @@
   </g>
 
   <!-- ==== footer micro-text, y 864..869, x 503..1095 ==== -->
-  <g font-family="Rajdhani" font-size="9" letter-spacing="0.2" fill="#82f0d3">
-    <text x="503" y="870" font-weight="700">ARASAKA CONSUMER TECHNOLOGY</text>
-    <text x="640" y="870">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+  <!-- one weight for the whole line (the notice is as bold as ARASAKA in the photo); tracking holds the extent
+       x 504..1095 with ARASAKA ending at 634 and ONLY starting at 641 -->
+  <g font-family="Rajdhani" font-size="9" font-weight="700" fill="#82f0d3">
+    <text x="503" y="870" letter-spacing="0.25">ARASAKA CONSUMER TECHNOLOGY</text>
+    <text x="641" y="870" letter-spacing="0.24">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
   </g>
 </svg>

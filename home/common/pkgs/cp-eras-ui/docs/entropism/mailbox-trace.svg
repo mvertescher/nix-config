@@ -57,7 +57,12 @@
        on panel B, the button row, the T1 badge, the header and footer):
          - the stroke itself is 2px, #67937d/#557257 (mean ~#5e8268)
          - a 1px near-black undershoot hugs it (#050500..#0a0900), on the
-           inside on most edges
+           inside on most edges. (2026-09-03: probed again at full 3840
+           resolution, this undershoot is NOT in the photo — the stroke
+           there is a 3px bright line, mean core #8fba97, sitting straight
+           on the #10..#1c ground. The dark ring is the negative lobe of
+           the Lanczos filter used for the 1600 rescale. The faint sage
+           overshoot below is real, +12 lum over ~5px at full res.)
          - a faint sage overshoot 2..4px further out, 2px wide, #1e2417 /
            #232d1f / #1d1f14 / #2a3427 (the photo's #25281d family), outside the frame
            on the left/top/bottom and just inside on the right — a ghost
@@ -71,6 +76,30 @@
        halo around every bright edge), so a trace of the photo carries
        it; it is not a designed glow — README.md's "no glow" rule stands
        for the iced implementation, which should draw the 2px stroke only.
+       2026-09-03: left in place after the full-res probe above. The
+       other three entropism traces draw the measured 1.25px #8fba97
+       core alone; the gate passes either way, and the 2px #709174 here
+       is the rescale's dilution of the same 3px line (see
+       dashboard-trace.svg, "Stroke profile"), not a second ink.
+       2026-09-03: the 7px and 4px passes carry class="photo". G2i
+       (docs/PIPELINE.md) hides that class before rendering the design,
+       because the extractor bins the ring as its own ink family and it
+       was 48% of this trace's shape area, more than the 40% a
+       faithful implementation is allowed to miss. G1i still renders it.
+
+       Pass notes:
+         2026-09-03  header/footer strings 15/ls 1 #8aaf8d -> 17/500,
+                     natural tracking, #97c4a0 (photo text ink, bright-
+                     tail mean over the run, is #97c4a1; the old 15px
+                     rendered cap 10 at y 51..60 vs the photo's 11 at
+                     49..59, and #6e8a6d); middle x 521 -> 518 (rendered
+                     522 vs the photo's 519), PROVIDED BY 517 -> 518,
+                     header baseline 61 -> 60.
+         2026-09-03  T1..T4: bold 26/ls 1 rendered 19..26 wide (cap 17);
+                     photo glyphs are bold extended, 27/34/35/37 wide,
+                     cap 18 (y 253..270, 331..347) — bold 27 stretched
+                     1.42..1.46, centred on the measured runs (1376/1453,
+                     1375.5/1453), baselines 271 / 348.
 
        Palette sampled by k-means over the photo (extract_spec.py):
          ink    #a6d2a8 (5.8%, the solid fills)  #8aaf8d (bright text)
@@ -116,14 +145,14 @@
   <!-- ==== header strip, y 43..69, dividers at x 465 and 1353 ==== -->
   <g>
     <g fill="none">
-      <use href="#hdr-chrome" stroke="#25281d" stroke-width="7"/>
-      <use href="#hdr-chrome" stroke="#0a0a02" stroke-width="4"/>
+      <use href="#hdr-chrome" stroke="#25281d" stroke-width="7" class="photo"/>
+      <use href="#hdr-chrome" stroke="#0a0a02" stroke-width="4" class="photo"/>
       <use href="#hdr-chrome" stroke="#709174" stroke-width="2"/>
     </g>
-    <g font-family="Rajdhani" font-size="15" fill="#8aaf8d" letter-spacing="1">
-      <text x="61" y="61">RIPPERDOC SURGICAL SOFTWAREV2</text>
-      <text x="521" y="61">STORE ACCESS SCREEN</text>
-      <text x="1382" y="61">FLAIR TRS 5MMP</text>
+    <g font-family="Rajdhani" font-size="17" font-weight="500" fill="#97c4a0">
+      <text x="61" y="60">RIPPERDOC SURGICAL SOFTWAREV2</text>
+      <text x="518" y="60">STORE ACCESS SCREEN</text>
+      <text x="1382" y="60">FLAIR TRS 5MMP</text>
     </g>
   </g>
 
@@ -148,8 +177,8 @@
   <!-- ==== A: MAIL BOX list, frame x 84..451, y 205..686, 62px rows ==== -->
   <g font-family="Rajdhani">
     <g fill="none">
-      <use href="#a-chrome" stroke="#25281d" stroke-width="7"/>
-      <use href="#a-chrome" stroke="#0a0a02" stroke-width="4"/>
+      <use href="#a-chrome" stroke="#25281d" stroke-width="7" class="photo"/>
+      <use href="#a-chrome" stroke="#0a0a02" stroke-width="4" class="photo"/>
       <use href="#a-chrome" stroke="#709174" stroke-width="2"/>
     </g>
 
@@ -190,8 +219,8 @@
   <!-- ==== B: MESSAGE panel, frame x 529..1279, y 205..686 ==== -->
   <g font-family="Rajdhani">
     <g fill="none">
-      <use href="#b-chrome" stroke="#25281d" stroke-width="7"/>
-      <use href="#b-chrome" stroke="#0a0a02" stroke-width="4"/>
+      <use href="#b-chrome" stroke="#25281d" stroke-width="7" class="photo"/>
+      <use href="#b-chrome" stroke="#0a0a02" stroke-width="4" class="photo"/>
       <use href="#b-chrome" stroke="#709174" stroke-width="2"/>
     </g>
     <!-- filled title bar y 227..288 -->
@@ -217,8 +246,8 @@
   <!-- ==== button row, y 694..746, cells at x 529 / 716 / 903 / 1091 / 1279 ==== -->
   <g font-family="Rajdhani" font-size="22" letter-spacing="1">
     <g fill="none">
-      <use href="#btn-chrome" stroke="#25281d" stroke-width="7"/>
-      <use href="#btn-chrome" stroke="#0a0a02" stroke-width="4"/>
+      <use href="#btn-chrome" stroke="#25281d" stroke-width="7" class="photo"/>
+      <use href="#btn-chrome" stroke="#0a0a02" stroke-width="4" class="photo"/>
       <use href="#btn-chrome" stroke="#709174" stroke-width="2"/>
     </g>
     <text x="549" y="719" fill="#a6d2a8">REPLY</text>
@@ -230,29 +259,31 @@
   </g>
 
   <!-- ==== C: ENCRIPTION LEVEL 2x2 badges, 69x69, T2 filled ==== -->
-  <g font-family="Rajdhani" font-size="26" font-weight="bold" letter-spacing="1" text-anchor="middle">
+  <!-- glyphs: bold extended, cap 18 (y 253..270 / 331..347), runs T1 27,
+       T2 34, T3 35, T4 37 wide — Rajdhani Bold 27 stretched ~1.42 -->
+  <g font-family="Rajdhani" font-size="27" font-weight="bold" text-anchor="middle">
     <g fill="none">
-      <use href="#c-chrome" stroke="#25281d" stroke-width="7"/>
-      <use href="#c-chrome" stroke="#0a0a02" stroke-width="4"/>
+      <use href="#c-chrome" stroke="#25281d" stroke-width="7" class="photo"/>
+      <use href="#c-chrome" stroke="#0a0a02" stroke-width="4" class="photo"/>
       <use href="#c-chrome" stroke="#709174" stroke-width="2"/>
     </g>
-    <text x="1375" y="271" fill="#a6d2a8">T1</text>
-    <text x="1452" y="271" fill="#a6d2a8">T3</text>
+    <text transform="translate(1376,271) scale(1.42,1)" fill="#a6d2a8">T1</text>
+    <text transform="translate(1453,271) scale(1.46,1)" fill="#a6d2a8">T3</text>
     <rect x="1341" y="305" width="69" height="69" fill="#a6d2a8"/>
-    <text x="1375" y="349" fill="#25281d">T2</text>
-    <text x="1452" y="349" fill="#a6d2a8">T4</text>
+    <text transform="translate(1375.5,348) scale(1.42,1)" fill="#25281d">T2</text>
+    <text transform="translate(1453,348) scale(1.42,1)" fill="#a6d2a8">T4</text>
   </g>
 
   <!-- ==== footer strip, y 847..873, no dividers ==== -->
   <g>
     <g fill="none">
-      <use href="#ftr-chrome" stroke="#25281d" stroke-width="7"/>
-      <use href="#ftr-chrome" stroke="#0a0a02" stroke-width="4"/>
+      <use href="#ftr-chrome" stroke="#25281d" stroke-width="7" class="photo"/>
+      <use href="#ftr-chrome" stroke="#0a0a02" stroke-width="4" class="photo"/>
       <use href="#ftr-chrome" stroke="#709174" stroke-width="2"/>
     </g>
-    <g font-family="Rajdhani" font-size="15" fill="#8aaf8d" letter-spacing="1">
+    <g font-family="Rajdhani" font-size="17" font-weight="500" fill="#97c4a0">
       <text x="61" y="865">INTERFACE LOADED</text>
-      <text x="517" y="865">PROVIDED BY NEXUS NETWORK V10.8</text>
+      <text x="518" y="865">PROVIDED BY NEXUS NETWORK V10.8</text>
       <text x="1382" y="865">BUILD 6.47.48441.R15</text>
     </g>
   </g>

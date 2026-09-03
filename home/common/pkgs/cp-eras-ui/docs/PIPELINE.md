@@ -88,6 +88,27 @@ source, and which are originals.
   to 0.90. It also writes `compare_ref.py`'s overlays plus both inputs to
   `/tmp/g2i-<era>-<screen>/`, because "unmatched in source" names a
   bounding box and only the picture says what was in it.
+  One thing G2i hides: a trace records how the material *photographs*,
+  and part of that is residue the implementation is told not to draw —
+  entropism's sharpening ring around every edge, neokitsch's blurred
+  copy of its own content. The extractor bins such residue as an ink
+  family of its own, and on the mailbox it was 48% (entropism) and 77%
+  (neokitsch) of the design's shape area, so no faithful screen could
+  clear the 60% bar. A trace marks those elements `class="photo"`; G2i
+  renders the design with that class hidden and G1i renders it whole.
+  The tag is a claim about the photo, so adding it is vision work like
+  any other trace edit, and the header should say what was tagged.
+  Two more things about the extractor worth knowing before reading a
+  G2i number. Its colour budget is k=8 clusters and a haze or bloom
+  takes about five of them, so on a hazed screen every ink family is
+  competing for three bins: line art drawn dimmer than measured merges
+  into a neighbouring family (the neokitsch mailbox wire scored as
+  tape ink, RIFLES as foreground), and a screen drawn without its
+  ground scores against a design whose ground *is* five of the eight
+  families — backgrounds are not optional. And iced strokes cover
+  ~15% more than rsvg's at the same width (.87 vs .75 coverage per
+  edge pixel), which is enough to flip a hairline's bin; the pairs are
+  a match by eye when that is all the diff says.
 - **G2 — svg → iced.** The implementation matches the reference:
   rasterise the SVG (`rsvg-convert`) and
   `scripts/compare_ref.py <svg render> tests/golden/<screen>-<era>-...png`.

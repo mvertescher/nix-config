@@ -224,7 +224,11 @@ impl BarWindow {
                     Message::Entry,
                     Message::Submenu,
                 ),
-                Space::new().width(Length::Fixed(MENU_MARGIN)).height(Length::Shrink),
+                Space::new()
+                    .width(Length::Fixed(
+                        MENU_MARGIN - cp_eras_ui::bar::menu_edge_pad(&self.style),
+                    ))
+                    .height(Length::Shrink),
             ],
             // The bar and its menu do not fill 220px. The empty ground
             // under them is what makes a capture legible as a desktop
@@ -236,7 +240,17 @@ impl BarWindow {
     }
 }
 
-/// How far the menu's right edge sits from the right of the capture.
+/// How far the menu chain's right edge sits from the right of the
+/// capture.
+///
+/// Measured to the *panel*, not to the chain: since the bar restyle the
+/// chain also carries whatever the era draws outside its panels, and
+/// neokitsch's onion rings run 14px past the root panel's right edge
+/// (`docs/neokitsch/bar.svg`, the four rings at x 1483.5 / 1487 /
+/// 1490.5 / 1494 against a panel ending at 1480). `bar::menu_edge_pad`
+/// is that reserve, and subtracting it here lands every era's panel
+/// edge on the design's x=1480 -- it is zero in the three eras that
+/// draw no rings, so none of them moved.
 const MENU_MARGIN: f32 = 120.0;
 
 fn main() -> iced::Result {

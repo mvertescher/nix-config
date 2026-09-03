@@ -197,7 +197,18 @@ for era in "${selected_eras[@]}"; do
 
       design="$scratch/g2i-$era-$screen-design.png"
       impl="$scratch/g2i-$era-$screen-impl.png"
-      $rsvg_bin -w "$w" -h "$h" "$svg" -o "$design" 2>/dev/null || {
+      # A trace records how the material *photographs*, and some of that
+      # is not design: the sharpening halo around every entropism edge,
+      # neokitsch's blurred copy of its own content. The trace draws it
+      # (G1i needs it -- the photo has it), but the implementation is told
+      # not to, and the extractor bins it as its own ink family, which on
+      # the mailbox put 48% (entropism) and 77% (neokitsch) of the design's
+      # shape area behind a 60% gate no faithful screen could reach. The
+      # trace marks such elements `class="photo"`; G2i renders the design
+      # with them hidden, so what is compared is what the screen must draw.
+      g2i_svg="$scratch/g2i-$era-$screen-design.svg"
+      sed '0,/<svg[^>]*>/s//&<style>.photo{display:none}<\/style>/' "$svg" > "$g2i_svg"
+      $rsvg_bin -w "$w" -h "$h" "$g2i_svg" -o "$design" 2>/dev/null || {
         echo "FAIL $era/$screen: rsvg-convert errored"; overall_fail=1; continue; }
       # `env -u FONTCONFIG_FILE`: the pinned fontconfig above exists so
       # rsvg-convert finds Rajdhani/Orbitron the same way everywhere. The

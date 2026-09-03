@@ -14,14 +14,18 @@
          - a rose bloom over the top of a near-black ground, brightest at
            top centre (#ae4f62 at y 10), gone by y~420; the left margin
            is grey-green rather than black to y~550
-         - logotype top-left: 4S in solid heavy mint (x 155..271, cap y
-           88..132) with an OUTLINED T after it (x ~280..318), and
-           S T O R E letter-spaced beneath (x 154..315, cap y 144..155)
+         - logotype top-left: 4S in solid heavy mint (4 x 150.8..210.4, S
+           x 213.8..275, cap y ~85..134) with an OUTLINED T after it
+           (x 277.5..317.5, stems ~1.3px), and S T O R E beneath on a
+           38.6px glyph pitch (lefts 154.2/192.1/230.4/270.8/309.6, cap
+           y 144..156)
          - a rounded customer chip x 123..338, y 178..200 reading
            "customer" (x 133) and "#NC488402" (x 243..306); beneath it
            "loyalty discount .. 10%" and "last update .. 10/05/2077" at
            cap y 215..227 / 230..243, values right-aligned to x 306
-         - THE NAV BRACKET, a 2px teal outline: a top line at y 186 from
+         - THE NAV BRACKET, a ~1.2px teal outline (FWHM 0.85, equivalent
+           width 1.5 with the glow; drawn 1.25 on .5 coordinates like every
+           other thin line here): a top line at y 186.5 from
            x~440 (fading in) left to x 372, an S-bend down through
            (348,215)..(348,235) and out to a horizontal at y 268 (x 311
            down to 136 — it wraps around the customer block), a
@@ -36,24 +40,30 @@
            tops y 297 / 357 / 417 / 477 / 537: the left edge rises from
            (140,316) to a peak at (158,297), drops onto the top edge at
            (167,300); the right end chamfers back from (356,308) to
-           (330,336). RIFLES / SMG / SNIPER / SHOTGUN / PISTOL, labels
-           at x 170 (cap ~17px); SMG is SOLID YELLOW (#ffbe18)
+           (330,336), corners softly rounded. RIFLES / SMG / SNIPER /
+           SHOTGUN / PISTOL, labels at x 171 (cap 16px, RIFLES 60 wide,
+           SHOTGUN 88); SMG is SOLID YELLOW (#ffbe18)
          - FOUR PRODUCT CARDS on a 320px pitch, x0 = 484 / 804 / 1123 /
            1443 (the fourth runs off the right edge), each 261 wide.
-           The standard card (1, 3, 4) is a teal outline x0..x0+261,
-           y 218..538 with a r~6 top-left and a 24px top-right chamfer:
-             MAGNUM 650 (cap y 233..247) / HAND GUN (255..267) at x0+12
+           The standard card (1, 3, 4) is a ~1.2px teal outline
+           x0..x0+261, y 218..538 with a r~6 top-left and a 24px
+           top-right chamfer (all the card rules measure 1.0 FWHM /
+           1.2..1.7 equivalent width, never 1.5 or 2):
+             MAGNUM 650 (cap y 233..248.5, x0+12..133) / HAND GUN
+             (255..267.5, x0+12..95) at x0+12
              a SOLID YELLOW band y 277..312 that pokes 27px out past the
              card's left edge as a flag: left edge x0-27 from 312 up to
              290, a diagonal up to a peak at (x0-3,268), a drop onto the
              top edge; the right end is the card edge with its
-             bottom-right chamfered from (x0+258,282) to (x0+233,312).
+             bottom-right chamfered at 45 degrees from (x0+258.5,289.5)
+             to (x0+235.5,312).
              In the band: four small dark glyph marks + a micro-text
              block at the left, all in the band's LOWER half, y 296..308
              (a certification square, a disc-in-square, a C-in-C mark
              and a warning triangle inside the text block's rounded
-             outline, x0-17..x0+92); PETROCHEM in a dark box and
-             BETTERLIFE TEC at the right (x0+162..220)
+             outline, x0-17..x0+92); PETROCHEM in a dark box (x0+163..221,
+             y 290.8..298.8, the text filling it x0+163..218) and a bold
+             wide BETTERLIFE TEC beneath (x0+164..235, cap y 302..308)
              a mint line drawing of the gun, x0+37..235, y 347..401: a
              tall front block with magazine tubes, an open trigger
              guard and magazine well, a sloping upper receiver and a
@@ -68,20 +78,61 @@
            Card 2 is the selection, GROWN: the same layout but FILLED
            amber (#ffc233) from y 218 down to a stepped bottom (y 457 on
            the right, 472 under the first 65px, diagonal x0+64..79),
-           its text and gun dark on amber (the gun sits 14px higher
+           its text and gun dark on amber; its band is not a separate
+           fill but a ~1px dark (#a4583a) OUTLINE of the whole band
+           shape drawn over the amber — top edge y 276.6, right edge
+           x0+258.2, r~3 corners, the same 45-degree chamfer to
+           (x0+238.5,311) and the bottom edge at y 312.5; nothing of it
+           shows left of the card edge (the gun sits 14px higher
            than in the standard card, y 333..387); then an amber-outlined lower
            body x0..x0+261 from y 457 to 680 holding 20 Recoil / 22
            Sperad / 12 Range (baselines 497/518/539), Bonus / +9
            Reflexes / +2 Modules Slots (568/589/610), a socket row y
            632..680 split at x0+52/118/190, and the micro-text at
            y 695..708. Card 3 and 4 sit at the standard height.
-         - footer marks: boxed A at x 350..378, y 733..760 after three
-           lines of micro-text (x 181..333); boxed C at x 1500..1529
-           after two lines (x 1325..1468)
+         - footer marks: three lines of BRIGHT bold, wide micro-text
+           (x 181..334 / 182..328 / 180..261, cap rows 733.3..738.8 /
+           742.5..748.3 / 751.2..756.7, ink p90 (115,207,183) — the same
+           #82f0d3 as the foot line, not dim) then a boxed A: a ~24x24
+           square with a 2px stroke (centreline x 354..377.7,
+           y 734.3..758.5) holding a wide heavy A (15.8 x 11.7, cap y
+           742.2..753.8); two lines at x 1326..1469 (rows 741.8..746.8 /
+           750.9..755.9) then a boxed C at x 1501..1525.2, y 733.9..758.2
          - one line of BRIGHT mint micro-text centred at the foot, y
-           864..869, x 504..1095 (pixel p90 (127,240,209), so #82f0d3
+           864..870, x 504..1095 (pixel p90 (127,240,209), so #82f0d3
            at font-size 9 — an earlier version used size 8 #5fc9b5,
-           which ended at x 1023 and was too dim)
+           which ended at x 1023 and was too dim); the whole line is
+           ONE bold weight (ARASAKA .. TECHNOLOGY ends x 634, ONLY
+           starts 641), coverage 0.17 of its box
+
+       Notes, 2026-09-03 pass (vision, against 1600x900 crops of the photo):
+         - logotype redrawn glyph by glyph: 4 / S / T at x 147.4 / 207.9 /
+           277.5 with stretches 1.63 / 1.89 / 1.24 of Rajdhani Bold 73
+           (was 4S at scale 1.7 size 60, 158..260, and T 280..310);
+           S T O R E as five texts on the measured 38.6px pitch (was
+           letter-spacing 22, size 15)
+         - card titles: MAGNUM 650 size 24.4 ls -0.75 (was 19 ls 0.5, 103
+           wide vs the photo's 121) and HAND GUN 19.5 ls 0.6 (was 17),
+           weight 500 (ink 0.21 vs the photo's 0.21; was 0.14)
+         - band: chamfer corrected to 45 degrees (V 71.5 L 235.5,94; was
+           V 64 L 233,94); card 2's two #c9931a rules at y 277/312
+           replaced by the dark outline the photo shows; PETROCHEM box
+           moved from x0+160,288 to x0+163,290.8 and shrunk to 58x8,
+           its text stretched 1.3x to fill it; BETTERLIFE TEC bold and
+           stretched 1.3x (was regular, 35 wide vs the photo's 70)
+         - every thin teal/amber line 1.5 or 2 -> 1.25 on .5 coordinates
+           (card outline, socket rules, customer chip, nav bracket and
+           its fades, chevrons, card 2's lower body); the chevron joins
+           rounded; nav labels 24.5 weight 500 ls -0.4 (was 22 regular)
+         - footnotes: Rajdhani Bold 8 stretched 1.3x in #82f0d3 (was
+           7.5 regular ls 0.6 in #4f9a92: 20-30% short and a fifth of
+           the photo's ink); boxed A/C redrawn at the measured 24x24
+           2px squares with a size-18 bold letter stretched 1.7x
+         - foot line: both runs Rajdhani 700, ls 0.25 / 0.24 from x 503
+           and 641 (the notice was regular; coverage 0.116 -> 0.165 vs
+           the photo's 0.172, extent unchanged)
+         - G1i inks 0.57 -> 0.73 (yellow 0.68 -> 0.91, teal 0.48 -> 0.48,
+           mint 0.45 -> 0.59)
 
        Palette sampled by k-means (extract_spec.py):
          ink    #fabe29 (6.3%)  #39a896 (3.2%)  #82f4de (2.9%)
@@ -184,18 +235,18 @@
     <!-- the standard (unselected) card, origin at its outline's left edge, y 218 -->
     <g id="card">
       <!-- outline: r6 top-left, 24px top-right chamfer, to y 538 -->
-      <path d="M 6,0 H 237 L 261,24 V 320 H 0 V 6 Q 0,0 6,0 Z" fill="none" stroke="#5fd6c2" stroke-width="1.5"/>
-      <g font-family="Rajdhani" fill="#7fe0c8">
-        <text x="12" y="29" font-size="19" letter-spacing="0.5">MAGNUM 650</text>
-        <text x="12" y="49" font-size="17">HAND GUN</text>
+      <path d="M 6.5,0.5 H 237 L 261.5,24.5 V 320.5 H 0.5 V 6.5 Q 0.5,0.5 6.5,0.5 Z" fill="none" stroke="#5fd6c2" stroke-width="1.25"/>
+      <g font-family="Rajdhani" font-weight="500" fill="#7fe0c8">
+        <text x="10.5" y="30.5" font-size="24.4" letter-spacing="-0.75">MAGNUM 650</text>
+        <text x="10" y="49.5" font-size="19.5" letter-spacing="0.6">HAND GUN</text>
       </g>
       <!-- yellow band with its left flag, y 277..312 -> local 59..94 -->
-      <path d="M -27,94 V 72 L -3,50 V 59 H 256 Q 258,59 258,61 V 64 L 233,94 Z" fill="#fec32f"/>
+      <path d="M -27,94 V 72 L -3,50 V 59 H 256 Q 258,59 258,61 V 71.5 L 235.5,94 Z" fill="#fec32f"/>
       <use href="#bandglyphs"/>
       <g font-family="Rajdhani" fill="#5a3a08">
-        <rect x="160" y="70" width="60" height="9" fill="#5a3a08"/>
-        <text x="163" y="78" font-size="8" font-weight="700" letter-spacing="0.5" fill="#fec32f">PETROCHEM</text>
-        <text x="160" y="89" font-size="8" letter-spacing="0.5">BETTERLIFE TEC</text>
+        <rect x="163" y="72.8" width="58" height="8" fill="#5a3a08"/>
+        <text transform="translate(163 79.6) scale(1.3 1)" font-size="8" font-weight="700" letter-spacing="0.6" fill="#fec32f">PETROCHEM</text>
+        <text transform="translate(163 90) scale(1.3 1)" font-size="8" font-weight="700" letter-spacing="0.2">BETTERLIFE TEC</text>
       </g>
       <!-- gun drawing -->
       <use href="#gun" fill="#93ffe4"/>
@@ -216,7 +267,7 @@
         <text x="222" y="255">5</text>
       </g>
       <!-- socket row y 492..538 (local 274..320), cells at 52 / 119 / 190 -->
-      <path d="M 0,274 H 261 M 52,274 V 320 M 119,274 V 320 M 190,274 V 320" fill="none" stroke="#5fd6c2" stroke-width="1.5"/>
+      <path d="M 0.5,274.5 H 261.5 M 52.5,274.5 V 320.5 M 119.5,274.5 V 320.5 M 190.5,274.5 V 320.5" fill="none" stroke="#5fd6c2" stroke-width="1.25"/>
       <use href="#qr" x="12" y="283" fill="#81fee7"/>
       <g font-family="Rajdhani" font-size="9" font-weight="600" fill="#7fe0c8" text-anchor="middle">
         <text x="85"  y="295">EMPTY</text><text x="85"  y="307">SOCKET</text>
@@ -240,13 +291,19 @@
     <!-- the logotype is a heavy EXTENDED face: 4S fills x 155..271 (cap 44),
          the outlined T x 280..318. Stretched horizontally so the widths hold
          under a fallback font (rsvg ignores textLength). -->
-    <text transform="translate(155 132) scale(1.7 1)" font-size="60" fill="#8ff2dc">4S</text>
-    <text transform="translate(280 132) scale(1.15 1)" font-size="60" fill="none" stroke="#8ff2dc" stroke-width="1.3">T</text>
-    <text x="154" y="155" font-size="15" font-weight="500" letter-spacing="22" fill="#7fe0c8">STORE</text>
+    <!-- one <text> per glyph: the photo's 4 / S / T are 59.6 / 61.2 / 40 wide (x 150.8..210.4 / 213.8..275 / 277.5..317.5,
+         cap y ~85..134), each a different horizontal stretch of Rajdhani Bold 73; rsvg ignores per-glyph x lists -->
+    <text transform="translate(147.4 134) scale(1.63 1)" font-size="73" fill="#8ff2dc">4</text>
+    <text transform="translate(207.9 134) scale(1.89 1)" font-size="73" fill="#8ff2dc">S</text>
+    <text transform="translate(277.5 134) scale(1.24 1)" font-size="73" fill="none" stroke="#8ff2dc" stroke-width="1.3">T</text>
+    <!-- S T O R E: glyph lefts 154.2 / 192.1 / 230.4 / 270.8 / 309.6 in the photo (cap y 144..156), a 38.6px pitch -->
+    <g font-size="17" font-weight="500" fill="#7fe0c8">
+      <text x="153" y="156">S</text><text x="192" y="156">T</text><text x="229.3" y="156">O</text><text x="269.7" y="156">R</text><text x="308.5" y="156">E</text>
+    </g>
   </g>
 
   <!-- ==== customer chip and account lines ==== -->
-  <rect x="123" y="178" width="215" height="22" rx="8" fill="none" stroke="#5fd6c2" stroke-width="1.5"/>
+  <rect x="124.5" y="178.5" width="213" height="21" rx="8" fill="none" stroke="#5fd6c2" stroke-width="1.25"/>
   <g font-family="Rajdhani" font-size="12" fill="#7fe0c8">
     <text x="133" y="193">customer</text>
     <text x="243" y="193">#NC488402</text>
@@ -260,21 +317,21 @@
   <path d="M 106.5,575 Q 106.5,617 150,617 H 312 Q 345,617 345,650 V 685 Q 345,716 375,718 H 310 Q 110,718 106.5,575 Z"
         fill="#1bb6a3"/>
   <!-- top line (fading in from the right), S-bend around the customer block, corner, left edge, the wave's top and right side -->
-  <path d="M 440,186 H 372 Q 348,186 348,215 V 235 Q 348,268 313,268 H 136 Q 106.5,268 106.5,298 V 575 Q 106.5,617 150,617 H 312 Q 345,617 345,650 V 685 Q 345,716 375,718"
-        fill="none" stroke="#5fd6c2" stroke-width="2"/>
-  <path d="M 372,186 H 440" fill="none" stroke="url(#fadeR)" stroke-width="2"/>
+  <path d="M 440,186.5 H 372 Q 348.5,186.5 348.5,215 V 235 Q 348.5,267.5 313,267.5 H 136 Q 106.5,267.5 106.5,298 V 575 Q 106.5,617.5 150,617.5 H 312 Q 345.5,617.5 345.5,650 V 685 Q 345.5,716 375,718.5"
+        fill="none" stroke="#5fd6c2" stroke-width="1.25"/>
+  <path d="M 372,186.5 H 440" fill="none" stroke="url(#fadeR)" stroke-width="1.25"/>
   <!-- the outer sweep and the bottom line, fading right -->
-  <path d="M 106.5,575 Q 110,718 310,718 H 445" fill="none" stroke="url(#fadeR)" stroke-width="2"/>
+  <path d="M 106.5,575 Q 110,718.5 310,718.5 H 445" fill="none" stroke="url(#fadeR)" stroke-width="1.25"/>
 
   <!-- nav chevrons, tops 297/357/417/477/537, SMG solid -->
-  <g fill="none" stroke="#5fd6c2" stroke-width="1.5">
-    <use href="#nav" x="140" y="297"/>
-    <use href="#nav" x="140" y="417"/>
-    <use href="#nav" x="140" y="477"/>
-    <use href="#nav" x="140" y="537"/>
+  <g fill="none" stroke="#5fd6c2" stroke-width="1.25" stroke-linejoin="round">
+    <use href="#nav" x="140.5" y="296.5"/>
+    <use href="#nav" x="140.5" y="416.5"/>
+    <use href="#nav" x="140.5" y="476.5"/>
+    <use href="#nav" x="140.5" y="536.5"/>
   </g>
   <use href="#nav" x="140" y="357" fill="#ffbe18"/>
-  <g font-family="Rajdhani" font-size="22" letter-spacing="0.5" fill="#7fe0c8">
+  <g font-family="Rajdhani" font-size="24.5" font-weight="500" letter-spacing="-0.4" fill="#7fe0c8">
     <text x="170" y="327">RIFLES</text>
     <text x="170" y="387" fill="#5a3a08">SMG</text>
     <text x="170" y="447">SNIPER</text>
@@ -293,15 +350,19 @@
     <path d="M 6,0 H 237 L 261,24 V 239 H 79 L 64,254 H 0 V 6 Q 0,0 6,0 Z" fill="#ffc233"/>
     <!-- the band's flag, poking out to the left, and its faint outline across the fill -->
     <path d="M -27,94 V 72 L -3,50 V 59 H 0 V 94 Z" fill="#ffc233"/>
-    <path d="M 0,59 H 256 M 0,94 H 261" fill="none" stroke="#c9931a" stroke-width="1"/>
-    <g font-family="Rajdhani" fill="#8a3f28">
-      <text x="12" y="29" font-size="19" letter-spacing="0.5">MAGNUM 650</text>
-      <text x="12" y="49" font-size="17">HAND GUN</text>
+    <!-- card 2's band is not filled solid: a ~1px dark outline (#a4583a..#b6623a) traces the whole band shape across the
+         amber — top edge y 276.6 with a r~3 top-right corner, right edge x 1062.2 (local 258.2) down to y~290, a rounded knee
+         into a 45-degree chamfer to (1039.5,313), rounded into the bottom edge at y 313. Nothing shows left of the card edge. -->
+    <path d="M -3,52 V 55.5 Q -3,58.5 0,58.5 H 255.5 Q 258.5,58.5 258.5,61.5 V 70.5 Q 258.5,73 257,74.5 L 238.5,93 Q 237,94.5 234.5,94.5 H 0"
+          fill="none" stroke="#a4583a" stroke-width="1.1"/>
+    <g font-family="Rajdhani" font-weight="500" fill="#8a3f28">
+      <text x="10.5" y="30.5" font-size="24.4" letter-spacing="-0.75">MAGNUM 650</text>
+      <text x="10" y="49.5" font-size="19.5" letter-spacing="0.6">HAND GUN</text>
     </g>
     <use href="#bandglyphs"/>
-    <rect x="160" y="70" width="60" height="9" fill="#8a3f28"/>
-    <text x="163" y="78" font-family="Rajdhani" font-size="8" font-weight="700" letter-spacing="0.5" fill="#ffc233">PETROCHEM</text>
-    <text x="160" y="89" font-family="Rajdhani" font-size="8" letter-spacing="0.5" fill="#5a3a08">BETTERLIFE TEC</text>
+    <rect x="163" y="72.8" width="58" height="8" fill="#8a3f28"/>
+    <text transform="translate(163 79.6) scale(1.3 1)" font-family="Rajdhani" font-size="8" font-weight="700" letter-spacing="0.6" fill="#ffc233">PETROCHEM</text>
+    <text transform="translate(163 90) scale(1.3 1)" font-family="Rajdhani" font-size="8" font-weight="700" letter-spacing="0.2" fill="#5a3a08">BETTERLIFE TEC</text>
     <!-- the gun, dark on amber. In the grown card it sits 14px higher
          than in the standard card: the dark silhouette measures local x
          38.5..237, y 115..169 here against 37..236, y 129..183 in card 1 -->
@@ -319,8 +380,8 @@
       </g>
     </g>
     <!-- lower body outline, y 457..680 (local 239..462), socket row 632..680 (414..462) -->
-    <path d="M 0,239 V 462 H 261 V 239 M 0,414 H 261 M 52,414 V 462 M 118,414 V 462 M 190,414 V 462"
-          fill="none" stroke="#e2a408" stroke-width="1.5"/>
+    <path d="M 0.5,239 V 461.5 H 261.5 V 239 M 0.5,414.5 H 261.5 M 52.5,414.5 V 461.5 M 118.5,414.5 V 461.5 M 190.5,414.5 V 461.5"
+          fill="none" stroke="#e2a408" stroke-width="1.25"/>
     <g font-family="Rajdhani" font-size="16" fill="#fabe29">
       <text x="16" y="279">20</text><text x="52" y="279">Recoil</text>
       <text x="16" y="300">22</text><text x="52" y="300">Sperad</text>
@@ -343,22 +404,37 @@
 
   <!-- ==== footer marks ==== -->
   <g font-family="Rajdhani" fill="#7fd4cc">
-    <g font-size="7.5" letter-spacing="0.6" fill="#4f9a92">
-      <text x="181" y="738">SPARE TIME MANAGER WAS DEVELO-</text>
-      <text x="181" y="747">PED BY SEOCHO. SERVING CUSTO-</text>
-      <text x="181" y="756">MERS SINCE 2006.</text>
-      <text x="1325" y="746">MAPS ARE PROVIDED BY SEOCHO.</text>
-      <text x="1325" y="755">SATELITE SERVICES SINCE 2006.</text>
+    <!-- the footnotes are BRIGHT mint in a bold, wide, tracked face (ink p90 (115,207,183) — the same #82f0d3 as the
+         foot line), not dim: Rajdhani Bold 8 stretched 1.3x. Rows x 181..334 / 182..328 / 180..261, cap rows
+         733.3..738.8 / 742.5..748.3 / 751.2..756.7; the C block x 1326..1469, rows 741.8..746.8 / 750.9..755.9 -->
+    <g font-size="8" font-weight="700" fill="#82f0d3">
+      <g transform="translate(181 0) scale(1.3 1)">
+        <text x="0" y="738.8">SPARE TIME MANAGER WAS DEVELO-</text>
+        <text x="0" y="747.8">PED BY SEOCHO. SERVING CUSTO-</text>
+        <text x="0" y="756.7">MERS SINCE 2006.</text>
+      </g>
+      <g transform="translate(1325.8 0) scale(1.3 1)">
+        <text x="0" y="746.8">MAPS ARE PROVIDED BY SEOCHO.</text>
+        <text x="0" y="755.9">SATELITE SERVICES SINCE 2006.</text>
+      </g>
     </g>
-    <rect x="350" y="733" width="28" height="27" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
-    <text x="364" y="752" font-size="14" text-anchor="middle">A</text>
-    <rect x="1500" y="733" width="29" height="27" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
-    <text x="1514.5" y="752" font-size="14" text-anchor="middle">C</text>
+    <!-- boxed A / C: ~24x24 squares with a 2px stroke (centrelines x 354..377.7, y 734.3..758.5 and x 1501..1525.2,
+         y 733.9..758.2), the letter a wide pointed cap 15.8 x 11.7 -->
+    <g fill="none" stroke="#82f0d3" stroke-width="2">
+      <rect x="354" y="734.3" width="23.7" height="24.2"/>
+      <rect x="1501" y="733.9" width="24.2" height="24.3"/>
+    </g>
+    <g font-size="18" font-weight="700" text-anchor="middle" fill="#82f0d3">
+      <text transform="translate(365.9 753.8) scale(1.7 1)">A</text>
+      <text transform="translate(1513.1 753.4) scale(1.7 1)">C</text>
+    </g>
   </g>
 
   <!-- ==== footer micro-text, y 864..869, x 503..1095 ==== -->
-  <g font-family="Rajdhani" font-size="9" letter-spacing="0.2" fill="#82f0d3">
-    <text x="503" y="870" font-weight="700">ARASAKA CONSUMER TECHNOLOGY</text>
-    <text x="640" y="870">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+  <!-- one weight for the whole line (the notice is as bold as ARASAKA in the photo); tracking holds the extent
+       x 504..1095 with ARASAKA ending at 634 and ONLY starting at 641 -->
+  <g font-family="Rajdhani" font-size="9" font-weight="700" fill="#82f0d3">
+    <text x="503" y="870" letter-spacing="0.25">ARASAKA CONSUMER TECHNOLOGY</text>
+    <text x="641" y="870" letter-spacing="0.24">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
   </g>
 </svg>

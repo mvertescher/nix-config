@@ -41,7 +41,35 @@
        Palette sampled by k-means over the photo (extract_spec.py):
          ink    #8aac8c (12.1%, the band + NEXT)  #739479 (outlines)
                 #5b765d  #445d48  #324132  #20281c (dark text on sage)
-         ground #0f0a04 (59.5%)  #1a1810 (25.7%) -->
+         ground #0f0a04 (59.5%)  #1a1810 (25.7%)
+
+       Strokes, probed 2026-09-03 at full 3840 resolution (header strip
+       and field frame, rows and columns): a 3px line (1.25px here),
+       peak core #6c8a77..#819b82 — this screen is dimmer than the hub,
+       mail and store — sitting straight on the ground, no dark ring. The
+       k-means #739479 is the 1600 rescale's dilution of that line over
+       two pixels; drawn as 1.25px #75967b. Text ink the same way
+       (bright-tail mean over the run): header strings #799d81, USERNAME
+       #82aa88; the band #8ab48d.
+
+       Pass notes:
+         2026-09-03  header strings 15/ls 1 #8aac8c -> 17/500 natural
+                     #799d81 (photo runs x 62..305 / 519..672 /
+                     1383..1494, cap 49..59; the old 15px rendered cap 10
+                     at 51..60 and 240/158/111 wide), middle x 521 ->
+                     518, baseline 61 -> 60.
+         2026-09-03  outlines 1.5px #739479 -> 1.25px #75967b (above).
+         2026-09-03  USERNAME: 23/ls 1 regular -> 23/500 ls 0.75 at
+                     x 576 (rendered 580 vs photo 578), baseline 402;
+                     masked field: eleven asterisks were 20/ls 2 (4-5px
+                     glyphs at pitch 10, run 110 wide) — photo is 7px
+                     glyphs at pitch ~9.7, run x 578..669 y 425..430:
+                     bold 22, natural tracking (run 94); NEXT 22 regular
+                     ls 1 -> 500 ls 2 at x 940 baseline 433 (photo dark
+                     run x 942..989, cap 419..432; was 941..984, 421..434);
+                     footer baseline 862 -> 863, x 517/1382 -> 519/1383
+                     (photo runs 62..190 / 520..768 / 1384..1523, cap
+                     853..862). -->
   <defs>
     <radialGradient id="lift" cx="0.45" cy="0.4" r="0.8">
       <stop offset="0"   stop-color="#1a1810"/>
@@ -54,37 +82,37 @@
 
   <!-- ==== header strip, y 43..69, dividers at x 465 and 1353 ==== -->
   <g>
-    <rect x="49" y="43" width="1498" height="26" fill="none" stroke="#739479" stroke-width="1.5"/>
-    <path d="M 465,43 V 69 M 1353,43 V 69" fill="none" stroke="#739479" stroke-width="1.5"/>
-    <g font-family="Rajdhani" font-size="15" fill="#8aac8c" letter-spacing="1">
-      <text x="61" y="61">RIPPERDOC SURGICAL SOFTWAREV2</text>
-      <text x="521" y="61">STORE ACCESS SCREEN</text>
-      <text x="1382" y="61">FLAIR TRS 5MMP</text>
+    <rect x="49" y="43" width="1498" height="26" fill="none" stroke="#75967b" stroke-width="1.25"/>
+    <path d="M 465,43 V 69 M 1353,43 V 69" fill="none" stroke="#75967b" stroke-width="1.25"/>
+    <g font-family="Rajdhani" font-size="17" font-weight="500" fill="#799d81">
+      <text x="61" y="60">RIPPERDOC SURGICAL SOFTWAREV2</text>
+      <text x="518" y="60">STORE ACCESS SCREEN</text>
+      <text x="1382" y="60">FLAIR TRS 5MMP</text>
     </g>
   </g>
 
   <!-- ==== the login form: label, masked field, NEXT ==== -->
   <g font-family="Rajdhani">
-    <text x="578" y="403" font-size="23" fill="#8aac8c" letter-spacing="1">USERNAME:</text>
+    <text x="576" y="402" font-size="23" font-weight="500" fill="#8aac8c" letter-spacing="0.75">USERNAME:</text>
 
     <!-- field, x 563..922, y 414..447 -->
-    <rect x="563" y="414" width="359" height="33" fill="none" stroke="#739479" stroke-width="1.5"/>
-    <text x="579" y="438" font-size="20" fill="#8aac8c" letter-spacing="2">***********</text>
+    <rect x="563" y="414" width="359" height="33" fill="none" stroke="#75967b" stroke-width="1.25"/>
+    <text x="578" y="439" font-size="22" font-weight="bold" fill="#8aac8c">***********</text>
     <!-- caret underline under the first pair of characters -->
-    <path d="M 577,440 H 594" fill="none" stroke="#739479" stroke-width="1.5"/>
+    <path d="M 577,440 H 594" fill="none" stroke="#75967b" stroke-width="1.25"/>
 
     <!-- NEXT, filled, x 932..1037, y 413..446 -->
     <rect x="932" y="413" width="105" height="33" fill="#8aac8c"/>
-    <text x="939" y="435" font-size="22" fill="#20281c" letter-spacing="1">NEXT</text>
+    <text x="940" y="433" font-size="22" font-weight="500" fill="#20281c" letter-spacing="2">NEXT</text>
   </g>
 
   <!-- ==== solid footer band, x 36..1565, y 765..880 ==== -->
   <g>
     <rect x="36" y="765" width="1529" height="115" fill="#8aac8c"/>
     <g font-family="Rajdhani" font-size="15" fill="#20281c" letter-spacing="1">
-      <text x="61" y="862">INTERFACE LOADED</text>
-      <text x="517" y="862">PROVIDED BY NEXUS NETWORK V10.8</text>
-      <text x="1382" y="862">BUILD 6.47.48441.R15</text>
+      <text x="61" y="863">INTERFACE LOADED</text>
+      <text x="519" y="863">PROVIDED BY NEXUS NETWORK V10.8</text>
+      <text x="1383" y="863">BUILD 6.47.48441.R15</text>
     </g>
   </g>
 </svg>

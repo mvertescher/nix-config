@@ -13,11 +13,24 @@
 
        What the source shows:
          - a rose bloom over the top of a near-black ground
-         - header: boxed letters with in-fiction annotation text beside
-           them — A USER (box x 169..197) over a notched GUES 7702 box at
-           x 155..331, y 195..241; C SECURITY LEVEL (x 672..699) over four
-           badges at x 664/725/785/844, y 189..241, the second filled
-           amber; D DESCRIPTION (x 1215..1242) over the BRAINDANCE panel
+         - header: boxed letters — ~24x24 squares with a 2px stroke,
+           centrelines x 164.6..188.8 / 673.3..697.5 / 1215.2..1239.2,
+           y 109.8..134, each a wide heavy cap at y 117.9..129.2 — with
+           three lines of BRIGHT bold, wide in-fiction micro-text beside
+           each (x 205..356 / 715..867 / 1254..1396, cap rows
+           109.4..113.6 / 118.6..122.8 / 127.3..131.9, the same #82f0d3
+           as the foot line) and a bold wide section label beneath (cap
+           y 155..163: USER x 165..204, SECURITY LEVEL 674..791,
+           DESCRIPTION 1216..1312). A USER over the GUES 7702 box: the
+           SAME stepped box as the mailbox screen's, a ~1.2px line
+           x 155.5..349.5, top y 189.5, bottom y 232.5 on the right and
+           240.5 under the first 55px, joined by a diagonal at x 208..220
+           (an earlier version drew a 2px box at x 155..331, y 195..241
+           with a tab hanging to y 258 — the photo has no tab); GUES
+           7702 bold, x 163..256, cap y 203..218. C SECURITY LEVEL over
+           four ~1px-outlined badges at x 664.5/725/785.5/844.5,
+           y 189.5..241 (eqw 0.7..1.2), the second filled amber;
+           D DESCRIPTION over the BRAINDANCE panel
          - THE MENU IS TWO THREE-BLADE FANS of rounded cards (162x50,
            r8 — measured in each card's own frame by rotating the photo
            by -rot about the card centre and profiling the outline: every
@@ -32,8 +45,41 @@
          - BRAINDANCE detail panel: yellow header tab at [1200,261,232,38]
            (chamfered tl/tr/bl), a small warning tape at ~[1172,306,180,24],
            an outlined body to y 666 holding two yellow paragraphs
-         - B DEVICE SOFTWARE mark at x 575..602, y 742..769
-         - a single line of bright MINT micro-text centred at the foot, y 864..869 (measured; not yellow)
+         - B DEVICE SOFTWARE mark: a ~24x24 2px square, centreline
+           x 574.3..598.3, y 741..765.2, the B at cap y 748..761; two
+           bright bold note lines at x 610..753 (cap rows 741..746 /
+           750..755); DEVICE SOFTWARE bold and wide, x 575..712, cap
+           y 786..794
+         - a single line of bright MINT micro-text centred at the foot,
+           y 864..870, x 504..1095 (measured; not yellow), the whole
+           line ONE bold weight (ARASAKA .. TECHNOLOGY ends x 634, ONLY
+           starts 641), coverage 0.17 of its box
+         - the BRAINDANCE body outline is a ~1.2px line (FWHM 0.7 /
+           eqw 1.4..1.7 across its left, right and bottom edges); the
+           rotated fan cards were not re-measured (no clean profile
+           across a rotated edge) and keep their 1.8 / 1.2
+
+       Notes, 2026-09-03 pass (vision, against 1600x900 crops of the photo):
+         - header and B notes: Rajdhani 600 (header, on the rose) / 700
+           (B, on black) size 8 stretched 1.3x in #82f0d3 at the
+           measured rows (were 8 regular ls 0.5 in #4f9a92: the C block
+           8px left, D 4px left, and a fifth of the photo's ink); boxed
+           A/C/D/B redrawn at the measured 24x24 2px squares (were
+           28x27 / 27x27 at 1.5px; A was 4.5px right) with size-18
+           letters stretched 1.7x; section labels Rajdhani 600 12.3
+           stretched 1.37x (were 15 regular ls 2, half the ink)
+         - USER box redrawn as the photo's stepped box (above), 1.25 on
+           .5 coordinates with rounded joins (was 2px); GUES 7702 21.5
+           weight 600 (was 19 regular ls 1)
+         - security badges 2 -> 1.0 at .5 coordinates, their digits 22
+           weight 600 (were 19 regular: 12 tall vs the photo's 14, a
+           third of the ink); BRAINDANCE body 1.5 -> 1.25 at .5
+           coordinates
+         - foot line: both runs Rajdhani 700, ls 0.25 / 0.24 from x 503
+           and 641 (the notice was regular; coverage 0.116 -> 0.169 vs
+           the photo's 0.17, extent unchanged)
+         - G1i inks 0.59 -> 0.69 (dark teal 0.44 -> 0.45, teal 0.80 ->
+           0.92, yellow 0.51 -> 0.79)
 
        Palette sampled by k-means (extract_spec.py):
          ink   #2c9798 (3.8%)  #195147 (4.1%)  #f5cb23 (1.5%)
@@ -56,42 +102,64 @@
 
   <!-- ==== header: boxed letters, annotations, labels ==== -->
   <g font-family="Rajdhani" fill="#7fd4cc">
-    <g font-size="8" letter-spacing="0.5" fill="#4f9a92">
-      <text x="205" y="112">SPARE TIME MANAGER WAS DEVELO-</text>
-      <text x="205" y="122">PED BY SEOCHO. SERVING CUSTO-</text>
-      <text x="205" y="132">MERS SINCE 2006.</text>
-      <text x="707" y="112">SPARE TIME MANAGER WAS DEVELO-</text>
-      <text x="707" y="122">PED BY SEOCHO. SERVING CUSTO-</text>
-      <text x="707" y="132">MERS SINCE 2006.</text>
-      <text x="1250" y="112">MAPS ARE PROVIDED BY SEOCHO.</text>
-      <text x="1250" y="122">SATELITE SERVICES SINCE 2006.</text>
+    <!-- the notes are BRIGHT bold, wide, tracked micro-text (the same #82f0d3 as the foot line, not dim):
+         x 205..356 / 715..867 / 1254..1396, cap rows 109.4..113.6 / 118.6..122.8 / 127.3..131.9 -->
+    <g font-size="8" font-weight="600" fill="#82f0d3">
+      <g transform="translate(205 0) scale(1.3 1)">
+        <text x="0" y="113.6">SPARE TIME MANAGER WAS DEVELO-</text>
+        <text x="0" y="122.8">PED BY SEOCHO. SERVING CUSTO-</text>
+        <text x="0" y="131.9">MERS SINCE 2006.</text>
+      </g>
+      <g transform="translate(715.3 0) scale(1.3 1)">
+        <text x="0" y="113.6">SPARE TIME MANAGER WAS DEVELO-</text>
+        <text x="0" y="122.8">PED BY SEOCHO. SERVING CUSTO-</text>
+        <text x="0" y="131.9">MERS SINCE 2006.</text>
+      </g>
+      <g transform="translate(1253.8 0) scale(1.3 1)">
+        <text x="0" y="113.6">MAPS ARE PROVIDED BY SEOCHO.</text>
+        <text x="0" y="122.8">SATELITE SERVICES SINCE 2006.</text>
+      </g>
     </g>
-    <rect x="169" y="109" width="28" height="27" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
-    <text x="177" y="129" font-size="16">A</text>
-    <text x="169" y="162" font-size="15" letter-spacing="2">USER</text>
-    <rect x="672" y="109" width="27" height="27" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
-    <text x="680" y="129" font-size="16">C</text>
-    <text x="672" y="162" font-size="15" letter-spacing="2">SECURITY LEVEL</text>
-    <rect x="1215" y="109" width="27" height="27" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
-    <text x="1223" y="129" font-size="16">D</text>
-    <text x="1215" y="162" font-size="15" letter-spacing="2">DESCRIPTION</text>
+    <!-- boxed A / C / D: ~24x24 squares with a 2px stroke (centrelines x 164.6..188.8 / 673.3..697.5 / 1215.2..1239.2,
+         y 109.8..134), each holding a wide heavy cap ~15.8 x 11.7 at y 117.9..129.2 -->
+    <g fill="none" stroke="#82f0d3" stroke-width="2">
+      <rect x="164.6" y="109.8" width="24.2" height="24.2"/>
+      <rect x="673.3" y="109.8" width="24.2" height="24.2"/>
+      <rect x="1215.2" y="109.8" width="24" height="24.2"/>
+    </g>
+    <g font-size="18" font-weight="600" text-anchor="middle" fill="#82f0d3">
+      <text transform="translate(176.7 129.2) scale(1.7 1)">A</text>
+      <text transform="translate(685.4 129.2) scale(1.7 1)">C</text>
+      <text transform="translate(1227.2 129.2) scale(1.7 1)">D</text>
+    </g>
+    <!-- section labels: the same bold wide face as the notes, cap y 155..163, USER x 165..204 / SECURITY LEVEL
+         674..791 / DESCRIPTION 1216..1312 (were Rajdhani 15 regular ls 2: the extent but half the ink) -->
+    <g font-size="12.3" font-weight="600" letter-spacing="0.6" fill="#82f0d3">
+      <text transform="translate(165 163) scale(1.37 1)">USER</text>
+      <text transform="translate(674 163) scale(1.37 1)">SECURITY LEVEL</text>
+      <text transform="translate(1216 163) scale(1.37 1)">DESCRIPTION</text>
+    </g>
   </g>
 
-  <!-- USER box with its bottom-left tab, x 155..331, y 195..241 -->
-  <path d="M 155,195 H 331 V 241 H 205 L 185,258 H 165 L 155,248 Z"
-        fill="none" stroke="#7fd4cc" stroke-width="2"/>
-  <text x="170" y="225" font-family="Rajdhani" font-size="19" letter-spacing="1"
+  <!-- USER box: the same stepped box as the mailbox screen's, x 155.5..349.5, top y 189.5, bottom y 232.5 on the
+       right and 240.5 under the first 55px, joined by a diagonal at x 208..220; a ~1.2px line on .5 coordinates.
+       (An earlier version drew a 2px box at x 155..331, y 195..241 with a tab hanging to y 258; the photo has
+       no such tab.) GUES 7702 is bold: x 163..256, cap y 203..218 -->
+  <path d="M 155.5,189.5 H 349.5 V 232.5 H 220 L 208,240.5 H 155.5 Z"
+        fill="none" stroke="#7fd4cc" stroke-width="1.25" stroke-linejoin="round"/>
+  <text x="164" y="218" font-family="Rajdhani" font-size="21.5" font-weight="600" letter-spacing="0.5"
         fill="#a9e6df">GUES 7702</text>
 
   <!-- security badges, y 189..241, 02 filled amber -->
-  <g font-family="Rajdhani" font-size="19" text-anchor="middle">
-    <use href="#badge" x="664" y="189" fill="none" stroke="#7fd4cc" stroke-width="2"/>
+  <!-- digits cap y 208..222, 01 spanning x 683..701 (were drawn 19 regular: 12 tall, 13 wide, a third of the ink) -->
+  <g font-family="Rajdhani" font-size="22" font-weight="600" text-anchor="middle">
+    <use href="#badge" x="664.5" y="189.5" fill="none" stroke="#7fd4cc" stroke-width="1"/>
     <text x="692" y="222" fill="#7fd4cc">01</text>
     <use href="#badge" x="725" y="189" fill="#f5cb23"/>
     <text x="753" y="222" fill="#6b4d08">02</text>
-    <use href="#badge" x="785" y="189" fill="none" stroke="#7fd4cc" stroke-width="2"/>
+    <use href="#badge" x="785.5" y="189.5" fill="none" stroke="#7fd4cc" stroke-width="1"/>
     <text x="813" y="222" fill="#7fd4cc">03</text>
-    <use href="#badge" x="844" y="189" fill="none" stroke="#7fd4cc" stroke-width="2"/>
+    <use href="#badge" x="844.5" y="189.5" fill="none" stroke="#7fd4cc" stroke-width="1"/>
     <text x="872" y="222" fill="#7fd4cc">04</text>
   </g>
 
@@ -213,7 +281,7 @@
       <text x="1178" y="325">ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
     </g>
     <!-- body -->
-    <rect x="1207" y="299" width="225" height="367" fill="none" stroke="#f5cb23" stroke-width="1.5"/>
+    <rect x="1207.5" y="299.5" width="224.5" height="367" fill="none" stroke="#f5cb23" stroke-width="1.25"/>
     <g fill="#e3bd20">
       <rect x="1224" y="345" width="196" height="11"/>
       <rect x="1224" y="365" width="188" height="11"/>
@@ -229,13 +297,15 @@
 
   <!-- ==== B DEVICE SOFTWARE mark ==== -->
   <g font-family="Rajdhani" fill="#7fd4cc">
-    <g font-size="8" letter-spacing="0.5" fill="#4f9a92">
-      <text x="612" y="752">MAPS ARE PROVIDED BY SEOCHO.</text>
-      <text x="612" y="762">SATELITE SERVICES SINCE 2006.</text>
+    <!-- notes x 610..753, cap rows 741..746 / 750..755, bright and bold like the header's; the boxed B a ~24x24
+         2px square (centreline x 574.3..598.3, y 741..765.2) with its cap at y 748..761 -->
+    <g transform="translate(609.9 0) scale(1.3 1)" font-size="8" font-weight="700" fill="#82f0d3">
+      <text x="0" y="746">MAPS ARE PROVIDED BY SEOCHO.</text>
+      <text x="0" y="755">SATELITE SERVICES SINCE 2006.</text>
     </g>
-    <rect x="575" y="742" width="27" height="27" fill="none" stroke="#7fd4cc" stroke-width="1.5"/>
-    <text x="583" y="762" font-size="16">B</text>
-    <text x="575" y="795" font-size="15" letter-spacing="2">DEVICE SOFTWARE</text>
+    <rect x="574.3" y="741" width="24" height="24.2" fill="none" stroke="#82f0d3" stroke-width="2"/>
+    <text transform="translate(586.3 761.2) scale(1.7 1)" font-size="18" font-weight="600" text-anchor="middle" fill="#82f0d3">B</text>
+    <text transform="translate(575 794) scale(1.37 1)" font-size="12.3" font-weight="600" letter-spacing="0.6" fill="#82f0d3">DEVICE SOFTWARE</text>
   </g>
 
   <!-- ==== footer micro-text, y 864..869, x 504..1095: BRIGHT MINT, the
@@ -243,8 +313,10 @@
        p90 (127,240,209) in the photo). An earlier version drew it yellow
        #d9b41f at size 10, which the photo does not support, and the two
        runs overlapped ==== -->
-  <g font-family="Rajdhani" font-size="9" letter-spacing="0.2" fill="#82f0d3">
-    <text x="504" y="870" font-weight="700">ARASAKA CONSUMER TECHNOLOGY</text>
-    <text x="640" y="870">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+  <!-- one weight for the whole line (the notice is as bold as ARASAKA in the photo); tracking holds the extent
+       x 504..1095 with ARASAKA ending at 634 and ONLY starting at 641 -->
+  <g font-family="Rajdhani" font-size="9" font-weight="700" fill="#82f0d3">
+    <text x="503" y="870" letter-spacing="0.25">ARASAKA CONSUMER TECHNOLOGY</text>
+    <text x="641" y="870" letter-spacing="0.24">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
   </g>
 </svg>

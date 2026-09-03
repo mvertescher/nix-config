@@ -13,26 +13,67 @@
          - a full-width header strip, x 49..1547, y 43..69, with dividers at
            x 465 and x 1353: RIPPERDOC SURGICAL SOFTWAREV2 / STORE ACCESS
            SCREEN / FLAIR TRS 5MMP (the hub screen itself carries the
-           STORE ACCESS SCREEN caption — that is the material, not an error)
-         - three boxed section letters with labels at y~147..174:
-           A MAIL BOX (box x 132..158), B MESSAGE (x 1013..1040),
-           C SECURITY LEVEL (x 1328..1354, label on two lines)
+           STORE ACCESS SCREEN caption — that is the material, not an error).
+           Text runs x 62..305 / 519..672 / 1383..1494, cap y 49..59.
+         - three boxed section letters (26x26) with labels: A MAIL BOX
+           (box x 133..158, y 145..170; label x 171..254, cap 149..163),
+           B MESSAGE (box x 1014..1039, y 145..170; label x 1049..1132),
+           C SECURITY LEVEL (box x 1329..1354, y 142..167; label on two
+           lines, SECURITY x 1381..1465 cap 147..161, LEVEL x 1381..1433
+           cap 172..185). Labels are a medium-weight face, cap 15, not
+           letter-spaced. The boxed letters are bold and extended:
+           A 18x14 (x 137..154, y 151..164), B and C 15x14.
          - a 3x2 TILE GRID: tiles 194 wide at x 128, 418, 716; row 1
            y 226..438, row 2 y 499..710; square corners, thin outline.
            Labels EMAILS / MATRIX / BRAINDANCE and SECURITY SYSTEMS /
-           PRIVATE / DEVICES centred in the tiles. BRAINDANCE (row 1,
-           tile 3) is filled solid sage — the selection. Each tile's foot
-           carries a two-cell caption strip (top rule at y 409 / y 681,
-           internal divider 95px in): 85SD4F3Q5S41 | COMBAT COLONIZATION
-           DEFENCE PROGRAM
+           PRIVATE / DEVICES centred in the tiles, semibold, cap 14px
+           (EMAILS x 189..253 y 313..327; SECURITY x 179..264 y 577..591
+           over SYSTEMS y 602..615; PRIVATE x 478..549 y 586..599).
+           BRAINDANCE (row 1, tile 3) is filled solid sage — the selection.
+           Each tile's foot carries a CAPTION BOX: a brighter, thinner
+           outlined rectangle whose sides and bottom coincide with the
+           tile frame and whose top rule sits at y 410 (row 2: y 682),
+           split by a divider 96px in (x 224 / 514 / 812). Cells hold real
+           text: 85SD4F3Q5S41 (x 134..192, cap 415..422) | COMBAT
+           COLONIZATION (x 231..311, cap 415..422) over DEFENCE PROGRAM
+           (x 231..299, cap 425..431). On the selected tile the box and
+           text are dark on the sage fill.
          - a MESSAGE detail panel, x 1014..1275, y 215..723: BRAINDANCE
-           heading over a full-width underline at y 281, then two lorem
-           paragraphs (5 lines + 3 lines)
+           heading (x 1033..1148, cap 250..264, bold) over a full-width
+           underline at y 281, then lorem body copy at x 1033 on a 21px
+           pitch, cap tops 310..436: SEVEN lines ending "gravi- / da.",
+           a blank line, then THREE lines (Risus commodo viverra ma- /
+           ecenas accumsan lacus vel / facilisis.) at cap tops 478 / 499 /
+           520. Line widths 218 208 222 198 199 210 21 / 217 211 62.
          - a SECURITY LEVEL badge column: four 68x68 boxes at x 1380,
            y 214 / 304 / 393 / 482, labelled T1..T4, with T2 filled solid
-           (the extractor reads it at exactly [1380,304,68,68])
+           (the extractor reads it at exactly [1380,304,68,68]). The
+           glyphs are a bold EXTENDED face: cap 18px, T1 26 wide, T2 34,
+           T3 36, T4 36 (x 1396..1431), centred on the box.
          - a full-width footer strip, x 49..1547, y 847..872: INTERFACE
            LOADED / PROVIDED BY NEXUS NETWORK V10.8 / BUILD 6.47.48441.R15
+
+       Stroke profile, measured 2026-09-03 at FULL resolution (3840 wide;
+       column/row probes through the header, every tile, the panel, the
+       badges and the footer): every outlined frame is a 3px line at 3840
+       = 1.25px in this frame, with a bright core (#82b393..#9ec2a0,
+       mean ~#8fba97 — the era's sage TEXT tone, not a dimmer outline
+       tone), a faint +12-lum overshoot ~5px out, and NO dark undershoot
+       (ground 16, the "undershoot" 16..18). The 2px / #709174 profile
+       that the 1600-wide rescale shows — and that the k-means palette
+       below reports — is that 1.25px bright line spread by Lanczos over
+       two half-bright pixels, ringed by the filter's negative lobe. The
+       traces draw the material, so strokes here are 1.25px of the core
+       colour on integer coordinates (which rsvg antialiases into the
+       same two-pixel footprint the rescale has). The caption-box lines
+       are heavier and brighter: 4px at 3840 = 1.7px, #a8d7a7.
+
+       Text ink, measured the same way on the 1600 rescale (bright-tail
+       mean over the run): header/footer strings #97c4a0, tile labels
+       #acddb4, body copy #9fc09c. The face is a medium weight with tight
+       tracking, cap 11; Rajdhani 500 at 17px, natural tracking, lands
+       each header/footer run within 4px of the photo (241/158/112 and
+       127/247/140 vs 244/154/112 and 130/250/142) at the photo's cap.
 
        Replaces the previous revision, which drew "four tiles in a row,
        caption strips, a build-rule at the foot" and claimed the app's
@@ -41,7 +82,35 @@
        wrong file); the material shows a 3-per-row grid WITH a detail
        panel and a badge column.
 
-       Palette sampled by k-means over the photo (extract_spec.py):
+       Pass notes:
+         2026-09-02  footer: only BUILD right-anchored (end 1525);
+                     PROVIDED BY left-anchored at 517 as on the mailbox.
+         2026-09-03  header strings: size 14 -> 17/500, x 60/477/1365 ->
+                     61/518/1382, baseline 61 -> 60 (runs were 8% short,
+                     40px left, cap 2px low); footer strings to match.
+         2026-09-03  every outline 2px/1.5px #739676 -> 1.25px #8fba97
+                     (full-res measurement above); letter boxes 1.5px
+                     #9ac3a0.
+         2026-09-03  caption strips were a dim 1.5px rule + divider with
+                     grey bars; the photo has a bright inset box with
+                     real text — redrawn (top rule 409 -> 410, divider
+                     95 -> 96 in).
+         2026-09-03  T1..T4 were Rajdhani regular 22 (cap 14, ~20 wide);
+                     photo is bold extended (cap 18, 26..36 wide) —
+                     bold 27 stretched 1.37..1.5 horizontally.
+         2026-09-03  section labels 17/ls 2 -> 23/600 at measured runs
+                     (natural tracking: 85/86/87/52 vs 84/84/85/53);
+                     boxed letters bold 22 stretched 1.5-1.6; C box was
+                     5px low (147 -> 142); tile labels 600/22 at measured
+                     runs; panel body 5+3 bars -> 7+3 text lines as read
+                     off the photo (500/17 stretched 1.16).
+         2026-09-03  no textLength anywhere: rsvg-convert 2.62 ignores
+                     textLength/lengthAdjust (verified — identical width
+                     with and without), so runs are pinned with
+                     letter-spacing or scale(sx,1) transforms instead.
+
+       Palette sampled by k-means over the photo (extract_spec.py; the
+       #739676 centroid is the rescale's diluted stroke, see above):
          ink   #a6d3a7 (3.3%, the solid fills)  #739676  #59755b  #3a4c38
          ground #0f0a03 (63.8%) #1c1a10 (19.5%) #232419 (9.2%) -->
   <defs>
@@ -50,14 +119,15 @@
       <stop offset="0.7" stop-color="#141107"/>
       <stop offset="1"   stop-color="#0f0a03"/>
     </radialGradient>
-    <!-- one caption strip, drawn at the tile's local origin: top rule,
-         internal divider 95px in, small text in each cell -->
-    <g id="caption">
-      <path d="M 0,0 H 194" fill="none" stroke="#59755b" stroke-width="1.5"/>
-      <path d="M 95,0 V 29" fill="none" stroke="#59755b" stroke-width="1.5"/>
-      <rect x="7"   y="8" width="80" height="7" fill="#59755b"/>
-      <rect x="103" y="5" width="82" height="6" fill="#59755b"/>
-      <rect x="103" y="14" width="70" height="6" fill="#59755b"/>
+    <!-- one caption box, drawn at the tile's bottom-left corner (the
+         tile's own frame is at y 0 here and the box's bottom edge lies on
+         it): top rule 28px up, divider 96px in, two cells of small bold
+         text at the measured runs -->
+    <g id="caption" font-family="Rajdhani" font-weight="600" text-anchor="start">
+      <path d="M 0,-28 H 194 M 96,-28 V 0" fill="none" stroke-width="1.7"/>
+      <text transform="translate(6,-15) scale(0.78,1)" font-size="12">85SD4F3Q5S41</text>
+      <text transform="translate(103,-15) scale(0.685,1)" font-size="12">COMBAT COLONIZATION</text>
+      <text transform="translate(103,-6) scale(0.82,1)" font-size="10.5">DEFENCE PROGRAM</text>
     </g>
   </defs>
 
@@ -65,111 +135,117 @@
 
   <!-- ==== header strip, y 43..69, dividers at x 465 and 1353 ==== -->
   <g>
-    <rect x="49" y="43" width="1498" height="26" fill="none" stroke="#739676" stroke-width="1.5"/>
-    <path d="M 465,43 V 69 M 1353,43 V 69" fill="none" stroke="#739676" stroke-width="1.5"/>
-    <g font-family="Rajdhani" font-size="14" fill="#87b08d" letter-spacing="1">
-      <text x="60" y="61">RIPPERDOC SURGICAL SOFTWAREV2</text>
-      <text x="477" y="61">STORE ACCESS SCREEN</text>
-      <text x="1365" y="61">FLAIR TRS 5MMP</text>
+    <rect x="49" y="43" width="1498" height="26" fill="none" stroke="#8fba97" stroke-width="1.25"/>
+    <path d="M 465,43 V 69 M 1353,43 V 69" fill="none" stroke="#8fba97" stroke-width="1.25"/>
+    <g font-family="Rajdhani" font-size="17" font-weight="500" fill="#97c4a0">
+      <text x="61" y="60">RIPPERDOC SURGICAL SOFTWAREV2</text>
+      <text x="518" y="60">STORE ACCESS SCREEN</text>
+      <text x="1382" y="60">FLAIR TRS 5MMP</text>
     </g>
   </g>
 
-  <!-- ==== section headings, y 147..174 ==== -->
-  <g font-family="Rajdhani" font-size="17" fill="#87b08d" letter-spacing="2">
-    <rect x="132" y="147" width="26" height="26" fill="none" stroke="#87b08d" stroke-width="1.5"/>
-    <text x="139" y="166">A</text>
-    <text x="170" y="166">MAIL BOX</text>
-    <rect x="1013" y="147" width="27" height="26" fill="none" stroke="#87b08d" stroke-width="1.5"/>
-    <text x="1020" y="166">B</text>
-    <text x="1049" y="166">MESSAGE</text>
-    <rect x="1328" y="147" width="26" height="26" fill="none" stroke="#87b08d" stroke-width="1.5"/>
-    <text x="1335" y="166">C</text>
-    <text x="1381" y="160" font-size="15">SECURITY</text>
-    <text x="1381" y="178" font-size="15">LEVEL</text>
+  <!-- ==== section headings: boxes 26x26 holding a bold extended letter
+       (photo A is 18x14, B/C 15x14 — Rajdhani Bold 22 stretched 1.5-1.6),
+       labels Rajdhani 600 at 23 (cap 15, natural tracking hits the
+       measured runs 84/84/85/53 within 2px) ==== -->
+  <g font-family="Rajdhani" fill="#a0d2a9">
+    <g font-size="22" font-weight="bold" text-anchor="middle">
+      <rect x="133" y="145" width="26" height="26" fill="none" stroke="#9ac3a0" stroke-width="1.5"/>
+      <text transform="translate(146,165) scale(1.6,1)">A</text>
+      <rect x="1014" y="145" width="26" height="26" fill="none" stroke="#9ac3a0" stroke-width="1.5"/>
+      <text transform="translate(1027,165) scale(1.5,1)">B</text>
+      <rect x="1329" y="142" width="26" height="26" fill="none" stroke="#9ac3a0" stroke-width="1.5"/>
+      <text transform="translate(1342,162) scale(1.5,1)">C</text>
+    </g>
+    <g font-size="23" font-weight="600">
+      <text x="169"  y="164">MAIL BOX</text>
+      <text x="1047" y="164">MESSAGE</text>
+      <text x="1380" y="162">SECURITY</text>
+      <text x="1379" y="186">LEVEL</text>
+    </g>
   </g>
 
   <!-- ==== the 3x2 tile grid ==== -->
-  <!-- row 1: y 226..438, caption rule at y 409 -->
-  <g font-family="Rajdhani" font-size="19" letter-spacing="1.5" text-anchor="middle">
-    <rect x="128" y="226" width="194" height="212" fill="none" stroke="#739676" stroke-width="2"/>
-    <text x="225" y="327" fill="#a6d3a7">EMAILS</text>
-    <use href="#caption" x="128" y="409" fill="#59755b"/>
+  <!-- row 1: y 226..438, caption box top rule at y 410 -->
+  <g font-family="Rajdhani" font-size="22" font-weight="600" text-anchor="middle" letter-spacing="0.3">
+    <rect x="128" y="226" width="194" height="212" fill="none" stroke="#8fba97" stroke-width="1.25"/>
+    <text x="221" y="327" fill="#acddb4">EMAILS</text>
+    <use href="#caption" x="128" y="438" fill="#a8d7a7" stroke="#a8d7a7"/>
 
-    <rect x="418" y="226" width="194" height="212" fill="none" stroke="#739676" stroke-width="2"/>
-    <text x="515" y="327" fill="#a6d3a7">MATRIX</text>
-    <use href="#caption" x="418" y="409"/>
+    <rect x="418" y="226" width="194" height="212" fill="none" stroke="#8fba97" stroke-width="1.25"/>
+    <text x="514" y="327" fill="#acddb4">MATRIX</text>
+    <use href="#caption" x="418" y="438" fill="#a8d7a7" stroke="#a8d7a7"/>
 
-    <!-- the selection: solid sage fill, dark caption elements -->
+    <!-- the selection: solid sage fill, dark caption box and text -->
     <rect x="716" y="227" width="194" height="211" fill="#a6d3a7"/>
     <text x="813" y="327" fill="#22301f">BRAINDANCE</text>
-    <g transform="translate(716,409)">
-      <path d="M 0,0 H 194" fill="none" stroke="#3a4c38" stroke-width="1.5"/>
-      <path d="M 95,0 V 29" fill="none" stroke="#3a4c38" stroke-width="1.5"/>
-      <rect x="7"   y="8" width="80" height="7" fill="#3a4c38"/>
-      <rect x="103" y="5" width="82" height="6" fill="#3a4c38"/>
-      <rect x="103" y="14" width="70" height="6" fill="#3a4c38"/>
-    </g>
+    <use href="#caption" x="716" y="438" fill="#2e4a2c" stroke="#2e4a2c"/>
 
-    <!-- row 2: y 499..710, caption rule at y 681 -->
-    <rect x="128" y="499" width="194" height="211" fill="none" stroke="#739676" stroke-width="2"/>
-    <text x="225" y="590" fill="#a6d3a7" font-size="17">SECURITY</text>
-    <text x="225" y="610" fill="#a6d3a7" font-size="17">SYSTEMS</text>
-    <use href="#caption" x="128" y="681"/>
+    <!-- row 2: y 499..710, caption box top rule at y 682 -->
+    <rect x="128" y="499" width="194" height="211" fill="none" stroke="#8fba97" stroke-width="1.25"/>
+    <text x="222" y="591" fill="#acddb4">SECURITY</text>
+    <text x="220" y="615" fill="#acddb4">SYSTEMS</text>
+    <use href="#caption" x="128" y="710" fill="#a8d7a7" stroke="#a8d7a7"/>
 
-    <rect x="418" y="499" width="194" height="211" fill="none" stroke="#739676" stroke-width="2"/>
-    <text x="515" y="600" fill="#a6d3a7">PRIVATE</text>
-    <use href="#caption" x="418" y="681"/>
+    <rect x="418" y="499" width="194" height="211" fill="none" stroke="#8fba97" stroke-width="1.25"/>
+    <text x="514" y="599" fill="#acddb4">PRIVATE</text>
+    <use href="#caption" x="418" y="710" fill="#a8d7a7" stroke="#a8d7a7"/>
 
-    <rect x="716" y="499" width="194" height="211" fill="none" stroke="#739676" stroke-width="2"/>
-    <text x="813" y="600" fill="#a6d3a7">DEVICES</text>
-    <use href="#caption" x="716" y="681"/>
+    <rect x="716" y="499" width="194" height="211" fill="none" stroke="#8fba97" stroke-width="1.25"/>
+    <text x="814" y="599" fill="#acddb4">DEVICES</text>
+    <use href="#caption" x="716" y="710" fill="#a8d7a7" stroke="#a8d7a7"/>
   </g>
 
   <!-- ==== MESSAGE detail panel, x 1014..1275, y 215..723 ==== -->
-  <g>
-    <rect x="1014" y="215" width="261" height="508" fill="none" stroke="#739676" stroke-width="2"/>
-    <text x="1034" y="262" font-family="Rajdhani" font-size="20" letter-spacing="2"
-          fill="#a6d3a7">BRAINDANCE</text>
-    <path d="M 1014,281 H 1275" fill="none" stroke="#739676" stroke-width="1.5"/>
-    <!-- body copy: five lines, blank, three lines (measured line pitch 21) -->
-    <g fill="#59755b">
-      <rect x="1034" y="308" width="222" height="10"/>
-      <rect x="1034" y="329" width="214" height="10"/>
-      <rect x="1034" y="350" width="220" height="10"/>
-      <rect x="1034" y="371" width="208" height="10"/>
-      <rect x="1034" y="392" width="120" height="10"/>
-      <rect x="1034" y="413" width="216" height="10"/>
-      <rect x="1034" y="434" width="210" height="10"/>
-      <rect x="1034" y="455" width="96"  height="10"/>
+  <g font-family="Rajdhani">
+    <rect x="1014" y="215" width="261" height="508" fill="none" stroke="#8fba97" stroke-width="1.25"/>
+    <text x="1033" y="264" font-size="22" font-weight="600" fill="#acddb4"
+          letter-spacing="0.3">BRAINDANCE</text>
+    <path d="M 1014,281 H 1275" fill="none" stroke="#8fba97" stroke-width="1.25"/>
+    <!-- body copy: 7 lines, blank, 3 lines on a 21px pitch, x 1033,
+         baselines cap-top + 11. The face is a wide medium sans: Rajdhani
+         500 at 17 stretched 1.16 lands every line's run within 4px -->
+    <g font-size="17" font-weight="500" fill="#9fc09c" transform="translate(1033,0) scale(1.16,1)">
+      <text x="0" y="321">Lorem ipsum dolor sit amet,</text>
+      <text x="0" y="342">consectetur adipiscing elit,</text>
+      <text x="0" y="363">sed do eiusmod tempor inci-</text>
+      <text x="0" y="384">didunt ut labore et dolore</text>
+      <text x="0" y="405">magna aliqua. Quis ipsum</text>
+      <text x="0" y="426">suspendisse ultrices gravi-</text>
+      <text x="0" y="447">da.</text>
+      <text x="0" y="489">Risus commodo viverra ma-</text>
+      <text x="0" y="510">ecenas accumsan lacus vel</text>
+      <text x="0" y="531">facilisis.</text>
     </g>
   </g>
 
-  <!-- ==== SECURITY LEVEL badges: four 68x68 at x 1380, T2 filled ==== -->
-  <g font-family="Rajdhani" font-size="22" letter-spacing="1" text-anchor="middle">
-    <rect x="1380" y="214" width="68" height="68" fill="none" stroke="#739676" stroke-width="2"/>
-    <text x="1414" y="256" fill="#a6d3a7">T1</text>
+  <!-- ==== SECURITY LEVEL badges: four 68x68 at x 1380, T2 filled ====
+       glyphs: bold extended, cap 18 — Rajdhani Bold 27 stretched to the
+       measured run width; the photo's T is 17 wide, its 1 is 6 -->
+  <g font-family="Rajdhani" font-size="27" font-weight="bold" text-anchor="middle">
+    <rect x="1380" y="214" width="68" height="68" fill="none" stroke="#8fba97" stroke-width="1.25"/>
+    <text transform="translate(1414,257) scale(1.37,1)" fill="#acddb4">T1</text>
     <rect x="1380" y="304" width="68" height="68" fill="#a6d3a7"/>
-    <text x="1414" y="346" fill="#22301f">T2</text>
-    <rect x="1380" y="393" width="68" height="68" fill="none" stroke="#739676" stroke-width="2"/>
-    <text x="1414" y="435" fill="#a6d3a7">T3</text>
-    <rect x="1380" y="482" width="68" height="68" fill="none" stroke="#739676" stroke-width="2"/>
-    <text x="1414" y="524" fill="#a6d3a7">T4</text>
+    <text transform="translate(1414,346) scale(1.42,1)" fill="#22301f">T2</text>
+    <rect x="1380" y="393" width="68" height="68" fill="none" stroke="#8fba97" stroke-width="1.25"/>
+    <text transform="translate(1414,435) scale(1.5,1)" fill="#acddb4">T3</text>
+    <rect x="1380" y="482" width="68" height="68" fill="none" stroke="#8fba97" stroke-width="1.25"/>
+    <text transform="translate(1414,524) scale(1.38,1)" fill="#acddb4">T4</text>
   </g>
 
   <!-- ==== footer strip, y 847..872 ==== -->
   <!-- text runs measured on the 1600-wide rescale (threshold+trim over the
        strip interior; identical on the mailbox source, it is the same
-       footer): INTERFACE LOADED x 61..192, PROVIDED BY NEXUS NETWORK
-       V10.8 x 519..769, BUILD 6.47.48441.R15 x 1383..1525. The middle
-       string is left-anchored at the same x as on the mailbox screen, not
-       right-aligned; the build string ends 22px inside the frame's right
-       edge (1547), so it is anchored at its end. Cap height 12px ->
-       font-size 15, as in mailbox-trace.svg. -->
+       footer): INTERFACE LOADED x 62..191, PROVIDED BY NEXUS NETWORK
+       V10.8 x 519..768, BUILD 6.47.48441.R15 x 1383..1524, cap y 855..865.
+       The middle string is left-anchored at the same x as on the mailbox
+       screen, not right-aligned; the build string ends 22px inside the
+       frame's right edge (1547), so it is anchored at its end. -->
   <g>
-    <rect x="49" y="847" width="1498" height="25" fill="none" stroke="#739676" stroke-width="1.5"/>
-    <g font-family="Rajdhani" font-size="15" fill="#87b08d" letter-spacing="1">
+    <rect x="49" y="847" width="1498" height="25" fill="none" stroke="#8fba97" stroke-width="1.25"/>
+    <g font-family="Rajdhani" font-size="17" font-weight="500" fill="#97c4a0">
       <text x="61" y="865">INTERFACE LOADED</text>
-      <text x="517" y="865">PROVIDED BY NEXUS NETWORK V10.8</text>
+      <text x="518" y="865">PROVIDED BY NEXUS NETWORK V10.8</text>
       <text x="1525" y="865" text-anchor="end">BUILD 6.47.48441.R15</text>
     </g>
   </g>

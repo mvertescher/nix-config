@@ -46,14 +46,7 @@ pub fn label<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a> {
 /// `#728f76`. So 0.6 is the entropism reading, and it lands the
 /// maximalist eras a little under theirs, which is the safe direction.
 pub fn mid_ink(style: &Style) -> Color {
-    let mix = |a: f32, b: f32| a * 0.4 + b * 0.6;
-    let (d, f) = (style.palette.dim, style.palette.fg);
-    Color {
-        r: mix(d.r, f.r),
-        g: mix(d.g, f.g),
-        b: mix(d.b, f.b),
-        a: f.a,
-    }
+    crate::style::Ink::Mid.of(&style.palette)
 }
 
 /// Secondary text, in [`mid_ink`]: small, structural, and still meant

@@ -44,6 +44,15 @@
            (the #3b2416 family); drawn once as a blurred copy of the
            content group under the crisp content, as on the other screens
 
+       Passes:
+         2026-09-03  the blurred halo copy (the one <use href="#content"
+                     filter="url(#halo)"> under #content) is tagged
+                     class="photo":
+                     G2i renders with .photo{display:none} since the
+                     extractor bins the halo as its own ink family.
+                     Nothing else carries the class; G1i still renders
+                     the halo and its verdict is unchanged
+
        Palette sampled by k-means (extract_spec.py):
          ink   #f2b463 (6.2%, fills)  #bd8951  #7e5836  #3b2416
          ground #0e0a0d (63%) #3a3853 / #5b466c (violet haze) #192636 -->
@@ -147,7 +156,7 @@
   <rect width="1600" height="900" fill="url(#haze)"/>
   <rect width="1600" height="560" fill="url(#hazeblue)" mask="url(#bluemask)"/>
 
-  <use href="#content" filter="url(#halo)"/>
+  <use href="#content" filter="url(#halo)" class="photo"/>
   <g id="content">
   <!-- ==== header ==== -->
   <g font-family="Rajdhani" fill="#bd8951">

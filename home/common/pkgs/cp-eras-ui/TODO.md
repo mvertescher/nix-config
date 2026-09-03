@@ -139,13 +139,8 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
 
 ### Trace improvements (2026-09-02)
 
-**Uncommitted in `public/` as of 2026-09-02:** the twelve
-`{login,mailbox,store}-trace.svg` files (untracked — `git add` them or
-nix will not see them), every `dashboard-trace.svg` and `bar.svg`,
-`docs/PIPELINE.md`, `docs/sources.md`, `scripts/fidelity_check.sh`
-(per-process scratch dir, 16-entry source map, `--inventory <era>`
-runs all four screens, pinned fontconfig) and `scripts/spec_diff.py`
-(rect↔chamfer soft match, `--min-class-share`).
+All of the above landed in `a0a9274` (2026-09-02); the third vision
+pass below and the conversion wave landed together on 2026-09-03.
 
 All 16 era × screen traces exist and every one was checked by eye
 against its source (`images/compare/<era>-<screen>-{trace,overlay}.png`,
@@ -247,56 +242,77 @@ Texture — done where cheap:
   the drift against the goldens on exactly those diamonds — expected;
   the goldens follow when the Rust bar is restyled.
 
-Still open after the second pass (each measured, none gating):
+Third pass, 2026-09-03 — one vision agent each for entropism, kitsch
+and neokitsch (neomil had no pass; its items below stay open). G1i
+after: kitsch login .54→.63, dashboard .59→.69, mailbox .62→.67, store
+.57→.73; neokitsch login .73→.77, mailbox .68→.73, store .60→.66,
+dashboard byte-identical; entropism dashboard PASS re-run. Two tool
+facts the pass established, both verified: **rsvg 2.62.3 ignores
+`textLength`** (every such attribute in the traces was a no-op; all
+removed) **and per-glyph `x` lists** (`x="a b c"`) — fit text with
+`letter-spacing` or `scale(sx,1)`, one `<text>` per glyph where the
+gap must be exact.
 
-- [ ] **Neokitsch "4S T" logotype gap** (`store-trace.svg`, also the
-  kitsch one's letter-spacing and "MAGNUM 650" title width) — the S–T
-  gap is in the SVG's glyph spacing, not font fallback. Measure the
-  source's advance and set `letter-spacing` / explicit x per glyph.
-- [ ] **Entropism `dashboard-trace.svg` header strip** — strings ~8%
-  short and ~40px left (font-size 14 vs the mailbox's 15); same fix
-  shape as the footer: size 15, x 61 / 517 / 1382.
-- [ ] **Entropism halo consistency** — only `mailbox-trace.svg` carries
-  the measured three-stroke edge profile; the other three entropism
-  traces draw a plain 2px stroke. Either port the profile (same
-  numbers) or leave, since it is photographic and the iced side
-  ignores it either way. Same question for line widths generally: the
-  kitsch pass found 2px where the photo has 1.2px and dim/short
-  footers on every kitsch screen; the other eras were not checked for
-  this.
-- [ ] **Neokitsch mailbox halo is ~2.4x too abundant around body text**
-  (9983 vs 4116 glow pixels in a 592x40 crop; between-line rows ~(39,
-  30,32) vs source ~(20,18,22)); around rules it matches. Removing the
-  halo split the gold correctly on its own, so the halo is what steals
-  the centroid. Probably a smaller x-blur for text than for rules.
-- [ ] Neokitsch violet haze is larger than the source's on all three
-  new screens (ground ~54–59% vs 61–67%); the source typeface is wider
-  than Rajdhani (FROM: JACKIE 82px vs 77px); card QR glyphs are
-  coarser than the source's 9x9.
+- [x] **Neokitsch "4S T" logotype gap** — 4/S/T are per-glyph scaled
+  texts now, STORE five texts, "MAGNUM 650" fitted by
+  letter-spacing/scale (kitsch likewise).
+- [x] **Entropism `dashboard-trace.svg` header strip** — premise
+  half-wrong: measured 17px weight 500 at natural tracking, x 61 / 518
+  / 1382, baseline 60 (not 15px). Applied to all four entropism traces
+  and their footers.
+- [x] ~~**Entropism halo consistency**~~ — premise false: the
+  "three-stroke edge profile" is a Lanczos undershoot from
+  `extract_spec.py`'s rescale (line ~356), not ink. Not ported; the
+  mailbox header note corrected. Line widths: the entropism 2px
+  outlines were rescale dilution too — 1.25px measured core (#8fba97
+  hub, #75967b login, #93bd95 store). Kitsch strokes 1.5/2 → 1.25 on
+  .5 coordinates across all four, badges 1.0; footers bold 700 at x
+  503/641, footnotes size 8 scale(1.3) bright #82f0d3 (were dim).
+- [x] **Neokitsch mailbox halo** — split into `#lines`/`#text` with
+  separate filters; and see the `class="photo"` gate change below,
+  which takes the halo out of G2i entirely.
+- [x] Neokitsch violet haze retuned (+`#hazelobe`); widths fitted by
+  letter-spacing/scale; QR glyphs 9x9; header micro block re-anchored
+  left at x 843.3; grain stroke #e6ae6b → #cf975c. Seen, not fixed:
+  gun silhouettes coarse, DPS labels small, text weight lighter than
+  600 throughout.
 - [ ] Neomil: store card 4's title is ghosted/duplicated in the photo
   (glitch treatment); mailbox has small QR-like glyphs beside the
   panel the trace simplifies; dashboard glitch echoes are two hairline
   pairs where the photo has a few more fragments.
-- [ ] Entropism mailbox T1–T4 glyphs are ~26px against the source's
-  ~30; `bar.svg` menu icons overlap the row text (icon to 1177, text
-  at 1175) — pre-existing, the golden has a gap.
-- [ ] Kitsch store card 2's band is a full thin outline with a
-  chamfered right end ~3px above the two rules the trace draws;
-  PETROCHEM box ~2px left.
+- [x] Entropism mailbox T1–T4: bold 27 + scale(1.42..1.46, 1).
+- [ ] Entropism `bar.svg` menu icons overlap the row text (icon to
+  1177, text at 1175) — pre-existing, the golden has a gap; the third
+  pass did not touch `bar.svg`.
+- [x] Kitsch store card 2's band: 1.1px #a4583a outline path with a
+  45° chamfered right end; card 1's chamfer angle fixed; PETROCHEM box
+  at (163, 72.8, 58x8), PETROCHEM/BETTERLIFE scale(1.3, 1). Left: card
+  4's right-edge vignette and the fan-card strokes are unmeasured;
+  weights are by eye.
 - [ ] Kitsch mailbox yellow family sits at 0.46 IoU because the
   extractor hole-fills the photo's closed panel outline into a solid
   block while the render's antialiased rounded corners break the ring;
-  not a trace fault, do not square the corners.
+  not a trace fault, do not square the corners. Verified again in the
+  third pass, do not fix.
+- [ ] **Entropism OUTLINE ink — decision needed.** The real outline ink
+  measures ~#8fba97, i.e. the same sage as the text (#94bb94); the
+  earlier ~#709174 was rescale dilution and the palette's OUTLINE
+  #5d7752 is far from both. Options: repoint OUTLINE, or add a role.
+  Affects every entropism screen and the bar; until decided the login
+  conversion carries its inks as `Ink::Fixed` (#75967b / #8aac8c /
+  #20281c / #799d81) and the READMEs say "under measurement".
 
 Housekeeping, blocked on decisions above:
 
 - [ ] **Delete `docs/<era>/target-app.svg` ×4** — superseded by
   `store-trace.svg` (neomil: by `mailbox-trace.svg` + `store-trace.svg`)
-  and marked so in `docs/sources.md`. Kept only until the iced store
-  screen is rebuilt from the trace, and because `src/style.rs`,
-  `src/palette.rs` and `src/widgets/ornament.rs` still cite
-  `target-app.svg` / `target-components.svg` by coordinate in their doc
-  comments — those references move to the traces in the same change.
+  and marked so in `docs/sources.md`. The store screen *is* now built
+  from the trace (2026-09-03), so the only remaining reason to keep
+  them is that 12 source files (`src/{lib,palette,style}.rs`,
+  `src/eras/{kitsch,neokitsch}.rs`, `src/widgets/{chrome,glyph,menu,
+  ornament,surface,table,text}.rs`) still cite `target-app.svg` /
+  `target-components.svg` by coordinate in doc comments — those
+  references move to the traces in the same change.
   Note `neomil/target-components.svg` samples nothing from its run
   either; it goes at the same time or gets rebuilt from the four neomil
   traces.
@@ -305,7 +321,7 @@ Housekeeping, blocked on decisions above:
   neokitsch ones are the item above; neomil and entropism are the same
   fault with a smaller number. Blocked on the `Layout` decision.
 
-### Bar restyle (2026-09-02) — SVG done, `bar.rs` has not followed
+### Bar restyle (2026-09-02) — SVG done; `bar.rs` followed 2026-09-03
 
 The four `docs/<era>/bar.svg` were one skeleton with a palette swap.
 Each was redrawn by a vision agent from its era's four verified
@@ -355,22 +371,47 @@ Open:
   to the badges but the dimmest strip of the four at 14px. Lift the
   idle ink (OFF_WHITE or RED_HOT) if it is hard to read on the real
   monitor; the SVG is the place to decide, then the delta.
-- [ ] **`bar.rs` follows the four deltas**, one era at a time, re-taking
-  `tests/golden/bar-<era>-1600x220.png` per the `tests/bar.nix`
-  procedure only once the render matches the SVG by eye. Neokitsch's
-  band and haze are the most work (a `Ground::Bloom` strip and a canvas
-  ornament); entropism's is mostly gap 0 + stroke 2 + dividers.
-- [ ] Stale claims the bar agents hit, all read-only for them: the era
-  READMEs still describe `dashboard.svg` as the invented composites
-  (neomil "three red chart cards", entropism "a single row of four
-  tiles ... no detail panel"), and `docs/kitsch/README.md` says
-  `bar.svg` is "exactly as `bar()` composes it"; `src/eras/kitsch.rs`
-  cites `target-app.svg` overhang numbers (12/18) where
-  `store-trace.svg` measures 27 on a 35px band; `src/eras/entropism.rs`
-  repeats the tile-row misreading around `Layout::TileRow`. Also an
-  entropism-wide question the agent raised: the traces sample outline
-  ink at ~#709174 (≈ MID) while OUTLINE is #5d7752, and the README's
-  "1px strokes" rule disagrees with the measured 2px designed stroke.
+- [x] **`bar.rs` follows the four deltas** — landed 2026-09-03:
+  `bar.rs` rewritten against `Style::bar` tables (`Dress`, `BarGround`,
+  `BarChrome`, `BarOrnament`, `WindowLabel`, `Tab`, `MenuRule`,
+  `MenuMarker`, `PanelEcho`, `BarMenu`), goldens re-taken. G2i:
+  entropism 100%, neomil 86%, kitsch 83%, **neokitsch 52% FAIL,
+  accepted** — the extractor fragments the veneer plates and ring bands
+  into cells the design does not have; measured ceiling 58.5% with the
+  trace's own 52px-period zigzag grain drawn (the period is what seeds
+  the extractor's cells; documented in `bar.rs`). Neokitsch labels are
+  `Face::Medium` (Regular was visibly thinner than the design's
+  dark-on-gold; decided by eye, `src/eras/neokitsch.rs`). Neokitsch
+  stroke is 2.0 not the delta's 1.6 (AA). The tray diamonds render
+  purple/orange because the example feeds sample SNI raster icons; the
+  SVG's diamonds are stand-ins, not a fault. **The layer-shell bar is
+  unverified until a switch**; only `bar-window` is captured.
+  - [ ] Not followed, per era: entropism selection inset 1px; neomil
+    window box 1.0 stroke (`Bar` has one stroke width); kitsch chevron
+    4.9px shoulder step; neokitsch highlight row running 8px past the
+    panel edge (iced clips), the haze's blue annulus, window label at
+    weight 400. Each needs a widget, not a value — see "widget gaps"
+    under the conversion wave.
+- [ ] Stale claims — the four era `README.md`s were rewritten
+  2026-09-03 (dashboard composites no longer described as real;
+  numbers now point at the trace headers). Still stale, all pointing
+  at the same root: `src/style.rs` `Layout::OpsCharts` / `TileRow`
+  docs describe invented compositions; `src/eras/entropism.rs` :4 "1px
+  strokes", :5 "doc #24-32", the `TileRow` block "single row of four
+  tiles … #42" (42 is the store; the trace is a hub);
+  `src/screens/dashboard.rs` :49-64 / :225-234 / :251-259 and
+  `src/widgets/charts.rs` :7,17 "straight off the traces";
+  `src/eras/neomil.rs` :9 and `src/theme.rs` :7,10,189 cite
+  `src/colors.rs`, which is gone; `src/eras/kitsch.rs` :92-107 overhang
+  12/18 where `store-trace.svg` measures 27 on 35; crate `README.md`
+  :54-58, :66, :94 (neokitsch double-gold frame — an invention per
+  `sources.md:183`), :171-173, :294-312; `docs/sources.md` :26-29 now
+  behind the READMEs. All of it collapses into the `Layout` decision
+  above (fold OpsCharts/TileRow back to ModuleHub) — fix it there, once.
+  Unverified README claims the docs pass left in place: kitsch bezel
+  #f08c1e and #fcbb15, neokitsch #c78948, the neomil `dashboard.svg`
+  wordmark vs `dashboard.rs:225-234` "wordmark", the entropism
+  desktop-theme paragraph, the `target-components.svg` inventories.
 
 ### SVG→iced pre-work (2026-09-02)
 
@@ -452,13 +493,89 @@ four bars, done in this order so the Rust is written once.
   against; it retires the `dashboard/kitsch` 99.739. The pre-0.14
   goldens are one commit back if the edge-pixel residue ever needs
   re-examining.
-- [ ] Then the conversion wave: one coding agent per screen file, the
-  four SVGs of that screen as spec, G2i PASS ×4 eras as done, a vision
-  pass on `/tmp/g2i-*/side-by-side.png` before goldens move. Order bar
-  → login → mailbox, store (parallel) → dashboard (blocked on `Layout`).
-  `src/eras/<era>.rs` and `widgets/` are the contention points: add
-  era values in a delimited per-screen block; use widgets, don't edit
-  them — report what is missing.
+- [x] The conversion wave — bar, login, mailbox and store landed
+  2026-09-03 (bar on main; the three screens on worktree branches,
+  merged by hand). Dashboard is still blocked on `Layout`. What
+  landed: every converted screen is **one `canvas::Program` walking an
+  era table** — `Style::access` (login), `Style::mailbox`,
+  `Style::store: &[Prim]` + `store_selection` — with hit-testing
+  `Message::Select` on mailbox and store (both were `Message {}`
+  before). `Ink`/`Face`/`Seg` are one type each in `style.rs` (the
+  branches each grew their own; consolidated at merge —
+  `Ink::of(&palette)`, `Style::ink_in`). Era files carry the values in
+  `// --- login ---` / `mailbox` / `store` blocks.
+
+  G2i, final, all from main's script and traces (`/tmp/wave-shots/
+  gates.txt` for the run), as entropism/neomil/kitsch/neokitsch: bar
+  100/86/83/**52**, login **28**/96/72/89, mailbox 100/95/67/86, store
+  100/84/88/82. Two accepted FAILs, do not chase:
+  - **entropism login 28%** — the warm-lift ground shape (72% of the
+    design's area) loses its k-means centre to the render's edge ramp:
+    iced built without `web-colors` blends AA in linear space and 4×
+    MSAA cannot make 0.625 coverage, so hairline pixels split across
+    two bins. Backdrops are pixel-identical and the side-by-side
+    matches. The fixes (`web-colors`, sRGB AA) are crate-wide and
+    move every golden.
+  - **neokitsch bar 52%** — extractor fragmentation, see the bar item.
+  - kitsch mailbox 67% (unselected chevrons are two cells in the
+    design, one in the render) and kitsch login 72% (`Wash::RoseBloom`
+    kept over Plain's 98% because layout IoU is 0.963 vs 0.568) are
+    PASSes with a known reason.
+  - Dashboard, not in the wave, gated after the merge: entropism and
+    neokitsch PASS; neomil 0% (the item at the top of this file) and
+    kitsch 19% — the kitsch number is identical against the
+    `a0a9274` trace, so pre-existing, not a regression.
+
+  Findings that outlive the wave, each verified by the orchestrator:
+  - **Gate change:** `fidelity_check.sh --implementation` hides
+    `class="photo"` elements (halos, glows) from the design render
+    before comparing; `docs/PIPELINE.md` has the paragraph. XML
+    comments must not contain `--`. Follow-on: `--source` mode only
+    runs `dashboard.svg` (login/mailbox/store SKIP) — script gap.
+  - **iced_wgpu canvas buckets meshes < images < text per canvas**
+    regardless of draw order — a covering strip cannot hide a caption
+    on the same canvas; use layers. `Frame::draft`/clip keeps the
+    region only as a scissor with an identity transform, so a clipped
+    sub-frame cannot be re-based (`Prim::Clip` was built on it and
+    retired). Strokes are ~15% heavier than rsvg (coverage .87 vs .75
+    per px), which flips k-means bins — not fudged. No radial
+    gradient: hazes are concentric ellipse annuli or a 1:1 RGBA image.
+  - **`canvas::Text` has no letter-spacing, x-scale or rotation**, so
+    fitted tracking and glyph x-scales from the traces are dropped
+    (login has `Legend::stretch`/`tracking` as a prefix-measured
+    workaround), and neomil's rotated maker's marks / margin strings
+    are not drawn.
+  - **Widget gaps the agents reported** (each "use widgets, don't edit
+    them" collided with): absolute placement; `Cut` has no Step cut;
+    `Surface` has no tab, ticks or dense grain; no custom panel
+    silhouette; no blur; `fonts.rs` has no semibold (`Face::SemiBold`
+    maps to Medium); `Ground` caps at ~6% alpha (neokitsch haze wants
+    #4f4262). This is the input to the canvas-vs-widgets decision
+    below.
+  - **Three haze implementations coexist**: login `wash_image` (RGBA
+    buffer as a cached canvas image), mailbox `Lobe` annuli/wedges (96
+    bands / 72 wedges), store `Prim::Lobe` annuli. Unify — the image
+    one is the smoothest and the only one that survived a side-by-side
+    without banding.
+  - **Extractor cluster budget:** with k=8, a haze takes 5 clusters,
+    so line art drawn dimmer than measured merges ink families (the
+    neokitsch mailbox wire went to `Ink::Tape`, RIFLES to `Ink::Fg`,
+    per a re-cut trace). Backgrounds are not optional for the
+    extractor (kitsch bloom = 5/8 clusters). Noted in `PIPELINE.md`.
+  - `widgets::row::mail_row` / `row::Mail` have no caller now.
+  - **Live inconsistency:** `src/eras/kitsch.rs` has `border: TEAL`
+    (#7ddec8) where `home/themes/kitsch/scheme.nix` says border
+    #2e5f57; the store samples #5fd6c2. Outlives this crate — decide
+    which is right.
+  - Bar/entropism inks and the login `Ink::Fixed`s wait on the
+    OUTLINE decision under "Trace improvements".
+- [ ] **Canvas vs widgets — decide.** Four screens are now display
+  lists over era tables and the widget layer (`widgets/`, `Layout`,
+  `Cut`, `Surface`, `Ground`) serves only the dashboard and the bar's
+  window. Either the widget layer grows the gaps above and the screens
+  fold back onto it, or it is retired to what the bar needs and the
+  dashboard converts the same way. Decide before the dashboard, and
+  together with the `Layout` fold-back — same decision.
 
 ## Toolkit infrastructure
 

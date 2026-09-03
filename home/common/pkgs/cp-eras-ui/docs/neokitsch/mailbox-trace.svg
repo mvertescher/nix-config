@@ -11,7 +11,17 @@
 
        What the source shows, top to bottom:
          - the run's violet-over-black haze (pixel-identical to the
-           dashboard's; the lobe below is dashboard-trace's, measured)
+           dashboard's, and to the login and store screens'). Measured
+           on this photo (ground mask B >= R-8, 16x9 colour grid and the
+           per-column y where smoothed ground luma drops below 70/50/35/
+           25): the violet centre sits at x~770, the lit region ends by
+           y~300 at the centre and y~150 at the edges, and the top-left
+           quadrant (x 300..700, y 0..50, ground (106,76,121)) is
+           brighter and pinker than the centre ((93,68,108) at x
+           800..1000). Drawn as the #haze ellipse (cx 770, r 1000,
+           y-scale 0.49, stops 0.35/0.66/0.85) plus a flatter #hazelobe
+           ellipse (cx 430, cy -40, r 560, y-scale 0.30) for the lobe,
+           and the #hazeblue band (cx 850, r 1000, y-scale 0.47)
          - THE SAME HEADER AS THE DASHBOARD, pixel for pixel (mean abs
            diff 2.7/255 over y 0..200, i.e. film grain): CUSTOMER
            #NC488402 and LEVEL T1 at the left, SECURITY LEVEL and LEVEL
@@ -36,12 +46,15 @@
            the lines chevron into, a swirl at the far left edge and
            arcs bending up into the top-right chamfer. At 1600 the
            source bar averages to #eab26e, and 92% of its pixels classify
-           with the bright family — the grain lines themselves sample
-           #e6ae6b on a #f8c678 base at 3840, and only where they bunch
-           (the left swirl, the seam, the top-right arcs) do they
-           resolve as the darker #c19867. Drawn that way: 32 hairlines
-           on the measured 1.7 pitch in #e6ae6b, clipped to the bar, plus
-           the bunched dark lines on top.
+           with the bright family — the grain line cores themselves sample
+           (207,151,92) = #cf975c on a (254,206,140) = #fecc8c base at
+           3840, and only where they bunch (the left swirl, the seam,
+           the top-right arcs) do they resolve as the darker #c19867.
+           Drawn that way: 32 hairlines on the measured 1.7 pitch in
+           #cf975c at 0.7 wide, clipped to the bar, plus the bunched
+           dark lines on top; the base fill stays #f8c678, a touch
+           under the sampled base, which with the grain blends to the
+           measured #eab26e average at 1600.
            Titles: You'll regret that / Urgent information (!) / Heist
            data sent to you / I'm worried man / Special offer to you! /
            I'm worried man / Special offer to you!; senders JACKIE, MOM,
@@ -57,9 +70,57 @@
            micro-text in the foot
          - every glyph and stroke sits on a soft vertically-smeared glow
            (the #39281b family, 3.7% of the canvas — as much ink as the
-           gold itself); drawn once as a blurred copy of the content
-           group under the crisp content
+           gold itself). The rules' smear is wide (stdDeviation 1.5 x
+           4.5) but the glyphs' is not: around the body text at x
+           738..1330, y 320..360 the source has 5644 glow pixels
+           (R 60..140 on ground), and a single wide halo under the text
+           gave 11594. So the content is split into #lines and #text
+           and each is haloed with its own filter — #halo for the
+           rules, the tighter #halotext (stdDeviation 1.0 x 1.6) for
+           the glyphs — which brings that count to 5648
+         - the source's letterforms are a wider face than Rajdhani.
+           The font is not changed; where a run's width matters its
+           letter-spacing (or, for the single A/B/C/D letters, an x
+           scale) is set so the run's extent matches the photo, and
+           each such run carries its measured extent in a comment
          - no cascade cards, no detail panel, no footer line
+
+       Passes:
+         2026-09-03  veneer grain recoloured #e6ae6b -> #cf975c (measured
+                     cores); halo split into #lines/#text with the
+                     tighter #halotext for glyphs (gold-family IoU
+                     #c19867 0.33 -> 0.44, #86694b 0.53 -> 0.53,
+                     weighted 0.68 -> 0.70); text cores #f3c583 / #f8c884
+                     / #f9cb8a / #e8b98e, RIFLES outline #ecbe82 1.25
+         2026-09-03  haze retuned to this photo: #haze cx 825 r 1030
+                     y-scale 0.515 -> cx 770 r 1000 0.49, stops
+                     0.258/0.572/0.873 -> 0.35/0.66/0.85; #hazeblue
+                     900/1030/0.515 -> 850/1000/0.47; #hazelobe added.
+                     Ground-edge mean abs error (thr 70/50/35/25)
+                     31.4/34.9/39.5/41.6 -> 14.0/11.1/14.7/18.9 px; dark
+                     (<22) fraction 0.596 -> 0.642 (source 0.636);
+                     weighted IoU 0.70 -> 0.72
+         2026-09-03  run widths fitted with letter-spacing, never
+                     textLength (rsvg 2.62 ignores it): FROM: lines 1 ->
+                     1.65 (FROM: JACKIE ends 274 as in the photo, was
+                     267); body lorem 0.3 (line 1 ends 1259, was 1238);
+                     URGENT INFORMATION (!) 0.5 -> 1.15 (908, was 897);
+                     "Urgent information (!)" -0.22; CUSTOMER #NC488402
+                     15px ls 1.5 -> 13px 500 ls -0.05 (118..240, was
+                     121..286); A/B/C/D letters 19.5px 700 scaled 1.6 /
+                     1.75 in x (A 242..257 on cap 103..115.5); the four
+                     SPARE TIME / MAPS micro-text blocks 8px -> 6.2px
+                     ls 0.7 on their measured baselines, the right
+                     header block left-aligned at x 843.3 (it was
+                     right-anchored at 1000; the photo's second line is
+                     flush left). Weighted IoU 0.72 -> 0.73
+         2026-09-03  the blurred halo copies (the <use> elements under
+                     #content that carry filter="url(#halo)" and
+                     filter="url(#halotext)") are tagged class="photo":
+                     G2i renders with .photo{display:none} since the
+                     extractor bins the halo as its own ink family.
+                     Nothing else carries the class; G1i still renders
+                     the halo and its verdict is unchanged
 
        Palette sampled by k-means (extract_spec.py):
          ink   #f0bf7b (2.7%, the selection bar and text)
@@ -68,8 +129,8 @@
          ground #0f0b0d (67%) #3b3953 / #5b466c (violet haze) #1a2637 -->
   <defs>
     <radialGradient id="hazeblue" gradientUnits="userSpaceOnUse"
-        cx="900" cy="-120" r="1030"
-        gradientTransform="rotate(2 900 -120) translate(900 -120) scale(1 0.515) translate(-900 120)">
+        cx="850" cy="-120" r="1000"
+        gradientTransform="rotate(2 850 -120) translate(850 -120) scale(1 0.47) translate(-850 120)">
       <stop offset="0"    stop-color="#223350" stop-opacity="0"/>
       <stop offset="0.60" stop-color="#223350" stop-opacity="0"/>
       <stop offset="0.68" stop-color="#223350" stop-opacity="0.85"/>
@@ -91,13 +152,25 @@
       <rect width="1600" height="900" fill="url(#hazebluefade)"/>
     </mask>
     <radialGradient id="haze" gradientUnits="userSpaceOnUse"
-        cx="825" cy="-120" r="1030"
-        gradientTransform="rotate(1.3 825 -120) translate(825 -120) scale(1 0.515) translate(-825 120)">
+        cx="770" cy="-120" r="1000"
+        gradientTransform="rotate(1.3 770 -120) translate(770 -120) scale(1 0.49) translate(-770 120)">
       <stop offset="0"     stop-color="#574568"/>
-      <stop offset="0.258" stop-color="#574568"/>
-      <stop offset="0.572" stop-color="#3a3853"/>
-      <stop offset="0.873" stop-color="#16121a"/>
+      <stop offset="0.35" stop-color="#574568"/>
+      <stop offset="0.66" stop-color="#3a3853"/>
+      <stop offset="0.85" stop-color="#16121a"/>
       <stop offset="1"     stop-color="#0e0a0d"/>
+    </radialGradient>
+    <!-- the haze's bright lobe: the top-left quadrant of the photo is
+         lit brighter and pinker than the centre (ground (106,76,121) at
+         x 300..700 y 0..50 vs (93,68,108) at x 800..1000), and stays
+         lit to the left edge; a second, flatter ellipse over the haze
+         (2026-09-03) -->
+    <radialGradient id="hazelobe" gradientUnits="userSpaceOnUse"
+        cx="430" cy="-40" r="560"
+        gradientTransform="translate(430 -40) scale(1 0.30) translate(-430 40)">
+      <stop offset="0"    stop-color="#7a5288" stop-opacity="0.85"/>
+      <stop offset="0.45" stop-color="#7a5288" stop-opacity="0.55"/>
+      <stop offset="1"    stop-color="#7a5288" stop-opacity="0"/>
     </radialGradient>
     <!-- boxed section letter: 26x26 rounded plate, folded bottom-right
          corner (the era's mini-SIM motif) -->
@@ -118,36 +191,27 @@
       <feGaussianBlur stdDeviation="1.5 4.5"/>
       <feColorMatrix type="matrix" values="0.43 0 0 0 0  0 0.32 0 0 0  0 0 0.21 0 0  0 0 0 1.45 0"/>
     </filter>
+    <!-- the glyph halo: a tight bloom, not the rules' smear (2026-09-03,
+         measured on the body text at x 738..1330, y 320..360). -->
+    <filter id="halotext" x="-5%" y="-10%" width="110%" height="120%">
+      <feGaussianBlur stdDeviation="1.0 1.6"/>
+      <feColorMatrix type="matrix" values="0.43 0 0 0 0  0 0.32 0 0 0  0 0 0.21 0 0  0 0 0 1.45 0"/>
+    </filter>
   </defs>
 
   <rect width="1600" height="900" fill="#0e0a0d"/>
   <rect width="1600" height="900" fill="url(#haze)"/>
+  <rect width="1600" height="300" fill="url(#hazelobe)"/>
   <rect width="1600" height="560" fill="url(#hazeblue)" mask="url(#bluemask)"/>
 
-  <use href="#content" filter="url(#halo)"/>
+  <!-- two halos: the broad vertical smear belongs to the rules, plates
+       and strands; glyphs carry only a tight bloom (measured 2026-09-03,
+       see the header). Each group is blurred with its own filter. -->
+  <use href="#lines" filter="url(#halo)" class="photo"/>
+  <use href="#text" filter="url(#halotext)" class="photo"/>
   <g id="content">
-  <!-- ==== header ==== -->
-  <!-- glyph cores sampled at 3840: CUSTOMER/LEVEL/T-marks ~#dca97b (the
-       header reads #dcae98 where it sits on the violet), the wire strands
-       #cb9a64, the A/B annotations #cfa78c on violet, the C/D ones
-       #deb689, the FROM: lines #f4c587 — all the #c19867 k-means family
-       at 1600, so they are drawn at their measured brightness rather
-       than at the dimmer #bd8951 / #a97c48 the dashboard trace uses. -->
-  <g font-family="Rajdhani" fill="#dcaa78">
-    <text x="120" y="42" font-size="15" letter-spacing="1.5">CUSTOMER #NC488402</text>
-    <text x="120" y="70" font-size="12" letter-spacing="2">LEVEL</text>
-    <text x="126" y="90" font-size="21" font-weight="600">T1</text>
-
-    <text x="1131" y="68" font-size="12" letter-spacing="2">SECURITY</text>
-    <text x="1131" y="83" font-size="12" letter-spacing="2">LEVEL</text>
-    <g font-size="12" letter-spacing="1.5">
-      <text x="1229" y="63">LEVEL</text><text x="1354" y="63">LEVEL</text>
-      <text x="1417" y="63">LEVEL</text>
-    </g>
-    <g font-size="20" font-weight="600">
-      <text x="1236" y="86">T1</text><text x="1361" y="86">T3</text>
-      <text x="1424" y="86">T4</text>
-    </g>
+  <!-- ==== lines: every stroke, plate and glyph-less mark ==== -->
+  <g id="lines">
     <!-- T2: a FOLDER icon — low shelf on the left, a rounded diagonal
          riser to the raised tab on the RIGHT. Front outline measured at
          (1287,55)-(1338,104), tab top y~37, riser x~1310-1318. Seven
@@ -156,6 +220,7 @@
          measured ~3 — tighter overpaints into a fat border), right edges
          spill out, all converging at the bottom. A solid gold trapezoid
          tab points UP from the inside bottom edge. -->
+  <g font-family="Rajdhani" fill="#dcaa78">
     <g fill="none" stroke="#a97c48" stroke-width="0.7">
       <path d="M 1286.8,40.3 H 1302 Q 1314.6,42.4 1317.6,37.4 L 1320.6,41.1 Q 1322.6,32.1 1329.6,32.1 H 1344.2 Q 1349.2,32.1 1349.2,37.1 V 101.8 Q 1349.2,105.8 1345.2,105.8 H 1286.8 Q 1282.8,105.8 1282.8,101.8 V 46.4 Q 1282.8,42.4 1286.8,42.4 Z" stroke-opacity="0.55"/>
       <path d="M 1287.4,42.4 H 1302 Q 1313.8,44.2 1316.8,39.2 L 1319.8,41.8 Q 1321.8,32.8 1328.8,32.8 H 1342.6 Q 1347.6,32.8 1347.6,37.8 V 101.5 Q 1347.6,105.5 1343.6,105.5 H 1287.4 Q 1283.4,105.5 1283.4,101.5 V 48.2 Q 1283.4,44.2 1287.4,44.2 Z" stroke-opacity="0.60"/>
@@ -167,8 +232,6 @@
     </g>
     <path d="M 1291.0,55.0 H 1302 Q 1309.0,55.0 1312.0,50.0 L 1315.0,46.0 Q 1317.0,37.0 1324.0,37.0 H 1333.0 Q 1338.0,37.0 1338.0,42.0 V 100.0 Q 1338.0,104.0 1334.0,104.0 H 1291.0 Q 1287.0,104.0 1287.0,100.0 V 59.0 Q 1287.0,55.0 1291.0,55.0 Z" fill="none" stroke="#e8c186" stroke-width="1.1"/>
     <path d="M 1293,104.5 L 1297,100 H 1322 L 1326,104.5 Z" fill="#f2b463"/>
-    <text x="1295" y="71" font-size="12" letter-spacing="1.2" fill="#d9a877">LEVEL</text>
-    <text x="1296" y="95" font-size="21" font-weight="600" fill="#e8c186">T2</text>
   </g>
 
   <!-- the wire band, measured: an eight-strand bundle enters low at the
@@ -188,7 +251,7 @@
   </g>
   <!-- boxed letters A/B hang under the tight line (boxes 26x26 at y98,
        interiors masking the strands) -->
-  <g font-family="Rajdhani" font-size="15">
+  <g>
     <g fill="#4c3f5f">
       <rect x="238" y="98" width="26" height="26" rx="3"/>
       <rect x="1011" y="98" width="26" height="26" rx="3"/>
@@ -196,15 +259,6 @@
     <g stroke="#bd8951">
       <use href="#letterbox" x="238" y="98"/>
       <use href="#letterbox" x="1011" y="98"/>
-    </g>
-    <g fill="#d9a877" text-anchor="middle">
-      <text x="250" y="117">A</text><text x="1023" y="117">B</text>
-    </g>
-    <g font-size="8" fill="#d9a877" letter-spacing="0.4">
-      <text x="288" y="106">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
-      <text x="288" y="116">SERVING CUSTOMERS SINCE 2006.</text>
-      <text x="1000" y="106" text-anchor="end">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
-      <text x="1000" y="116" text-anchor="end">SERVING CUSTOMERS SINCE 2006.</text>
     </g>
   </g>
 
@@ -234,7 +288,7 @@
   <!-- the veneer grain: 32 hairlines on the measured 1.7 pitch in the darker
        gold, pinched toward the bar centre at the left edge, chevroned
        into the seam at x 273, arcing up into the chamfer past x~430 -->
-  <g clip-path="url(#selclip)" fill="none" stroke="#e6ae6b" stroke-width="0.7">
+  <g clip-path="url(#selclip)" fill="none" stroke="#cf975c" stroke-width="0.7">
       <path d="M 35.0,327.9 C 39.7,327.9 43.3,326.0 48.0,326.0 S 64.5,318.9 74.0,318.9 S 90.5,318.3 100.0,318.3 S 116.5,314.7 126.0,314.7 S 142.5,317.1 152.0,317.1 S 168.5,314.7 178.0,314.7 S 194.5,317.1 204.0,317.1 S 220.5,314.7 230.0,314.7 S 246.5,317.1 256.0,317.1 S 272.5,313.7 282.0,313.7 S 298.5,317.1 308.0,317.1 S 324.5,314.7 334.0,314.7 S 350.5,317.1 360.0,317.1 S 376.5,314.7 386.0,314.7 S 402.5,317.1 412.0,317.1 S 428.5,314.7 438.0,314.7 S 454.5,317.0 464.0,317.0 S 480.5,314.4 490.0,314.4 S 504.0,316.5 512.0,316.5"/>
       <path d="M 35.0,329.6 C 38.1,329.6 40.4,328.5 43.4,328.5 S 60.0,320.6 69.4,320.6 S 86.0,320.7 95.4,320.7 S 112.0,316.1 121.4,316.1 S 138.0,319.2 147.4,319.2 S 164.0,316.0 173.4,316.0 S 190.0,319.2 199.4,319.2 S 216.0,316.0 225.4,316.0 S 242.0,319.2 251.4,319.2 S 268.0,314.2 277.4,314.2 S 294.0,319.2 303.4,319.2 S 320.0,316.0 329.4,316.0 S 346.0,319.2 355.4,319.2 S 372.0,316.0 381.4,316.0 S 398.0,319.2 407.4,319.2 S 424.0,316.0 433.4,316.0 S 450.0,319.0 459.4,319.0 S 476.0,315.4 485.4,315.4 S 502.3,317.8 512.0,317.8"/>
       <path d="M 35.0,331.2 C 36.4,331.2 37.5,330.6 38.9,330.6 S 55.4,322.5 64.9,322.5 S 81.4,322.8 90.9,322.8 S 107.4,317.8 116.9,317.8 S 133.4,321.0 142.9,321.0 S 159.4,317.6 168.9,317.6 S 185.4,321.0 194.9,321.0 S 211.4,317.6 220.9,317.6 S 237.4,321.0 246.9,321.0 S 263.4,315.1 272.9,315.1 S 289.4,321.0 298.9,321.0 S 315.4,317.6 324.9,317.6 S 341.4,321.0 350.9,321.0 S 367.4,317.6 376.9,317.6 S 393.4,321.0 402.9,321.0 S 419.4,317.6 428.9,317.6 S 445.4,320.8 454.9,320.8 S 471.4,316.7 480.9,316.7 S 497.4,318.9 506.9,318.9 S 510.1,318.3 512.0,318.3"/>
@@ -286,23 +340,6 @@
     <line x1="273" y1="315" x2="273" y2="370" stroke-width="0.8"/>
     </g>
   </g>
-  <path d="M 420,370 L 424,365 H 453 L 457,370 V 373 H 420 Z" fill="#0f0b0d" stroke="#e0b67a" stroke-width="1"/>
-  <g font-family="Rajdhani">
-    <text x="193" y="276.0" font-size="18" font-weight="600" fill="#e6b878">You'll regret that</text>
-    <text x="193" y="297.0" font-size="11.5" letter-spacing="1" font-weight="600" fill="#e6b878">FROM: JACKIE</text>
-    <text x="193" y="336.2" font-size="18" font-weight="600" fill="#7b5438">Urgent information (!)</text>
-    <text x="193" y="357.2" font-size="11.5" letter-spacing="1" font-weight="600" fill="#895f3b">FROM: MOM</text>
-    <text x="193" y="396.4" font-size="18" font-weight="600" fill="#e6b878">Heist data sent to you</text>
-    <text x="193" y="417.4" font-size="11.5" letter-spacing="1" font-weight="600" fill="#e6b878">FROM: 805000451</text>
-    <text x="193" y="456.6" font-size="18" font-weight="600" fill="#e6b878">I'm worried man</text>
-    <text x="193" y="477.6" font-size="11.5" letter-spacing="1" font-weight="600" fill="#e6b878">FROM: RACHEL ROSS</text>
-    <text x="193" y="516.8" font-size="18" font-weight="600" fill="#e6b878">Special offer to you!</text>
-    <text x="193" y="537.8" font-size="11.5" letter-spacing="1" font-weight="600" fill="#e6b878">FROM: JINX JINX STORE</text>
-    <text x="193" y="577.0" font-size="18" font-weight="600" fill="#e6b878">I'm worried man</text>
-    <text x="193" y="598.0" font-size="11.5" letter-spacing="1" font-weight="600" fill="#e6b878">FROM: RACHEL ROSS</text>
-    <text x="193" y="637.2" font-size="18" font-weight="600" fill="#e6b878">Special offer to you!</text>
-    <text x="193" y="658.2" font-size="11.5" letter-spacing="1" font-weight="600" fill="#e6b878">FROM: RACHEL ROSS</text>
-  </g>
   <!-- envelope glyphs at x 429..445: rows 1,3,7 OPEN (flap raised, 14.5
        tall), the rest CLOSED (10.5 tall); the selected row's in dark -->
   <g fill="none" stroke-width="1">
@@ -315,11 +352,99 @@
     <g stroke="#f0bf7b" transform="translate(429 632.9)"><path d="M 0,4 L 8,0 L 16,4 V 14.5 H 0 Z"/><path d="M 0,4 L 8,9.5 L 16,4"/></g>
   </g>
 
+  <!-- ==== four RIFLES buttons ==== -->
+  <!-- outlined in the DARKER gold (#c29a65 sampled, ~4px at 3840, 1.7
+       here — only the tabs are the bright #fdcf8c), 184x39 at y 684..723
+       on a 192 pitch from x 735; rounded
+       corners, the bottom-LEFT one cut by a 13x10 chamfer; a filled
+       trapezoid tab sits on the bottom edge at x 866..903 -->
+  <g id="riflebox">
+    <path d="M 740,684 H 914 Q 919,684 919,689 V 718 Q 919,723 914,723 H 748 L 735,713 V 689 Q 735,684 740,684 Z" fill="none" stroke="#ecbe82" stroke-width="1.25"/>
+    <path d="M 866,723 L 870,716 H 899 L 903,723 Z" fill="#fdcf8c"/>
+  </g>
+  <use href="#riflebox" x="192"/>
+  <use href="#riflebox" x="385"/>
+  <use href="#riflebox" x="575"/>
+
+  <!-- ==== foot: C and D letter boxes with their annotations ==== -->
+  <g>
+    <g stroke="#bd8951">
+      <use href="#letterbox" x="139" y="777"/>
+      <use href="#letterbox" x="735" y="777"/>
+    </g>
+  </g>
+  </g>
+
+  <!-- ==== text: every glyph ==== -->
+  <g id="text" font-family="Rajdhani">
+  <!-- ==== header ==== -->
+  <!-- glyph cores sampled at 3840: CUSTOMER/LEVEL/T-marks ~#dca97b (the
+       header reads #dcae98 where it sits on the violet), the wire strands
+       #cb9a64, the A/B annotations #cfa78c on violet, the C/D ones
+       #deb689, the FROM: lines #f4c587 — all the #c19867 k-means family
+       at 1600, so they are drawn at their measured brightness rather
+       than at the dimmer #bd8951 / #a97c48 the dashboard trace uses. -->
+  <g fill="#e8b98e">
+    <text x="118.3" y="42.2" font-size="13" font-weight="500" letter-spacing="-0.05">CUSTOMER #NC488402</text>
+    <text x="120" y="70" font-size="12" letter-spacing="2">LEVEL</text>
+    <text x="126" y="90" font-size="21" font-weight="600">T1</text>
+
+    <text x="1131" y="68" font-size="12" letter-spacing="2">SECURITY</text>
+    <text x="1131" y="83" font-size="12" letter-spacing="2">LEVEL</text>
+    <g font-size="12" letter-spacing="1.5">
+      <text x="1229" y="63">LEVEL</text><text x="1354" y="63">LEVEL</text>
+      <text x="1417" y="63">LEVEL</text>
+    </g>
+    <g font-size="20" font-weight="600">
+      <text x="1236" y="86">T1</text><text x="1361" y="86">T3</text>
+      <text x="1424" y="86">T4</text>
+    </g>
+    <text x="1295" y="71" font-size="12" letter-spacing="1.2" fill="#d9a877">LEVEL</text>
+    <text x="1296" y="95" font-size="21" font-weight="600" fill="#e8c186">T2</text>
+  </g>
+  <g font-size="15">
+    <!-- the letters are a wide geometric face: A 15.0 x 12.5 (x 242.2..257.2,
+         cap 103..115.5), B 14.2 wide at x 1015.4..1029.6; Rajdhani at 19.5
+         is 9.4 / 7.8 wide, so each glyph is scaled 1.6 in x (2026-09-03) -->
+    <g fill="#d9a877" text-anchor="middle" font-size="19.5" font-weight="700">
+      <text transform="translate(249.7 115.5) scale(1.6 1)">A</text>
+      <text transform="translate(1022.5 115.5) scale(1.75 1)">B</text>
+    </g>
+    <!-- micro text: cap 4.2 (rows 99.2..103.3 / 105.4..110.0); both
+         blocks are left-aligned, the right one at x 843.3 (the trace had it
+         right-anchored at 1000); runs 278.3..434.2 / ..378.3 and
+         843.3..999.2 / ..943.3 (2026-09-03) -->
+    <g font-size="6.2" font-weight="500" fill="#d9a877" letter-spacing="0.7">
+      <text x="278.3" y="103.3">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+      <text x="278.3" y="110">SERVING CUSTOMERS SINCE 2006.</text>
+      <text x="843.3" y="103.3">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+      <text x="843.3" y="110">SERVING CUSTOMERS SINCE 2006.</text>
+    </g>
+  </g>
+
+  <!-- ==== the message list ==== -->
+  <g font-family="Rajdhani">
+    <text x="193" y="276.0" font-size="18" font-weight="600" fill="#f3c583">You'll regret that</text>
+    <text x="193" y="297.0" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: JACKIE</text>
+    <text x="193.5" y="336.2" font-size="18" font-weight="600" fill="#7b5438" letter-spacing="-0.22">Urgent information (!)</text>
+    <text x="193" y="357.2" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#895f3b">FROM: MOM</text>
+    <text x="193" y="396.4" font-size="18" font-weight="600" fill="#f3c583">Heist data sent to you</text>
+    <text x="193" y="417.4" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: 805000451</text>
+    <text x="193" y="456.6" font-size="18" font-weight="600" fill="#f3c583">I'm worried man</text>
+    <text x="193" y="477.6" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: RACHEL ROSS</text>
+    <text x="193" y="516.8" font-size="18" font-weight="600" fill="#f3c583">Special offer to you!</text>
+    <text x="193" y="537.8" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: JINX JINX STORE</text>
+    <text x="193" y="577.0" font-size="18" font-weight="600" fill="#f3c583">I'm worried man</text>
+    <text x="193" y="598.0" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: RACHEL ROSS</text>
+    <text x="193" y="637.2" font-size="18" font-weight="600" fill="#f3c583">Special offer to you!</text>
+    <text x="193" y="658.2" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: RACHEL ROSS</text>
+  </g>
+
   <!-- ==== the message body: plain text, no panel ==== -->
-  <g font-family="Rajdhani" fill="#f0bf7b">
-    <text x="738" y="277" font-size="15" font-weight="700" letter-spacing="0.5">URGENT INFORMATION (!)</text>
-    <text x="740" y="297" font-size="11.5" letter-spacing="1" font-weight="600" fill="#e6b878">FROM: MOM</text>
-    <g font-size="17" font-weight="600" fill="#e6b878">
+  <g font-family="Rajdhani" fill="#f8c884">
+    <text x="737" y="276" font-size="15" font-weight="700" letter-spacing="1.15">URGENT INFORMATION (!)</text>
+    <text x="740" y="297" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: MOM</text>
+    <g font-size="17" font-weight="600" fill="#f3c583" letter-spacing="0.3">
       <text x="738" y="333">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod</text>
       <text x="738" y="354">tempor incididunt ut labore et dolore magna aliqua.</text>
       <text x="738" y="397">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut</text>
@@ -333,36 +458,31 @@
     </g>
   </g>
 
-  <!-- ==== four RIFLES buttons ==== -->
-  <!-- outlined in the DARKER gold (#c29a65 sampled, ~4px at 3840, 1.7
-       here — only the tabs are the bright #fdcf8c), 184x39 at y 684..723
-       on a 192 pitch from x 735; rounded
-       corners, the bottom-LEFT one cut by a 13x10 chamfer; a filled
-       trapezoid tab sits on the bottom edge at x 866..903 -->
-  <g id="rifles" font-family="Rajdhani">
-    <path d="M 740,684 H 914 Q 919,684 919,689 V 718 Q 919,723 914,723 H 748 L 735,713 V 689 Q 735,684 740,684 Z" fill="none" stroke="#c29a65" stroke-width="1.7"/>
-    <path d="M 866,723 L 870,716 H 899 L 903,723 Z" fill="#fdcf8c"/>
-    <text x="757" y="710" font-size="15" font-weight="600" letter-spacing="1" fill="#f5c689">RIFLES</text>
+  <!-- RIFLES labels (boxes are in #lines) -->
+  <g id="rifletext">
+    <text x="757" y="710.5" font-size="16" font-weight="500" letter-spacing="1" fill="#f9cb8a">RIFLES</text>
   </g>
-  <use href="#rifles" x="192"/>
-  <use href="#rifles" x="385"/>
-  <use href="#rifles" x="575"/>
+  <use href="#rifletext" x="192"/>
+  <use href="#rifletext" x="385"/>
+  <use href="#rifletext" x="575"/>
 
-  <!-- ==== foot: C and D letter boxes with their annotations ==== -->
-  <g font-family="Rajdhani">
-    <g stroke="#bd8951">
-      <use href="#letterbox" x="139" y="777"/>
-      <use href="#letterbox" x="735" y="777"/>
+  <!-- foot annotations -->
+  <g>
+    <!-- C 14.2 wide at x 144.2..158.4, D 21.2 wide at 740.1..761.3; same
+         face and x-scale as A/B (2026-09-03) -->
+    <g font-size="19.5" font-weight="700" fill="#d9a877" text-anchor="middle">
+      <text transform="translate(151.3 796) scale(1.6 1)">C</text>
+      <text transform="translate(750.7 796) scale(1.75 1)">D</text>
     </g>
-    <g font-size="15" fill="#d9a877" text-anchor="middle">
-      <text x="151" y="796">C</text><text x="747" y="796">D</text>
+    <!-- micro text: cap 4.2, baselines 782.8 / 789.8; runs 183.3..337.9 /
+         ..283.3 and 771.7..930.0 / ..806.2 (2026-09-03) -->
+    <g font-size="6.2" font-weight="500" fill="#deb689" letter-spacing="0.7">
+      <text x="183.3" y="782.8">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+      <text x="183.3" y="789.8">SERVING CUSTOMERS SINCE 2006.</text>
+      <text x="771.7" y="782.8">MAPS ARE PROVIDED BY SEOCHO. SATELITE SERVICES</text>
+      <text x="771.7" y="789.8">SINCE 2006.</text>
     </g>
-    <g font-size="8" fill="#deb689" letter-spacing="0.4">
-      <text x="183" y="783">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
-      <text x="183" y="792">SERVING CUSTOMERS SINCE 2006.</text>
-      <text x="771" y="783">MAPS ARE PROVIDED BY SEOCHO. SATELITE SERVICES</text>
-      <text x="771" y="792">SINCE 2006.</text>
-    </g>
+  </g>
   </g>
   </g>
 </svg>

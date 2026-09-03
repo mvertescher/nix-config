@@ -12,21 +12,34 @@
        What the source shows, top to bottom:
          - the same violet-over-black haze every screen of this run
            wears (its blue-channel profile is pixel-identical to the
-           dashboard's at every sampled column, so the lobe geometry and
-           stops below are the dashboard-trace's, carried over)
+           dashboard's, mailbox's and store's at every sampled column).
+           Measured on this photo (ground mask B >= R-8, 16x9 colour
+           grid and the per-column y where smoothed ground luma drops
+           below 70/50/35/25): the violet centre sits at x~770, the lit
+           region ends by y~300 at the centre and y~150 at the edges,
+           and the top-left quadrant (x 300..700, y 0..50) is brighter
+           and pinker than the centre. Drawn as the #haze ellipse (cx
+           770, r 1000, y-scale 0.49, stops 0.35/0.66/0.85) plus a
+           flatter #hazelobe ellipse (cx 430, cy -40, r 560, y-scale
+           0.30) for the lobe, and the #hazeblue band (cx 850, r 1000,
+           y-scale 0.47)
          - top-left: the ARASAKA logotype, a heavy stencil face, spanning
-           x 93..278, y 59..88; under it ARASAKA CONSUMER TECHNOLOGY
+           x 92.1..272.1, y 59..88 (drawn as Rajdhani 700 at 36px
+           x-scaled 1.155 onto that extent); under it ARASAKA CONSUMER TECHNOLOGY
            (x 118..251, baseline ~97) and a two-cell outlined box at
            [90,100]..[275,125], divider at x~195, holding 57ASD4AV15AA
            and COMBAT COLONIZATION / DEFENCE PROGRAM
          - top-right: 10:10 PM large (x 1293..1404, y 67..87), then
            NIGHT CITY and AREA in small caps beneath
          - mid-height: TWO IDENTICAL ENTRY GROUPS, the right one exactly
-           +420 in x. Each: a PRASE_6054012 label (x 415, cap top 335),
+           +420 in x. Each: a PRASE_6054012 label (x 429.2..553.8, cap
+           336.2..349.2 — 19.5px 500, letter-spacing 0.15),
            a dark chocolate field [417,361]..[762,403] (#3c1c11, no
            outline), a solid gold bar [417,414]..[761,441] with a
            ~16x13 chamfer cut off its bottom-LEFT corner only, carrying
-           ENTER / LOGIN in a wide light face in dark brown; a 26x26
+           ENTER / LOGIN in a wide light face in dark brown (x
+           532.9..645.4: 14px 300 letter-spacing 4.1 centred on 582.5);
+           a 26x26
            letter box A (416,465) / B (836,465) with the era's folded
            corner, and the SPARE TIME MANAGER micro-text beside it
          - across the foot: the stacked-hairline WIRE BAND as a wide
@@ -43,12 +56,48 @@
            the bottom one, with no spill outside the band
          - footer line at y~875, centred: ARASAKA CONSUMER TECHNOLOGY
            (bold) ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE
-           ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.
+           ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE. (x
+           501.2..1097.5, fitted with letter-spacing 0.06)
          - every glyph and bar sits on a soft vertically-smeared glow
-           (it is what fattens the #351b11 family to 5.5%); drawn once
-           as a blurred copy of the content group under the crisp content
+           (it is what fattens the #351b11 family to 5.5%). The bars'
+           smear is wide (stdDeviation 1.5 x 4.5) but the glyphs' is a
+           tight bloom (measured on the clock block, x 1270..1440, y
+           55..140), so the content is split into #lines (bars, fields,
+           band) and #text and each is haloed with its own filter,
+           #halo and #halotext (stdDeviation 1.0 x 1.6); the entry
+           group is likewise split into #entrylines / #entrytext
+         - the source's letterforms are a wider face than Rajdhani.
+           The font is not changed; where a run's width matters its
+           letter-spacing (or, for ARASAKA, an x scale) is set so the
+           run's extent matches the photo, and each such run carries
+           its measured extent in a comment. rsvg 2.62 ignores
+           textLength, so no run uses it
          - nothing else: no frame, no header rule, no cards. The screen
            is sparse by design.
+
+       Passes:
+         2026-09-03  haze retuned to this photo: #haze cx 825 r 1030
+                     y-scale 0.515 -> cx 770 r 1000 0.49, stops
+                     0.258/0.572/0.873 -> 0.35/0.66/0.85; #hazeblue
+                     900/1030/0.515 -> 850/1000/0.47; #hazelobe added;
+                     dark (<22) fraction 0.562 -> 0.612 (source 0.639);
+                     weighted IoU 0.73 -> 0.77
+         2026-09-03  halo split into #lines/#text (and #entry into
+                     #entrylines/#entrytext) with the tighter #halotext
+                     for glyphs; run widths fitted with letter-spacing
+                     or x-scale instead of the no-op textLength: ARASAKA
+                     (rendered 94..250, now 92..272), PRASE_6054012 (21px
+                     600 ls 1 at x 415 -> 19.5px 500 ls 0.15 at 428.5;
+                     430..554), ENTER / LOGIN (ls 3 -> 4.1; 534..645),
+                     footer (ls 0.06; 500..1100). Weighted IoU stays
+                     0.77
+         2026-09-03  the blurred halo copies (the <use> elements under
+                     #content that carry filter="url(#halo)" and
+                     filter="url(#halotext)") are tagged class="photo":
+                     G2i renders with .photo{display:none} since the
+                     extractor bins the halo as its own ink family.
+                     Nothing else carries the class; G1i still renders
+                     the halo and its verdict is unchanged
 
        Palette sampled by k-means (extract_spec.py):
          ink   #fbc171 (1.5%, the two bars)  #aa7a44  #664121
@@ -58,8 +107,8 @@
     <!-- haze: identical backdrop to dashboard-trace.svg (measured there;
          re-verified here by column profile) -->
     <radialGradient id="hazeblue" gradientUnits="userSpaceOnUse"
-        cx="900" cy="-120" r="1030"
-        gradientTransform="rotate(2 900 -120) translate(900 -120) scale(1 0.515) translate(-900 120)">
+        cx="850" cy="-120" r="1000"
+        gradientTransform="rotate(2 850 -120) translate(850 -120) scale(1 0.47) translate(-850 120)">
       <stop offset="0"    stop-color="#223350" stop-opacity="0"/>
       <stop offset="0.60" stop-color="#223350" stop-opacity="0"/>
       <stop offset="0.68" stop-color="#223350" stop-opacity="0.85"/>
@@ -77,13 +126,25 @@
       <rect width="1600" height="900" fill="url(#hazebluefade)"/>
     </mask>
     <radialGradient id="haze" gradientUnits="userSpaceOnUse"
-        cx="825" cy="-120" r="1030"
-        gradientTransform="rotate(1.3 825 -120) translate(825 -120) scale(1 0.515) translate(-825 120)">
+        cx="770" cy="-120" r="1000"
+        gradientTransform="rotate(1.3 770 -120) translate(770 -120) scale(1 0.49) translate(-770 120)">
       <stop offset="0"     stop-color="#574568"/>
-      <stop offset="0.258" stop-color="#574568"/>
-      <stop offset="0.572" stop-color="#3a3853"/>
-      <stop offset="0.873" stop-color="#16121a"/>
+      <stop offset="0.35" stop-color="#574568"/>
+      <stop offset="0.66" stop-color="#3a3853"/>
+      <stop offset="0.85" stop-color="#16121a"/>
       <stop offset="1"     stop-color="#0e0a0d"/>
+    </radialGradient>
+    <!-- the haze's bright lobe: the top-left quadrant of the photo is
+         lit brighter and pinker than the centre (ground (106,76,121) at
+         x 300..700 y 0..50 vs (93,68,108) at x 800..1000), and stays
+         lit to the left edge; a second, flatter ellipse over the haze
+         (2026-09-03) -->
+    <radialGradient id="hazelobe" gradientUnits="userSpaceOnUse"
+        cx="430" cy="-40" r="560"
+        gradientTransform="translate(430 -40) scale(1 0.30) translate(-430 40)">
+      <stop offset="0"    stop-color="#7a5288" stop-opacity="0.85"/>
+      <stop offset="0.45" stop-color="#7a5288" stop-opacity="0.55"/>
+      <stop offset="1"    stop-color="#7a5288" stop-opacity="0"/>
     </radialGradient>
     <!-- boxed section letter: 26x26 rounded plate, folded bottom-right
          corner (the era's mini-SIM motif; same as dashboard-trace) -->
@@ -93,16 +154,18 @@
       <path d="M 26,17 H 21 Q 19,17 19,19 V 24" stroke-width="1"/>
     </g>
     <!-- one entry group at its measured origin (left group; the right
-         group is the same at +420) -->
-    <g id="entry" font-family="Rajdhani">
-      <text x="415" y="351" font-size="21" font-weight="600" letter-spacing="1" fill="#f5bf75">PRASE_6054012</text>
+         group is the same at +420), split into its plates and its
+         glyphs so the two can carry different halos (2026-09-03) -->
+    <g id="entrylines">
       <rect x="417" y="361" width="345" height="42" fill="#3c1c11"/>
       <!-- gold bar, bottom-left chamfer 16x13 -->
       <path d="M 417,414 H 761 V 441 H 433 L 417,428 Z" fill="#fbc171"/>
-      <text x="589" y="435" font-size="14" font-weight="300" letter-spacing="3"
-            fill="#6b3f1e" text-anchor="middle">ENTER / LOGIN</text>
       <use href="#letterbox" x="416" y="465" stroke="#c8914d"/>
-      <text x="429" y="483" font-size="15" fill="#d9a877" text-anchor="middle">A</text>
+    </g>
+    <g id="entrytext" font-family="Rajdhani">
+      <text x="428.5" y="350" font-size="19.5" font-weight="500" letter-spacing="0.15" fill="#f5bf75">PRASE_6054012</text>
+      <text x="582.5" y="435" font-size="14" font-weight="300" letter-spacing="4.1"
+            fill="#6b3f1e" text-anchor="middle">ENTER / LOGIN</text>
       <g font-size="7" fill="#a97c48" letter-spacing="0.4">
         <text x="454" y="471">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
         <text x="454" y="479">SERVING CUSTOMERS SINCE 2006.</text>
@@ -125,44 +188,36 @@
       <feGaussianBlur stdDeviation="1.5 4.5"/>
       <feColorMatrix type="matrix" values="0.43 0 0 0 0  0 0.32 0 0 0  0 0 0.21 0 0  0 0 0 1.45 0"/>
     </filter>
+    <!-- the glyph halo: a tight bloom, not the bars' smear (2026-09-03,
+         measured on the clock block at x 1270..1440, y 55..140) -->
+    <filter id="halotext" x="-5%" y="-10%" width="110%" height="120%">
+      <feGaussianBlur stdDeviation="1.0 1.6"/>
+      <feColorMatrix type="matrix" values="0.43 0 0 0 0  0 0.32 0 0 0  0 0 0.21 0 0  0 0 0 1.45 0"/>
+    </filter>
   </defs>
 
   <rect width="1600" height="900" fill="#0e0a0d"/>
   <rect width="1600" height="900" fill="url(#haze)"/>
+  <rect width="1600" height="300" fill="url(#hazelobe)"/>
   <rect width="1600" height="560" fill="url(#hazeblue)" mask="url(#bluemask)"/>
 
-  <use href="#content" filter="url(#halo)"/>
+  <!-- two halos: the bars' vertical smear under the line work, the
+       glyphs' tight bloom under the text (2026-09-03; the text used to
+       share the smear and glowed ~2x too much) -->
+  <use href="#lines" filter="url(#halo)" class="photo"/>
+  <use href="#text" filter="url(#halotext)" class="photo"/>
   <g id="content">
+  <g id="lines">
 
   <!-- ==== header ==== -->
-  <g font-family="Rajdhani" fill="#f5bf75">
-    <!-- logotype: a custom stencil face; drawn as bold text forced to
-         the measured 185px width -->
-    <text x="93" y="87" font-size="36" font-weight="700" letter-spacing="3"
-          textLength="185" lengthAdjust="spacingAndGlyphs">ARASAKA</text>
-    <text x="118" y="97" font-size="8" letter-spacing="0.8" fill="#d9a877">ARASAKA CONSUMER TECHNOLOGY</text>
-    <g fill="none" stroke="#c8914d" stroke-width="1">
-      <rect x="90" y="100" width="185" height="25"/>
-      <line x1="195" y1="100" x2="195" y2="125"/>
-    </g>
-    <g font-size="8" fill="#d9a877" letter-spacing="0.5">
-      <text x="96" y="115" font-size="9">57ASD4AV15AA</text>
-      <text x="200" y="110">COMBAT COLONIZATION</text>
-      <text x="200" y="120">DEFENCE PROGRAM</text>
-    </g>
-    <text x="1293" y="87" font-size="28" font-weight="500" letter-spacing="1">10:10 PM</text>
-    <text x="1295" y="110" font-size="13" font-weight="500" letter-spacing="0.5">NIGHT CITY</text>
-    <text x="1295" y="129" font-size="13" font-weight="500" letter-spacing="0.5">AREA</text>
+  <g fill="none" stroke="#c8914d" stroke-width="1">
+    <rect x="90" y="100" width="185" height="25"/>
+    <line x1="195" y1="100" x2="195" y2="125"/>
   </g>
 
   <!-- ==== the two entry groups ==== -->
-  <use href="#entry"/>
-  <g transform="translate(420 0)">
-    <use href="#entry"/>
-    <!-- the right group's letter is B, not A -->
-    <rect x="419" y="468" width="20" height="20" fill="#0e0a0d"/>
-    <text x="429" y="483" font-family="Rajdhani" font-size="15" fill="#d9a877" text-anchor="middle">B</text>
-  </g>
+  <use href="#entrylines"/>
+  <use href="#entrylines" x="420"/>
 
   <!-- ==== the wire band ==== -->
   <!-- 22 strands: strand i runs the outer plateaus at y 727.1+3.9i,
@@ -196,7 +251,41 @@
     <path d="M 35,812 V 817.0 Q 35,809.0 43,809.0 H 397.9 C 427.8,809.0 422.3,845.7 452.2,845.7 H 1163.8 C 1193.7,845.7 1188.2,809.0 1218.1,809.0 H 1556 Q 1564,809.0 1564,817.0 V 812" stroke-opacity="1.00"/>
   </g>
 
-  <!-- ==== footer ==== -->
-  <text x="800" y="875" font-family="Rajdhani" font-size="9.5" letter-spacing="0.1" fill="#c8914d" text-anchor="middle" textLength="618" lengthAdjust="spacingAndGlyphs"><tspan font-weight="700">ARASAKA CONSUMER TECHNOLOGY</tspan>  ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+  </g><!-- lines -->
+
+  <!-- every glyph, gathered here so the text halo can differ from the
+       bars' -->
+  <g id="text" font-family="Rajdhani">
+  <!-- ==== header ==== -->
+  <g fill="#f5bf75">
+    <!-- logotype: a custom stencil face; drawn as bold text scaled
+         horizontally onto the measured ink extent x 92.1..272.1 (2026-09-03:
+         was textLength="185", which librsvg ignores, and rendered 156
+         wide) -->
+    <text transform="translate(91 87) scale(1.155 1)" font-size="36" font-weight="700" letter-spacing="3">ARASAKA</text>
+    <text x="118" y="97" font-size="8" letter-spacing="0.8" fill="#d9a877">ARASAKA CONSUMER TECHNOLOGY</text>
+    <g font-size="8" fill="#d9a877" letter-spacing="0.5">
+      <text x="96" y="115" font-size="9">57ASD4AV15AA</text>
+      <text x="200" y="110">COMBAT COLONIZATION</text>
+      <text x="200" y="120">DEFENCE PROGRAM</text>
+    </g>
+    <text x="1293" y="87" font-size="28" font-weight="500" letter-spacing="1">10:10 PM</text>
+    <text x="1295" y="110" font-size="13" font-weight="500" letter-spacing="0.5">NIGHT CITY</text>
+    <text x="1295" y="129" font-size="13" font-weight="500" letter-spacing="0.5">AREA</text>
   </g>
+
+  <!-- ==== the two entry groups' glyphs; the letters are A and B ==== -->
+  <use href="#entrytext"/>
+  <use href="#entrytext" x="420"/>
+  <g font-size="15" fill="#d9a877" text-anchor="middle">
+    <text x="429" y="483">A</text>
+    <text x="849" y="483">B</text>
+  </g>
+
+  <!-- ==== footer ==== -->
+  <!-- fitted by letter-spacing to the source's x 501..1097 (2026-09-03:
+       was textLength="618", a no-op in librsvg) -->
+  <text x="800" y="875" font-size="9.5" letter-spacing="0.06" fill="#c8914d" text-anchor="middle"><tspan font-weight="700">ARASAKA CONSUMER TECHNOLOGY</tspan>  ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+  </g>
+  </g><!-- content -->
 </svg>
