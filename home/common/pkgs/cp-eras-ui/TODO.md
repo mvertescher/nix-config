@@ -223,8 +223,8 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
     is only where a click returns to.
   - neokitsch: rows 6 and 7 are both Rachel Ross; rows 1, 3, 7 are
     open and the *selected* row is closed. Its body is set at weight
-    600 (line 462) and iced draws it regular — visible in the
-    triptych; belongs to the renderer-limits item below.
+    600 (line 462); until 2026-09-04 iced drew it Medium (see the
+    renderer-limits item below), now `Run::semibold()`.
   - kitsch: no open-envelope glyph at all; all five rows closed.
   - `ADVANCE`'s doc-claimed second reader (right-aligning the sender)
     did not exist.
@@ -476,14 +476,42 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
     still true: only the alpha is rescaled, the colour is not. (Since
     2026-09-04 the ghost stacks do not go through this at all; they are
     a `Prim::Soft` group — see "Gate-side blending" above.)
-- [ ] Dashboard renderer limits surfaced by the transcription, all
-  small and all shared with the earlier conversions: no rotated text
-  (kitsch's ±30° blade labels are drawn upright; the two PRODUCTS
-  labels stacked one glyph per line), no letter-spacing, no stroked
-  text (neomil's outlined `next` logotype is drawn filled), `Wide` is
-  start-anchored only (centred stretched glyphs are placed by hand at
-  `cx - run/2`), Rajdhani 600 renders as Medium, no gradient masks
-  (neokitsch's `#bluemask` left-fade; the blue lobe is drawn unmasked).
+- [x] Dashboard renderer limits surfaced by the transcription, all
+  small and all shared with the earlier conversions. Landed 2026-09-04:
+  - **Rajdhani 600.** The stated limit was "renders as Medium", and the
+    mapping `Face::SemiBold => FONT_RAJDHANI_MEDIUM` was a *workaround*,
+    not the cause: no binary loaded `Rajdhani-SemiBold.ttf`, and asking
+    the shaper for weight 600 with only 400/500/700 loaded returns
+    **Bold** (CSS matching climbs from 600). So the bar strip and every
+    `Face::SemiBold` label were a stop off in one direction or the
+    other. Now `fonts::FONT_RAJDHANI_SEMIBOLD`, the file loaded by all
+    six binaries, `Face::SemiBold` and `bar::era_face` map to it, and
+    `Run::semibold()` gives the mail body the same. neokitsch's mailbox
+    body line widths now match the design; kitsch's dashboard header /
+    fan labels and neomil's module labels sit at the trace's weight.
+  - **Letter-spacing** is `Prim::Tracked` (`Prim::Text` plus
+    `tracking`, drawn glyph by glyph on shaper-measured advances, the
+    anchor applied to the tracked run; `scene::advances` is login's
+    prefix-measure, moved so both use one). Applied where the
+    transcription had recorded the value: kitsch's blade / PRODUCTS
+    labels (`letter-spacing="2"`) and neomil's six module labels
+    (1.2). The traces use `letter-spacing` ~180 times; the rest is
+    per-era transcription work (neokitsch header 1.5 / LEVEL 2 /
+    annotations 0.4, neomil header and tabs, every store), not a
+    renderer limit any more.
+  - Rotated text landed earlier (`Prim::Text` `rotate`); kitsch's blade
+    labels are on the blades.
+  - Goldens moved: bar.neokitsch, all four dashboards, mailbox.neokitsch
+    (re-taken by eye against the G2i design renders; login untouched).
+    G2i is blind to weight and tracking — entropism 98, kitsch 69 (was
+    68), neomil 96, neokitsch 94, neokitsch mailbox 84, all unchanged —
+    so these are by-eye verifications only.
+  - Still open, small: no stroked text (neomil's outlined `next`
+    logotype is drawn filled); `Wide` is start-anchored only (centred
+    stretched glyphs are placed by hand at `cx - run/2`). Gradient
+    masks (neokitsch's `#bluemask` left-fade; the blue lobe is drawn
+    unmasked) belong to the "four grounds" item above: `Prim::Soft`
+    needs luminance masks for that too.
 - [ ] Follow-ups the era agents flagged and did not touch: neomil
   `components.svg:1113` calls the maker's mark "an M of 89x39" but the
   trace path (`dashboard-trace.svg:242`) is 46 wide — the 89 is the bar
@@ -1052,12 +1080,15 @@ four bars, done in this order so the Rust is written once.
     fitted tracking and glyph x-scales from the traces are dropped
     (login has `Legend::stretch`/`tracking` as a prefix-measured
     workaround), and neomil's rotated maker's marks / margin strings
-    are not drawn.
+    are not drawn. (Since then: `rotate` on `Prim::Text`, and
+    2026-09-04 `Prim::Tracked` for letter-spacing; x-scale is still
+    login's `Wide` only.)
   - **Widget gaps the agents reported** (each "use widgets, don't edit
     them" collided with): absolute placement; `Cut` has no Step cut;
     `Surface` has no tab, ticks or dense grain; no custom panel
-    silhouette; no blur; `fonts.rs` has no semibold (`Face::SemiBold`
-    maps to Medium); `Ground` caps at ~6% alpha (neokitsch haze wants
+    silhouette; no blur; `fonts.rs` had no semibold (`Face::SemiBold`
+    mapped to Medium — fixed 2026-09-04, `FONT_RAJDHANI_SEMIBOLD`);
+    `Ground` caps at ~6% alpha (neokitsch haze wants
     #4f4262). This is the input to the canvas-vs-widgets decision
     below.
   - **Three haze implementations coexist**: login `wash_image` (RGBA

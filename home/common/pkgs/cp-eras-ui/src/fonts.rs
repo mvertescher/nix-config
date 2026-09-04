@@ -45,6 +45,18 @@ pub const FONT_RAJDHANI_MEDIUM: iced::Font = iced::Font {
     style: iced::font::Style::Normal,
 };
 
+/// Rajdhani 600. The traces set most chrome at 500 or 600, and a
+/// binary that names this weight without loading `RAJDHANI_SEMIBOLD`
+/// gets *Bold* from the shaper (CSS matching climbs from 600), which is
+/// how the bar strip and every `Face::SemiBold` label came to be drawn
+/// a stop off in either direction. Load the bytes wherever this is used.
+pub const FONT_RAJDHANI_SEMIBOLD: iced::Font = iced::Font {
+    family: iced::font::Family::Name("Rajdhani"),
+    weight: iced::font::Weight::Semibold,
+    stretch: iced::font::Stretch::Normal,
+    style: iced::font::Style::Normal,
+};
+
 pub const FONT_RAJDHANI_BOLD: iced::Font = iced::Font {
     family: iced::font::Family::Name("Rajdhani"),
     weight: iced::font::Weight::Bold,

@@ -1424,7 +1424,9 @@ pub const STORE: &[Prim] = &[
 // *outlined* Orbitron, and the
 // scene has neither a stroked text nor an Orbitron face, so it is set
 // filled in the bold Rajdhani face. Letter-spacing on the header and
-// tab labels is dropped, as the store block drops it. The body copy of
+// tab labels is dropped, as the store block drops it (`Prim::Tracked`
+// carries it since 2026-09-04; only the module labels below use it
+// so far). The body copy of
 // the GO HOME panel is drawn as the trace's measured run boxes
 // (:232-239) because the trace carries no copy for it.
 
@@ -1720,13 +1722,13 @@ pub const DASHBOARD: &[Prim] = &[
     fill_rect(619.5, 445.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
     fill_rect(521.5, 577.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
     fill_rect(717.0, 577.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
-    // labels (:207-212): 600/19, centred on each cell's x
-    Prim::Text { x: 334.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, content: "VEHICLES" },
-    Prim::Text { x: 530.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, content: "LOCATIONS" },
-    Prim::Text { x: 725.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, content: "FACTIONS" },
-    Prim::Text { x: 431.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, content: "WEAPONS" },
-    Prim::Text { x: 628.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, content: "PRODUCTS" },
-    Prim::Text { x: 822.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, content: "CORPORATIONS" },
+    // labels (:206-212): 600/19, centred on each cell's x, tracked 1.2
+    Prim::Tracked { x: 334.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "VEHICLES" },
+    Prim::Tracked { x: 530.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "LOCATIONS" },
+    Prim::Tracked { x: 725.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "FACTIONS" },
+    Prim::Tracked { x: 431.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "WEAPONS" },
+    Prim::Tracked { x: 628.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "PRODUCTS" },
+    Prim::Tracked { x: 822.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "CORPORATIONS" },
     // GO HOME panel (:217-244): the outline, the bright edge bar, the
     // glitch echoes 3 and 5 out, the heading, the body run boxes and
     // the maker's mark

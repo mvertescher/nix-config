@@ -185,36 +185,7 @@ fn plate_path(g: Grid, plate: &Plate) -> canvas::Path {
 /// measures zero -- the shaper trims it -- and because a difference the
 /// shaper makes between neighbours belongs to the pair, not to either
 /// glyph.
-fn advances(content: &str, size: f32, font: iced::Font) -> Vec<f32> {
-    let mut out = Vec::with_capacity(content.chars().count());
-    let mut previous = 0.0;
-    let mut end = 0;
-    for glyph in content.chars() {
-        end += glyph.len_utf8();
-        let width = run_width(&content[..end], size, font);
-        out.push((width - previous).max(0.0));
-        previous = width;
-    }
-    out
-}
-
-fn run_width(content: &str, size: f32, font: iced::Font) -> f32 {
-    use iced::advanced::text::Paragraph as _;
-
-    iced::advanced::graphics::text::Paragraph::with_text(iced::advanced::text::Text {
-        content,
-        bounds: Size::INFINITE,
-        size: size.into(),
-        line_height: iced::widget::text::LineHeight::Absolute((size * LINE).into()),
-        font,
-        align_x: iced::advanced::text::Alignment::Left,
-        align_y: iced::alignment::Vertical::Top,
-        shaping: iced::advanced::text::Shaping::Advanced,
-        wrapping: iced::advanced::text::Wrapping::None,
-    })
-    .min_bounds()
-    .width
-}
+use super::scene::advances;
 
 struct Pen<'a> {
     frame: &'a mut canvas::Frame,

@@ -406,6 +406,7 @@ pub fn supported(prim: &Prim) -> bool {
         Prim::Text { .. }
         | Prim::Wide { .. }
         | Prim::Spaced { .. }
+        | Prim::Tracked { .. }
         | Prim::Grain { .. }
         | Prim::Dots { .. }
         | Prim::Plate { .. } => false,
@@ -505,6 +506,7 @@ fn walk(buf: &mut Buf, prims: &[Prim], palette: &Palette, xf: Xf) {
             Prim::Text { .. }
             | Prim::Wide { .. }
             | Prim::Spaced { .. }
+            | Prim::Tracked { .. }
             | Prim::Grain { .. }
             | Prim::Dots { .. }
             | Prim::Plate { .. } => {

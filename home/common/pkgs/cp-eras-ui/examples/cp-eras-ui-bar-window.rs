@@ -269,6 +269,7 @@ fn main() -> iced::Result {
     .title(BarWindow::title)
     .font(cp_eras_ui::fonts::RAJDHANI_REGULAR)
     .font(cp_eras_ui::fonts::RAJDHANI_MEDIUM)
+    .font(cp_eras_ui::fonts::RAJDHANI_SEMIBOLD)
     .font(cp_eras_ui::fonts::RAJDHANI_BOLD)
     .default_font(cp_eras_ui::fonts::FONT_RAJDHANI_REGULAR)
     .style(move |_state, _theme| iced::theme::Style {

@@ -307,8 +307,8 @@ impl<M> Scene<M> {
     fn font(face: Face) -> iced::Font {
         match face {
             Face::Regular => crate::fonts::FONT_RAJDHANI_REGULAR,
-            // No published semibold face; see `bar::era_face`.
-            Face::Medium | Face::SemiBold => crate::fonts::FONT_RAJDHANI_MEDIUM,
+            Face::Medium => crate::fonts::FONT_RAJDHANI_MEDIUM,
+            Face::SemiBold => crate::fonts::FONT_RAJDHANI_SEMIBOLD,
             Face::Bold => crate::fonts::FONT_RAJDHANI_BOLD,
         }
     }
@@ -397,6 +397,32 @@ impl<M> Scene<M> {
                             ..Default::default()
                         });
                     });
+                }
+                Prim::Tracked { x, y, size, ink, face, anchor, tracking, content } => {
+                    let (size, tracking) = (size * k, tracking * k);
+                    let advances = advances(content, size, Self::font(face));
+                    let total: f32 = advances.iter().sum::<f32>()
+                        + tracking * advances.len().saturating_sub(1) as f32;
+                    let mut gx = (ox + x) * k
+                        - match anchor {
+                            Anchor::Start => 0.0,
+                            Anchor::Middle => total / 2.0,
+                            Anchor::End => total,
+                        };
+                    for (glyph, advance) in content.chars().zip(advances) {
+                        let mut buf = [0u8; 4];
+                        self.paint_text(
+                            frame,
+                            glyph.encode_utf8(&mut buf),
+                            gx,
+                            (oy + y) * k,
+                            size,
+                            ink,
+                            face,
+                            Anchor::Start,
+                        );
+                        gx += advance + tracking;
+                    }
                 }
                 Prim::Spaced { x, y, size, ink, face, pitch, content } => {
                     for (i, ch) in content.chars().enumerate() {
@@ -600,6 +626,40 @@ impl<M> Scene<M> {
             ..Default::default()
         });
     }
+}
+
+/// The advance of each glyph of `content` at `size` in `font`, measured
+/// through the shaper as prefix widths so kerning inside the run is
+/// kept. What a tracked run is walked with, here and on the login.
+pub(crate) fn advances(content: &str, size: f32, font: iced::Font) -> Vec<f32> {
+    let mut out = Vec::with_capacity(content.chars().count());
+    let mut previous = 0.0;
+    let mut end = 0;
+    for glyph in content.chars() {
+        end += glyph.len_utf8();
+        let width = run_width(&content[..end], size, font);
+        out.push((width - previous).max(0.0));
+        previous = width;
+    }
+    out
+}
+
+fn run_width(content: &str, size: f32, font: iced::Font) -> f32 {
+    use iced::advanced::text::Paragraph as _;
+
+    iced::advanced::graphics::text::Paragraph::with_text(iced::advanced::text::Text {
+        content,
+        bounds: Size::INFINITE,
+        size: size.into(),
+        line_height: iced::widget::text::LineHeight::Relative(1.0),
+        font,
+        align_x: iced::advanced::text::Alignment::Left,
+        align_y: iced::alignment::Vertical::Top,
+        shaping: iced::advanced::text::Shaping::Advanced,
+        wrapping: iced::advanced::text::Wrapping::None,
+    })
+    .min_bounds()
+    .width
 }
 
 /// The sRGB decode, on one channel: what wgpu does to a vertex colour

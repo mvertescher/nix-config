@@ -186,15 +186,12 @@ pub fn style() -> Style {
             // are set against the leading edge, never centred.
             label_left: true,
             // The trace sets the strip at weight 600 and the
-            // annotation under the wire bridge at 400. `fonts.rs`
-            // publishes no semibold face, and asking the shaper for
-            // one resolved it to Bold -- which at 14px on a 25px cell
-            // read as a smear rather than as the tracked face the
-            // material has. Regular was tried and came out visibly
-            // thinner than the design's dark-on-gold tab labels
-            // side by side; Medium is the nearest published weight
-            // below 600 and is what the strip is set in.
-            face: Face::Medium,
+            // annotation under the wire bridge at 400. Until
+            // 2026-09-04 this was Medium: `fonts.rs` published no
+            // semibold face, and asking the shaper for one resolved
+            // it to Bold, which at 14px on a 25px cell read as a
+            // smear. The bar binaries now load the 600 file.
+            face: Face::SemiBold,
             tape_extra: 10.0,
             tape_ticks: false,
 
@@ -1313,7 +1310,8 @@ pub fn mailbox() -> Mailbox {
             from: Some(Run::new(740.0, 297.0, 11.5, Ink::Fg)),
             heading: None,
             sender: None,
-            body: Run::new(738.0, 333.0, 17.0, Ink::Fg),
+            // weight 600, trace line 462
+            body: Run::new(738.0, 333.0, 17.0, Ink::Fg).semibold(),
             line: 21.5,
             para: 43.0,
             paragraphs: &PARAGRAPHS,
@@ -1928,8 +1926,10 @@ const CONTENT: &[Prim] = &[
 //   * the haze's 1.3-degree rotation and the blue's 2 degrees
 //     (`gradientTransform`, :133 and :110): `Prim::Lobe` is axis-aligned.
 //   * `letter-spacing` on every text (1.5 on the header, 2 on LEVEL,
-//     0.4 on the annotations): `Prim::Text` has no tracking. The store
-//     block drops the same attribute; only `S T O R E` earned `Spaced`.
+//     0.4 on the annotations): not yet transcribed. `Prim::Tracked`
+//     exists since 2026-09-04 (kitsch's blades, neomil's module labels
+//     use it); this block and the store still set plain `Prim::Text`,
+//     and only `S T O R E` earned `Spaced`.
 //   * stroke opacity. The onion rings are one hex (`#bd8951` on the
 //     cards and panel, `#a97c48` on the T2 badge) at a per-ring
 //     `stroke-opacity`, and iced's canvas stroke has none, so each ring

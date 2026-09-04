@@ -469,6 +469,8 @@ fn label(frame: &mut canvas::Frame, scale: Scale, at: Run, color: Color, content
         size: size.into(),
         font: if at.bold {
             crate::fonts::FONT_RAJDHANI_BOLD
+        } else if at.semibold {
+            crate::fonts::FONT_RAJDHANI_SEMIBOLD
         } else if at.medium {
             crate::fonts::FONT_RAJDHANI_MEDIUM
         } else {

@@ -26,6 +26,7 @@ fn main() -> iced::Result {
         .title(MailBox::title)
         .font(cp_eras_ui::fonts::RAJDHANI_REGULAR)
         .font(cp_eras_ui::fonts::RAJDHANI_MEDIUM)
+        .font(cp_eras_ui::fonts::RAJDHANI_SEMIBOLD)
         .font(cp_eras_ui::fonts::RAJDHANI_BOLD)
         .font(cp_eras_ui::fonts::ORBITRON_REGULAR)
         .font(cp_eras_ui::fonts::ORBITRON_BOLD)

@@ -1533,6 +1533,8 @@ pub struct Run {
     /// Rajdhani 500. The re-cut traces set most chrome at weight 500 or
     /// 600, which neither `bold` nor the regular face carries.
     pub medium: bool,
+    /// Rajdhani 600; wins over `medium`.
+    pub semibold: bool,
     /// Centre on `x` rather than starting at it.
     pub center: bool,
     /// End at `x` rather than starting at it.
@@ -1548,6 +1550,7 @@ impl Run {
             ink,
             bold: false,
             medium: false,
+            semibold: false,
             center: false,
             right: false,
         }
@@ -1560,6 +1563,11 @@ impl Run {
 
     pub const fn medium(mut self) -> Run {
         self.medium = true;
+        self
+    }
+
+    pub const fn semibold(mut self) -> Run {
+        self.semibold = true;
         self
     }
 
@@ -2051,6 +2059,24 @@ pub enum Prim {
         pitch: f32,
         content: &'static str,
     },
+    /// Letter-spaced text, as SVG's `letter-spacing`: each glyph's own
+    /// advance plus `tracking` between neighbours. Where [`Prim::Spaced`]
+    /// puts glyphs on a fixed pitch, this keeps the face's fitting and
+    /// opens it a little, which is how the traces set nearly every
+    /// label (0.25 on the fine print, 2 on kitsch's blade labels). The
+    /// scene draws it glyph by glyph off measured advances, since
+    /// iced's text has no tracking; `anchor` applies to the whole
+    /// tracked run.
+    Tracked {
+        x: f32,
+        y: f32,
+        size: f32,
+        ink: Ink,
+        face: Face,
+        anchor: Anchor,
+        tracking: f32,
+        content: &'static str,
+    },
     /// Wood-veneer grain over a fill: hairlines on a `pitch`, clipped
     /// to a rectangle.
     ///
@@ -2246,6 +2272,10 @@ pub const fn txt(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -> 
 
 pub const fn txt_mid(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -> Prim {
     Prim::Text { x, y, size, ink, face: Face::Regular, anchor: Anchor::Middle, content }
+}
+/// [`txt_mid`] with `letter-spacing`.
+pub const fn tracked_mid(x: f32, y: f32, size: f32, tracking: f32, ink: Ink, content: &'static str) -> Prim {
+    Prim::Tracked { x, y, size, ink, face: Face::Regular, anchor: Anchor::Middle, tracking, content }
 }
 
 pub const fn txt_end(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -> Prim {

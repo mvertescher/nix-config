@@ -241,19 +241,18 @@ fn ink_of(style: &Style, ink: Ink) -> Color {
 
 /// The font one of the era's bar labels is set in.
 fn era_face(style: &Style, bold: bool) -> iced::Font {
-    use crate::fonts::{FONT_RAJDHANI_BOLD, FONT_RAJDHANI_MEDIUM, FONT_RAJDHANI_REGULAR};
+    use crate::fonts::{
+        FONT_RAJDHANI_BOLD, FONT_RAJDHANI_MEDIUM, FONT_RAJDHANI_REGULAR, FONT_RAJDHANI_SEMIBOLD,
+    };
     if bold {
         return FONT_RAJDHANI_BOLD;
     }
     match style.bar.face {
         Face::Regular => FONT_RAJDHANI_REGULAR,
         Face::Medium => FONT_RAJDHANI_MEDIUM,
-        // `fonts.rs` publishes no semibold `Font`, and naming the
-        // weight and letting the shaper choose resolved it to *Bold*
-        // on both bar binaries -- a whole stop heavy. Medium is the
-        // closest published face; an era wanting a true 600 needs the
-        // constant, which is not this file's to add.
-        Face::SemiBold => FONT_RAJDHANI_MEDIUM,
+        // A true 600 only if the binary loaded `RAJDHANI_SEMIBOLD`;
+        // otherwise the shaper hands back Bold (see `fonts.rs`).
+        Face::SemiBold => FONT_RAJDHANI_SEMIBOLD,
         Face::Bold => FONT_RAJDHANI_BOLD,
     }
 }

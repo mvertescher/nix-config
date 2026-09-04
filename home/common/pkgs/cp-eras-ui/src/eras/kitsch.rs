@@ -1012,7 +1012,7 @@ pub fn mailbox() -> Mailbox {
 // the neutral choice it looks like.
 
 use crate::style::{
-    fill_path, fill_rect, line_path, line_rect, shut_path, txt, txt_bold, txt_end, txt_mid,
+    fill_path, fill_rect, line_path, line_rect, shut_path, txt, txt_bold, txt_end, tracked_mid, txt_mid,
     Group, Prim, Seg,
 };
 
@@ -1516,8 +1516,8 @@ pub const STORE: &[Prim] = &[
 //   the label lies along the card. The card path itself stays
 //   pre-rotated (above) rather than moving into the `Turn`, so the
 //   hit boxes and the `BLADE_*` tables are unchanged. The group's
-//   `letter-spacing="2"` is still dropped: iced text has no tracking
-//   (TODO.md § Design pipeline, renderer limits).
+//   `letter-spacing="2"` is `Prim::Tracked`, drawn glyph by glyph off
+//   measured advances since iced text has no tracking of its own.
 // - `fill-opacity` / `stroke-opacity` on the ghosts are carried as the
 //   alpha of an `Ink::Fixed` colour (`faded`); nothing is pre-mixed.
 //   They composite onto the bloom the way the SVG does because the
@@ -1675,7 +1675,8 @@ const fn shut_and_fill(x: f32, y: f32, segs: &'static [Seg], fill: Ink, stroke: 
 /// box (half extents 81 cos 30 + 25 sin 30 = 82.65 by 81 sin 30 +
 /// 25 cos 30 = 62.15), the label the trace's Rajdhani 19 centred at
 /// baseline +6.5 inside a `Prim::Turn` at the blade's angle `$a`, so
-/// it lies along the card as the trace's `rotate(a)` group has it.
+/// it lies along the card as the trace's `rotate(a)` group has it,
+/// tracked 2 as that group's `letter-spacing` says.
 /// `$on` / `$off` carry the pre-rotated card path for the same angle.
 macro_rules! blade {
     ($i:expr, $cx:expr, $cy:expr, $a:expr, $on:expr, $off:expr, $label:expr) => {
@@ -1688,11 +1689,11 @@ macro_rules! blade {
             h: 124.3,
             on: &[
                 Prim::At { x: $cx, y: $cy, prims: $on },
-                Prim::Turn { x: $cx, y: $cy, angle: $a, prims: &[txt_mid(0.0, 6.5, 19.0, Ink::Fixed(ON_HUB_YELLOW), $label)] },
+                Prim::Turn { x: $cx, y: $cy, angle: $a, prims: &[tracked_mid(0.0, 6.5, 19.0, 2.0, Ink::Fixed(ON_HUB_YELLOW), $label)] },
             ],
             off: &[
                 Prim::At { x: $cx, y: $cy, prims: $off },
-                Prim::Turn { x: $cx, y: $cy, angle: $a, prims: &[txt_mid(0.0, 6.5, 19.0, Ink::Fixed(ON_MINT_BAR), $label)] },
+                Prim::Turn { x: $cx, y: $cy, angle: $a, prims: &[tracked_mid(0.0, 6.5, 19.0, 2.0, Ink::Fixed(ON_MINT_BAR), $label)] },
             ],
         }
     };
@@ -1701,11 +1702,11 @@ macro_rules! blade {
 /// once, centred, in a `Prim::Turn` at 90 so it reads down the card.
 const PRODUCTS_ON: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: BLADE_V_ON },
-    Prim::Turn { x: 0.0, y: 0.0, angle: 90.0, prims: &[txt_mid(0.0, 6.5, 19.0, Ink::Fixed(ON_HUB_YELLOW), "PRODUCTS")] },
+    Prim::Turn { x: 0.0, y: 0.0, angle: 90.0, prims: &[tracked_mid(0.0, 6.5, 19.0, 2.0, Ink::Fixed(ON_HUB_YELLOW), "PRODUCTS")] },
 ];
 const PRODUCTS_OFF: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: BLADE_V_OFF },
-    Prim::Turn { x: 0.0, y: 0.0, angle: 90.0, prims: &[txt_mid(0.0, 6.5, 19.0, Ink::Fixed(ON_MINT_BAR), "PRODUCTS")] },
+    Prim::Turn { x: 0.0, y: 0.0, angle: 90.0, prims: &[tracked_mid(0.0, 6.5, 19.0, 2.0, Ink::Fixed(ON_MINT_BAR), "PRODUCTS")] },
 ];
 macro_rules! blade_v {
     ($i:expr, $cx:expr, $cy:expr) => {

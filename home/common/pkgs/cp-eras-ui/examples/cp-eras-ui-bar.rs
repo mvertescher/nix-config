@@ -619,6 +619,7 @@ fn main() -> Result<(), iced_layershell::Error> {
         fonts: vec![
             cp_eras_ui::fonts::RAJDHANI_REGULAR.into(),
             cp_eras_ui::fonts::RAJDHANI_MEDIUM.into(),
+            cp_eras_ui::fonts::RAJDHANI_SEMIBOLD.into(),
             cp_eras_ui::fonts::RAJDHANI_BOLD.into(),
         ],
         default_font: cp_eras_ui::fonts::FONT_RAJDHANI_REGULAR,
