@@ -25,8 +25,9 @@
 #                   The app log always lands next to it as <out>.log.
 #   --bin PATH      use this binary instead of resolving one by name.
 #   --settle N      seconds to let the app draw before capturing. Default
-#                   8; the note on DEFAULT_SETTLE below says why (it was
-#                   3 until the login washes) when tests/visual.nix waits 15.
+#                   4; the note on DEFAULT_SETTLE below has the measurements
+#                   (and why ICED_PRESENT_MODE is set) when tests/visual.nix
+#                   waits 15.
 #   --keep-log      accepted and ignored: the log is always kept.
 #
 # Examples:
@@ -48,21 +49,34 @@ here=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 crate=$(dirname "$here")
 home_root=$(cd -- "$crate/../../.." && pwd)   # home/, where themes/ lives
 
-# 8s. Was 3, measured 2026-09-02 against the 0.13 binaries (login/neomil,
+# 4s, with ICED_PRESENT_MODE=mailbox exported below. History: 3 until
+# 2026-09-04, measured 2026-09-02 against the 0.13 binaries (login/neomil,
 # bar-window/neokitsch, dashboard/kitsch and store/entropism all
-# byte-identical to visual.nix's 15s capture at 0-8s). That stopped being
-# true when the login conversion added its software-rendered washes
-# (`screens/login.rs` `wash_image`): re-measured 2026-09-04, a 3s capture
-# of *every* era's login lacks the wash entirely -- entropism comes out
-# as flat palette bg, kitsch/neomil/neokitsch differ from the golden over
-# most of the frame -- while 5s, 8s and 15s are byte-identical to the
-# goldens. G2i had been reporting entropism login at 28% FAIL for this
-# reason, not for anything the screen draws. 8 is the measured-good
-# value with the same order-of-magnitude headroom 3 used to have; the
-# sandbox keeps 15 because three wasted minutes across the whole matrix
-# is cheaper than one flaky build. (That the wash takes 3-5s to appear at
-# all is a first-paint finding in its own right; crate TODO.md.)
-DEFAULT_SETTLE=8
+# byte-identical to visual.nix's 15s capture at 0-8s). Then the login
+# conversion added its software-rendered washes (`screens/login.rs`
+# `wash_image`) and a 3s capture of *every* era's login lacked the wash
+# while 5s, 8s and 15s were byte-identical to the goldens; G2i had been
+# reporting entropism login at 28% FAIL for that reason alone, and the
+# default went to 8. The delay was then blamed on the wash's raster cost
+# and filed as a first-paint problem. It is not: instrumented, the app
+# draws exactly two frames -- at ~60ms and ~130ms after weston starts,
+# the wash rasterised in the first in ~19ms, release and debug alike --
+# and never draws again. What took 3-5s was the *second frame reaching
+# the compositor*: under wgpu's default FIFO presentation, lavapipe's
+# swapchain blocks in present() until headless weston (pixman, no vblank)
+# hands back a frame callback, which it does seconds late for an idle
+# surface. What a 1-3.5s capture shows is the first frame, which comes
+# out without the wash for a reason not chased (iced_wgpu uploads an
+# image in the frame that draws it, so it is at most a one-frame gap; a
+# real compositor turns it into a one-vblank flash). Under mailbox (or
+# immediate) presentation the same binary's 2s capture is byte-identical
+# to the goldens on 19 of 20 cells -- the 20th, store/neomil, differs by
+# its kanji glyphs, which the sandbox has no CJK font for and this host
+# does (crate TODO.md); no cell moved between 2s and 8s under either
+# mode. 4 keeps the 2x headroom 3 used to have over the measured value;
+# the sandbox keeps 15 and FIFO because three wasted minutes across the
+# whole matrix is cheaper than one flaky build.
+DEFAULT_SETTLE=4
 
 usage() { sed -n '2,/^set -u/p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//;$d'; }
 
@@ -252,6 +266,10 @@ export VK_ICD_FILENAMES="$icd"
 # Without this wgpu picks GLES and panics in wgpu-hal's gles/egl.rs on a
 # missing EGL display. The ICD alone is not enough.
 export WGPU_BACKEND=vulkan
+# Mailbox presentation, so present() never blocks on a frame callback the
+# headless compositor is slow to send; the DEFAULT_SETTLE note has the
+# measurement. Pixel content is unaffected -- it is when the frame lands.
+export ICED_PRESENT_MODE=mailbox
 [ -n "$app_ld_path" ] && export LD_LIBRARY_PATH="$app_ld_path${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 log="$run/app.log"

@@ -287,15 +287,43 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
     to § "Bar restyle": tray diamonds are purple/orange in the app
     where `bar.svg` has gold/black, and the popup panels draw more
     echo rings than the design. Left FAIL; not a gate rule to add.
-- [ ] **Login first paint takes 3-5s.** Fallout of the above: the
-  wash (`login.rs` `wash_image`, a software-rendered 1600x900 radial)
-  is absent from the first frames and appears seconds later. On a real
-  session that is a visible flash from flat ground to washed ground.
-  Either precompute it off the render thread and show it on frame 1,
-  or draw it as canvas gradients (the `login.rs:445` note says why
-  that was rejected — iced has no radial gradient — so precompute is
-  the likelier answer). Measure the delay first; `render.sh --settle`
-  at 3, 4, 5 brackets it.
+- [x] **Login first paint takes 3-5s — it does not; the harness was
+  presenting late.** Filed 2026-09-04 as fallout of the above: the wash
+  (`login.rs` `wash_image`, a software-rendered 1600x900 radial) was
+  absent from a 3s capture and present from 4s, so the item blamed the
+  raster cost and proposed precomputing it off the render thread.
+  Measured the same day and the premise is wrong. Release and debug
+  captures are byte-identical at every settle (so not CPU cost), and
+  `eprintln!` probes in `Backdrop::draw`/`Art::draw` show the app draws
+  exactly two frames — at ~60ms and ~130ms after weston starts, the
+  wash rasterised in the first in ~19ms — and never draws again. The
+  3-5s was the second frame *reaching the compositor*: wgpu's default
+  FIFO presentation blocks `present()` until headless weston (pixman,
+  no vblank) returns a frame callback, which it does seconds late for
+  an idle surface. With `ICED_PRESENT_MODE=mailbox` (or `immediate`,
+  `iced_wgpu` `settings.rs`) a 2s capture of the same binary is
+  byte-identical to the goldens on 19 of 20 cells (the 20th is the
+  kanji item below), and no cell moves between 2s and 8s under either
+  mode. `render.sh` now exports mailbox and `DEFAULT_SETTLE` is back
+  down to 4 (~8s per G2i cell instead of ~13); the sandbox keeps FIFO
+  and 15s, unchanged. Still open and not chased: *why* frame 1 lacks
+  the wash when `iced_wgpu` uploads an image in the frame that draws
+  it — at most a one-vblank flash on a real compositor, which is the
+  whole of what this item was about. Do not precompute the wash.
+- [ ] **store/neomil golden has tofu where the host draws kanji.**
+  `tests/golden/store-neomil-1600x900.png` renders `益荒男`
+  (`eras/neomil.rs` `Prim::Text` at 192,104) as three boxes: the
+  sandbox has no CJK font, and `render.sh` on this host finds one, so
+  it is the only cell whose capture is not byte-identical to its
+  golden (~350 pixels, all in that word's box at 194,76 104x35). The
+  trace (§ Gate fails, "Kanji is real Noto CJK text") and G1i are
+  right; the golden is the lie. The UI faces are compiled in
+  (`src/fonts.rs` `include_bytes!`, staged by `default.nix` `preBuild`),
+  so the fix is to bundle a CJK face the same way — a Noto Sans CJK
+  subset, since the full OTF is ~16MB per weight — and load it beside
+  the others, then re-take that one golden. Falling back to whatever
+  fontconfig finds is what makes this cell host-dependent today. Until
+  then the neomil store's G2i number carries the tofu.
 - [ ] **Gate-side blending.** The alpha item below and the kitsch
   mailbox hole-fill (§ Trace improvements, "do not fix") are both cases
   where G2i measures rsvg-vs-wgpu rather than design-vs-implementation.

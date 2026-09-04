@@ -139,14 +139,17 @@ scripts/render.sh --era none  --bin /path/to/cp-eras-ui-login ...      # compile
 ```
 
 It is what G2i captures the implementation with, and it takes about
-fifteen seconds against a warm nix store (an 8s settle: the login washes
-take 3-5s to appear, and a 3s capture used to miss them — `render.sh`'s
-`DEFAULT_SETTLE` note has the measurement). It does not build anything: use
-`nix-shell shell.nix --run 'cargo build --bin <name>'` first, or pass
-`--bin`. The capture is faithful — `cp-eras-ui-login` in neomil comes out
-byte-identical to `tests/golden/login-neomil-1600x900.png` — but it is
-not hermetic, so `scripts/run_test_matrix.sh` remains what gates a
-change.
+eight seconds against a warm nix store: a 4s settle, with
+`ICED_PRESENT_MODE=mailbox` so the app's second frame is not held back
+by the headless compositor's frame callback — under the default FIFO
+presentation that frame took 3-5s to land and a 3s capture missed the
+login washes, which was misread for a day as a first-paint cost.
+`render.sh`'s `DEFAULT_SETTLE` note has the measurements. It does not
+build anything: use `nix-shell shell.nix --run 'cargo build --bin
+<name>'` first, or pass `--bin`. The capture is faithful — 19 of the 20
+golden cells come out byte-identical to `tests/golden/` — but it is not
+hermetic (the 20th, store/neomil, draws kanji the sandbox has no font
+for), so `scripts/run_test_matrix.sh` remains what gates a change.
 
 `scripts/triptych.sh [era [screen]]` stacks the three stages of a screen
 into one image — source photo, trace render, `render.sh` capture, top to
