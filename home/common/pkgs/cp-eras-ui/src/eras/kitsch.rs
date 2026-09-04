@@ -625,8 +625,12 @@ pub const ACCESS: Access = Access {
 // --- mailbox ---
 //
 // `docs/kitsch/mailbox-trace.svg`, read at its 1600x900 frame. The rose
-// bloom and the grey-green left wash are `Ground::Bloom`'s business and
-// are not repeated here; everything else in the trace is below.
+// bloom and the grey-green left wash are `MAIL_GROUND`, from this
+// trace's own defs (:146-147); until 2026-09-04 this header said they
+// were `Ground::Bloom`'s business, and that generic disc out of the top
+// right left a flat maroon `47 15 24` over the whole frame where the
+// trace is page black by y 450 -- `triptych.sh --diff` lit every pixel.
+// Everything else in the trace is below.
 //
 // Two shapes the era's `Corner::Round { radius: 16 }` cannot say, both
 // carried as per-piece [`Trim`]s or as polylines: the USER and
@@ -645,6 +649,29 @@ const fn text(x: f32, y: f32, size: f32, ink: Ink, s: &'static str) -> Piece {
         text: s,
     })
 }
+
+/// The page, `<rect fill="#0e0d0c">` (:145): a step darker in B than
+/// the store's `PAGE`, and what `#bloom` fades to.
+const MAIL_PAGE: iced::Color = rgb(0x0e0d0c);
+/// `#bloom` (:2-8): `cx=0.5 cy=-0.25 r=0.9` over the 1600x620 rect at
+/// :146, so centre (800,-155), rx 1440, ry 558 -- the store's `ROSE`
+/// stops, but a smaller radius and this page's black at the rim.
+const MAIL_ROSE: &[(f32, iced::Color)] = &[
+    (0.00, rgb(0xb05064)),
+    (0.35, rgb(0x933b53)),
+    (0.60, rgb(0x5c2236)),
+    (0.85, rgb(0x1e0f14)),
+    (1.00, MAIL_PAGE),
+];
+/// The ground, composited: page, bloom, and `#leftwash` (:9-13, :147),
+/// which is the store's `MARGIN` lobe to the number -- `cx=0 cy=0.5
+/// r=0.5` over the 600x780 rect at (0,60).
+const MAIL_GROUND: &[Prim] = &[
+    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(MAIL_PAGE)),
+    Prim::Lobe { x: 800.0, y: -155.0, rx: 1440.0, ry: 558.0, stops: MAIL_ROSE },
+    Prim::Lobe { x: 0.0, y: 450.0, rx: 300.0, ry: 390.0, stops: MARGIN },
+];
+const MAIL_BACKDROP: &[Prim] = &[Prim::Soft { prims: MAIL_GROUND }];
 
 /// The in-fiction micro-print: the re-cut trace measures it at size 8
 /// weight 600 in the bright mint, not the dim teal an earlier pass set
@@ -886,7 +913,7 @@ static PARAGRAPHS: [&[&str]; 3] = [
 
 pub fn mailbox() -> Mailbox {
     Mailbox {
-        // this era's mailbox is content with its `Ground`
+        backdrop: MAIL_BACKDROP,
         haze: &[],
         chrome: &CHROME,
         list: MailList {

@@ -378,10 +378,12 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   blue lobe out leftward, 0 at x=0 to full at x=640) and the 1.3°/2°
   `rotate` on both gradients. The dashboard trace has the same mask
   and rotations. Since G2i spends ~5 of its 8 clusters on a haze, this
-  is where the neokitsch store's 82% likely sits. The mask wants a new
-  prim (a horizontal alpha ramp multiplying what a group has drawn),
-  which `soft.rs` can do and the canvas cannot; the lobe is a table
-  line; the rotations are `Turn` around each lobe.
+  is where the neokitsch store's 82% likely sits. The mask is
+  `Prim::Masked` over a `Prim::Ramp` since 2026-09-04 (the four-grounds
+  item below), so this is now all table work: `Masked { [Lobe BLUE],
+  [Ramp #hazebluefade] }` on both screens, the `#hazelobe` line on the
+  store, and `Turn { 825,-120, 1.3 }` / `Turn { 900,-120, 2 }` around
+  each lobe with the lobe at the origin.
 - [x] `scripts/triptych.sh --diff` — done 2026-09-04: an optional
   fourth row, trace vs iced, so the review view points at the
   difference rather than leaving it to the eye. Not `visual_diff.py`,
@@ -399,7 +401,8 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   dominates the percentage, so read the picture, not the number.
   Full run with `--diff`: 16 cells in 3m41s, all of it render.sh.
   First run's catch is the grounds item below.
-- [ ] **Four grounds are drawn from memory, not from their trace.**
+- [x] **Four grounds are drawn from memory, not from their trace.**
+  Done 2026-09-04 — see the **Done** note at the foot of this item.
   `--diff` lit the whole frame on the kitsch mailbox (7.8% off by >8),
   neomil mailbox (5.4%), entropism store (1.6%) and neomil store, and
   the G2i captures say why (design vs implementation, sRGB):
@@ -440,6 +443,67 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   Not chased under the `--diff` item: it is transcription work on four
   cells, and the dashboard/login cells are dark on the same row, so
   the row is telling the truth.
+  **Done 2026-09-04.** Two prims, both composited-only (`paint` skips
+  them; `soft_only_prims_stay_soft` keeps them inside `Soft` groups):
+  `Prim::Ramp`, a rect under the trace's own multi-stop
+  `linearGradient` (`from`/`to` in bbox fractions), and `Prim::Masked
+  { prims, mask }`, SVG's luminance mask — `0.2125R + 0.7154G +
+  0.0721B` times alpha on the *encoded* values, which is what rsvg
+  does (measured on a test document: `#808080` passes 128, pure red
+  54, pure green 183, half-alpha white 128; no linearisation), and
+  `a_mask_passes_its_luminance_as_rsvg_measures_it` pins those
+  numbers. `Mailbox` gained `backdrop: &[Prim]`, a leading `Soft`
+  group `mail.rs` stacks under the sheet through `scene::Backdrop`.
+  Then per cell, from the traces' defs:
+  - kitsch mailbox: `MAIL_GROUND` — page `#0e0d0c`, `#bloom` as a lobe
+    at (800,−155) rx 1440 ry 558 (r 0.9 of the 1600x620 rect; not the
+    store's 0.95), `#leftwash` = the store's `MARGIN` lobe. Column
+    x=800: `153 63 87` / `38 18 25` / `14 13 12` / `14 13 12` at y 0 /
+    300 / 450 / 650, design and implementation alike (the item's
+    numbers above were the before). 7.8% → **1.5%** off by >8; what is
+    left lit is the selected row's fill and the four chevron fills,
+    solid — a colour miss on those, not the ground.
+  - neomil: `HUB_GLOW` = `Masked { Ramp #glowh (10 stops, horizontal),
+    Ramp #glowv (9 stops, vertical) }` and `HUB_VIGNETTE`, shared by
+    all three neomil screens since the three traces define them
+    identically. The **dashboard** dropped its 640-strip compile-time
+    rasteriser (`glow()`, three linear pieces for the nine mask stops)
+    for the construct itself: G2i 96 → **99**, `--diff` 0.3%. The
+    **mailbox** stacks page, glow, `#wash` (3 stops) under `#washmask`
+    (black → white by 0.45), vignette; (50,150) `31 31 34` exact,
+    5.4% → 2.0% — and since the panel and every row were lit solid,
+    two content fixes rode along: the panel is filled `#1c0608` (:324;
+    was `frame_fill: None`) and the rows `#280c0d` (:262; were
+    `Ink::Border`, `94 17 18` against `33 8 9`) → **0.9%**. The
+    **store**: page, glow, `#wash` lobe (288,450) rx 720 ry 405,
+    `#blackv` ramp on the 540x520 rect at (1060,380), vignette;
+    (50,150) `26 22 24` exact, → **0.6%**.
+  - entropism store: `#lift` lobe at (720,360) rx 1280 ry 720 over its
+    pad colour `#100b03`; (50,50) `21 18 7` exact, 1.6% → **1.3%**.
+  Goldens moved: mailbox.kitsch, mailbox.neomil, store.entropism,
+  store.neomil, dashboard.neomil. G2i: entropism store 100 → 100,
+  neomil dashboard 96 → 99, and three went *down* — kitsch mailbox
+  67 → 61, neomil mailbox 95 → 89, neomil store 84 → 80 — with the
+  ground palette now matching the design cluster for cluster (kitsch:
+  `#0f0d0d 55.5%` vs `#0f0d0d 55.6%`, all five within a level). The
+  drops are shape-inventory churn: the extractor's segmentation
+  thresholds moved with the ground and it now merges the kitsch
+  badges at (1336,190)+(1395,190) into one 118-wide rect, and splits
+  the neomil rows differently. The pixels say the grounds are right;
+  the gate is measuring its own thresholds here. Follow-ups the diff
+  rows point at, none chased:
+  - neomil mailbox's four action buttons: the trace fills the idle ones
+    `#1a0607` (:353) and `MailButtons` has no idle fill field — a
+    struct change across four eras, so left.
+  - kitsch mailbox's selected-row fill and chevron fills read solid in
+    the diff: colour, not placement.
+  - **translucent fills over a composited ground are rebased against
+    the flat `palette.bg`** (`blend_over`), so where the ground now
+    varies they drift: entropism store's rifle silhouettes (720,360)
+    design `168 212 162` vs `156 183 149`, neomil store's `c2upper`
+    wash. Those live in `Plate`s, which `Soft` cannot hold; the fix
+    is either a `Soft` group per plate state or `blend_over` taking
+    the composited ground's pixel. Measure before choosing.
 - [x] **`scene.rs` alpha blending** — done 2026-09-04, alpha converted at
   paint time. Translucent `Ink::Fixed` alphas are composited in linear
   space by wgpu but the traces were designed in sRGB (rsvg), so every
@@ -509,9 +573,9 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   - Still open, small: no stroked text (neomil's outlined `next`
     logotype is drawn filled); `Wide` is start-anchored only (centred
     stretched glyphs are placed by hand at `cx - run/2`). Gradient
-    masks (neokitsch's `#bluemask` left-fade; the blue lobe is drawn
-    unmasked) belong to the "four grounds" item above: `Prim::Soft`
-    needs luminance masks for that too.
+    masks are `Prim::Masked` since later the same day (the "four
+    grounds" item above); neokitsch's `#bluemask` is now a table line
+    under the neokitsch backdrops item.
 - [ ] Follow-ups the era agents flagged and did not touch: neomil
   `components.svg:1113` calls the maker's mark "an M of 89x39" but the
   trace path (`dashboard-trace.svg:242`) is 46 wide — the 89 is the bar

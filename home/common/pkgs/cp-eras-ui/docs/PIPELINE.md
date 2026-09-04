@@ -124,7 +124,13 @@ source, and which are originals.
   carries the trace's own pixels (that screen: 45% → 68%). A new
   translucent stack that scores low is almost certainly missing its
   `Soft`, and a gate-side "linear-light design" mode would not help —
-  rsvg has no such mode, and the drift is per channel.
+  rsvg has no such mode, and the drift is per channel. The same
+  compositor is where the traces' gradient defs the canvas has no
+  shape for go: a multi-stop `linearGradient` is `Prim::Ramp`, a
+  luminance `mask` is `Prim::Masked` (rsvg's arithmetic, on the
+  encoded values), both inside a `Soft` group. A ground that
+  `triptych.sh --diff` lights edge to edge is one of these drawn from
+  memory instead.
 - **G2 — svg → iced.** The implementation matches the reference:
   rasterise the SVG (`rsvg-convert`) and
   `scripts/compare_ref.py <svg render> tests/golden/<screen>-<era>-...png`.

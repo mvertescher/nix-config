@@ -568,6 +568,11 @@ impl<M> Scene<M> {
                 // Painted by the `Backdrop` canvas underneath; see
                 // `Scene::view`.
                 Prim::Soft { .. } => {}
+                // Composited only: a multi-stop ramp and a luminance
+                // mask have no canvas drawing, and
+                // `soft_only_prims_stay_soft` keeps them inside a
+                // `Soft` group where `Backdrop` finds them.
+                Prim::Ramp { .. } | Prim::Masked { .. } => {}
             }
         }
     }
@@ -833,6 +838,36 @@ mod tests {
             let style = era.style();
             check(style.dashboard, &format!("{era:?} dashboard"));
             check(style.store, &format!("{era:?} store"));
+            check(style.mailbox.backdrop, &format!("{era:?} mailbox backdrop"));
+        }
+    }
+
+    /// `Prim::Ramp` and `Prim::Masked` have no canvas drawing (`paint`
+    /// skips them), so one outside a `Soft` group would vanish without
+    /// a word.
+    #[test]
+    fn soft_only_prims_stay_soft() {
+        fn check(prims: &[Prim], where_: &str) {
+            for prim in prims {
+                match *prim {
+                    Prim::Ramp { .. } | Prim::Masked { .. } => {
+                        panic!("{where_}: a composited-only prim outside a Soft group")
+                    }
+                    Prim::At { prims, .. } | Prim::Turn { prims, .. } => check(prims, where_),
+                    Prim::Plate { on, off, .. } => {
+                        check(on, where_);
+                        check(off, where_);
+                    }
+                    Prim::Soft { .. } => {}
+                    _ => {}
+                }
+            }
+        }
+        for era in crate::style::Era::ALL {
+            let style = era.style();
+            check(style.dashboard, &format!("{era:?} dashboard"));
+            check(style.store, &format!("{era:?} store"));
+            check(style.mailbox.backdrop, &format!("{era:?} mailbox backdrop"));
         }
     }
 
@@ -857,7 +892,11 @@ mod tests {
         }
         for era in crate::style::Era::ALL {
             let style = era.style();
-            for (prims, screen) in [(style.dashboard, "dashboard"), (style.store, "store")] {
+            for (prims, screen) in [
+                (style.dashboard, "dashboard"),
+                (style.store, "store"),
+                (style.mailbox.backdrop, "mailbox backdrop"),
+            ] {
                 let where_ = format!("{era:?} {screen}");
                 let lead = leading_soft(prims).len();
                 assert!(

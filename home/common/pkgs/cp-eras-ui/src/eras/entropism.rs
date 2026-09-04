@@ -554,6 +554,7 @@ static PARAGRAPHS: [&[&str]; 3] = [
 pub fn mailbox() -> Mailbox {
     Mailbox {
         // this era's mailbox is content with its `Ground`
+        backdrop: &[],
         haze: &[],
         chrome: &CHROME,
         list: MailList {
@@ -881,7 +882,25 @@ const SHELF_1: &[Prim] = shelf!(1);
 const SHELF_2: &[Prim] = shelf!(2);
 const SHELF_3: &[Prim] = shelf!(3);
 
+/// The store's `#lift` (:2-6), `cx 0.45 cy 0.4 r 0.8` of the page:
+/// centre (720,360), radii (1280,720), padded past the rim with its
+/// last stop. Not the dashboard's `LIFT` (cy 0.45, r 0.75, its own
+/// hex): each trace measured its own photo. Until 2026-09-04 the store
+/// drew no lift at all -- flat `17 12 7` where the design runs
+/// `22 20 9` .. `28 27 16`, 5-11 levels under it everywhere.
+const STORE_LIFT: &[(f32, iced::Color)] = &[
+    (0.0, rgb(0x1e1d12)),
+    (0.7, rgb(0x151207)),
+    (1.0, rgb(0x100b03)),
+];
+const STORE_GROUND: &[Prim] = &[
+    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(rgb(0x100b03))),
+    Prim::Lobe { x: 720.0, y: 360.0, rx: 1280.0, ry: 720.0, stops: STORE_LIFT },
+];
+
 pub const STORE: &[Prim] = &[
+    // ground (:168), composited
+    Prim::Soft { prims: STORE_GROUND },
     // header strip, y 43..69, dividers at x 467 and 1357
     line_rect(49.0, 43.0, 1502.0, 26.0, Ink::Border, 1.5),
     vline(467.0, 43.0, 69.0, Ink::Border, 1.5),

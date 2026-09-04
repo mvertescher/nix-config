@@ -51,6 +51,7 @@ use crate::style::{
     Style, Ticket, Trim, Lobe, BL, BR, TL, TR,
 };
 use crate::widgets::surface::{outline, Corners, Cut};
+use crate::screens::scene::Backdrop;
 use crate::widgets::ground;
 use iced::widget::{canvas, stack, Action};
 use iced::{mouse, Color, Element, Event, Length, Point, Rectangle, Renderer, Size, Theme, Vector};
@@ -119,9 +120,16 @@ impl MailBox {
         .height(Length::Fill);
 
         // An era whose mailbox trace measures its own ground draws it
-        // itself; the rest take the era's `Ground`. Stacking both would
+        // itself -- composited from `backdrop`, or on the sheet from
+        // `haze`; the rest take the era's `Ground`. Stacking two would
         // double the bloom.
-        if self.style.mailbox.haze.is_empty() {
+        let m = &self.style.mailbox;
+        if !m.backdrop.is_empty() {
+            let backdrop = canvas(Backdrop { style: self.style, prims: m.backdrop })
+                .width(Length::Fill)
+                .height(Length::Fill);
+            stack![backdrop, sheet].into()
+        } else if m.haze.is_empty() {
             stack![ground(&self.style), sheet].into()
         } else {
             sheet.into()

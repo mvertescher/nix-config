@@ -1900,9 +1900,21 @@ pub struct MailBadges {
 /// The whole of an era's mailbox, as data.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Mailbox {
+    /// The ground this screen's own trace draws, as the leading
+    /// [`Prim::Soft`] group(s) a store or dashboard table would open
+    /// with, composited under the sheet by `scene::Backdrop`. Empty for
+    /// an era whose mailbox is content with [`Ground`] or with `haze`.
+    ///
+    /// Added 2026-09-04 when `triptych.sh --diff` lit the whole frame
+    /// on the kitsch and neomil mailboxes: both had been taking the
+    /// era's generic `Ground` while their traces open with their own
+    /// gradient defs (`#bloom` + `#leftwash`, `#glowh` under
+    /// `#glowmask` + `#wash` under `#washmask` + `#vignette`).
+    pub backdrop: &'static [Prim],
     /// The ground washes this screen's own trace measures, drawn under
-    /// everything. Empty for an era whose mailbox is content with
-    /// [`Ground`].
+    /// everything on the canvas as concentric bands. Empty for an era
+    /// whose mailbox is content with [`Ground`]. Predates `backdrop`;
+    /// neokitsch still uses it.
     pub haze: &'static [Lobe],
     /// Header, footer, section letters, micro-print and line art: every
     /// era-owned element that is not one of the four regions below.
@@ -2229,6 +2241,39 @@ pub enum Prim {
     /// leaves uncovered is blended linear like anything else.
     Soft {
         prims: &'static [Prim],
+    },
+    /// A rect filled with the trace's own `linearGradient`: the axis
+    /// `from` -> `to` in bounding-box fractions (SVG's `x1 y1 x2 y2`)
+    /// and the whole stop table. [`Prim::Wash`] is the two-stop
+    /// vertical case the canvas can draw; neomil's `#glowh` has ten
+    /// stops across the frame and its masks' luminance ramps nine
+    /// down it, past the eight iced's gradient holds.
+    ///
+    /// Composited only: it lives inside a [`Prim::Soft`] group, and
+    /// `soft_only_prims_stay_soft` in `scene.rs` keeps it there.
+    Ramp {
+        x: f32,
+        y: f32,
+        w: f32,
+        h: f32,
+        from: (f32, f32),
+        to: (f32, f32),
+        /// `(offset, colour)`, in gradient order.
+        stops: &'static [(f32, Color)],
+    },
+    /// `prims` drawn through an SVG luminance mask: each pixel's alpha
+    /// is multiplied by the luminance of what `mask` draws there,
+    /// `0.2125 R + 0.7154 G + 0.0721 B` times its alpha on the encoded
+    /// values, which is what rsvg does with `mask="url(#m)"` (measured:
+    /// `#808080` passes 128, pure red 54, pure green 183). Nothing the
+    /// mask leaves uncovered shows. Neomil's cold glow is a horizontal
+    /// gradient under a vertical one; neokitsch's blue lobe fades out
+    /// leftward; no un-masked prim says either.
+    ///
+    /// Composited only, like [`Prim::Ramp`].
+    Masked {
+        prims: &'static [Prim],
+        mask: &'static [Prim],
     },
 }
 

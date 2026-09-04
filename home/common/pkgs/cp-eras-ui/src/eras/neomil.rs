@@ -536,11 +536,15 @@ pub const ACCESS: Access = Access {
 // --- mailbox ---
 //
 // `docs/neomil/mailbox-trace.svg`, read at its 1600x900 frame. The
-// photograph's residue is left out: the cold-blue hub glow, the warm
-// left-margin vignette and the per-row fill gradient (#280c0d at the
-// top of the list fading to #1d0708 at its foot) are how the material
-// photographs, not geometry, so the ground stays `Ground::Flat` and
-// every row takes one fill.
+// ground is the trace's (:145-148): the cold-blue hub glow, a warm
+// near-black wash under the list and panel drawn through its own
+// vertical mask, and the left-margin vignette, as `MAIL_BACKDROP`.
+// Until 2026-09-04 this header called those "the photograph's residue
+// ... not geometry" and kept `Ground::Flat`; but the trace draws them,
+// G2i scores the trace, and `triptych.sh --diff` lit the whole frame
+// (`5 3 4` everywhere the design reads `31 31 34` at (50,150)). The
+// per-row fill gradient (#280c0d at the top of the list fading to
+// #1d0708 at its foot) is still left out: every row takes one fill.
 //
 // Two things the trace draws that are not here, both noted in the
 // conversion report: the rotated BETTERLIFE TEC / PETROCHEM maker's
@@ -551,6 +555,47 @@ use crate::style::{
     Frame, Icons, Mail, MailBadges, MailButtons, MailList, MailPanel, Mailbox, Note,
     Piece, RowDecor, Run, Trim, FromAt, BL, BR, TR,
 };
+
+/// `#wash` (:32-39): "the warm near-black wash under the list and
+/// panel, sampled at y 500..850: #120205 left margin, #0d0406..#040202
+/// mid (fading downward), #020202 right of x~1460" -- a horizontal
+/// gradient across the frame ...
+const MAIL_WASH: &[(f32, iced::Color)] = &[
+    (0.00, rgb(0x110305)),
+    (0.40, rgb(0x0b0304)),
+    (0.90, rgb(0x020202)),
+];
+/// ... drawn through `#washmask` (:40-44), clear at the top and solid
+/// from y 405 down.
+const MAIL_WASH_V: &[(f32, iced::Color)] = &[(0.00, rgb(0x000000)), (0.45, rgb(0xffffff))];
+const MAIL_WASH_PRIMS: &[Prim] = &[Prim::Ramp {
+    x: 0.0,
+    y: 0.0,
+    w: 1600.0,
+    h: 900.0,
+    from: (0.0, 0.0),
+    to: (1.0, 0.0),
+    stops: MAIL_WASH,
+}];
+const MAIL_WASH_MASK: &[Prim] = &[Prim::Ramp {
+    x: 0.0,
+    y: 0.0,
+    w: 1600.0,
+    h: 900.0,
+    from: (0.0, 0.0),
+    to: (0.0, 1.0),
+    stops: MAIL_WASH_V,
+}];
+/// The ground as the trace stacks it (:145-148): page `#070304` (the
+/// dashboard's `HUB_GROUND`), the masked glow, the masked wash, the
+/// vignette.
+const MAIL_GROUND: &[Prim] = &[
+    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(HUB_GROUND)),
+    HUB_GLOW,
+    Prim::Masked { prims: MAIL_WASH_PRIMS, mask: MAIL_WASH_MASK },
+    HUB_VIGNETTE,
+];
+const MAIL_BACKDROP: &[Prim] = &[Prim::Soft { prims: MAIL_GROUND }];
 
 const fn tape(x: f32, y: f32, w: f32) -> Piece {
     Piece::Box {
@@ -764,7 +809,7 @@ static PARAGRAPHS: [&[&str]; 3] = [
 
 pub fn mailbox() -> Mailbox {
     Mailbox {
-        // this era's mailbox is content with its `Ground`
+        backdrop: MAIL_BACKDROP,
         haze: &[],
         chrome: &CHROME,
         list: MailList {
@@ -779,7 +824,11 @@ pub fn mailbox() -> Mailbox {
             rows: &ROWS,
             selected: 0,
             decor: RowDecor::Boxed,
-            row_fill: Some(Ink::Border),
+            // `#280c0d` (:262), the flat fill of rows 2-4; rows 5-8 fade
+            // to `#1d0708` and take this one too. Was `Ink::Border`
+            // (`#60181a`) until 2026-09-04 -- `94 17 18` where the
+            // trace has `33 8 9`, and the whole list lit in `--diff`.
+            row_fill: Some(Ink::Fixed(rgb(0x280c0d))),
             row_stroke: Some(Ink::Dim),
             row_width: 1.5,
             row_trim: Trim::chamfer(BL, 12.0),
@@ -820,7 +869,8 @@ pub fn mailbox() -> Mailbox {
         },
         panel: MailPanel {
             frame: Some(Frame::new(729.0, 312.0, 721.0, 387.0)),
-            frame_fill: None,
+            // `#1c0608` (:324); unfilled until 2026-09-04
+            frame_fill: Some(Ink::Fixed(rgb(0x1c0608))),
             frame_stroke: Some(Ink::Dim),
             frame_width: 1.2,
             frame_trim: Trim::chamfer(TR | BR, 8.0),
@@ -921,8 +971,104 @@ pub const WASH_FOOT: iced::Color = rgb(0x2c0c10);
 /// than ink -- but ground the extractor's palette split depends on, so
 /// the scene draws it rather than leaving the page flat.
 pub const GROUND: iced::Color = rgb(0x0b0405);
-pub const GLOW_TOP: iced::Color = rgb(0x1e2a4e);
-pub const WARM: iced::Color = rgb(0x1a0c0e);
+
+// The cold-blue glow every neomil screen after the login opens with,
+// as the three traces (dashboard :75-101, mailbox and store :2-27)
+// define it, to the stop: `#glowh`, a ten-stop horizontal gradient
+// across the frame, drawn through `#glowmask`, a nine-stop luminance
+// ramp down it -- opaque to y 225, gone by 540. Until 2026-09-04 the
+// dashboard rasterised the pair at compile time into 640 strips and
+// the mailbox and store drew a flat ground and a two-stop `Wash`;
+// `Prim::Masked` over two `Prim::Ramp`s is the construct itself,
+// composited by `soft.rs`, so all three now share these.
+
+/// `#glowh`: the sampled hex, offsets as fractions of the frame width.
+pub const GLOW_H: &[(f32, iced::Color)] = &[
+    (0.000, rgb(0x282824)),
+    (0.063, rgb(0x273743)),
+    (0.188, rgb(0x263953)),
+    (0.313, rgb(0x202b56)),
+    (0.438, rgb(0x1b2253)),
+    (0.563, rgb(0x171f51)),
+    (0.688, rgb(0x121f51)),
+    (0.813, rgb(0x0d1f4e)),
+    (0.938, rgb(0x082447)),
+    (1.000, rgb(0x080b0e)),
+];
+/// `#glowv`, the mask's luminance down the frame ("stops read off the
+/// source's blue channel at x=1000, normalised" -- the trace).
+pub const GLOW_V: &[(f32, iced::Color)] = &[
+    (0.00, rgb(0xffffff)),
+    (0.25, rgb(0xffffff)),
+    (0.30, rgb(0xe3e3e3)),
+    (0.35, rgb(0xbababa)),
+    (0.40, rgb(0x8c8c8c)),
+    (0.45, rgb(0x545454)),
+    (0.50, rgb(0x2b2b2b)),
+    (0.55, rgb(0x121212)),
+    (0.60, rgb(0x000000)),
+];
+const GLOW_RECT: &[Prim] = &[Prim::Ramp {
+    x: 0.0,
+    y: 0.0,
+    w: 1600.0,
+    h: 900.0,
+    from: (0.0, 0.0),
+    to: (1.0, 0.0),
+    stops: GLOW_H,
+}];
+const GLOW_MASK: &[Prim] = &[Prim::Ramp {
+    x: 0.0,
+    y: 0.0,
+    w: 1600.0,
+    h: 900.0,
+    from: (0.0, 0.0),
+    to: (0.0, 1.0),
+    stops: GLOW_V,
+}];
+/// `<rect width=1600 height=900 fill="url(#glowh)" mask="url(#glowmask)">`.
+pub const HUB_GLOW: Prim = Prim::Masked { prims: GLOW_RECT, mask: GLOW_MASK };
+
+/// The warm near-black vignette down the left margin, `radialGradient
+/// id="vignette"`, `cx 0.02 cy 0.60 r 0.34` of the page: one colour
+/// from opaque to clear. The same on all three screens.
+const VIGNETTE: &[(f32, iced::Color)] = &[
+    (0.0, rgb(0x241012)),
+    (1.0, iced::Color { a: 0.0, ..rgb(0x241012) }),
+];
+pub const HUB_VIGNETTE: Prim = Prim::Lobe { x: 32.0, y: 540.0, rx: 544.0, ry: 306.0, stops: VIGNETTE };
+
+/// `#wash` on the store (:34-38): the warm wash under the left half,
+/// `cx 0.18 cy 0.5 r 0.45` of the page -- centre (288,450), radii
+/// (720,405) -- `#1a0c0e` fading to a clear `#120608`.
+const STORE_WASH: &[(f32, iced::Color)] = &[
+    (0.0, rgb(0x1a0c0e)),
+    (0.7, rgb(0x120608)),
+    (1.0, iced::Color { a: 0.0, ..rgb(0x120608) }),
+];
+/// `#blackv` (:40-43): the pure-black field right of the cards below
+/// the glow, clear at the top of its 540x520 rect at (1060,380) and
+/// solid a quarter of the way down.
+const STORE_BLACK: &[(f32, iced::Color)] = &[
+    (0.00, iced::Color { a: 0.0, ..rgb(0x020203) }),
+    (0.25, rgb(0x020203)),
+];
+/// The store's ground as its trace stacks it (:225-229).
+const STORE_GROUND: &[Prim] = &[
+    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(GROUND)),
+    HUB_GLOW,
+    Prim::Lobe { x: 288.0, y: 450.0, rx: 720.0, ry: 405.0, stops: STORE_WASH },
+    Prim::Ramp {
+        x: 1060.0,
+        y: 380.0,
+        w: 540.0,
+        h: 520.0,
+        from: (0.0, 0.0),
+        to: (0.0, 1.0),
+        stops: STORE_BLACK,
+    },
+    HUB_VIGNETTE,
+];
 /// The two tones the gun drawing takes on the selected card, and the
 /// two dark faces it takes on the others.
 pub const GUN_LIT: iced::Color = rgb(0xb02c30);
@@ -1344,11 +1490,10 @@ const SLANT: &[Seg] = &[
 const ARROW: &[Seg] = &[Seg::Line(985.0, 35.0), Seg::Line(985.0, 45.0)];
 
 pub const STORE: &[Prim] = &[
-    // the hub backdrop: near-black, a cold blue over the top that is
-    // gone by y~540, and a warm wash under the left half
-    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(GROUND)),
-    Prim::Wash { x: 0.0, y: 0.0, w: 1600.0, h: 540.0, top: Ink::Fixed(GLOW_TOP), foot: Ink::Fixed(GROUND) },
-    Prim::Wash { x: 0.0, y: 240.0, w: 700.0, h: 660.0, top: Ink::Fixed(WARM), foot: Ink::Fixed(GROUND) },
+    // the hub backdrop: near-black, the masked cold blue over the top,
+    // the warm wash under the left half, the black field at the
+    // bottom right, the vignette -- composited, from the trace's defs
+    Prim::Soft { prims: STORE_GROUND },
     // top strip
     fill_rect(752.0, 35.0, 5.0, 5.0, Ink::Fg),
     fill_rect(762.0, 31.0, 14.0, 15.0, Ink::Fg),
@@ -1410,17 +1555,14 @@ pub const STORE: &[Prim] = &[
 // which are the same three roles the store block maps to `Ink::Fg` /
 // `Ink::Dim` / `Ink::Border` (its `#df3131` / `#96282d` / `#60181a`),
 // so the palette still reaches the screen; the ground and the glow
-// stops are the trace's own hex, as the store's `GROUND` and
-// `GLOW_TOP` are.
+// stops are the trace's own hex, as the store's `GROUND` is.
 //
-// What the trace draws that is not transcribed as drawn, and why: the
-// blue glow is a horizontal gradient under a vertical mask (:75-101),
-// which the `Prim` set has no single shape for -- `Wash` is vertical
-// only -- so `glow()` rasterises it from the trace's own stop tables
-// at compile time: 10px vertical strips, each the horizontal gradient
-// sampled at its centre (interpolated in sRGB, as SVG does), held flat
-// over the mask's plateau and washed to the ground down the mask's
-// ramp in three linear pieces. The `next` logotype (:151-152) is
+// What the trace draws that is not transcribed as drawn, and why. (The
+// blue glow, a horizontal gradient under a vertical mask (:75-101),
+// used to head this list: until 2026-09-04 `glow()` rasterised it at
+// compile time into 640 strips, three linear pieces standing in for
+// the mask's nine stops. It is now `HUB_GLOW`, the construct itself.)
+// The `next` logotype (:151-152) is
 // *outlined* Orbitron, and the
 // scene has neither a stroked text nor an Orbitron face, so it is set
 // filled in the bold Rajdhani face. Letter-spacing on the header and
@@ -1436,91 +1578,12 @@ pub const HUB_GROUND: iced::Color = rgb(0x070304);
 /// The panel's translucent fill: `#671b21` at `fill-opacity 0.55`
 /// (:218) -- the deep red *over* the ground, not a fourth red.
 const PANEL_FILL: iced::Color = iced::Color { a: 0.55, ..rgb(0x671b21) };
-/// `glowh` (:75-86): the glow's horizontal stops, offsets in page x
-/// (`offset x 1600`) and the sampled hex.
-const GLOW_H: [(f32, u32); 10] = [
-    (0.0, 0x282824),
-    (100.8, 0x273743),
-    (300.8, 0x263953),
-    (500.8, 0x202b56),
-    (700.8, 0x1b2253),
-    (900.8, 0x171f51),
-    (1100.8, 0x121f51),
-    (1300.8, 0x0d1f4e),
-    (1500.8, 0x082447),
-    (1600.0, 0x080b0e),
-];
-/// `glowv` (:88-98), the mask, as `(y, opacity)`: opaque to y 225,
-/// then the S-curve through its `#bababa` (315) and `#2b2b2b` (450)
-/// stops to clear at 540. Three ramps hold the other stops within 0.05.
-const GLOW_V: [(f32, f32); 4] = [
-    (225.0, 1.0),
-    (315.0, 186.0 / 255.0),
-    (450.0, 43.0 / 255.0),
-    (540.0, 0.0),
-];
-const GLOW_PITCH: f32 = 10.0;
-const GLOW_STRIPS: usize = 160;
-
-/// `a` toward `b` by `t`, in sRGB, opaque.
-const fn mix(a: iced::Color, b: iced::Color, t: f32) -> iced::Color {
-    iced::Color {
-        r: a.r + (b.r - a.r) * t,
-        g: a.g + (b.g - a.g) * t,
-        b: a.b + (b.b - a.b) * t,
-        a: 1.0,
-    }
-}
-
-/// The glow's colour at page `x`, between its bracketing stops.
-const fn glow_at(x: f32) -> iced::Color {
-    let mut i = 1;
-    while i < GLOW_H.len() {
-        let (x1, c1) = GLOW_H[i];
-        if x <= x1 {
-            let (x0, c0) = GLOW_H[i - 1];
-            return mix(rgb(c0), rgb(c1), (x - x0) / (x1 - x0));
-        }
-        i += 1;
-    }
-    rgb(GLOW_H[GLOW_H.len() - 1].1)
-}
-
-/// The masked glow as strips: per strip one flat band over the mask's
-/// plateau and one `Wash` per ramp, each ramp's ends the glow blended
-/// over the ground at the mask's opacity there.
-const fn glow() -> [Prim; GLOW_STRIPS * 4] {
-    let mut out = [fill_rect(0.0, 0.0, 0.0, 0.0, Ink::None); GLOW_STRIPS * 4];
-    let mut i = 0;
-    while i < GLOW_STRIPS {
-        let x = i as f32 * GLOW_PITCH;
-        let c = glow_at(x + GLOW_PITCH / 2.0);
-        out[i * 4] = fill_rect(x, 0.0, GLOW_PITCH, GLOW_V[0].0, Ink::Fixed(c));
-        let mut j = 0;
-        while j < 3 {
-            let (y0, a0) = GLOW_V[j];
-            let (y1, a1) = GLOW_V[j + 1];
-            out[i * 4 + 1 + j] = Prim::Wash {
-                x,
-                y: y0,
-                w: GLOW_PITCH,
-                h: y1 - y0,
-                top: Ink::Fixed(mix(HUB_GROUND, c, a0)),
-                foot: Ink::Fixed(mix(HUB_GROUND, c, a1)),
-            };
-            j += 1;
-        }
-        i += 1;
-    }
-    out
-}
-const HUB_GLOW: [Prim; GLOW_STRIPS * 4] = glow();
-
-/// The warm near-black vignette down the left margin, `radialGradient
-/// id="vignette"` (:102-105): one colour from opaque to clear.
-const VIGNETTE: &[(f32, iced::Color)] = &[
-    (0.0, rgb(0x241012)),
-    (1.0, iced::Color { a: 0.0, ..rgb(0x241012) }),
+/// The ground, the masked glow and the vignette (:138-140), composited
+/// as one: see `HUB_GLOW`.
+const HUB_BACK: &[Prim] = &[
+    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(HUB_GROUND)),
+    HUB_GLOW,
+    HUB_VIGNETTE,
 ];
 
 /// `#badge` (:135): 59x57 with a 15px bottom-left chamfer, at its own
@@ -1671,13 +1734,8 @@ const MAKER_MARK: &[Seg] = &[
 ];
 
 pub const DASHBOARD: &[Prim] = &[
-    // ground (:138)
-    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(HUB_GROUND)),
-    // the blue glow (:139): `glowh` under `glowv`, rasterised from the
-    // stop tables by `glow()`
-    Prim::At { x: 0.0, y: 0.0, prims: &HUB_GLOW },
-    // the warm vignette (:140): `cx 0.02 cy 0.60 r 0.34` of the page
-    Prim::Lobe { x: 32.0, y: 540.0, rx: 544.0, ry: 306.0, stops: VIGNETTE },
+    // ground, glow, vignette (:138-140)
+    Prim::Soft { prims: HUB_BACK },
     // header, left (:144-154)
     txt(109.0, 90.0, 14.0, Ink::Fg, "CUSTOMER"),
     Prim::At { x: 117.0, y: 104.0, prims: BADGE },

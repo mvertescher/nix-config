@@ -1233,6 +1233,7 @@ static PARAGRAPHS: [&[&str]; 3] = [
 
 pub fn mailbox() -> Mailbox {
     Mailbox {
+        backdrop: &[],
         haze: &HAZE,
         chrome: &CHROME,
         list: MailList {

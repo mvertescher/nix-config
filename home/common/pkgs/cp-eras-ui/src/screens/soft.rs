@@ -25,7 +25,8 @@
 //! in a release build.
 //!
 //! Scope. A group holds fills: rects, rounded rects, paths, ellipses,
-//! circles, lobes, washes, and `At`/`Turn` around those. Text, grain,
+//! circles, lobes, washes, multi-stop ramps, luminance-masked
+//! sub-groups, and `At`/`Turn` around those. Text, grain,
 //! dots and plates are not rasterised here -- they never carry an
 //! opacity, iced draws them well, and a plate's `on`/`off` switch would
 //! defeat the cache. `soft_groups_hold_only_fills` in the test module
@@ -141,6 +142,28 @@ impl Buf {
         p[1] = p[1] * keep + c.g * a;
         p[2] = p[2] * keep + c.b * a;
         p[3] = p[3] * keep + a;
+    }
+
+    /// Multiply every pixel by the luminance of `mask`'s: SVG's
+    /// luminance mask, `0.2125 R + 0.7154 G + 0.0721 B` of the encoded
+    /// colour times its alpha -- which, on a premultiplied pixel, is
+    /// the luminance of the stored channels as they are. rsvg does not
+    /// linearise first (see `Prim::Masked`).
+    fn mask(&mut self, mask: &Buf) {
+        for (p, m) in self.px.iter_mut().zip(&mask.px) {
+            let lum = (0.2125 * m[0] + 0.7154 * m[1] + 0.0721 * m[2]).clamp(0.0, 1.0);
+            p.iter_mut().for_each(|v| *v *= lum);
+        }
+    }
+
+    /// Composite `layer` over this buffer, premultiplied "over".
+    fn over(&mut self, layer: &Buf) {
+        for (p, l) in self.px.iter_mut().zip(&layer.px) {
+            let keep = 1.0 - l[3];
+            for i in 0..4 {
+                p[i] = p[i] * keep + l[i];
+            }
+        }
     }
 
     /// Premultiplied 8-bit RGBA, which is what the image pipeline
@@ -399,10 +422,12 @@ pub fn supported(prim: &Prim) -> bool {
         | Prim::Lobe { .. }
         | Prim::Ellipse { .. }
         | Prim::Circle { .. }
-        | Prim::Wash { .. } => true,
+        | Prim::Wash { .. }
+        | Prim::Ramp { .. } => true,
         Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Soft { prims } => {
             prims.iter().all(supported)
         }
+        Prim::Masked { prims, mask } => prims.iter().all(supported) && mask.iter().all(supported),
         Prim::Text { .. }
         | Prim::Wide { .. }
         | Prim::Spaced { .. }
@@ -497,6 +522,31 @@ fn walk(buf: &mut Buf, prims: &[Prim], palette: &Palette, xf: Xf) {
                     let (_, ly) = xf.inv(px, py);
                     lerp(top, foot, ((ly - y) / h).clamp(0.0, 1.0))
                 });
+            }
+            Prim::Ramp { x, y, w, h, from, to, stops } => {
+                // The stop offset of a point is its projection onto the
+                // gradient vector, in bounding-box fractions: SVG's
+                // `objectBoundingBox` axis, so a diagonal on a wide box
+                // skews the way the trace's does.
+                let ring = map(round_rect(x, y, w, h, 0.0));
+                let (dx, dy) = (to.0 - from.0, to.1 - from.1);
+                let len2 = (dx * dx + dy * dy).max(f32::EPSILON);
+                buf.fill(&[ring], &|px, py| {
+                    let (lx, ly) = xf.inv(px, py);
+                    let (fx, fy) = ((lx - x) / w - from.0, (ly - y) / h - from.1);
+                    stop(stops, ((fx * dx + fy * dy) / len2).clamp(0.0, 1.0))
+                });
+            }
+            Prim::Masked { prims, mask } => {
+                // Both sides rasterised over transparency at the frame's
+                // size, the layer thinned by the mask's luminance, then
+                // laid as one: what rsvg does with `mask="url(#m)"`.
+                let mut layer = Buf::new(buf.w, buf.h);
+                walk(&mut layer, prims, palette, xf);
+                let mut lum = Buf::new(buf.w, buf.h);
+                walk(&mut lum, mask, palette, xf);
+                layer.mask(&lum);
+                buf.over(&layer);
             }
             Prim::At { x, y, prims } => walk(buf, prims, palette, xf.moved(x, y)),
             Prim::Turn { x, y, angle, prims } => {
@@ -633,6 +683,68 @@ mod tests {
         assert!((along as i32 - 112).abs() <= 2, "{along}");
         assert!((across as i32 - 127).abs() <= 2, "{across}");
         assert_eq!(px(&out, 20, 10, 2)[3], 0, "outside the ellipse");
+    }
+
+    #[test]
+    fn a_ramp_reads_its_stops_along_its_axis() {
+        const STOPS: &[(f32, Color)] = &[
+            (0.0, Color { r: 0.0, g: 0.0, b: 0.0, a: 1.0 }),
+            (1.0, Color { r: 1.0, g: 1.0, b: 1.0, a: 1.0 }),
+        ];
+        // Horizontal over a 10x2 box: column 2 sits at t = 0.25.
+        let prims = [Prim::Ramp {
+            x: 0.0,
+            y: 0.0,
+            w: 10.0,
+            h: 2.0,
+            from: (0.0, 0.0),
+            to: (1.0, 0.0),
+            stops: STOPS,
+        }];
+        let out = composite(&prims, &palette(), 10, 2, 1.0);
+        assert_eq!(px(&out, 10, 2, 1)[0], 64);
+        assert_eq!(px(&out, 10, 7, 0)[0], 191);
+        // Vertical over the same box: the row, not the column, decides.
+        let prims = [Prim::Ramp {
+            x: 0.0,
+            y: 0.0,
+            w: 10.0,
+            h: 2.0,
+            from: (0.0, 0.0),
+            to: (0.0, 1.0),
+            stops: STOPS,
+        }];
+        let out = composite(&prims, &palette(), 10, 2, 1.0);
+        assert_eq!(px(&out, 10, 2, 0)[0], 64);
+        assert_eq!(px(&out, 10, 2, 1)[0], 191);
+    }
+
+    #[test]
+    fn a_mask_passes_its_luminance_as_rsvg_measures_it() {
+        // White through #808080, pure red, pure green and half-alpha
+        // white: 128, 54, 183, 128 -- the numbers rsvg-convert gives
+        // for the same document (see `Prim::Masked`).
+        const WHITE: Color = Color { r: 1.0, g: 1.0, b: 1.0, a: 1.0 };
+        const GREY: Color = Color { r: 128.0 / 255.0, g: 128.0 / 255.0, b: 128.0 / 255.0, a: 1.0 };
+        const GREEN: Color = Color { r: 0.0, g: 1.0, b: 0.0, a: 1.0 };
+        const HALF_WHITE: Color = Color { r: 1.0, g: 1.0, b: 1.0, a: 0.5 };
+        const LAYER: &[Prim] = &[fill_rect(0.0, 0.0, 4.0, 1.0, Ink::Fixed(WHITE))];
+        const MASK: &[Prim] = &[
+            fill_rect(0.0, 0.0, 1.0, 1.0, Ink::Fixed(GREY)),
+            fill_rect(1.0, 0.0, 1.0, 1.0, Ink::Fixed(RED)),
+            fill_rect(2.0, 0.0, 1.0, 1.0, Ink::Fixed(GREEN)),
+            fill_rect(3.0, 0.0, 1.0, 1.0, Ink::Fixed(HALF_WHITE)),
+        ];
+        let prims = [
+            fill_rect(0.0, 0.0, 5.0, 1.0, Ink::Fixed(Color::BLACK)),
+            Prim::Masked { prims: LAYER, mask: MASK },
+        ];
+        let out = composite(&prims, &palette(), 5, 1, 1.0);
+        assert_eq!(px(&out, 5, 0, 0)[0], 128);
+        assert_eq!(px(&out, 5, 1, 0)[0], 54);
+        assert!((px(&out, 5, 2, 0)[0] as i32 - 183).abs() <= 1);
+        assert!((px(&out, 5, 3, 0)[0] as i32 - 128).abs() <= 1);
+        assert_eq!(px(&out, 5, 4, 0), [0, 0, 0, 255], "nothing where the mask draws nothing");
     }
 
     #[test]
