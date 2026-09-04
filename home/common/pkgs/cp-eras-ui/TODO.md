@@ -302,10 +302,10 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   no vblank) returns a frame callback, which it does seconds late for
   an idle surface. With `ICED_PRESENT_MODE=mailbox` (or `immediate`,
   `iced_wgpu` `settings.rs`) a 2s capture of the same binary is
-  byte-identical to the goldens on 19 of 20 cells (the 20th is the
-  kanji item below), and no cell moves between 2s and 8s under either
-  mode. `render.sh` now exports mailbox and `DEFAULT_SETTLE` is back
-  down to 4 (~8s per G2i cell instead of ~13); the sandbox keeps FIFO
+  byte-identical to the goldens on 19 of 20 cells (the 20th was the
+  kanji item below, fixed 2026-09-04), and no cell moves between 2s
+  and 8s under either mode. `render.sh` now exports mailbox and
+  `DEFAULT_SETTLE` is back down to 4 (~8s per G2i cell instead of ~13); the sandbox keeps FIFO
   and 15s, unchanged. Still open and not chased: *why* frame 1 lacks
   the wash when `iced_wgpu` uploads an image in the frame that draws
   it — at most a one-vblank flash on a real compositor, which is the
@@ -1226,13 +1226,27 @@ four bars, done in this order so the Rust is written once.
     which is right.
   - Bar/entropism inks and the login `Ink::Fixed`s wait on the
     OUTLINE decision under "Trace improvements".
-- [ ] **Canvas vs widgets — decide.** Four screens are now display
+- [ ] **Canvas vs widgets — decide.** ~~Four screens are now display
   lists over era tables and the widget layer (`widgets/`, `Layout`,
   `Cut`, `Surface`, `Ground`) serves only the dashboard and the bar's
   window. Either the widget layer grows the gaps above and the screens
   fold back onto it, or it is retired to what the bar needs and the
   dashboard converts the same way. Decide before the dashboard, and
-  together with the `Layout` fold-back — same decision.
+  together with the `Layout` fold-back — same decision.~~ Overtaken on
+  one side: the dashboard converted to a scene and `Layout` folded on
+  2026-09-03, so "fold the screens back onto widgets" is no longer a
+  live option — all four screens are `Prim` tables. What is left to
+  decide is how much of `widgets/` to keep for the bar and the panels.
+  Measured 2026-09-04 (callers outside `widgets/` itself, doc comments
+  excluded): **live** — `ground` (every screen), `surface::{outline,
+  layered, span_at, backdrop, surface, Surface, Corners, Cut, Fill}`
+  (`bar.rs`, `screens::mail`, `panels::mail`, `style.rs` for
+  `Corners`), `chrome::{top_bar, footer}` and `text` (`panels::mail`),
+  `floppy_icon` (its example); **no caller** — `banner`, `bracket`,
+  `card`, `glyph`, `input`, `ornament`, `row`, `silhouette`,
+  `floppy_vector` (named only in a neomil comment). The `mod.rs`
+  re-exports keep the dead ones warning-free. Retiring the nine is
+  mechanical once decided; the build-out list below is the other fork.
 
 ## Toolkit infrastructure
 
