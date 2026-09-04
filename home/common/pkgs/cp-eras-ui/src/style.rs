@@ -1743,6 +1743,12 @@ pub struct MailList {
     /// The selection fill, in absolute coordinates on its own row.
     pub sel: Frame,
     pub sel_trim: Trim,
+    /// What it is filled with: `Ink::Select` everywhere but kitsch, whose
+    /// trace draws the row a stop deeper than the panel tab (`#e8c21f`
+    /// against `#fbd42c`, mailbox-trace.svg:224/256) -- the photo's
+    /// selected row samples `#ccad19`, the tab `#fed82e`. The icon cell
+    /// takes the same fill.
+    pub sel_fill: Ink,
     /// Kitsch splits its selection in two: an icon cell, a 2px gap, and
     /// the body above. Absolute, like `sel`.
     pub sel_icon: Option<Frame>,
@@ -1834,8 +1840,15 @@ pub struct MailButtons {
     pub dx: f32,
     pub dy: f32,
     pub count: usize,
-    /// Which one is filled in the era's selection colour, if any.
+    /// Which one is filled, if any, and with what: `Ink::Select` everywhere
+    /// but kitsch, whose DETAILS chevron is `#e6c020` (mailbox-trace.svg:280)
+    /// -- the row's deeper yellow, not the tab's.
     pub filled: Option<usize>,
+    pub fill: Ink,
+    /// The fill of the idle ones. Neomil's three unselected buttons are
+    /// filled `#1a0607` under their outline (mailbox-trace.svg:353); the
+    /// other eras leave theirs open.
+    pub idle_fill: Option<Ink>,
     /// Entropism draws its four as one outlined strip with dividers.
     pub joined: bool,
     /// Kitsch's tab shape: a peak on the leading edge, a cut trailing

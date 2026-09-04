@@ -941,6 +941,10 @@ pub fn mailbox() -> Mailbox {
             sel_trim: Trim::chamfer(BR, 20.0),
             sel_icon: Some(Frame::new(154.0, 313.0, 41.0, 38.0)),
             sel_icon_trim: Trim::chamfer(BR, 12.0),
+            // the row's yellow (:224) is a stop deeper than the tab's
+            // `#fbd42c` (:256) and `select`'s #fcc428; the DETAILS chevron
+            // takes the row's (:280). All three drew `select` until 2026-09-04
+            sel_fill: Ink::Fixed(rgb(0xe8c21f)),
             sel_notch: None,
             veneer: None,
             glyph_x: 165.0,
@@ -968,7 +972,7 @@ pub fn mailbox() -> Mailbox {
             frame_width: 1.25,
             frame_trim: Trim::round(BL | BR, 8.0),
             head: Some(Frame::new(575.0, 313.0, 552.0, 36.0)),
-            head_ink: Ink::Select,
+            head_ink: Ink::Fixed(rgb(0xfbd42c)),
             head_trim: Trim::chamfer(TR, 22.0),
             // the tab reads the selected row's own subject, trace line
             // 257, and no sender under it
@@ -991,6 +995,8 @@ pub fn mailbox() -> Mailbox {
             dy: 54.0,
             count: 4,
             filled: Some(0),
+            fill: Ink::Fixed(rgb(0xe6c020)),
+            idle_fill: None,
             joined: false,
             chevron: true,
             trim: Trim::NONE,

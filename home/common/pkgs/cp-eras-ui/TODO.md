@@ -508,12 +508,29 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   badges at (1336,190)+(1395,190) into one 118-wide rect, and splits
   the neomil rows differently. The pixels say the grounds are right;
   the gate is measuring its own thresholds here. Follow-ups the diff
-  rows point at, none chased:
-  - neomil mailbox's four action buttons: the trace fills the idle ones
+  rows pointed at, all three settled on 2026-09-04:
+  - ~~neomil mailbox's four action buttons: the trace fills the idle ones
     `#1a0607` (:353) and `MailButtons` has no idle fill field — a
-    struct change across four eras, so left.
-  - kitsch mailbox's selected-row fill and chevron fills read solid in
-    the diff: colour, not placement.
+    struct change across four eras, so left.~~ Done 2026-09-04:
+    `MailButtons.idle_fill: Option<Ink>` (`Some(Ink::Fixed(#1a0607))`
+    for neomil, `None` elsewhere), drawn under the outline. (950,720)
+    `1a0607` exact, was `080303`; G2i 89 held, `--diff` 0.9 → 0.87%.
+    The idle strokes stay `Ink::Dim` (nix `#a32226` vs trace `#8a2024`,
+    an ERAS-DELTA role) and the selected one `select` (8 levels off).
+  - ~~kitsch mailbox's selected-row fill and chevron fills read solid in
+    the diff: colour, not placement.~~ Done 2026-09-04: the trace has
+    three yellows on this screen and the era drew `select` #fcc428 for
+    all of them — row `#e8c21f` (:224), DETAILS chevron `#e6c020`
+    (:280), panel tab `#fbd42c` (:256); the photo's own spot samples
+    (`#ccad19` / `#dfb715` / `#fed82e`) agree that the row and chevron
+    are a stop deeper than the tab. Added `MailList.sel_fill: Ink`
+    (the icon cell takes it too) and `MailButtons.fill: Ink`, both
+    `Ink::Select` in the other three eras; kitsch's are `Ink::Fixed`
+    and its `head_ink` is `Ink::Fixed(#fbd42c)`. All three probe exact;
+    G2i 61 held, `--diff` 1.5 → **1.4%**. What is left lit is text, and
+    the wave at the bracket's foot: trace `#1db5a4` against `ornament`
+    `#1cb39b` — 9 levels on one channel, a nix-overridden role that
+    `bar.svg` uses five times, so an ERAS-DELTA delta, not chased.
   - ~~translucent fills over a composited ground are rebased against
     the flat `palette.bg`~~ — **the premise was wrong on both examples**
     (measured 2026-09-04). Entropism (720,360) is the grown card's

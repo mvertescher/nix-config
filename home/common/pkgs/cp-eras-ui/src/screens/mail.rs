@@ -491,7 +491,7 @@ impl Sheet<'_> {
                         scale,
                         cell.shifted(0.0, shift),
                         list.sel_icon_trim,
-                        Some(ink(s, Ink::Select)),
+                        Some(ink(s, list.sel_fill)),
                         None,
                     );
                 }
@@ -660,7 +660,7 @@ impl Sheet<'_> {
         let at = list.sel.shifted(0.0, shift);
         let fill = match list.veneer {
             Some(v) => v.base,
-            None => ink(s, Ink::Select),
+            None => ink(s, list.sel_fill),
         };
         box_at(frame, scale, at, list.sel_trim, Some(fill), None);
 
@@ -861,11 +861,12 @@ impl Sheet<'_> {
             let at = b.first.shifted(b.dx * i as f32, b.dy * i as f32);
             let filled = b.filled == Some(i);
             if b.chevron {
-                self.chevron(frame, scale, at, filled, b.width);
+                self.chevron(frame, scale, at, filled.then_some(ink(s, b.fill)), b.width);
             } else if filled {
-                box_at(frame, scale, at, b.trim, Some(ink(s, Ink::Select)), None);
+                box_at(frame, scale, at, b.trim, Some(ink(s, b.fill)), None);
             } else if !b.joined {
-                box_at(frame, scale, at, b.trim, None, Some((ink(s, b.stroke), b.width)));
+                let fill = b.idle_fill.map(|i| ink(s, i));
+                box_at(frame, scale, at, b.trim, fill, Some((ink(s, b.stroke), b.width)));
             }
             if let Some(tab) = b.tab {
                 let t = tab.shifted(at.x, at.y);
@@ -907,7 +908,7 @@ impl Sheet<'_> {
         frame: &mut canvas::Frame,
         scale: Scale,
         at: crate::style::Frame,
-        filled: bool,
+        fill: Option<iced::Color>,
         width: f32,
     ) {
         let s = self.style;
@@ -926,8 +927,8 @@ impl Sheet<'_> {
                 (x + w - 22.0, y + h),
             ],
             true,
-            if filled { Some(ink(s, Ink::Select)) } else { None },
-            if filled { None } else { Some((ink(s, Ink::Fg), width)) },
+            fill,
+            if fill.is_some() { None } else { Some((ink(s, Ink::Fg), width)) },
         );
     }
 

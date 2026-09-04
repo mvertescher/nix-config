@@ -840,6 +840,7 @@ pub fn mailbox() -> Mailbox {
             sel_trim: Trim::chamfer(BL, 12.0),
             sel_icon: None,
             sel_icon_trim: Trim::NONE,
+            sel_fill: Ink::Select,
             sel_notch: None,
             veneer: None,
             // no envelope: this era spends the glyph budget on the
@@ -899,6 +900,10 @@ pub fn mailbox() -> Mailbox {
             dy: 0.0,
             count: 4,
             filled: Some(0),
+            fill: Ink::Select,
+            // the idle three are filled `#1a0607` (:353); they drew open
+            // until 2026-09-04, 20 levels dark against the trace
+            idle_fill: Some(Ink::Fixed(rgb(0x1a0607))),
             joined: false,
             chevron: false,
             trim: Trim::chamfer(BR, 9.0),

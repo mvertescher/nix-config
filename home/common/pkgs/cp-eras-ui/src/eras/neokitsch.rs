@@ -1205,6 +1205,7 @@ pub fn mailbox() -> Mailbox {
             sel_trim: Trim::chamfer(TR, 22.0),
             sel_icon: None,
             sel_icon_trim: Trim::NONE,
+            sel_fill: Ink::Select,
             sel_notch: Some(Frame::new(420.0, 363.0, 37.0, 10.0)),
             veneer: Some(Veneer {
                 // measured on the bar: a #f8c678 base carrying 32
@@ -1269,6 +1270,8 @@ pub fn mailbox() -> Mailbox {
             dy: 0.0,
             count: 4,
             filled: None,
+            fill: Ink::Select,
+            idle_fill: None,
             joined: false,
             chevron: false,
             trim: Trim::chamfer(BL, 13.0),
