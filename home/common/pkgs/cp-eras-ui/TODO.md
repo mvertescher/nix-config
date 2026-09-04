@@ -382,9 +382,64 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   prim (a horizontal alpha ramp multiplying what a group has drawn),
   which `soft.rs` can do and the canvas cannot; the lobe is a table
   line; the rotations are `Turn` around each lobe.
-- [ ] `scripts/triptych.sh --diff`: an optional fourth row, trace vs
-  iced heatmap (`visual_diff.py` already draws one), so the review view
-  points at the difference rather than leaving it to the eye.
+- [x] `scripts/triptych.sh --diff` — done 2026-09-04: an optional
+  fourth row, trace vs iced, so the review view points at the
+  difference rather than leaving it to the eye. Not `visual_diff.py`,
+  which the item named: that script draws a raw difference after a
+  121x121 brute-force alignment search (minutes per pair, and two
+  same-size renders of one design need no aligning), and pillow is not
+  something triptych.sh otherwise needs. The row is ImageMagick, which
+  it already requires: largest-channel |trace − iced| with a 2-level
+  floor, square-rooted so a few levels of drift still register, on a
+  black → yellow → red ramp over a 22%-grey copy of the trace; the
+  caption carries the share of pixels off by more than 8 levels, the
+  cliff the sRGB item measured. The trace is diffed *without* its
+  `class="photo"` elements (G2i's design), so the expected halo does
+  not light up. Text always lights (two rasterisers, two AAs) and
+  dominates the percentage, so read the picture, not the number.
+  Full run with `--diff`: 16 cells in 3m41s, all of it render.sh.
+  First run's catch is the grounds item below.
+- [ ] **Four grounds are drawn from memory, not from their trace.**
+  `--diff` lit the whole frame on the kitsch mailbox (7.8% off by >8),
+  neomil mailbox (5.4%), entropism store (1.6%) and neomil store, and
+  the G2i captures say why (design vs implementation, sRGB):
+  - kitsch mailbox: the trace is `#bloom`, a radial at (800,−155)
+    r 0.9 of a 1600x620 rect — `b05064` → `933b53` → `5c2236` →
+    `1e0f14` → page — plus `#leftwash`, `2a2e2a` fading right from
+    x=0 over y 60..840. Column x=800: design `153 63 87` at y 0, `38 18
+    25` at 300, page `14 13 12` from 450; implementation `71 21 36`,
+    `67 20 34`, `59 18 30`, still `47 15 24` at y 650 — a flat maroon
+    over the whole frame, and `11 11 7` where the left wash should be
+    `34 37 33`. It is `Ground::Bloom`, the generic 26-disc stack out of
+    the top-right (`widgets/ground.rs`), which the `--- mailbox ---`
+    header in `eras/kitsch.rs` wrongly says handles "the rose bloom and
+    the grey-green left wash". The store on the same era already has
+    `BACKDROP` with the right `ROSE`/`MARGIN` lobes; the mailbox needs
+    its own from the mailbox trace's numbers, and G2i's 67 there —
+    "PASS with a known reason", the chevron cells — is at least partly
+    this.
+  - neomil mailbox: the trace stacks `#glowh` under `#glowmask`, a
+    `#wash` under `#washmask` and a `#vignette`; the implementation is
+    `Ground::Flat` — `5 3 4` everywhere the design reads `31 31 34`
+    (50,150) and `28 6 8` (800,450) — and a red element at (300,700)
+    is `94 17 18` against the trace's `33 8 9`.
+  - entropism store: the trace's `#lift` radial (cx .45, cy .4, r .8)
+    is not drawn; the implementation is flat `17 12 7` where the design
+    runs `22 20 9` … `28 27 16`, 5–11 levels under it everywhere.
+  - neomil store: `STORE` draws the top glow as a plain vertical
+    `Prim::Wash` 0..540, but the trace's `#glowh` is horizontal *and*
+    masked by `#glowmask`, so the implementation is blue-grey at the
+    top-left, `27 37 70`, where the design is `26 22 24`.
+  The mailbox screen (`screens/mail.rs`) has no per-era backdrop group
+  at all — it stacks the generic `ground()` under the sheet — and the
+  entropism/neomil store tables carry none or an approximation. Fix is
+  the kitsch-store pattern: a leading `Prim::Soft` group per screen
+  transcribed from the trace's gradient defs. Masked gradients
+  (`#glowmask`, `#washmask`, and neokitsch's `#bluemask` in the item
+  above) need `soft.rs` to learn a luminance mask first; do that once.
+  Not chased under the `--diff` item: it is transcription work on four
+  cells, and the dashboard/login cells are dark on the same row, so
+  the row is telling the truth.
 - [x] **`scene.rs` alpha blending** — done 2026-09-04, alpha converted at
   paint time. Translucent `Ink::Fixed` alphas are composited in linear
   space by wgpu but the traces were designed in sRGB (rsvg), so every

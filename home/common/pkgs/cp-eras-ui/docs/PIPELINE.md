@@ -171,7 +171,14 @@ bottom, captioned — for every era x sourced screen by default, into
 far apart two stages are, this shows *where*, and it is the fastest way
 to see whether a trace or an implementation lost something the photo has.
 Unlike G2i the trace is rendered with its `class="photo"` elements, since
-it is being read against the photo above it.
+it is being read against the photo above it. `--diff` adds a fourth row
+that points at what rows 2 and 3 disagree on — |trace − iced| per pixel
+on a black → yellow → red ramp over a dimmed copy of the trace, the
+trace this time *without* its `photo` elements so the expected halo
+stays dark — with the share of pixels off by more than 8 levels in the
+caption. Text always lights a little (two rasterisers, two AAs); a
+filled shape lit solid is a colour miss, an outline lit is a placement
+miss, and a whole frame lit dimly is a ground drawn from memory.
 
 ## Iteration loop
 

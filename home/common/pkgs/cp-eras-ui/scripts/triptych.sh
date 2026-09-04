@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# triptych.sh — one image per era x screen, three rows top to bottom:
+# triptych.sh — one image per era x screen, three rows top to bottom (a
+# fourth with `--diff`):
 #
 #   1. the Behance source photo from images/ (gitignored; download_images.py)
 #   2. docs/<era>/<screen>-trace.svg rasterised at 1600x900
@@ -17,13 +18,29 @@
 # of the photo. Row 3 is told not to draw those, so a soft glow present in
 # rows 1-2 and absent in row 3 is expected, not a finding.
 #
+# `--diff` adds a fourth row that points at what rows 2 and 3 disagree
+# on, so the review does not have to find it by eye: the trace and the
+# capture subtracted per pixel (largest channel difference, square-rooted
+# so a small drift still shows) on a black -> yellow -> red ramp -- 1-2
+# levels stay black, 8 is a dim yellow, full yellow by ~65, red at 255 --
+# over a dimmed grey copy of the trace for orientation, and the caption
+# gives the share of pixels off by more than 8 levels. This row
+# diffs the trace *without* its `class="photo"` elements, exactly the
+# design G2i scores, so it lights up findings and not the expected halo.
+# Text is always lit a little (two rasterisers never agree on AA), a
+# filled shape lit solid is a colour miss, an outline lit is a placement
+# miss. Only rows 2 and 3 are diffed: the photo is a different size,
+# a different medium, and G1/G1i already compare it.
+#
 # Usage:
 #   triptych.sh                        # every era x login,dashboard,mailbox,store
 #   triptych.sh neomil                 # one era
 #   triptych.sh neomil dashboard       # one pair
+#   triptych.sh --diff kitsch dashboard
 #   triptych.sh --bin-dir /tmp/bins kitsch
 #   triptych.sh --out /tmp/tri --no-labels
 #
+#   --diff          add the trace-vs-iced difference as a fourth row.
 #   --bin-dir DIR   where the cp-eras-ui-<screen> binaries are; default
 #                   target/debug, which `cargo build --bin ...` writes.
 #   --out DIR       where to write <era>-<screen>.png; default
@@ -50,9 +67,11 @@ w=1600; h=900
 bin_dir="$crate/target/debug"
 out_dir="$crate/images/triptych"
 labels=1
+diff=0
 targets=()
 while [ $# -gt 0 ]; do
   case "$1" in
+    --diff)      diff=1; shift ;;
     --bin-dir)   bin_dir=$2; shift 2 ;;
     --out)       out_dir=$2; shift 2 ;;
     --no-labels) labels=0; shift ;;
@@ -121,6 +140,29 @@ caption() {
     -font "$label_font" -pointsize 30 -fill '#e0e0e0' -annotate +14+6 "$2" "$1"
 }
 
+# The fourth row: $1 trace (photo elements hidden), $2 capture, $3 out.
+# Prints the share of pixels off by more than 8 levels, as a percentage.
+# 8 is where the G2i verdict was measured to turn (docs/PIPELINE.md, the
+# sRGB-vs-linear note): pasting every pixel further off than that into
+# the capture moved the kitsch dashboard from FAIL to 49%.
+heat() {
+  # subtract 0.8% = a 2-level floor: inside a converged fill the two
+  # rasterisers still disagree by a level or two, and that is not news.
+  "${magick[@]}" "$1" "$2" -compose difference -composite \
+    -separate -evaluate-sequence max \
+    -evaluate subtract 0.8% -evaluate pow 0.5 \
+    \( \( -size 1x128 gradient:'black-#ffe030' \) \
+       \( -size 1x128 gradient:'#ffe030-#ff2020' \) -append \) -clut \
+    "$3" || return 1
+  "${magick[@]}" "$1" -colorspace gray -evaluate multiply 0.22 -colorspace sRGB \
+    "$3" -compose lighten -composite "$3" || return 1
+  # `compare -metric AE` counts the differing pixels; fuzz 3.2% of the
+  # quantum range is 8 levels. It reports "count (fraction)" on stderr.
+  "${magick[@]}" compare -metric AE -fuzz 3.2% "$1" "$2" null: 2>&1 \
+    | sed -n 's/.*(\([0-9.e-]*\)).*/\1/p' \
+    | awk '{ printf "%.1f", $1 * 100 }' | grep . || return 1
+}
+
 mkdir -p "$out_dir"
 fail=0
 for era in "${eras[@]}"; do
@@ -153,10 +195,27 @@ for era in "${eras[@]}"; do
       --era "$era" --size "${w}x${h}" --bin "$bin" --out "$impl" >/dev/null \
       || { echo "FAIL $era/$screen: render.sh could not capture $app (see $impl.log)"; fail=1; continue; }
 
+    rows=("$photo" "$trace" "$impl")
+    if [ "$diff" = 1 ]; then
+      # The same design G2i scores: the trace with its `class="photo"`
+      # elements hidden (the sed is fidelity_check.sh's).
+      g2i_svg="$scratch/$era-$screen-g2i.svg"
+      g2i="$scratch/$era-$screen-g2i.png"
+      heat="$scratch/$era-$screen-diff.png"
+      sed '0,/<svg[^>]*>/s//&<style>.photo{display:none}<\/style>/' "$svg" > "$g2i_svg"
+      "${rsvg[@]}" -w "$w" -h "$h" "$g2i_svg" -o "$g2i" 2>/dev/null \
+        || { echo "FAIL $era/$screen: rsvg-convert on $g2i_svg"; fail=1; continue; }
+      off=$(heat "$g2i" "$impl" "$heat") \
+        || { echo "FAIL $era/$screen: diff"; fail=1; continue; }
+      rows+=("$heat")
+    fi
+
     caption "$photo" "$era / $screen — 1 source photo: images/$(basename "$src")"
     caption "$trace" "2 trace: docs/$era/$screen-trace.svg"
     caption "$impl"  "3 iced: $app --era $era"
-    "${magick[@]}" "$photo" "$trace" "$impl" -append "$out" \
+    [ "$diff" = 1 ] && caption "$heat" \
+      "4 diff: |trace − iced|, trace without class=photo — ${off}% of pixels off by >8 levels"
+    "${magick[@]}" "${rows[@]}" -append "$out" \
       || { echo "FAIL $era/$screen: append"; fail=1; continue; }
     echo "$out"
   done
