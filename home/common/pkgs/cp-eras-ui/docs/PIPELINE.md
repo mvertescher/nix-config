@@ -146,6 +146,15 @@ byte-identical to `tests/golden/login-neomil-1600x900.png` — but it is
 not hermetic, so `scripts/run_test_matrix.sh` remains what gates a
 change.
 
+`scripts/triptych.sh [era [screen]]` stacks the three stages of a screen
+into one image — source photo, trace render, `render.sh` capture, top to
+bottom, captioned — for every era x sourced screen by default, into
+`images/triptych/`. It is the review view, not a gate: the gates say how
+far apart two stages are, this shows *where*, and it is the fastest way
+to see whether a trace or an implementation lost something the photo has.
+Unlike G2i the trace is rendered with its `class="photo"` elements, since
+it is being read against the photo above it.
+
 ## Iteration loop
 
 ```
