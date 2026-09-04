@@ -422,8 +422,8 @@ pub const ACCESS: Access = Access {
         // form under it.
         Slot {
             body: Some(
-                Plate::filled(Plot::new(372.0, 313.0, 253.0, 259.0), Ink::Fg)
-                    .bevelled(Bevel::tr(46.0)),
+                Plate::filled(Plot::new(372.0, 315.0, 253.0, 255.0), Ink::Fg)
+                    .bevelled(Bevel::tr(51.0)),
             ),
             notch: Some(Plot::new(372.0, 392.0, 15.0, 105.0)),
             mark: Some(Plate::filled(
@@ -520,10 +520,10 @@ pub const ACCESS: Access = Access {
         },
     ],
     fixture: Fixture::Margins {
-        chips: &[Plot::new(60.0, 346.0, 14.0, 14.0), Plot::new(1542.0, 346.0, 14.0, 14.0)],
+        chips: &[Plot::new(60.0, 347.0, 12.5, 12.5), Plot::new(1541.0, 347.0, 12.5, 12.5)],
         labels: &[
             Legend::new("1", 63.0, 357.0, 10.0, Ink::Fixed(ON_CARD)).bold(),
-            Legend::new("2", 1545.0, 357.0, 10.0, Ink::Fixed(ON_CARD)).bold(),
+            Legend::new("2", 1544.0, 357.0, 10.0, Ink::Fixed(ON_CARD)).bold(),
             Legend::new("00032 05 54 08 CP", 57.0, 472.0, 11.0, Ink::Dim).turned(),
             Legend::new("JHN 102 CKC 151 CC10 AS5", 1556.0, 554.0, 11.0, Ink::Dim).turned(),
             Legend::new("KIROSHI", 1556.0, 651.0, 11.0, Ink::Dim).turned(),
@@ -642,10 +642,19 @@ static EDGE_BAR: [(f32, f32); 6] = [
     (1440.0, 552.0),
     (1440.0, 422.0),
 ];
-static SCROLL_UP: [(f32, f32); 3] = [(556.0, 700.0), (561.0, 691.0), (566.0, 700.0)];
-static SCROLL_DOWN: [(f32, f32); 3] = [(567.0, 706.0), (572.0, 715.0), (577.0, 706.0)];
+// The scroll widget's two thin arrows (mailbox-trace :304-312): heads
+// 4.7 wide, both spanning y 692.7..714.6.
+static SCROLL_UP: [(f32, f32); 3] = [(559.7, 704.6), (562.0, 692.7), (564.4, 704.6)];
+static SCROLL_DOWN: [(f32, f32); 3] = [(569.8, 701.0), (574.6, 701.0), (572.2, 714.6)];
+/// The widget's r 10.5 ring around the "R", as four cubics (k = 0.5523 r).
+const SCROLL_RING: &[Seg] = &[
+    Seg::Cubic { c1x: 577.5, c1y: 725.2, c2x: 572.8, c2y: 720.5, x: 567.0, y: 720.5 },
+    Seg::Cubic { c1x: 561.2, c1y: 720.5, c2x: 556.5, c2y: 725.2, x: 556.5, y: 731.0 },
+    Seg::Cubic { c1x: 556.5, c1y: 736.8, c2x: 561.2, c2y: 741.5, x: 567.0, y: 741.5 },
+    Seg::Cubic { c1x: 572.8, c1y: 741.5, c2x: 577.5, c2y: 736.8, x: 577.5, y: 731.0 },
+];
 
-static CHROME: [Piece; 38] = [
+static CHROME: [Piece; 42] = [
     // customer block
     text(124.0, 90.0, 14.0, Ink::Fg, "CUSTOMER"),
     Piece::Box {
@@ -735,6 +744,30 @@ static CHROME: [Piece; 38] = [
         width: 0.0,
         close: true,
     },
+    Piece::Box {
+        at: Frame::new(561.3, 704.0, 1.5, 10.6),
+        fill: Some(Ink::Fg),
+        stroke: None,
+        width: 0.0,
+        trim: Trim::NONE,
+    },
+    Piece::Box {
+        at: Frame::new(571.4, 692.7, 1.5, 9.0),
+        fill: Some(Ink::Fg),
+        stroke: None,
+        width: 0.0,
+        trim: Trim::NONE,
+    },
+    Piece::Curve {
+        start: (577.5, 731.0),
+        steps: SCROLL_RING,
+        fill: None,
+        stroke: Some(Ink::Fg),
+        width: 2.0,
+        close: true,
+    },
+    // the trace centres the R on x 567; Run is start-anchored
+    strong(563.3, 736.0, 13.0, Ink::Fg, "R"),
     Piece::Poly {
         points: &EDGE_BAR,
         fill: Some(Ink::Fg),
@@ -1507,12 +1540,13 @@ const NAV_SELECTED: &[Prim] = &[
     fill_rect(-5.0, 0.0, 3.0, 51.0, Ink::Fg),
 ];
 
-/// The left-margin chip: two ticks, a block and the numbered square.
+/// The left-margin chip: two ticks, a block and the numbered 12.5
+/// square, one below the origin (`#chip`; photo 12.5x12.1 at (62.5,187.9)).
 const CHIP: &[Prim] = &[
     fill_rect(-21.0, 3.0, 8.0, 1.5, Ink::Fg),
     fill_rect(-21.0, 7.0, 6.0, 1.5, Ink::Fg),
     fill_rect(-11.0, 3.0, 6.0, 6.0, Ink::Fg),
-    fill_rect(0.0, 0.0, 14.0, 14.0, Ink::Fg),
+    fill_rect(0.0, 1.0, 12.5, 12.5, Ink::Fg),
 ];
 /// The MASURAO band, solid to x~275, and the slanted bar left of the
 /// kanji. The band's decay into diagonal hatching past x 275 is the
@@ -1565,8 +1599,8 @@ pub const STORE: &[Prim] = &[
     Prim::Plate { group: Group::Category, index: 3, x: 148.0, y: 452.0, w: 213.0, h: 67.0, on: NAV_ON_3, off: NAV_OFF_3 },
     Prim::Plate { group: Group::Category, index: 4, x: 148.0, y: 519.0, w: 213.0, h: 67.0, on: NAV_ON_4, off: NAV_OFF_4 },
     // left margin
-    Prim::At { x: 61.0, y: 186.0, prims: CHIP },
-    txt_bold(64.0, 197.0, 10.0, Ink::OnSelect, "1"),
+    Prim::At { x: 62.0, y: 186.0, prims: CHIP },
+    txt_bold(65.0, 197.0, 10.0, Ink::OnSelect, "1"),
     // the shelf
     Prim::At { x: 437.0, y: 0.0, prims: SHELF_0 },
     Prim::At { x: 769.0, y: 0.0, prims: SHELF_1 },
@@ -1759,20 +1793,27 @@ const PANEL_BAR: &[Seg] = &[
     Seg::Line(1358.0, 516.0),
     Seg::Line(1358.0, 414.0),
 ];
-/// The maker's mark, an M (:242). The trace's path is relative from
-/// `M 1208,722`; these are the same points made absolute.
+/// The maker's mark (:241-252): a stencil "M" with both stems leaning
+/// in from the top, a shoulder on the left stem and a diagonal notch
+/// on the right one around a detached square dot. Absolute points of
+/// the trace's path, which starts at (1238.8,682.1).
 const MAKER_MARK: &[Seg] = &[
-    Seg::Line(1208.0, 683.0),
-    Seg::Line(1219.0, 683.0),
-    Seg::Line(1231.0, 701.0),
-    Seg::Line(1243.0, 683.0),
-    Seg::Line(1254.0, 683.0),
-    Seg::Line(1254.0, 722.0),
-    Seg::Line(1243.0, 722.0),
-    Seg::Line(1243.0, 702.0),
-    Seg::Line(1231.0, 718.0),
-    Seg::Line(1219.0, 702.0),
-    Seg::Line(1219.0, 722.0),
+    Seg::Line(1255.4, 682.1),
+    Seg::Line(1255.8, 698.3),
+    Seg::Line(1267.1, 682.1),
+    Seg::Line(1283.3, 682.1),
+    Seg::Line(1283.3, 707.1),
+    Seg::Line(1274.6, 714.6),
+    Seg::Line(1271.7, 719.6),
+    Seg::Line(1267.9, 725.0),
+    Seg::Line(1248.3, 725.0),
+    Seg::Line(1248.3, 714.6),
+    Seg::Line(1247.1, 714.6),
+    Seg::Line(1240.0, 725.0),
+    Seg::Line(1220.4, 725.0),
+    Seg::Line(1220.4, 699.6),
+    Seg::Line(1227.5, 698.8),
+    Seg::Line(1229.2, 697.1),
 ];
 
 pub const DASHBOARD: &[Prim] = &[
@@ -1847,8 +1888,10 @@ pub const DASHBOARD: &[Prim] = &[
     fill_rect(1140.0, 495.0, 216.0, 12.0, Ink::Dim),
     fill_rect(1140.0, 516.0, 186.0, 12.0, Ink::Dim),
     fill_rect(1140.0, 537.0, 193.0, 12.0, Ink::Dim),
-    fill_path(1208.0, 722.0, MAKER_MARK, Ink::Fg),
-    fill_rect(1208.0, 731.0, 89.0, 8.0, Ink::Border),
+    fill_path(1238.8, 682.1, MAKER_MARK, Ink::Fg),
+    fill_rect(1273.0, 715.0, 10.75, 11.7, Ink::Fg),
+    Prim::Text { x: 1252.0, y: 737.5, size: 8.0, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Middle, content: "PRECISION LIQUID" },
+    Prim::Text { x: 1252.0, y: 746.0, size: 8.0, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Middle, content: "POLYMER MUSCLE" },
     // margins (:249-251): the rotated micro-text runs as the trace's
     // own bars
     fill_rect(33.0, 463.0, 8.0, 113.0, Ink::Border),

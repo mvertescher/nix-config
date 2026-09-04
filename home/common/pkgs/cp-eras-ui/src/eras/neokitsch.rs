@@ -1264,7 +1264,9 @@ pub fn mailbox() -> Mailbox {
             paragraphs: &PARAGRAPHS,
         },
         buttons: MailButtons {
-            // four outlined RIFLES buttons, 184x39 on a 192 pitch, each
+            // four outlined RIFLES buttons, 184x39 on a 192 pitch (the photo
+            // steps 194, 191, 190: x 735, 929, 1120, 1310; the uniform pitch
+            // lands within 2px of each), each
             // with a bottom-left chamfer and a filled tab on its bottom
             // edge
             first: Frame::new(735.0, 684.0, 184.0, 39.0),

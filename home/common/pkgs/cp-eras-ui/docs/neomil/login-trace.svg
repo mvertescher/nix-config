@@ -23,7 +23,7 @@
            right, the second (T2) filled
          - a full-width hairline rule at y=188, x 42..1558
          - margin markers: a small "1" chip at x 60..72 y 347..359 (left)
-           and a "2" chip at x 1542..1556 (right), each with a dot and
+           and a "2" chip at x 1541..1553.5 (right), each with a dot and
            dashes to its left; rotated micro-text down both margins
            ("00032 05 54 08 CP" left; a down-arrow, "JHN 102 CKC 151 CC10
            AS5" and "KIROSHI" right)
@@ -37,7 +37,7 @@
            46, a miss, not a rounding); the notch depth reads 14.8, 15.2,
            15.0 (this prose had 14 against a path that drew 15):
              card 1 (x 372..625): the ACTIVE one. A solid #f63333 block
-               y 313..572 holding a darker avatar box x 452..546
+               y 315..570 holding a darker avatar box x 452..546
                y 386..487 (tab at top-left, hexagon glyph inside) and
                USER 01 in dark ink; then "password:", a dark password
                field x 372..625 y 602..634 with "**********  __", a
@@ -108,12 +108,12 @@
          chamfered top and bottom (column scans across cards 2 and 3 at
          photo scale, 2026-09-03: outer 389.7..496.0, inner 405..483) -->
     <path id="notch" d="M 0,390 L 15,405 V 483 L 0,496 Z"/>
-    <!-- margin chip: dashes, a dot, a filled square with a digit -->
+    <!-- margin chip: dashes, a dot, a 12.5 filled square with a digit (photo: 12.5x12.9 at (60.4,347.1) and (1540.8,347.1); the def used to be 14x14) -->
     <g id="chip">
       <rect x="-21" y="3" width="8" height="1.5"/>
       <rect x="-21" y="7" width="6" height="1.5"/>
       <rect x="-11" y="3" width="6" height="6"/>
-      <rect x="0" y="0" width="14" height="14"/>
+      <rect x="0" y="1" width="12.5" height="12.5"/>
     </g>
   </defs>
 
@@ -180,8 +180,8 @@
     <text x="63" y="357" font-size="10" font-weight="700" fill="#420f10">1</text>
     <text transform="translate(57,472) rotate(-90)" fill="#ae2729">00032 05 54 08 CP</text>
 
-    <use href="#chip" x="1542" y="346" fill="#f63333"/>
-    <text x="1545" y="357" font-size="10" font-weight="700" fill="#420f10">2</text>
+    <use href="#chip" x="1541" y="346" fill="#f63333"/>
+    <text x="1544" y="357" font-size="10" font-weight="700" fill="#420f10">2</text>
     <!-- down-arrow glyph x 1546..1552 y 410..434, dashes beside it -->
     <rect x="1548" y="410" width="2" height="18" fill="#f63333"/>
     <path d="M 1544,426 H 1554 L 1549,434 Z" fill="#f63333"/>
@@ -193,8 +193,10 @@
 
   <!-- ==== card 1: the active user, x 372..625 ==== -->
   <g>
-    <!-- solid red block y 313..572, top-right chamfer 51 -->
-    <path d="M 372,313 H 574 L 625,364 V 572 H 372 Z" fill="#f63333"/>
+    <!-- solid red block y 315..570 (photo half-maximum 315.4 / 570.2, the
+         313..572 drawn before 2026-09-04 included the glow), top-right
+         chamfer 51 -->
+    <path d="M 372,315 H 574 L 625,366 V 570 H 372 Z" fill="#f63333"/>
     <use href="#notch" x="372" fill="#080405"/>
     <rect x="372" y="390" width="1.5" height="106" fill="#ae2729"/>
     <!-- avatar box: tab x 452..498 y 386..393 over a square y 393..487 -->

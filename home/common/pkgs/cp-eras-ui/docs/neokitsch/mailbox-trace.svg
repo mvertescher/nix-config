@@ -72,7 +72,7 @@
            three lorem paragraphs at 17px on a 21.5 line pitch, x 738,
            lines 2 / 5 / 3, widest ~600px (to x~1322)
          - four outlined RIFLES buttons, 184x39 at y 684..723, x from
-           735 on a 192 pitch, each with a bottom-left chamfer and a
+           735 (then 929, 1120, 1310), each with a bottom-left chamfer and a
            filled tab on its bottom edge
          - letter boxes C (139,777) and D (735,777) with annotation
            micro-text in the foot
@@ -368,16 +368,19 @@
   </g>
 
   <!-- ==== four RIFLES buttons ==== -->
-  <!-- outlined in the DARKER gold (#c29a65 sampled, ~4px at 3840, 1.7
-       here — only the tabs are the bright #fdcf8c), 184x39 at y 684..723
-       on a 192 pitch from x 735; rounded
+  <!-- outlined in #ecbe82 at 1.25 (the 2026-09-03 re-cut, see the header;
+       this comment said the darker #c29a65 at 1.7 until 2026-09-04 — only
+       the tabs are the bright #fdcf8c), 184x39 at y 684..723, left edges
+       at x 735, 929, 1120, 1310 (photo 734.6 / 929.2 / 1119.6 / 1310.0:
+       steps 194, 191, 190, so not one pitch; the implementation's uniform
+       192 lands within 2px of each); rounded
        corners, the bottom-LEFT one cut by a 13x10 chamfer; a filled
        trapezoid tab sits on the bottom edge at x 866..903 -->
   <g id="riflebox">
     <path d="M 740,684 H 914 Q 919,684 919,689 V 718 Q 919,723 914,723 H 748 L 735,713 V 689 Q 735,684 740,684 Z" fill="none" stroke="#ecbe82" stroke-width="1.25"/>
     <path d="M 866,723 L 870,716 H 899 L 903,723 Z" fill="#fdcf8c"/>
   </g>
-  <use href="#riflebox" x="192"/>
+  <use href="#riflebox" x="194"/>
   <use href="#riflebox" x="385"/>
   <use href="#riflebox" x="575"/>
 

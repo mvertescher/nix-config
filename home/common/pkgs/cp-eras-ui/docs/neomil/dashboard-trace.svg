@@ -49,7 +49,7 @@
            not "nearly flat"), and steps 8px inward to x 1358 below the
            bar - the same bar-and-step motif as the store cards. Faint glitch
            echoes of the edge sit 3 and 5px to its right; no scrollbar.
-           A maker's mark at its foot
+           A stencil-cut maker's mark at its foot over two lines of micro-text
          - rotated micro-text down both margins, and a two-cell OUTLINED
            footer tape x 1209..1354, y 864..888 (bright 1px frame, divider
            at x 1270.5; a code in the left cell, two lines of micro-text in
@@ -238,10 +238,19 @@
       <rect x="1140" y="516" width="186" height="12"/>
       <rect x="1140" y="537" width="193" height="12"/>
     </g>
-    <!-- maker's mark at the foot -->
-    <path d="M 1208,722 V 683 h 11 l 12 18 12,-18 h 11 v 39 h -11 v -20 l -12,16 -12,-16 v 20 Z"
-          fill="#ef3333"/>
-    <rect x="1208" y="731" width="89" height="8" fill="#671b21"/>
+    <!-- maker's mark at the foot: a stencil "M" whose stems are cut, not a
+         plain M. Measured on img-07 at 2.4x (re-scanned 2026-09-04): both
+         stems lean in from the top (outer edges (1239,682)->(1229,697) and
+         (1267,682)->(1256,698)), the left stem drops a shoulder to x 1220 and
+         the right stem is notched at (1283,707)->(1275,715) around a detached
+         10.75x11.7 square dot at (1273,715). Bbox x 1220..1287, y 682..725.
+         Below it two centred lines of 8px micro-text, not a bar. -->
+    <path d="M 1238.8,682.1 h 16.6 l 0.4,16.2 11.3,-16.2 h 16.2 v 25 l -8.7,7.5 -2.9,5 -3.8,5.4 h -19.6 v -10.4 h -1.2 l -7.1,10.4 h -19.6 v -25.4 l 7.1,-0.8 1.7,-1.7 Z" fill="#ef3333"/>
+    <rect x="1273" y="715" width="10.75" height="11.7" fill="#ef3333"/>
+    <g font-family="Rajdhani" font-size="8" font-weight="700" fill="#ef3333" text-anchor="middle">
+      <text x="1252" y="737.5">PRECISION LIQUID</text>
+      <text x="1252" y="746">POLYMER MUSCLE</text>
+    </g>
   </g>
 
   <!-- ==== margins: rotated micro-text down both sides ==== -->

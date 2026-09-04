@@ -41,7 +41,7 @@
            to you / I'm worried man / I'm worried man / Heist data sent to
            you
          - a scroll rail at x 542..548 the height of the list, thumb at
-           y 313..384; a scroll widget at x 556..578, y 691..760 (up/down
+           y 313..384; a scroll widget at x 556..578, y 693..759 (thin up/down
            arrows, an R in a circle, "SCRLL 85402")
          - RIGHT: "Urgent Information (!)" at (742,287), then a big
            outlined panel x 729..1450, y 312..699 (8px chamfers on its
@@ -112,7 +112,7 @@
       <rect x="-21" y="3" width="8" height="1.5"/>
       <rect x="-21" y="7" width="6" height="1.5"/>
       <rect x="-11" y="3" width="6" height="6"/>
-      <rect x="0" y="0" width="14" height="14"/>
+      <rect x="0" y="1" width="12.5" height="12.5"/>
     </g>
     <!-- one list row: 270x68 with a 12px bottom-left chamfer, plus the
          spine at x -4..-1 -->
@@ -205,8 +205,8 @@
 
   <!-- ==== margins ==== -->
   <g font-family="Rajdhani" font-size="11" letter-spacing="1">
-    <use href="#chip" x="60" y="220" fill="#e63132"/>
-    <text x="63" y="231" font-size="10" font-weight="700" fill="#200a0b">1</text>
+    <use href="#chip" x="61" y="220" fill="#e63132"/>
+    <text x="64" y="231" font-size="10" font-weight="700" fill="#200a0b">1</text>
     <use href="#chip" x="1542" y="220" fill="#e63132"/>
     <text x="1545" y="231" font-size="10" font-weight="700" fill="#200a0b">2</text>
     <text transform="translate(58,483) rotate(-90)" textLength="88" fill="#a8282b">00032 05 54 08 CP</text>
@@ -301,11 +301,14 @@
   <g>
     <rect x="542" y="313" width="6" height="565" fill="#3a0f12"/>
     <rect x="542" y="313" width="6" height="71" fill="#a8282b"/>
+    <!-- the two arrows (re-measured 2026-09-04 on the photo): thin, both
+         spanning y 692.7..714.6, shafts ~1 wide, heads 4.7 wide - the
+         first pass had them 10 wide and staggered 687..715 -->
     <g fill="#e63132">
-      <rect x="560" y="697" width="2" height="18"/>
-      <path d="M 556,700 L 561,691 L 566,700 Z"/>
-      <rect x="571" y="687" width="2" height="18"/>
-      <path d="M 567,706 L 572,715 L 577,706 Z"/>
+      <rect x="561.3" y="704" width="1.5" height="10.6"/>
+      <path d="M 559.7,704.6 L 562,692.7 L 564.4,704.6 Z"/>
+      <rect x="571.4" y="692.7" width="1.5" height="9"/>
+      <path d="M 569.8,701 L 574.6,701 L 572.2,714.6 Z"/>
     </g>
     <circle cx="567" cy="731" r="10.5" fill="none" stroke="#e63132" stroke-width="2"/>
     <text x="567" y="736" font-family="Rajdhani" font-size="13" font-weight="700"

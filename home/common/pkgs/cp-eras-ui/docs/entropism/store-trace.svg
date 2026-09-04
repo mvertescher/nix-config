@@ -18,9 +18,10 @@
          - a full-width header strip, x 49..1551, y 43..69, dividers at
            x 467 and x 1357: DIGITAL DISTRIBUTION SOFTWAREV2 / STORE ACCESS
            SCREEN / FLAIR TRS 5MMP
-         - the 4ST logotype, x 134..308, y 102..160: "4S" solid heavy
+         - the 4ST logotype, x 138..308, y 102..152 (photo 137.5..305, 101..152.5;
+           this prose said 134..308 / 102..160 until 2026-09-04): "4S" solid heavy
            sage (extractor: 4 at [138,105,59,46], S at [202,102,52,49]),
-           the T outline-only; S T O R E letter-spaced beneath, y 160..174
+           the T outline-only; S T O R E letter-spaced beneath, caps y 162..174
          - a CUSTOMER box, outlined, x 113..330, y 194..216, CUSTOMER left
            and #NC488402 right-aligned; two unboxed key/value lines under
            it: LOYALTY DISCOUNT 10% (baseline 243), LAST UPDATE 10/05/2077

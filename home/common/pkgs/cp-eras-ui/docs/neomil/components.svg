@@ -95,12 +95,13 @@
          59x57, bottom-left chamfer 15 -->
     <path id="badge" d="M 0,0 H 59 V 57 H 15 L 0,42 Z"/>
     <!-- login-trace.svg / mailbox-trace.svg / store-trace.svg #chip:
-         two dashes, a 6x6 dot, a 14x14 filled square -->
+         two dashes, a 6x6 dot, a 12.5 filled square one below the origin
+         (photo squares 12.1..12.9; the def was 14x14 until 2026-09-04) -->
     <g id="chip">
       <rect x="-21" y="3" width="8" height="1.5"/>
       <rect x="-21" y="7" width="6" height="1.5"/>
       <rect x="-11" y="3" width="6" height="6"/>
-      <rect x="0" y="0" width="14" height="14"/>
+      <rect x="0" y="1" width="12.5" height="12.5"/>
     </g>
     <!-- login-trace.svg #notch: 15 deep, y 390..496, ends cut 15 (top)
          and 13 (bottom); re-measured on the photo 2026-09-03 -->
@@ -544,8 +545,8 @@
       <text x="63" y="357" font-size="10" font-weight="700" fill="#420f10">1</text>
     </g>
     <g transform="translate(-731,-82)">
-      <use href="#chip" x="1542" y="346" fill="#f63333"/>
-      <text x="1545" y="357" font-size="10" font-weight="700" fill="#420f10">2</text>
+      <use href="#chip" x="1541" y="346" fill="#f63333"/>
+      <text x="1544" y="357" font-size="10" font-weight="700" fill="#420f10">2</text>
     </g>
   </g>
   <!-- TOP STRIP, STORE. store-trace.svg x 752..1000 y 31..47: the chip
@@ -798,17 +799,18 @@
       <text x="527" y="534">EMPTY</text><text x="527" y="547.5">SOCKET</text>
     </g>
   </g>
-  <!-- SCROLL WIDGET. mailbox-trace.svg x 556..578 y 687..760: an up
-       arrow (2x18 shaft at 560, head 10x9) beside a down arrow (shaft
-       at 571, head below), an r 10.5 circle stroked 2 with a 700/13
-       "R" in it, and SCRLL / 85402 in 6px under it.
-       Translated by (+604,-241). -->
+  <!-- SCROLL WIDGET. mailbox-trace.svg x 556..578 y 693..759: two THIN
+       arrows both spanning y 692.7..714.6 (shafts 1.5 wide at x 561.3 and
+       571.4, heads 4.7 wide; re-measured 2026-09-04, the first pass had
+       10-wide heads staggered 687..715), an r 10.5 circle stroked 2 with
+       a 700/13 "R" in it, and SCRLL / 85402 in 6px under it.
+       Translated by (+604,-231). -->
   <g transform="translate(604,-231)">
     <g fill="#e63132">
-      <rect x="560" y="697" width="2" height="18"/>
-      <path d="M 556,700 L 561,691 L 566,700 Z"/>
-      <rect x="571" y="687" width="2" height="18"/>
-      <path d="M 567,706 L 572,715 L 577,706 Z"/>
+      <rect x="561.3" y="704" width="1.5" height="10.6"/>
+      <path d="M 559.7,704.6 L 562,692.7 L 564.4,704.6 Z"/>
+      <rect x="571.4" y="692.7" width="1.5" height="9"/>
+      <path d="M 569.8,701 L 574.6,701 L 572.2,714.6 Z"/>
     </g>
     <circle cx="567" cy="731" r="10.5" fill="none" stroke="#e63132" stroke-width="2"/>
     <text x="567" y="736" font-family="Rajdhani" font-size="13" font-weight="700"
@@ -835,8 +837,8 @@
   <text x="30" y="566" font-family="Rajdhani" font-size="13" letter-spacing="4.5" fill="#df3131">3 // CARDS AND PANELS</text>
 
   <!-- USER CARD, ACTIVE. login-trace.svg x 372..625, y 313..709: a
-       SOLID #f63333 block y 313..572 with a top-RIGHT chamfer 51
-       ((574,313) to (625,364); the trace carried 46 until 2026-09-03,
+       SOLID #f63333 block y 315..570 with a top-RIGHT chamfer 51
+       ((574,315) to (625,366); the trace carried 46 until 2026-09-03,
        when the photo was re-measured at 50.8..52.1); the notch every
        card carries cut into its left edge, 15 deep, y 390..496, ends
        chamfered 15 top and 13 bottom, filled with the ground and edged
@@ -852,7 +854,7 @@
        and two 7.5px notice lines at y 700 and 709.
        Translated by (-342,+261). -->
   <g transform="translate(-342,261)">
-    <path d="M 372,313 H 574 L 625,364 V 572 H 372 Z" fill="#f63333"/>
+    <path d="M 372,315 H 574 L 625,366 V 570 H 372 Z" fill="#f63333"/>
     <use href="#notch" x="372" fill="#080405"/>
     <rect x="372" y="390" width="1.5" height="106" fill="#ae2729"/>
     <path d="M 452,386 H 492 L 498,393 H 452 Z" fill="#c72a2b"/>
@@ -884,7 +886,7 @@
     </g>
   </g>
   <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.2" fill="#96282d">
-    <text x="30" y="982">USER CARD, ACTIVE (login) . 253 wide, block y 313..572, chamfer TOP-RIGHT 51, solid #f63333</text>
+    <text x="30" y="982">USER CARD, ACTIVE (login) . 253 wide, block y 315..570, chamfer TOP-RIGHT 51, solid #f63333</text>
     <text x="30" y="991">notch 15 deep x 106 tall at y +77, ends cut 15 top / 13 bottom, ground filled, 1.5 edge line #ae2729</text>
     <text x="30" y="1000">avatar 94x94 #c72a2b + a 46x7 tab, right end cut 6 . name 18 ls 1.5 centred, ink #420f10</text>
     <text x="30" y="1009">INPUT FIELD 252x32, fill #430e0f, stroke #ae2729 1, mask 12 ls 3 . label 14 above it</text>
@@ -1105,7 +1107,9 @@
        copy is drawn as measured RUN BOXES 12 high on a 21 pitch, five
        then four, x+12, widths 121..216 - that is photographic
        measurement, not geometry an implementation should copy. A
-       maker's mark sits at the foot, an M of 89x39 over an 89x8 bar.
+       stencil-cut maker's mark sits at the foot - bbox 67x43 at (1220,682),
+       both stems leaning in, a detached square dot at (1273,715) - over two
+       centred 8px lines PRECISION LIQUID / POLYMER MUSCLE (not a bar).
        Translated by (-216,+260). -->
   <g transform="translate(-216,260)">
     <path d="M 1128,314 H 1358 L 1366,322 V 508 L 1358,516 V 756 H 1170 L 1128,714 Z"
@@ -1129,15 +1133,18 @@
       <rect x="1140" y="516" width="186" height="12"/>
       <rect x="1140" y="537" width="193" height="12"/>
     </g>
-    <path d="M 1208,722 V 683 h 11 l 12 18 12,-18 h 11 v 39 h -11 v -20 l -12,16 -12,-16 v 20 Z"
-          fill="#ef3333"/>
-    <rect x="1208" y="731" width="89" height="8" fill="#671b21"/>
+    <path d="M 1238.8,682.1 h 16.6 l 0.4,16.2 11.3,-16.2 h 16.2 v 25 l -8.7,7.5 -2.9,5 -3.8,5.4 h -19.6 v -10.4 h -1.2 l -7.1,10.4 h -19.6 v -25.4 l 7.1,-0.8 1.7,-1.7 Z" fill="#ef3333"/>
+    <rect x="1273" y="715" width="10.75" height="11.7" fill="#ef3333"/>
+    <g font-family="Rajdhani" font-size="8" font-weight="700" fill="#ef3333" text-anchor="middle">
+      <text x="1252" y="737.5">PRECISION LIQUID</text>
+      <text x="1252" y="746">POLYMER MUSCLE</text>
+    </g>
   </g>
   <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.2" fill="#96282d">
     <text x="912" y="1028">INFO PANEL (dashboard) . 238x442 . TOP-RIGHT chamfer 8, BOTTOM-LEFT chamfer 42,</text>
     <text x="912" y="1037">the other two corners SQUARE . fill #671b21 at 0.55, stroke #ef3333 1.5</text>
     <text x="912" y="1046">edge bar 8x111 at y +91, both ends cut 8, edge steps 8 inward below it, two 1.5 echoes 3 and 5 out</text>
-    <text x="912" y="1055">heading 700/20 at +12,+19 . body on a 21 pitch . MAKER MARK 89x56 at the foot</text>
+    <text x="912" y="1055">heading 700/20 at +12,+19 . body on a 21 pitch . STENCIL MAKER MARK 67x43 + two 8px lines at the foot</text>
   </g>
 
   <!-- MARGIN MARKS. store-trace.svg x 30..69 y 477..584: the MASURAO

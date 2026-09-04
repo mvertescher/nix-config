@@ -627,11 +627,23 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
     masks are `Prim::Masked` since later the same day (the "four
     grounds" item above); neokitsch's `#bluemask` landed as `BLUE_MASK`
     under the neokitsch backdrops item, done the same day.
-- [ ] Follow-ups the era agents flagged and did not touch: neomil
-  `components.svg:1113` calls the maker's mark "an M of 89x39" but the
-  trace path (`dashboard-trace.svg:242`) is 46 wide — the 89 is the bar
-  under it (**vision fix, still open**: the standing rule keeps coding
-  models out of `docs/*.svg`). The other two were doc rot, settled
+- [x] Follow-ups the era agents flagged and did not touch. The neomil
+  maker's-mark one (`components.svg:1113` "an M of 89x39", trace path 46
+  wide) was mis-diagnosed: re-measured on `img-07` at 2.4x on
+  2026-09-04, the mark is not an M and the "89x8 bar" under it is not
+  a bar. It is a stencil-cut M — both stems lean in from the top, the
+  left one drops a shoulder to x 1220, the right one is notched
+  diagonally around a detached ~11px square dot at (1273,715) — with
+  bbox x 1220..1287, y 682..725, and beneath it two centred 8px lines
+  of micro-text, PRECISION LIQUID / POLYMER MUSCLE, at y 737.5 / 746.
+  Trace, `components.svg` (prose, translated copy and the caption) and
+  `neomil.rs` `MAKER_MARK` + DASHBOARD prims now carry that geometry;
+  G2i pixel diff 0.32%, golden dashboard-neomil re-taken. The design
+  inventory now splits the mark into two "chamfer" stems that the
+  implementation's single blob does not pair with (44/53 matched,
+  98% area, still PASS) — an artefact of the inventory's ink
+  quantisation, not a drawing gap; the crops agree by eye. The other
+  two were doc rot, settled
   2026-09-04: neokitsch `STRATA`'s comment now says its one reader is
   the bar's mail example panel through `Chrome::DeviceFrame`, not the
   dashboard; kitsch `style.ticket`'s comment (`kitsch.rs:343-355`)
@@ -871,40 +883,75 @@ renders) resolved them as follows:
   right. `components.svg` copies and captions updated for both eras;
   `sources.md` rows and G1 tables too. Renders/overlays were in
   `/tmp/followup/nm/` and `/tmp/nkfix/` (gone on reboot).
-- [ ] **Neomil dashboard diamonds are truncated at their outward tips**
-  (vision work). Row 1's three top tips and row 2's three bottom tips
-  are cut flat in the photo — a 30px plateau at y 370.8 (x 319.6..349.2
-  etc.) and 28..29px at y 682.9 — consistent with a 104 half-diagonal
-  diamond cut 14..15 short of the tip; the inner 68 outline is cut the
-  same way; inward tips run full. `dashboard-trace.svg:95` says "outer
-  tips run full", the opposite of the photo, and `#cell` draws six full
-  diamonds. Needs two cell variants or a clip, propagates to
-  `components.svg` and to the iced diamond; may move the G1i template
-  fit. Measured 2026-09-03, seen in a crop, not fixed.
-- [ ] **Neokitsch dashboard detail panel geometry** (vision work).
-  `dashboard-trace.svg` prose "(1168,259)..(1400,725)" is closer than
-  the `<use href="#npanel" x="1168" y="253">`: photo top 259.8, left
-  1170.8, shoulder y 290 (path 278), chamfer 30 wide (path 22; the defs
-  comment says 42). Its six rings are drawn as outward offsets −3..−18
-  while the photo nests them inward like the cards (top lines 623.5 /
-  630.5 / 638 at 3840). Reshape the panel and re-derive the rings in
-  one measured pass; the overlay shows the doubling clearly. Also the
-  card labels sit ~8px low (MATRIX baseline 358 vs ~350) and the front
-  stroke reads 1.25 wide / (251,194,98), trace 1.6 / #bd8951.
-- [ ] **Small trace prose/path residue, measured and left** (fix in the
-  next pass of each file, not worth a gate run each): neomil login
-  `#chip` def 14x14 vs photo ~12.3x12.5 (prose right, def 2px big,
-  shared with mailbox and the sheet); neomil dashboard footer tape third
-  cell ends 1354 vs photo 1358.8; neomil mailbox scroll widget prose
-  y 691..760 vs paths from 687, fourth button pitch 179 vs "5 apart";
-  neomil login card 1 y 313..572 vs photo 315.8..569.4 (inside the
-  glow); entropism `store-trace.svg` 4ST prose bbox 134..308/102..160 vs
-  glyph paths 138..308/102..151; neokitsch `mailbox-trace.svg:383-385`
-  RIFLES comment says #c29a65 1.7 / "192 pitch", path is #ecbe82 1.25
-  at +192/+385/+575; neokitsch `login-trace.svg:250-251` last two
-  strands overshoot "to y~812" by up to 5px. **`neokitsch/bar.svg` §10
-  chose its menu-panel chamfer against the old `#ncard` numbers**; the
-  citation is annotated as historical, the panel geometry not revisited.
+- [x] **Neomil dashboard diamonds are truncated at their outward tips**
+  — stale when re-read on 2026-09-04: the trace fix had already landed
+  in the 2026-09-03 conversion wave ("two trace fixes first" above).
+  `dashboard-trace.svg:27-36` and `:107-113` now say EVERY OUTWARD TIP
+  IS CUT FLAT at 89 (inner outline at 59) and the defs are two explicit
+  variants, `#cell-up` / `#cell-down`; `components.svg:113-130` mirrors
+  them and `neomil.rs` `CELL_UP` / `CELL_DOWN` (`:1660-1695`) transcribe
+  the same points. Checked on the G2i render: D1's top reads a ~32px
+  plateau at y 369..375, not a point. Original measurement kept for the
+  record: photo plateaus 30px at y 370.8 and 28..29px at y 682.9,
+  i.e. a 104 half-diagonal cut 15 short.
+- [x] **Neokitsch dashboard detail panel geometry** — stale when
+  re-read on 2026-09-04: every sub-claim landed in the 2026-09-03
+  conversion wave. `dashboard-trace.svg:42-58` and the `#npanel` def
+  (`:160-182`) place the panel at (1170.8,259.7), 230.4x465.3, with the
+  stepped shoulder at local y 30.3, the S-curve to x 110 and r10/r7.5
+  corners; the rings are FOUR nested inside (`#npring1..4`, `:183-200`);
+  the card labels sit at their measured baselines (`:416-425`, MATRIX
+  366.3); the front stroke is 1.2 `#e8ab66` (`:384-388`, with the
+  reasoning for not going to 1.0). `neokitsch.rs` mirrors it: `NPANEL`
+  (`:2115-2174`), `HUB_EDGE = rgb(0xe8ab66)` (`:1935`), MATRIX at
+  `txt_end(338.0, 366.3, …)` (`:2402`). Original measurements kept for
+  the record: photo top 259.8, left 1170.8, shoulder y 290, chamfer 30
+  wide, ring top lines 623.5 / 630.5 / 638 at 3840, front stroke
+  1.25 / (251,194,98).
+- [x] **Small trace prose/path residue** — worked through 2026-09-04,
+  each re-measured on its photo before touching the file; only the
+  `bar.svg` note at the end stays open:
+  - neomil `#chip`: the photo squares are 12.5x12.9 (login), 12.9
+    (mailbox), 12.5x12.1 (store), never 14 — the *def* was wrong, and
+    the login prose's right chip "1542..1556" too (photo 1540.8). Def
+    is now a 12.5 square at (0,1) in all four files, login's right use
+    at x 1541, mailbox's left at 61, store's at 62 (photo 61.25 /
+    62.5). `neomil.rs` login `chips` are 12.5 at y 347 and the store
+    `CHIP` prim matches; `screens/login.rs` `Fixture::Margins` now
+    places ticks, dot and the right-margin arrow from the square, so
+    the trace's absolute arrow (1548,410) still lands.
+  - neomil dashboard footer tape "third cell ends 1354 vs photo
+    1358.8": not a defect — `dashboard-trace.svg:263-269` already says
+    the 1358 is the dim echo of the frame 3px right and down.
+  - neomil mailbox scroll widget: the photo's two arrows are THIN
+    (shafts 1.5, heads 4.7) and both span y 692.7..714.6, not 10-wide
+    heads staggered 687..715. Trace, `components.svg` and
+    `neomil.rs` `SCROLL_UP`/`SCROLL_DOWN` redrawn; the ring and the
+    "R" the iced mailbox never drew are now `SCROLL_RING` (four
+    cubics) + a `strong` "R" (`CHROME` 38 -> 42 pieces). Fourth button:
+    photo left edges 728.75 / 908.3 / ~1088 / 1267.1 — the trace's
+    1267 is the photo, "5 apart" is ±1; left.
+  - neomil login card 1: photo half-maximum edges 315.4 / 570.2; the
+    313..572 included the glow. Block now y 315..570 (trace,
+    `components.svg`, `neomil.rs` `Plot::new(372,315,253,255)`), and
+    the era table's `Bevel::tr(46)` went to the trace's 51 at the same
+    time (the "fix with the login table, not alone" note under the
+    gate-artefacts item).
+  - entropism `store-trace.svg` 4ST: photo glyphs x 137.5..305,
+    y 101..152.5 — the paths (138..308, 102..151) were right and the
+    prose's "y 102..160" wrong; prose corrected.
+  - neokitsch `mailbox-trace.svg` RIFLES: local comment updated to the
+    header's #ecbe82 1.25; photo left edges 734.6 / 929.2 / 1119.6 /
+    1310.0 (steps 194, 191, 190), second use moved +192 -> +194, the
+    implementation's uniform `dx: 192` documented as within 2px.
+  - neokitsch `login-trace.svg` last two strands: their r 8 curl ran
+    past y 812 by 1.1 / 5px. Tighter curls (r 6.9 / r 3) in the trace
+    and the same clamp (`curl = CURL.min(end - oy)`) in
+    `screens/login.rs` `wire_band`; golden login-neokitsch re-taken
+    (27 px differ).
+  - **`neokitsch/bar.svg` §10 chose its menu-panel chamfer against the
+    old `#ncard` numbers**; the citation is annotated as historical,
+    the panel geometry not revisited. Still open.
 - [x] **`src/eras/*.rs` vs traces — triaged, not applied.** Every
   delta-box line is classified in **`ERAS-DELTA.md`** by consumer:
   (a) read by a gated screen, (b) dashboard/bar only, (c) dead, (d) doc
@@ -1157,8 +1204,8 @@ four bars, done in this order so the Rust is written once.
   evening run happened to capture before it painted (see the ticked
   "gate artefacts" item above). 72/89 are the numbers; both PASS.
   Neomil login held 96 with the trace chamfer now 51 (the era table
-  still draws 46 — a measured 5px delta the gate absorbs; fix with the
-  login table, not alone). Two accepted FAILs, do not chase (one since
+  drew 46 until 2026-09-04, when the residue item above moved it to 51
+  alongside the card-1 block and chip fixes). Two accepted FAILs, do not chase (one since
   resolved):
   - **entropism login 28%** — **resolved 2026-09-04, 100% PASS.** The
     explanation that stood here (linear-space AA splitting hairline

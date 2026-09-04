@@ -1068,24 +1068,26 @@ fn fixture(pen: &mut Pen, fixture: &Fixture) {
         Fixture::None => {}
         Fixture::Margins { chips, labels } => {
             for (i, chip) in chips.iter().enumerate() {
+                // `chip` is the numbered square; the trace's `#chip` origin is
+                // one above it, so its ticks and dot sit at y+2 here.
                 let (x, y) = (chip.x, chip.y);
-                pen.box_at(Plot::new(x - 21.0, y + 3.0, 8.0, 1.5), Ink::Fg);
-                pen.box_at(Plot::new(x - 21.0, y + 7.0, 6.0, 1.5), Ink::Fg);
-                pen.box_at(Plot::new(x - 11.0, y + 3.0, 6.0, 6.0), Ink::Fg);
+                pen.box_at(Plot::new(x - 21.0, y + 2.0, 8.0, 1.5), Ink::Fg);
+                pen.box_at(Plot::new(x - 21.0, y + 6.0, 6.0, 1.5), Ink::Fg);
+                pen.box_at(Plot::new(x - 11.0, y + 2.0, 6.0, 6.0), Ink::Fg);
                 pen.box_at(Plot::new(x, y, chip.w, chip.h), Ink::Fg);
                 // The right margin carries a down-arrow under its chip.
                 if i + 1 == chips.len() {
-                    pen.box_at(Plot::new(x + 6.0, y + 64.0, 2.0, 18.0), Ink::Fg);
+                    pen.box_at(Plot::new(x + 7.0, y + 63.0, 2.0, 18.0), Ink::Fg);
                     pen.poly(
                         &[
-                            (x + 2.0, y + 80.0),
-                            (x + 12.0, y + 80.0),
-                            (x + 7.0, y + 88.0),
+                            (x + 3.0, y + 79.0),
+                            (x + 13.0, y + 79.0),
+                            (x + 8.0, y + 87.0),
                         ],
                         Ink::Fg,
                     );
-                    pen.box_at(Plot::new(x + 13.0, y + 66.0, 1.5, 4.0), Ink::Dim);
-                    pen.box_at(Plot::new(x + 13.0, y + 73.0, 1.5, 4.0), Ink::Dim);
+                    pen.box_at(Plot::new(x + 14.0, y + 65.0, 1.5, 4.0), Ink::Dim);
+                    pen.box_at(Plot::new(x + 14.0, y + 72.0, 1.5, 4.0), Ink::Dim);
                 }
             }
             pen.legends(labels);
@@ -1185,10 +1187,13 @@ fn wire_band(pen: &mut Pen, outer: f32, inner: f32, end: f32, strands: usize) {
     let strand = |p: &mut canvas::path::Builder, i: usize, g: Grid, closed: bool| {
         let (oy, iy, lx, rx) = geometry(i);
         let bow = 0.55 * (rx - lx);
+        // The curl ends at `end`; a strand within CURL of it takes a
+        // tighter radius rather than overshooting (the trace's last two).
+        let curl = CURL.min(end - oy).max(0.0);
         if !closed {
             p.move_to(g.at(X0, end));
-            p.line_to(g.at(X0, oy + CURL));
-            p.quadratic_curve_to(g.at(X0, oy), g.at(X0 + CURL, oy));
+            p.line_to(g.at(X0, oy + curl));
+            p.quadratic_curve_to(g.at(X0, oy), g.at(X0 + curl, oy));
         } else {
             p.move_to(g.at(X0, oy));
         }
@@ -1201,8 +1206,8 @@ fn wire_band(pen: &mut Pen, outer: f32, inner: f32, end: f32, strands: usize) {
             g.at(MIRROR - lx, oy),
         );
         if !closed {
-            p.line_to(g.at(X1 - CURL, oy));
-            p.quadratic_curve_to(g.at(X1, oy), g.at(X1, oy + CURL));
+            p.line_to(g.at(X1 - curl, oy));
+            p.quadratic_curve_to(g.at(X1, oy), g.at(X1, oy + curl));
             p.line_to(g.at(X1, end));
         } else {
             p.line_to(g.at(X1, oy));

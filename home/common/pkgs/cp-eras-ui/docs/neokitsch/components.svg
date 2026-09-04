@@ -753,7 +753,7 @@
   <text x="1189" y="680.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">no panel, no outline, no fill · heading 15px 700 ls 1.15 #f8c884 · FROM: 11.5px 600 ls 1.65 #f3c583 · body</text>
   <text x="1189" y="688.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">17px 600 ls 0.3 on a 21.5 line pitch, x 738, widest run 600, paragraph gaps 43 / 42</text>
   <text x="1189" y="706" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">6  OUTLINED BUTTON, MAILBOX</text>
-  <!-- OUTLINED BUTTON. mailbox-trace.svg: four RIFLES buttons 184x39 at y 684..723, x from 735 on a 192 pitch. r5 corners with the bottom LEFT cut by a 13x10 chamfer, outline #ecbe82 1.25, a filled trapezoid tab #fdcf8c (37 base / 29 top / 7 tall) sitting INSIDE the outline on the bottom edge at x 866..903, and a left aligned label at x+22, 16px 500 ls 1, #f9cb8a. Placed at (1189,718): translate(454 34) -->
+  <!-- OUTLINED BUTTON. mailbox-trace.svg: four RIFLES buttons 184x39 at y 684..723, left edges x 735, 929, 1120, 1310 (~192 pitch). r5 corners with the bottom LEFT cut by a 13x10 chamfer, outline #ecbe82 1.25, a filled trapezoid tab #fdcf8c (37 base / 29 top / 7 tall) sitting INSIDE the outline on the bottom edge at x 866..903, and a left aligned label at x+22, 16px 500 ls 1, #f9cb8a. Placed at (1189,718): translate(454 34) -->
   <g transform="translate(454 34)">
   <use href="#riflebox"/>
   <g font-family="Rajdhani">
