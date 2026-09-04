@@ -625,12 +625,14 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
 - [ ] Follow-ups the era agents flagged and did not touch: neomil
   `components.svg:1113` calls the maker's mark "an M of 89x39" but the
   trace path (`dashboard-trace.svg:242`) is 46 wide — the 89 is the bar
-  under it (vision fix); neokitsch `STRATA` doc comment (~`:66-68`)
-  still says "dashboard top bar / footer" though the dashboard no
-  longer reads `Chrome::DeviceFrame` (only `panels::mail` does); kitsch
-  `style.ticket` now has no reader at all — every `Ticket` caller
-  passes `Ticket::default()` and nothing calls `Surface::ticket()` —
-  which feeds the widget-vs-canvas item.
+  under it (**vision fix, still open**: the standing rule keeps coding
+  models out of `docs/*.svg`). The other two were doc rot, settled
+  2026-09-04: neokitsch `STRATA`'s comment now says its one reader is
+  the bar's mail example panel through `Chrome::DeviceFrame`, not the
+  dashboard; kitsch `style.ticket`'s comment (`kitsch.rs:343-355`)
+  already recorded that nothing reads it and why `Ticket` cannot
+  describe the trace's `#nav` chevron — nothing to change there, and
+  the widget-vs-canvas item below carries the decision.
 
 ### Trace improvements (2026-09-02)
 
@@ -1019,22 +1021,23 @@ Open:
     panel edge (iced clips), the haze's blue annulus, window label at
     weight 400. Each needs a widget, not a value — see "widget gaps"
     under the conversion wave.
-- [ ] Stale claims — the four era `README.md`s were rewritten
+- [x] Stale claims — the four era `README.md`s were rewritten
   2026-09-03 (dashboard composites no longer described as real;
-  numbers now point at the trace headers). Still stale, all pointing
-  at the same root: `src/style.rs` `Layout::OpsCharts` / `TileRow`
-  docs describe invented compositions; `src/eras/entropism.rs` :4 "1px
-  strokes", :5 "doc #24-32", the `TileRow` block "single row of four
-  tiles … #42" (42 is the store; the trace is a hub);
-  `src/screens/dashboard.rs` :49-64 / :225-234 / :251-259 and
-  `src/widgets/charts.rs` :7,17 "straight off the traces";
-  `src/eras/neomil.rs` :9 and `src/theme.rs` :7,10,189 cite
-  `src/colors.rs`, which is gone; `src/eras/kitsch.rs` :92-107 overhang
-  12/18 where `store-trace.svg` measures 27 on 35; crate `README.md`
-  :54-58, :66, :94 (neokitsch double-gold frame — an invention per
-  `sources.md:183`), :171-173, :294-312; `docs/sources.md` :26-29 now
-  behind the READMEs. All of it collapses into the `Layout` decision
-  above (fold OpsCharts/TileRow back to ModuleHub) — fix it there, once.
+  numbers now point at the trace headers). Swept 2026-09-04 against
+  the tree: the `Layout` fold had already taken most of the list with
+  it (`OpsCharts`/`TileRow` are gone from `style.rs`, `charts.rs` is
+  gone, entropism.rs :4-7 and kitsch.rs's overhang comment were
+  corrected in place, the crate README's neokitsch double-gold frame
+  is described as the invention it was). What was still wrong and is
+  now fixed: `src/theme.rs` :7,10,189 and `src/eras/neomil.rs` :12
+  cited `src/colors.rs`, deleted in `61db2ae` (now say so and point
+  at `Theme::fallback`); the crate README said dashboard blocks could
+  still be `&[]` (all four are transcribed) and listed a neokitsch
+  BASKET panel "on the mailbox footer" as not yet done — no trace
+  puts BASKET on the mailbox (it is the store's plate, drawn), and the
+  mailbox notch it also named is `sel_notch`, drawn since 2026-09-03.
+  `docs/sources.md` :26-29 is not stale: it says the READMEs' old run
+  numbers are shifted by ten, which is still the fact.
   Unverified README claims the docs pass left in place: kitsch bezel
   #f08c1e and #fcbb15, neokitsch #c78948, the neomil `dashboard.svg`
   wordmark vs `dashboard.rs:225-234` "wordmark" (moot: the SVG is

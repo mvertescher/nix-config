@@ -306,16 +306,10 @@ The dashboard is the newest of the trace-driven screens (2026-09-03):
 era's ground, `Message::Select` on a click, `Style::dashboard_selection`
 as the opening state -- and everything it draws is the era's
 `Style::dashboard` scene, transcribed from `docs/<era>/dashboard-trace.svg`
-into the `// --- dashboard ---` block of `src/eras/<era>.rs`. The
-transcriptions land per era; an era whose block is still `&[]` renders
-its ground and nothing else.
+into the `// --- dashboard ---` block of `src/eras/<era>.rs`. All four
+blocks are transcribed and gated (G2i, `docs/PIPELINE.md`).
 
 Not yet done:
-- Neokitsch's BASKET panel and its step-notch pill on the mailbox
-  footer are in the design targets but not yet drawn. The ticket notch,
-  the compliance caption and the nav-column outline that runs into the
-  page-curl have all since landed; the fan, cascade and tiles now arrive
-  as dashboard scene data rather than widgets.
 - Fields are display-only. `widgets::input::field` draws the box and the
   value but takes no input; the screens it serves are design targets,
   and a real `text_input` needs per-era styling before it earns a place.

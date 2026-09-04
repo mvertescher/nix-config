@@ -9,9 +9,10 @@
 //! the HUD "evolved from and is based on this style").
 //!
 //! Unlike the other three eras, this one already had an implementation
-//! before the sampling pass, in `src/colors.rs`. The figures agree; the
-//! values here are the same reds, restated in the era table so all four
-//! read alike.
+//! before the sampling pass, in the crate's original `colors.rs`
+//! (deleted in `61db2ae`; `theme::Theme::fallback` keeps its values).
+//! The figures agree; the values here are the same reds, restated in
+//! the era table so all four read alike.
 
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{

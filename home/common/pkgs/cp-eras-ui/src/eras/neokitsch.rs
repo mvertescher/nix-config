@@ -66,10 +66,12 @@ pub const FRAME_LIT: iced::Color = rgb(0xc69a55);
 /// are the wire band and the onion rings (`docs/neokitsch/README.md`,
 /// "stacked-hairline wire band"), and `#634427` is sampled by nothing in
 /// the four traces. Still consumed as `ornaments.ornament`: the one
-/// reader this era reaches is `Chrome::DeviceFrame` in `widgets::chrome`
-/// (dashboard top bar / footer; the bar's other reader is
-/// `PanelEcho::Wave`, which is kitsch's echo, not this era's). The
-/// gated renders override it from `home/themes/neokitsch/palettes.nix`.
+/// reader this era reaches is `Chrome::DeviceFrame` in `widgets::chrome`,
+/// and only from the bar's mail example panel (`panels::mail`) -- the
+/// dashboard stopped reading it at the `Layout` fold of 2026-09-03.
+/// (The bar's other reader is `PanelEcho::Wave`, which is kitsch's echo,
+/// not this era's.) The gated renders override it from
+/// `home/themes/neokitsch/palettes.nix`.
 pub const STRATA: iced::Color = rgb(0x634427);
 
 /// The four stops of the violet haze every screen in the run sits in,
