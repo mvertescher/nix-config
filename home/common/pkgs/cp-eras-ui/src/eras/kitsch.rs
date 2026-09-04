@@ -635,8 +635,8 @@ pub const ACCESS: Access = Access {
 // row's body cuts a *diagonal* trailing corner on an era that rounds
 // everything else.
 use crate::style::{
-    Frame, MailBadges, MailButtons, MailList, MailPanel, Mailbox, Note, Piece, RowDecor,
-    Run, Trim, FromAt, BL, BR, TL, TR,
+    Frame, Mail, MailBadges, MailButtons, MailList, MailPanel, Mailbox, Note, Piece,
+    RowDecor, Run, Trim, FromAt, BL, BR, TL, TR,
 };
 
 const fn text(x: f32, y: f32, size: f32, ink: Ink, s: &'static str) -> Piece {
@@ -850,6 +850,40 @@ static CHROME: [Piece; 29] = [
 static TABS: [&str; 4] = ["DETAILS", "MODS", "PRICE", "DAMAGE"];
 static LEVELS: [&str; 4] = ["01", "02", "03", "04"];
 
+/// The five rows, trace lines 229-230 and 241-250. Every envelope is
+/// the closed `#env` (lines 228 / 234-237; the trace defines no open
+/// one), so nothing here is unread. The subjects are set in capitals
+/// there; `title_upper` does that here.
+static ROWS: [Mail; 5] = [
+    Mail { subject: "You'll regret that", from: "Jackie", unread: false },
+    Mail { subject: "Urgent information (!)", from: "Mom", unread: false },
+    Mail { subject: "Heist data sent to you", from: "805000451", unread: false },
+    Mail { subject: "I'm worried man", from: "Rachel Ross", unread: false },
+    Mail { subject: "Special offer to you!", from: "JINX JINX STORE", unread: false },
+];
+
+/// The body, trace lines 267-276: 5 + 2 + 3 lines. This era splits the
+/// lorem after "laborum." rather than after "explicabo.", and has no
+/// "Nemo enim" paragraph at all.
+static PARAGRAPHS: [&[&str]; 3] = [
+    &[
+        "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod",
+        "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim",
+        "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea com-",
+        "modo consequat. Duis aute irure dolor in reprehenderit in voluptate velit",
+        "esse cillum dolore eu fugiat nulla pariatur.",
+    ],
+    &[
+        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia de-",
+        "serunt mollit anim id est laborum.",
+    ],
+    &[
+        "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium",
+        "doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inven-",
+        "tore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
+    ],
+];
+
 pub fn mailbox() -> Mailbox {
     Mailbox {
         // this era's mailbox is content with its `Ground`
@@ -863,7 +897,7 @@ pub fn mailbox() -> Mailbox {
             // drawn behind an unselected one
             row: Frame::new(154.0, 313.0, 338.0, 38.0),
             pitch: 59.8,
-            count: 5,
+            rows: &ROWS,
             selected: 0,
             decor: RowDecor::Bare,
             row_fill: None,
@@ -897,7 +931,6 @@ pub fn mailbox() -> Mailbox {
             title_upper: true,
             from_upper: false,
             new_pill: None,
-            new_rows: 0,
             icons: None,
         },
         panel: MailPanel {
@@ -911,14 +944,18 @@ pub fn mailbox() -> Mailbox {
             head: Some(Frame::new(575.0, 313.0, 552.0, 36.0)),
             head_ink: Ink::Select,
             head_trim: Trim::chamfer(TR, 22.0),
+            // the tab reads the selected row's own subject, trace line
+            // 257, and no sender under it
             message: 0,
             title: Run::new(590.0, 340.0, 17.0, Ink::OnSelect),
             title_upper: true,
             from: None,
+            heading: None,
+            sender: None,
             body: Run::new(592.0, 411.0, 16.8, Ink::Select),
             line: 19.0,
             para: 38.0,
-            wrap: 555.0,
+            paragraphs: &PARAGRAPHS,
         },
         buttons: MailButtons {
             // four chevron tabs stacked down the right, where the other
@@ -1472,13 +1509,15 @@ pub const STORE: &[Prim] = &[
 //   (`CARD_CW`, `CARD_CCW`). The `rotate(90)` cards need no path: a
 //   162x50 r8 card turned a quarter is a 50x162 r8 `Prim::Round`.
 // - the labels rotate with their blade in the trace (`components.svg`
-//   line 575). Scene text is upright, so the +-30 labels are drawn
-//   horizontally through the card centre (the horizontal chord of a
-//   162x50 card at 30 degrees is 100px, and the widest label fits it)
-//   and the two PRODUCTS labels on the 90-degree cards are stacked one
-//   upright glyph per line on a 14px pitch centred on the card, which
-//   keeps the ink inside the silhouette. Letter-spacing 2 is dropped
-//   with them.
+//   line 575). Each label is a `Prim::Turn` at the blade's centre and
+//   angle (+-30, or 90 for the two PRODUCTS cards) holding one
+//   `txt_mid(0, 6.5, 19, ..)`, which is the trace's `<text y="6.5"
+//   text-anchor="middle">` inside its `translate() rotate()` group, so
+//   the label lies along the card. The card path itself stays
+//   pre-rotated (above) rather than moving into the `Turn`, so the
+//   hit boxes and the `BLADE_*` tables are unchanged. The group's
+//   `letter-spacing="2"` is still dropped: iced text has no tracking
+//   (TODO.md § Design pipeline, renderer limits).
 // - `fill-opacity` / `stroke-opacity` on the ghosts are carried as the
 //   alpha of an `Ink::Fixed` colour (`faded`), which composites onto
 //   the bloom the way the SVG does; nothing is pre-mixed.
@@ -1631,9 +1670,11 @@ const fn shut_and_fill(x: f32, y: f32, segs: &'static [Seg], fill: Ink, stroke: 
 /// A +-30 blade as a plate: the hit box is the rotated card's bounding
 /// box (half extents 81 cos 30 + 25 sin 30 = 82.65 by 81 sin 30 +
 /// 25 cos 30 = 62.15), the label the trace's Rajdhani 19 centred at
-/// baseline +6.5, drawn upright.
+/// baseline +6.5 inside a `Prim::Turn` at the blade's angle `$a`, so
+/// it lies along the card as the trace's `rotate(a)` group has it.
+/// `$on` / `$off` carry the pre-rotated card path for the same angle.
 macro_rules! blade {
-    ($i:expr, $cx:expr, $cy:expr, $on:expr, $off:expr, $label:expr) => {
+    ($i:expr, $cx:expr, $cy:expr, $a:expr, $on:expr, $off:expr, $label:expr) => {
         Prim::Plate {
             group: Group::Module,
             index: $i,
@@ -1643,38 +1684,24 @@ macro_rules! blade {
             h: 124.3,
             on: &[
                 Prim::At { x: $cx, y: $cy, prims: $on },
-                txt_mid($cx, $cy + 6.5, 19.0, Ink::Fixed(ON_HUB_YELLOW), $label),
+                Prim::Turn { x: $cx, y: $cy, angle: $a, prims: &[txt_mid(0.0, 6.5, 19.0, Ink::Fixed(ON_HUB_YELLOW), $label)] },
             ],
             off: &[
                 Prim::At { x: $cx, y: $cy, prims: $off },
-                txt_mid($cx, $cy + 6.5, 19.0, Ink::Fixed(ON_MINT_BAR), $label),
+                Prim::Turn { x: $cx, y: $cy, angle: $a, prims: &[txt_mid(0.0, 6.5, 19.0, Ink::Fixed(ON_MINT_BAR), $label)] },
             ],
         }
     };
 }
-/// A 90-degree blade: hit box the 50x162 card itself, PRODUCTS stacked
-/// one upright glyph per 14px line, the column centred on the card.
-macro_rules! stack {
-    ($ink:expr) => {
-        &[
-            txt_mid(0.0, -42.35, 19.0, $ink, "P"),
-            txt_mid(0.0, -28.35, 19.0, $ink, "R"),
-            txt_mid(0.0, -14.35, 19.0, $ink, "O"),
-            txt_mid(0.0, -0.35, 19.0, $ink, "D"),
-            txt_mid(0.0, 13.65, 19.0, $ink, "U"),
-            txt_mid(0.0, 27.65, 19.0, $ink, "C"),
-            txt_mid(0.0, 41.65, 19.0, $ink, "T"),
-            txt_mid(0.0, 55.65, 19.0, $ink, "S"),
-        ]
-    };
-}
+/// A 90-degree blade: hit box the 50x162 card itself, PRODUCTS set
+/// once, centred, in a `Prim::Turn` at 90 so it reads down the card.
 const PRODUCTS_ON: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: BLADE_V_ON },
-    Prim::At { x: 0.0, y: 0.0, prims: stack!(Ink::Fixed(ON_HUB_YELLOW)) },
+    Prim::Turn { x: 0.0, y: 0.0, angle: 90.0, prims: &[txt_mid(0.0, 6.5, 19.0, Ink::Fixed(ON_HUB_YELLOW), "PRODUCTS")] },
 ];
 const PRODUCTS_OFF: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: BLADE_V_OFF },
-    Prim::At { x: 0.0, y: 0.0, prims: stack!(Ink::Fixed(ON_MINT_BAR)) },
+    Prim::Turn { x: 0.0, y: 0.0, angle: 90.0, prims: &[txt_mid(0.0, 6.5, 19.0, Ink::Fixed(ON_MINT_BAR), "PRODUCTS")] },
 ];
 macro_rules! blade_v {
     ($i:expr, $cx:expr, $cy:expr) => {
@@ -1797,12 +1824,12 @@ pub const DASHBOARD: &[Prim] = &[
     Prim::At { x: 939.0, y: 566.0, prims: GHOST_CW[6] },
     // the six solid blades in the trace's order (lines 243-267);
     // EVENTS is the selection
-    blade!(0, 364.0, 413.0, BLADE_CW_ON, BLADE_CW_OFF, "VEHICLES"),
-    blade!(1, 551.0, 414.0, BLADE_CCW_ON, BLADE_CCW_OFF, "WEAPONS"),
+    blade!(0, 364.0, 413.0, 30.0, BLADE_CW_ON, BLADE_CW_OFF, "VEHICLES"),
+    blade!(1, 551.0, 414.0, -30.0, BLADE_CCW_ON, BLADE_CCW_OFF, "WEAPONS"),
     blade_v!(2, 458.0, 575.0),
     blade_v!(3, 825.0, 424.0),
-    blade!(4, 731.0, 586.0, BLADE_CCW_ON, BLADE_CCW_OFF, "EVENTS"),
-    blade!(5, 919.0, 586.0, BLADE_CW_ON, BLADE_CW_OFF, "LOCATIONS"),
+    blade!(4, 731.0, 586.0, -30.0, BLADE_CCW_ON, BLADE_CCW_OFF, "EVENTS"),
+    blade!(5, 919.0, 586.0, 30.0, BLADE_CW_ON, BLADE_CW_OFF, "LOCATIONS"),
     // BRAINDANCE panel: tab, warning tape, outlined body, two
     // paragraphs of yellow bars (lines 273-295)
     fill_path(1213.0, 261.0, TAB, Ink::Fixed(HUB_YELLOW)),

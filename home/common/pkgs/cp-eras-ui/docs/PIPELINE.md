@@ -138,8 +138,10 @@ scripts/render.sh --era kitsch --out /tmp/login.png cp-eras-ui-login   # 1600x90
 scripts/render.sh --era none  --bin /path/to/cp-eras-ui-login ...      # compiled fallback
 ```
 
-It is what G2i captures the implementation with, and it takes about ten
-seconds against a warm nix store. It does not build anything: use
+It is what G2i captures the implementation with, and it takes about
+fifteen seconds against a warm nix store (an 8s settle: the login washes
+take 3-5s to appear, and a 3s capture used to miss them — `render.sh`'s
+`DEFAULT_SETTLE` note has the measurement). It does not build anything: use
 `nix-shell shell.nix --run 'cargo build --bin <name>'` first, or pass
 `--bin`. The capture is faithful — `cp-eras-ui-login` in neomil comes out
 byte-identical to `tests/golden/login-neomil-1600x900.png` — but it is

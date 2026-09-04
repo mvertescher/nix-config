@@ -29,7 +29,9 @@ Pipeline:
      (the k most-populated coarse bins, no RNG).
   3. split palette into "ground" and "ink": a cluster is ground if it holds
      a meaningful share of the image border. Gradients and backdrop bands
-     reach the border; foreground widgets do not.
+     reach the border; foreground widgets do not. A cluster that never
+     reaches the border but sits within a few RGB units of one that does
+     is the inner band of the same gradient, and is ground too.
   4. label connected ink components; split touching/overlapping convex
      blobs by nearest-peak (Voronoi) assignment on the distance transform.
   5. fit each component against shape templates (rect, diamond, chamfered
@@ -60,6 +62,15 @@ MIN_SHAPE_IOU = 0.62
 # in a framed design do not reach the canvas edge at all, so the ink clusters
 # sit at ~0 and anything that touches the frame is a band or a gradient.
 GROUND_BORDER_SHARE = 0.015
+# A cluster this close (RGB Euclidean) to a border-touching ground cluster
+# is a band of the same gradient rather than an ink. Added 2026-09-04 for
+# entropism's login: its radial lift quantised as #151209 at the edge and
+# #18160d in the middle, and the middle band -- 33% of the frame, never
+# touching the border -- was fitted as a 1044x586 "chamfer" that no
+# implementation could draw, failing the screen at 28% while every real
+# widget matched. 10 is well under the darkest ink-on-ground distance in
+# the four eras (neokitsch's #302418 strands on #0a0a0a are ~48 away).
+GROUND_NEIGHBOUR_DIST = 10.0
 # Ink clusters below this coverage are resampling noise, not a design colour.
 MIN_INK_COVERAGE = 0.002
 
@@ -124,6 +135,16 @@ def palette_spec(labels, centres, h, w):
             "border_share": round(float(share), 4),
             "role": "ground" if share > GROUND_BORDER_SHARE else "ink",
         })
+    # Second pass: inner bands of a ground gradient. Only border-touching
+    # clusters seed this, so two near-identical inks never pull each other
+    # into the ground.
+    seeds = [np.array(e["rgb"], float) for e in out if e["role"] == "ground"]
+    for e in out:
+        if e["role"] == "ink" and any(
+            np.linalg.norm(np.array(e["rgb"], float) - s) <= GROUND_NEIGHBOUR_DIST
+            for s in seeds
+        ):
+            e["role"] = "ground"
     out.sort(key=lambda e: -e["coverage"])
     return out
 

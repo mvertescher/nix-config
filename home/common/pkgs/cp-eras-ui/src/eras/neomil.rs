@@ -548,8 +548,8 @@ pub const ACCESS: Access = Access {
 // rotated through `fill_text`), and the two rotated `00032 05 54 08 CP`
 // margin strings, for the same reason.
 use crate::style::{
-    Frame, Icons, MailBadges, MailButtons, MailList, MailPanel, Mailbox, Note, Piece,
-    RowDecor, Run, Trim, FromAt, BL, BR, TR,
+    Frame, Icons, Mail, MailBadges, MailButtons, MailList, MailPanel, Mailbox, Note,
+    Piece, RowDecor, Run, Trim, FromAt, BL, BR, TR,
 };
 
 const fn tape(x: f32, y: f32, w: f32) -> Piece {
@@ -724,6 +724,44 @@ static BUTTONS: [&str; 4] = [
 ];
 static LEVELS: [&str; 4] = ["T1", "T2", "T3", "T4"];
 
+/// The eight rows, trace lines 256-257 and 282-288. Not the inbox the
+/// other three eras list: the first row is "List of messages", every
+/// other row alternates two subjects, and every sender is Jackie. No
+/// envelopes; `unread` is the NEW pill, which the trace outlines on
+/// rows 1-3 (lines 258-259 and 292-297).
+static ROWS: [Mail; 8] = [
+    Mail { subject: "List of messages", from: "Jackie", unread: true },
+    Mail { subject: "I'm worried man", from: "Jackie", unread: true },
+    Mail { subject: "Heist data sent to you", from: "Jackie", unread: true },
+    Mail { subject: "I'm worried man", from: "Jackie", unread: false },
+    Mail { subject: "Heist data sent to you", from: "Jackie", unread: false },
+    Mail { subject: "I'm worried man", from: "Jackie", unread: false },
+    Mail { subject: "I'm worried man", from: "Jackie", unread: false },
+    Mail { subject: "Heist data sent to you", from: "Jackie", unread: false },
+];
+
+/// The body, trace lines 336-345: 4 + 4 + 2 lines, the same three
+/// paragraphs entropism sets but broken one word later on the first
+/// two lines ("incididunt" / "exercitation" whole, "reprehen-" split).
+static PARAGRAPHS: [&[&str]; 3] = [
+    &[
+        "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt",
+        "ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation",
+        "ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehen-",
+        "derit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    ],
+    &[
+        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit",
+        "anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem ac-",
+        "cusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore",
+        "veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
+    ],
+    &[
+        "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia",
+        "consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.",
+    ],
+];
+
 pub fn mailbox() -> Mailbox {
     Mailbox {
         // this era's mailbox is content with its `Ground`
@@ -738,7 +776,7 @@ pub fn mailbox() -> Mailbox {
             // chamfer and a spine at x 237..240
             row: Frame::new(241.0, 315.0, 270.0, 68.0),
             pitch: 70.0,
-            count: 8,
+            rows: &ROWS,
             selected: 0,
             decor: RowDecor::Boxed,
             row_fill: Some(Ink::Border),
@@ -771,9 +809,9 @@ pub fn mailbox() -> Mailbox {
             from_prefix: "",
             title_upper: false,
             from_upper: false,
-            // rows 1-3 carry an outlined NEW pill in the lower right
+            // the unread rows carry an outlined NEW pill in the lower
+            // right
             new_pill: Some(Frame::new(162.0, 48.0, 76.0, 14.0)),
-            new_rows: 3,
             icons: Some(Icons {
                 x: 185.0,
                 y: 323.0,
@@ -789,14 +827,20 @@ pub fn mailbox() -> Mailbox {
             head: None,
             head_ink: Ink::Select,
             head_trim: Trim::NONE,
+            // the panel is headed "Urgent Information (!)" (trace line
+            // 320), which is no row of this era's list; the heading is
+            // pinned and `message` only says which row a click returns
+            // to. Row 2 is a guess the trace cannot confirm or refute.
             message: 1,
             title: Run::new(742.0, 287.0, 20.0, Ink::Fg).bold(),
             title_upper: false,
             from: None,
+            heading: Some("Urgent Information (!)"),
+            sender: None,
             body: Run::new(739.0, 347.0, 15.0, Ink::Fg),
             line: 21.0,
             para: 42.0,
-            wrap: 620.0,
+            paragraphs: &PARAGRAPHS,
         },
         buttons: MailButtons {
             // four 175x56 buttons on a 180 pitch, bottom-right chamfer

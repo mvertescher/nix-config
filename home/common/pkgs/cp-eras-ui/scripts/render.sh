@@ -25,8 +25,8 @@
 #                   The app log always lands next to it as <out>.log.
 #   --bin PATH      use this binary instead of resolving one by name.
 #   --settle N      seconds to let the app draw before capturing. Default
-#                   3; the note on DEFAULT_SETTLE below says why that is
-#                   enough when tests/visual.nix waits 15.
+#                   8; the note on DEFAULT_SETTLE below says why (it was
+#                   3 until the login washes) when tests/visual.nix waits 15.
 #   --keep-log      accepted and ignored: the log is always kept.
 #
 # Examples:
@@ -48,18 +48,21 @@ here=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 crate=$(dirname "$here")
 home_root=$(cd -- "$crate/../../.." && pwd)   # home/, where themes/ lives
 
-# 3s. Measured 2026-09-02 against the 0.13 binaries: login/neomil,
-# bar-window/neokitsch (1600x220), dashboard/kitsch and store/entropism
-# all produce a capture byte-identical to visual.nix's 15s one at 3, 5
-# and 8 — and six concurrent 3s renders of login/neomil agreed with the
-# 15s reference too, which is the case a short settle would be expected
-# to lose. Probing further down, 0s, 1s and 2s also matched, so the app's
-# first frame is up long before the shooter asks; 3 is kept as an order
-# of magnitude of headroom for a loaded box rather than because anything
-# needed it. The sandbox keeps 15 because three wasted minutes across the
-# whole matrix is cheaper than one flaky build; an interactive loop is
-# the other way round.
-DEFAULT_SETTLE=3
+# 8s. Was 3, measured 2026-09-02 against the 0.13 binaries (login/neomil,
+# bar-window/neokitsch, dashboard/kitsch and store/entropism all
+# byte-identical to visual.nix's 15s capture at 0-8s). That stopped being
+# true when the login conversion added its software-rendered washes
+# (`screens/login.rs` `wash_image`): re-measured 2026-09-04, a 3s capture
+# of *every* era's login lacks the wash entirely -- entropism comes out
+# as flat palette bg, kitsch/neomil/neokitsch differ from the golden over
+# most of the frame -- while 5s, 8s and 15s are byte-identical to the
+# goldens. G2i had been reporting entropism login at 28% FAIL for this
+# reason, not for anything the screen draws. 8 is the measured-good
+# value with the same order-of-magnitude headroom 3 used to have; the
+# sandbox keeps 15 because three wasted minutes across the whole matrix
+# is cheaper than one flaky build. (That the wash takes 3-5s to appear at
+# all is a first-paint finding in its own right; crate TODO.md.)
+DEFAULT_SETTLE=8
 
 usage() { sed -n '2,/^set -u/p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//;$d'; }
 

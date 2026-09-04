@@ -181,13 +181,167 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
     scores against the photo.
   - All five dashboard goldens re-taken (`tests/bar.nix` procedure);
     21/21 matrix green; the 16 non-dashboard G2i cells unchanged.
-- [ ] **`scene.rs` alpha blending.** Translucent `Ink::Fixed` alphas
-  are composited in linear space by wgpu but the traces were designed
-  in sRGB (rsvg). Every ghost stack, haze and lobe is therefore brighter
-  in the app than in its trace. Options: pre-blend over the known
-  backdrop (what the neokitsch table does by hand for its ring
-  opacities — `RING_25..85` consts), or convert alpha at paint time.
-  Measure on kitsch dashboard ghosts (numbers above) before choosing.
+- [x] **Mailbox content is wrapped, not transcribed — and the shared
+  premise is false** — done 2026-09-04 (findings at the end). `screens/mail.rs:22-27` says the four traces
+  "agree" on content (same messages, same senders, same three lorem
+  paragraphs), so `INBOX` and `BODY` are screen constants and `wrap()`
+  (`mail.rs:580`) greedy-breaks the body at a mean-advance guess
+  (`ADVANCE 0.464`). The 2026-09-04 triptychs (`scripts/triptych.sh`)
+  say otherwise: kitsch's and neokitsch's traces set *three* paragraphs
+  with different splits and no "Nemo enim…" (iced draws a fourth in
+  kitsch); neomil's trace list is "List of messages / I'm worried man /
+  Heist data sent to you…", every row from Jackie, not the entropism
+  inbox; and every era's line breaks differ from the trace because the
+  traces set each line explicitly, hyphenated ("incidi-" / "dunt").
+  Same failure class as the invented traces — a premise stated in code
+  that nobody checked against the material. Fix: rows and body lines
+  move into the era tables verbatim from each `mailbox-trace.svg`
+  (`&'static [&'static str]` per paragraph), `wrap()` and `ADVANCE` go,
+  and the `mail.rs` module doc is corrected rather than deleted. Largest
+  visible mailbox diff in all four eras; kitsch mailbox G2i 67 is partly
+  this.
+  **Done:** `style::Mail { subject, from, unread }`; `MailList.rows:
+  &[Mail]` replaces `count` + `new_rows` (the NEW pill follows `unread`
+  per row); `MailPanel.paragraphs: &[&[&str]]` (lines as the trace sets
+  them, hyphens included) replaces `wrap`, plus `heading`/`sender`
+  options that pin the resting panel text where no row supplies it. Per
+  era `static ROWS` / `static PARAGRAPHS` in the `--- mailbox ---` block
+  cite trace line numbers. `mail.rs` lost `Mail`/`INBOX`/`BODY`/`wrap`/
+  `ADVANCE`; the `FromAt::Trailing` inset went 8→7 (neomil anchors
+  every sender end at x 504). All four renders now match their trace
+  on rows, senders, envelope state, paragraph count and every
+  hyphenated break (checked by eye on neokitsch). G2i mailbox
+  100/67/95/**84** (entropism/kitsch/neomil/neokitsch): kitsch did not
+  move — its 67 is the hole-fill, not content — and neokitsch's 86→84 is
+  the untouched top-right wire band re-binning (agent rebuilt the
+  pre-change sources in a worktree to attribute it; ink IoU 0.32→0.38).
+  What the traces actually say, none of it in the old constants:
+  - entropism: only Mom is unread; the panel writes `from: Mom` where
+    the list has `FROM: MOM` (pinned via `sender`).
+  - neomil: the resting heading "Urgent Information (!)" is no row of
+    its own list (trace line 320); pinned via `heading`, `message: 1`
+    is only where a click returns to.
+  - neokitsch: rows 6 and 7 are both Rachel Ross; rows 1, 3, 7 are
+    open and the *selected* row is closed. Its body is set at weight
+    600 (line 462) and iced draws it regular — visible in the
+    triptych; belongs to the renderer-limits item below.
+  - kitsch: no open-envelope glyph at all; all five rows closed.
+  - `ADVANCE`'s doc-claimed second reader (right-aligning the sender)
+    did not exist.
+- [x] **Rotated text** — done 2026-09-04 as `Prim::Turn { x, y, angle,
+  prims }`, a group transform beside `Prim::At` (the trace's
+  `<g transform="translate(cx cy) rotate(a)">`) rather than a field on
+  `Prim::Text`, which every era table constructs. `scene.rs` interprets
+  it in `paint` (`with_save` + translate + rotate), `hit_at` (inverse
+  rotation of the point) and the test-only `plates`. iced's
+  `Frame::rotate` matrix is SVG's `rotate(a)` exactly, so trace degrees
+  pass straight through (positive = clockwise, y down; unit test pins
+  it). Kitsch's six blade labels now turn with their blades, PRODUCTS
+  as one run at 90 (the `stack!` glyph column is gone). G2i kitsch
+  dashboard is blind to it — 45%/0.75 before and after; the shape gate
+  cannot see a 19px label's orientation — so this is a by-eye fix, and
+  the fan crop shows the labels along the blades as in the design.
+  Letter-spacing 2 is still dropped (renderer-limits item below).
+  Originally: split out of the renderer-limits item below
+  because it is the one gap visible at reading distance: kitsch's
+  dashboard blade labels (±30° in the trace) are drawn upright and the
+  two PRODUCTS labels one glyph per line. `Prim::Text` grows an
+  `angle` (degrees, default 0) and `scene.rs` draws it under
+  `frame.with_save` + `translate`/`rotate` about the anchor point;
+  kitsch's `DASHBOARD` table then sets the six labels as the trace
+  does. Letter-spacing, stroked text and Rajdhani 600 stay in the item
+  below.
+- [x] **Two G2i FAILs the triptychs say are gate artefacts, not screen
+  faults** — investigated 2026-09-04, both were, in different ways:
+  - Entropism login 28% → **100% PASS**, two causes stacked. (1)
+    `render.sh`'s 3s settle predates the login washes: a 3s capture of
+    *every* era's login lacks its wash (entropism comes out flat
+    palette bg; the other three differ from their goldens over most of
+    the frame), while 5/8/15s are byte-identical to the goldens.
+    `DEFAULT_SETTLE` is now 8 with the measurement in its comment. This
+    also means the 2026-09-04 triptych login rows and every earlier
+    G2i login number were taken without the wash. (2) With the wash
+    present the extractor still split rsvg's radial into a
+    border-touching ground (#151209) and a 33%-of-frame inner band
+    (#18160d) it fitted as a 1044x586 "chamfer"; the app's smoother
+    wash quantised as one ground. `extract_spec.py` now folds a
+    non-border cluster within 10 RGB units of a ground cluster into the
+    ground (`GROUND_NEIGHBOUR_DIST`). Full G2i matrix re-run on the
+    pre-wave binaries: only the three non-neomil logins moved.
+    Entropism 28→100 is above; kitsch 97→**72** and neokitsch 67→**89**
+    are both the settle alone (kitsch re-captured at 3s under the new
+    rule still scores 97 — with 22 "invented" shapes against 4 now, so
+    the 97 was a wash-less capture scoring against a design with a
+    wash). The 72 is honest and its residual is one colour bin: the
+    barcode digits are drawn in the bars' bright teal where the trace
+    has them dim (#518b7e), so the extractor merges them into the bars
+    (63px tall vs the design's 51). Rule is unchanged for every
+    non-login cell. G1i under the new rule: all 16 PASS; shape-area %
+    entropism 83/92/88/79, kitsch 56/59/20/80, neomil 79/94/86/71,
+    neokitsch 78/54/79/56 (login/dashboard/mailbox/store; kitsch and
+    neokitsch gate on ink IoU, not on these).
+  - Neokitsch bar 52%: by eye a near match (`/tmp/g2i-neokitsch-bar/
+    side-by-side.png`); the number is the extractor fusing the popup
+    panels' onion rings and the tray cells into single components on
+    one side and not the other. The real deltas are small and belong
+    to § "Bar restyle": tray diamonds are purple/orange in the app
+    where `bar.svg` has gold/black, and the popup panels draw more
+    echo rings than the design. Left FAIL; not a gate rule to add.
+- [ ] **Login first paint takes 3-5s.** Fallout of the above: the
+  wash (`login.rs` `wash_image`, a software-rendered 1600x900 radial)
+  is absent from the first frames and appears seconds later. On a real
+  session that is a visible flash from flat ground to washed ground.
+  Either precompute it off the render thread and show it on frame 1,
+  or draw it as canvas gradients (the `login.rs:445` note says why
+  that was rejected — iced has no radial gradient — so precompute is
+  the likelier answer). Measure the delay first; `render.sh --settle`
+  at 3, 4, 5 brackets it.
+- [ ] **Gate-side blending.** The alpha item below and the kitsch
+  mailbox hole-fill (§ Trace improvements, "do not fix") are both cases
+  where G2i measures rsvg-vs-wgpu rather than design-vs-implementation.
+  The alpha item landed 2026-09-04 and kitsch dashboard went 31→45,
+  still FAIL: the residual is the extractor filling the ghost stacks'
+  holes on one side and not the other, plus the still-linear gradient
+  *interpolation* (note under that item). A `extract_spec.py` mode that
+  composites the design in linear light would address the second; the
+  first is § Trace improvements' kitsch hole-fill. Re-measure after the
+  rotated-text item, which moves the same screen.
+- [ ] `scripts/triptych.sh --diff`: an optional fourth row, trace vs
+  iced heatmap (`visual_diff.py` already draws one), so the review view
+  points at the difference rather than leaving it to the eye.
+- [x] **`scene.rs` alpha blending** — done 2026-09-04, alpha converted at
+  paint time. Translucent `Ink::Fixed` alphas are composited in linear
+  space by wgpu but the traces were designed in sRGB (rsvg), so every
+  ghost stack, haze and lobe came out brighter in the app than in its
+  trace. `Scene::ink` and the `Lobe` stops now go through `blend_over(c,
+  palette.bg)`: the sRGB result the trace wants is `r = a*c + (1-a)*bg`,
+  and the alpha that reproduces it under linear blending is
+  `a' = Σw(lin(r)-lin(bg)) / Σw(lin(c)-lin(bg))`, luminance-weighted
+  across channels; opaque and clear colours pass through. Chosen over
+  pre-blending because the ghost stacks overlap each other, which a
+  pre-mixed opaque would get wrong. Measured on the pre-wave bins:
+  kitsch dashboard 31→**45** (still FAIL; placement IoU 0.69→0.75),
+  neokitsch dashboard 92→94, the other six dashboard/store cells
+  unchanged; ghost-6 pixel (1045,456) G: design 34, before 61, after 32.
+  Residual on kitsch is the extractor hole-fill, not colour. Notes:
+  - the backdrop is the flat `palette.bg`, so over a haze the
+    conversion is approximate; neomil's `PANEL_FILL` R came out 62
+    against the design's 59 (was 78).
+  - the *interpolation* space of a gradient is unchanged (wgpu still
+    lerps stops in linear light), so the neomil GLOW→GROUND band is
+    ~14 levels brighter mid-ramp than rsvg's. Only the stops are
+    corrected. If it ever matters, `Scene::stop` is where extra
+    intermediate stops would go.
+  - iced's `web-colors` feature is the principled fix (blend in sRGB
+    outright) and `Cargo.toml` turns it off deliberately — it thins
+    every glyph (record under "SVG→iced pre-work"). This item is the
+    scene-local alternative.
+  - neokitsch's hand pre-blended `RING_25..85` consts are opaque, so
+    they pass through untouched — not double-corrected, but no longer
+    needed; they could become translucent stops when that table is
+    next touched.
+  - `kitsch.rs`'s dashboard-comment bullet "nothing is pre-mixed" is
+    still true: only the alpha is rescaled, the colour is not.
 - [ ] Dashboard renderer limits surfaced by the transcription, all
   small and all shared with the earlier conversions: no rotated text
   (kitsch's ±30° blade labels are drawn upright; the two PRODUCTS
@@ -717,19 +871,21 @@ four bars, done in this order so the Rust is written once.
   100/86/83/**52**, login **28**/96/72/89, mailbox 100/95/67/86, store
   100/84/88/82. **Re-run 2026-09-03 evening against the follow-up traces
   (`45c31b4`): identical except kitsch login 97 and neokitsch login 67**
-  — neither trace nor login code changed since `d27b334`, so the wave's
-  72/89 were taken before the third-pass trace edits were bundled into
-  that commit; both PASS. Neomil login held 96 with the trace chamfer now
-  51 (the era table still draws 46 — a measured 5px delta the gate
-  absorbs; fix with the login table, not alone). Two accepted FAILs, do
-  not chase:
-  - **entropism login 28%** — the warm-lift ground shape (72% of the
-    design's area) loses its k-means centre to the render's edge ramp:
-    iced built without `web-colors` blends AA in linear space and 4×
-    MSAA cannot make 0.625 coverage, so hairline pixels split across
-    two bins. Backdrops are pixel-identical and the side-by-side
-    matches. The fixes (`web-colors`, sRGB AA) are crate-wide and
-    move every golden.
+  — attributed at the time to trace edits; wrong. Neither trace nor
+  login code changed, and 2026-09-04 with `render.sh` settling 8s the
+  two read 72/89 again: the 3s settle raced the login wash, and the
+  evening run happened to capture before it painted (see the ticked
+  "gate artefacts" item above). 72/89 are the numbers; both PASS.
+  Neomil login held 96 with the trace chamfer now 51 (the era table
+  still draws 46 — a measured 5px delta the gate absorbs; fix with the
+  login table, not alone). Two accepted FAILs, do not chase (one since
+  resolved):
+  - **entropism login 28%** — **resolved 2026-09-04, 100% PASS.** The
+    explanation that stood here (linear-space AA splitting hairline
+    pixels across two bins; crate-wide fix) was wrong: the capture had
+    no wash at all (3s settle, see the "gate artefacts" item) and, once
+    it did, the extractor split rsvg's radial into two ground bins.
+    Neither needed `web-colors`.
   - **neokitsch bar 52%** — extractor fragmentation, see the bar item.
   - kitsch mailbox 67% (unselected chevrons are two cells in the
     design, one in the render) is a PASS with a known reason; kitsch

@@ -99,10 +99,28 @@ fn hit_at(prims: &[Prim], ox: f32, oy: f32, k: f32, at: Point) -> Option<(Group,
                     return Some(f);
                 }
             }
+            Prim::Turn { x, y, angle, prims } => {
+                // Carry the point into the turned frame: subtract the
+                // pivot, undo the rotation, and the sub-scene's own
+                // coordinates apply with the pivot at the origin.
+                let (px, py) = ((ox + x) * k, (oy + y) * k);
+                let (lx, ly) = turned(at.x - px, at.y - py, -angle);
+                if let Some(f) = hit_at(prims, 0.0, 0.0, k, Point::new(lx, ly)) {
+                    return Some(f);
+                }
+            }
             _ => {}
         }
     }
     None
+}
+
+/// `(x, y)` rotated `angle` degrees about the origin, SVG's sense:
+/// positive is clockwise on a y-down screen (`x' = x cos - y sin`,
+/// `y' = x sin + y cos`).
+fn turned(x: f32, y: f32, angle: f32) -> (f32, f32) {
+    let (sin, cos) = angle.to_radians().sin_cos();
+    (x * cos - y * sin, x * sin + y * cos)
 }
 
 /// Every plate in a scene as `(group, index, centre)`, the centre in
@@ -118,6 +136,16 @@ pub(crate) fn plates(prims: &[Prim], ox: f32, oy: f32, out: &mut Vec<(Group, usi
                 Point::new(ox + x + w / 2.0, oy + y + h / 2.0),
             )),
             Prim::At { x, y, prims } => plates(prims, ox + x, oy + y, out),
+            Prim::Turn { x, y, angle, prims } => {
+                // Collect the sub-scene's centres about its own origin,
+                // then turn them out about the pivot.
+                let mut inner = Vec::new();
+                plates(prims, 0.0, 0.0, &mut inner);
+                out.extend(inner.into_iter().map(|(g, i, c)| {
+                    let (tx, ty) = turned(c.x, c.y, angle);
+                    (g, i, Point::new(ox + x + tx, oy + y + ty))
+                }));
+            }
             _ => {}
         }
     }
@@ -127,7 +155,31 @@ impl<M> Scene<M> {
     /// Resolve one of the scene's inks against the live palette, so a
     /// published theme still re-dresses the screen.
     fn ink(&self, ink: Ink) -> Color {
-        ink.of(&self.style.palette)
+        self.blend(ink.of(&self.style.palette))
+    }
+
+    /// Rebase a translucent colour for wgpu's linear-light compositing.
+    ///
+    /// The traces are sRGB documents: rsvg composites `fill-opacity` as
+    /// `r = a*c + (1-a)*b` on the *encoded* channel values, and every
+    /// alpha in an era table was read off one. iced/wgpu blends in
+    /// linear light onto an sRGB surface, so the same alpha lands far
+    /// brighter over a dark ground -- kitsch's faintest ghost, `#0f9f80`
+    /// at .12, painted G 61 where the trace has 33. This keeps the ink
+    /// and rescales the alpha so a linear blend over the era's ground
+    /// `b` reproduces the trace's pixel: per channel
+    /// `a' = (lin(r) - lin(b)) / (lin(c) - lin(b))`, collapsed to one
+    /// alpha with the luminance weights (the channels agree to within a
+    /// level over a near-black ground).
+    ///
+    /// `b` is `palette.bg`, exact over flat ground and an approximation
+    /// wherever the prim sits on a haze or on another translucent prim
+    /// (measured: a ghost over the kitsch bloom lands within 8 levels,
+    /// a five-deep stack 23 levels dark where it was 9 bright). The
+    /// test module below pins the numbers; TODO.md § Design pipeline
+    /// records the alternatives and why they lost.
+    fn blend(&self, c: Color) -> Color {
+        blend_over(c, self.style.palette.bg)
     }
 
     /// The colour a gradient stop table holds at `t`, interpolated in
@@ -328,10 +380,14 @@ impl<M> Scene<M> {
                         frame.fill(
                             &path,
                             canvas::Fill {
-                                style: canvas::Style::Solid(Self::stop(
+                                // The stop table is interpolated in sRGB
+                                // like rsvg's, then each ring's colour is
+                                // rebased for the linear blend like any
+                                // other translucent fill.
+                                style: canvas::Style::Solid(self.blend(Self::stop(
                                     stops,
                                     (outer + inner) * 0.5,
-                                )),
+                                ))),
                                 rule: canvas::fill::Rule::EvenOdd,
                             },
                         );
@@ -371,6 +427,20 @@ impl<M> Scene<M> {
                     self.paint(frame, prims, ox, oy, k);
                 }
                 Prim::At { x, y, prims } => self.paint(frame, prims, ox + x, oy + y, k),
+                Prim::Turn { x, y, angle, prims } => {
+                    // iced's `Frame::rotate` composes euclid's
+                    // `[cos sin; -sin cos]`, the same matrix as SVG's
+                    // `rotate(a)`: a positive angle is clockwise on
+                    // screen, so the trace's degrees pass straight
+                    // through. Text under a rotation is rendered by
+                    // iced as filled glyph outlines, so a label turns
+                    // with its group rather than staying upright.
+                    frame.with_save(|f| {
+                        f.translate(iced::Vector::new((ox + x) * k, (oy + y) * k));
+                        f.rotate(iced::Radians(angle.to_radians()));
+                        self.paint(f, prims, 0.0, 0.0, k);
+                    });
+                }
             }
         }
     }
@@ -429,6 +499,56 @@ impl<M> Scene<M> {
             ..Default::default()
         });
     }
+}
+
+/// The sRGB decode, on one channel: what wgpu does to a vertex colour
+/// before it blends (`Color::into_linear`, spelled out so the test can
+/// hold the inverse next to it).
+fn to_linear(v: f32) -> f32 {
+    if v <= 0.04045 {
+        v / 12.92
+    } else {
+        ((v + 0.055) / 1.055).powf(2.4)
+    }
+}
+
+/// `c` composited in sRGB at its own alpha over `b`, as rsvg paints it.
+fn srgb_over(c: Color, b: Color) -> [f32; 3] {
+    let mix = |x: f32, y: f32| c.a * x + (1.0 - c.a) * y;
+    [mix(c.r, b.r), mix(c.g, b.g), mix(c.b, b.b)]
+}
+
+/// The linear-blend colour that lands where `c` would under sRGB
+/// compositing over `b`: the ink unchanged, the alpha rescaled. Opaque
+/// and fully transparent colours pass through, so a table of solid
+/// inks -- including one that pre-mixes its opacities by hand, as
+/// neokitsch's `RING_*` do -- is unaffected.
+///
+/// Why the alpha and not the ink: the two ways to be exact over `b`
+/// are to keep `c` and shrink `a`, or to keep `a` and darken `c`. Both
+/// are approximate where prims stack, because sRGB compositing adds
+/// *more* linear light over a brighter backdrop and a fixed linear
+/// layer adds less; the darkened ink is the worse of the two there
+/// (kitsch's five-deep WEAPONS ghosts: trace G 139, none 148, alpha
+/// 116, darkened ink 102) and it also shifts the hue, so the alpha is
+/// what moves. Measured on the kitsch dashboard, G2i 31% -> 45% with
+/// the alpha, 32% with the ink.
+fn blend_over(c: Color, b: Color) -> Color {
+    if c.a <= 0.0 || c.a >= 1.0 {
+        return c;
+    }
+    const LUMA: [f32; 3] = [0.2126, 0.7152, 0.0722];
+    let r = srgb_over(c, b);
+    let (mut num, mut den) = (0.0, 0.0);
+    for (i, (cc, bb)) in [(c.r, b.r), (c.g, b.g), (c.b, b.b)].into_iter().enumerate() {
+        num += LUMA[i] * (to_linear(r[i]) - to_linear(bb));
+        den += LUMA[i] * (to_linear(cc) - to_linear(bb));
+    }
+    if den.abs() < 1e-6 {
+        // The ink is the ground: any alpha paints the same pixel.
+        return c;
+    }
+    Color { a: (num / den).clamp(0.0, 1.0), ..c }
 }
 
 /// A whole-turn elliptical arc, for the path builder.
@@ -491,5 +611,127 @@ impl<M> canvas::Program<M> for Scene<M> {
             self.paint(&mut frame, self.prims, 0.0, 0.0, k);
         }
         vec![frame.into_geometry()]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The sRGB encode, inverse of `to_linear`.
+    fn to_srgb(l: f32) -> f32 {
+        if l <= 0.003_130_8 {
+            l * 12.92
+        } else {
+            1.055 * l.powf(1.0 / 2.4) - 0.055
+        }
+    }
+
+    fn rgb(h: u32) -> Color {
+        Color::from_rgb8((h >> 16) as u8, (h >> 8) as u8, h as u8)
+    }
+
+    /// What wgpu paints: `c` blended in linear light over `b`, back in
+    /// 8-bit sRGB.
+    fn linear_blend(c: Color, b: Color) -> [u8; 3] {
+        let ch = |x: f32, y: f32| {
+            (to_srgb(c.a * to_linear(x) + (1.0 - c.a) * to_linear(y)) * 255.0).round() as u8
+        };
+        [ch(c.r, b.r), ch(c.g, b.g), ch(c.b, b.b)]
+    }
+
+    /// What rsvg paints: the same blend on the encoded values.
+    fn srgb_blend(c: Color, b: Color) -> [u8; 3] {
+        srgb_over(c, b).map(|v| (v * 255.0).round() as u8)
+    }
+
+    /// Kitsch's faintest ghost, `#0f9f80` at .12 over the hub ground:
+    /// the trace has G 31 (measured 33 on the haze), a naive linear
+    /// blend paints 60, and the rebased alpha lands within a level.
+    #[test]
+    fn ghost_over_flat_ground_matches_the_trace() {
+        let ground = rgb(0x0d0d0c);
+        let ghost = Color { a: 0.12, ..rgb(0x0f9f80) };
+        let design = srgb_blend(ghost, ground);
+        let naive = linear_blend(ghost, ground);
+        let fixed = linear_blend(blend_over(ghost, ground), ground);
+        assert_eq!(design[1], 31);
+        assert!(naive[1] >= 58, "naive linear blend was {naive:?}");
+        for i in 0..3 {
+            assert!(
+                (fixed[i] as i16 - design[i] as i16).abs() <= 1,
+                "channel {i}: design {design:?}, rebased {fixed:?}"
+            );
+        }
+    }
+
+    /// The alpha only ever shrinks for an ink brighter than its ground,
+    /// and the ink itself is never touched.
+    #[test]
+    fn rebasing_moves_only_the_alpha() {
+        let ground = rgb(0x0a0a0a);
+        for a in [0.07, 0.12, 0.5, 0.85] {
+            let c = Color { a, ..rgb(0x6cc4bd) };
+            let out = blend_over(c, ground);
+            assert_eq!((out.r, out.g, out.b), (c.r, c.g, c.b));
+            assert!(out.a < a && out.a > 0.0, "alpha {a} -> {}", out.a);
+        }
+    }
+
+    /// Opaque and clear colours pass through, so neokitsch's hand
+    /// pre-mixed `RING_*` inks are not corrected twice.
+    #[test]
+    fn opaque_and_clear_pass_through() {
+        let ground = rgb(0x0e0a0d);
+        let ring = rgb(0x3a2a1e);
+        assert_eq!(blend_over(ring, ground), ring);
+        let clear = Color { a: 0.0, ..ring };
+        assert_eq!(blend_over(clear, ground), clear);
+        // An ink equal to its ground has no alpha to solve for.
+        let same = Color { a: 0.3, ..ground };
+        assert_eq!(blend_over(same, ground), same);
+    }
+
+    /// A tall plate standing 60 right of a `Turn` pivot, turned +30: its
+    /// centre lands below and to the right (SVG's clockwise on a y-down
+    /// screen), `plates` and `hit_at` agree on where, and a point that
+    /// only the *unturned* box would cover misses.
+    #[test]
+    fn a_plate_inside_a_turn_is_hit_at_its_turned_centre() {
+        const TURNED: &[Prim] = &[Prim::Turn {
+            x: 400.0,
+            y: 300.0,
+            angle: 30.0,
+            prims: &[Prim::Plate {
+                group: Group::Module,
+                index: 3,
+                x: 50.0,
+                y: -50.0,
+                w: 20.0,
+                h: 100.0,
+                on: &[],
+                off: &[],
+            }],
+        }];
+        let k = 0.5;
+        let mut centres = Vec::new();
+        plates(TURNED, 0.0, 0.0, &mut centres);
+        assert_eq!(centres.len(), 1);
+        let (group, index, c) = centres[0];
+        assert_eq!((group, index), (Group::Module, 3));
+        // (60, 0) turned 30 clockwise: (60 cos 30, 60 sin 30).
+        let (ex, ey) = (400.0 + 60.0 * 0.866_025_4, 300.0 + 30.0);
+        assert!((c.x - ex).abs() < 1e-3 && (c.y - ey).abs() < 1e-3, "centre {c:?}");
+        assert!(c.y > 300.0, "positive angle must turn clockwise (y down)");
+        assert_eq!(hit(TURNED, k, Point::new(c.x * k, c.y * k)), Some((Group::Module, 3)));
+        // The unturned box's top end (460, 255) maps to local
+        // (29.5, -69): off the end of the turned plate, so a miss.
+        assert_eq!(hit(TURNED, k, Point::new(460.0 * k, 255.0 * k)), None);
+        // The far end of the plate, in its own frame (60, 45), turned.
+        let (fx, fy) = turned(60.0, 45.0, 30.0);
+        assert_eq!(
+            hit(TURNED, k, Point::new((400.0 + fx) * k, (300.0 + fy) * k)),
+            Some((Group::Module, 3))
+        );
     }
 }

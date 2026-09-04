@@ -580,8 +580,8 @@ pub const ACCESS: Access = Access {
 // The wire band's eight strands are the trace's beziers stepped into
 // short segments; at 1.1px they read the same.
 use crate::style::{
-    Frame, MailBadges, MailButtons, MailList, MailPanel, Mailbox, Note, Piece, RowDecor,
-    Run, Seg, Trim, Veneer, Lobe, FromAt, BL, TR,
+    Frame, Mail, MailBadges, MailButtons, MailList, MailPanel, Mailbox, Note, Piece,
+    RowDecor, Run, Seg, Trim, Veneer, Lobe, FromAt, BL, TR,
 };
 
 /// The selection bar's own two tones, measured off the photograph at
@@ -1196,6 +1196,44 @@ static CHROME: [Piece; 49] = [
 static BUTTONS: [&str; 4] = ["RIFLES", "RIFLES", "RIFLES", "RIFLES"];
 static LEVELS: [&str; 0] = [];
 
+/// The seven rows, trace lines 442-455; the envelopes at lines 361-367
+/// are open on rows 1, 3 and 7 and closed on the rest, the selected
+/// row's included. Rows 6 and 7 are both from Rachel Ross here, where
+/// entropism has Biala Robertson and Larix & Betula. The senders are
+/// set in capitals; `from_upper` does that here.
+static ROWS: [Mail; 7] = [
+    Mail { subject: "You'll regret that", from: "Jackie", unread: true },
+    Mail { subject: "Urgent information (!)", from: "Mom", unread: false },
+    Mail { subject: "Heist data sent to you", from: "805000451", unread: true },
+    Mail { subject: "I'm worried man", from: "Rachel Ross", unread: false },
+    Mail { subject: "Special offer to you!", from: "JINX JINX STORE", unread: false },
+    Mail { subject: "I'm worried man", from: "Rachel Ross", unread: false },
+    Mail { subject: "Special offer to you!", from: "Rachel Ross", unread: true },
+];
+
+/// The body, trace lines 463-472: 2 + 5 + 3 lines. This era breaks its
+/// first paragraph after "aliqua." and runs "Excepteur sint" into the
+/// second, so the three paragraphs are the same words split in yet
+/// another place; like kitsch it has no "Nemo enim" paragraph.
+static PARAGRAPHS: [&[&str]; 3] = [
+    &[
+        "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod",
+        "tempor incididunt ut labore et dolore magna aliqua.",
+    ],
+    &[
+        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut",
+        "aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in vo-",
+        "luptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat",
+        "cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est la-",
+        "borum.",
+    ],
+    &[
+        "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium do-",
+        "loremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore",
+        "veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
+    ],
+];
+
 pub fn mailbox() -> Mailbox {
     Mailbox {
         haze: &HAZE,
@@ -1208,7 +1246,7 @@ pub fn mailbox() -> Mailbox {
             // each one, carrying a small filled trapezoid tab
             row: Frame::new(35.0, 248.8, 477.0, 60.2),
             pitch: 60.2,
-            count: 7,
+            rows: &ROWS,
             selected: 1,
             decor: RowDecor::Ruled,
             row_fill: None,
@@ -1254,7 +1292,6 @@ pub fn mailbox() -> Mailbox {
             title_upper: false,
             from_upper: true,
             new_pill: None,
-            new_rows: 0,
             icons: None,
         },
         panel: MailPanel {
@@ -1268,14 +1305,18 @@ pub fn mailbox() -> Mailbox {
             head: None,
             head_ink: Ink::Select,
             head_trim: Trim::NONE,
+            // the message is the selected row's, URGENT INFORMATION (!)
+            // / FROM: MOM, trace lines 460-461
             message: 1,
             title: Run::new(738.0, 277.0, 15.0, Ink::Fg).bold(),
             title_upper: true,
             from: Some(Run::new(740.0, 297.0, 11.5, Ink::Fg)),
+            heading: None,
+            sender: None,
             body: Run::new(738.0, 333.0, 17.0, Ink::Fg),
             line: 21.5,
             para: 43.0,
-            wrap: 565.0,
+            paragraphs: &PARAGRAPHS,
         },
         buttons: MailButtons {
             // four outlined RIFLES buttons, 184x39 on a 192 pitch, each

@@ -1705,6 +1705,29 @@ pub struct Icons {
     pub pitch: f32,
 }
 
+/// One row of an era's mailbox, transcribed from its trace.
+///
+/// The four traces do *not* show the same inbox. Three of them list
+/// variations on "You'll regret that / Urgent information (!) / Heist
+/// data sent to you / ..." with different senders, different lengths and
+/// different envelopes open; neomil's is "List of messages / I'm worried
+/// man / Heist data sent to you / ..." with every row from Jackie. So
+/// the rows live in the era table, and the screen draws whatever the
+/// table says.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Mail {
+    /// Set in the case the era's `title_upper` / `from_upper` flags
+    /// produce: an era that shouts its subjects stores them in sentence
+    /// case here and the screen uppercases them, so the same text reads
+    /// the same way in the list and over the message.
+    pub subject: &'static str,
+    pub from: &'static str,
+    /// An unread message shows an open-flap envelope in every trace
+    /// that draws envelopes, and carries the NEW pill in the one era
+    /// that draws pills instead.
+    pub unread: bool,
+}
+
 /// Region A of every trace: the message list.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MailList {
@@ -1715,7 +1738,8 @@ pub struct MailList {
     /// The first row's box; every other row is this plus `pitch`.
     pub row: Frame,
     pub pitch: f32,
-    pub count: usize,
+    /// The rows, top to bottom, exactly as many as the trace shows.
+    pub rows: &'static [Mail],
     pub selected: usize,
     pub decor: RowDecor,
     pub row_fill: Option<Ink>,
@@ -1765,10 +1789,9 @@ pub struct MailList {
     /// because no era sets them the same way.
     pub title_upper: bool,
     pub from_upper: bool,
-    /// The outlined NEW pill neomil sets in a row's lower right, and
-    /// how many rows from the top carry one. Zero everywhere else.
+    /// The outlined NEW pill neomil sets in a row's lower right, on
+    /// every row whose [`Mail::unread`] is set. `None` everywhere else.
     pub new_pill: Option<Frame>,
-    pub new_rows: usize,
     pub icons: Option<Icons>,
 }
 
@@ -1786,20 +1809,37 @@ pub struct MailPanel {
     pub head: Option<Frame>,
     pub head_ink: Ink,
     pub head_trim: Trim,
-    /// Which message the panel is showing. Not always the selected row:
-    /// entropism picks row 1 out of a list whose row 0 is selected, and
-    /// the trace is unambiguous about both.
+    /// Which row the panel is reading at rest. Not always the selected
+    /// row: entropism reads row 1 out of a list whose row 0 is
+    /// selected, and the trace is unambiguous about both. A click moves
+    /// the panel onto the clicked row.
     pub message: usize,
     pub title: Run,
     pub title_upper: bool,
     /// Neomil prints no sender beside its panel title.
     pub from: Option<Run>,
+    /// What the trace sets in `title` / `from` at rest, where that is
+    /// *not* the shown row's own subject / sender under the list's
+    /// prefix and casing rules. `None` derives from `rows[message]`.
+    /// Two traces need it: entropism heads its message "from: Mom"
+    /// above a list that says "FROM: MOM", and neomil's panel reads
+    /// "Urgent Information (!)", which is no row of its list at all.
+    /// Only the resting state is pinned; once a click moves the panel
+    /// off `message`, both are derived.
+    pub heading: Option<&'static str>,
+    pub sender: Option<&'static str>,
+    /// Where the first body line's baseline sits, and how it is set.
     pub body: Run,
     /// Baseline-to-baseline within a paragraph, and between them.
     pub line: f32,
     pub para: f32,
-    /// Wrap width, in design pixels.
-    pub wrap: f32,
+    /// The body copy: paragraphs of lines, each line exactly as the
+    /// trace sets it, hyphenated breaks ("incidi-" / "dunt") included.
+    /// The traces break the same lorem four different ways -- two of
+    /// them without its third paragraph -- and set each line
+    /// explicitly, so there is nothing to wrap: the screen draws one
+    /// run per entry.
+    pub paragraphs: &'static [&'static [&'static str]],
 }
 
 /// Region C: the action buttons, or whatever the era puts where they go
@@ -2139,6 +2179,16 @@ pub enum Prim {
     At {
         x: f32,
         y: f32,
+        prims: &'static [Prim],
+    },
+    /// A sub-scene translated to `(x, y)` then rotated `angle` degrees
+    /// clockwise about that point: the trace's
+    /// `<g transform="translate(cx cy) rotate(a)">`. Text inside turns
+    /// with it, which is how a blade label lies along its blade.
+    Turn {
+        x: f32,
+        y: f32,
+        angle: f32,
         prims: &'static [Prim],
     },
 }

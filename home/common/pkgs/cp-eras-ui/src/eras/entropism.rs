@@ -388,8 +388,8 @@ pub const ACCESS: Access = Access {
 // stop darker at #5d7752. (The crate TODO already carries this as an
 // entropism-wide question.)
 use crate::style::{
-    Frame, MailBadges, MailButtons, MailList, MailPanel, Mailbox, Note, Piece, RowDecor,
-    Run, Trim, FromAt,
+    Frame, Mail, MailBadges, MailButtons, MailList, MailPanel, Mailbox, Note, Piece,
+    RowDecor, Run, Trim, FromAt,
 };
 
 /// Header strip, footer strip, the three boxed section letters, and
@@ -517,6 +517,40 @@ static BUTTONS: [&str; 4] = ["REPLY", "FORWARD", "DELETE", "REPORT SPAM"];
 /// the filled one.
 static LEVELS: [&str; 4] = ["T1", "T3", "T2", "T4"];
 
+/// The seven rows, trace lines 188-207 (text) and 186 / 210-216 (the
+/// envelopes: only row 2's is `#env-open`). The trace sets them in
+/// capitals; `title_upper` / `from_upper` do that here.
+static ROWS: [Mail; 7] = [
+    Mail { subject: "You'll regret that", from: "Jackie", unread: false },
+    Mail { subject: "Urgent information (!)", from: "Mom", unread: true },
+    Mail { subject: "Heist data sent to you", from: "805000451", unread: false },
+    Mail { subject: "I'm worried man", from: "Rachel Ross", unread: false },
+    Mail { subject: "Special offer to you!", from: "JINX JINX STORE", unread: false },
+    Mail { subject: "I'm worried man", from: "Biala Robertson", unread: false },
+    Mail { subject: "Special offer to you!", from: "Larix & Betula", unread: false },
+];
+
+/// The body, trace lines 233-242: 4 + 4 + 2 lines, each set with its
+/// own `textLength`, broken where the trace breaks them.
+static PARAGRAPHS: [&[&str]; 3] = [
+    &[
+        "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incidi-",
+        "dunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitati-",
+        "on ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in re-",
+        "prehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+    ],
+    &[
+        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit",
+        "anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem ac-",
+        "cusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore",
+        "veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
+    ],
+    &[
+        "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia",
+        "consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.",
+    ],
+];
+
 pub fn mailbox() -> Mailbox {
     Mailbox {
         // this era's mailbox is content with its `Ground`
@@ -532,7 +566,7 @@ pub fn mailbox() -> Mailbox {
             // are each row's own foot.
             row: Frame::new(85.0, 226.0, 366.0, 62.0),
             pitch: 61.95,
-            count: 7,
+            rows: &ROWS,
             selected: 0,
             decor: RowDecor::Framed,
             row_fill: None,
@@ -564,7 +598,6 @@ pub fn mailbox() -> Mailbox {
             title_upper: true,
             from_upper: true,
             new_pill: None,
-            new_rows: 0,
             icons: None,
         },
         panel: MailPanel {
@@ -576,14 +609,20 @@ pub fn mailbox() -> Mailbox {
             head: Some(Frame::new(531.0, 227.0, 746.0, 61.0)),
             head_ink: Ink::Select,
             head_trim: Trim::NONE,
+            // the panel reads row 2 (URGENT INFORMATION (!)) while row
+            // 1 is selected, trace lines 185-188 / 228
             message: 1,
             title: Run::new(557.0, 253.0, 22.0, Ink::OnSelect),
             title_upper: true,
             from: Some(Run::new(557.0, 279.0, 17.0, Ink::OnSelect)),
+            heading: None,
+            // trace line 229: the list shouts "FROM: MOM", the panel
+            // does not
+            sender: Some("from: Mom"),
             body: Run::new(557.0, 325.0, 17.0, Ink::Fg),
             line: 21.7,
             para: 39.0,
-            wrap: 690.0,
+            paragraphs: &PARAGRAPHS,
         },
         buttons: MailButtons {
             // one outlined strip y 694..746 split at x 716 / 903 /

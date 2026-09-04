@@ -19,12 +19,25 @@
 //! era it is in, which is the standing test for `screens/` and not a
 //! comment.
 //!
-//! The *content* -- subjects, senders, body copy -- is the screen's,
-//! not the table's, because the four traces agree about it: the same
-//! messages from the same senders, the same three lorem paragraphs.
-//! What the table says about content is structural only: how many rows
-//! are visible, which one is selected, which message the panel shows,
-//! and whether the era shouts its subjects or its senders.
+//! The *content* -- subjects, senders, body copy -- is the table's too,
+//! because the four traces do not agree about it. An earlier version of
+//! this file said they did and kept one inbox and three lorem
+//! paragraphs here; read as text, the traces say otherwise. Neomil's
+//! list is "List of messages / I'm worried man / Heist data sent to
+//! you / ..." with every row from Jackie, not the inbox the other three
+//! show, and its panel is headed "Urgent Information (!)", which is no
+//! row of that list. Entropism reads a message it has not selected and
+//! heads it "from: Mom" over a list that says "FROM: MOM". Kitsch and
+//! neokitsch split the lorem three ways with no "Nemo enim" paragraph;
+//! entropism and neomil keep it. And every trace sets each body line
+//! explicitly, hyphenating where it breaks ("incidi-" / "dunt"), so
+//! there is nothing to wrap: [`crate::style::MailList::rows`] and
+//! [`crate::style::MailPanel::paragraphs`] carry the text verbatim and
+//! this file draws one run per entry. What is still the screen's is
+//! casing -- an era that shouts its subjects stores them in sentence
+//! case and `title_upper` / `from_upper` say so -- and what happens on
+//! a click, when the panel leaves the trace's resting message and reads
+//! the clicked row instead.
 //!
 //! Drawn as one canvas rather than composed out of layout, for the same
 //! reason [`crate::screens::dashboard`]'s trace-shaped arms are: a
@@ -53,51 +66,6 @@ const DH: f32 = 900.0;
 /// the face's ascent, which is why it is a measured constant rather
 /// than a font metric.
 const BASELINE: f32 = 0.95;
-
-/// Mean advance of Rajdhani as a fraction of the font size, used to
-/// wrap body copy and to right-align a trailing sender. Read off the
-/// traces, which set their body lines with an explicit `textLength`:
-/// entropism's first line is 86 characters in 679px at size 17.
-const ADVANCE: f32 = 0.464;
-
-/// One message. The four traces show the same inbox; how much of it is
-/// visible, and which row is picked out, is the era's business.
-struct Mail {
-    subject: &'static str,
-    from: &'static str,
-    /// An unread message shows an open-flap envelope in every trace
-    /// that distinguishes the two.
-    unread: bool,
-}
-
-static INBOX: [Mail; 8] = [
-    Mail { subject: "You'll regret that", from: "Jackie", unread: false },
-    Mail { subject: "Urgent information (!)", from: "Mom", unread: true },
-    Mail { subject: "Heist data sent to you", from: "805000451", unread: true },
-    Mail { subject: "I'm worried man", from: "Rachel Ross", unread: false },
-    Mail { subject: "Special offer to you!", from: "JINX JINX STORE", unread: false },
-    Mail { subject: "I'm worried man", from: "Biala Robertson", unread: false },
-    Mail { subject: "Special offer to you!", from: "Larix & Betula", unread: true },
-    Mail { subject: "Heist data sent to you", from: "Jackie", unread: false },
-];
-
-/// The three lorem paragraphs every trace sets in its message body.
-const BODY: [&str; 3] = [
-    "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do \
-     eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim \
-     ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut \
-     aliquip ex ea commodo consequat. Duis aute irure dolor in \
-     reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla \
-     pariatur.",
-    "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui \
-     officia deserunt mollit anim id est laborum. Sed ut perspiciatis \
-     unde omnis iste natus error sit voluptatem accusantium doloremque \
-     laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore \
-     veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
-    "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit \
-     aut fugit, sed quia consequuntur magni dolores eos qui ratione \
-     voluptatem sequi nesciunt.",
-];
 
 pub struct MailBox {
     pub style: Style,
@@ -135,7 +103,7 @@ impl MailBox {
     pub fn update(&mut self, message: Message) {
         match message {
             Message::Select(row) => {
-                self.selected = row.min(self.style.mailbox.list.count.saturating_sub(1));
+                self.selected = row.min(self.style.mailbox.list.rows.len().saturating_sub(1));
                 self.showing = self.selected;
             }
         }
@@ -196,7 +164,7 @@ impl Sheet<'_> {
                 && at.y >= f.y * sy
                 && at.y <= (f.y + f.h) * sy
         };
-        (0..list.count).find(|&i| {
+        (0..list.rows.len()).find(|&i| {
             let band = self.row_at(i);
             inside(band)
                 || (i == self.selected && inside(list.sel.shifted(0.0, self.sel_offset())))
@@ -572,30 +540,6 @@ fn envelope(
     frame.stroke(&path, stroke);
 }
 
-/// Greedy wrap at a pixel width, using [`ADVANCE`].
-///
-/// Canvas text is drawn run by run, so the body copy is broken here
-/// rather than by the shaper. The traces set their own lines with an
-/// explicit `textLength`, which is where the constant comes from.
-fn wrap(content: &str, size: f32, width: f32) -> Vec<String> {
-    let max = (width / (size * ADVANCE)).max(8.0) as usize;
-    let mut lines = Vec::new();
-    let mut line = String::new();
-    for word in content.split_whitespace() {
-        if !line.is_empty() && line.chars().count() + 1 + word.chars().count() > max {
-            lines.push(std::mem::take(&mut line));
-        }
-        if !line.is_empty() {
-            line.push(' ');
-        }
-        line.push_str(word);
-    }
-    if !line.is_empty() {
-        lines.push(line);
-    }
-    lines
-}
-
 fn cased(content: &str, upper: bool) -> String {
     if upper {
         content.to_uppercase()
@@ -621,7 +565,7 @@ impl Sheet<'_> {
         }
 
         if let Some(icons) = list.icons {
-            for i in 0..list.count {
+            for i in 0..list.rows.len() {
                 self.cartridge(
                     frame,
                     scale,
@@ -632,7 +576,7 @@ impl Sheet<'_> {
             }
         }
 
-        for (i, mail) in INBOX.iter().take(list.count).enumerate() {
+        for (i, mail) in list.rows.iter().enumerate() {
             let row = self.row_at(i);
             let selected = i == self.selected;
             let shift = self.sel_offset();
@@ -765,9 +709,11 @@ impl Sheet<'_> {
                     from_ink,
                 ),
                 // The one era that sets the sender as a second column,
-                // right-aligned on the subject's own line.
+                // right-aligned on the subject's own line: neomil's
+                // trace anchors every name's end 7px inside the row's
+                // right edge (x 504 on rows x 241..511).
                 FromAt::Trailing => Run::new(
-                    row.x + row.w - 8.0,
+                    row.x + row.w - 7.0,
                     row.y + list.title_dy,
                     list.from_size,
                     from_ink,
@@ -776,9 +722,10 @@ impl Sheet<'_> {
             };
             label(frame, scale, at, ink(s, from_ink), &sender);
 
-            // The NEW pill, on the rows the trace puts one on.
+            // The NEW pill, on the rows the trace puts one on -- its
+            // unread ones, in the era that marks them this way.
             if let Some(pill) = list.new_pill {
-                if i < list.new_rows {
+                if mail.unread {
                     let at = pill.shifted(row.x, row.y);
                     box_at(
                         frame,
@@ -934,33 +881,36 @@ impl Sheet<'_> {
             );
         }
 
-        let mail = &INBOX[self.showing.min(INBOX.len() - 1)];
-        label(
-            frame,
-            scale,
-            panel.title,
-            ink(s, panel.title.ink),
-            &cased(mail.subject, panel.title_upper),
-        );
+        // At rest the panel says what the trace says, which two eras
+        // pin explicitly; once a click has moved it off `message` the
+        // heading and sender are the shown row's own.
+        let Some(mail) = list.rows.get(self.showing).or(list.rows.last()) else {
+            return;
+        };
+        let at_rest = self.showing == panel.message;
+        let heading = match panel.heading.filter(|_| at_rest) {
+            Some(text) => text.to_string(),
+            None => cased(mail.subject, panel.title_upper),
+        };
+        label(frame, scale, panel.title, ink(s, panel.title.ink), &heading);
         if let Some(at) = panel.from {
-            label(
-                frame,
-                scale,
-                at,
-                ink(s, at.ink),
-                &format!("{}{}", list.from_prefix, cased(mail.from, list.from_upper)),
-            );
+            let sender = match panel.sender.filter(|_| at_rest) {
+                Some(text) => text.to_string(),
+                None => format!("{}{}", list.from_prefix, cased(mail.from, list.from_upper)),
+            };
+            label(frame, scale, at, ink(s, at.ink), &sender);
         }
 
+        // One run per line the trace sets; nothing is wrapped here.
         let mut y = panel.body.y;
-        for para in BODY {
-            for line in wrap(para, panel.body.size, panel.wrap) {
+        for para in panel.paragraphs {
+            for line in *para {
                 label(
                     frame,
                     scale,
                     Run { y, ..panel.body },
                     ink(s, panel.body.ink),
-                    &line,
+                    line,
                 );
                 y += panel.line;
             }
