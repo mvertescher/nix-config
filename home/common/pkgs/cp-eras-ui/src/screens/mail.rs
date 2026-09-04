@@ -1047,63 +1047,67 @@ impl canvas::Program<Message> for Sheet<'_> {
         let s = self.style;
         let m = &s.mailbox;
 
-        for piece in m.chrome {
-            match piece {
-                Piece::Box {
-                    at,
-                    fill,
-                    stroke,
-                    width,
-                    trim,
-                } => box_at(
-                    &mut frame,
-                    scale,
-                    *at,
-                    *trim,
-                    fill.map(|r| ink(s, r)),
-                    stroke.map(|r| (ink(s, r), *width)),
-                ),
-                Piece::Poly {
-                    points,
-                    fill,
-                    stroke,
-                    width,
-                    close,
-                } => poly_at(
-                    &mut frame,
-                    scale,
-                    points,
-                    *close,
-                    fill.map(|r| ink(s, r)),
-                    stroke.map(|r| (ink(s, r), *width)),
-                ),
-                Piece::Curve {
-                    start,
-                    steps,
-                    fill,
-                    stroke,
-                    width,
-                    close,
-                } => curve_at(
-                    &mut frame,
-                    scale,
-                    *start,
-                    steps,
-                    *close,
-                    fill.map(|r| ink(s, r)),
-                    stroke.map(|r| (ink(s, r), *width)),
-                ),
-                Piece::Label(note) => {
-                    label(&mut frame, scale, note.at, ink(s, note.at.ink), note.text)
-                }
-            }
-        }
-
+        pieces(&mut frame, scale, s, m.chrome);
         self.list(&mut frame, scale, &m.list);
         self.panel(&mut frame, scale, &m.panel, &m.list);
         self.buttons(&mut frame, scale, &m.buttons);
         self.badges(&mut frame, scale, &m.badges);
+        pieces(&mut frame, scale, s, m.overlay);
 
         vec![frame.into_geometry()]
+    }
+}
+
+/// Draw an era's free-standing pieces -- [`Mailbox::chrome`] under the
+/// four regions, [`Mailbox::overlay`] over them.
+fn pieces(frame: &mut canvas::Frame, scale: Scale, s: &Style, pieces: &[Piece]) {
+    for piece in pieces {
+        match piece {
+            Piece::Box {
+                at,
+                fill,
+                stroke,
+                width,
+                trim,
+            } => box_at(
+                frame,
+                scale,
+                *at,
+                *trim,
+                fill.map(|r| ink(s, r)),
+                stroke.map(|r| (ink(s, r), *width)),
+            ),
+            Piece::Poly {
+                points,
+                fill,
+                stroke,
+                width,
+                close,
+            } => poly_at(
+                frame,
+                scale,
+                points,
+                *close,
+                fill.map(|r| ink(s, r)),
+                stroke.map(|r| (ink(s, r), *width)),
+            ),
+            Piece::Curve {
+                start,
+                steps,
+                fill,
+                stroke,
+                width,
+                close,
+            } => curve_at(
+                frame,
+                scale,
+                *start,
+                steps,
+                *close,
+                fill.map(|r| ink(s, r)),
+                stroke.map(|r| (ink(s, r), *width)),
+            ),
+            Piece::Label(note) => label(frame, scale, note.at, ink(s, note.at.ink), note.text),
+        }
     }
 }

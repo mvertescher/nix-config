@@ -1902,6 +1902,11 @@ pub struct Mailbox {
     /// Header, footer, section letters, micro-print and line art: every
     /// era-owned element that is not one of the four regions below.
     pub chrome: &'static [Piece],
+    /// Pieces drawn *over* the four regions: ornaments that ride a
+    /// region's edge and would otherwise be buried under its fill --
+    /// neomil's bright bar on the panel's right edge lost its inner
+    /// half the day the panel gained its `#1c0608` fill (2026-09-04).
+    pub overlay: &'static [Piece],
     pub list: MailList,
     pub panel: MailPanel,
     pub buttons: MailButtons,

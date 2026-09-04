@@ -1181,6 +1181,7 @@ pub fn mailbox() -> Mailbox {
         // and masked blue line for line, so it takes the store's ground.
         backdrop: MAIL_BACKDROP,
         chrome: &CHROME,
+        overlay: &[],
         list: MailList {
             frame: None,
             frame_ink: Ink::Fg,

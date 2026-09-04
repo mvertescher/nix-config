@@ -322,10 +322,16 @@
       <use href="#icons" y="584" stroke="#df3131"/>
       <text x="11" y="202" font-size="20" font-weight="700" letter-spacing="1">MAGNUM 650</text>
       <text x="11" y="223" font-size="17" letter-spacing="1">HAND GUN</text>
-      <g font-size="7" letter-spacing="0.5" fill="#96282d">
-        <text transform="translate(272,182) rotate(90)">BETTERLIFE TEC</text>
-        <text transform="translate(263,182) rotate(90)">PETROCHEM</text>
-        <rect x="256" y="181" width="8" height="42" fill="none" stroke="#96282d" stroke-width="0.8"/>
+      <!-- the 0.8 box sits AROUND PETROCHEM (img-09-store.png: outline 36..55
+           photo px in from the card's right edge, y 438..556, i.e. local
+           x 261..269, y 182.5..231.7, PETROCHEM glyphs 262.3..268.2 inside
+           it, BETTERLIFE TEC 272.3..277.3; the same construct as the
+           mailbox panel's corner). Until 2026-09-04 it was drawn at
+           256..264 x 181..223, beside the text. -->
+      <g font-size="7.5" letter-spacing="0.5" fill="#96282d">
+        <text transform="translate(272,182.5) rotate(90)">BETTERLIFE TEC</text>
+        <text transform="translate(262.5,183) rotate(90)">PETROCHEM</text>
+        <rect x="261.4" y="182.9" width="7.2" height="48.4" fill="none" stroke="#96282d" stroke-width="0.8"/>
       </g>
       <use href="#gunbody" fill="#96282d" stroke="#df3131" stroke-width="1"/>
       <use href="#gundark" fill="#5a1e22"/>
@@ -364,10 +370,10 @@
       <use href="#icons" y="776" stroke="#df3131"/>
       <text x="11" y="202" font-size="20" font-weight="700" letter-spacing="1">MAGNUM 650</text>
       <text x="11" y="223" font-size="17" letter-spacing="1">HAND GUN</text>
-      <g font-size="7" letter-spacing="0.5" fill="#b02c30">
-        <text transform="translate(272,182) rotate(90)">BETTERLIFE TEC</text>
-        <text transform="translate(263,182) rotate(90)">PETROCHEM</text>
-        <rect x="256" y="181" width="8" height="42" fill="none" stroke="#b02c30" stroke-width="0.8"/>
+      <g font-size="7.5" letter-spacing="0.5" fill="#b02c30">
+        <text transform="translate(272,182.5) rotate(90)">BETTERLIFE TEC</text>
+        <text transform="translate(262.5,183) rotate(90)">PETROCHEM</text>
+        <rect x="261.4" y="182.9" width="7.2" height="48.4" fill="none" stroke="#b02c30" stroke-width="0.8"/>
       </g>
       <!-- solid variant, 14px left of the frame-relative position -->
       <g transform="translate(-14,0)">
@@ -417,10 +423,10 @@
       <use href="#icons" y="584" stroke="#df3131"/>
       <text x="11" y="202" font-size="20" font-weight="700" letter-spacing="1">MAGNUM 650</text>
       <text x="11" y="223" font-size="17" letter-spacing="1">HAND GUN</text>
-      <g font-size="7" letter-spacing="0.5" fill="#96282d">
-        <text transform="translate(272,182) rotate(90)">BETTERLIFE TEC</text>
-        <text transform="translate(263,182) rotate(90)">PETROCHEM</text>
-        <rect x="256" y="181" width="8" height="42" fill="none" stroke="#96282d" stroke-width="0.8"/>
+      <g font-size="7.5" letter-spacing="0.5" fill="#96282d">
+        <text transform="translate(272,182.5) rotate(90)">BETTERLIFE TEC</text>
+        <text transform="translate(262.5,183) rotate(90)">PETROCHEM</text>
+        <rect x="261.4" y="182.9" width="7.2" height="48.4" fill="none" stroke="#96282d" stroke-width="0.8"/>
       </g>
       <use href="#gunbody" fill="#96282d" stroke="#df3131" stroke-width="1"/>
       <use href="#gundark" fill="#5a1e22"/>

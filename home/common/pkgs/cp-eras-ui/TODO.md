@@ -790,14 +790,39 @@ gap must be exact.
   left at x 843.3; grain stroke #e6ae6b → #cf975c. Seen, not fixed:
   gun silhouettes coarse, DPS labels small, text weight lighter than
   600 throughout.
-- [ ] Neomil: store card 4's title is ghosted/duplicated in the photo
-  (glitch treatment); mailbox has small QR-like glyphs beside the
-  panel the trace simplifies; dashboard glitch echoes are two hairline
-  pairs where the photo has a few more fragments.
+- [x] Neomil photo details, triaged 2026-09-04 against the photos:
+  - Store card 4's ghosted/duplicated title and the dashboard's extra
+    glitch fragments are the photograph's treatment (`docs/PIPELINE.md`);
+    the store trace's own comment calls the ghost "not drawn". Left.
+  - The mailbox "QR-like glyphs beside the panel" are the boxed
+    PETROCHEM / BETTERLIFE TEC maker's marks in the panel's top-right
+    corner, and the trace had them wrong: the 0.8 box sat *beside*
+    the text (x 1424..1432) where the photo draws it *around* PETROCHEM
+    (img-08-main.png x 3431..3447, y 812..922 → design 1429.6..1436.25,
+    338.3..384.2; BETTERLIFE TEC at 1440..1444.2). Same construct on
+    the store cards (box 36..55 photo px in from the card's right edge
+    → local 261..269 x 182.5..231.7, glyphs 7.5 not 7). Fixed in
+    `mailbox-trace.svg`, `store-trace.svg`, `components.svg`, the
+    store `card!` macro and `CARD2`'s `line_rect`.
+  - Found on the way: the mailbox panel's `#1c0608` fill (added
+    2026-09-04) was drawn *after* CHROME and buried the inner half of
+    the bright bar riding its right edge (`EDGE_BAR`, x 1440..1455;
+    only 1450..1455 survived). New `Mailbox::overlay` layer drawn after
+    the four regions; neomil's holds the bar and the maker's-mark box,
+    the other three eras' are empty. Goldens mailbox/store-neomil
+    re-taken.
+  - Not changed: the photo's panel outline and marks are 1-2 px of
+    bright (251,53,53) at 2.4x, which integrates to about the trace's
+    dim `#a8282b` at 1.2 / 0.8 — the same ink trade the neokitsch
+    strands make.
 - [x] Entropism mailbox T1–T4: bold 27 + scale(1.42..1.46, 1).
-- [ ] Entropism `bar.svg` menu icons overlap the row text (icon to
-  1177, text at 1175) — pre-existing, the golden has a gap; the third
-  pass did not touch `bar.svg`.
+- [x] Entropism `bar.svg` menu icons overlap the row text (icon to
+  1177, text at 1175) — stale by 2026-09-04: the current `bar.svg`
+  reserves a 16px icon column (glyph +12..+28, label at +36; Mount's
+  diamond 1153..1169, text 1177) and its own prose (`:168-170`) calls
+  that "the fix for the old icon/text overlap". The iced bar matches
+  (G2i entropism bar 5/5 shapes; example icons are the synthetic
+  magenta `sample_icon`, by design).
 - [x] Kitsch store card 2's band: 1.1px #a4583a outline path with a
   45° chamfered right end; card 1's chamfer angle fixed; PETROCHEM box
   at (163, 72.8, 58x8), PETROCHEM/BETTERLIFE scale(1.3, 1). Left: card

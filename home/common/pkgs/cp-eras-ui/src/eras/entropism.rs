@@ -556,6 +556,7 @@ pub fn mailbox() -> Mailbox {
         // this era's mailbox is content with its `Ground`
         backdrop: &[],
         chrome: &CHROME,
+        overlay: &[],
         list: MailList {
             // frame x 84..451, y 205..686
             frame: Some(Frame::new(84.0, 205.0, 367.0, 481.0)),

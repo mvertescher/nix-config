@@ -551,7 +551,8 @@ pub const ACCESS: Access = Access {
 // conversion report: the rotated BETTERLIFE TEC / PETROCHEM maker's
 // marks inside the panel's top-right corner (canvas text cannot be
 // rotated through `fill_text`), and the two rotated `00032 05 54 08 CP`
-// margin strings, for the same reason.
+// margin strings, for the same reason. The 0.8 box around PETROCHEM is
+// drawn, in `OVERLAY` (it sits on the panel, so CHROME is too early).
 use crate::style::{
     Frame, Icons, Mail, MailBadges, MailButtons, MailList, MailPanel, Mailbox, Note,
     Piece, RowDecor, Run, Trim, FromAt, BL, BR, TR,
@@ -654,7 +655,7 @@ const SCROLL_RING: &[Seg] = &[
     Seg::Cubic { c1x: 572.8, c1y: 741.5, c2x: 577.5, c2y: 736.8, x: 577.5, y: 731.0 },
 ];
 
-static CHROME: [Piece; 42] = [
+static CHROME: [Piece; 41] = [
     // customer block
     text(124.0, 90.0, 14.0, Ink::Fg, "CUSTOMER"),
     Piece::Box {
@@ -769,13 +770,6 @@ static CHROME: [Piece; 42] = [
     // the trace centres the R on x 567; Run is start-anchored
     strong(563.3, 736.0, 13.0, Ink::Fg, "R"),
     Piece::Poly {
-        points: &EDGE_BAR,
-        fill: Some(Ink::Fg),
-        stroke: None,
-        width: 0.0,
-        close: true,
-    },
-    Piece::Poly {
         points: &FOOT_ARROW,
         fill: Some(Ink::Fg),
         stroke: None,
@@ -793,6 +787,31 @@ static CHROME: [Piece; 42] = [
         trim: Trim::NONE,
     },
     strong(1314.0, 872.0, 10.0, Ink::OnSelect, "B"),
+];
+
+/// Drawn after the panel, whose `#1c0608` fill (2026-09-04) had buried
+/// the inner half of the bar riding its right edge and would bury the
+/// maker's-mark box in its top-right corner.
+static OVERLAY: [Piece; 2] = [
+    Piece::Poly {
+        points: &EDGE_BAR,
+        fill: Some(Ink::Fg),
+        stroke: None,
+        width: 0.0,
+        close: true,
+    },
+    // The 0.8 box the trace draws *around* the rotated PETROCHEM in the
+    // panel's corner (mailbox-trace :330-335); the text itself cannot be
+    // drawn -- `fill_text` does not rotate. Measured on img-08-main.png
+    // at photo x 3431..3447, y 812..922 (outer), i.e. design 1429.6..
+    // 1436.25 x 338.3..384.2; the frame here is the stroke centreline.
+    Piece::Box {
+        at: Frame::new(1430.0, 338.7, 6.25, 45.1),
+        fill: None,
+        stroke: Some(Ink::Dim),
+        width: 0.8,
+        trim: Trim::NONE,
+    },
 ];
 
 static BUTTONS: [&str; 4] = [
@@ -845,6 +864,7 @@ pub fn mailbox() -> Mailbox {
     Mailbox {
         backdrop: MAIL_BACKDROP,
         chrome: &CHROME,
+        overlay: &OVERLAY,
         list: MailList {
             frame: None,
             frame_ink: Ink::Dim,
@@ -1313,7 +1333,7 @@ macro_rules! card {
             Prim::At { x: 0.0, y: 0.0, prims: ICONS_FOOT },
             txt_bold(11.0, 202.0, 20.0, Ink::Fg, "MAGNUM 650"),
             txt(11.0, 223.0, 17.0, Ink::Fg, "HAND GUN"),
-            line_rect(256.0, 181.0, 8.0, 42.0, Ink::Dim, 0.8),
+            line_rect(261.4, 182.9, 7.2, 48.4, Ink::Dim, 0.8),
             Prim::At { x: 0.0, y: 0.0, prims: GUN_OUTLINED },
             Prim::At { x: 0.0, y: 0.0, prims: STATS },
         ]
@@ -1348,7 +1368,7 @@ const GROWN: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: ICONS_FOOT_SEL },
     txt_bold(11.0, 202.0, 20.0, Ink::Fg, "MAGNUM 650"),
     txt(11.0, 223.0, 17.0, Ink::Fg, "HAND GUN"),
-    line_rect(256.0, 181.0, 8.0, 42.0, Ink::Fixed(GUN_LIT), 0.8),
+    line_rect(261.4, 182.9, 7.2, 48.4, Ink::Fixed(GUN_LIT), 0.8),
     // the solid variant, 14px left of the frame-relative position
     Prim::At { x: -14.0, y: 0.0, prims: GUN_SOLID },
     // on the solid gun only the trigger cradle reads dark

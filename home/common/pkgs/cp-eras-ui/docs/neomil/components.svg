@@ -941,7 +941,7 @@
        reads as a parallelogram riding the edge (the same motif the
        store cards and the GO HOME panel carry). Inside the top-right
        corner two rotated 7px maker's marks, BETTERLIFE TEC and
-       PETROCHEM, beside an 8x42 empty box stroked 0.8. Body copy is
+       PETROCHEM, the latter boxed 6.25x45.1 stroked 0.8. Body copy is
        Rajdhani 15 #c42d2f at x+10, ten lines on a 21 pitch in three
        paragraphs separated by one blank line. Heading "Urgent
        Information (!)" 600/20 at (742,287), i.e. 25 above the panel.
@@ -951,9 +951,9 @@
     <path d="M 729,312 H 1442 L 1450,320 V 691 L 1442,699 H 729 Z"
           fill="#1c0608" stroke="#a8282b" stroke-width="1.2"/>
     <g font-family="Rajdhani" font-size="7" fill="#a8282b" letter-spacing="0.5">
-      <text transform="translate(1440,337) rotate(90)">BETTERLIFE TEC</text>
-      <text transform="translate(1431,337) rotate(90)">PETROCHEM</text>
-      <rect x="1424" y="336" width="8" height="42" fill="none" stroke="#a8282b" stroke-width="0.8"/>
+      <text transform="translate(1440,338) rotate(90)">BETTERLIFE TEC</text>
+      <text transform="translate(1431,338.5) rotate(90)">PETROCHEM</text>
+      <rect x="1430" y="338.7" width="6.25" height="45.1" fill="none" stroke="#a8282b" stroke-width="0.8"/>
     </g>
     <g font-family="Rajdhani" font-size="15" fill="#c42d2f">
       <text x="739" y="347">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt</text>
@@ -977,8 +977,8 @@
        ends. Inside, at card-local x: the icon trio at y 163 and again
        at y 584; MAGNUM 650 at 700/20 ls 1 (x+11, y 202) over HAND GUN
        at 17 ls 1; the rotated BETTERLIFE TEC / PETROCHEM marks and
-       their 8x42 box at x+256; the four-layer rifle drawing, outlined
-       here (#gunbody #96282d stroked #df3131 1, #gundark #5a1e22,
+       the 7.2x48.4 box around the latter at x+261.4; the four-layer
+       rifle drawing, outlined here (#gunbody #96282d stroked #df3131 1, #gundark #5a1e22,
        #gunhi #df3131, #gundetail stroked #df3131); a stat row of four
        labels at 15 ls 1 (y 434) over four values at 700/20 centred
        (y 467) on a 64 pitch; a two line 8px notice; and the socket row
@@ -993,10 +993,10 @@
       <use href="#icons" y="584" stroke="#df3131"/>
       <text x="11" y="202" font-size="20" font-weight="700" letter-spacing="1">MAGNUM 650</text>
       <text x="11" y="223" font-size="17" letter-spacing="1">HAND GUN</text>
-      <g font-size="7" letter-spacing="0.5" fill="#96282d">
-        <text transform="translate(272,182) rotate(90)">BETTERLIFE TEC</text>
-        <text transform="translate(263,182) rotate(90)">PETROCHEM</text>
-        <rect x="256" y="181" width="8" height="42" fill="none" stroke="#96282d" stroke-width="0.8"/>
+      <g font-size="7.5" letter-spacing="0.5" fill="#96282d">
+        <text transform="translate(272,182.5) rotate(90)">BETTERLIFE TEC</text>
+        <text transform="translate(262.5,183) rotate(90)">PETROCHEM</text>
+        <rect x="261.4" y="182.9" width="7.2" height="48.4" fill="none" stroke="#96282d" stroke-width="0.8"/>
       </g>
       <use href="#gunbody" fill="#96282d" stroke="#df3131" stroke-width="1"/>
       <use href="#gundark" fill="#5a1e22"/>
@@ -1050,10 +1050,10 @@
       <use href="#icons" y="776" stroke="#df3131"/>
       <text x="11" y="202" font-size="20" font-weight="700" letter-spacing="1">MAGNUM 650</text>
       <text x="11" y="223" font-size="17" letter-spacing="1">HAND GUN</text>
-      <g font-size="7" letter-spacing="0.5" fill="#b02c30">
-        <text transform="translate(272,182) rotate(90)">BETTERLIFE TEC</text>
-        <text transform="translate(263,182) rotate(90)">PETROCHEM</text>
-        <rect x="256" y="181" width="8" height="42" fill="none" stroke="#b02c30" stroke-width="0.8"/>
+      <g font-size="7.5" letter-spacing="0.5" fill="#b02c30">
+        <text transform="translate(272,182.5) rotate(90)">BETTERLIFE TEC</text>
+        <text transform="translate(262.5,183) rotate(90)">PETROCHEM</text>
+        <rect x="261.4" y="182.9" width="7.2" height="48.4" fill="none" stroke="#b02c30" stroke-width="0.8"/>
       </g>
       <g transform="translate(-14,0)">
         <use href="#gunbody" fill="#df3131"/>

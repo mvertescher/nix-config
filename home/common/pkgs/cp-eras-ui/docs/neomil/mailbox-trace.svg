@@ -327,11 +327,19 @@
           fill="#1c0608" stroke="#a8282b" stroke-width="1.2"/>
     <!-- the bright bar riding the right edge, y 415..552, chamfered ends -->
     <path d="M 1447,415 H 1455 V 545 L 1448,552 H 1440 V 422 Z" fill="#e63132"/>
-    <!-- rotated maker's marks inside the top-right corner -->
+    <!-- rotated maker's marks inside the top-right corner. The 0.8 box
+         is drawn AROUND PETROCHEM, not beside it: img-08-main.png has its
+         outline at photo x 3431..3447, y 812..922 (design 1429.6..1436.25,
+         338.3..384.2) with the PETROCHEM glyphs at 3434..3444 inside it and
+         BETTERLIFE TEC at 3456..3466, y 812..946 (1440..1444.2, 338..394).
+         Until 2026-09-04 the rect sat at x 1424..1432, y 336..378, beside
+         and overlapping the text. Ink: the photo's marks are 1-2 px of
+         bright (251,53,53); at 2.4x that integrates to about this dim
+         #a8282b at 0.8, the same trade the panel outline makes. -->
     <g font-family="Rajdhani" font-size="7" fill="#a8282b" letter-spacing="0.5">
-      <text transform="translate(1440,337) rotate(90)">BETTERLIFE TEC</text>
-      <text transform="translate(1431,337) rotate(90)">PETROCHEM</text>
-      <rect x="1424" y="336" width="8" height="42" fill="none" stroke="#a8282b" stroke-width="0.8"/>
+      <text transform="translate(1440,338) rotate(90)">BETTERLIFE TEC</text>
+      <text transform="translate(1431,338.5) rotate(90)">PETROCHEM</text>
+      <rect x="1430" y="338.7" width="6.25" height="45.1" fill="none" stroke="#a8282b" stroke-width="0.8"/>
     </g>
     <!-- body copy: ten lines in three paragraphs (measured run boxes
          18 high on a 21px pitch, paragraph gaps of one line) -->
