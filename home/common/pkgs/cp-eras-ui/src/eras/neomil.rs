@@ -1543,7 +1543,9 @@ pub const STORE: &[Prim] = &[
     fill_rect(983.0, 39.0, 17.0, 2.0, Ink::Fg),
     fill_path(977.0, 40.0, ARROW, Ink::Fg),
     // MASURAO logotype
-    Prim::Text { x: 192.0, y: 104.0, size: 36.0, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "益荒男" },
+    // (`:252-254`: translate(188,102) skewX(-13), letter-spacing 5 -- the
+    // tracking is drawn, the 13-degree skew is not: `Prim` has no shear)
+    Prim::Tracked { x: 192.0, y: 104.0, size: 36.0, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, tracking: 5.0, content: "益荒男" },
     fill_path(187.0, 72.0, SLANT, Ink::Fg),
     fill_path(160.0, 108.0, BAND, Ink::Fg),
     txt_bold(165.0, 125.0, 15.0, Ink::OnSelect, "MASURAO"),

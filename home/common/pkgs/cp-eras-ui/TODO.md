@@ -310,20 +310,25 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   the wash when `iced_wgpu` uploads an image in the frame that draws
   it — at most a one-vblank flash on a real compositor, which is the
   whole of what this item was about. Do not precompute the wash.
-- [ ] **store/neomil golden has tofu where the host draws kanji.**
-  `tests/golden/store-neomil-1600x900.png` renders `益荒男`
-  (`eras/neomil.rs` `Prim::Text` at 192,104) as three boxes: the
-  sandbox has no CJK font, and `render.sh` on this host finds one, so
-  it is the only cell whose capture is not byte-identical to its
-  golden (~350 pixels, all in that word's box at 194,76 104x35). The
-  trace (§ Gate fails, "Kanji is real Noto CJK text") and G1i are
-  right; the golden is the lie. The UI faces are compiled in
-  (`src/fonts.rs` `include_bytes!`, staged by `default.nix` `preBuild`),
-  so the fix is to bundle a CJK face the same way — a Noto Sans CJK
-  subset, since the full OTF is ~16MB per weight — and load it beside
-  the others, then re-take that one golden. Falling back to whatever
-  fontconfig finds is what makes this cell host-dependent today. Until
-  then the neomil store's G2i number carries the tofu.
+- [x] **store/neomil golden has tofu where the host draws kanji.**
+  `tests/golden/store-neomil-1600x900.png` rendered `益荒男`
+  (`eras/neomil.rs` at 192,104) as three boxes: the sandbox has no CJK
+  font, and `render.sh` on this host found one, so it was the only
+  cell whose capture was not byte-identical to its golden. Fixed
+  2026-09-04 the way the item proposed: `home/common/pkgs/noto-cjk-subset`
+  takes the JP face out of nixpkgs' `NotoSansCJK-VF.otf.ttc`,
+  `pyftsubset`s it to the three glyphs and freezes `wght=700` with
+  `varLib.instancer` (5KB, family name kept as "Noto Sans CJK JP" so
+  cosmic-text's Han fallback asks for it by name); `default.nix` and
+  `shell.nix` stage it into `fonts/` beside Orbitron and Rajdhani,
+  `fonts::NOTO_SANS_CJK_JP_BOLD` embeds it, and the five scene
+  examples load it. Sandbox render now equals the host capture at
+  AE 0. Riding along: the logotype is `Prim::Tracked` at the trace's
+  letter-spacing 5 (bbox 148 wide vs the design's 150; was 138 as
+  plain `Text`). Not drawn: the trace's `skewX(-13)` — `Prim` has no
+  shear. G2i 78 → 79, `--diff` 0.52%. **Setting any new CJK string in
+  an era table means extending that package's `text` first**, or the
+  sandbox is back to tofu; `fonts.rs` says so at the const.
 - [x] **Gate-side blending — the gate was right; the app was blending
   wrong, and the fix is `Prim::Soft`** (2026-09-04). This item used to
   say the residual after the alpha fix was the extractor's hole-fill

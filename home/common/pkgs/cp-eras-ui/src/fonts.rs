@@ -9,6 +9,15 @@ pub const RAJDHANI_MEDIUM: &[u8] = include_bytes!("../fonts/Rajdhani-Medium.ttf"
 pub const RAJDHANI_SEMIBOLD: &[u8] = include_bytes!("../fonts/Rajdhani-SemiBold.ttf");
 pub const RAJDHANI_BOLD: &[u8] = include_bytes!("../fonts/Rajdhani-Bold.ttf");
 
+/// Noto Sans CJK JP 700, subset to the kanji the era tables set --
+/// today the neomil store's MASURAO logotype (`益荒男`, `eras/neomil.rs`).
+/// Built by `home/common/pkgs/noto-cjk-subset`; extend that package's
+/// `text` before setting a new CJK string, or the sandbox render draws
+/// tofu where the host, which has the full face on fontconfig, draws
+/// the glyph. Nothing names this family: a Rajdhani run reaches it
+/// through the shaper's Han fallback, so load it beside the others.
+pub const NOTO_SANS_CJK_JP_BOLD: &[u8] = include_bytes!("../fonts/NotoSansCJKjp-Bold-subset.otf");
+
 // iced::Font constants for easy use
 pub const FONT_ORBITRON_REGULAR: iced::Font = iced::Font {
     family: iced::font::Family::Name("Orbitron"),

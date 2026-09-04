@@ -36,6 +36,7 @@ let
     inTreePkgs = final: prev: {
         orbitron-vf = final.callPackage ../home/common/pkgs/orbitron { };
         rajdhani-fontshare = final.callPackage ../home/common/pkgs/rajdhani-fontshare { };
+        noto-cjk-subset = final.callPackage ../home/common/pkgs/noto-cjk-subset { };
         cp-eras-ui = final.callPackage ../home/common/pkgs/cp-eras-ui {
             orbitron = final.orbitron-vf;
         };

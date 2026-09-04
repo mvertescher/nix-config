@@ -28,6 +28,7 @@
 , wayland
 , orbitron
 , rajdhani-fontshare
+, noto-cjk-subset
 }:
 
 let
@@ -80,6 +81,7 @@ let
       cp "${orbitron}/share/fonts/truetype/Orbitron Bold.ttf" fonts/Orbitron-Bold.ttf
     fi
     cp ${rajdhani-fontshare}/share/fonts/truetype/*.ttf fonts/
+    cp ${noto-cjk-subset}/share/fonts/opentype/*.otf fonts/
   '';
 
   postInstall = ''

@@ -2,6 +2,7 @@
 
 let
   rajdhani-fontshare = pkgs.callPackage ../rajdhani-fontshare { };
+  noto-cjk-subset = pkgs.callPackage ../noto-cjk-subset { };
   orbitron = pkgs.callPackage ../orbitron { };
 
   driversPath = "${pkgs.mesa}/lib/dri";
@@ -32,6 +33,7 @@ pkgs.mkShell {
     # finds it through pkg-config's `libpulse`.
     libpulseaudio
     rajdhani-fontshare
+    noto-cjk-subset
     orbitron
     mesa
   ];
@@ -48,7 +50,8 @@ pkgs.mkShell {
       cp -f "${orbitron}/share/fonts/truetype/Orbitron Bold.ttf" fonts/Orbitron-Bold.ttf
     fi
     cp -f ${rajdhani-fontshare}/share/fonts/truetype/*.ttf fonts/
-    chmod +w fonts/*.ttf
+    cp -f ${noto-cjk-subset}/share/fonts/opentype/*.otf fonts/
+    chmod +w fonts/*.ttf fonts/*.otf
 
     # If running in headless/software-force mode, configure the drivers
     if [ -n "''${FORCE_SOFTWARE_GL:-}" ]; then
