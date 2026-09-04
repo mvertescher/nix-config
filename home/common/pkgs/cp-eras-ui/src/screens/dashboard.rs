@@ -24,7 +24,7 @@
 //! click on any unit re-dresses the screen without this file knowing
 //! what a menu unit looks like in any era.
 //!
-//! The traces draw their own grounds (hazes as `Wash` and `Lobe`
+//! The traces draw their own grounds (hazes as `Ramp` and `Lobe`
 //! prims), so like the store this screen stacks its canvas over
 //! [`crate::widgets::ground()`] and nothing else.
 //!

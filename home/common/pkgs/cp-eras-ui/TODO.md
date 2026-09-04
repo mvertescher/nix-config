@@ -514,13 +514,25 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
     struct change across four eras, so left.
   - kitsch mailbox's selected-row fill and chevron fills read solid in
     the diff: colour, not placement.
-  - **translucent fills over a composited ground are rebased against
-    the flat `palette.bg`** (`blend_over`), so where the ground now
-    varies they drift: entropism store's rifle silhouettes (720,360)
-    design `168 212 162` vs `156 183 149`, neomil store's `c2upper`
-    wash. Those live in `Plate`s, which `Soft` cannot hold; the fix
-    is either a `Soft` group per plate state or `blend_over` taking
-    the composited ground's pixel. Measure before choosing.
+  - ~~translucent fills over a composited ground are rebased against
+    the flat `palette.bg`~~ — **the premise was wrong on both examples**
+    (measured 2026-09-04). Entropism (720,360) is the grown card's
+    *opaque* header fill, `Ink::Select` #9cb795 against the trace's
+    #a8d4a2: the era-role-vs-trace-hex choice `ERAS-DELTA.md` already
+    classifies, not blending. Neomil's `c2upper` was a two-stop
+    `Prim::Wash` drawn by iced's gradient, which `mix`es in linear
+    light and `smoothstep`s between stops — 14 levels off a third of
+    the way down with the *right* stops at both ends. Fixed the same
+    day: `Prim::Ramp` is now painted on the canvas too, as flat
+    design-pixel strips read in sRGB (axis-aligned only there;
+    `soft_only_prims_stay_soft` checks), `c2upper` carries the
+    trace's four stops and lands exact down x=900, and `Prim::Wash`
+    is deleted. Card 4's cut strip, which was a flat `GROUND` rect
+    under a wash and up to 25 levels off over the composited ground,
+    is two column ramps sampled off the design (within ±6). neomil
+    store G2i 80 held, `--diff` 0.6 → 0.5%, golden moved. No
+    translucent-over-composited case is left: kitsch's ghosts are
+    inside their `Soft` group.
 - [x] **`scene.rs` alpha blending** — done 2026-09-04, alpha converted at
   paint time. Translucent `Ink::Fixed` alphas are composited in linear
   space by wgpu but the traces were designed in sRGB (rsvg), so every

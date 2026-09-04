@@ -2152,19 +2152,6 @@ pub enum Prim {
         stroke: Option<Ink>,
         width: f32,
     },
-    /// A vertical two-stop gradient. Neomil's selected card is filled
-    /// with one -- `linearGradient id="c2upper"` in its trace -- and a
-    /// flat fill in its place is not a near miss: the wash is what
-    /// makes the card's *upper* two thirds read as a separate surface
-    /// from the body under it.
-    Wash {
-        x: f32,
-        y: f32,
-        w: f32,
-        h: f32,
-        top: Ink,
-        foot: Ink,
-    },
     /// A selectable plate: a hit box and the two drawings it wears.
     ///
     /// `on` is painted when this plate's `index` is the current
@@ -2214,13 +2201,14 @@ pub enum Prim {
     },
     /// A rect filled with the trace's own `linearGradient`: the axis
     /// `from` -> `to` in bounding-box fractions (SVG's `x1 y1 x2 y2`)
-    /// and the whole stop table. [`Prim::Wash`] is the two-stop
-    /// vertical case the canvas can draw; neomil's `#glowh` has ten
-    /// stops across the frame and its masks' luminance ramps nine
-    /// down it, past the eight iced's gradient holds.
+    /// and the whole stop table, read in sRGB the way rsvg reads it.
     ///
-    /// Composited only: it lives inside a [`Prim::Soft`] group, and
-    /// `soft_only_prims_stay_soft` in `scene.rs` keeps it there.
+    /// Not iced's gradient, which `mix`es in linear light and
+    /// `smoothstep`s between its (at most eight) stops and so lands the
+    /// trace only *at* a stop. Inside a [`Prim::Soft`] group it is
+    /// composited exactly at any angle; on the canvas it is painted as
+    /// flat strips along its axis, so there it must be horizontal or
+    /// vertical -- `soft_only_prims_stay_soft` in `scene.rs` checks.
     Ramp {
         x: f32,
         y: f32,

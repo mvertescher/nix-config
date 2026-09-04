@@ -530,21 +530,36 @@ impl<M> Scene<M> {
                         canvas::Path::circle(Point::new((ox + x) * k, (oy + y) * k), r * k);
                     self.paint_path(frame, &path, fill, stroke, width, k);
                 }
-                Prim::Wash { x, y, w, h, top, foot } => {
-                    let (x0, y0) = ((ox + x) * k, (oy + y) * k);
-                    let gradient = iced::advanced::graphics::gradient::Linear::new(
-                        Point::new(x0, y0),
-                        Point::new(x0, y0 + h * k),
-                    )
-                    .add_stop(0.0, self.ink(top))
-                    .add_stop(1.0, self.ink(foot));
-                    frame.fill(
-                        &canvas::Path::rectangle(Point::new(x0, y0), Size::new(w * k, h * k)),
-                        canvas::Fill {
-                            style: canvas::Style::Gradient(gradient.into()),
-                            rule: canvas::fill::Rule::NonZero,
-                        },
-                    );
+                Prim::Ramp { x, y, w, h, from, to, stops } => {
+                    // Flat strips at design-pixel pitch along the axis,
+                    // each the stop table read in sRGB the way rsvg reads
+                    // it. Not iced's gradient: that one `mix`es in linear
+                    // light and `smoothstep`s between stops, so it can
+                    // only land the trace *at* a stop -- neomil's
+                    // `#c2upper` drawn that way was 14 levels off a third
+                    // of the way down. Axis-aligned only here (the test
+                    // `soft_only_prims_stay_soft` keeps it so); a
+                    // diagonal ramp lives in a `Soft` group.
+                    let vertical = from.0 == to.0;
+                    let n = (if vertical { h } else { w }).ceil().max(1.0) as usize;
+                    let (dx, dy) = (to.0 - from.0, to.1 - from.1);
+                    let len2 = (dx * dx + dy * dy).max(f32::EPSILON);
+                    for i in 0..n {
+                        let f = (i as f32 + 0.5) / n as f32;
+                        let (fx, fy) = if vertical { (0.5, f) } else { (f, 0.5) };
+                        let t = ((fx - from.0) * dx + (fy - from.1) * dy) / len2;
+                        let colour = self.blend(soft::stop(stops, t.clamp(0.0, 1.0)));
+                        let (sx, sy, sw, sh) = if vertical {
+                            (x, y + h * i as f32 / n as f32, w, h / n as f32)
+                        } else {
+                            (x + w * i as f32 / n as f32, y, w / n as f32, h)
+                        };
+                        frame.fill_rectangle(
+                            Point::new((ox + sx) * k, (oy + sy) * k),
+                            Size::new(sw * k, sh * k),
+                            colour,
+                        );
+                    }
                 }
                 Prim::Plate { group, index, on, off, .. } => {
                     let prims = if self.picked.get(group) == index { on } else { off };
@@ -568,11 +583,10 @@ impl<M> Scene<M> {
                 // Painted by the `Backdrop` canvas underneath; see
                 // `Scene::view`.
                 Prim::Soft { .. } => {}
-                // Composited only: a multi-stop ramp and a luminance
-                // mask have no canvas drawing, and
-                // `soft_only_prims_stay_soft` keeps them inside a
-                // `Soft` group where `Backdrop` finds them.
-                Prim::Ramp { .. } | Prim::Masked { .. } => {}
+                // Composited only: a luminance mask has no canvas
+                // drawing, and `soft_only_prims_stay_soft` keeps it
+                // inside a `Soft` group where `Backdrop` finds it.
+                Prim::Masked { .. } => {}
             }
         }
     }
@@ -842,16 +856,24 @@ mod tests {
         }
     }
 
-    /// `Prim::Ramp` and `Prim::Masked` have no canvas drawing (`paint`
-    /// skips them), so one outside a `Soft` group would vanish without
-    /// a word.
+    /// `Prim::Masked` has no canvas drawing (`paint` skips it), so one
+    /// outside a `Soft` group would vanish without a word; and the
+    /// canvas draws `Prim::Ramp` as strips along one axis, so a diagonal
+    /// one outside a `Soft` group would come out wrong rather than
+    /// vanish.
     #[test]
     fn soft_only_prims_stay_soft() {
         fn check(prims: &[Prim], where_: &str) {
             for prim in prims {
                 match *prim {
-                    Prim::Ramp { .. } | Prim::Masked { .. } => {
+                    Prim::Masked { .. } => {
                         panic!("{where_}: a composited-only prim outside a Soft group")
+                    }
+                    Prim::Ramp { from, to, .. } => {
+                        assert!(
+                            from.0 == to.0 || from.1 == to.1,
+                            "{where_}: a diagonal Ramp outside a Soft group"
+                        );
                     }
                     Prim::At { prims, .. } | Prim::Turn { prims, .. } => check(prims, where_),
                     Prim::Plate { on, off, .. } => {

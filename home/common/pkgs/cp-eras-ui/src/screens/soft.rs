@@ -422,7 +422,6 @@ pub fn supported(prim: &Prim) -> bool {
         | Prim::Lobe { .. }
         | Prim::Ellipse { .. }
         | Prim::Circle { .. }
-        | Prim::Wash { .. }
         | Prim::Ramp { .. } => true,
         Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Soft { prims } => {
             prims.iter().all(supported)
@@ -513,14 +512,6 @@ fn walk(buf: &mut Buf, prims: &[Prim], palette: &Palette, xf: Xf) {
                     let (lx, ly) = xf.inv(px, py);
                     let t = (((lx - x) / rx).powi(2) + ((ly - y) / ry).powi(2)).sqrt();
                     stop(stops, t.min(1.0))
-                });
-            }
-            Prim::Wash { x, y, w, h, top, foot } => {
-                let ring = map(round_rect(x, y, w, h, 0.0));
-                let (top, foot) = (top.of(palette), foot.of(palette));
-                buf.fill(&[ring], &|px, py| {
-                    let (_, ly) = xf.inv(px, py);
-                    lerp(top, foot, ((ly - y) / h).clamp(0.0, 1.0))
                 });
             }
             Prim::Ramp { x, y, w, h, from, to, stops } => {

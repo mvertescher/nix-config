@@ -960,11 +960,17 @@ pub const CARD4_FILL: iced::Color = rgb(0x0c0505);
 pub const CARD2_FILL: iced::Color = rgb(0x170507);
 /// The nav row's own fill, under its `#96282d` outline.
 pub const NAV_FILL: iced::Color = rgb(0x2e1012);
-/// The selected card's wash, head and foot: `linearGradient
-/// id="c2upper"` sampled down x=900, where the hub's blue glow lifts
-/// the card's top into violet before it falls back to the card fill.
-pub const WASH_HEAD: iced::Color = rgb(0x552842);
-pub const WASH_FOOT: iced::Color = rgb(0x2c0c10);
+/// The selected card's wash, `linearGradient id="c2upper"` (:107-112),
+/// sampled down x=900, where the hub's blue glow lifts the card's top
+/// into violet before it falls back to the card fill. The four stops
+/// as the trace has them: drawn as a two-stop head-to-foot wash the
+/// canvas was 14 levels off a third of the way down (2026-09-04).
+pub const C2UPPER: &[(f32, iced::Color)] = &[
+    (0.00, rgb(0x4e2545)),
+    (0.35, rgb(0x5a2a3a)),
+    (0.75, rgb(0x35171b)),
+    (1.00, rgb(0x2c0c10)),
+];
 /// The hub backdrop: near-black under a cold blue that is gone by
 /// y~540, and a warm near-black wash under the left half. Ground rather
 /// than ink -- but ground the extractor's palette split depends on, so
@@ -977,7 +983,7 @@ pub const GROUND: iced::Color = rgb(0x0b0405);
 // across the frame, drawn through `#glowmask`, a nine-stop luminance
 // ramp down it -- opaque to y 225, gone by 540. Until 2026-09-04 the
 // dashboard rasterised the pair at compile time into 640 strips and
-// the mailbox and store drew a flat ground and a two-stop `Wash`;
+// the mailbox and store drew a flat ground and a two-stop wash;
 // `Prim::Masked` over two `Prim::Ramp`s is the construct itself,
 // composited by `soft.rs`, so all three now share these.
 
@@ -1297,7 +1303,7 @@ const EDGE_BAR_SEL: &[Seg] = &[
 
 const GROWN: &[Prim] = &[
     Prim::Path { x: 0.0, y: 151.0, segs: FRAME_SEL, close: true, fill: Some(Ink::Fixed(CARD2_FILL)), stroke: Some(Ink::Fg), width: 1.2 },
-    Prim::Wash { x: 0.0, y: 151.0, w: 282.0, h: 365.0, top: Ink::Fixed(WASH_HEAD), foot: Ink::Fixed(WASH_FOOT) },
+    Prim::Ramp { x: 0.0, y: 151.0, w: 282.0, h: 365.0, from: (0.0, 0.0), to: (0.0, 1.0), stops: C2UPPER },
     fill_path(282.0, 266.0, EDGE_BAR_SEL, Ink::Fg),
     Prim::At { x: 0.0, y: 0.0, prims: ICONS_HEAD },
     Prim::At { x: 0.0, y: 0.0, prims: ICONS_FOOT_SEL },
@@ -1369,11 +1375,40 @@ const CARD4_EDGE: &[Seg] = &[
     Seg::Line(0.0, 613.0),
     Seg::Line(132.0, 613.0),
 ];
-/// The page as it stands right of card 4's cut: the era's ground under
-/// the tail of the hub glow, which fades out at y 540. `GLOW_AT_CUT` is
-/// that wash sampled at y=151, so the strip continues the backdrop
-/// rather than patching a flat rectangle over it.
-pub const GLOW_AT_CUT: iced::Color = rgb(0x191f3a);
+/// The page as it stands right of card 4's cut: `STORE_GROUND` as the
+/// design renders it, sampled down two columns (x 1567 and 1589) of the
+/// 43px strip, offsets as fractions of the card's 462 height. The glow
+/// sits opaque to y 225 and is gone by 540; the `#blackv` ramp takes
+/// over from y 380. Two columns because the glow's last stop runs
+/// #082447 -> #080b0e across x 1500..1600, 22 levels over the strip;
+/// one column would be 11 off at its edges. A flat `GROUND` rect under
+/// a two-stop wash sat here until 2026-09-04, up to 25 levels off.
+const CUT_GROUND_L: &[(f32, iced::Color)] = &[
+    (0.000, rgb(0x081320)),
+    (0.214, rgb(0x08121e)),
+    (0.322, rgb(0x08101a)),
+    (0.431, rgb(0x0a0d15)),
+    (0.496, rgb(0x0a0b11)),
+    (0.539, rgb(0x08080c)),
+    (0.604, rgb(0x070608)),
+    (0.669, rgb(0x050305)),
+    (0.734, rgb(0x040304)),
+    (0.777, rgb(0x020203)),
+    (1.000, rgb(0x020203)),
+];
+const CUT_GROUND_R: &[(f32, iced::Color)] = &[
+    (0.000, rgb(0x080d14)),
+    (0.214, rgb(0x080c13)),
+    (0.322, rgb(0x080b11)),
+    (0.431, rgb(0x0a0a0e)),
+    (0.496, rgb(0x0a080c)),
+    (0.539, rgb(0x080708)),
+    (0.604, rgb(0x070507)),
+    (0.669, rgb(0x050305)),
+    (0.734, rgb(0x040304)),
+    (0.777, rgb(0x020203)),
+    (1.000, rgb(0x020203)),
+];
 
 /// Card 4's unselected drawing: its own dark fill, the full card
 /// content, the page restored right of the cut, and the open frame.
@@ -1390,8 +1425,8 @@ pub const GLOW_AT_CUT: iced::Color = rgb(0x191f3a);
 const CARD4: &[Prim] = &[
     fill_rect(0.0, 151.0, 132.0, 462.0, Ink::Fixed(CARD4_FILL)),
     Prim::At { x: 0.0, y: 0.0, prims: CARD_CUT },
-    fill_rect(132.0, 151.0, 43.0, 462.0, Ink::Fixed(GROUND)),
-    Prim::Wash { x: 132.0, y: 151.0, w: 43.0, h: 389.0, top: Ink::Fixed(GLOW_AT_CUT), foot: Ink::Fixed(GROUND) },
+    Prim::Ramp { x: 132.0, y: 151.0, w: 21.0, h: 462.0, from: (0.0, 0.0), to: (0.0, 1.0), stops: CUT_GROUND_L },
+    Prim::Ramp { x: 153.0, y: 151.0, w: 22.0, h: 462.0, from: (0.0, 0.0), to: (0.0, 1.0), stops: CUT_GROUND_R },
     shut_path(132.0, 151.0, CARD4_EDGE, Ink::Fg, 1.2),
 ];
 
