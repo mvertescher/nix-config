@@ -34,8 +34,8 @@
 use crate::screens::scene::{Picked, Scene};
 use crate::style::Style;
 use crate::widgets::ground;
-use iced::widget::{canvas, stack};
-use iced::{Element, Length};
+use iced::widget::stack;
+use iced::Element;
 
 pub struct Dashboard {
     pub style: Style,
@@ -73,7 +73,7 @@ impl Dashboard {
     pub fn view(&self) -> Element<'_, Message> {
         stack![
             ground(&self.style),
-            canvas(Scene {
+            Scene {
                 style: self.style,
                 prims: self.style.dashboard,
                 picked: Picked {
@@ -83,9 +83,8 @@ impl Dashboard {
                 // The dashboard has one chooser, so the group is not
                 // worth carrying: any plate in this scene is a module.
                 on_select: |_group, index| Message::Select { index },
-            })
-            .width(Length::Fill)
-            .height(Length::Fill),
+            }
+            .view(),
         ]
         .into()
     }

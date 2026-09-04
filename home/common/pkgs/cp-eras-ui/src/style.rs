@@ -2191,6 +2191,19 @@ pub enum Prim {
         angle: f32,
         prims: &'static [Prim],
     },
+    /// A sub-scene composited in software, in sRGB, and drawn as one
+    /// image: for translucent fills that stack on each other or on a
+    /// haze, which wgpu's linear-light blending cannot land where the
+    /// trace's `fill-opacity` does. Kitsch's ghost cards over its rose
+    /// bloom are the case that forced it; `screens/soft.rs` has the
+    /// measurements and the scope (fills only -- no text, no plates).
+    ///
+    /// The group is rasterised over transparency at the frame's own
+    /// size, so it should open with its opaque ground: whatever it
+    /// leaves uncovered is blended linear like anything else.
+    Soft {
+        prims: &'static [Prim],
+    },
 }
 
 // Scene constructors. Const fns rather than a builder so an era table

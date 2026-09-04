@@ -1519,8 +1519,12 @@ pub const STORE: &[Prim] = &[
 //   `letter-spacing="2"` is still dropped: iced text has no tracking
 //   (TODO.md § Design pipeline, renderer limits).
 // - `fill-opacity` / `stroke-opacity` on the ghosts are carried as the
-//   alpha of an `Ink::Fixed` colour (`faded`), which composites onto
-//   the bloom the way the SVG does; nothing is pre-mixed.
+//   alpha of an `Ink::Fixed` colour (`faded`); nothing is pre-mixed.
+//   They composite onto the bloom the way the SVG does because the
+//   ground, bloom and ghosts are one `Prim::Soft` group (`HUB_BACK`),
+//   rasterised in sRGB by `screens/soft.rs` rather than blended in
+//   linear light by wgpu -- the difference is 4-10 levels per channel
+//   on the faint tails, and it is what G2i failed this screen on.
 // - the two `text-anchor="middle"` letters under a `scale(1.7 1)` --
 //   `Prim::Wide` is start-anchored, so A / C / D / B are placed at the
 //   box centreline minus half the trace's stated cap width (15.8, line
@@ -1739,43 +1743,16 @@ const USER_STEP: &[Seg] = &[
     Seg::Line(155.5, 240.5),
 ];
 
-pub const DASHBOARD: &[Prim] = &[
+/// The ground, the bloom and the ghost trails, composited in software:
+/// up to seven translucent cards stack on the haze here, and wgpu's
+/// linear blend cannot land rsvg's sRGB `fill-opacity` on a backdrop
+/// that varies under the stack -- see `screens/soft.rs`. Everything in
+/// this group sits under the header and the solid blades, so drawing
+/// it first, ahead of the header text, changes no pixel's order.
+const HUB_BACK: &[Prim] = &[
     // ground and bloom (trace lines 89-94, 100-101)
     fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(HUB_GROUND)),
     Prim::Lobe { x: 832.0, y: -31.0, rx: 1360.0, ry: 527.0, stops: HUB_ROSE },
-    // header notes: Rajdhani 600 8 stretched 1.3 (lines 107-122)
-    Prim::Wide { x: 205.0, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "SPARE TIME MANAGER WAS DEVELO-" },
-    Prim::Wide { x: 205.0, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "PED BY SEOCHO. SERVING CUSTO-" },
-    Prim::Wide { x: 205.0, y: 131.9, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "MERS SINCE 2006." },
-    Prim::Wide { x: 715.3, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "SPARE TIME MANAGER WAS DEVELO-" },
-    Prim::Wide { x: 715.3, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "PED BY SEOCHO. SERVING CUSTO-" },
-    Prim::Wide { x: 715.3, y: 131.9, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "MERS SINCE 2006." },
-    Prim::Wide { x: 1253.8, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "MAPS ARE PROVIDED BY SEOCHO." },
-    Prim::Wide { x: 1253.8, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "SATELITE SERVICES SINCE 2006." },
-    // boxed A / C / D: 24x24 2px squares (lines 125-129) holding a
-    // size-18 cap stretched 1.7, centred on the box (lines 130-134)
-    line_rect(164.6, 109.8, 24.2, 24.2, Ink::Fixed(BRIGHT), 2.0),
-    line_rect(673.3, 109.8, 24.2, 24.2, Ink::Fixed(BRIGHT), 2.0),
-    line_rect(1215.2, 109.8, 24.0, 24.2, Ink::Fixed(BRIGHT), 2.0),
-    Prim::Wide { x: 168.8, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "A" },
-    Prim::Wide { x: 677.5, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "C" },
-    Prim::Wide { x: 1219.3, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "D" },
-    // section labels: Rajdhani 600 12.3 stretched 1.37 (lines 137-141)
-    Prim::Wide { x: 165.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "USER" },
-    Prim::Wide { x: 674.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "SECURITY LEVEL" },
-    Prim::Wide { x: 1216.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "DESCRIPTION" },
-    // USER box and GUES 7702 (lines 148-151)
-    shut_path(155.5, 189.5, USER_STEP, Ink::Fixed(MARK), 1.25),
-    Prim::Text { x: 164.0, y: 218.0, size: 21.5, ink: Ink::Fixed(NAME_INK), face: Face::SemiBold, anchor: Anchor::Start, content: "GUES 7702" },
-    // security badges, `#badge` 57x52, 02 filled (lines 155-164)
-    line_rect(664.5, 189.5, 57.0, 52.0, Ink::Fixed(MARK), 1.0),
-    Prim::Text { x: 692.0, y: 222.0, size: 22.0, ink: Ink::Fixed(MARK), face: Face::SemiBold, anchor: Anchor::Middle, content: "01" },
-    fill_rect(725.0, 189.0, 57.0, 52.0, Ink::Fixed(HUB_YELLOW)),
-    Prim::Text { x: 753.0, y: 222.0, size: 22.0, ink: Ink::Fixed(ON_BADGE), face: Face::SemiBold, anchor: Anchor::Middle, content: "02" },
-    line_rect(785.5, 189.5, 57.0, 52.0, Ink::Fixed(MARK), 1.0),
-    Prim::Text { x: 813.0, y: 222.0, size: 22.0, ink: Ink::Fixed(MARK), face: Face::SemiBold, anchor: Anchor::Middle, content: "03" },
-    line_rect(844.5, 189.5, 57.0, 52.0, Ink::Fixed(MARK), 1.0),
-    Prim::Text { x: 872.0, y: 222.0, size: 22.0, ink: Ink::Fixed(MARK), face: Face::SemiBold, anchor: Anchor::Middle, content: "04" },
     // the ghosts, farthest first, every trail stepping (+20,-20) in
     // screen space from its solid card (lines 196-239); they belong to
     // no plate because they do not change with the selection and the
@@ -1822,6 +1799,43 @@ pub const DASHBOARD: &[Prim] = &[
     Prim::At { x: 979.0, y: 526.0, prims: GHOST_CW[4] },
     Prim::At { x: 959.0, y: 546.0, prims: GHOST_CW[5] },
     Prim::At { x: 939.0, y: 566.0, prims: GHOST_CW[6] },
+];
+
+pub const DASHBOARD: &[Prim] = &[
+    Prim::Soft { prims: HUB_BACK },
+    // header notes: Rajdhani 600 8 stretched 1.3 (lines 107-122)
+    Prim::Wide { x: 205.0, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "SPARE TIME MANAGER WAS DEVELO-" },
+    Prim::Wide { x: 205.0, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "PED BY SEOCHO. SERVING CUSTO-" },
+    Prim::Wide { x: 205.0, y: 131.9, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "MERS SINCE 2006." },
+    Prim::Wide { x: 715.3, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "SPARE TIME MANAGER WAS DEVELO-" },
+    Prim::Wide { x: 715.3, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "PED BY SEOCHO. SERVING CUSTO-" },
+    Prim::Wide { x: 715.3, y: 131.9, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "MERS SINCE 2006." },
+    Prim::Wide { x: 1253.8, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "MAPS ARE PROVIDED BY SEOCHO." },
+    Prim::Wide { x: 1253.8, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "SATELITE SERVICES SINCE 2006." },
+    // boxed A / C / D: 24x24 2px squares (lines 125-129) holding a
+    // size-18 cap stretched 1.7, centred on the box (lines 130-134)
+    line_rect(164.6, 109.8, 24.2, 24.2, Ink::Fixed(BRIGHT), 2.0),
+    line_rect(673.3, 109.8, 24.2, 24.2, Ink::Fixed(BRIGHT), 2.0),
+    line_rect(1215.2, 109.8, 24.0, 24.2, Ink::Fixed(BRIGHT), 2.0),
+    Prim::Wide { x: 168.8, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "A" },
+    Prim::Wide { x: 677.5, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "C" },
+    Prim::Wide { x: 1219.3, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "D" },
+    // section labels: Rajdhani 600 12.3 stretched 1.37 (lines 137-141)
+    Prim::Wide { x: 165.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "USER" },
+    Prim::Wide { x: 674.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "SECURITY LEVEL" },
+    Prim::Wide { x: 1216.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "DESCRIPTION" },
+    // USER box and GUES 7702 (lines 148-151)
+    shut_path(155.5, 189.5, USER_STEP, Ink::Fixed(MARK), 1.25),
+    Prim::Text { x: 164.0, y: 218.0, size: 21.5, ink: Ink::Fixed(NAME_INK), face: Face::SemiBold, anchor: Anchor::Start, content: "GUES 7702" },
+    // security badges, `#badge` 57x52, 02 filled (lines 155-164)
+    line_rect(664.5, 189.5, 57.0, 52.0, Ink::Fixed(MARK), 1.0),
+    Prim::Text { x: 692.0, y: 222.0, size: 22.0, ink: Ink::Fixed(MARK), face: Face::SemiBold, anchor: Anchor::Middle, content: "01" },
+    fill_rect(725.0, 189.0, 57.0, 52.0, Ink::Fixed(HUB_YELLOW)),
+    Prim::Text { x: 753.0, y: 222.0, size: 22.0, ink: Ink::Fixed(ON_BADGE), face: Face::SemiBold, anchor: Anchor::Middle, content: "02" },
+    line_rect(785.5, 189.5, 57.0, 52.0, Ink::Fixed(MARK), 1.0),
+    Prim::Text { x: 813.0, y: 222.0, size: 22.0, ink: Ink::Fixed(MARK), face: Face::SemiBold, anchor: Anchor::Middle, content: "03" },
+    line_rect(844.5, 189.5, 57.0, 52.0, Ink::Fixed(MARK), 1.0),
+    Prim::Text { x: 872.0, y: 222.0, size: 22.0, ink: Ink::Fixed(MARK), face: Face::SemiBold, anchor: Anchor::Middle, content: "04" },
     // the six solid blades in the trace's order (lines 243-267);
     // EVENTS is the selection
     blade!(0, 364.0, 413.0, 30.0, BLADE_CW_ON, BLADE_CW_OFF, "VEHICLES"),

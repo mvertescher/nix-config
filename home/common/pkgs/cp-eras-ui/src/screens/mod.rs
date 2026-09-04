@@ -13,6 +13,7 @@ pub mod dashboard;
 pub mod login;
 pub mod mail;
 pub mod scene;
+pub mod soft;
 pub mod store;
 
 pub use dashboard::Dashboard;

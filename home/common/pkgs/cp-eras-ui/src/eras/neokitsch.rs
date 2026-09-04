@@ -1846,7 +1846,11 @@ const SHELF_2: &[Prim] = shelf!(2);
 const SHELF_3: &[Prim] = shelf!(3);
 
 pub const STORE: &[Prim] = &[
-    Prim::At { x: 0.0, y: 0.0, prims: BACKDROP },
+    // Composited in software: the blue lobe is translucent over the
+    // haze and both over the page, and wgpu's linear blend lands the
+    // top edge 20 levels dark (design `64 54 83`, painted `40 43 66`).
+    // See `screens/soft.rs`.
+    Prim::Soft { prims: BACKDROP },
     Prim::At { x: 0.0, y: 0.0, prims: CONTENT },
 ];
 
@@ -2351,7 +2355,9 @@ macro_rules! hub_box {
 }
 
 pub const DASHBOARD: &[Prim] = &[
-    Prim::At { x: 0.0, y: 0.0, prims: HUB_GROUND },
+    // Composited in software, as the store's backdrop is: the two
+    // lobes carry opacities and stack.
+    Prim::Soft { prims: HUB_GROUND },
     // ==== header (:254-291) ====
     txt(120.0, 42.0, 15.0, Ink::Fixed(HUB_MID), "CUSTOMER #NC488402"),
     txt(120.0, 70.0, 12.0, Ink::Fixed(HUB_MID), "LEVEL"),

@@ -111,7 +111,20 @@ source, and which are originals.
   families — backgrounds are not optional. And iced strokes cover
   ~15% more than rsvg's at the same width (.87 vs .75 coverage per
   edge pixel), which is enough to flip a hairline's bin; the pairs are
-  a match by eye when that is all the diff says.
+  a match by eye when that is all the diff says. Third, the two sides
+  do not composite alike: rsvg applies `fill-opacity` to the encoded
+  sRGB values and wgpu blends in linear light, and no single alpha
+  reproduces a translucent layer over a *varying* backdrop in all three
+  channels. On the kitsch dashboard's ghost stacks the gate flipped
+  between four and six levels of drift (paste experiments: correcting
+  every pixel off by more than 8 levels scored 49%, more than 6 levels
+  67%). The scene resolves this on the app side, not the gate's: an
+  era table wraps a translucent stack in `Prim::Soft` and
+  `screens/soft.rs` composites it in sRGB, in software, so the capture
+  carries the trace's own pixels (that screen: 45% → 68%). A new
+  translucent stack that scores low is almost certainly missing its
+  `Soft`, and a gate-side "linear-light design" mode would not help —
+  rsvg has no such mode, and the drift is per channel.
 - **G2 — svg → iced.** The implementation matches the reference:
   rasterise the SVG (`rsvg-convert`) and
   `scripts/compare_ref.py <svg render> tests/golden/<screen>-<era>-...png`.

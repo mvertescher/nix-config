@@ -324,16 +324,64 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   the others, then re-take that one golden. Falling back to whatever
   fontconfig finds is what makes this cell host-dependent today. Until
   then the neomil store's G2i number carries the tofu.
-- [ ] **Gate-side blending.** The alpha item below and the kitsch
-  mailbox hole-fill (§ Trace improvements, "do not fix") are both cases
-  where G2i measures rsvg-vs-wgpu rather than design-vs-implementation.
-  The alpha item landed 2026-09-04 and kitsch dashboard went 31→45,
-  still FAIL: the residual is the extractor filling the ghost stacks'
-  holes on one side and not the other, plus the still-linear gradient
-  *interpolation* (note under that item). A `extract_spec.py` mode that
-  composites the design in linear light would address the second; the
-  first is § Trace improvements' kitsch hole-fill. Re-measure after the
-  rotated-text item, which moves the same screen.
+- [x] **Gate-side blending — the gate was right; the app was blending
+  wrong, and the fix is `Prim::Soft`** (2026-09-04). This item used to
+  say the residual after the alpha fix was the extractor's hole-fill
+  plus linear gradient *interpolation*, and proposed an `extract_spec.py`
+  mode that composites the design in linear light. Both wrong. Measured
+  on the kitsch dashboard (45% FAIL): at ghost centres G was exact but
+  R sat 8-10 levels bright and B 3-4 dark (design `68 49 55`, painted
+  `76 47 52`), and each card split into a too-bright and a too-dark
+  half where the layer count under it changed. Paste experiments —
+  overwriting only the pixels off by more than N levels with the
+  design's — put the gate's cliff at N=6: >8 → 49%, >6 → 67% PASS,
+  >4 → 100%. So the FAIL was colour, 4-6 levels of it, on the faint
+  ghost tails. Why no alpha fix reaches it: rsvg applies `fill-opacity`
+  on encoded sRGB values, wgpu in linear light, and a rebased layer adds
+  a *fixed* amount of linear light where the trace's adds more over a
+  brighter backdrop; per channel, teal over pink must darken R while it
+  brightens G, which no one alpha does. Tried and rejected before the
+  fix: a full under-model (sample the backdrop at each prim's centre
+  through every earlier fill, rebase against that) — 45→49% only, for
+  ~200 lines; per-channel ink solving on top — exact at one point,
+  flattens the ghost against the haze beside it. And the gate-side
+  "linear-light design" mode is impossible: rsvg has no such mode, and
+  it would move the design away from the drift, not the implementation
+  toward it. What landed: `Prim::Soft { prims }` — a sub-scene
+  composited in software, in sRGB, by `screens/soft.rs` (scanline
+  even-odd fills with 4 sub-rows and exact span fractions, distance-band
+  strokes, analytic lobes and washes, `At`/`Turn`) and drawn as one
+  opaque image in a `Backdrop` canvas *under* the scene's canvas
+  (`Scene::view`) — under, because iced batches a canvas layer as all
+  meshes, then all images, then all text, so an image in the scene's
+  own canvas covered every fill after it (measured: only the text
+  survived). Cached per canvas size and palette (`SoftCache`, the
+  program state); 66ms release / 600ms debug for the kitsch dashboard,
+  paid once. Kitsch dashboard's ground+bloom+ghosts and both neokitsch
+  backdrops are wrapped; ghost pixels now land exactly (`68 49 55`) and
+  the cell scores **45 → 68% PASS**; the other seven cells are unchanged
+  and five of the eight goldens byte-identical (kitsch dashboard,
+  neokitsch dashboard and store re-taken). Two tests keep the scope:
+  `soft_groups_hold_only_fills` (no text, grain, dots or plates inside
+  a group) and `soft_groups_lead_their_scene` (a group is a backdrop,
+  so it leads the list and is never nested). `blend_over` stays for the
+  lone translucent prim over flat ground. The hole-fill note was a red
+  herring: with the colour right the extractor matches 28/53 shapes.
+- [ ] **neokitsch backdrops are transcribed short of the trace.** Now
+  that both are composited exactly (`Prim::Soft`), the residual on the
+  hazes is transcription, not blending: store (150,50) design `64 54 83`
+  vs painted `35 42 65`, (500,50) `98 73 115` vs `79 65 98`; dashboard
+  (1550,150) `23 29 44` vs `22 23 35`. The store trace draws three
+  things `BACKDROP` does not: `#hazelobe` (a third radial, cx 430 cy
+  -40 r 560 scaled 1x0.30, `#7a5288` .85→.55→0, clipped to y<300 — the
+  top-left lift), `mask="url(#bluemask)"` (a luminance mask fading the
+  blue lobe out leftward, 0 at x=0 to full at x=640) and the 1.3°/2°
+  `rotate` on both gradients. The dashboard trace has the same mask
+  and rotations. Since G2i spends ~5 of its 8 clusters on a haze, this
+  is where the neokitsch store's 82% likely sits. The mask wants a new
+  prim (a horizontal alpha ramp multiplying what a group has drawn),
+  which `soft.rs` can do and the canvas cannot; the lobe is a table
+  line; the rotations are `Turn` around each lobe.
 - [ ] `scripts/triptych.sh --diff`: an optional fourth row, trace vs
   iced heatmap (`visual_diff.py` already draws one), so the review view
   points at the difference rather than leaving it to the eye.
@@ -358,8 +406,9 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   - the *interpolation* space of a gradient is unchanged (wgpu still
     lerps stops in linear light), so the neomil GLOW→GROUND band is
     ~14 levels brighter mid-ramp than rsvg's. Only the stops are
-    corrected. If it ever matters, `Scene::stop` is where extra
-    intermediate stops would go.
+    corrected. If it ever matters, `soft::stop` is where extra
+    intermediate stops would go (a Lobe inside a `Prim::Soft` group is
+    evaluated per pixel and has no such problem).
   - iced's `web-colors` feature is the principled fix (blend in sRGB
     outright) and `Cargo.toml` turns it off deliberately — it thins
     every glyph (record under "SVG→iced pre-work"). This item is the
@@ -369,7 +418,9 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
     needed; they could become translucent stops when that table is
     next touched.
   - `kitsch.rs`'s dashboard-comment bullet "nothing is pre-mixed" is
-    still true: only the alpha is rescaled, the colour is not.
+    still true: only the alpha is rescaled, the colour is not. (Since
+    2026-09-04 the ghost stacks do not go through this at all; they are
+    a `Prim::Soft` group — see "Gate-side blending" above.)
 - [ ] Dashboard renderer limits surfaced by the transcription, all
   small and all shared with the earlier conversions: no rotated text
   (kitsch's ±30° blade labels are drawn upright; the two PRODUCTS

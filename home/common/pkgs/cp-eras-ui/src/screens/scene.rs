@@ -17,10 +17,12 @@
 //! the pick for its [`Group`] and `off` otherwise, and reports clicks
 //! on plates back through the screen's own message constructor.
 
+use crate::screens::soft;
 use crate::style::{Anchor, Face, Group, Ink, Prim, Seg, Style};
+use std::cell::RefCell;
 use iced::widget::canvas;
 use iced::mouse::Interaction;
-use iced::{mouse, Color, Point, Rectangle, Renderer, Size, Theme};
+use iced::{mouse, Color, Element, Point, Rectangle, Renderer, Size, Theme};
 
 /// The frame every trace is measured in. The scene is painted at this
 /// size and scaled to the canvas, so the screen holds its proportions
@@ -63,6 +65,123 @@ pub struct Scene<M> {
     pub prims: &'static [Prim],
     pub picked: Picked,
     pub on_select: fn(Group, usize) -> M,
+}
+
+impl<M: 'static> Scene<M> {
+    /// The scene as a widget: its [`Prim::Soft`] groups in a canvas of
+    /// their own under the canvas that paints everything else.
+    ///
+    /// Two canvases because of how iced batches a canvas layer: every
+    /// mesh in it, then every image, then every text run. A composited
+    /// group is an image, so drawn in the same canvas as the fills it
+    /// is meant to sit under it would cover them -- measured, it did,
+    /// leaving only the text of the kitsch dashboard showing. Each
+    /// child of a `stack` after the first gets a layer of its own, so
+    /// the split puts the image where the era table says it goes.
+    pub fn view(self) -> Element<'static, M> {
+        iced::widget::stack![
+            canvas(Backdrop { style: self.style, prims: self.prims })
+                .width(iced::Length::Fill)
+                .height(iced::Length::Fill),
+            canvas(self).width(iced::Length::Fill).height(iced::Length::Fill),
+        ]
+        .into()
+    }
+}
+
+/// The [`Prim::Soft`] groups of a scene, as their own canvas: see
+/// [`Scene::view`] for why they cannot share the scene's. It paints
+/// only the groups that *lead* the scene's list -- a composited
+/// backdrop is what `Soft` is for, and `soft_groups_lead_their_scene`
+/// keeps every era table to that.
+#[derive(Debug, Clone, Copy)]
+pub struct Backdrop {
+    pub style: Style,
+    pub prims: &'static [Prim],
+}
+
+/// The leading run of [`Prim::Soft`] groups in `prims`.
+fn leading_soft(prims: &'static [Prim]) -> &'static [Prim] {
+    let n = prims.iter().take_while(|p| matches!(p, Prim::Soft { .. })).count();
+    &prims[..n]
+}
+
+impl<M> canvas::Program<M> for Backdrop {
+    type State = SoftCache;
+
+    fn draw(
+        &self,
+        soft: &Self::State,
+        renderer: &Renderer,
+        _theme: &Theme,
+        bounds: Rectangle,
+        _cursor: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        let mut frame = canvas::Frame::new(renderer, bounds.size());
+        let k = scale(bounds);
+        if k > 0.0 {
+            // One pixel of image per pixel of canvas, so at the golden
+            // matrix's 1600x900 the composite lands byte-for-byte;
+            // scaled, it is filtered like any other image.
+            let size = ((FRAME.0 * k).round().max(1.0) as u32, (FRAME.1 * k).round().max(1.0) as u32);
+            for prim in leading_soft(self.prims) {
+                let Prim::Soft { prims } = *prim else { continue };
+                let handle = soft.image(prims, &self.style.palette, size, k);
+                frame.draw_image(
+                    Rectangle { x: 0.0, y: 0.0, width: size.0 as f32, height: size.1 as f32 },
+                    canvas::Image::new(handle)
+                        .filter_method(iced::widget::image::FilterMethod::Linear),
+                );
+            }
+        }
+        vec![frame.into_geometry()]
+    }
+}
+
+/// The rasterised [`Prim::Soft`] groups of one [`Backdrop`] canvas, the
+/// widget's `Program::State`. A group is rebuilt only when the canvas
+/// size or the palette changes (a published theme re-dresses the screen
+/// through the palette), so the software composite is paid once, not
+/// per frame -- clicks and hovers redraw the scene without it.
+#[derive(Debug, Default)]
+pub struct SoftCache(RefCell<Vec<SoftEntry>>);
+
+#[derive(Debug)]
+struct SoftEntry {
+    prims: usize,
+    len: usize,
+    size: (u32, u32),
+    palette: crate::palette::Palette,
+    handle: iced::widget::image::Handle,
+}
+
+impl SoftCache {
+    /// The image for `prims` at `size` under `palette`, composited on a
+    /// miss. Entries for another size or palette are dropped on the
+    /// way: a resize or a theme change invalidates every group at once.
+    fn image(
+        &self,
+        prims: &'static [Prim],
+        palette: &crate::palette::Palette,
+        size: (u32, u32),
+        k: f32,
+    ) -> iced::widget::image::Handle {
+        let mut cache = self.0.borrow_mut();
+        cache.retain(|e| e.size == size && e.palette == *palette);
+        if let Some(e) = cache.iter().find(|e| e.prims == prims.as_ptr() as usize && e.len == prims.len()) {
+            return e.handle.clone();
+        }
+        let pixels = soft::composite(prims, palette, size.0, size.1, k);
+        let handle = iced::widget::image::Handle::from_rgba(size.0, size.1, pixels);
+        cache.push(SoftEntry {
+            prims: prims.as_ptr() as usize,
+            len: prims.len(),
+            size,
+            palette: *palette,
+            handle: handle.clone(),
+        });
+        handle
+    }
 }
 
 /// The frame-to-canvas scale, and the same one `draw` paints with.
@@ -175,35 +294,14 @@ impl<M> Scene<M> {
     /// `b` is `palette.bg`, exact over flat ground and an approximation
     /// wherever the prim sits on a haze or on another translucent prim
     /// (measured: a ghost over the kitsch bloom lands within 8 levels,
-    /// a five-deep stack 23 levels dark where it was 9 bright). The
+    /// a five-deep stack 23 levels dark where it was 9 bright). That is
+    /// as far as one alpha can go, and it is why translucent *stacks*
+    /// are not drawn this way at all: an era table wraps them in a
+    /// [`Prim::Soft`] group and `soft.rs` composites them in sRGB. The
     /// test module below pins the numbers; TODO.md § Design pipeline
     /// records the alternatives and why they lost.
     fn blend(&self, c: Color) -> Color {
         blend_over(c, self.style.palette.bg)
-    }
-
-    /// The colour a gradient stop table holds at `t`, interpolated in
-    /// sRGB between the two stops that bracket it.
-    fn stop(stops: &[(f32, Color)], t: f32) -> Color {
-        let Some(&(_, first)) = stops.first() else {
-            return Color::TRANSPARENT;
-        };
-        let mut prev = (0.0, first);
-        for &(offset, color) in stops {
-            if t <= offset {
-                let span = offset - prev.0;
-                let f = if span > 0.0 { (t - prev.0) / span } else { 0.0 };
-                let mix = |a: f32, b: f32| a + (b - a) * f;
-                return Color {
-                    r: mix(prev.1.r, color.r),
-                    g: mix(prev.1.g, color.g),
-                    b: mix(prev.1.b, color.b),
-                    a: mix(prev.1.a, color.a),
-                };
-            }
-            prev = (offset, color);
-        }
-        prev.1
     }
 
     fn font(face: Face) -> iced::Font {
@@ -384,7 +482,7 @@ impl<M> Scene<M> {
                                 // like rsvg's, then each ring's colour is
                                 // rebased for the linear blend like any
                                 // other translucent fill.
-                                style: canvas::Style::Solid(self.blend(Self::stop(
+                                style: canvas::Style::Solid(self.blend(soft::stop(
                                     stops,
                                     (outer + inner) * 0.5,
                                 ))),
@@ -441,6 +539,9 @@ impl<M> Scene<M> {
                         self.paint(f, prims, 0.0, 0.0, k);
                     });
                 }
+                // Painted by the `Backdrop` canvas underneath; see
+                // `Scene::view`.
+                Prim::Soft { .. } => {}
             }
         }
     }
@@ -643,6 +744,78 @@ mod tests {
     /// What rsvg paints: the same blend on the encoded values.
     fn srgb_blend(c: Color, b: Color) -> [u8; 3] {
         srgb_over(c, b).map(|v| (v * 255.0).round() as u8)
+    }
+
+    /// Every `Prim::Soft` group in every era table holds only what
+    /// `soft.rs` rasterises: text, grain, dots and plates go in the
+    /// scene proper. See the module note there for why.
+    #[test]
+    fn soft_groups_hold_only_fills() {
+        fn check(prims: &[Prim], where_: &str) {
+            for prim in prims {
+                match *prim {
+                    Prim::Soft { prims } => {
+                        assert!(
+                            prims.iter().all(soft::supported),
+                            "{where_}: a Soft group holds a prim soft.rs does not rasterise"
+                        );
+                    }
+                    Prim::At { prims, .. } | Prim::Turn { prims, .. } => check(prims, where_),
+                    Prim::Plate { on, off, .. } => {
+                        check(on, where_);
+                        check(off, where_);
+                    }
+                    _ => {}
+                }
+            }
+        }
+        for era in crate::style::Era::ALL {
+            let style = era.style();
+            check(style.dashboard, &format!("{era:?} dashboard"));
+            check(style.store, &format!("{era:?} store"));
+        }
+    }
+
+    /// A `Prim::Soft` group is a backdrop, and `Backdrop` paints only
+    /// the groups that lead a scene's list: one after any other prim
+    /// would be silently dropped, and one nested in an `At`, `Turn` or
+    /// plate would be too.
+    #[test]
+    fn soft_groups_lead_their_scene() {
+        fn none_nested(prims: &[Prim], where_: &str) {
+            for prim in prims {
+                match *prim {
+                    Prim::Soft { .. } => panic!("{where_}: a Soft group is not at the top level"),
+                    Prim::At { prims, .. } | Prim::Turn { prims, .. } => none_nested(prims, where_),
+                    Prim::Plate { on, off, .. } => {
+                        none_nested(on, where_);
+                        none_nested(off, where_);
+                    }
+                    _ => {}
+                }
+            }
+        }
+        for era in crate::style::Era::ALL {
+            let style = era.style();
+            for (prims, screen) in [(style.dashboard, "dashboard"), (style.store, "store")] {
+                let where_ = format!("{era:?} {screen}");
+                let lead = leading_soft(prims).len();
+                assert!(
+                    !prims[lead..].iter().any(|p| matches!(p, Prim::Soft { .. })),
+                    "{where_}: a Soft group follows a non-Soft prim"
+                );
+                for prim in prims {
+                    match *prim {
+                        Prim::At { prims, .. } | Prim::Turn { prims, .. } => none_nested(prims, &where_),
+                        Prim::Plate { on, off, .. } => {
+                            none_nested(on, &where_);
+                            none_nested(off, &where_);
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
     }
 
     /// Kitsch's faintest ghost, `#0f9f80` at .12 over the hub ground:

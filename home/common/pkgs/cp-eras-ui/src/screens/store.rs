@@ -25,8 +25,8 @@
 use crate::screens::scene::{Picked, Scene};
 use crate::style::{Group, Style};
 use crate::widgets::ground;
-use iced::widget::{canvas, stack};
-use iced::{Element, Length};
+use iced::widget::stack;
+use iced::Element;
 
 pub struct Store {
     pub style: Style,
@@ -80,7 +80,7 @@ impl Store {
     pub fn view(&self) -> Element<'_, Message> {
         stack![
             ground(&self.style),
-            canvas(Scene {
+            Scene {
                 style: self.style,
                 prims: self.style.store,
                 picked: Picked {
@@ -89,9 +89,8 @@ impl Store {
                     module: 0,
                 },
                 on_select: |group, index| Message::Select { group, index },
-            })
-            .width(Length::Fill)
-            .height(Length::Fill),
+            }
+            .view(),
         ]
         .into()
     }
