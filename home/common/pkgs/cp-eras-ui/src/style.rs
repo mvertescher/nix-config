@@ -1591,31 +1591,6 @@ pub struct Note {
     pub text: &'static str,
 }
 
-/// One elliptical wash of an era's ground haze.
-///
-/// An SVG `radialGradient` in `userSpaceOnUse` with a y-scaling
-/// `gradientTransform` is an *ellipse*, not a circle, so this carries
-/// the aspect the trace measures rather than assuming one.
-/// [`crate::widgets::ground`]'s `Ground::Bloom` is one disc stack with a
-/// quadratic falloff and cannot say this: the neokitsch mailbox layers
-/// three washes with their own centres, aspects and stop tables, one of
-/// them faded out leftward.
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Lobe {
-    pub cx: f32,
-    pub cy: f32,
-    pub r: f32,
-    /// The y scale the trace's `gradientTransform` applies about the
-    /// centre.
-    pub aspect: f32,
-    /// Stops as `(offset, colour)`; opacity rides on the colour.
-    pub stops: &'static [(f32, Color)],
-    /// A left fade, as the x span over which the wash ramps from
-    /// nothing to full. Equal values mean no fade. Stands in for the
-    /// trace's luminance mask on the blue layer.
-    pub fade: (f32, f32),
-}
-
 /// One drawn element of an era's mailbox chrome.
 ///
 /// Three kinds cover all four traces. `Box` is every framed or filled
@@ -1903,7 +1878,7 @@ pub struct Mailbox {
     /// The ground this screen's own trace draws, as the leading
     /// [`Prim::Soft`] group(s) a store or dashboard table would open
     /// with, composited under the sheet by `scene::Backdrop`. Empty for
-    /// an era whose mailbox is content with [`Ground`] or with `haze`.
+    /// an era whose mailbox is content with [`Ground`].
     ///
     /// Added 2026-09-04 when `triptych.sh --diff` lit the whole frame
     /// on the kitsch and neomil mailboxes: both had been taking the
@@ -1911,11 +1886,6 @@ pub struct Mailbox {
     /// gradient defs (`#bloom` + `#leftwash`, `#glowh` under
     /// `#glowmask` + `#wash` under `#washmask` + `#vignette`).
     pub backdrop: &'static [Prim],
-    /// The ground washes this screen's own trace measures, drawn under
-    /// everything on the canvas as concentric bands. Empty for an era
-    /// whose mailbox is content with [`Ground`]. Predates `backdrop`;
-    /// neokitsch still uses it.
-    pub haze: &'static [Lobe],
     /// Header, footer, section letters, micro-print and line art: every
     /// era-owned element that is not one of the four regions below.
     pub chrome: &'static [Piece],

@@ -367,7 +367,7 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   so it leads the list and is never nested). `blend_over` stays for the
   lone translucent prim over flat ground. The hole-fill note was a red
   herring: with the colour right the extractor matches 28/53 shapes.
-- [ ] **neokitsch backdrops are transcribed short of the trace.** Now
+- [x] **neokitsch backdrops are transcribed short of the trace.** Now
   that both are composited exactly (`Prim::Soft`), the residual on the
   hazes is transcription, not blending: store (150,50) design `64 54 83`
   vs painted `35 42 65`, (500,50) `98 73 115` vs `79 65 98`; dashboard
@@ -378,12 +378,29 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   blue lobe out leftward, 0 at x=0 to full at x=640) and the 1.3°/2°
   `rotate` on both gradients. The dashboard trace has the same mask
   and rotations. Since G2i spends ~5 of its 8 clusters on a haze, this
-  is where the neokitsch store's 82% likely sits. The mask is
-  `Prim::Masked` over a `Prim::Ramp` since 2026-09-04 (the four-grounds
-  item below), so this is now all table work: `Masked { [Lobe BLUE],
-  [Ramp #hazebluefade] }` on both screens, the `#hazelobe` line on the
-  store, and `Turn { 825,-120, 1.3 }` / `Turn { 900,-120, 2 }` around
-  each lobe with the lobe at the origin.
+  is where the neokitsch store's 82% likely sits.
+  **Done 2026-09-04.** Table work on `Prim::Ramp`/`Prim::Masked`, as
+  predicted: each haze is a `Lobe` at the origin under a `Turn` about
+  its trace centre (`Turn { 770,-120, 1.3 }`, `Turn { 850,-120, 2 }`;
+  dashboard 825/900), the blue goes through `Masked { .., BLUE_MASK }`
+  where `BLUE_MASK` is the `#hazebluefade` greys as a horizontal
+  `Ramp`, and the store adds the `#hazelobe` line. The mailbox trace
+  opens with the store's three defs line for line, so `mailbox()` now
+  takes `Prim::Soft { BACKDROP }` too, and the widget-level
+  `Mailbox.haze` / `style::Lobe` / `mail.rs::wash_at` ring-band
+  mechanism (neokitsch was its only user) is deleted. Every probed
+  ground pixel is now within ±1 of the design render on all three
+  screens (store (150,50) `65 53 83`, (500,50) `98 73 115`; dashboard
+  (1550,150) `23 29 44`; mailbox (300,20) `88 69 110`). G2i store
+  **82→89**, dashboard 94 held (38→37 shapes), mailbox 84 held; the
+  `--diff` share store 1.29→1.06%, dashboard 0.265→0.262%, mailbox
+  2.07→2.04% — the diff rows are dark across the ground, what is left
+  is text, the veneer grain (a different strand set) and stroke AA.
+  Three goldens re-taken (store, dashboard, mailbox neokitsch), 21/21.
+  Note `soft_only_prims_stay_soft` caught the first attempt, which set
+  `backdrop: BACKDROP` without the `Prim::Soft` wrapper: the `Masked`
+  would have vanished silently and the `Turn`ed lobes drawn by the
+  canvas instead.
 - [x] `scripts/triptych.sh --diff` — done 2026-09-04: an optional
   fourth row, trace vs iced, so the review view points at the
   difference rather than leaving it to the eye. Not `visual_diff.py`,
@@ -574,8 +591,8 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
     logotype is drawn filled); `Wide` is start-anchored only (centred
     stretched glyphs are placed by hand at `cx - run/2`). Gradient
     masks are `Prim::Masked` since later the same day (the "four
-    grounds" item above); neokitsch's `#bluemask` is now a table line
-    under the neokitsch backdrops item.
+    grounds" item above); neokitsch's `#bluemask` landed as `BLUE_MASK`
+    under the neokitsch backdrops item, done the same day.
 - [ ] Follow-ups the era agents flagged and did not touch: neomil
   `components.svg:1113` calls the maker's mark "an M of 89x39" but the
   trace path (`dashboard-trace.svg:242`) is 46 wide — the 89 is the bar

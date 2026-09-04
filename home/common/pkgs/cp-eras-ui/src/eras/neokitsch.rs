@@ -578,7 +578,7 @@ pub const ACCESS: Access = Access {
 // short segments; at 1.1px they read the same.
 use crate::style::{
     Frame, Mail, MailBadges, MailButtons, MailList, MailPanel, Mailbox, Note, Piece,
-    RowDecor, Run, Seg, Trim, Veneer, Lobe, FromAt, BL, TR,
+    RowDecor, Run, Seg, Trim, Veneer, FromAt, BL, TR,
 };
 
 /// The selection bar's own two tones, measured off the photograph at
@@ -586,64 +586,6 @@ use crate::style::{
 /// base the grain sits on, and the grain-line core the polished trace
 /// recoloured to #cf975c. They are a stop brighter than `VENEER` /
 /// `GRAIN`, which dress a synthesised plank rather than this one.
-/// The three ground washes the trace measures on this photo: the
-/// violet haze, the brighter lobe over its top left, and the blue band
-/// that only reaches the right two thirds. Their centres sit well above
-/// the frame, and each is an *ellipse* -- the trace's gradients carry a
-/// y-scaling transform, so a disc stack would be the wrong shape.
-const fn rgba(hex: u32, a: f32) -> iced::Color {
-    iced::Color { a, ..rgb(hex) }
-}
-
-static HAZE_STOPS: [(f32, iced::Color); 5] = [
-    (0.0, rgb(0x574568)),
-    (0.35, rgb(0x574568)),
-    (0.66, rgb(0x3a3853)),
-    (0.85, rgb(0x16121a)),
-    (1.0, rgb(0x0e0a0d)),
-];
-static LOBE_STOPS: [(f32, iced::Color); 3] = [
-    (0.0, rgba(0x7a5288, 0.85)),
-    (0.45, rgba(0x7a5288, 0.55)),
-    (1.0, rgba(0x7a5288, 0.0)),
-];
-static BLUE_STOPS: [(f32, iced::Color); 5] = [
-    (0.0, rgba(0x223350, 0.0)),
-    (0.60, rgba(0x223350, 0.0)),
-    (0.68, rgba(0x223350, 0.85)),
-    (0.76, rgba(0x1a2c46, 0.80)),
-    (0.84, rgba(0x101d30, 0.0)),
-];
-static HAZE: [Lobe; 3] = [
-    Lobe {
-        cx: 770.0,
-        cy: -120.0,
-        r: 1000.0,
-        aspect: 0.49,
-        stops: &HAZE_STOPS,
-        fade: (0.0, 0.0),
-    },
-    Lobe {
-        cx: 430.0,
-        cy: -40.0,
-        r: 560.0,
-        aspect: 0.30,
-        stops: &LOBE_STOPS,
-        fade: (0.0, 0.0),
-    },
-    Lobe {
-        // the blue is right-weighted: the photo shows only a thin arm
-        // of it on the left and none at all before x~200, which the
-        // trace does with a luminance mask and this does with a fade
-        cx: 850.0,
-        cy: -120.0,
-        r: 1000.0,
-        aspect: 0.47,
-        stops: &BLUE_STOPS,
-        fade: (100.0, 640.0),
-    },
-];
-
 pub const BAR: iced::Color = rgb(0xf8c678);
 pub const BAR_GRAIN: iced::Color = rgb(0xcf975c);
 
@@ -1233,8 +1175,9 @@ static PARAGRAPHS: [&[&str]; 3] = [
 
 pub fn mailbox() -> Mailbox {
     Mailbox {
-        backdrop: &[],
-        haze: &HAZE,
+        // The mailbox trace (`:211-213`) opens with the store's haze, lobe
+        // and masked blue line for line, so it takes the store's ground.
+        backdrop: MAIL_BACKDROP,
         chrome: &CHROME,
         list: MailList {
             frame: None,
@@ -1422,16 +1365,19 @@ pub const ECHO2: iced::Color = rgb(0x604a3a);
 pub const ECHO3: iced::Color = rgb(0x4b3b2f);
 pub const ECHO4: iced::Color = rgb(0x3a2f28);
 
-/// The run's violet-over-black haze, and the cold blue annulus the
-/// right half carries. Both are `gradientUnits="userSpaceOnUse"`
-/// radials scaled 0.515 in y, so both are ellipses roughly 2:1 --
-/// drawn as concentric bands at the gradient's own stop offsets.
+const fn rgba(hex: u32, a: f32) -> iced::Color {
+    iced::Color { a, ..rgb(hex) }
+}
+
+/// The page under the haze (`:231`), and the last haze stop.
 pub const PAGE: iced::Color = rgb(0x0e0a0d);
 
 /// The run's violet haze and the cold blue annulus the right half
 /// carries, as the trace's own stop tables. Both are
-/// `gradientUnits="userSpaceOnUse"` radials scaled 0.49 in y, so both
-/// are ellipses roughly 2:1.
+/// `gradientUnits="userSpaceOnUse"` radials scaled 0.49 / 0.47 in y,
+/// so both are ellipses roughly 2:1, and each is turned about its own
+/// centre (`rotate(1.3 770 -120)`, `rotate(2 850 -120)`: :169, :146),
+/// which is what the `Turn` around each `Lobe` at the origin does.
 const STORE_HAZE: &[(f32, iced::Color)] = &[
     (0.00, rgb(0x574568)),
     (0.35, rgb(0x574568)),
@@ -1439,24 +1385,61 @@ const STORE_HAZE: &[(f32, iced::Color)] = &[
     (0.85, rgb(0x16121a)),
     (1.00, PAGE),
 ];
+const HAZE_LOBE: &[Prim] = &[Prim::Lobe { x: 0.0, y: 0.0, rx: 1000.0, ry: 490.0, stops: STORE_HAZE }];
 /// The cold blue the right half carries. An *annulus* -- transparent
 /// inside and out, and only briefly opaque across `t 0.60..0.84` -- so
 /// its stops are opacities and it needs the same alpha treatment the
 /// left margin does. Drawn as a thick flat stroke instead it has two
 /// hard edges where the source has none.
 const BLUE: &[(f32, iced::Color)] = &[
-    (0.60, iced::Color { r: 0.133, g: 0.200, b: 0.314, a: 0.00 }),
-    (0.68, iced::Color { r: 0.133, g: 0.200, b: 0.314, a: 0.85 }),
-    (0.76, iced::Color { r: 0.102, g: 0.173, b: 0.275, a: 0.80 }),
-    (0.84, iced::Color { r: 0.063, g: 0.114, b: 0.188, a: 0.00 }),
-    (1.00, iced::Color { r: 0.063, g: 0.114, b: 0.188, a: 0.00 }),
+    (0.60, rgba(0x223350, 0.00)),
+    (0.68, rgba(0x223350, 0.85)),
+    (0.76, rgba(0x1a2c46, 0.80)),
+    (0.84, rgba(0x101d30, 0.00)),
+    (1.00, rgba(0x101d30, 0.00)),
+];
+const BLUE_LOBE: &[Prim] = &[Prim::Lobe { x: 0.0, y: 0.0, rx: 1000.0, ry: 470.0, stops: BLUE }];
+const BLUE_TURNED: &[Prim] = &[Prim::Turn { x: 850.0, y: -120.0, angle: 2.0, prims: BLUE_LOBE }];
+/// `#hazebluefade` (:157-163), the luminance mask the blue annulus is
+/// laid through (`mask="url(#bluemask)"`, :234): black at the left
+/// edge, full from x 640, so the violet stays on top on the left where
+/// the source shows only a thin blue arm. Greys, because a mask is
+/// read as luminance.
+const BLUE_FADE: &[(f32, iced::Color)] = &[
+    (0.00, rgb(0x000000)),
+    (0.12, rgb(0x1a1a1a)),
+    (0.22, rgb(0x7a7a7a)),
+    (0.40, rgb(0xffffff)),
+    (1.00, rgb(0xffffff)),
+];
+const BLUE_MASK: &[Prim] = &[Prim::Ramp {
+    x: 0.0,
+    y: 0.0,
+    w: 1600.0,
+    h: 900.0,
+    from: (0.0, 0.0),
+    to: (1.0, 0.0),
+    stops: BLUE_FADE,
+}];
+/// `#hazelobe` (:181-187): the top-left lift, a third and flatter
+/// radial (cx 430, cy -40, r 560, y-scaled 0.30) of one violet at
+/// three opacities, over the haze. Not turned.
+const LOBE: &[(f32, iced::Color)] = &[
+    (0.00, rgba(0x7a5288, 0.85)),
+    (0.45, rgba(0x7a5288, 0.55)),
+    (1.00, rgba(0x7a5288, 0.00)),
 ];
 
+/// The store's ground in the trace's paint order (:231-234): page,
+/// haze, lobe, then the blue through its mask.
 const BACKDROP: &[Prim] = &[
     fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(PAGE)),
-    Prim::Lobe { x: 770.0, y: -120.0, rx: 1000.0, ry: 490.0, stops: STORE_HAZE },
-    Prim::Lobe { x: 850.0, y: -120.0, rx: 1000.0, ry: 470.0, stops: BLUE },
+    Prim::Turn { x: 770.0, y: -120.0, angle: 1.3, prims: HAZE_LOBE },
+    Prim::Lobe { x: 430.0, y: -40.0, rx: 560.0, ry: 168.0, stops: LOBE },
+    Prim::Masked { prims: BLUE_TURNED, mask: BLUE_MASK },
 ];
+/// The mailbox's ground: `BACKDROP` composited, the way `STORE` opens.
+const MAIL_BACKDROP: &[Prim] = &[Prim::Soft { prims: BACKDROP }];
 
 /// The 9x9 socket glyph, read off card 1. Not a lattice of equal cells:
 /// the finder blocks are 13.8 and the rest 3.1 or 6.7, so it is spelled
@@ -1920,12 +1903,6 @@ const CONTENT: &[Prim] = &[
 //   * the halo (:252, `<use href="#content" filter="url(#halo)"
 //     class="photo">`): the photograph's glow, hidden by G2i and never
 //     drawn by any screen here (docs/PIPELINE.md).
-//   * the blue annulus's left fade (`mask="url(#bluemask)"`, :250 and :128, a
-//     luminance ramp over x 0..640): the `Prim` set has no mask, so the
-//     annulus is drawn whole and shows a thin arm on the left the
-//     source has only faintly.
-//   * the haze's 1.3-degree rotation and the blue's 2 degrees
-//     (`gradientTransform`, :133 and :110): `Prim::Lobe` is axis-aligned.
 //   * `letter-spacing` on every text (1.5 on the header, 2 on LEVEL,
 //     0.4 on the annotations): not yet transcribed. `Prim::Tracked`
 //     exists since 2026-09-04 (kitsch's blades, neomil's module labels
@@ -1985,8 +1962,10 @@ pub const BADGE_85: iced::Color = rgb(0x98724a);
 
 /// The haze (`#haze`, :131-139): the same four colours the bar and store
 /// use, at this trace's own stop offsets, centred (825,-120), r 1030,
-/// y-scaled 0.515. The blue annulus (`#hazeblue`, :108-116) is the
-/// store's `BLUE` table stop for stop, at (900,-120) and the same radii.
+/// y-scaled 0.515, turned 1.3 degrees (:133). The blue annulus
+/// (`#hazeblue`, :108-116) is the store's `BLUE` table stop for stop,
+/// at (900,-120) and the same radii, turned 2 degrees (:110), and laid
+/// through the store's `BLUE_MASK` (`#bluemask`, :128-130, :250).
 const HUB_HAZE: &[(f32, iced::Color)] = &[
     (0.0, HAZE_CORE),
     (0.258, HAZE_CORE),
@@ -1994,10 +1973,16 @@ const HUB_HAZE: &[(f32, iced::Color)] = &[
     (0.873, HAZE_EDGE),
     (1.0, HAZE_OUT),
 ];
+const HUB_HAZE_LOBE: &[Prim] =
+    &[Prim::Lobe { x: 0.0, y: 0.0, rx: 1030.0, ry: 530.45, stops: HUB_HAZE }];
+const HUB_BLUE_LOBE: &[Prim] =
+    &[Prim::Lobe { x: 0.0, y: 0.0, rx: 1030.0, ry: 530.45, stops: BLUE }];
+const HUB_BLUE_TURNED: &[Prim] =
+    &[Prim::Turn { x: 900.0, y: -120.0, angle: 2.0, prims: HUB_BLUE_LOBE }];
 const HUB_GROUND: &[Prim] = &[
     fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(PAGE)),
-    Prim::Lobe { x: 825.0, y: -120.0, rx: 1030.0, ry: 530.45, stops: HUB_HAZE },
-    Prim::Lobe { x: 900.0, y: -120.0, rx: 1030.0, ry: 530.45, stops: BLUE },
+    Prim::Turn { x: 825.0, y: -120.0, angle: 1.3, prims: HUB_HAZE_LOBE },
+    Prim::Masked { prims: HUB_BLUE_TURNED, mask: BLUE_MASK },
 ];
 
 /// One cascade card (`#ncard`, :154): r6.5 top-left, the 45-degree

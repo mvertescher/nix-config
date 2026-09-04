@@ -914,7 +914,6 @@ static PARAGRAPHS: [&[&str]; 3] = [
 pub fn mailbox() -> Mailbox {
     Mailbox {
         backdrop: MAIL_BACKDROP,
-        haze: &[],
         chrome: &CHROME,
         list: MailList {
             frame: None,

@@ -555,7 +555,6 @@ pub fn mailbox() -> Mailbox {
     Mailbox {
         // this era's mailbox is content with its `Ground`
         backdrop: &[],
-        haze: &[],
         chrome: &CHROME,
         list: MailList {
             // frame x 84..451, y 205..686

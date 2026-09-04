@@ -48,7 +48,7 @@
 
 use crate::style::{
     FromAt, Ink, MailBadges, MailButtons, MailList, MailPanel, Piece, RowDecor, Run, Seg,
-    Style, Ticket, Trim, Lobe, BL, BR, TL, TR,
+    Style, Ticket, Trim, BL, BR, TL, TR,
 };
 use crate::widgets::surface::{outline, Corners, Cut};
 use crate::screens::scene::Backdrop;
@@ -119,20 +119,17 @@ impl MailBox {
         .width(Length::Fill)
         .height(Length::Fill);
 
-        // An era whose mailbox trace measures its own ground draws it
-        // itself -- composited from `backdrop`, or on the sheet from
-        // `haze`; the rest take the era's `Ground`. Stacking two would
-        // double the bloom.
+        // An era whose mailbox trace measures its own ground composites
+        // it from `backdrop`; the rest take the era's `Ground`. Stacking
+        // two would double the bloom.
         let m = &self.style.mailbox;
-        if !m.backdrop.is_empty() {
+        if m.backdrop.is_empty() {
+            stack![ground(&self.style), sheet].into()
+        } else {
             let backdrop = canvas(Backdrop { style: self.style, prims: m.backdrop })
                 .width(Length::Fill)
                 .height(Length::Fill);
             stack![backdrop, sheet].into()
-        } else if m.haze.is_empty() {
-            stack![ground(&self.style), sheet].into()
-        } else {
-            sheet.into()
         }
     }
 }
@@ -357,110 +354,6 @@ fn curve_at(
                 .with_width(scale.len(width))
                 .with_line_join(canvas::LineJoin::Round),
         );
-    }
-}
-
-/// The colour of a wash at radius fraction `t`, interpolating its stops.
-fn stop_at(stops: &[(f32, Color)], t: f32) -> Color {
-    if stops.is_empty() {
-        return Color::TRANSPARENT;
-    }
-    if t <= stops[0].0 {
-        return stops[0].1;
-    }
-    for pair in stops.windows(2) {
-        let ((o0, c0), (o1, c1)) = (pair[0], pair[1]);
-        if t <= o1 {
-            let k = if o1 > o0 { (t - o0) / (o1 - o0) } else { 0.0 };
-            return Color {
-                r: c0.r + (c1.r - c0.r) * k,
-                g: c0.g + (c1.g - c0.g) * k,
-                b: c0.b + (c1.b - c0.b) * k,
-                a: c0.a + (c1.a - c0.a) * k,
-            };
-        }
-    }
-    stops[stops.len() - 1].1
-}
-
-/// One elliptical ground wash, as concentric bands.
-///
-/// Bands rather than a renderer gradient, the way the other trace-shaped
-/// screens draw theirs: 96 of them, cut into 72 angular wedges, which is
-/// fine enough that no step reads at 1:1. An opaque wash paints filled
-/// ellipses from the outside in, which composites exactly; a translucent
-/// one has to paint *annuli* instead, or every interior pixel would take
-/// the colour of every band enclosing it. The wedges are what let
-/// the trace's left-hand fade apply per column, which is what
-/// its luminance mask does.
-fn wash_at(frame: &mut canvas::Frame, scale: Scale, wash: &Lobe) {
-    const BANDS: usize = 96;
-    const WEDGES: usize = 72;
-    let translucent = wash.stops.iter().any(|(_, c)| c.a < 1.0);
-    let faded = wash.fade.1 > wash.fade.0;
-    let point = |t: f32, a: f32| {
-        scale.point(
-            wash.cx + wash.r * t * a.cos(),
-            wash.cy + wash.r * wash.aspect * t * a.sin(),
-        )
-    };
-
-    if !translucent && !faded {
-        for i in (0..BANDS).rev() {
-            let t = (i + 1) as f32 / BANDS as f32;
-            let color = stop_at(wash.stops, t);
-            let path = canvas::Path::new(|b| {
-                b.ellipse(canvas::path::arc::Elliptical {
-                    center: scale.point(wash.cx, wash.cy),
-                    radii: Vector::new(
-                        wash.r * t * scale.sx,
-                        wash.r * wash.aspect * t * scale.sy,
-                    ),
-                    rotation: iced::Radians(0.0),
-                    start_angle: iced::Radians(0.0),
-                    end_angle: iced::Radians(std::f32::consts::TAU),
-                });
-            });
-            frame.fill(&path, color);
-        }
-        return;
-    }
-
-    let step = std::f32::consts::TAU / WEDGES as f32;
-    for i in 0..BANDS {
-        let (t0, t1) = (i as f32 / BANDS as f32, (i + 1) as f32 / BANDS as f32);
-        let color = stop_at(wash.stops, (t0 + t1) / 2.0);
-        if color.a <= 0.002 {
-            continue;
-        }
-        for w in 0..WEDGES {
-            let (a0, a1) = (w as f32 * step, (w + 1) as f32 * step);
-            // The fade is a function of x, so it is sampled at the
-            // wedge's own middle rather than the wash's centre.
-            let mid = wash.cx + wash.r * (t0 + t1) / 2.0 * ((a0 + a1) / 2.0).cos();
-            let mask = if faded {
-                ((mid - wash.fade.0) / (wash.fade.1 - wash.fade.0)).clamp(0.0, 1.0)
-            } else {
-                1.0
-            };
-            if mask <= 0.002 {
-                continue;
-            }
-            let quad = canvas::Path::new(|b| {
-                b.move_to(point(t0, a0));
-                b.line_to(point(t1, a0));
-                b.line_to(point(t1, a1));
-                b.line_to(point(t0, a1));
-                b.close();
-            });
-            frame.fill(
-                &quad,
-                Color {
-                    a: color.a * mask,
-                    ..color
-                },
-            );
-        }
     }
 }
 
@@ -1152,19 +1045,6 @@ impl canvas::Program<Message> for Sheet<'_> {
         };
         let s = self.style;
         let m = &s.mailbox;
-
-        // The ground this screen's own trace measures, under everything.
-        // `view` leaves `widgets::ground` out when the table declares
-        // one, so the two never stack.
-        if !m.haze.is_empty() {
-            frame.fill(
-                &canvas::Path::rectangle(Point::ORIGIN, bounds.size()),
-                s.palette.bg,
-            );
-            for wash in m.haze {
-                wash_at(&mut frame, scale, wash);
-            }
-        }
 
         for piece in m.chrome {
             match piece {
