@@ -78,7 +78,10 @@ in
         options = {
           package = lib.mkOption {
             type = lib.types.package;
-            default = pkgs.callPackage ../../common/pkgs/rajdhani-fontshare { };
+            # The overlay's build (`lib/overlays.nix`), which is also what
+            # `cp-eras-ui` embeds -- one derivation, not a second
+            # `callPackage` of the same path.
+            default = pkgs.rajdhani-fontshare;
           };
           name = lib.mkOption {
             type = lib.types.str;
