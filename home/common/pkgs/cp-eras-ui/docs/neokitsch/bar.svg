@@ -332,11 +332,11 @@
   <g font-size="14" font-weight="600" letter-spacing="0.8">
     <!-- Devices: outlined mini-card with the tab on its inside bottom edge;
          its right end, the rule and the tabs all keep clear of the rings -->
-    <path d="M 1290,49.8 H 1442.2 Q 1445.2,49.8 1445.2,52.8 V 72.4 Q 1445.2,75.4 1442.2,75.4 H 1290 Q 1287,75.4 1287,72.4 V 52.8 Q 1287,49.8 1290,49.8 Z" fill="none" stroke="#e7c686" stroke-width="1.1"/>
-    <path d="M 1413.2,75.4 L 1417.2,70.8 H 1435.2 L 1439.2,75.4 Z" fill="#f4c474"/>
+    <path d="M 1290,49.8 H 1458.2 Q 1461.2,49.8 1461.2,52.8 V 72.4 Q 1461.2,75.4 1458.2,75.4 H 1290 Q 1287,75.4 1287,72.4 V 52.8 Q 1287,49.8 1290,49.8 Z" fill="none" stroke="#e7c686" stroke-width="1.1"/>
+    <path d="M 1429.2,75.4 L 1433.2,70.8 H 1451.2 L 1455.2,75.4 Z" fill="#f4c474"/>
     <path d="M 1291,62.6 L 1299,54.6 L 1307,62.6 L 1299,70.6 Z" fill="#e7c686"/>
     <text x="1315" y="67.8" fill="#e7c686">Devices</text>
-    <text x="1404.2" y="67.8" text-anchor="end" fill="#e7c686" font-weight="400">&lt;</text>
+    <text x="1420.2" y="67.8" text-anchor="end" fill="#e7c686" font-weight="400">&lt;</text>
     <text x="1315" y="93.4" fill="#8a7048">Disconnect</text>
     <line x1="1287" y1="105.8" x2="1461.2" y2="105.8" stroke="#d3b279" stroke-width="1.5"/>
     <path d="M 1419.2,105.8 L 1422.7,100.8 H 1445.7 L 1449.2,105.8 Z" fill="#f4c474"/>
@@ -465,10 +465,14 @@
        - Label: GOLD_TEXT 14px weight 600 letter-spacing 0.8.
        - Open submenu parent (Devices): an outlined r=3 rounded rect inset 6 from
          the panel's left edge and 6 from the rings' inner edge on the right
-         (x 1287..1445.2, y 49.8..75.4), stroke GOLD_TEXT 1.1, no fill, with a
+         (x 1287..1461.2, y 49.8..75.4), stroke GOLD_TEXT 1.1, no fill, with a
          VENEER_LIGHT tab (base 26, top 18, 4.6 tall) on its inside bottom edge,
          right end 6 in from the outline; the "<" glyph weight 400 right-aligned
-         at x 1404.2 so it clears the tab.
+         at x 1420.2 so it clears the tab. (Until 2026-09-05 the box ended at
+         1445.2, a number carried over from before the rings nested, when
+         the rows began at y 37 inside the panel's 22px chamfer and the box
+         had to stop at the chamfer's foot; the rows now start below the
+         innermost ring's 9.2px chamfer, which clears 1461.2 by 3px.)
        - Highlighted row (Enable networking): a veneer bar from the panel's
          left edge, ACROSS the rings, to 8 PAST its right edge (x 1281..1488;
          the mail bar runs past its list rules), top-RIGHT chamfer 10x10,

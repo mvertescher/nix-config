@@ -34,7 +34,7 @@ Sampled off the reference and carried as the era consts in
 
 ```
 bg          #110c07   warm dark olive-brown (#1a140c upper, #0d0603 lower)
-sage solid  #9cb795   selection fills, footer band
+sage solid  #a6d3a7   selection fills, footer band (was #9cb795 until 2026-09-05)
 sage text   #94bb94   labels, titles
 mid         #728f76   top-bar text, secondary
 outline     #8fba97   frame strokes (was #5d7752 until 2026-09-05)
@@ -43,10 +43,14 @@ on-solid    #1f2a1c   dark text on sage fills
 ```
 
 The traces' own k-means samples run brighter than these (see each
-trace header's palette block). The outline ink was settled 2026-09-05
-by eye against the photographs: the frames are the bright sage, the
-1.25px core `HUB_STROKE` was measured to, and #5d7752 was the one
-value of the four screens whose outlines receded into the ground.
+trace header's palette block). Two were settled 2026-09-05: the
+outline ink by eye against the photographs -- the frames are the bright
+sage, the 1.25px core every trace's stroke profile was measured to, and
+#5d7752 was the one value of the four screens whose outlines receded
+into the ground -- and the solid, which followed it: at #9cb795 a
+selection fill no longer stood off the brightened frames, and the three
+traces agree on ~#a6d3a7 for it (a fill, unlike a line, does not dilute
+in the rescale).
 
 **One hue, with one exception.** The era is a single sage green on a
 warm dark ground — a monochrome terminal that somebody keeps repairing
