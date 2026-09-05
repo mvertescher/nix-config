@@ -19,10 +19,11 @@
 
 use crate::screens::soft;
 use crate::style::{Anchor, Face, Group, Ink, Prim, Seg, Style};
+use crate::Element;
 use std::cell::RefCell;
 use iced::widget::canvas;
 use iced::mouse::Interaction;
-use iced::{mouse, Color, Element, Point, Rectangle, Renderer, Size, Theme};
+use iced::{mouse, Color, Point, Rectangle, Renderer, Size};
 
 /// The frame every trace is measured in. The scene is painted at this
 /// size and scaled to the canvas, so the screen holds its proportions
@@ -115,14 +116,14 @@ fn leading_soft(prims: &'static [Prim]) -> &'static [Prim] {
     &prims[..n]
 }
 
-impl<M> canvas::Program<M> for Backdrop {
+impl<M> canvas::Program<M, Style> for Backdrop {
     type State = SoftCache;
 
     fn draw(
         &self,
         soft: &Self::State,
         renderer: &Renderer,
-        _theme: &Theme,
+        _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
@@ -726,7 +727,7 @@ fn ellipse(center: Point, rx: f32, ry: f32) -> canvas::Path {
     canvas::Path::new(|b| b.ellipse(elliptical(center, rx, ry)))
 }
 
-impl<M> canvas::Program<M> for Scene<M> {
+impl<M> canvas::Program<M, Style> for Scene<M> {
     type State = ();
 
     fn update(
@@ -760,7 +761,7 @@ impl<M> canvas::Program<M> for Scene<M> {
         &self,
         _state: &Self::State,
         renderer: &Renderer,
-        _theme: &Theme,
+        _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {

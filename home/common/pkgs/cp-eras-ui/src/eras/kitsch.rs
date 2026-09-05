@@ -24,7 +24,8 @@
 
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
-    Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Compliance, Corner, Dress,
+    Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Coat, Compliance, Controls,
+    Corner, Dress,
     Era, Face, Footnotes, Ground, Ink, MenuMarker, MenuRule, Metrics, Nameplate,
     PanelEcho, Selection, Style, Ticket, WindowLabel,
 };
@@ -373,6 +374,27 @@ pub fn style() -> Style {
         // The dotted matrix, hollow square and hollow triangle that
         // head every shelf band and lead every socket row.
         glyphs: true,
+        // --- controls --- (components.svg INPUT FIELD, ENTER BAR,
+        // PROTECTED BAR, TAB CHEVRON)
+        controls: Controls {
+            // The role, not the login's mint: `ACCESS` pins ENTER to
+            // `LIT` because the trace does, but the era's affirmative
+            // fill everywhere else is the yellow, and the role is what
+            // a theme can retint.
+            primary: Coat::filled(Ink::Cta, Ink::OnSelect),
+            // The mailbox chevrons: stroked 1.25 in the body teal.
+            ghost: Coat::outlined(Ink::Fg, 1.25, Ink::Fg),
+            // PROTECTED: near-ground fill, hairline edge one stop up,
+            // mid-mint label.
+            disabled: Coat::filled(Ink::Fixed(LOCKED), Ink::Fixed(ANNOTATION))
+                .edged(Ink::Fixed(LOCKED_EDGE), 1.0),
+            // The login well: solid dark teal, no outline.
+            field: Coat::filled(Ink::Fixed(WELL), Ink::Fg),
+            placeholder: Ink::Dim,
+            // `rx 2` on the field; the bars are square.
+            radius: 2.0,
+        },
+        // --- end controls ---
         // --- login ---
         access: ACCESS,
         // --- end login ---

@@ -106,9 +106,9 @@ mod tray;
 use cp_eras_ui::bar::{
     bar, tray_menu, MenuEntry, MenuPath, Readings, TrayAction, TrayMenu,
 };
-use cp_eras_ui::Style;
+use cp_eras_ui::{Element, Style};
 use iced::widget::{column, container, mouse_area, row, Space};
-use iced::{Element, Length, Task, Theme};
+use iced::{Length, Task};
 use iced_layershell::build_pattern::daemon;
 use iced_layershell::reexport::{
     Anchor, KeyboardInteractivity, Layer, NewLayerShellSettings, OutputOption,
@@ -408,7 +408,7 @@ impl BarApp {
         iced::window::close(open.window)
     }
 
-    fn view(&self, window: iced::window::Id) -> Element<'_, Message, Theme, iced::Renderer> {
+    fn view(&self, window: iced::window::Id) -> Element<'_, Message> {
         match &self.open {
             Some(open) if open.window == window => self.menu(open),
             _ => {
@@ -421,7 +421,7 @@ impl BarApp {
                 // sees it, so clicking one still opens a menu.
                 mouse_area(
                     container(bar(&self.style, &self.readings, Some(Message::Tray)))
-                        .style(move |_: &Theme| container::Style {
+                        .style(move |_: &Style| container::Style {
                             background: Some(bg.into()),
                             ..container::Style::default()
                         })
@@ -435,7 +435,7 @@ impl BarApp {
     }
 
     /// The menu, and the rest of the screen it is listening to.
-    fn menu<'a>(&'a self, open: &'a Open) -> Element<'a, Message, Theme, iced::Renderer> {
+    fn menu<'a>(&'a self, open: &'a Open) -> Element<'a, Message> {
         // The *chain's* width, not the root panel's: submenus open
         // leftwards, so opening one widens the element to the left and
         // leaves the root panel exactly where it was.
@@ -480,7 +480,7 @@ impl BarApp {
     // `iced_layershell::Appearance` was an alias for iced's own
     // `theme::Style` and stopped being public in 0.19; the type is the
     // same one, named where it comes from.
-    fn style(&self, _theme: &Theme) -> iced::theme::Style {
+    fn style(&self, _theme: &Style) -> iced::theme::Style {
         // Transparent, not the era's ground: the runtime paints one
         // colour for every surface this application owns, and the menu
         // surface covers the whole output. The bar paints its own in
@@ -601,6 +601,7 @@ fn main() -> Result<(), iced_layershell::Error> {
         BarApp::update,
         BarApp::view,
     )
+    .theme(|app: &BarApp, _window| app.style)
     .style(BarApp::style)
     .subscription(BarApp::subscription)
     .settings(Settings {

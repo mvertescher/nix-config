@@ -10,8 +10,9 @@
 use super::surface::{surface, Surface};
 use super::text;
 use crate::style::{Chrome, Style};
+use crate::Element;
 use iced::widget::{canvas, column, container, row, Space};
-use iced::{mouse, Color, Element, Length, Padding, Point, Rectangle, Renderer, Theme};
+use iced::{mouse, Color, Length, Padding, Point, Rectangle, Renderer};
 
 /// Height of the stepped device-frame rail at the top and bottom of a
 /// neokitsch screen.
@@ -37,14 +38,14 @@ struct Strata {
     pub lines: usize,
 }
 
-impl<Message> canvas::Program<Message> for Strata {
+impl<Message> canvas::Program<Message, Style> for Strata {
     type State = ();
 
     fn draw(
         &self,
         _state: &Self::State,
         renderer: &Renderer,
-        _theme: &Theme,
+        _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
@@ -187,14 +188,14 @@ fn rail_path(
     })
 }
 
-impl<Message> canvas::Program<Message> for DeviceRail {
+impl<Message> canvas::Program<Message, Style> for DeviceRail {
     type State = ();
 
     fn draw(
         &self,
         _state: &Self::State,
         renderer: &Renderer,
-        _theme: &Theme,
+        _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
@@ -354,7 +355,7 @@ pub fn footer<'a, Message: 'static>(
 
     match style.chrome {
         Chrome::Segmented => column![
-            container(Space::new().width(Length::Fill).height(1.0)).style(move |_: &Theme| {
+            container(Space::new().width(Length::Fill).height(1.0)).style(move |_: &Style| {
                 container::Style {
                     background: Some(iced::Background::Color(border)),
                     ..Default::default()

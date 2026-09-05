@@ -53,8 +53,9 @@ use crate::style::{
 use crate::widgets::surface::{outline, Corners, Cut};
 use crate::screens::scene::Backdrop;
 use crate::widgets::ground;
+use crate::Element;
 use iced::widget::{canvas, stack, Action};
-use iced::{mouse, Color, Element, Event, Length, Point, Rectangle, Renderer, Size, Theme, Vector};
+use iced::{mouse, Color, Event, Length, Point, Rectangle, Renderer, Size, Vector};
 
 /// The frame every trace measures in.
 const DW: f32 = 1600.0;
@@ -989,7 +990,7 @@ impl Sheet<'_> {
     }
 }
 
-impl canvas::Program<Message> for Sheet<'_> {
+impl canvas::Program<Message, Style> for Sheet<'_> {
     type State = ();
 
     /// Click a row to select it.
@@ -1031,7 +1032,7 @@ impl canvas::Program<Message> for Sheet<'_> {
         &self,
         _state: &Self::State,
         renderer: &Renderer,
-        _theme: &Theme,
+        _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {

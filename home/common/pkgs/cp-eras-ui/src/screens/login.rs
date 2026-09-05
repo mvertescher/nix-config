@@ -34,8 +34,9 @@ use crate::style::{
 };
 use crate::screens::scene::Backdrop;
 use crate::widgets::ground;
+use crate::Element;
 use iced::widget::{canvas, stack};
-use iced::{mouse, Color, Element, Length, Point, Rectangle, Renderer, Size, Theme, Vector};
+use iced::{mouse, Color, Length, Point, Rectangle, Renderer, Size, Vector};
 
 pub struct Login {
     pub style: Style,
@@ -338,14 +339,14 @@ struct Art {
     style: Style,
 }
 
-impl<Message> canvas::Program<Message> for Art {
+impl<Message> canvas::Program<Message, Style> for Art {
     type State = ();
 
     fn draw(
         &self,
         _state: &Self::State,
         renderer: &Renderer,
-        _theme: &Theme,
+        _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {

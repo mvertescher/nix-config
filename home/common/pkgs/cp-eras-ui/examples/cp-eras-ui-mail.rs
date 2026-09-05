@@ -17,7 +17,8 @@ use cp_eras_ui::panels::{
     mail_panel, Email, MailFocus, ThreadMessage,
 };
 use cp_eras_ui::{Era, Style};
-use iced::{keyboard, Element, Event, Subscription, Task};
+use cp_eras_ui::Element;
+use iced::{keyboard, Event, Subscription, Task};
 
 /// Launch size. `scroll_to_selected` derives the message-list viewport
 /// from the height, so both must share this one number.
@@ -38,6 +39,7 @@ pub fn main() -> iced::Result {
 
     iced::application(move || App::new(style), App::update, App::view)
         .title(App::title)
+        .theme(|app: &App| app.style)
         .font(fonts::ORBITRON_REGULAR)
         .font(fonts::ORBITRON_MEDIUM)
         .font(fonts::ORBITRON_SEMIBOLD)

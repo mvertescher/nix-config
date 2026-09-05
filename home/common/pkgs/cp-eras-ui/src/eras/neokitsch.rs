@@ -26,7 +26,8 @@
 
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
-    Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Compliance, Corner, Dress,
+    Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Coat, Compliance, Controls,
+    Corner, Dress,
     Era, Face, Footnotes, Ground, Ink, MenuMarker, MenuRule, Metrics, Nameplate,
     PanelEcho, Selection, Style, Tab, Ticket, WindowLabel,
 };
@@ -376,6 +377,25 @@ pub fn style() -> Style {
         // footer; its nav pills are plain `rx="4"` rects.
         ticket: Ticket::default(),
         glyphs: false,
+        // --- controls --- (components.svg LOGIN ENTRY GROUP, OUTLINED
+        // BUTTON)
+        controls: Controls {
+            // ENTER / LOGIN: the amber bar with the chocolate ink
+            // `ACCESS` uses on it; `on_select` is veneer's ink.
+            primary: Coat::filled(Ink::Cta, Ink::Fixed(ON_BAR)),
+            // RIFLES: outline 1.25 and label both in the gold text, as
+            // `mailbox.buttons` reads them.
+            ghost: Coat::outlined(Ink::Fg, 1.25, Ink::Fg),
+            // No disabled control in the era; the outline one stop down.
+            disabled: Coat::outlined(Ink::Dim, 1.25, Ink::Dim),
+            // The entry field: solid chocolate, no outline, no rule.
+            field: Coat::filled(Ink::Inset, Ink::Fg),
+            placeholder: Ink::Dim,
+            // The r5 the buttons carry (with a chamfer and a tab a
+            // built-in cannot draw).
+            radius: 5.0,
+        },
+        // --- end controls ---
         // --- login ---
         access: ACCESS,
         // --- end login ---

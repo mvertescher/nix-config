@@ -31,7 +31,8 @@
 
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
-    Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Compliance, Corner, Dress,
+    Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Coat, Compliance, Controls,
+    Corner, Dress,
     Era, Face, Footnotes, Ground, Ink, MenuMarker, MenuRule, Metrics, Nameplate,
     PanelEcho, Selection, Style, Ticket, WindowLabel,
 };
@@ -246,6 +247,22 @@ pub fn style() -> Style {
         // No wedge: entropism cuts nothing, anywhere.
         ticket: Ticket::default(),
         glyphs: false,
+        // --- controls --- (components.svg BUTTON ROW, LOGIN FORM)
+        controls: Controls {
+            // REPORT SPAM and NEXT: the solid sage, dark ink on it.
+            primary: Coat::filled(Ink::Cta, Ink::OnSelect),
+            // REPLY / FORWARD / DELETE: the bare strip, stroke 2, same
+            // readings as `mailbox.buttons`.
+            ghost: Coat::outlined(Ink::Border, 2.0, Ink::Fg),
+            // No disabled control anywhere in the era; the outline one
+            // stop down.
+            disabled: Coat::outlined(Ink::Dim, 1.25, Ink::Dim),
+            // The USERNAME field: outlined 1.25, no fill, bold value.
+            field: Coat::outlined(Ink::Border, 1.25, Ink::Fg),
+            placeholder: Ink::Dim,
+            radius: 0.0,
+        },
+        // --- end controls ---
         // --- login ---
         access: ACCESS,
         // --- end login ---
