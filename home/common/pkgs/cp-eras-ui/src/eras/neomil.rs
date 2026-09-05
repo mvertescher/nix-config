@@ -280,7 +280,6 @@ pub fn style() -> Style {
                     top: 31.0,
                     len: 38.0,
                 },
-                echo_pad: 0.0,
             },
         },
         banner: Banner::default(),

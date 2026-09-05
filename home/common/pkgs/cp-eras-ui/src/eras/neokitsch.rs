@@ -353,13 +353,15 @@ pub fn style() -> Style {
                 spine: 0.0,
                 foot: 0.0,
                 marker: MenuMarker::Text,
-                // The card's onion rings: concentric offsets of the
-                // silhouette at 3.5 pitch, fading out.
+                // The onion rings, nested inside the panel as the
+                // dashboard photo nests them inside its cards and detail
+                // panel (dashboard-trace `#nring1..6`, `#npring1..4`):
+                // four at the detail panel's 3.2 pitch, fading inward.
+                // Outward at 3.5 until 2026-09-04 (`bar.svg` item 10).
                 echo: PanelEcho::Rings {
                     count: 4,
-                    pitch: 3.5,
+                    pitch: 3.2,
                 },
-                echo_pad: 14.0,
             },
         },
         // The footer nameplate hangs past the card by the same 12 as

@@ -998,24 +998,6 @@ fn row_pitch(style: &Style, entry: &MenuEntry) -> f32 {
         }
 }
 
-/// How tall a whole panel is drawn. Needed by the chain's ornament
-/// canvas, which has to know the boxes it is ringing before iced has
-/// laid any of them out.
-fn panel_height(style: &Style, entries: &[MenuEntry], root: bool) -> f32 {
-    let m = &style.bar.menu;
-    let mut height = m.air * 2.0;
-    for (index, entry) in entries.iter().enumerate() {
-        height += row_height(style, entry);
-        if m.row_divider && index + 1 < entries.len() {
-            height += style.bar.stroke;
-        }
-    }
-    if root {
-        height += m.foot;
-    }
-    height
-}
-
 /// Whether a panel reserves the icon column.
 ///
 /// Per panel rather than per row: one row with an icon indents every
@@ -1059,6 +1041,7 @@ fn level_width(style: &Style, entries: &[MenuEntry]) -> f32 {
     // ceiling is `MENU_LABEL_CHARS` worth of the largest era's body
     // text, so the clip above is what bounds this and not the clamp.
     ((widest as f32 * per_char).ceil() + gutter + marker + m.level_pad).clamp(140.0, 460.0)
+        + m.ring_inset()
 }
 
 /// One panel of the open chain: its rows, how far its top edge sits
@@ -1108,18 +1091,6 @@ fn levels<'a>(style: &Style, menu: &'a TrayMenu, open: &[usize]) -> Vec<Level<'a
     }
 }
 
-/// How much of the chain's trailing edge is ornament rather than panel.
-///
-/// The chain is the panels *plus* whatever the era draws outside them,
-/// and neokitsch's onion rings run past the root panel on every side
-/// but the top. Whoever pins the chain against an edge -- the live
-/// bar's overlay, or the golden harness -- wants the *panel* there and
-/// not the rings, so this is the offset that puts it there. Zero in
-/// the three eras that draw no echo, which is why nothing else moved.
-pub fn menu_edge_pad(style: &Style) -> f32 {
-    style.bar.menu.echo_pad
-}
-
 /// How wide the whole open chain is, in pixels.
 ///
 /// Public for the same reason [`icon_size`] is: whoever places the
@@ -1134,7 +1105,7 @@ pub fn menu_chain_width(style: &Style, menu: &TrayMenu, open: &[usize]) -> f32 {
         .iter()
         .map(|level| level_width(style, level.entries))
         .sum();
-    panels + m.level_gap * (levels.len() as f32 - 1.0).max(0.0) + m.echo_pad * 2.0
+    panels + m.level_gap * (levels.len() as f32 - 1.0).max(0.0)
 }
 
 /// A corner's cut as a pair, for the paths that walk one by hand.
@@ -1186,6 +1157,46 @@ impl Panel {
             b.line_to(Point::new(bl.0, h));
             b.line_to(Point::new(0.0, h - bl.1));
             b.close();
+        })
+    }
+
+    /// One onion ring, `d` inside the outline: open, from the shared
+    /// left edge round the top, down the right edge and along the
+    /// bottom until it meets the shared bottom-left cut. A chamfer on
+    /// the top-right keeps its angle and its start x, so its foot stays
+    /// where the outline's is -- the cards' rings do exactly that
+    /// (dashboard-trace `#nring1..6`).
+    fn ring(&self, w: f32, h: f32, d: f32) -> Path {
+        let (ax, ay) = cut_xy(self.corners.top_left);
+        let (cx, cy) = cut_xy(self.corners.top_right);
+        let (rx, ry) = cut_xy(self.corners.bottom_right);
+        let (bx, by) = cut_xy(self.corners.bottom_left);
+        let round = |cut: Cut| matches!(cut, Cut::Round { .. });
+        Path::new(|b| {
+            b.move_to(Point::new(0.0, d + ay));
+            if round(self.corners.top_left) {
+                b.quadratic_curve_to(Point::new(0.0, d), Point::new(ax, d));
+            } else {
+                b.line_to(Point::new(ax, d));
+            }
+            b.line_to(Point::new(w - cx, d));
+            match self.corners.top_right {
+                Cut::Round { .. } => {
+                    b.quadratic_curve_to(Point::new(w - d, d), Point::new(w - d, d + cy))
+                }
+                Cut::Chamfer { .. } => b.line_to(Point::new(w - d, d + (cx - d) * cy / cx)),
+                Cut::Square => b.line_to(Point::new(w - d, d)),
+            }
+            b.line_to(Point::new(w - d, h - d - ry));
+            match self.corners.bottom_right {
+                Cut::Round { .. } => {
+                    b.quadratic_curve_to(Point::new(w - d, h - d), Point::new(w - d - rx, h - d))
+                }
+                Cut::Chamfer { .. } => b.line_to(Point::new(w - d - rx, h - d)),
+                Cut::Square => b.line_to(Point::new(w - d, h - d)),
+            }
+            let foot = if by > 0.0 { bx * (1.0 - d / by) } else { 0.0 };
+            b.line_to(Point::new(foot.max(0.0), h - d));
         })
     }
 
@@ -1263,6 +1274,31 @@ impl<Message> canvas::Program<Message> for Panel {
             );
         }
 
+        // Neokitsch's onion rings, nested inside the outline: over the
+        // fill, under the rows (which the padding keeps clear of them).
+        if let PanelEcho::Rings { count, pitch } = self.echo {
+            // The detail panel's measured ratios (dashboard-trace
+            // `#npring1..4`); the fifth and later would be invisible.
+            const FADE: [f32; 4] = [0.7, 0.7, 0.55, 0.25];
+            for ring in 1..=count {
+                let d = ring as f32 * pitch;
+                frame.stroke(
+                    &self.ring(w, h, d),
+                    Stroke::default()
+                        .with_color(Color {
+                            a: FADE[(ring - 1).min(FADE.len() - 1)],
+                            ..self.accent
+                        })
+                        // The design draws the rings at 1; rsvg renders
+                        // that as one solid pixel and an antialiased
+                        // canvas as two half-lit ones, which reads as a
+                        // fainter ring than the trace has. 1.5 puts a
+                        // whole pixel on the line.
+                        .with_width(1.5),
+                );
+            }
+        }
+
         // The bright bar riding the right edge, and the two glitch
         // echoes trailing it to the panel's foot.
         if let (PanelEcho::EdgeBar { step, top, len }, true) = (self.echo, self.root) {
@@ -1285,62 +1321,6 @@ impl<Message> canvas::Program<Message> for Panel {
             }
         }
 
-        vec![frame.into_geometry()]
-    }
-}
-
-/// Neokitsch's onion rings: concentric copies of each panel's
-/// silhouette, drawn once for the whole chain because they run outside
-/// the panels they belong to and a canvas cannot draw past its own box.
-///
-/// Clipped at the top by that same box, which is the design's own
-/// instruction -- the menu overlay sits below the bar surface, so
-/// nothing of it may rise into the strip.
-#[derive(Debug, Clone)]
-struct ChainEcho {
-    boxes: Vec<(Rectangle, Corners)>,
-    count: usize,
-    pitch: f32,
-    ink: Color,
-    stroke_width: f32,
-}
-
-impl<Message> canvas::Program<Message> for ChainEcho {
-    type State = ();
-
-    fn draw(
-        &self,
-        _state: &Self::State,
-        renderer: &Renderer,
-        _theme: &Theme,
-        bounds: Rectangle,
-        _cursor: mouse::Cursor,
-    ) -> Vec<canvas::Geometry> {
-        const FADE: [f32; 4] = [0.85, 0.61, 0.37, 0.25];
-        let mut frame = Frame::new(renderer, bounds.size());
-        for &(rect, corners) in &self.boxes {
-            for ring in 1..=self.count {
-                let out = ring as f32 * self.pitch;
-                let path = outline(
-                    corners,
-                    Ticket::default(),
-                    rect.width + out * 2.0,
-                    rect.height + out * 2.0,
-                );
-                let shift = iced::Vector::new(rect.x - out, rect.y - out);
-                frame.translate(shift);
-                frame.stroke(
-                    &path,
-                    Stroke::default()
-                        .with_color(Color {
-                            a: FADE[(ring - 1).min(FADE.len() - 1)],
-                            ..self.ink
-                        })
-                        .with_width(self.stroke_width),
-                );
-                frame.translate(iced::Vector::new(-shift.x, -shift.y));
-            }
-        }
         vec![frame.into_geometry()]
     }
 }
@@ -1738,10 +1718,12 @@ fn menu_panel<'a, Message: Clone + 'static>(
 
     container(layered(
         canvas(panel).width(Length::Fill).height(Length::Fill),
+        // The rows sit inside the innermost ring, in the era that has
+        // them; the left edge is the rings' own and takes no more air.
         container(rows).padding(Padding {
-            top: m.air,
-            right: m.side,
-            bottom: m.air + if root { m.foot } else { 0.0 },
+            top: m.air + m.ring_inset(),
+            right: m.side + m.ring_inset(),
+            bottom: m.air + m.ring_inset() + if root { m.foot } else { 0.0 },
             left: m.side,
         }),
     ))
@@ -1801,8 +1783,6 @@ pub fn tray_menu<'a, Message: Clone + 'static>(
     // Deepest first, so that the root panel ends up rightmost and the
     // chain grows away from the edge of the screen.
     let mut chain = row![].align_y(iced::Alignment::Start);
-    let mut boxes: Vec<(Rectangle, Corners)> = Vec::new();
-    let mut x = m.echo_pad;
     for (depth, level) in levels.iter().enumerate().rev() {
         if depth + 1 < levels.len() && m.level_gap > 0.0 {
             chain = chain.push(
@@ -1810,22 +1790,10 @@ pub fn tray_menu<'a, Message: Clone + 'static>(
                     .width(Length::Fixed(m.level_gap))
                     .height(Length::Fixed(1.0)),
             );
-            x += m.level_gap;
         }
         // `depth` never runs past the walk, so this slice is the
         // prefix that actually got followed.
         let panel = menu_panel(style, level, &open[..depth], depth == 0, on_entry, on_submenu);
-        let width = level_width(style, level.entries);
-        boxes.push((
-            Rectangle {
-                x,
-                y: level.top,
-                width,
-                height: panel_height(style, level.entries, depth == 0),
-            },
-            m.panel.corners,
-        ));
-        x += width;
         chain = chain.push(
             iced::widget::column![
                 Space::new()
@@ -1837,43 +1805,11 @@ pub fn tray_menu<'a, Message: Clone + 'static>(
         );
     }
 
-    // The rings run outside the panels, so they cannot be drawn by a
-    // panel's own canvas; the chain reserves room on the left and at
-    // the foot and draws them all at once. Nothing is reserved above
-    // or to the right on purpose: the top is where the design clips
-    // them (the overlay sits below the bar surface) and the right edge
-    // is the chain's contract with whoever placed it.
-    let chain: Element<'a, Message> = container(chain)
-        .padding(Padding {
-            top: 0.0,
-            right: m.echo_pad,
-            bottom: m.echo_pad,
-            left: m.echo_pad,
-        })
-        .height(Length::Shrink)
-        .into();
-
-    match m.echo {
-        PanelEcho::Rings { count, pitch } => layered(
-            canvas(ChainEcho {
-                boxes,
-                count,
-                pitch,
-                ink: ink_of(style, m.panel.stroke),
-                // The design draws the rings at 1; rsvg renders that
-                // as one solid pixel and an antialiased canvas as two
-                // half-lit ones, which reads as a fainter ring than
-                // the trace has. 1.5 puts a whole pixel on the line;
-                // the era's full stroke was tried and is no better on
-                // the gate and heavier by eye.
-                stroke_width: 1.5,
-            })
-            .width(Length::Fill)
-            .height(Length::Fill),
-            chain,
-        ),
-        _ => chain,
-    }
+    // Every ornament an era draws lives inside its panel's own box
+    // (neokitsch's rings did not until 2026-09-04, and the chain then
+    // carried a padded canvas of them), so the chain is the panels and
+    // nothing else.
+    container(chain).height(Length::Shrink).into()
 }
 
 /// How the bar reports a pointer event on a tray cell to its host.
@@ -2473,7 +2409,7 @@ mod tests {
         assert_eq!(levels(&style, &menu, &[]).len(), 1);
         assert_eq!(
             menu_chain_width(&style, &menu, &[]),
-            level_width(&style, &menu.entries) + style.bar.menu.echo_pad * 2.0
+            level_width(&style, &menu.entries)
         );
     }
 
@@ -2493,7 +2429,6 @@ mod tests {
             level_width(&style, &menu.entries)
                 + level_width(&style, &menu.entries[2].children)
                 + style.bar.menu.level_gap
-                + style.bar.menu.echo_pad * 2.0
         );
     }
 

@@ -217,7 +217,6 @@ pub fn style() -> Style {
                 foot: 0.0,
                 marker: MenuMarker::Text,
                 echo: PanelEcho::None,
-                echo_pad: 0.0,
             },
         },
         banner: Banner::default(),

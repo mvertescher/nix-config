@@ -292,8 +292,10 @@ pub enum PanelEcho {
     /// edge stepping `step` inward below it, and two hairline echoes of
     /// that edge trailing to the panel's foot.
     EdgeBar { step: f32, top: f32, len: f32 },
-    /// Neokitsch: `count` concentric copies of the silhouette offset
-    /// outward at `pitch`, fading out.
+    /// Neokitsch: `count` echo outlines nested *inside* the panel at
+    /// `pitch`, sharing its left edge and bottom-left corner and
+    /// stepping in on the other three sides, fading inward. The rows
+    /// sit inside the innermost one (see [`BarMenu::ring_inset`]).
     Rings { count: usize, pitch: f32 },
     /// Kitsch: the solid curl in the panel's foot.
     Wave,
@@ -347,11 +349,6 @@ pub struct BarMenu {
     pub foot: f32,
     pub marker: MenuMarker,
     pub echo: PanelEcho,
-    /// Room the echo needs outside the chain's own bounds, on every
-    /// side but the top -- where the design clips it, because the menu
-    /// overlay is drawn below the bar surface and nothing of it may
-    /// rise into the strip.
-    pub echo_pad: f32,
 }
 
 /// Status-bar shape. Mirrors the `barHeight` and `hostTape` knobs the
@@ -453,6 +450,19 @@ pub struct Bar {
     pub menu: BarMenu,
 }
 
+impl BarMenu {
+    /// How far the rows keep clear of the panel's top, right and
+    /// bottom edges for [`PanelEcho::Rings`] -- the rings' whole depth.
+    /// Zero in every other era. The left edge is the rings' own, so it
+    /// is not padded.
+    pub fn ring_inset(&self) -> f32 {
+        match self.echo {
+            PanelEcho::Rings { count, pitch } => count as f32 * pitch,
+            _ => 0.0,
+        }
+    }
+}
+
 impl Default for Bar {
     fn default() -> Self {
         Bar {
@@ -546,7 +556,6 @@ impl Default for Bar {
                 foot: 0.0,
                 marker: MenuMarker::Text,
                 echo: PanelEcho::None,
-                echo_pad: 0.0,
             },
         }
     }

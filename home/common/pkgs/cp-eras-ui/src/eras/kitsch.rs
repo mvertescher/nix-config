@@ -310,7 +310,6 @@ pub fn style() -> Style {
                 foot: 20.0,
                 marker: MenuMarker::Text,
                 echo: PanelEcho::Wave,
-                echo_pad: 0.0,
             },
         },
         // The shelf band hangs 12px past the card and steps its

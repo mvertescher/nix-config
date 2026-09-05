@@ -280,13 +280,15 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
     entropism 83/92/88/79, kitsch 56/59/20/80, neomil 79/94/86/71,
     neokitsch 78/54/79/56 (login/dashboard/mailbox/store; kitsch and
     neokitsch gate on ink IoU, not on these).
-  - Neokitsch bar 52%: by eye a near match (`/tmp/g2i-neokitsch-bar/
+  - Neokitsch bar 52% (14% since the rings nested inside the panels,
+    2026-09-04): by eye a near match (`/tmp/g2i-neokitsch-bar/
     side-by-side.png`); the number is the extractor fusing the popup
-    panels' onion rings and the tray cells into single components on
-    one side and not the other. The real deltas are small and belong
-    to § "Bar restyle": tray diamonds are purple/orange in the app
-    where `bar.svg` has gold/black, and the popup panels draw more
-    echo rings than the design. Left FAIL; not a gate rule to add.
+    panels, their onion rings and the tray cells into single components
+    on one side and not the other (impl `blob-01` [1094,3,443,116]
+    swallows both menus and the tray strip). The real deltas are small
+    and belong to § "Bar restyle": tray diamonds are purple/orange in
+    the app where `bar.svg` has gold/black. Left FAIL; not a gate rule
+    to add.
 - [x] **Login first paint takes 3-5s — it does not; the harness was
   presenting late.** Filed 2026-09-04 as fallout of the above: the wash
   (`login.rs` `wash_image`, a software-rendered 1600x900 radial) was
@@ -974,9 +976,24 @@ renders) resolved them as follows:
     and the same clamp (`curl = CURL.min(end - oy)`) in
     `screens/login.rs` `wire_band`; golden login-neokitsch re-taken
     (27 px differ).
-  - **`neokitsch/bar.svg` §10 chose its menu-panel chamfer against the
-    old `#ncard` numbers**; the citation is annotated as historical,
-    the panel geometry not revisited. Still open.
+  - **`neokitsch/bar.svg` §10 chose its menu-panel geometry against
+    the old `#ncard` numbers** — revisited 2026-09-04. Of the three
+    things §10 took from the old card, one survives and two did not:
+    the 22 chamfer stands, but on the mailbox selection bar's evidence
+    alone (§10 also credited the detail panel, which the 2026-09-03
+    re-measure found has *no* chamfer); the rings went from four
+    offset outward at 3.5 to four nested inside at the detail panel's
+    3.2, sharing the left edge and the bottom-left chamfer, fading
+    .7 .7 .55 .25, exactly as `#nring1..6` / `#npring1..4` nest. Rows
+    sit inside the innermost ring (root panel 31..180.6, was ..155).
+    `bar.rs`: rings drawn by the panel's own canvas (`Panel::ring`),
+    `BarMenu::ring_inset()` pads the rows; `ChainEcho`, `echo_pad`
+    and `menu_edge_pad` deleted — nothing is drawn outside a panel any
+    more, so the chain is the panels and the harness margin is a plain
+    120. G2i neokitsch bar (accepted FAIL) 52% → 14%: the extractor
+    now fuses the tray strip and both menus into one `blob-01`
+    [1094,3,443,116] on the impl side; by eye the crops match. Golden
+    bar-neokitsch re-taken.
 - [x] **`src/eras/*.rs` vs traces — triaged, not applied.** Every
   delta-box line is classified in **`ERAS-DELTA.md`** by consumer:
   (a) read by a gated screen, (b) dashboard/bar only, (c) dead, (d) doc
