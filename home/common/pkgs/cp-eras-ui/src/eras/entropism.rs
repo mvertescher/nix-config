@@ -44,7 +44,11 @@ pub const BG: iced::Color = rgb(0x110c07);
 pub const SAGE_SOLID: iced::Color = rgb(0x9cb795);
 pub const SAGE_TEXT: iced::Color = rgb(0x94bb94);
 pub const MID: iced::Color = rgb(0x728f76);
-pub const OUTLINE: iced::Color = rgb(0x5d7752);
+/// The frames' ink: the 1.25px core of every outlined box on the hub
+/// and store sheets at full resolution, the same value `HUB_STROKE`
+/// below was measured to. #5d7752 until 2026-09-05, a stop darker than
+/// any frame in the material.
+pub const OUTLINE: iced::Color = rgb(0x8fba97);
 pub const DIM: iced::Color = rgb(0x3d4d38);
 pub const ON_SOLID: iced::Color = rgb(0x1f2a1c);
 
@@ -211,8 +215,11 @@ pub fn style() -> Style {
                 row_split: None,
                 // The quietest legible ink in the material is the
                 // dashboard caption strip's; DIM is the faint-rule
-                // tone and is not legible at 14px.
-                disabled: Ink::Border,
+                // tone and is not legible at 14px. Was `Ink::Border`
+                // while that was the dim #5d7752; since `border` took
+                // the frames' bright sage (2026-09-05) the quiet ink
+                // is MID, and this follows the quietness, not the role.
+                disabled: Ink::Mid,
                 rule_ink: Ink::Border,
                 row_inset: (0.0, 0.0),
                 row_overshoot: 0.0,
@@ -281,7 +288,8 @@ pub fn style() -> Style {
 // Colours are the era's published roles rather than the trace's spot
 // samples, so the theme still reaches the screen. The pairs, for the
 // record: band and button `select`/`cta` #9cb795 against the trace's
-// #8aac8c, outlines `border` #5d7752 against #739479, text `fg`
+// #8aac8c, outlines `border` (#5d7752 then, #8fba97 since 2026-09-05)
+// against #739479, text `fg`
 // #94bb94 against #8aac8c, dark ink on the band `on_select` #1f2a1c
 // against #20281c.
 
@@ -290,8 +298,9 @@ pub fn style() -> Style {
 /// Probed at full 3840 resolution on the 2026-09-03 trace pass: the
 /// header strip and the field frame are a 3px line with a peak core of
 /// #6c8a77..#819b82, sitting straight on the ground with no dark ring.
-/// The era's published `border` (#5d7752) was sampled off the hub,
-/// mail and store sheets and this screen is dimmer than those; the
+/// The era's published `border` (#5d7752 then; #8fba97 since
+/// 2026-09-05) was sampled off the hub, mail and store sheets and this
+/// screen is dimmer than those; the
 /// k-means #739479 the trace used to carry is the 1600 rescale's
 /// dilution of the same line over two pixels.
 pub const LINE: iced::Color = rgb(0x75967b);
@@ -386,9 +395,10 @@ pub const ACCESS: Access = Access {
 //     `Ground::Flat` stands.
 //
 // Outline ink is `Ink::Mid`, not `Ink::Border`: the trace samples every
-// frame at #709174 and the era's `MID` is #728f76, while `OUTLINE` is a
-// stop darker at #5d7752. (The crate TODO already carries this as an
-// entropism-wide question.)
+// frame at #709174 and the era's `MID` is #728f76. `OUTLINE` was a stop
+// darker at #5d7752 when this was written; since 2026-09-05 it is the
+// bright #8fba97, and folding this screen onto the role is the open
+// follow-up in the crate TODO.
 use crate::style::{
     Frame, Mail, MailBadges, MailButtons, MailList, MailPanel, Mailbox, Note, Piece,
     RowDecor, Run, Trim, FromAt,
@@ -943,9 +953,11 @@ pub const STORE: &[Prim] = &[
     Prim::At { x: 1105.0, y: 260.0, prims: SHELF_2 },
     Prim::At { x: 1429.0, y: 260.0, prims: SHELF_3 },
     // bottom-left caption and the A / B letter boxes. The letters sit
-    // BELOW the things they label on this screen.
-    txt(126.0, 787.0, 8.5, Ink::Border, "SPARE TIME MANAGER WAS DEVELOPED BY"),
-    txt(126.0, 796.0, 8.5, Ink::Border, "SEOCHO. SERVING CUSTOMERS SINCE 2006."),
+    // BELOW the things they label on this screen. The caption is the
+    // photo's faintest text; it took `Ink::Border` for that while the
+    // role was the dim #5d7752, and MID since `border` brightened.
+    txt(126.0, 787.0, 8.5, Ink::Mid, "SPARE TIME MANAGER WAS DEVELOPED BY"),
+    txt(126.0, 796.0, 8.5, Ink::Mid, "SEOCHO. SERVING CUSTOMERS SINCE 2006."),
     line_rect(294.0, 779.0, 26.0, 26.0, Ink::Fg, 1.5),
     txt(300.0, 799.0, 19.0, Ink::Fg, "A"),
     line_rect(464.0, 779.0, 26.0, 26.0, Ink::Fg, 1.5),
@@ -968,12 +980,15 @@ pub const STORE: &[Prim] = &[
 // the trace's paint order; the comment on each group names the trace
 // element it came from.
 //
-// Inks are the trace's sampled hex values. None of the era's role
-// consts above carries any of them (BG #110c07 vs the trace's ground
-// #0f0a03; SAGE_SOLID #9cb795 vs the fill #a6d3a7; SAGE_TEXT #94bb94 vs
-// the stroke #8fba97 and label #acddb4; ON_SOLID #1f2a1c vs #22301f), so
-// they are spelled here as block-local consts, the way `STORE_BAND` is.
-// Reconciling them with the palette is ERAS-DELTA work, not this block's.
+// Inks are the trace's sampled hex values. Since 2026-09-05 `OUTLINE`
+// carries the stroke (#8fba97, the same measurement); none of the other
+// role consts above carries any of them (BG #110c07 vs the trace's
+// ground #0f0a03; SAGE_SOLID #9cb795 vs the fill #a6d3a7; SAGE_TEXT
+// #94bb94 vs the label #acddb4; ON_SOLID #1f2a1c vs #22301f), so they
+// are spelled here as block-local consts, the way `STORE_BAND` is.
+// Reconciling the rest with the palette is ERAS-DELTA work, not this
+// block's; `HUB_STROKE` stays a local const until that pass folds it
+// onto `Ink::Border` with the login and mailbox outlines.
 
 use crate::style::{hline, Anchor};
 

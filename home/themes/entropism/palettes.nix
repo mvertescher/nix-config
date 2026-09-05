@@ -27,7 +27,12 @@
   nexus = {
     bg = "#110c07";
     panel = "#181109";
-    border = "#5d7752";
+    # The bright sage the photographs actually frame with -- the 1.25px
+    # core of every outlined box on the hub and store sheets, probed at
+    # full resolution. #5d7752 until 2026-09-05; that was a stop darker
+    # than any frame in the material and the only one of the four
+    # screens whose outlines receded into the ground.
+    border = "#8fba97";
     dim = "#3d4d38";
     fg = "#94bb94";
     alert = "#728f76";
