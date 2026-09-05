@@ -1,13 +1,5 @@
-pub mod banner;
-pub mod bracket;
-pub mod card;
 pub mod chrome;
-pub mod glyph;
 pub mod ground;
-pub mod input;
-pub mod ornament;
-pub mod row;
-pub mod silhouette;
 pub mod surface;
 pub mod text;
 
@@ -49,6 +41,12 @@ pub mod text;
 //     cascade menus now live as `Prim` lists in each era's
 //     `// --- dashboard ---` block, transcribed from the traces the
 //     widgets had only approximated.
+//   * `banner`, `bracket`, `card`, `glyph`, `input`, `ornament`, `row`,
+//     `silhouette` -- the era-agnostic set the widget-built screens
+//     were assembled from. Deleted 2026-09-05: every screen is a
+//     `Prim` table now, and not one of the eight had a caller outside
+//     the others. What the roadmap still wants of them is rebuilt from
+//     `docs/<era>/components.svg` when a caller exists, not kept warm.
 //
 // `floppy_icon` and `floppy_vector` stay, and they are the one honest
 // exception: they are *art*, not a dressed rectangle -- a traced
@@ -57,15 +55,8 @@ pub mod text;
 pub mod floppy_icon;
 pub mod floppy_vector;
 
-pub use banner::banner;
-pub use bracket::bracket_panel;
-pub use card::{notice as card_notice, product_card, Product};
 pub use chrome::{footer, top_bar};
-pub use glyph::{glyph, Glyph};
 pub use ground::ground;
-pub use ornament::{column_rule, page_curl};
-pub use row::{mail_row, Mail};
-pub use silhouette::silhouette;
 pub use surface::{layered, surface, Corners, Cut, Fill, Surface};
 
 pub use floppy_icon::{floppy_icon, FloppyIcon};

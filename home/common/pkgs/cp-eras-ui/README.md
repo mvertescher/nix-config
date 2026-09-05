@@ -131,8 +131,8 @@ src/
   theme.rs        runtime palette published by the nix theme layer
   eras/           one table per era, sampled figures, plus each era's
                   store and dashboard scenes as Prim lists
-  widgets/        surface, card, banner, silhouette, glyph, bracket,
-                  ornament, chrome, ground, row, input, text
+  widgets/        surface, chrome, ground, text, floppy_icon -- what the
+                  bar and panels draw with; the screens are Prim tables
   screens/        store, login, mailbox, dashboard — era-agnostic by
                   construction; scene is the Prim renderer the store
                   and dashboard share
@@ -310,6 +310,6 @@ into the `// --- dashboard ---` block of `src/eras/<era>.rs`. All four
 blocks are transcribed and gated (G2i, `docs/PIPELINE.md`).
 
 Not yet done:
-- Fields are display-only. `widgets::input::field` draws the box and the
-  value but takes no input; the screens it serves are design targets,
-  and a real `text_input` needs per-era styling before it earns a place.
+- Fields are display-only. The login screen draws its boxes and values
+  as `Prim`s and takes no input; the screens are design targets, and a
+  real `text_input` needs per-era styling before it earns a place.
