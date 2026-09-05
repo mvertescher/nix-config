@@ -641,7 +641,12 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   of micro-text, PRECISION LIQUID / POLYMER MUSCLE, at y 737.5 / 746.
   Trace, `components.svg` (prose, translated copy and the caption) and
   `neomil.rs` `MAKER_MARK` + DASHBOARD prims now carry that geometry;
-  G2i pixel diff 0.32%, golden dashboard-neomil re-taken. The design
+  G2i pixel diff 0.32%, golden dashboard-neomil re-taken -- but not
+  `dashboard-fallback`, which is the same neomil dashboard under the
+  crate's compiled palette: it sat at 99.951% (the old M in an 89x64
+  box at (1208,682)) through every run until 2026-09-05, passing the
+  99.9 gate. Re-taken then; the wrapper TODO's rule stands, a golden
+  that passes at 99.9-something is drifting. The design
   inventory now splits the mark into two "chamfer" stems that the
   implementation's single blob does not pair with (44/53 matched,
   98% area, still PASS) — an artefact of the inventory's ink
@@ -1148,10 +1153,12 @@ Open:
   purple/orange because the example feeds sample SNI raster icons; the
   SVG's diamonds are stand-ins, not a fault. **The layer-shell bar is
   unverified until a switch**; only `bar-window` is captured.
-  - [ ] "Not followed, per era" — six deviations, filed 2026-09-03 as
-    each needing "a widget, not a value". Spot-checked 2026-09-05: four
+  - [x] "Not followed, per era" — six deviations, filed 2026-09-03 as
+    each needing "a widget, not a value". Spot-checked 2026-09-05: five
     of the six were values or a shape the existing widget could carry,
-    and the premise held for two, which are what is left open here.
+    and the sixth (the haze blue annulus) wanted the haze unification
+    rather than a widget. All six closed by 2026-09-05; the entries
+    stay for the reasoning.
     - Entropism selection inset 1px — *fixed*, and it was worse than an
       inset: the module faces were drawn flush to their cells over the
       strip's chrome, burying the inner half of every divider next to a
@@ -1541,7 +1548,9 @@ four bars, done in this order so the Rust is written once.
 ## Toolkit infrastructure
 
 - [x] **Visual regression, landed 2026-08-22** as `tests.visual`
-  (`nix build -f . tests.visual`): weston headless + pixman inside the
+  (`scripts/run_test_matrix.sh visual`; the `nix build -f .
+  tests.visual` it landed with never worked once `default.nix` took
+  `callPackage` arguments): weston headless + pixman inside the
   build sandbox, weston-screenshooter capture, diffed against a
   committed golden by scripts/check_similarity.py. Two independent runs
   are byte-identical, so the threshold is strict. Original note kept
