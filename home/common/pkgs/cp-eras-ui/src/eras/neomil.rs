@@ -269,6 +269,7 @@ pub fn style() -> Style {
                 rule_ink: Ink::Dim,
                 // Ending 6px short of the stepped right edge.
                 row_inset: (9.0, 14.0),
+                row_overshoot: 0.0,
                 spine: 3.0,
                 foot: 0.0,
                 // The arrow the era puts after a code string, not a

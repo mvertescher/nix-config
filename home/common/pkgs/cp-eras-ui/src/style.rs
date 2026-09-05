@@ -349,9 +349,14 @@ pub struct BarMenu {
     /// Ink of a separator rule.
     pub rule_ink: Ink,
     /// How far a highlighted row is inset from the panel's left and
-    /// right inner edges. Negative on the right in neokitsch, whose
-    /// mail bar runs past its own list rules.
+    /// right inner edges.
     pub row_inset: (f32, f32),
+    /// How far a highlighted row's plate runs *past* the root panel's
+    /// right outline. Neokitsch 8: the mail bar runs past its own list
+    /// rules (483 -> 512 in the trace), and the menu's highlight past
+    /// the panel and its rings the same way. Zero elsewhere. Root panel
+    /// only -- a submenu's would run under the panel it hangs off.
+    pub row_overshoot: f32,
     /// A spine down the left of a highlighted row, and how far it runs.
     pub spine: f32,
     /// Extra room at the foot of the root panel, for [`PanelEcho`].
@@ -565,6 +570,7 @@ impl Default for Bar {
                 disabled: Ink::Dim,
                 rule_ink: Ink::Border,
                 row_inset: (0.0, 0.0),
+                row_overshoot: 0.0,
                 spine: 0.0,
                 foot: 0.0,
                 marker: MenuMarker::Text,

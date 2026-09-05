@@ -215,6 +215,7 @@ pub fn style() -> Style {
                 disabled: Ink::Border,
                 rule_ink: Ink::Border,
                 row_inset: (0.0, 0.0),
+                row_overshoot: 0.0,
                 spine: 0.0,
                 foot: 0.0,
                 marker: MenuMarker::Text,

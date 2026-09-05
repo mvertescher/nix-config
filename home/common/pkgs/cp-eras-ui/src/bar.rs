@@ -1144,6 +1144,12 @@ fn levels<'a>(style: &Style, menu: &'a TrayMenu, open: &[usize]) -> Vec<Level<'a
 /// constants that agree until one of them is edited. The chain's
 /// *right* edge is what goes under the pointer, so this width is the
 /// offset that puts it there.
+///
+/// The panels' width, not the element's: the element runs
+/// [`menu_overshoot`] further right, for the highlight plate that
+/// neokitsch draws past its panel. That strip belongs *past* the
+/// pointer, so a host placing the chain by this width gets it there
+/// for free -- and one sizing a surface to the chain needs the sum.
 pub fn menu_chain_width(style: &Style, menu: &TrayMenu, open: &[usize]) -> f32 {
     let m = &style.bar.menu;
     let levels = levels(style, menu, open);
@@ -1152,6 +1158,13 @@ pub fn menu_chain_width(style: &Style, menu: &TrayMenu, open: &[usize]) -> f32 {
         .map(|level| level_width(style, level.entries))
         .sum();
     panels + m.level_gap * (levels.len() as f32 - 1.0).max(0.0)
+}
+
+/// How far the chain's element runs past [`menu_chain_width`], to the
+/// right: the root panel's highlight plate, where the era has one run
+/// past its outline. Zero in three eras, 8 in neokitsch.
+pub fn menu_overshoot(style: &Style) -> f32 {
+    style.bar.menu.row_overshoot
 }
 
 /// A corner's cut as a pair, for the paths that walk one by hand.
@@ -1183,6 +1196,9 @@ struct Panel {
     echo_ink: Color,
     accent: Color,
     root: bool,
+    /// Width at the right the panel leaves undrawn: the strip a
+    /// highlighted row's plate runs into (`BarMenu::row_overshoot`).
+    overshoot: f32,
 }
 
 impl Panel {
@@ -1291,7 +1307,10 @@ impl<Message> canvas::Program<Message> for Panel {
         } else {
             0.0
         };
-        let (w, h) = (bounds.width - inset * 2.0, bounds.height - inset * 2.0);
+        let (w, h) = (
+            bounds.width - inset * 2.0 - self.overshoot,
+            bounds.height - inset * 2.0,
+        );
         if w <= 0.0 || h <= 0.0 {
             return vec![frame.into_geometry()];
         }
@@ -1507,13 +1526,14 @@ fn menu_row<'a, Message: Clone + 'static>(
     path: MenuPath,
     gutter: bool,
     open: bool,
+    edge: f32,
     on_entry: fn(i32) -> Message,
     on_submenu: fn(MenuPath) -> Message,
 ) -> Element<'a, Message> {
     let m = &style.bar.menu;
 
     if let MenuKind::Separator = entry.kind {
-        return separator_row(style, entry);
+        return separator_row(style, entry, edge);
     }
 
     let label = clip(&entry.label, MENU_LABEL_CHARS);
@@ -1521,8 +1541,14 @@ fn menu_row<'a, Message: Clone + 'static>(
     // one you are looking at", which is not always its selection:
     // three eras fill it and neokitsch outlines it, because a material
     // means "chosen" there and an outline means "current".
+    //
+    // `edge` is how far the row's box runs past where its content
+    // stops -- the rings' depth, plus the root panel's overshoot. The
+    // open face and the content stay inside it; the highlight is the
+    // one thing that runs out to the box's edge, which is the point of
+    // widening the box (see `menu_panel`).
     let dressed = if open {
-        Some((m.open, m.open_inset))
+        Some((m.open, (m.open_inset.0, m.open_inset.1 + edge)))
     } else if matches!(entry.kind, MenuKind::Toggle(true)) {
         Some((m.row, m.row_inset))
     } else {
@@ -1585,7 +1611,7 @@ fn menu_row<'a, Message: Clone + 'static>(
     let padded = container(inner)
         .padding(Padding {
             top: m.row_air,
-            right: m.row_side,
+            right: m.row_side + edge,
             bottom: m.row_air,
             left: m.row_side,
         })
@@ -1679,7 +1705,11 @@ fn menu_row<'a, Message: Clone + 'static>(
 }
 
 /// A break between groups, in the era's own shape.
-fn separator_row<'a, Message: 'static>(style: &Style, entry: &MenuEntry) -> Element<'a, Message> {
+fn separator_row<'a, Message: 'static>(
+    style: &Style,
+    entry: &MenuEntry,
+    edge: f32,
+) -> Element<'a, Message> {
     let m = &style.bar.menu;
     let height = row_height(style, entry);
     if let MenuRule::Empty { .. } = m.rule {
@@ -1694,7 +1724,7 @@ fn separator_row<'a, Message: 'static>(style: &Style, entry: &MenuEntry) -> Elem
         _ => (0.0, 0.0),
     };
     canvas(Rule {
-        inset,
+        inset: (inset.0, inset.1 + edge),
         width: style.bar.stroke,
         ink: ink_of(style, m.rule_ink),
         tab: match m.rule {
@@ -1731,6 +1761,14 @@ fn menu_panel<'a, Message: Clone + 'static>(
 ) -> Element<'a, Message> {
     let m = &style.bar.menu;
     let gutter = has_icons(level.entries);
+    // A highlighted row's plate can run past the panel's right outline
+    // (neokitsch's does, by 8), and a canvas draws only inside its own
+    // bounds -- so the rows' boxes have to reach that far. The root
+    // container is widened by the overshoot, the rows' column gives up
+    // its ring inset on the right, and each row pads its content back
+    // by both so that only the highlight moves.
+    let overshoot = if root { m.row_overshoot } else { 0.0 };
+    let edge = m.ring_inset() + overshoot;
     let mut rows = iced::widget::column![].width(Length::Fill);
     for (index, entry) in level.entries.iter().enumerate() {
         let mut path = prefix.to_vec();
@@ -1741,6 +1779,7 @@ fn menu_panel<'a, Message: Clone + 'static>(
             path,
             gutter,
             level.open == Some(index),
+            edge,
             on_entry,
             on_submenu,
         ));
@@ -1765,20 +1804,22 @@ fn menu_panel<'a, Message: Clone + 'static>(
         },
         accent: ink_of(style, m.panel.stroke),
         root,
+        overshoot,
     };
 
     container(layered(
         canvas(panel).width(Length::Fill).height(Length::Fill),
         // The rows sit inside the innermost ring, in the era that has
         // them; the left edge is the rings' own and takes no more air.
+        // The right is the rows' own business (`edge`, above).
         container(rows).padding(Padding {
             top: m.air + m.ring_inset(),
-            right: m.side + m.ring_inset(),
+            right: m.side,
             bottom: m.air + m.ring_inset() + if root { m.foot } else { 0.0 },
             left: m.side,
         }),
     ))
-    .width(Length::Fixed(level_width(style, level.entries)))
+    .width(Length::Fixed(level_width(style, level.entries) + overshoot))
     .height(Length::Shrink)
     .into()
 }

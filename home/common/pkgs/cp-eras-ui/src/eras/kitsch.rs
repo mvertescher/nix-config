@@ -317,6 +317,7 @@ pub fn style() -> Style {
                 disabled: Ink::Dim,
                 rule_ink: Ink::Border,
                 row_inset: (2.5, 4.0),
+                row_overshoot: 0.0,
                 spine: 0.0,
                 // The 20px foot the wave lives in.
                 foot: 20.0,

@@ -224,8 +224,11 @@ impl BarWindow {
                     Message::Entry,
                     Message::Submenu,
                 ),
+                // The margin is measured to the root panel's outline;
+                // whatever the era draws past that (neokitsch's
+                // highlight plate) comes out of it.
                 Space::new()
-                    .width(Length::Fixed(MENU_MARGIN))
+                    .width(Length::Fixed(MENU_MARGIN - cp_eras_ui::bar::menu_overshoot(&self.style)))
                     .height(Length::Shrink),
             ],
             // The bar and its menu do not fill 220px. The empty ground
@@ -243,7 +246,9 @@ impl BarWindow {
 ///
 /// Until 2026-09-04 this subtracted `bar::menu_edge_pad`, the 14px of
 /// neokitsch onion rings that ran outside the root panel; the rings
-/// now nest inside it and no era draws past its panels.
+/// now nest inside it. Since 2026-09-05 `view` subtracts
+/// `bar::menu_overshoot` instead -- the 8px neokitsch's highlight
+/// plate runs past the panel, to the design's x=1488.
 const MENU_MARGIN: f32 = 120.0;
 
 fn main() -> iced::Result {

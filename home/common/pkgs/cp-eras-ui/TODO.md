@@ -1149,12 +1149,52 @@ Open:
       chamfer. Unit-tested against `#chev` scaled 25/46; the 13-of-25
       rise trips `extent`'s half-height clamp and is squeezed 12.5/13,
       under half a pixel.
-    - Neokitsch highlight row 8px past the panel edge — *still open*,
-      and now further off: rows are inset by `ring_inset()` (12.8) on
-      the right since 2026-09-04, so the highlight ends 20px short of
-      where the design's overshoot ends. Needs the panel canvas to draw
-      the highlight (it alone can paint outside the rows), which means
-      hover state reaching the panel; a widget.
+    - Neokitsch highlight row 8px past the panel edge — *fixed*
+      2026-09-05, and the premise recorded here was wrong. It did
+      **not** need the panel canvas to draw the highlight, and no hover
+      state had to reach `Panel`; that reading assumed the row's box
+      was the panel's inner width and could not be anything else. The
+      fix went the other way round: the rows' boxes were widened past
+      the panel's outline and the panel was told to leave that strip
+      undrawn. `BarMenu::row_overshoot` (neokitsch 8, zero elsewhere);
+      `menu_panel` widens the root container by it, gives the rows'
+      column back the `ring_inset()` it padded on the right, and hands
+      each row the sum as `edge`; `menu_row` pads its content and
+      insets the open face and the separator rule by `edge` again, so
+      the highlight is the only thing that moves; `Panel::draw`
+      subtracts `overshoot` from its width so its outline stays put.
+      `bar::menu_overshoot` is the host's share — `bar-window`
+      subtracts it from `MENU_MARGIN`, so the panel still ends on the
+      design's x=1480 and the plate runs to 1488.
+      Measured on the re-taken golden: the plate's last veneer pixel is
+      1486 against a panel outline at 1478..1479 — the design's 8, off
+      the outline the chain actually lands on. Only neokitsch sets
+      `PanelEcho::Rings`, so `edge` is 0 in the other three and no
+      other era's geometry moves; against the old golden the whole
+      diff is one 121x26 box at (1366,111) — the row's right end plus
+      the veneer seam and grain hairlines that re-space with it.
+      A submenu's rows now take `edge = ring_inset()` and no
+      overshoot, so a highlight there crosses the rings but stops at
+      the panel outline. Nothing in the design says otherwise, and
+      `bar-window` has no highlighted submenu row to show it.
+      `cp-eras-ui-bar` needed no change: it places the chain by
+      `menu_chain_width` inside a full-width surface, so the strip
+      lands past the pointer rather than being clipped. The one edge
+      case is a pointer within 8px of the output's right edge, where
+      it would run off; the tray never sits that far over.
+    - Neokitsch open-row (submenu parent) box ends ~13px wide of the
+      design — *found 2026-09-05 while measuring the overshoot, not
+      fixed*. `bar.svg` draws the Devices outline at x 1287..1445.2
+      (line 335) but its own prose calls that "6 from the rings' inner
+      edge", which would be 1461.2 — the number the separator rule on
+      line 341 actually uses. The code gives both the same 6
+      (`open_inset.1`, and the rule's own inset), so the rule measures
+      1460..1461 on the golden, dead on, and the open row measures
+      1458.5 where the drawing wants 1445.2. Either the prose or the
+      path in `bar.svg` is wrong; that wants a vision model on the
+      photo before anything moves in `neokitsch.rs`. Pre-existing —
+      the overshoot change did not move this row (its diff was one
+      121x26 box two rows below).
     - Neokitsch haze blue annulus — *still open*. On the strip it is a
       faint blue cast on the last ~150px (design #2B2E40 vs #292637 at
       x 1520) plus a mask-faded arc on the left; alpha-stop annuli with
