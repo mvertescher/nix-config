@@ -7,10 +7,11 @@
 //! single implementation across four eras.
 
 use crate::style::{Corner, Selection, Style, Ticket};
+use crate::Element;
 use iced::advanced::widget::{Operation, Tree};
 use iced::advanced::{layout, overlay, renderer, Clipboard, Layout, Shell, Widget};
 use iced::widget::{canvas, container, stack};
-use iced::{mouse, Color, Element, Event, Length, Point, Rectangle, Renderer, Size, Theme};
+use iced::{mouse, Color, Event, Length, Point, Rectangle, Renderer, Size};
 
 /// One corner's treatment.
 ///
@@ -574,14 +575,14 @@ fn band_path(
     }))
 }
 
-impl<Message> canvas::Program<Message> for Surface {
+impl<Message> canvas::Program<Message, Style> for Surface {
     type State = ();
 
     fn draw(
         &self,
         _state: &Self::State,
         renderer: &Renderer,
-        _theme: &Theme,
+        _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
@@ -764,7 +765,7 @@ impl<'a, Message> Backdrop<'a, Message> {
     const CONTENT: usize = 1;
 }
 
-impl<Message> Widget<Message, Theme, Renderer> for Backdrop<'_, Message> {
+impl<Message> Widget<Message, Style, Renderer> for Backdrop<'_, Message> {
     fn children(&self) -> Vec<Tree> {
         self.children.iter().map(Tree::new).collect()
     }
@@ -805,7 +806,7 @@ impl<Message> Widget<Message, Theme, Renderer> for Backdrop<'_, Message> {
         &self,
         tree: &Tree,
         renderer: &mut Renderer,
-        theme: &Theme,
+        theme: &Style,
         style: &renderer::Style,
         layout: Layout<'_>,
         cursor: mouse::Cursor,
@@ -907,7 +908,7 @@ impl<Message> Widget<Message, Theme, Renderer> for Backdrop<'_, Message> {
         renderer: &Renderer,
         viewport: &Rectangle,
         translation: iced::Vector,
-    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
+    ) -> Option<overlay::Element<'b, Message, Style, Renderer>> {
         overlay::from_children(
             &mut self.children,
             tree,

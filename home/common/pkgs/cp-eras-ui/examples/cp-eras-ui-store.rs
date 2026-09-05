@@ -35,6 +35,7 @@ fn main() -> iced::Result {
 
     iced::application(move || Store::new(style), Store::update, Store::view)
         .title(Store::title)
+        .theme(|app: &Store| app.style)
         .font(cp_eras_ui::fonts::RAJDHANI_REGULAR)
         .font(cp_eras_ui::fonts::RAJDHANI_MEDIUM)
         .font(cp_eras_ui::fonts::RAJDHANI_SEMIBOLD)

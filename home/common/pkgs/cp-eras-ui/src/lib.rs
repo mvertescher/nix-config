@@ -16,6 +16,7 @@
 //! whatever era the nix theme layer has published, so `switch` re-dresses
 //! them without a rebuild.
 
+pub mod catalog;
 pub mod eras;
 pub mod palette;
 pub mod screens;
@@ -34,3 +35,7 @@ pub mod bar;
 pub mod fonts;
 
 pub use style::{Era, Style};
+
+/// An element dressed by an era: iced's, with [`Style`] as the theme.
+/// See [`catalog`] for what that buys.
+pub type Element<'a, Message> = iced::Element<'a, Message, Style, iced::Renderer>;

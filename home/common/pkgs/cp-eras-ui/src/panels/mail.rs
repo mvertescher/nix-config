@@ -13,12 +13,14 @@
 //! so `--era` re-dresses it and a desktop `switch` is enough to move it.
 //! Nothing below branches on era.
 
+use crate::catalog;
 use crate::palette::Palette;
 use crate::style::{Chrome, Metrics, Style};
 use crate::widgets::surface::{backdrop, surface, Surface};
 use crate::widgets::{footer, ground, text, top_bar};
-use iced::widget::{column, container, mouse_area, row, scrollable, stack, Space};
-use iced::{Alignment, Color, Element, Length, Padding};
+use crate::Element;
+use iced::widget::{button, column, container, mouse_area, row, scrollable, stack, Space};
+use iced::{Alignment, Color, Length, Padding};
 
 /// One reply in a thread.
 #[derive(Debug, Clone)]
@@ -73,6 +75,9 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
             Palette::faded(c, UNFOCUSED)
         }
     };
+    let alpha = |focused: bool| if focused { 1.0 } else { UNFOCUSED };
+    let list_alpha = alpha(focus == MailFocus::List);
+    let content_alpha = alpha(focus == MailFocus::Content);
     let list_ink = fade(s.palette.fg, focus == MailFocus::List);
     let list_line = fade(s.palette.border, focus == MailFocus::List);
     let content_ink = fade(s.palette.fg, focus == MailFocus::Content);
@@ -107,7 +112,7 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
                 .scroller_width(4.0)
                 .margin(5.0),
         ))
-        .style(rail(list_line))
+        .style(catalog::faded_rail(list_alpha))
         .height(Length::Fill)
         .width(Length::Fill),
     ]
@@ -130,7 +135,7 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
                             .scroller_width(4.0)
                             .margin(5.0),
                     ))
-                    .style(rail(content_line))
+                    .style(catalog::faded_rail(content_alpha))
                     .height(Length::Fill),
             ))
             .height(Length::Fill),
@@ -320,8 +325,10 @@ fn actions<'a, Message: 'static + Clone>(
     let s = style;
     let mut bar = row![].spacing(s.metrics.gap * 0.5).height(Length::Fixed(34.0));
 
+    // A real `button` under a bare coat: the plate is the face, the
+    // widget supplies the press.
     bar = bar.push(
-        mouse_area(
+        button(
             container(surface(
                 Surface::filled(s, s.palette.alert).no_stroke(),
                 Padding::from([5, 8]),
@@ -330,6 +337,10 @@ fn actions<'a, Message: 'static + Clone>(
             .width(Length::Fill)
             .height(Length::Fill),
         )
+        .padding(0)
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .style(catalog::button::bare)
         .on_press(on_delete),
     );
 
@@ -557,43 +568,3 @@ fn list<'a, Message: 'static>(
     col.into()
 }
 
-/// Scrollbar styling in the era's line colour. A closure factory rather
-/// than a widget: `scrollable`'s style takes an `Fn`, and the colour has
-/// to be copied out before it crosses into one.
-fn rail(
-    line: Color,
-) -> impl Fn(&iced::Theme, scrollable::Status) -> scrollable::Style {
-    // `auto_scroll` is iced 0.14's middle-click autoscroll overlay and
-    // has no era reading, so it is left at whatever the built-in theme
-    // draws rather than invented here; everything this crate has an
-    // opinion about is still written out.
-    move |theme, status| scrollable::Style {
-        container: container::Style::default(),
-        vertical_rail: scrollable::Rail {
-            background: Some(Palette::faded(line, 0.05).into()),
-            border: iced::Border {
-                color: Color::TRANSPARENT,
-                width: 0.0,
-                radius: 0.0.into(),
-            },
-            scroller: scrollable::Scroller {
-                background: Palette::faded(line, 0.5).into(),
-                border: iced::Border {
-                    color: Color::TRANSPARENT,
-                    width: 0.0,
-                    radius: 2.0.into(),
-                },
-            },
-        },
-        horizontal_rail: scrollable::Rail {
-            background: None,
-            border: iced::Border::default(),
-            scroller: scrollable::Scroller {
-                background: Color::TRANSPARENT.into(),
-                border: iced::Border::default(),
-            },
-        },
-        gap: None,
-        ..scrollable::default(theme, status)
-    }
-}

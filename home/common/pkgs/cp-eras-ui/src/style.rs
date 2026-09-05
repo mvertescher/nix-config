@@ -772,6 +772,8 @@ pub struct Style {
     /// marks head kitsch's shelf band and lead its EMPTY SOCKET row,
     /// and no other era's references carry them anywhere.
     pub glyphs: bool,
+    /// How the era dresses iced's built-in controls. See [`Controls`].
+    pub controls: Controls,
     // --- login ---
     /// The era's access screen, measured off its login trace. See the
     /// `--- login ---` block at the foot of this file for why the
@@ -966,6 +968,82 @@ impl Style {
         style
     }
 }
+
+// --- controls ---
+//
+// The era's form controls, for `catalog` to dress iced's built-ins
+// with. Kept to inks and one radius on purpose: iced styles a `button`
+// or a `text_input` as a rectangle with a border, and the silhouettes
+// the traces actually draw -- neomil's bottom-right chamfer, kitsch's
+// stepped bar, neokitsch's tab -- are `widgets::surface` territory.
+// What a built-in *can* take from the era is here.
+
+/// One dress of a control: what it is filled with, edged in, and
+/// lettered in. [`Ink::None`] for a fill means no fill; for an edge,
+/// no edge.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Coat {
+    pub fill: Ink,
+    pub edge: Ink,
+    /// Edge width in px; irrelevant when `edge` is [`Ink::None`].
+    pub weight: f32,
+    pub ink: Ink,
+}
+
+impl Coat {
+    pub const fn filled(fill: Ink, ink: Ink) -> Coat {
+        Coat {
+            fill,
+            edge: Ink::None,
+            weight: 0.0,
+            ink,
+        }
+    }
+
+    pub const fn outlined(edge: Ink, weight: f32, ink: Ink) -> Coat {
+        Coat {
+            fill: Ink::None,
+            edge,
+            weight,
+            ink,
+        }
+    }
+
+    pub const fn edged(self, edge: Ink, weight: f32) -> Coat {
+        Coat {
+            edge,
+            weight,
+            ..self
+        }
+    }
+}
+
+/// The era's form-control readings.
+///
+/// Three of the four have material for two button dresses and a field
+/// -- the mailbox action row and the login form -- and kitsch adds a
+/// disabled bar; nothing in any trace is a checkbox, a radio, a
+/// toggle, a slider or a drop-down. `catalog` derives those from the
+/// same coats and roles rather than inventing per-era readings, and
+/// says so; an era that later gains a reference gets a field here.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Controls {
+    /// The affirmative control -- ENTER, NEXT, LOGIN, REPORT SPAM.
+    pub primary: Coat,
+    /// The bare control beside it -- REPLY, RIFLES, Confirm / Jump.
+    pub ghost: Coat,
+    /// A control that will not take input -- kitsch's PROTECTED bar,
+    /// neomil's protected card. Derived where the era has none.
+    pub disabled: Coat,
+    /// The text field; `ink` is the value's.
+    pub field: Coat,
+    /// The field's placeholder.
+    pub placeholder: Ink,
+    /// Corner radius on a built-in, which cannot chamfer. Only
+    /// neokitsch rounds its buttons; kitsch rounds its field by 2.
+    pub radius: f32,
+}
+// --- end controls ---
 
 // --- login ---
 //

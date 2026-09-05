@@ -1604,24 +1604,33 @@ when that screen assembles from library widgets. Priority order:
 > 2026-09-05 under "Canvas vs widgets"; none of the items below start
 > from them.
 
-- [ ] **Theme/Catalog first**: replace loose color consts at call
-  sites with a semantic iced Theme + widget catalogs (surface/
-  primary/dim/danger...) so every later widget styles against tokens.
-  Everything below is written twice if this comes second.
-  - Re-read 2026-09-05, half of it is already there and the item
-    should not be read as "start from nothing": every canvas call
-    site styles through `Ink` roles resolved by `Palette` (`bar.rs`
-    `ink_of`, `scene.rs` `Scene::ink`, `login.rs`), the era tables
-    name roles rather than values wherever the trace has a role, and
-    the nix theme overlays the roles (`Palette::with_roles`) -- that
-    is the token layer. There are no loose colour consts at call
-    sites left to replace (the `rgb(0x..)` outside `src/eras/` are
-    `soft.rs`/`scene.rs` tests and the floppy icon). What does *not*
-    exist is the iced side: no `Theme`/`Catalog` impls, so every
-    built-in takes an ad-hoc closure (`panels::mail` `rail()` for
-    `scrollable`, `chrome.rs:357` for a `container`) and the form
-    controls below would each carry their own. That closure-per-site
-    is the remaining half.
+- [x] **Theme/Catalog first** — done 2026-09-05. `Style` *is* the
+  iced theme: `catalog.rs` gives it `theme::Base` (ground = the
+  palette's `bg`/`fg`, `palette()` maps cta/select/tape/alert onto
+  primary/success/warning/danger) and `Catalog` impls for
+  `container`, `text`, `scrollable`, `button`, `text_input`,
+  `checkbox`, `toggler`, `radio`, `slider`, `pick_list` + its menu,
+  `rule`, `progress_bar`, all `Class = StyleFn` so `.style(closure)`
+  still works. `crate::Element<'a, M>` is the alias to use; the old
+  `iced::Element<'_, M>` (with `iced::Theme`) no longer type-checks
+  against anything in the crate, and canvas programs are
+  `Program<M, Style>`. Every example sets `.theme(|app| app.style)`
+  (the layershell bar: `|app, _window|`). The per-site closures
+  went: `panels::mail`'s `rail()` is `catalog::faded_rail(alpha)`,
+  `bar-window`'s bg/fg closure is the theme base. Goldens did not
+  move (21/21 after the switch).
+  - Original text of the item, kept because its premise was half
+    wrong: "replace loose color consts at call sites with a semantic
+    iced Theme + widget catalogs ... so every later widget styles
+    against tokens." Re-read 2026-09-05 before starting: the token
+    layer already existed -- every canvas call site styles through
+    `Ink` roles resolved by `Palette` (`bar.rs` `ink_of`, `scene.rs`
+    `Scene::ink`, `login.rs`), the era tables name roles rather than
+    values wherever the trace has a role, and the nix theme overlays
+    the roles (`Palette::with_roles`). There were no loose colour
+    consts at call sites left to replace (the `rgb(0x..)` outside
+    `src/eras/` are `soft.rs`/`scene.rs` tests and the floppy icon).
+    What was missing was only the iced side, and that is what landed.
 - [x] **Migrate to iced 0.14** — done 2026-09-02, before the build-out;
   record under "SVG→iced pre-work" above (the `web-colors` opt-out is
   the part to know about).
@@ -1629,11 +1638,43 @@ when that screen assembles from library widgets. Priority order:
   button (primary/ghost/override-hatch/disabled/icon), text_input
   with focus treatment, checkbox/toggle/radio, pick_list + menu,
   slider with ticks.
+  - Coats landed 2026-09-05: `Style::controls` (`Controls` of
+    `Coat`s -- `primary`, `ghost`, `disabled`, `field`, plus
+    `placeholder` and the era `radius`) read off each
+    `components.svg` as text: entropism's stroke-2 button strip and
+    stroke-1.25 field, kitsch's ENTER bar / PROTECTED / well, neokitsch's
+    outlined r5 button and unlined `#3c1c11` field, neomil's
+    filled/outlined pair and `#430e0f` field. `catalog::button::
+    {primary, ghost, bare}` and `catalog::field` apply them (default
+    button class is `ghost`; `bare` is for a `widgets::surface` face
+    -- `panels::mail`'s DELETE is now a real `button` that way).
+    Tests pin the cta fill per era and kitsch's PROTECTED triple.
+  - **Not done, and why.** *Silhouettes*: a built-in `button` is a
+    rounded rectangle, so neomil's br-chamfer, kitsch's stepped bar
+    and neokitsch's tabbed bl-chamfer stay `widgets::surface` plates
+    inside a `bare` button; the coat sets only fill/edge/ink/radius.
+    *Hover/press*: the traces are stills with no such state; nothing
+    to read, left for "Motion". *override-hatch*: no era sheet has a
+    hatched button; iced has no pattern fill either. *Icon buttons*:
+    nothing to style beyond `bare`; blocked on "Icon set". *Slider
+    ticks*: `slider::Style` has no ticks; would be a widget, not a
+    style. *checkbox/toggle/radio/pick_list/menu/slider*: styled and
+    documented as **derived** from the coats (box = field coat, mark
+    = cta fill; menu = panel/border/select pair; rail = the scroll
+    rail's inks laid flat) -- no trace has any of them, so the
+    derivations are the best available and are not verified against
+    material. The item stays open for whichever of those a trace
+    later shows.
 - [ ] **App shell**: `neomil_ui::app(...)` bootstrap (fonts, theme,
   transparent window, background layer) replacing the per-example
   ritual.
 - [ ] **Data display**: styled scrollable/scrollbar, table/list rows
   with selection, key-value spec rows, log view with severity colors.
+  - The scrollable half is done under "Theme/Catalog first":
+    `catalog::rail` is the default `scrollable` class (neomil's 6px
+    `#3a0f12`/`#a8282b` reading, tested; the other eras derive from
+    their border/dim inks since no other trace shows a rail) and
+    `catalog::faded_rail(alpha)` is the unfocused-pane variant.
 - [ ] **Feedback**: segmented meter, progress bar (+indeterminate
   scan), toast/banner (warn = dim red, error = bright red), modal
   with scrim, tooltip, status bar.

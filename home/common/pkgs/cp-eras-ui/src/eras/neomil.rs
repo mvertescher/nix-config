@@ -16,7 +16,8 @@
 
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
-    Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Compliance, Corner, Dress,
+    Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Coat, Compliance, Controls,
+    Corner, Dress,
     Era, Face, Footnotes, Ground, Ink, MenuMarker, MenuRule, Metrics, Nameplate,
     PanelEcho, Selection, Style, Ticket, WindowLabel,
 };
@@ -296,6 +297,23 @@ pub fn style() -> Style {
         // a nav pill.
         ticket: Ticket::default(),
         glyphs: false,
+        // --- controls --- (components.svg BUTTON, USER CARD)
+        controls: Controls {
+            // Switch Weapon / Login: the fill red, dark ink.
+            primary: Coat::filled(Ink::Cta, Ink::OnSelect),
+            // Confirm / Jump: the near-ground fill `mailbox.buttons`
+            // reads for the idle three, edged and lettered in the mid
+            // red.
+            ghost: Coat::filled(Ink::Fixed(rgb(0x1a0607)), Ink::Dim).edged(Ink::Dim, 1.0),
+            // The protected card is the idle one "everything one stop
+            // darker": edge and ink each drop a role.
+            disabled: Coat::filled(Ink::Fixed(rgb(0x1a0607)), Ink::Border).edged(Ink::Border, 1.0),
+            // The password well: solid, edged 1 in the mid red.
+            field: Coat::filled(Ink::Fixed(WELL), Ink::Fg).edged(Ink::Dim, 1.0),
+            placeholder: Ink::Dim,
+            radius: 0.0,
+        },
+        // --- end controls ---
         // --- login ---
         access: ACCESS,
         // --- end login ---

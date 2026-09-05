@@ -24,6 +24,7 @@ fn main() -> iced::Result {
 
     iced::application(move || Dashboard::new(style), Dashboard::update, Dashboard::view)
         .title(Dashboard::title)
+        .theme(|app: &Dashboard| app.style)
         .font(cp_eras_ui::fonts::RAJDHANI_REGULAR)
         .font(cp_eras_ui::fonts::RAJDHANI_MEDIUM)
         .font(cp_eras_ui::fonts::RAJDHANI_SEMIBOLD)

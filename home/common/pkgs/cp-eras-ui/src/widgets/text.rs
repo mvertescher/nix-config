@@ -8,21 +8,21 @@ use iced::widget::text::IntoFragment;
 use iced::widget::{text, Text};
 use iced::Color;
 
-fn base<'a>(content: impl IntoFragment<'a>, size: u16, color: Color) -> Text<'a> {
+fn base<'a>(content: impl IntoFragment<'a>, size: u16, color: Color) -> Text<'a, Style> {
     text(content).size(f32::from(size)).color(color)
 }
 
-pub fn title<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a> {
+pub fn title<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a, Style> {
     base(content, style.metrics.text_title, style.palette.fg)
 }
 
-pub fn body<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a> {
+pub fn body<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a, Style> {
     base(content, style.metrics.text_body, style.palette.fg)
 }
 
 /// Tertiary text: present but deliberately receding. Meta labels, a
 /// card's class line, the internal rules of a list.
-pub fn label<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a> {
+pub fn label<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a, Style> {
     base(content, style.metrics.text_body, style.palette.dim)
 }
 
@@ -52,17 +52,17 @@ pub fn mid_ink(style: &Style) -> Color {
 
 /// Secondary text, in [`mid_ink`]: small, structural, and still meant
 /// to be read.
-pub fn mid<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a> {
+pub fn mid<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a, Style> {
     base(content, style.metrics.text_body, mid_ink(style))
 }
 
 /// The tiny maintenance strings the references are covered in --
 /// compliance notices, build numbers, "SERVING CUSTOMERS SINCE 2006".
-pub fn caption<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a> {
+pub fn caption<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a, Style> {
     base(content, style.metrics.text_caption, style.palette.dim)
 }
 
 /// Text drawn on top of a selected surface.
-pub fn on_select<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a> {
+pub fn on_select<'a>(style: &Style, content: impl IntoFragment<'a>) -> Text<'a, Style> {
     base(content, style.metrics.text_body, style.palette.on_select)
 }

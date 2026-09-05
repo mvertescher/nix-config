@@ -17,10 +17,11 @@ use crate::style::{
     Selection, Style, Tab, Ticket,
 };
 use crate::widgets::surface::{layered, outline, span_at, Corners, Cut, Fill, Surface};
+use crate::Element;
 use iced::widget::canvas::{Frame, Path, Stroke};
 use iced::widget::image;
 use iced::widget::{canvas, container, mouse_area, row, stack, Space};
-use iced::{mouse, Color, Element, Length, Padding, Point, Rectangle, Renderer, Size, Theme};
+use iced::{mouse, Color, Length, Padding, Point, Rectangle, Renderer, Size};
 
 
 /// One workspace as the compositor reports it.
@@ -269,7 +270,7 @@ fn ink_text<'a>(
     ink: Ink,
     bold: bool,
     label: impl Into<String>,
-) -> iced::widget::Text<'a> {
+) -> iced::widget::Text<'a, Style> {
     iced::widget::text(label.into())
         .size(f32::from(style.metrics.text_body))
         .color(ink_of(style, ink))
@@ -349,14 +350,14 @@ struct Stepped {
     stroke_width: f32,
 }
 
-impl<Message> canvas::Program<Message> for Stepped {
+impl<Message> canvas::Program<Message, Style> for Stepped {
     type State = ();
 
     fn draw(
         &self,
         _state: &Self::State,
         renderer: &Renderer,
-        _theme: &Theme,
+        _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
@@ -472,14 +473,14 @@ impl Trim {
     }
 }
 
-impl<Message> canvas::Program<Message> for Trim {
+impl<Message> canvas::Program<Message, Style> for Trim {
     type State = ();
 
     fn draw(
         &self,
         _state: &Self::State,
         renderer: &Renderer,
-        _theme: &Theme,
+        _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
@@ -595,14 +596,14 @@ struct Haze {
     prims: &'static [Prim],
 }
 
-impl<Message> canvas::Program<Message> for Haze {
+impl<Message> canvas::Program<Message, Style> for Haze {
     type State = SoftCache;
 
     fn draw(
         &self,
         soft: &Self::State,
         renderer: &Renderer,
-        _theme: &Theme,
+        _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
@@ -629,14 +630,14 @@ fn mix(a: Color, b: Color, t: f32) -> Color {
     }
 }
 
-impl<Message> canvas::Program<Message> for Strip {
+impl<Message> canvas::Program<Message, Style> for Strip {
     type State = ();
 
     fn draw(
         &self,
         _state: &Self::State,
         renderer: &Renderer,
-        _theme: &Theme,
+        _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
@@ -1292,14 +1293,14 @@ impl Panel {
     }
 }
 
-impl<Message> canvas::Program<Message> for Panel {
+impl<Message> canvas::Program<Message, Style> for Panel {
     type State = ();
 
     fn draw(
         &self,
         _state: &Self::State,
         renderer: &Renderer,
-        _theme: &Theme,
+        _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
@@ -1413,14 +1414,14 @@ impl RowTrim {
     }
 }
 
-impl<Message> canvas::Program<Message> for RowTrim {
+impl<Message> canvas::Program<Message, Style> for RowTrim {
     type State = ();
 
     fn draw(
         &self,
         _state: &Self::State,
         renderer: &Renderer,
-        _theme: &Theme,
+        _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
@@ -1451,14 +1452,14 @@ struct Rule {
     tab: Option<(Tab, Color)>,
 }
 
-impl<Message> canvas::Program<Message> for Rule {
+impl<Message> canvas::Program<Message, Style> for Rule {
     type State = ();
 
     fn draw(
         &self,
         _state: &Self::State,
         renderer: &Renderer,
-        _theme: &Theme,
+        _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
@@ -1486,14 +1487,14 @@ struct Arrow {
     ink: Color,
 }
 
-impl<Message> canvas::Program<Message> for Arrow {
+impl<Message> canvas::Program<Message, Style> for Arrow {
     type State = ();
 
     fn draw(
         &self,
         _state: &Self::State,
         renderer: &Renderer,
-        _theme: &Theme,
+        _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {

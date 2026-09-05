@@ -32,6 +32,7 @@ fn main() -> iced::Result {
 
     iced::application(move || Login::new(style), Login::update, Login::view)
         .title(Login::title)
+        .theme(|app: &Login| app.style)
         // The access screen sets text at four weights: neokitsch's
         // ENTER / LOGIN bar is a light face, the guest names and the
         // clocks are medium, the badge digits and the compliance

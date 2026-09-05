@@ -6,8 +6,9 @@
 //! flat, so this collapses to a single filled rectangle for them.
 
 use crate::style::{Ground, Style};
+use crate::Element;
 use iced::widget::canvas;
-use iced::{mouse, Color, Element, Length, Point, Rectangle, Renderer, Theme};
+use iced::{mouse, Color, Length, Point, Rectangle, Renderer};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Background {
@@ -26,14 +27,14 @@ impl Background {
     }
 }
 
-impl<Message> canvas::Program<Message> for Background {
+impl<Message> canvas::Program<Message, Style> for Background {
     type State = ();
 
     fn draw(
         &self,
         _state: &Self::State,
         renderer: &Renderer,
-        _theme: &Theme,
+        _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {

@@ -1,5 +1,7 @@
 use iced::widget::canvas;
-use iced::{mouse, Color, Element, Length, Rectangle, Renderer, Theme};
+use crate::style::Style;
+use crate::Element;
+use iced::{mouse, Color, Length, Rectangle, Renderer};
 
 #[derive(Debug, Clone, Copy)]
 pub struct FloppyIcon {
@@ -8,14 +10,14 @@ pub struct FloppyIcon {
     pub scale: f32,
 }
 
-impl<Message> canvas::Program<Message> for FloppyIcon {
+impl<Message> canvas::Program<Message, Style> for FloppyIcon {
     type State = ();
 
     fn draw(
         &self,
         _state: &Self::State,
         renderer: &Renderer,
-        _theme: &Theme,
+        _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {

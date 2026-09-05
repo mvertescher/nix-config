@@ -24,6 +24,7 @@ fn main() -> iced::Result {
 
     iced::application(move || MailBox::new(style), MailBox::update, MailBox::view)
         .title(MailBox::title)
+        .theme(|app: &MailBox| app.style)
         .font(cp_eras_ui::fonts::RAJDHANI_REGULAR)
         .font(cp_eras_ui::fonts::RAJDHANI_MEDIUM)
         .font(cp_eras_ui::fonts::RAJDHANI_SEMIBOLD)

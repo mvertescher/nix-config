@@ -28,9 +28,9 @@ use cp_eras_ui::bar::{
     bar, tray_menu, Audio, MenuEntry, MenuKind, MenuPath, Network, Readings, TrayItem, TrayMenu,
     Workspace,
 };
-use cp_eras_ui::Style;
+use cp_eras_ui::{Element, Style};
 use iced::widget::{column, container, image, row, Space};
-use iced::{Element, Length};
+use iced::Length;
 
 /// A tray icon, drawn here rather than read from anywhere.
 ///
@@ -253,8 +253,6 @@ const MENU_MARGIN: f32 = 120.0;
 
 fn main() -> iced::Result {
     let style = style::resolve();
-    let bg = style.palette.bg;
-    let fg = style.palette.fg;
     iced::application(
         move || BarWindow {
             style,
@@ -271,10 +269,7 @@ fn main() -> iced::Result {
     .font(cp_eras_ui::fonts::RAJDHANI_BOLD)
     .font(cp_eras_ui::fonts::NOTO_SANS_CJK_JP_BOLD)
     .default_font(cp_eras_ui::fonts::FONT_RAJDHANI_REGULAR)
-    .style(move |_state, _theme| iced::theme::Style {
-        background_color: bg,
-        text_color: fg,
-    })
+    .theme(|app: &BarWindow| app.style)
     .window_size((1600.0, 220.0))
     .antialiasing(true)
     .run()
