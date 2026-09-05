@@ -301,7 +301,7 @@ polarity = "dark"
 [colors]
 bg = "#0b0b07"
 panel = "#1c0f16"
-border = "#2e5f57"
+border = "#5fd6c2"
 dim = "#4d9484"
 fg = "#7ddec8"
 alert = "#fcc428"

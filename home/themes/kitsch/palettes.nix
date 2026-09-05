@@ -33,7 +33,10 @@
   reference = {
     bg = "#0b0b07";
     panel = "#1c0f16";
-    border = "#2e5f57";
+    # The outline teal the store and mailbox traces sample off card
+    # frames and dividers -- a stop under `fg`, not the dim #2e5f57 this
+    # once was, which dropped the frames out of the teal ink family.
+    border = "#5fd6c2";
     dim = "#4d9484";
     fg = "#7ddec8"; # sampled teal, carries all structure
     alert = "#fcc428"; # sampled yellow -- selection, not alarm

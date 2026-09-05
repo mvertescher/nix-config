@@ -31,7 +31,10 @@
     dim = "#3d4d38";
     fg = "#94bb94";
     alert = "#728f76";
-    tape = "#9cb795";
+    # The mid sage, not the selection sage: the tape is the host label at
+    # the bar's far left, and in the brighter #9cb795 it read as a second
+    # selected cell beside the live workspace (docs/entropism/bar.svg).
+    tape = "#728f76";
   };
 
   burn-in = {

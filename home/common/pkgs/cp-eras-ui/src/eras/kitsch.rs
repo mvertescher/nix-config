@@ -38,6 +38,10 @@ use crate::style::{
 pub const BG: iced::Color = rgb(0x0b0b07);
 pub const BLOOM: iced::Color = rgb(0xa63355);
 pub const TEAL: iced::Color = rgb(0x7ddec8);
+/// The outline teal: what the store and mailbox traces sample off card
+/// frames and dividers, a stop under the body teal. The `border` role,
+/// and the same value the published theme resolves it to.
+pub const TEAL_OUTLINE: iced::Color = rgb(0x5fd6c2);
 pub const TEAL_SOLID: iced::Color = rgb(0x1cb39b);
 pub const MINT: iced::Color = rgb(0x87f4d9);
 pub const YELLOW: iced::Color = rgb(0xfcc428);
@@ -73,9 +77,9 @@ pub const SLAB_SHADE: iced::Color = rgb(0x177a6b);
 /// fill.
 ///
 /// Unconsumed as of 2026-09-03: the only reader is `banner_selected`
-/// (below), which reaches `Palette::banner_on_select` -> the
-/// `widgets::banner` / `widgets::card` helpers, none of which any screen
-/// or bar calls. Trace value would be `#ffc233` (grown-card fill) if the
+/// (below), which reaches `Palette::banner_on_select`; its widget
+/// readers (`widgets::banner` / `widgets::card`) were deleted
+/// 2026-09-05, so nothing draws it. Trace value would be `#ffc233` (grown-card fill) if the
 /// band-on-selected pair is ever wired up.
 pub const YELLOW_SHADE: iced::Color = rgb(0xf0a80a);
 
@@ -83,7 +87,7 @@ pub fn palette() -> Palette {
     Palette {
         bg: BG,
         panel: BLOOM,
-        border: TEAL,
+        border: TEAL_OUTLINE,
         dim: TEAL_DIM,
         fg: TEAL,
         alert: YELLOW,
@@ -324,9 +328,10 @@ pub fn style() -> Style {
         // trailing corner down 8; measured off the target-app.svg
         // composite (deleted 2026-09-03).
         //
-        // Unconsumed as of 2026-09-03: `style.banner` is read only by
+        // Unconsumed as of 2026-09-03: `style.banner` was read only by
         // `widgets::banner::banner` and `widgets::card::product_card`,
-        // which nothing calls (the store is a canvas program). Trace
+        // which nothing called (the store is a canvas program) and
+        // which were deleted 2026-09-05. Trace
         // value would be a 35px band with a 27px flag, no notch, and a
         // 45-degree chamfer at the right end -- `store-trace.svg` `#card`
         // band `M -27,94 V 72 L -3,50 V 59 H 256 Q 258,59 258,61 V 71.5
@@ -351,8 +356,8 @@ pub fn style() -> Style {
         // (`widgets::pill` was deleted 2026-09-03). The `Ticket` type
         // survives as a parameter of `widgets::surface::{outline,
         // span_at, band_path}` and `Surface::ticket()`, but every
-        // caller -- `bar.rs`, `screens::mail`, `widgets::bracket`,
-        // `Surface::{outlined, filled, selected}` -- passes
+        // caller -- `bar.rs`, `screens::mail`, `Surface::{outlined,
+        // filled, selected}` -- passes
         // `Ticket::default()`, and nothing calls `Surface::ticket()`.
         // Trace value would be a peaked chevron, not a pill --
         // `store-trace.svg` `#nav`
@@ -1056,12 +1061,6 @@ use crate::style::{
     Group, Prim, Seg,
 };
 
-/// The outlines: a stop dimmer than the era's body teal, and its own
-/// sampled tone rather than the `border` role -- the published kitsch
-/// theme resolves `border` to `#2e5f57`, a third of this brightness,
-/// and drawn in it the card frames drop out of the teal ink family
-/// altogether.
-pub const OUTLINE: iced::Color = rgb(0x5fd6c2);
 /// The gun drawing and the stat bar under the figures.
 pub const GUN: iced::Color = rgb(0x93ffe4);
 pub const MINT_BAR: iced::Color = rgb(0x81fee7);
@@ -1138,7 +1137,7 @@ const CHEVRON: &[Seg] = &[
     Seg::Line(190.0, 39.0),
 ];
 
-const NAV_OUTLINE: &[Prim] = &[shut_path(0.0, 39.0, CHEVRON, Ink::Fixed(OUTLINE), 1.5)];
+const NAV_OUTLINE: &[Prim] = &[shut_path(0.0, 39.0, CHEVRON, Ink::Border, 1.5)];
 const NAV_SOLID: &[Prim] = &[fill_path(0.0, 39.0, CHEVRON, Ink::Select)];
 
 /// The bracket's solid wave, and the single-stroke run of the bracket
@@ -1323,7 +1322,7 @@ const BAND_MARKS_SEL: &[Prim] = band_marks!(Ink::Fixed(ON_BAND), Ink::Select);
 
 /// A standard product card, at its outline's own origin.
 const CARD: &[Prim] = &[
-    shut_path(6.0, 0.0, CARD_EDGE, Ink::Fixed(OUTLINE), 1.5),
+    shut_path(6.0, 0.0, CARD_EDGE, Ink::Border, 1.5),
     txt(12.0, 29.0, 19.0, Ink::Fg, "MAGNUM 650"),
     txt(12.0, 49.0, 17.0, Ink::Fg, "HAND GUN"),
     fill_path(-27.0, 94.0, BAND_SHAPE, Ink::Fixed(BAND)),
@@ -1342,10 +1341,10 @@ const CARD: &[Prim] = &[
     txt_mid(101.0, 255.0, 20.0, Ink::Fixed(ON_MINT_BAR), "30"),
     txt_mid(162.0, 255.0, 20.0, Ink::Fixed(ON_MINT_BAR), "5"),
     txt_mid(222.0, 255.0, 20.0, Ink::Fixed(ON_MINT_BAR), "5"),
-    fill_rect(0.0, 273.25, 261.0, 1.5, Ink::Fixed(OUTLINE)),
-    fill_rect(51.25, 274.0, 1.5, 46.0, Ink::Fixed(OUTLINE)),
-    fill_rect(118.25, 274.0, 1.5, 46.0, Ink::Fixed(OUTLINE)),
-    fill_rect(189.25, 274.0, 1.5, 46.0, Ink::Fixed(OUTLINE)),
+    fill_rect(0.0, 273.25, 261.0, 1.5, Ink::Border),
+    fill_rect(51.25, 274.0, 1.5, 46.0, Ink::Border),
+    fill_rect(118.25, 274.0, 1.5, 46.0, Ink::Border),
+    fill_rect(189.25, 274.0, 1.5, 46.0, Ink::Border),
     Prim::At { x: 0.0, y: 0.0, prims: QR_STD },
     txt_mid(85.0, 295.0, 9.0, Ink::Fg, "EMPTY"),
     txt_mid(85.0, 307.0, 9.0, Ink::Fg, "SOCKET"),
@@ -1492,7 +1491,7 @@ pub const STORE: &[Prim] = &[
     shut_path(280.0, 88.0, TEE, Ink::Fixed(LOGO), 1.3),
     Prim::Spaced { x: 154.0, y: 155.0, size: 15.0, ink: Ink::Fg, face: Face::Medium, pitch: 32.0, content: "STORE" },
     // customer chip and account lines
-    Prim::Round { x: 123.0, y: 178.0, w: 215.0, h: 22.0, r: 8.0, fill: None, stroke: Some(Ink::Fixed(OUTLINE)), width: 1.5 },
+    Prim::Round { x: 123.0, y: 178.0, w: 215.0, h: 22.0, r: 8.0, fill: None, stroke: Some(Ink::Border), width: 1.5 },
     txt(133.0, 193.0, 12.0, Ink::Fg, "customer"),
     txt(243.0, 193.0, 12.0, Ink::Fg, "#NC488402"),
     txt(133.0, 227.0, 12.0, Ink::Fg, "loyalty discount"),
@@ -1502,7 +1501,7 @@ pub const STORE: &[Prim] = &[
     // the nav bracket: one swept line wrapping the customer block, and
     // the solid wave it ends in
     fill_path(106.5, 575.0, WAVE_BODY, Ink::Fixed(WAVE_INK)),
-    line_path(440.0, 186.0, BRACKET_PATH, Ink::Fixed(OUTLINE), 2.0),
+    line_path(440.0, 186.0, BRACKET_PATH, Ink::Border, 2.0),
     // nav chevrons, SMG solid
     Prim::Plate { group: Group::Category, index: 0, x: 140.0, y: 297.0, w: 216.0, h: 39.0, on: NAV_ON_0, off: NAV_OFF_0 },
     Prim::Plate { group: Group::Category, index: 1, x: 140.0, y: 357.0, w: 216.0, h: 39.0, on: NAV_ON_1, off: NAV_OFF_1 },

@@ -34,11 +34,11 @@ Two things that bear on the meaning of class (a) for palette constants:
    and `banner_selected` survive from the era table. So for a const
    feeding one of the seven base roles or an overridden extra, the era
    value is **not what the golden shows**; the nix value is (they
-   agree except: entropism panel `#181109` vs table `BG #110c07`,
-   entropism tape `#9cb795` vs table `MID #728f76`; kitsch border
-   `#2e5f57` vs `TEAL #7ddec8`, kitsch panel `#1c0f16` vs `BLOOM
-   #a63355`; neokitsch panel `#16161f` vs `BLOOM #34344c`; neomil
-   identical). Changing such a const in the era file alone would not
+   agree except: entropism panel `#181109` vs table `BG #110c07`;
+   kitsch panel `#1c0f16` vs `BLOOM #a63355`; neokitsch panel `#16161f`
+   vs `BLOOM #34344c`; neomil identical. Entropism tape and kitsch
+   border disagreed too until 2026-09-05, when nix moved to the
+   trace values `#728f76` and `#5fd6c2`). Changing such a const in the era file alone would not
    move a gated render; the marker "(a, overridden)" below means "a
    gated screen reads this role, but the golden's value comes from
    nix". The one golden with no theme is `dashboard-fallback` (neomil

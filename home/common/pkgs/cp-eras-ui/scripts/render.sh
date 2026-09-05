@@ -203,7 +203,9 @@ if [ -n "$era" ] && [ "$era" != "none" ]; then
   [ "$era" = "entropism" ] && variant="nexus"
 
   mkdir -p "$theme_cache"
-  key=$(cat "$scheme" "$home_root/themes/lib/roles.nix" | cksum | tr -d ' /')
+  # The scheme imports its palettes.nix, so that has to be in the key too:
+  # without it, retinting a role left this cache serving the old value.
+  key=$(cat "$scheme" "$home_root/themes/$era/palettes.nix" "$home_root/themes/lib/roles.nix" | cksum | tr -d ' /')
   theme_toml="$theme_cache/$era-$key.toml"
 
   if [ ! -s "$theme_toml" ]; then

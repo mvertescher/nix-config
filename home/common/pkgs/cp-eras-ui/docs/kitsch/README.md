@@ -71,7 +71,8 @@ mapping): bracket and line-work peak around `#80e4d0`, the wave reads
 `#1bb6a3`/`#1db5a4`, the SMG and DETAILS selections `#ffbe18`/`#e6c020`,
 the amber `02` badge `#f0a93c`.
 
-Role mapping: `bg`=bg, `panel`=the bloom field, `border`/`fg`=teal,
+Role mapping: `bg`=bg, `panel`=the bloom field, `fg`=teal, `border`=the
+outline teal `#5fd6c2` the store and mailbox traces sample off frames,
 `alert`=yellow, `tape`=bezel orange. Note the inversion: in kitsch,
 yellow is *selection*, not alarm.
 
