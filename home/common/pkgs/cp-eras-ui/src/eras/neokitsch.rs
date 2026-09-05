@@ -353,6 +353,7 @@ pub fn style() -> Style {
                 disabled: Ink::Dim,
                 rule_ink: Ink::Banner,
                 row_inset: (0.0, 0.0),
+                row_overshoot: 8.0,
                 spine: 0.0,
                 foot: 0.0,
                 marker: MenuMarker::Text,
