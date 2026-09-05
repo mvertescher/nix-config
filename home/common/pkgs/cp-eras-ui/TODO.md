@@ -1710,17 +1710,63 @@ when that screen assembles from library widgets. Priority order:
     `mailbox` golden). The kitsch and neokitsch top bars carrying no
     MAIL BOX segment is `widgets::chrome::top_bar`'s Caption and
     DeviceFrame arms doing what their table says, not a gap.
+  - The rest, re-read 2026-09-05: *list rows with selection* is
+    `panels::mail::message_row` (Surface-dressed, four eras, now
+    golden-held); *table* is the same panel's pipe-table renderer
+    (`panels::mail::table`, in the `mail` goldens too). *Key-value
+    spec rows* have material -- the store card specs (neomil RANGE /
+    RECOIL / REFLEXES, neokitsch STORE META LINES) -- as `Prim`s in
+    each era's store block, and no widget caller. *Log view with
+    severity colours* has no material on any sheet. Neither gets
+    built ahead of a caller (`widgets/mod.rs`).
 - [ ] **Feedback**: segmented meter, progress bar (+indeterminate
   scan), toast/banner (warn = dim red, error = bright red), modal
   with scrim, tooltip, status bar.
+  - Re-read 2026-09-05 against `widgets/mod.rs`'s rule (no widget
+    without a caller) and the sheets. *Status bar* is `bar.rs`, four
+    eras, golden-held; done. *Progress bar* has a derived
+    `catalog::progress` style and no caller. *Segmented meter*: the
+    material is the SECURITY LEVEL badge row every store trace draws
+    (neomil `eras/neomil.rs` ~L103, "four security badges of which
+    the second is lit") -- a `Prim` list per era today, and it would
+    be the widget's source when a widget-built screen needs one. The
+    "warn = dim red, error = bright red" toast rule is the deleted
+    neomil mock's; no sheet draws a toast, a modal, a scrim or a
+    tooltip, and kitsch's URGENT INFORMATION block is the closest
+    thing to a banner. None of these gets built ahead of a caller.
 - [ ] **Chrome**: tab bar (generalize the T-chips), context menu,
   parameterized top_bar (move the demo copy into examples/).
+  - Re-read 2026-09-05. *Context menu* is `bar::tray_menu`, per-era
+    tables, golden-held in `bar-window`; done. *top_bar* already takes
+    its three segments and `footer` its three strings; the "demo copy"
+    is the mailbox chrome strings hardcoded in `panels::mail::
+    mail_panel`, which are the mailbox trace's own and are what the
+    `mail` goldens hold -- moving them to the example would be a
+    parameter nobody sets differently. *Tab bar*: the store's category
+    row is the material (neomil "TAB ROW END CHIPS" / "LETTER CHIP" on
+    the sheet, the other eras' category strips), drawn as `Prim`s in
+    each era's `// --- store ---` block; a widget waits for a
+    widget-built screen with tabs.
 - [ ] **Icon set**: 16px-grid canvas path icons behind one
   `icon(Icon::..., color, size)` entry point; retire the pixel-blob
   placeholders.
+  - Re-read 2026-09-05: there are no pixel-blob placeholders left to
+    retire -- they went with the neomil widget set. The bar's tray
+    icons are the SNI host's pixmaps (real, and `bar-window`
+    synthesises one for the golden). The icon material is on the
+    sheets (entropism `env`/`rifle`/`qr`, kitsch `k-env`/`k-gun`,
+    neomil `icons`/`gunbody`, neokitsch `riflebox`/`basketclip`) and
+    is drawn as per-era `Prim` paths inside the screens that use them.
+    An `icon(..)` entry point is worth building the day two screens
+    want the same glyph; today none do.
 - [ ] **Motion**: hover flicker + panel boot-in as canned animations
   (the Cache-invalidation pattern the deleted diamond_menu used is the
   plumbing; see git history).
+  - Still the item with the least material: the traces are stills.
+    What a hover *is* per era is the open question, and it is also
+    why `catalog` gives buttons and fields no hover/press treatment
+    (see "Form controls"). Decide the hover reading from the source
+    footage before plumbing anything.
 
 ## Headless check: feasibility settled (2026-08-22)
 
