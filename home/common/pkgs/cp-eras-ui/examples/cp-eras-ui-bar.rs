@@ -104,7 +104,7 @@ mod tray;
 use cp_eras_ui::bar::{
     bar, tray_menu, MenuEntry, MenuPath, Readings, TrayAction, TrayMenu,
 };
-use cp_eras_ui::shell;
+use cp_eras_ui::{catalog, shell};
 use cp_eras_ui::{Element, Style};
 use iced::widget::{column, container, mouse_area, row, Space};
 use iced::{Length, Task};
@@ -413,17 +413,13 @@ impl BarApp {
             _ => {
                 // The application background is transparent so the menu
                 // surface can be; the bar paints its own.
-                let bg = self.style.palette.bg;
                 // The menu surface starts below the bar, so the bar is
                 // the one strip of screen its dismiss-on-click does not
                 // cover. A tray cell captures the press before this
                 // sees it, so clicking one still opens a menu.
                 mouse_area(
                     container(bar(&self.style, &self.readings, Some(Message::Tray)))
-                        .style(move |_: &Style| container::Style {
-                            background: Some(bg.into()),
-                            ..container::Style::default()
-                        })
+                        .style(catalog::ground)
                         .width(Length::Fill)
                         .height(Length::Fill),
                 )
