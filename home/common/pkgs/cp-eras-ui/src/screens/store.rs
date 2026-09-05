@@ -43,6 +43,12 @@ pub enum Message {
     Select { group: Group, index: usize },
 }
 
+impl crate::shell::Wears for Store {
+    fn wears(&self) -> Style {
+        self.style
+    }
+}
+
 impl Store {
     pub fn new(style: Style) -> Self {
         let (category, card) = style.store_selection;

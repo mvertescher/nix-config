@@ -98,14 +98,13 @@ mod icon;
 mod network;
 #[path = "bar/sensor.rs"]
 mod sensor;
-#[path = "bar/style.rs"]
-mod style;
 #[path = "bar/tray.rs"]
 mod tray;
 
 use cp_eras_ui::bar::{
     bar, tray_menu, MenuEntry, MenuPath, Readings, TrayAction, TrayMenu,
 };
+use cp_eras_ui::shell;
 use cp_eras_ui::{Element, Style};
 use iced::widget::{column, container, mouse_area, row, Space};
 use iced::{Length, Task};
@@ -586,7 +585,7 @@ fn hostname() -> String {
 }
 
 fn main() -> Result<(), iced_layershell::Error> {
-    let style = style::resolve();
+    let style = shell::style();
     let height = style.bar.height;
 
     // 0.19's `daemon` boots the state itself, as iced's own builders
@@ -617,13 +616,8 @@ fn main() -> Result<(), iced_layershell::Error> {
             keyboard_interactivity: KeyboardInteractivity::None,
             ..Default::default()
         },
-        fonts: vec![
-            cp_eras_ui::fonts::RAJDHANI_REGULAR.into(),
-            cp_eras_ui::fonts::RAJDHANI_MEDIUM.into(),
-            cp_eras_ui::fonts::RAJDHANI_SEMIBOLD.into(),
-            cp_eras_ui::fonts::RAJDHANI_BOLD.into(),
-        ],
-        default_font: cp_eras_ui::fonts::FONT_RAJDHANI_REGULAR,
+        fonts: shell::faces(),
+        default_font: shell::DEFAULT_FONT,
         default_text_size: 14.0.into(),
         antialiasing: true,
         id: Some("cp-eras-ui-bar".to_string()),

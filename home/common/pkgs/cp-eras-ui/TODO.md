@@ -1665,9 +1665,29 @@ when that screen assembles from library widgets. Priority order:
     derivations are the best available and are not verified against
     material. The item stays open for whichever of those a trace
     later shows.
-- [ ] **App shell**: `neomil_ui::app(...)` bootstrap (fonts, theme,
-  transparent window, background layer) replacing the per-example
-  ritual.
+- [x] **App shell** — done 2026-09-05 as `shell.rs`, not the
+  `neomil_ui::app(...)` it was filed as: `shell::style()` (the `--era`
+  flag, else the desktop; `era_from` is testable over any argument
+  list), `shell::faces()` / `settings()` (every face the crate ships,
+  Rajdhani regular, antialiasing), `shell::FRAME` (1600x900), and
+  `shell::application(boot, update, view)`, which is
+  `iced::application` with the theme read off a `Wears` state and the
+  settings and frame applied. The four screens and the two example
+  states implement `Wears`. Five examples went from ~40 lines of boot
+  to four; `examples/bar/style.rs` is gone, both bar binaries resolve
+  through `shell::style()` (the layershell daemon keeps its own
+  `Settings` and takes `shell::faces()`). Every binary now loads all
+  ten faces where they had loaded five to nine -- `fonts.rs` says a
+  weight a binary never loaded is shaped in the wrong face. The matrix
+  did not move (21/21), so no screen had been naming a face its binary
+  lacked; the hazard is gone rather than a fault fixed.
+  - Not done: the "transparent window, background layer" half. It was
+    the old neomil mock's idea; every traced screen paints its own
+    ground edge to edge and the theme base fills the rest in the
+    palette's `bg`, so there is nothing for a transparent window to
+    show. The floppy bench keeps its own boot (Orbitron default,
+    neomil pinned, `tape` for text); it is a one-era ornament and not
+    a screen.
 - [ ] **Data display**: styled scrollable/scrollbar, table/list rows
   with selection, key-value spec rows, log view with severity colors.
   - The scrollable half is done under "Theme/Catalog first":

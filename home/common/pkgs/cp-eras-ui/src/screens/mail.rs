@@ -87,6 +87,12 @@ pub enum Message {
     Select(usize),
 }
 
+impl crate::shell::Wears for MailBox {
+    fn wears(&self) -> Style {
+        self.style
+    }
+}
+
 impl MailBox {
     pub fn new(style: Style) -> Self {
         let selected = style.mailbox.list.selected;

@@ -21,13 +21,11 @@
 //! make every capture differ from the last, and the whole point is that
 //! two runs are byte-identical.
 
-#[path = "bar/style.rs"]
-mod style;
-
 use cp_eras_ui::bar::{
     bar, tray_menu, Audio, MenuEntry, MenuKind, MenuPath, Network, Readings, TrayItem, TrayMenu,
     Workspace,
 };
+use cp_eras_ui::shell;
 use cp_eras_ui::{Element, Style};
 use iced::widget::{column, container, image, row, Space};
 use iced::Length;
@@ -195,6 +193,12 @@ enum Message {
     Submenu(MenuPath),
 }
 
+impl shell::Wears for BarWindow {
+    fn wears(&self) -> Style {
+        self.style
+    }
+}
+
 impl BarWindow {
     fn title(&self) -> String {
         format!("cp-eras-ui-bar - {}", self.style.era.name())
@@ -252,8 +256,10 @@ impl BarWindow {
 const MENU_MARGIN: f32 = 120.0;
 
 fn main() -> iced::Result {
-    let style = style::resolve();
-    iced::application(
+    // The same `shell::style()` the live bar resolves, so the golden is
+    // evidence about the style the bar actually wears.
+    let style = shell::style();
+    shell::application(
         move || BarWindow {
             style,
             readings: sample(),
@@ -263,14 +269,6 @@ fn main() -> iced::Result {
         BarWindow::view,
     )
     .title(BarWindow::title)
-    .font(cp_eras_ui::fonts::RAJDHANI_REGULAR)
-    .font(cp_eras_ui::fonts::RAJDHANI_MEDIUM)
-    .font(cp_eras_ui::fonts::RAJDHANI_SEMIBOLD)
-    .font(cp_eras_ui::fonts::RAJDHANI_BOLD)
-    .font(cp_eras_ui::fonts::NOTO_SANS_CJK_JP_BOLD)
-    .default_font(cp_eras_ui::fonts::FONT_RAJDHANI_REGULAR)
-    .theme(|app: &BarWindow| app.style)
     .window_size((1600.0, 220.0))
-    .antialiasing(true)
     .run()
 }
