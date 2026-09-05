@@ -11,7 +11,7 @@ use super::surface::{surface, Surface};
 use super::text;
 use crate::style::{Chrome, Style};
 use crate::Element;
-use iced::widget::{canvas, column, container, row, Space};
+use iced::widget::{canvas, column, container, row, rule, Space};
 use iced::{mouse, Color, Length, Padding, Point, Rectangle, Renderer};
 
 /// Height of the stepped device-frame rail at the top and bottom of a
@@ -339,9 +339,6 @@ pub fn footer<'a, Message: 'static>(
     middle: &'a str,
     right: &'a str,
 ) -> Element<'a, Message> {
-    // Copied out so the container-style closure does not borrow `style`.
-    let border = style.palette.border;
-
     // The build-string footer is `fill="#728f76"` in the entropism
     // target, same as the segmented bar above it: small print, but not
     // the tertiary ink the footnote bodies are set in.
@@ -355,12 +352,8 @@ pub fn footer<'a, Message: 'static>(
 
     match style.chrome {
         Chrome::Segmented => column![
-            container(Space::new().width(Length::Fill).height(1.0)).style(move |_: &Style| {
-                container::Style {
-                    background: Some(iced::Background::Color(border)),
-                    ..Default::default()
-                }
-            }),
+            // The era's divider, from `catalog::divider`.
+            rule::horizontal(1),
             container(line).padding(Padding::from([8, 0])),
         ]
         .into(),

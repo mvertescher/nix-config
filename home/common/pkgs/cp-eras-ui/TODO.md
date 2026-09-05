@@ -1617,8 +1617,13 @@ when that screen assembles from library widgets. Priority order:
   `Program<M, Style>`. Every example sets `.theme(|app| app.style)`
   (the layershell bar: `|app, _window|`). The per-site closures
   went: `panels::mail`'s `rail()` is `catalog::faded_rail(alpha)`,
-  `bar-window`'s bg/fg closure is the theme base. Goldens did not
-  move (21/21 after the switch).
+  `bar-window`'s bg/fg closure is the theme base, `chrome::footer`'s
+  1px border container is `rule::horizontal(1)` under
+  `catalog::divider` (pixel-identical on the mail goldens), and the
+  bar daemon's bg fill is `catalog::ground`. The two `.style` closures
+  left are deliberate: the daemon's transparent application surface
+  and the floppy bench's one-era dressing. Goldens did not move
+  (21/21 after the switch).
   - Original text of the item, kept because its premise was half
     wrong: "replace loose color consts at call sites with a semantic
     iced Theme + widget catalogs ... so every later widget styles

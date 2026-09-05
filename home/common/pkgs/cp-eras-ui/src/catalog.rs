@@ -96,6 +96,16 @@ impl container::Catalog for Style {
     }
 }
 
+/// A container filled flat in the era's ground, for a surface that
+/// paints its own rather than taking the theme base -- the bar under a
+/// transparent application. Pass as `.style(catalog::ground)`.
+pub fn ground(style: &Style) -> container::Style {
+    container::Style {
+        background: Some(style.palette.bg.into()),
+        ..container::Style::default()
+    }
+}
+
 impl text::Catalog for Style {
     type Class<'a> = text::StyleFn<'a, Self>;
 
