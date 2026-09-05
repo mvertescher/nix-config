@@ -25,6 +25,14 @@ pub enum Cut {
     /// along the vertical one.
     Chamfer { x: f32, y: f32 },
     Round { radius: f32 },
+    /// Kitsch's nav chevron (`mailbox-trace.svg` `#chev`, `bar.svg`
+    /// item 4): the vertical edge rises from `y` to a peak `x` along the
+    /// top, then drops `brow.0` further along to `brow.1` *below* the
+    /// box's top, and the rest of the top edge runs at that height. A
+    /// shoulder rather than a corner: the box's top is not where the
+    /// shape's top is. Top-left only -- on any other corner it is the
+    /// chamfer `{ x, y }`, brow and all ignored.
+    Peak { x: f32, y: f32, brow: (f32, f32) },
 }
 
 impl Cut {
@@ -44,6 +52,9 @@ impl Cut {
             Cut::Square => return (0.0, 0.0),
             Cut::Chamfer { x, y } => (x, y),
             Cut::Round { radius } => (radius, radius),
+            // The rising edge alone; the brow is the top-left walk's
+            // business, see `outline`.
+            Cut::Peak { x, y, .. } => (x, y),
         };
         if x <= 0.0 || y <= 0.0 {
             return (0.0, 0.0);
@@ -54,6 +65,15 @@ impl Cut {
 
     fn is_round(self) -> bool {
         matches!(self, Cut::Round { .. })
+    }
+
+    /// How far below the box's top the top edge runs: the drop of a
+    /// [`Cut::Peak`], and nothing for every other cut.
+    fn brow(self) -> f32 {
+        match self {
+            Cut::Peak { brow, .. } => brow.1,
+            _ => 0.0,
+        }
     }
 }
 
@@ -337,6 +357,11 @@ pub fn outline(corners: Corners, ticket: Ticket, w: f32, h: f32) -> canvas::Path
     };
     // The body the wedge grows out of.
     let bw = w - reach;
+    // Where the top edge runs: the box's top, unless the top-left is
+    // a peak standing above it -- and then it starts past the peak's
+    // drop, scaled as the peak itself was if the box squeezed it.
+    let top = corners.top_left.brow().min(h / 2.0);
+    let brow_x = brow_run(corners.top_left, tl);
 
     canvas::Path::new(|b| {
         // One walk for every shape: down the four edges, turning each
@@ -360,23 +385,23 @@ pub fn outline(corners: Corners, ticket: Ticket, w: f32, h: f32) -> canvas::Path
             }
         };
 
-        b.move_to(Point::new(tl.0, 0.0));
+        b.move_to(Point::new(tl.0 + brow_x, top));
         if cut {
             // The kitsch nav pill, exactly: the top edge runs the
             // body's full width with *no* top-right treatment, and the
             // wedge carries the outline out and down in its place.
             //
             //   M172 340 h158 l18 15 v13 q0 12 -12 12 h-164 ...
-            b.line_to(Point::new(bw, 0.0));
-            b.line_to(Point::new(w, drop));
+            b.line_to(Point::new(bw, top));
+            b.line_to(Point::new(w, top + drop));
         } else {
-            b.line_to(Point::new(w - tr.0, 0.0));
+            b.line_to(Point::new(w - tr.0, top));
             turn(
                 b,
                 corners.top_right,
                 tr,
-                Point::new(w, 0.0),
-                Point::new(w, tr.1),
+                Point::new(w, top),
+                Point::new(w, top + tr.1),
             );
         }
         b.line_to(Point::new(w, h - br.1));
@@ -396,15 +421,30 @@ pub fn outline(corners: Corners, ticket: Ticket, w: f32, h: f32) -> canvas::Path
             Point::new(0.0, h - bl.1),
         );
         b.line_to(Point::new(0.0, tl.1));
-        turn(
-            b,
-            corners.top_left,
-            tl,
-            Point::new(0.0, 0.0),
-            Point::new(tl.0, 0.0),
-        );
+        if let Cut::Peak { .. } = corners.top_left {
+            // Up to the peak and down onto the brow.
+            b.line_to(Point::new(tl.0, 0.0));
+            b.line_to(Point::new(tl.0 + brow_x, top));
+        } else {
+            turn(
+                b,
+                corners.top_left,
+                tl,
+                Point::new(0.0, 0.0),
+                Point::new(tl.0, 0.0),
+            );
+        }
         b.close();
     })
+}
+
+/// How far along the top a [`Cut::Peak`]'s drop runs, scaled by the
+/// same factor its rising edge was (`extent` is the scaled pair).
+fn brow_run(cut: Cut, (ex, _): (f32, f32)) -> f32 {
+    match cut {
+        Cut::Peak { x, brow, .. } if x > 0.0 => brow.0 * ex / x,
+        _ => 0.0,
+    }
 }
 
 /// The shape's horizontal extent at height `y`, used to clip grain lines
@@ -422,6 +462,15 @@ pub fn span_at(corners: Corners, ticket: Ticket, w: f32, h: f32, y: f32) -> (f32
     let cut = ticket.is_cut() && ticket.reach < w && ticket.drop < h;
 
     let (mut x0, mut x1) = (0.0f32, w);
+
+    // Above the brow only the peak exists: its far side is the drop
+    // from the peak onto the brow, and the rest of the top edge has not
+    // started yet.
+    let top = corners.top_left.brow().min(h / 2.0);
+    if y < top && top > 0.0 {
+        let tl = corners.top_left.extent(w, h);
+        x1 = x1.min(tl.0 + brow_run(corners.top_left, tl) * (y / top));
+    }
 
     // The wedge's hypotenuse: the right edge runs from the body's width
     // at the top edge out to the full width at `drop`, and is flush
@@ -455,7 +504,8 @@ pub fn span_at(corners: Corners, ticket: Ticket, w: f32, h: f32, y: f32) -> (f32
     // A ticket replaces the top-right treatment; applying both would
     // clip the wedge back off again.
     if !cut {
-        x1 = x1.min(w - inward(corners.top_right, y));
+        // Measured from the brow, where a peaked shape's top edge runs.
+        x1 = x1.min(w - inward(corners.top_right, (y - top).max(0.0)));
     }
     x1 = x1.min(w - inward(corners.bottom_right, h - y));
     (x0, x1)
@@ -971,6 +1021,41 @@ mod tests {
         span_eq(span(c, w, h, h - 4.0), (0.0, 160.0));
         span_eq(span(c, w, h, h - 2.0), (0.0, 154.0));
         span_eq(span(c, w, h, h), (0.0, 148.0));
+    }
+
+    /// kitsch workspace chevron: `#chev` scaled 25/46, `M 0,25 V 13
+    /// L 12,0 L 15.2,4.9 H 36.7 Q 40,4.9 40,7.6 V 13 L 28,25 Z`. The
+    /// top edge runs at 4.9, not 0, and above it only the peak exists.
+    #[test]
+    fn kitsch_chevron_peaks_above_its_own_top_edge() {
+        let c = Corners::square()
+            .with_top_left(Cut::Peak {
+                x: 12.0,
+                y: 13.0,
+                brow: (3.2, 4.9),
+            })
+            .with_top_right(Cut::Round { radius: 3.0 })
+            .with_bottom_right(Cut::Chamfer { x: 12.0, y: 12.0 });
+        let (w, h) = (40.0, 25.0);
+        // The rising edge takes 13 of a 25px cell, which is more than
+        // the half `extent` lets any corner eat, so the peak and its
+        // brow are squeezed by 12.5/13 -- under half a pixel.
+        let s = 12.5 / 13.0;
+        let (px, py, bx) = (12.0 * s, 13.0 * s, 3.2 * s);
+        let rise = |y: f32| px * (1.0 - y / py);
+
+        // The peak itself: a point.
+        span_eq(span(c, w, h, 0.0), (px, px));
+        // Halfway down the drop: the rising edge on the left, the
+        // drop on the right, and no top edge yet.
+        span_eq(span(c, w, h, 2.45), (rise(2.45), px + bx / 2.0));
+        // At the brow the top edge begins, and the top-right radius
+        // bites from *here*, not from the box's top.
+        span_eq(span(c, w, h, 4.9), (rise(4.9), 37.0));
+        span_eq(span(c, w, h, 7.9), (rise(7.9), 40.0));
+        // The rising edge lands; the bottom chamfer as before.
+        span_eq(span(c, w, h, py), (0.0, 40.0));
+        span_eq(span(c, w, h, h), (0.0, 28.0));
     }
 
     /// kitsch cells: round 8 on all four, and entropism: square. Both

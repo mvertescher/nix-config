@@ -163,6 +163,8 @@ pub fn style() -> Style {
                 ink: Ink::Tape,
                 leading: true,
                 pad_x: 12.0,
+                stroke: None,
+                face: None,
             },
 
             // The only urgency mark in the material is a literal

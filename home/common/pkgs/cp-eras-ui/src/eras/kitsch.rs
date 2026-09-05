@@ -157,7 +157,13 @@ pub fn style() -> Style {
             // chamfers back over the lower half.
             ws_corners: Some(
                 Corners::square()
-                    .with_top_left(Cut::Chamfer { x: 12.0, y: 13.0 })
+                    // #chev scaled 25/46: up from (0,13) to the peak at
+                    // (12,0), down onto the brow at (15.2,4.9).
+                    .with_top_left(Cut::Peak {
+                        x: 12.0,
+                        y: 13.0,
+                        brow: (3.2, 4.9),
+                    })
                     .with_top_right(Cut::Round { radius: 3.0 })
                     .with_bottom_right(Cut::Chamfer { x: 12.0, y: 12.0 }),
             ),
@@ -244,6 +250,8 @@ pub fn style() -> Style {
                 ink: Ink::Fg,
                 leading: false,
                 pad_x: 12.0,
+                stroke: None,
+                face: None,
             },
 
             alert_suffix: None,

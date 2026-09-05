@@ -258,6 +258,15 @@ pub struct WindowLabel {
     /// the way entropism's header strings sit after their divider.
     pub leading: bool,
     pub pad_x: f32,
+    /// The box's stroke width where it is not the bar's: neomil draws
+    /// its tab box at 1.0 inside a bar whose every other line is 1.5
+    /// (`bar.svg` §9, mailbox-trace x 241..451). `None` uses
+    /// [`Bar::stroke`].
+    pub stroke: Option<f32>,
+    /// The face the label is set in where it is not the bar's: neokitsch
+    /// sets its strip at 600 and the annotation under the wire bridge
+    /// at 400 (`bar.svg` §6). `None` uses [`Bar::face`].
+    pub face: Option<Face>,
 }
 
 /// What a dbusmenu separator is, in an era's own vocabulary.
@@ -444,8 +453,10 @@ pub struct Bar {
     pub alert_suffix: Option<&'static str>,
     /// The workspace digits and the clock are set in the bold face.
     pub bold_tiers: bool,
-    /// The clock is plain text at this size rather than a module.
-    pub clock_plain: Option<u16>,
+    /// The clock is plain text rather than a module, at this size and
+    /// in this face -- neokitsch's 18px at 500 (`bar.svg` §7) in a strip
+    /// set at 600.
+    pub clock_plain: Option<(u16, Face)>,
 
     pub menu: BarMenu,
 }
@@ -515,6 +526,8 @@ impl Default for Bar {
                 ink: Ink::Dim,
                 leading: false,
                 pad_x: 8.0,
+                stroke: None,
+                face: None,
             },
 
             alert_suffix: None,

@@ -208,6 +208,8 @@ pub fn style() -> Style {
                 ink: Ink::Fg,
                 leading: false,
                 pad_x: 8.0,
+                stroke: Some(1.0),
+                face: None,
             },
 
             alert_suffix: None,

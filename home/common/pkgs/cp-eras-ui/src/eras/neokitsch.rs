@@ -288,13 +288,16 @@ pub fn style() -> Style {
                 ink: Ink::Banner,
                 leading: false,
                 pad_x: 0.0,
+                stroke: None,
+                // The trace's one label at 400 in a strip set at 600.
+                face: Some(Face::Regular),
             },
 
             alert_suffix: None,
             bold_tiers: false,
             // login-trace's 10:10 PM at (1293,87): the only clock in
             // the run, and it is unboxed.
-            clock_plain: Some(18),
+            clock_plain: Some((18, Face::Medium)),
 
             menu: BarMenu {
                 // The dashboard cascade card: chamfer 22 on the

@@ -1102,19 +1102,66 @@ Open:
   accepted** — the extractor fragments the veneer plates and ring bands
   into cells the design does not have; measured ceiling 58.5% with the
   trace's own 52px-period zigzag grain drawn (the period is what seeds
-  the extractor's cells; documented in `bar.rs`). Neokitsch labels are
+  the extractor's cells; documented in `bar.rs`). Neokitsch labels were
   `Face::Medium` (Regular was visibly thinner than the design's
-  dark-on-gold; decided by eye, `src/eras/neokitsch.rs`). Neokitsch
+  dark-on-gold; decided by eye) until 2026-09-04, when the 600 file was
+  embedded and they became the trace's `SemiBold`. Neokitsch
   stroke is 2.0 not the delta's 1.6 (AA). The tray diamonds render
   purple/orange because the example feeds sample SNI raster icons; the
   SVG's diamonds are stand-ins, not a fault. **The layer-shell bar is
   unverified until a switch**; only `bar-window` is captured.
-  - [ ] Not followed, per era: entropism selection inset 1px; neomil
-    window box 1.0 stroke (`Bar` has one stroke width); kitsch chevron
-    4.9px shoulder step; neokitsch highlight row running 8px past the
-    panel edge (iced clips), the haze's blue annulus, window label at
-    weight 400. Each needs a widget, not a value — see "widget gaps"
-    under the conversion wave.
+  - [ ] "Not followed, per era" — six deviations, filed 2026-09-03 as
+    each needing "a widget, not a value". Spot-checked 2026-09-05: four
+    of the six were values or a shape the existing widget could carry,
+    and the premise held for two, which are what is left open here.
+    - Entropism selection inset 1px — *fixed*, and it was worse than an
+      inset: the module faces were drawn flush to their cells over the
+      strip's chrome, burying the inner half of every divider next to a
+      filled cell and the frame's whole top and bottom edges under the
+      tape, workspace 3 and the clock. Two changes in `bar.rs`: under
+      `BarChrome::Frame` the module row is laid out from the frame's
+      centreline (`frame_edge`, half a stroke inside the padding, which
+      is also where the design measures its segments — tape 7..72, not
+      6..71) and each face is inset half a stroke (`plate`). Pixel
+      transitions now match the design across the left run.
+    - Neomil window box 1.0 stroke — *fixed*: `WindowLabel::stroke:
+      Option<f32>`, threaded through `face_canvas`.
+    - Neokitsch window label at 400 — *fixed*: `WindowLabel::face:
+      Option<Face>`; also the clock, which `bar.svg` §7 sets at 500 and
+      the code set in the strip's 600: `clock_plain` is now
+      `Option<(u16, Face)>` and the digits sit against the right of
+      their reservation (the design right-aligns to 1594; the estimate
+      ran ~10px wide of the face's advance).
+    - Kitsch chevron shoulder — *fixed* with a new `Cut::Peak { x, y,
+      brow }` in `widgets/surface.rs`: the rising edge to a peak, a
+      drop onto a brow, and the top edge running *below* the box's top
+      from there. `outline` and `span_at` both honour it (the top-right
+      corner bites from the brow); top-left only, elsewhere it is the
+      chamfer. Unit-tested against `#chev` scaled 25/46; the 13-of-25
+      rise trips `extent`'s half-height clamp and is squeezed 12.5/13,
+      under half a pixel.
+    - Neokitsch highlight row 8px past the panel edge — *still open*,
+      and now further off: rows are inset by `ring_inset()` (12.8) on
+      the right since 2026-09-04, so the highlight ends 20px short of
+      where the design's overshoot ends. Needs the panel canvas to draw
+      the highlight (it alone can paint outside the rows), which means
+      hover state reaching the panel; a widget.
+    - Neokitsch haze blue annulus — *still open*. On the strip it is a
+      faint blue cast on the last ~150px (design #2B2E40 vs #292637 at
+      x 1520) plus a mask-faded arc on the left; alpha-stop annuli with
+      a horizontal fade need even-odd ring paths sliced in x. Not worth
+      it at this size; revisit with the haze unification (three
+      implementations, "conversion wave").
+    - Found on the way, **not fixed** (theme, not crate): entropism's
+      published `tape` is `#9cb795` (`home/themes/entropism/palettes.nix`
+      nexus), the *selection* sage, so on the live bar the host tape
+      reads as a second selected cell. The crate's own palette and
+      `bar.svg` want MID `#728f76` ("the dimmer of the two sage fills
+      so it does not read as a selection next to workspace 3"). The
+      goldens carry the theme's value. Filed under "Live inconsistency"
+      below.
+    - Goldens bar-{entropism,neomil,kitsch,neokitsch} re-taken (AE 0 vs
+      host renders); matrix 21/21.
 - [x] Stale claims — the four era `README.md`s were rewritten
   2026-09-03 (dashboard composites no longer described as real;
   numbers now point at the trace headers). Swept 2026-09-04 against
@@ -1313,6 +1360,14 @@ four bars, done in this order so the Rust is written once.
     (#7ddec8) where `home/themes/kitsch/scheme.nix` says border
     #2e5f57; the store samples #5fd6c2. Outlives this crate — decide
     which is right.
+  - **Live inconsistency, entropism:** `home/themes/entropism/palettes.nix`
+    nexus publishes `tape = "#9cb795"`, the selection sage, where
+    `src/eras/entropism.rs` and `bar.svg` have MID `#728f76` so the
+    host tape does not read as a second selected cell beside workspace
+    3. The bar golden carries the theme's value. Found 2026-09-05; the
+    crate side is right by the trace's own argument, but `tape` is a
+    theme role other consumers read, so the fix is in nix and is the
+    user's call.
   - Bar/entropism inks and the login `Ink::Fixed`s wait on the
     OUTLINE decision under "Trace improvements".
 - [ ] **Canvas vs widgets — decide.** ~~Four screens are now display

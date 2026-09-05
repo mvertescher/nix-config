@@ -241,13 +241,18 @@ fn ink_of(style: &Style, ink: Ink) -> Color {
 
 /// The font one of the era's bar labels is set in.
 fn era_face(style: &Style, bold: bool) -> iced::Font {
+    if bold {
+        return font_of(Face::Bold);
+    }
+    font_of(style.bar.face)
+}
+
+/// The loaded Rajdhani file a [`Face`] names.
+fn font_of(face: Face) -> iced::Font {
     use crate::fonts::{
         FONT_RAJDHANI_BOLD, FONT_RAJDHANI_MEDIUM, FONT_RAJDHANI_REGULAR, FONT_RAJDHANI_SEMIBOLD,
     };
-    if bold {
-        return FONT_RAJDHANI_BOLD;
-    }
-    match style.bar.face {
+    match face {
         Face::Regular => FONT_RAJDHANI_REGULAR,
         Face::Medium => FONT_RAJDHANI_MEDIUM,
         // A true 600 only if the binary loaded `RAJDHANI_SEMIBOLD`;
@@ -268,6 +273,17 @@ fn ink_text<'a>(
         .size(f32::from(style.metrics.text_body))
         .color(ink_of(style, ink))
         .font(era_face(style, bold))
+}
+
+/// How far inside the bar's padding the module row starts: half a
+/// stroke under [`BarChrome::Frame`], where the modules are segments of
+/// a frame measured from its centreline, and nothing where they stand
+/// loose.
+fn frame_edge(b: &crate::style::Bar) -> f32 {
+    match b.chrome {
+        BarChrome::Frame => b.stroke / 2.0,
+        BarChrome::Loose => 0.0,
+    }
 }
 
 /// The [`Surface`] a [`Dress`] describes.
@@ -383,13 +399,22 @@ impl<Message> canvas::Program<Message> for Stepped {
 }
 
 /// The canvas that paints a module's silhouette, whichever of the two
-/// shapes it is.
-fn face_canvas<'a, Message: 'static>(style: &Style, dress: &Dress) -> Element<'a, Message> {
+/// shapes it is, outlined at `stroke` -- the bar's everywhere but the
+/// window box, which may carry its own
+/// ([`crate::style::WindowLabel::stroke`]).
+fn face_canvas<'a, Message: 'static>(
+    style: &Style,
+    dress: &Dress,
+    stroke: f32,
+) -> Element<'a, Message> {
     match dress.step {
-        None => canvas(face_of(style, dress))
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .into(),
+        None => canvas(Surface {
+            stroke_width: stroke,
+            ..face_of(style, dress)
+        })
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .into(),
         Some(step) => canvas(Stepped {
             step,
             fill: match dress.fill {
@@ -397,7 +422,7 @@ fn face_canvas<'a, Message: 'static>(style: &Style, dress: &Dress) -> Element<'a
                 ink => Some(ink_of(style, ink)),
             },
             stroke: style.ink(dress.stroke),
-            stroke_width: style.bar.stroke,
+            stroke_width: stroke,
         })
         .width(Length::Fill)
         .height(Length::Fill)
@@ -680,12 +705,14 @@ impl<Message> canvas::Program<Message> for Strip {
             // -- which closes that run against the open centre segment
             // -- and one on the leading edge of every module in the
             // right, which does the same from the other side.
-            let mut x = self.pad_left;
+            // The runs are laid out from the frame's centreline, not
+            // from the bar's padding -- see `frame_edge`.
+            let mut x = self.pad_left + half;
             for &(gap, width) in &self.left {
                 x += gap + width;
                 divider(x);
             }
-            let mut x = w - self.pad_right;
+            let mut x = w - self.pad_right - half;
             for &(gap, width) in self.right.iter().rev() {
                 x -= width;
                 divider(x);
@@ -906,7 +933,26 @@ fn plate<'a, Message: 'static>(
             .into()
     };
 
-    let mut layers = stack![face_canvas(style, dress)];
+    // Under `BarChrome::Frame` the strip has already drawn a divider
+    // centred on each module boundary and the frame centred on the
+    // row's edges, and the module is drawn on top of it. A face flush
+    // to its cell buries the inner half of every line around it: a
+    // filled cell showed 1px dividers where its neighbours showed 2,
+    // and the frame's top and bottom edges vanished under it. The
+    // design (entropism `bar.svg`, "fills are inset 1px inside the
+    // chrome") keeps the fill inside the stroke: the row is laid out
+    // from the chrome's centrelines (`frame_edge`) and each face is
+    // inset half a stroke from its cell, so the lines run through
+    // unbroken.
+    let face: Element<'a, Message> = match b.chrome {
+        BarChrome::Frame => container(face_canvas(style, dress, b.stroke))
+            .padding(frame_edge(b))
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .into(),
+        BarChrome::Loose => face_canvas(style, dress, b.stroke),
+    };
+    let mut layers = stack![face];
     if !trim.is_empty() {
         layers = layers.push(canvas(trim).width(Length::Fill).height(Length::Fill));
     }
@@ -1114,6 +1160,9 @@ fn cut_xy(cut: Cut) -> (f32, f32) {
         Cut::Square => (0.0, 0.0),
         Cut::Chamfer { x, y } => (x, y),
         Cut::Round { radius } => (radius, radius),
+        // No panel wears a peak; drawn as its chamfer, as `Surface` does
+        // off the top-left.
+        Cut::Peak { x, y, .. } => (x, y),
     }
 }
 
@@ -1184,7 +1233,9 @@ impl Panel {
                 Cut::Round { .. } => {
                     b.quadratic_curve_to(Point::new(w - d, d), Point::new(w - d, d + cy))
                 }
-                Cut::Chamfer { .. } => b.line_to(Point::new(w - d, d + (cx - d) * cy / cx)),
+                Cut::Chamfer { .. } | Cut::Peak { .. } => {
+                    b.line_to(Point::new(w - d, d + (cx - d) * cy / cx))
+                }
                 Cut::Square => b.line_to(Point::new(w - d, d)),
             }
             b.line_to(Point::new(w - d, h - d - ry));
@@ -1192,7 +1243,7 @@ impl Panel {
                 Cut::Round { .. } => {
                     b.quadratic_curve_to(Point::new(w - d, h - d), Point::new(w - d - rx, h - d))
                 }
-                Cut::Chamfer { .. } => b.line_to(Point::new(w - d - rx, h - d)),
+                Cut::Chamfer { .. } | Cut::Peak { .. } => b.line_to(Point::new(w - d - rx, h - d)),
                 Cut::Square => b.line_to(Point::new(w - d, h - d)),
             }
             let foot = if by > 0.0 { bx * (1.0 - d / by) } else { 0.0 };
@@ -1567,7 +1618,7 @@ fn menu_row<'a, Message: Clone + 'static>(
                 split,
             };
 
-            let mut plate = stack![face_canvas(style, &dress)];
+            let mut plate = stack![face_canvas(style, &dress, style.bar.stroke)];
             let row_trim = Trim {
                 tab: dress
                     .tab
@@ -2129,7 +2180,10 @@ fn host_tape<'a, Message: 'static>(style: &Style, host: &str) -> Slot<'a, Messag
 /// The focused window's title, in whatever the era makes of it.
 fn window_label<'a, Message: 'static>(style: &Style, window: &str) -> Element<'a, Message> {
     let w = style.bar.window;
-    let text = ink_text(style, w.ink, false, window.to_string());
+    let mut text = ink_text(style, w.ink, false, window.to_string());
+    if let Some(face) = w.face {
+        text = text.font(font_of(face));
+    }
     match w.dress {
         // Bare text: entropism's long open centre string, and
         // neokitsch's annotation hanging under the wire bridge.
@@ -2149,7 +2203,7 @@ fn window_label<'a, Message: 'static>(style: &Style, window: &str) -> Element<'a
         Some(dress) => {
             let height = style.bar.height as f32 - style.bar.pad_y * 2.0;
             container(layered(
-                face_canvas(style, &dress),
+                face_canvas(style, &dress, w.stroke.unwrap_or(style.bar.stroke)),
                 container(text)
                     .padding(Padding::from([0.0, w.pad_x]))
                     .center_y(Length::Fixed(height)),
@@ -2240,7 +2294,7 @@ pub fn bar<'a, Message: Clone + 'static>(
     right.push(match b.clock_plain {
         // Neokitsch's clock is the login screen's: larger, lighter and
         // in no box at all, the only clock anywhere in the run.
-        Some(size) => {
+        Some((size, face)) => {
             let label = r.clock.clone();
             let width = text_width(style, &label) * f32::from(size)
                 / style.metrics.text_body as f32;
@@ -2251,11 +2305,17 @@ pub fn bar<'a, Message: Clone + 'static>(
                 // with. A shrink-width clock would let the face's own
                 // advance decide where the whole tray starts, and the
                 // run is right-anchored, so every module left of it
-                // would move with the hour.
+                // would move with the hour. The digits sit against the
+                // right of that reservation, since the design right-
+                // aligns them to the bar's edge and the estimate runs
+                // a little wide of the face's advance.
                 element: container(
-                    ink_text(style, b.idle.ink, b.bold_tiers, label).size(f32::from(size)),
+                    ink_text(style, b.idle.ink, false, label)
+                        .size(f32::from(size))
+                        .font(font_of(face)),
                 )
                 .width(Length::Fixed(width))
+                .align_x(iced::alignment::Horizontal::Right)
                 .center_y(Length::Fill)
                 .into(),
             }
@@ -2305,6 +2365,14 @@ pub fn bar<'a, Message: Clone + 'static>(
         ]
     };
 
+    // Under `BarChrome::Frame` the modules are segments of the frame and
+    // the design measures them from its centreline: entropism's frame
+    // is drawn at x 6..8 and its first segment starts at 7, its last
+    // ends at 1593 inside a right pad of 6. So the module row sits
+    // inside the centreline rectangle, half a stroke in from the
+    // padding, and `Strip` lays its dividers out from the same origin.
+    let edge = frame_edge(b);
+
     let strip = Strip {
         ground: b.ground,
         chrome: b.chrome,
@@ -2329,10 +2397,10 @@ pub fn bar<'a, Message: Clone + 'static>(
     layers = layers.push(
         container(modules.align_y(iced::Alignment::Center).height(Length::Fill))
             .padding(Padding {
-                top: b.pad_y,
-                right: b.pad_right,
-                bottom: b.pad_y,
-                left: b.pad_left,
+                top: b.pad_y + edge,
+                right: b.pad_right + edge,
+                bottom: b.pad_y + edge,
+                left: b.pad_left + edge,
             })
             .width(Length::Fill)
             .height(Length::Fill),
