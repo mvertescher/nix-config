@@ -37,14 +37,16 @@ bg          #110c07   warm dark olive-brown (#1a140c upper, #0d0603 lower)
 sage solid  #9cb795   selection fills, footer band
 sage text   #94bb94   labels, titles
 mid         #728f76   top-bar text, secondary
-outline     #5d7752   frame strokes
+outline     #8fba97   frame strokes (was #5d7752 until 2026-09-05)
 dim         #3d4d38   faint rules, captions
 on-solid    #1f2a1c   dark text on sage fills
 ```
 
 The traces' own k-means samples run brighter than these (see each
-trace header's palette block); which value the outline ink should take
-is under measurement and is deliberately not settled here.
+trace header's palette block). The outline ink was settled 2026-09-05
+by eye against the photographs: the frames are the bright sage, the
+1.25px core `HUB_STROKE` was measured to, and #5d7752 was the one
+value of the four screens whose outlines receded into the ground.
 
 **One hue, with one exception.** The era is a single sage green on a
 warm dark ground — a monochrome terminal that somebody keeps repairing

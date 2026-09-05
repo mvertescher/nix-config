@@ -835,22 +835,34 @@ gap must be exact.
   block while the render's antialiased rounded corners break the ring;
   not a trace fault, do not square the corners. Verified again in the
   third pass, do not fix.
-- [ ] **Entropism OUTLINE ink — decision needed.** The real outline ink
-  measures ~#8fba97, i.e. the same sage as the text (#94bb94); the
-  earlier ~#709174 was rescale dilution and the palette's OUTLINE
-  #5d7752 is far from both. Options: repoint OUTLINE, or add a role.
-  Affects every entropism screen and the bar; until decided the login
-  conversion carries its inks as `Ink::Fixed` (#75967b / #8aac8c /
-  #20281c / #799d81) and the READMEs say "under measurement".
-  2026-09-05: put to the user with side-by-sides (store and bar
-  rendered with `border` #5d7752 and #8fba97 against the photo); they
-  asked to see screenshots before deciding, so it stays open. Two
-  facts for whoever picks it up: the store is the only screen that
-  draws `Ink::Border` (~20 prims) — login has its own `LINE`, the
-  mailbox draws `Ink::Mid`, the hub `HUB_STROKE` #8fba97 — so the
-  four screens already disagree with each other, not only with the
-  role; and `store-trace.svg` itself strokes its frames in #93bd95,
-  so the trace and the role it was cut for have never agreed.
+- [x] **Entropism OUTLINE ink — decided 2026-09-05: repoint `border`
+  to #8fba97.** The real outline ink measures ~#8fba97, i.e. the same
+  sage as the text (#94bb94); the earlier ~#709174 was rescale dilution
+  and the old OUTLINE #5d7752 was far from both. Decided by the user
+  off the side-by-sides (store and bar rendered at `border` #5d7752 and
+  #8fba97 against the photo): the photo's frames are unmistakably the
+  bright sage, and #5d7752 was the only one of the three where the nav
+  and card frames receded into the ground. Applied to nexus `border`
+  in `home/themes/entropism/palettes.nix` and to the crate's `OUTLINE`
+  const (the same value `HUB_STROKE` was measured to), the era README
+  and the comments that cited #5d7752. Two `Ink::Border` readers had
+  chosen it for its *dimness*, not as a frame, and went to `Ink::Mid`
+  so the meaning survives: the bar menu's `disabled` ink (at #8fba97 a
+  disabled row would read as enabled) and the store's 8.5px footnote
+  caption (the mailbox already drew the same caption in MID). Frames,
+  menu rules and the bar chrome brighten as intended — the bar is
+  where it changes character most, and is worth a look on the real
+  monitor once entropism is live; terra is on `cybr`, so nothing on
+  the desktop moved. Goldens: only bar and store moved (99.25% and 99.55%
+  against the old ones, both re-taken); dashboard, login and mailbox
+  came out byte-identical, which is the follow-up below stated as a
+  measurement -- none of the three reads the role. Matrix 21/21.
+  Still open, as the follow-up: fold login's four `Ink::Fixed`s
+  (#75967b / #8aac8c / #20281c / #799d81) and the mailbox's `Ink::Mid`
+  outlines onto the role, and `HUB_STROKE`→`Ink::Border` on the hub,
+  so the four screens stop disagreeing with each other. `store-trace.svg`
+  strokes its frames in #93bd95 — the trace and the role still differ
+  by a hair; a vision-model question, not a code one.
 
 Housekeeping (the two deletions below landed 2026-09-03; nothing left
 here is blocked):
@@ -1428,8 +1440,10 @@ four bars, done in this order so the Rust is written once.
     `roles.nix` and not the `palettes.nix` the scheme imports, so a
     retinted role rendered stale. Fixed 2026-09-05 (key includes
     `themes/<era>/palettes.nix`).
-  - Bar/entropism inks and the login `Ink::Fixed`s wait on the
-    OUTLINE decision under "Trace improvements".
+  - Bar/entropism inks and the login `Ink::Fixed`s waited on the
+    OUTLINE decision under "Trace improvements" — taken 2026-09-05
+    (`border` → #8fba97); folding the login and mailbox inks onto the
+    role is the follow-up recorded there.
 - [x] **Canvas vs widgets — decided 2026-09-05: retire.** ~~Four screens are now display
   lists over era tables and the widget layer (`widgets/`, `Layout`,
   `Cut`, `Surface`, `Ground`) serves only the dashboard and the bar's
