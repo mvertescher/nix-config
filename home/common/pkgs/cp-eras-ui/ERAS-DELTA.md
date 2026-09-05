@@ -43,15 +43,24 @@ Two things that bear on the meaning of class (a) for palette constants:
    gated screen reads this role, but the golden's value comes from
    nix". The one golden with no theme is `dashboard-fallback` (neomil
    table used directly).
-2. **The login screens draw an opaque wash** (`src/screens/login.rs:647-
-   700` over `rgb(GROUND_*)` / `ramp_color`, alpha 1.0), so
-   `palette.bg`, `Ground` and `bloom` never reach a login golden.
-   Mailbox uses `widgets::ground` only when `mailbox.haze` is empty
-   (`src/screens/mail.rs:157-161`; neokitsch declares `haze: &HAZE`,
-   `src/eras/neokitsch.rs:1200`). Store stacks `ground` under the
-   canvas (`src/screens/store.rs:88`); kitsch, neokitsch and neomil
-   then paint a full 1600x900 rect over it (`kitsch.rs:1039`,
-   `neokitsch.rs:1415`, `neomil.rs:1314`); entropism's store does not.
+2. **`widgets::ground` (`Style::ground`, `palette.bloom`) reaches one
+   golden, `mailbox-entropism`, and there as a flat `bg` fill.**
+   Since 2026-09-05 every login ground is a `Prim::Soft` group
+   composited by `scene::Backdrop` (`Access.backdrop`, transcribed from
+   the login traces; until then `login.rs` drew an opaque wash from
+   closures of its own), every mailbox but entropism's composites
+   `Mailbox::backdrop` the same way (`src/screens/mail.rs:120-130`;
+   kitsch `MAIL_BACKDROP` carries the trace's `cx .5 cy -.25 r .95`
+   bloom, neomil's the glow and vignette), and every store and
+   dashboard table opens with a full 1600x900 fill inside its own
+   composited group (`STORE_GROUND`, `BACKDROP`, `HUB_BACK`,
+   `HUB_GROUND`) over the `widgets::ground` the screen stacks under
+   the canvas (`store.rs:82`, `dashboard.rs:75`). So at the goldens'
+   size `Ground::Bloom` shows nowhere; its discs are visible only in
+   the letterbox margins of a non-16:9 window and under `panels::mail`,
+   the working client, which has no golden. (Until 2026-09-04 the
+   mailbox took `widgets::ground` unless `mailbox.haze` was set and
+   entropism's store painted no full rect; `30683d5` changed both.)
 
 Gate status is as recorded in `TODO.md:571-592` (bar 100/86/83/52, login
 28/96/72/89, mailbox 100/95/67/86, store 100/84/88/82 for
@@ -159,7 +168,7 @@ bar inherits the metric (surface stroke, corner) -- check
 | neokitsch | `corner.cut` | `neokitsch.rs:130` | 22 (mailbox selection bar) / per widget |
 | neokitsch | `FRAME` (border) | `neokitsch.rs:39` | `#c5965a` or `#bd8951` (outline samples); nix `border` at palettes.nix:34 governs gated renders |
 | neokitsch | `STRATA` (ornament) | `neokitsch.rs:70` | none traced; nix `ornament` at palettes.nix:45 |
-| neokitsch | `ground` / `BLOOM` | `neokitsch.rs:133-137`, `:38` | four-stop haze `#574568` / `#3a3853` / `#16121a` / `#0e0a0d` (already in `HAZE_*` :79-82); `Ground::Bloom` cannot express it |
+| neokitsch | `ground` / `BLOOM` | `neokitsch.rs:133-137`, `:38` | four-stop haze `#574568` / `#3a3853` / `#16121a` / `#0e0a0d` (already in `HAZE_*` :79-82); `Ground::Bloom` cannot express it -- and since 2026-09-05 need not: the haze is `BACKDROP` / `HUB_GROUND` composited under every neokitsch screen and the bar, and `Ground::Bloom` reaches no golden (point 2 above) |
 | neomil | `corner` | `neomil.rs:94` | per widget (8/9/12/13/15/16/22/24/42/51); no single cut |
 | neomil | `OFF_WHITE` (tape) | `neomil.rs:46` | no white in traces; nix `tape` at palettes.nix:32 governs gated renders |
 | neomil | `layout` | `neomil.rs:311` | six-diamond hub (`dashboard-trace.svg:159`) |
@@ -177,8 +186,8 @@ era const alone is inert there and the nix palette must move with it.
 | entropism | `ON_SOLID` (on_select) | `entropism.rs:49` | `mailbox-entropism`, `store-entropism` | not overridden |
 | entropism | `SAGE_TEXT` (fg) | `entropism.rs:45` | all four entropism goldens via `Ink::Fg` | overridden; move `home/themes/entropism/palettes.nix:32` too |
 | entropism | `OUTLINE` (border) | `entropism.rs:47` | `store-entropism` (x21 `Ink::Border`), `mailbox-entropism` (x1), bar | overridden (palettes.nix:30); **user decision** per TODO OUTLINE item |
-| entropism | `BG` / `Ground::Flat` | `entropism.rs:43,86` | `mailbox-entropism`, `store-entropism` | `bg` overridden (same value); `Ground` not; the lift would need a new `Ground` variant |
-| kitsch | `Ground::Bloom { x: .82, y: 0, r: .75 }` / `BLOOM` | `kitsch.rs:123-127,39` | `mailbox-kitsch` | not overridden; trace `cx .5 cy -.25 r .95` |
+| entropism | `BG` / `Ground::Flat` | `entropism.rs:43,86` | `mailbox-entropism` (since 2026-09-04 the store's ground is `STORE_GROUND`, composited, with the lift as a `Prim::Lobe`) | `bg` overridden (same value); `Ground` not; a mailbox lift would be a `Mailbox::backdrop` group, not a `Ground` variant |
+| kitsch | `Ground::Bloom { x: .82, y: 0, r: .75 }` / `BLOOM` | `kitsch.rs:123-127,39` | none since 2026-09-04: `mailbox-kitsch` composites `MAIL_BACKDROP`, which carries the trace's `cx .5 cy -.25 r .95` | not overridden; the `Ground` value is now inert in every golden (point 2 above) |
 | neokitsch | `ClipTopRight` variant | `neokitsch.rs:130` | `login-neokitsch` (`login.rs:897` badge fold) | changing the *variant* changes login badges; changing only `cut` does not |
 | neokitsch | `FIELD` (inset) | `neokitsch.rs:48` | `login-neokitsch` | overridden (palettes.nix:46); trace `#3c1c11` |
 | neokitsch | `VENEER` (select) | `neokitsch.rs:43` | `mailbox-neokitsch` (head_ink), bar/dashboard veneer via `surface.rs:181` | `select` not overridden; `tape` overridden |
@@ -186,4 +195,4 @@ era const alone is inert there and the nix palette must move with it.
 | neokitsch | `ON_VENEER` (on_select) | `neokitsch.rs:49` | `store-neokitsch` | not overridden; store trace `#3a2010`, mailbox `#7b5438`/`#895f3b` -- one value cannot match both |
 | neomil | `RED_FILL` (fg/select/cta) | `neomil.rs:44` | all neomil goldens via `Ink::Fg`; `mailbox-neomil`, `store-neomil` via `Ink::Select` | `fg` overridden (palettes.nix:30), `select`/`cta` not |
 | neomil | `RED_MID` (dim), `RED_DEEP` (border) | `neomil.rs:43,42` | `login-`, `mailbox-`, `store-neomil` | overridden (palettes.nix:28-29) |
-| neomil | `Ground::Flat` | `neomil.rs:96` | `mailbox-neomil` | the glow would need a gradient `Ground` variant |
+| neomil | `Ground::Flat` | `neomil.rs:96` | none since 2026-09-04: `mailbox-neomil` composites `MAIL_BACKDROP`, glow and vignette included | inert in every golden (point 2 above) |

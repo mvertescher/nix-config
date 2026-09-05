@@ -1476,10 +1476,13 @@ four bars, done in this order so the Rust is written once.
     - **Kept, on purpose:** neomil's `Band` — a 2-stop horizontal ramp
       across 1600px steps a level at most every 12px, nothing to gain
       and the neomil bar golden would move for it; `Ground::Bloom` —
-      since every screen ground is a composited group it paints only
-      the letterbox margins at a non-16:9 window (and nothing under
-      the stretched login and mailbox). Flattening it to `bg` or
-      deleting `widgets::ground` is a follow-up that moves no golden.
+      every screen ground but the entropism mailbox's is a composited
+      group opening with a full-frame fill, so at 1600x900 its discs
+      show in no golden; they paint the letterbox margins of a
+      non-16:9 window and the ground of `panels::mail`, the working
+      client (`cp-eras-ui-mail`, no golden). Flattening it to `bg` is
+      a follow-up that moves no golden and changes that client;
+      `ERAS-DELTA.md` point 2 has the reader inventory.
     - Goldens re-taken: login-{neomil,neokitsch}, dashboard-entropism,
       store-kitsch, bar-neokitsch.
   - **Extractor cluster budget:** with k=8, a haze takes 5 clusters,
