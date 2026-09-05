@@ -126,7 +126,7 @@ impl MailBox {
         if m.backdrop.is_empty() {
             stack![ground(&self.style), sheet].into()
         } else {
-            let backdrop = canvas(Backdrop { style: self.style, prims: m.backdrop })
+            let backdrop = canvas(Backdrop { style: self.style, prims: m.backdrop, stretch: true })
                 .width(Length::Fill)
                 .height(Length::Fill);
             stack![backdrop, sheet].into()

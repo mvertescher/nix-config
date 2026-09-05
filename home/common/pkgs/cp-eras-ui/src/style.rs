@@ -206,24 +206,24 @@ pub enum BarGround {
         rule_width: f32,
     },
     /// Neokitsch: the violet haze the top of every screen in the run
-    /// sits in, as the lobe `store-trace.svg` measures -- centre,
-    /// radius, vertical squash and four stops -- clipped to the strip
-    /// by the bar's own bounds.
+    /// sits in. `prims` is the screen ground in frame coordinates --
+    /// the era's dashboard table, which is what `bar.svg` copies its
+    /// `#haze` and `#hazeblue` from -- composited by `screens::soft`
+    /// at the strip's own pixels, so what lands here is the top slice
+    /// of the run's haze and nothing else: the strip is 31px of a lobe
+    /// whose centre is above it and whose radius is thirty times its
+    /// height.
     ///
     /// Not [`Ground::Bloom`], which is what the era declares for a
     /// *page*: at 31px the page bloom reads as a thin dark wash, where
     /// the traces are violet across the middle 1200px of the strip and
-    /// near-black only at its ends. The stops are the measurement, so
-    /// they travel with the era rather than with the drawing.
-    Haze {
-        cx: f32,
-        cy: f32,
-        r: f32,
-        /// How far the lobe is flattened vertically.
-        squash: f32,
-        /// `(offset, colour)`, inner to outer.
-        stops: [(f32, Color); 5],
-    },
+    /// near-black only at its ends.
+    ///
+    /// Until 2026-09-05 this carried the lobe's centre, radius, squash
+    /// and stops and the strip stacked 64 discs from them: the haze
+    /// alone, without the blue annulus the traces lay through
+    /// `#bluemask`, and stepped a level every 16px across the violet.
+    Haze { prims: &'static [Prim] },
 }
 
 /// Chrome the bar draws around and between its modules.
@@ -1394,59 +1394,35 @@ pub enum Colophon {
     Notice { labels: &'static [Legend] },
 }
 
-/// What an era washes over the page on *this* screen, beyond its
-/// declared [`Ground`].
-///
-/// [`Ground`] is the era's house background and is shared with every
-/// other screen; neomil's login (and its hub -- the trace records the
-/// two backdrops as pixel-identical at every sampled row) puts a broad
-/// cold-blue glow over the top half of the frame that `Ground::Flat`
-/// does not describe and that `Ground::Bloom` cannot: it is a
-/// horizontal gradient under a vertical falloff, not a disc.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Wash {
-    /// The era's [`Ground`] is the whole story.
-    Plain,
-    /// Entropism: the faint warm radial lift the login photo carries
-    /// over its near-black ground.
-    ///
-    /// `Ground::Flat` is right about the era and wrong about this
-    /// screen, and the shape gate is what proved it: the trace's lift
-    /// is bright enough at its centre to be a palette cluster of its
-    /// own that never reaches the frame edge, so the extractor bins it
-    /// as *ink* and reads a 1044x586 shape in the middle of the
-    /// screen -- 72% of the design's shape area, against a flat ground
-    /// that offers nothing to match it.
-    WarmLift,
-    /// Neomil: the cold-blue glow, gone by y~420, over a warm near-black
-    /// vignette down the left margin.
-    ColdGlow,
-    /// Kitsch: the rose bloom out of the top edge, and the grey-green
-    /// cast down the left margin.
-    ///
-    /// Same argument as [`Wash::VioletHaze`], and the same measurement:
-    /// the era's declared bloom is a disc out of the top *right*
-    /// (`x: 0.82`), sampled off its store sheet, where the login photo
-    /// blooms from the top *centre* and reaches `#a34e60` at y 10. A
-    /// screen's backdrop is a fact about the screen here, not only
-    /// about the era.
-    RoseBloom,
-    /// Neokitsch: the violet-over-black haze the whole run wears, with
-    /// the cold-blue lobe inside it.
-    ///
-    /// `Ground::Bloom`'s stacked translucent discs cap out around 6%
-    /// alpha and reach a tenth of this: measured on the two renders,
-    /// the trace's haze is `#4f4262` at the top centre where the bloom
-    /// puts `#1f1f33`. That is not a shade -- it is the difference
-    /// between the backdrop holding two of the frame's palette
-    /// clusters and holding none, which is what the shape gate saw.
-    VioletHaze,
-}
-
 /// The era's access screen, measured off `docs/<era>/login-trace.svg`.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Access {
-    pub wash: Wash,
+    /// The ground this screen's own trace draws, as the leading
+    /// [`Prim::Soft`] group(s) a store or dashboard table would open
+    /// with, composited under the art by `scene::Backdrop` -- what
+    /// [`Mailbox::backdrop`] is to the mailbox. Empty for an era whose
+    /// login is content with [`Ground`]; none is, and the four grounds
+    /// are the reason this field exists at all. [`Ground`] is the era's
+    /// house background, shared with every screen, and each login photo
+    /// wears something the era's declaration does not describe: neomil's
+    /// cold-blue glow is a horizontal gradient under a vertical falloff,
+    /// not a disc; kitsch's rose blooms from the top *centre* where
+    /// `Ground::Bloom` (sampled off its store sheet) puts a disc at the
+    /// top right; neokitsch's haze is `#4f4262` at the top centre where
+    /// the stacked bloom discs cap out near `#1f1f33`; entropism's lift
+    /// is bright enough at its centre to be a palette cluster of its
+    /// own, which the shape gate reads as a 1044x586 shape -- 72% of
+    /// the design's shape area -- that a flat ground offers nothing to
+    /// match. A screen's backdrop is a fact about the screen, not only
+    /// about the era.
+    ///
+    /// Until 2026-09-05 this was a `Wash` enum and `login.rs` sampled
+    /// each variant through closures of its own -- the same radials and
+    /// ramps the era tables spell as `Prim`s, kept in a second notation
+    /// with a second rasteriser. `soft.rs` composites the tables the
+    /// way rsvg composites the traces, so the login now hands it the
+    /// same kind of table the other screens do.
+    pub backdrop: &'static [Prim],
     pub masthead: Masthead,
     /// Left to right, as the trace lays them out.
     pub slots: &'static [Slot],

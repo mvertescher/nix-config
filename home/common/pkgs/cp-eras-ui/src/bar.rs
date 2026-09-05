@@ -11,8 +11,9 @@
 //! Collecting the readings is the binary's job, which keeps this file
 //! testable and keeps the layer-shell dependency out of the library.
 
+use crate::screens::scene::SoftCache;
 use crate::style::{
-    BarChrome, BarGround, BarOrnament, Dress, Face, Ink, MenuMarker, MenuRule, PanelEcho,
+    BarChrome, BarGround, BarOrnament, Dress, Face, Ink, MenuMarker, MenuRule, PanelEcho, Prim,
     Selection, Style, Tab, Ticket,
 };
 use crate::widgets::surface::{layered, outline, span_at, Corners, Cut, Fill, Surface};
@@ -575,23 +576,50 @@ struct Strip {
     right: Vec<(f32, f32)>,
 }
 
-/// The colour a stop list reaches at `t`.
-fn stop_at(stops: &[(f32, Color); 5], t: f32) -> Color {
-    if t <= stops[0].0 {
-        return stops[0].1;
-    }
-    for pair in stops.windows(2) {
-        let (t0, c0) = pair[0];
-        let (t1, c1) = pair[1];
-        if t <= t1 {
-            let span = (t1 - t0).max(f32::EPSILON);
-            return mix(c0, c1, (t - t0) / span);
-        }
-    }
-    stops[4].1
+/// The strip's ground when it is a [`BarGround::Haze`]: the era's
+/// screen ground composited by `screens::soft` at the strip's own
+/// pixels, one image, cached the way a scene's backdrop is.
+///
+/// Its own canvas under [`Strip`] rather than a draw in it, for the
+/// reason `screens::scene::Scene::view` splits: a canvas layer draws
+/// its meshes, then its images, so a composite in the strip's canvas
+/// would sit over the dividers and the wire.
+///
+/// The frame-to-canvas scale is 1: the bar is laid out in design
+/// pixels (`bar.svg` is the 1600x220 the harness captures at) and its
+/// ground has to line up with the modules to the pixel, where a
+/// `scene::Backdrop` fits the frame to whatever window it gets.
+#[derive(Debug, Clone, Copy)]
+struct Haze {
+    style: Style,
+    prims: &'static [Prim],
 }
 
-/// Linear blend, for the one gradient the bar draws.
+impl<Message> canvas::Program<Message> for Haze {
+    type State = SoftCache;
+
+    fn draw(
+        &self,
+        soft: &Self::State,
+        renderer: &Renderer,
+        _theme: &Theme,
+        bounds: Rectangle,
+        _cursor: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        let mut frame = Frame::new(renderer, bounds.size());
+        let size = (bounds.width.round() as u32, bounds.height.round() as u32);
+        if size.0 > 0 && size.1 > 0 {
+            let handle = soft.image(self.prims, &self.style.palette, size, 1.0);
+            frame.draw_image(
+                Rectangle { x: 0.0, y: 0.0, width: bounds.width, height: bounds.height },
+                canvas::Image::new(handle).filter_method(image::FilterMethod::Linear),
+            );
+        }
+        vec![frame.into_geometry()]
+    }
+}
+
+/// Linear blend, for the one gradient the strip draws itself.
 fn mix(a: Color, b: Color, t: f32) -> Color {
     Color {
         r: a.r + (b.r - a.r) * t,
@@ -618,33 +646,7 @@ impl<Message> canvas::Program<Message> for Strip {
             return vec![frame.into_geometry()];
         }
 
-        if let BarGround::Haze {
-            cx,
-            cy,
-            r,
-            squash,
-            stops,
-        } = self.ground
-        {
-            // Rings rather than a renderer gradient, as
-            // `widgets::ground` stacks discs and for the same reason.
-            // The lobe's centre is above the strip and its radius is
-            // thirty times the strip's height, so what lands here is
-            // the top slice of the screen's own haze and nothing else.
-            frame.fill(
-                &Path::rectangle(Point::ORIGIN, Size::new(w, h)),
-                stops[4].1,
-            );
-            frame.push_transform();
-            frame.translate(iced::Vector::new(cx, cy));
-            frame.scale_nonuniform(iced::Vector::new(1.0, squash));
-            let steps = 64;
-            for i in (0..steps).rev() {
-                let t = (i + 1) as f32 / steps as f32;
-                frame.fill(&Path::circle(Point::ORIGIN, r * t), stop_at(&stops, t));
-            }
-            frame.pop_transform();
-        }
+        // A `BarGround::Haze` is the `Haze` canvas under this one.
 
         if let BarGround::Band {
             left,
@@ -2448,7 +2450,15 @@ pub fn bar<'a, Message: Clone + 'static>(
         right: right_metrics,
     };
 
-    let mut layers = stack![canvas(strip).width(Length::Fill).height(Length::Fill)];
+    let mut layers = stack![];
+    if let BarGround::Haze { prims } = b.ground {
+        layers = layers.push(
+            canvas(Haze { style: *style, prims })
+                .width(Length::Fill)
+                .height(Length::Fill),
+        );
+    }
+    layers = layers.push(canvas(strip).width(Length::Fill).height(Length::Fill));
     layers = layers.push(
         container(modules.align_y(iced::Alignment::Center).height(Length::Fill))
             .padding(Padding {

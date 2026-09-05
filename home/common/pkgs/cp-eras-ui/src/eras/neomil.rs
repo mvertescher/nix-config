@@ -23,7 +23,7 @@ use crate::style::{
 use crate::widgets::surface::{Corners, Cut};
 // --- login ---
 use crate::style::{
-    Access, Bevel, Colophon, Emblem, Fixture, Legend, Masthead, Plate, Plot, Slot, Wash,
+    Access, Bevel, Colophon, Emblem, Fixture, Legend, Masthead, Plate, Plot, Slot,
 };
 // --- end login ---
 
@@ -370,10 +370,22 @@ pub const NOTICE: iced::Color = rgb(0xe63132);
 const NOTICE_1: &str = "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO";
 const NOTICE_2: &str = "MANIPULATE, ACCESS OR DISABLE THIS DEVICE.";
 
+/// The ground as the trace paints it (:120-122): the page `#080405`
+/// (a step under the hub's `GROUND`), then the same `#glowh` under
+/// `#glowmask` and the same `#vignette` every other neomil screen
+/// opens with -- the trace records the login and hub backdrops as
+/// pixel-identical at every sampled row. Until 2026-09-05 `login.rs`
+/// sampled this through closures of its own and squared the
+/// vignette's alpha on the way, where the def is two linear stops.
+const LOGIN_GROUND: &[Prim] = &[
+    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(rgb(0x080405))),
+    HUB_GLOW,
+    HUB_VIGNETTE,
+];
+const LOGIN_BACKDROP: &[Prim] = &[Prim::Soft { prims: LOGIN_GROUND }];
+
 pub const ACCESS: Access = Access {
-    // A broad blue glow over near-black, gone by y~420, with a warm
-    // near-black vignette down the left margin.
-    wash: Wash::ColdGlow,
+    backdrop: LOGIN_BACKDROP,
     masthead: Masthead::Dossier {
         // 59x57, bottom-left chamfer 15. The customer badge at the
         // left, then four security badges of which the second is
@@ -1038,15 +1050,16 @@ pub const C2UPPER: &[(f32, iced::Color)] = &[
 /// the scene draws it rather than leaving the page flat.
 pub const GROUND: iced::Color = rgb(0x0b0405);
 
-// The cold-blue glow every neomil screen after the login opens with,
-// as the three traces (dashboard :75-101, mailbox and store :2-27)
+// The cold-blue glow every neomil screen opens with, as the four
+// traces (dashboard :75-101, mailbox and store :2-27, login :2-25)
 // define it, to the stop: `#glowh`, a ten-stop horizontal gradient
 // across the frame, drawn through `#glowmask`, a nine-stop luminance
 // ramp down it -- opaque to y 225, gone by 540. Until 2026-09-04 the
 // dashboard rasterised the pair at compile time into 640 strips and
 // the mailbox and store drew a flat ground and a two-stop wash;
 // `Prim::Masked` over two `Prim::Ramp`s is the construct itself,
-// composited by `soft.rs`, so all three now share these.
+// composited by `soft.rs`, so those three shared these from then and
+// the login (its own sampler until 2026-09-05) since.
 
 /// `#glowh`: the sampled hex, offsets as fractions of the frame width.
 pub const GLOW_H: &[(f32, iced::Color)] = &[
