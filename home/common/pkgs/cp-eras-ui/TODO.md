@@ -1695,6 +1695,16 @@ when that screen assembles from library widgets. Priority order:
     `#3a0f12`/`#a8282b` reading, tested; the other eras derive from
     their border/dim inks since no other trace shows a rail) and
     `catalog::faded_rail(alpha)` is the unfocused-pane variant.
+  - `tests.mail.<era>` added 2026-09-05: the working mail client now
+    has four goldens of its own, so the list rows with selection, the
+    focus fade, the rail and the `catalog::button::bare` DELETE are
+    held still. The matrix is 25 cases. Seen in the takes and left as
+    is: entropism's DELETE plate (`alert` fill under `on_select` ink)
+    is low-contrast (a `panels::mail` choice, not a catalog one; the
+    trace-backed reference for the screen is the display-only
+    `mailbox` golden). The kitsch and neokitsch top bars carrying no
+    MAIL BOX segment is `widgets::chrome::top_bar`'s Caption and
+    DeviceFrame arms doing what their table says, not a gap.
 - [ ] **Feedback**: segmented meter, progress bar (+indeterminate
   scan), toast/banner (warn = dim red, error = bright red), modal
   with scrim, tooltip, status bar.

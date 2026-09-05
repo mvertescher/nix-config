@@ -2,7 +2,7 @@
 #
 # Run the golden render matrix and print a pass/fail table.
 #
-#   ./scripts/run_test_matrix.sh              # all 21 cases
+#   ./scripts/run_test_matrix.sh              # all 25 cases
 #   ./scripts/run_test_matrix.sh store        # only cases matching /store/
 #   ./scripts/run_test_matrix.sh 'bar\.|visual'
 #
