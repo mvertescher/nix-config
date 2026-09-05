@@ -1597,11 +1597,25 @@ fn menu_row<'a, Message: Clone + 'static>(
             .into(),
     };
 
+    // An open face that carries a tab has it standing on its inside
+    // bottom edge, under where the marker would sit; the marker moves
+    // left of it (neokitsch bar.svg: "the \"<\" glyph right-aligned at
+    // x 1420.2 so it clears the tab", 41 in from a box ending at
+    // 1461.2 -- the tab's base and inset plus one icon gap).
+    let clear_tab = match dressed {
+        Some((dress, _)) if dress.tab => style
+            .bar
+            .tab
+            .map_or(0.0, |tab| tab.base + tab.inset + m.icon_gap),
+        _ => 0.0,
+    };
+
     let inner = row![]
         .extend(leading)
         .push(ink_text(style, ink, false, label))
         .push(Space::new().width(Length::Fill).height(Length::Shrink))
         .push(trailing)
+        .push(Space::new().width(Length::Fixed(clear_tab)).height(Length::Shrink))
         .align_y(iced::Alignment::Center)
         .width(Length::Fill)
         // See `row_height`: this is the half of that agreement the

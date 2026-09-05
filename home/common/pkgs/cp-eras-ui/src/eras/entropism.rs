@@ -41,13 +41,20 @@ use crate::style::{Access, Colophon, Fixture, Legend, Masthead, Plate, Plot, Slo
 // --- end login ---
 
 pub const BG: iced::Color = rgb(0x110c07);
-pub const SAGE_SOLID: iced::Color = rgb(0x9cb795);
+/// The selection fill and the footer band: the value every trace's
+/// k-means gives the solid sage (store #a8d4a2, mailbox #a6d2a8, hub
+/// #a6d3a7). #9cb795 until 2026-09-05, when `border` took the frames'
+/// bright #8fba97 and the two were 13 levels apart: a selected row no
+/// longer stood off its own outline, and the G2i extractor merged the
+/// families (store 32/32 -> 19/32). A fill does not dilute in the 1600
+/// rescale the way a line does, so the traces' number is the photo's.
+pub const SAGE_SOLID: iced::Color = rgb(0xa6d3a7);
 pub const SAGE_TEXT: iced::Color = rgb(0x94bb94);
 pub const MID: iced::Color = rgb(0x728f76);
 /// The frames' ink: the 1.25px core of every outlined box on the hub
-/// and store sheets at full resolution, the same value `HUB_STROKE`
-/// below was measured to. #5d7752 until 2026-09-05, a stop darker than
-/// any frame in the material.
+/// and store sheets at full resolution (hub trace header "Stroke
+/// profile"). #5d7752 until 2026-09-05, a stop darker than any frame
+/// in the material.
 pub const OUTLINE: iced::Color = rgb(0x8fba97);
 pub const DIM: iced::Color = rgb(0x3d4d38);
 pub const ON_SOLID: iced::Color = rgb(0x1f2a1c);
@@ -287,33 +294,23 @@ pub fn style() -> Style {
 //
 // Colours are the era's published roles rather than the trace's spot
 // samples, so the theme still reaches the screen. The pairs, for the
-// record: band and button `select`/`cta` #9cb795 against the trace's
-// #8aac8c, outlines `border` (#5d7752 then, #8fba97 since 2026-09-05)
-// against #739479, text `fg`
+// record: band and button `select`/`cta` #a6d3a7 against the trace's
+// #8aac8c, outlines `border` #8fba97 against #739479, text `fg`
 // #94bb94 against #8aac8c, dark ink on the band `on_select` #1f2a1c
 // against #20281c.
-
-/// The line ink of *this* screen.
-///
-/// Probed at full 3840 resolution on the 2026-09-03 trace pass: the
-/// header strip and the field frame are a 3px line with a peak core of
-/// #6c8a77..#819b82, sitting straight on the ground with no dark ring.
-/// The era's published `border` (#5d7752 then; #8fba97 since
-/// 2026-09-05) was sampled off the hub, mail and store sheets and this
-/// screen is dimmer than those; the
-/// k-means #739479 the trace used to carry is the 1600 rescale's
-/// dilution of the same line over two pixels.
-pub const LINE: iced::Color = rgb(0x75967b);
-/// The sage of the footer band and the NEXT button on this screen, and
-/// the two text inks over the ground, all bright-tail means over the
-/// runs on the same pass. This screen photographs a stop under the era
-/// sheets the palette was sampled from, and the difference is not
-/// cosmetic: on the published `select` (#9cb795) the k-means spends a
-/// whole cluster on the extra antialiasing ramp and has none left for
-/// the ground's warm lift, which is 72% of the design's shape area.
-pub const BAND: iced::Color = rgb(0x8aac8c);
-pub const ON_BAND: iced::Color = rgb(0x20281c);
-pub const HEADING: iced::Color = rgb(0x799d81);
+//
+// From 2026-09-03 to 2026-09-05 the four were `Ink::Fixed` at the
+// values a full-resolution probe of this photo gave: line #75967b (a
+// 3px line with a peak core of #6c8a77..#819b82, no dark ring), band
+// and button #8aac8c, ink on the band #20281c, header strings
+// #799d81. This screen photographs a stop under the hub, mail and
+// store sheets the palette was sampled from, and the fixed values
+// bought a G2i point (on the published `select` the k-means spends a
+// cluster on the antialiasing ramp and has none left for the ground's
+// warm lift). They went back to the roles when `border` took the
+// frames' bright sage, because four screens of one era disagreeing
+// about their outline ink was the larger fault; the probe stays here
+// so nobody re-measures it.
 
 /// The footer band is the one solid fill on the screen and it is 12.1%
 /// of the frame; the header strip and the field are hairline outlines.
@@ -329,36 +326,36 @@ pub const ACCESS: Access = Access {
     wash: Wash::WarmLift,
     // Header strip, x 49..1547, y 43..69, dividers at 465 and 1353.
     masthead: Masthead::Strip {
-        plate: Plate::outlined(Plot::new(49.0, 43.0, 1498.0, 26.0), Ink::Fixed(LINE), 1.25),
+        plate: Plate::outlined(Plot::new(49.0, 43.0, 1498.0, 26.0), Ink::Border, 1.25),
         dividers: &[465.0, 1353.0],
         labels: &[
-            Legend::new("RIPPERDOC SURGICAL SOFTWAREV2", 61.0, 60.0, 17.0, Ink::Fixed(HEADING))
+            Legend::new("RIPPERDOC SURGICAL SOFTWAREV2", 61.0, 60.0, 17.0, Ink::Fg)
                 .medium(),
-            Legend::new("STORE ACCESS SCREEN", 518.0, 60.0, 17.0, Ink::Fixed(HEADING)).medium(),
-            Legend::new("FLAIR TRS 5MMP", 1382.0, 60.0, 17.0, Ink::Fixed(HEADING)).medium(),
+            Legend::new("STORE ACCESS SCREEN", 518.0, 60.0, 17.0, Ink::Fg).medium(),
+            Legend::new("FLAIR TRS 5MMP", 1382.0, 60.0, 17.0, Ink::Fg).medium(),
         ],
     },
     // One slot, alone in the upper two thirds of an empty frame.
     slots: &[Slot {
         prompt: Some(
-            Legend::new("USERNAME:", 576.0, 402.0, 23.0, Ink::Fixed(BAND))
+            Legend::new("USERNAME:", 576.0, 402.0, 23.0, Ink::Fg)
                 .medium()
                 .tracked(0.75),
         ),
         field: Some(Plate::outlined(
             Plot::new(563.0, 414.0, 359.0, 33.0),
-            Ink::Fixed(LINE),
+            Ink::Border,
             1.25,
         )),
         // Eleven asterisks, and the photo's are 7px glyphs at a ~9.7
         // pitch, not the 4-5px at pitch 10 an earlier reading drew: a
         // bold 22 at natural tracking, run 94 wide.
-        value: Some(Legend::new("***********", 578.0, 439.0, 22.0, Ink::Fixed(BAND)).bold()),
+        value: Some(Legend::new("***********", 578.0, 439.0, 22.0, Ink::Fg).bold()),
         // The short caret underline under the first pair of characters.
-        caret: Some(Plate::filled(Plot::new(577.0, 439.5, 17.0, 1.25), Ink::Fixed(LINE))),
-        action: Some(Plate::filled(Plot::new(932.0, 413.0, 105.0, 33.0), Ink::Fixed(BAND))),
+        caret: Some(Plate::filled(Plot::new(577.0, 439.5, 17.0, 1.25), Ink::Border)),
+        action: Some(Plate::filled(Plot::new(932.0, 413.0, 105.0, 33.0), Ink::Cta)),
         action_label: Some(
-            Legend::new("NEXT", 940.0, 433.0, 22.0, Ink::Fixed(ON_BAND))
+            Legend::new("NEXT", 940.0, 433.0, 22.0, Ink::OnSelect)
                 .medium()
                 .tracked(2.0),
         ),
@@ -369,12 +366,12 @@ pub const ACCESS: Access = Access {
     // dividers, unlike the thin outlined strip the hub, mail and store
     // screens use.
     colophon: Colophon::Band {
-        plate: Plate::filled(Plot::new(36.0, 765.0, 1529.0, 115.0), Ink::Fixed(BAND)),
+        plate: Plate::filled(Plot::new(36.0, 765.0, 1529.0, 115.0), Ink::Select),
         labels: &[
-            Legend::new("INTERFACE LOADED", 61.0, 863.0, 15.0, Ink::Fixed(ON_BAND)).tracked(1.0),
-            Legend::new("PROVIDED BY NEXUS NETWORK V10.8", 519.0, 863.0, 15.0, Ink::Fixed(ON_BAND))
+            Legend::new("INTERFACE LOADED", 61.0, 863.0, 15.0, Ink::OnSelect).tracked(1.0),
+            Legend::new("PROVIDED BY NEXUS NETWORK V10.8", 519.0, 863.0, 15.0, Ink::OnSelect)
                 .tracked(1.0),
-            Legend::new("BUILD 6.47.48441.R15", 1383.0, 863.0, 15.0, Ink::Fixed(ON_BAND)).tracked(1.0),
+            Legend::new("BUILD 6.47.48441.R15", 1383.0, 863.0, 15.0, Ink::OnSelect).tracked(1.0),
         ],
     },
 };
@@ -394,11 +391,14 @@ pub const ACCESS: Access = Access {
 //   * the trace's `lift` radial ground is the photograph's falloff;
 //     `Ground::Flat` stands.
 //
-// Outline ink is `Ink::Mid`, not `Ink::Border`: the trace samples every
-// frame at #709174 and the era's `MID` is #728f76. `OUTLINE` was a stop
-// darker at #5d7752 when this was written; since 2026-09-05 it is the
-// bright #8fba97, and folding this screen onto the role is the open
-// follow-up in the crate TODO.
+// Outline ink is `Ink::Border`. It was `Ink::Mid` until 2026-09-05
+// because the trace samples every frame at #709174, next to the era's
+// `MID` #728f76 and a stop above the `OUTLINE` of the time (#5d7752);
+// the #709174 is the 1600 rescale's dilution of a bright 2px line,
+// which is what `border` now is (#8fba97), so the frames read the role
+// like the hub's and the store's. The two 8.5px captions under A MAIL
+// BOX stay `Ink::Mid`: they are the screen's faintest text, not frames.
+
 use crate::style::{
     Frame, Mail, MailBadges, MailButtons, MailList, MailPanel, Mailbox, Note, Piece,
     RowDecor, Run, Trim, FromAt,
@@ -411,20 +411,20 @@ static CHROME: [Piece; 22] = [
     Piece::Box {
         at: Frame::new(49.0, 43.0, 1498.0, 26.0),
         fill: None,
-        stroke: Some(Ink::Mid),
+        stroke: Some(Ink::Border),
         width: 2.0,
         trim: Trim::NONE,
     },
     Piece::Box {
         at: Frame::new(465.0, 43.0, 2.0, 26.0),
-        fill: Some(Ink::Mid),
+        fill: Some(Ink::Border),
         stroke: None,
         width: 0.0,
         trim: Trim::NONE,
     },
     Piece::Box {
         at: Frame::new(1353.0, 43.0, 2.0, 26.0),
-        fill: Some(Ink::Mid),
+        fill: Some(Ink::Border),
         stroke: None,
         width: 0.0,
         trim: Trim::NONE,
@@ -506,7 +506,7 @@ static CHROME: [Piece; 22] = [
     Piece::Box {
         at: Frame::new(49.0, 847.0, 1498.0, 26.0),
         fill: None,
-        stroke: Some(Ink::Mid),
+        stroke: Some(Ink::Border),
         width: 2.0,
         trim: Trim::NONE,
     },
@@ -572,7 +572,7 @@ pub fn mailbox() -> Mailbox {
         list: MailList {
             // frame x 84..451, y 205..686
             frame: Some(Frame::new(84.0, 205.0, 367.0, 481.0)),
-            frame_ink: Ink::Mid,
+            frame_ink: Ink::Border,
             frame_width: 2.0,
             // seven rows on a 62px pitch starting 21px below the top
             // edge; the dividers at 349 / 411 / 473 / 535 / 596 / 658
@@ -588,7 +588,7 @@ pub fn mailbox() -> Mailbox {
             row_trim: Trim::NONE,
             spine: None,
             rule: Some(Frame::new(0.0, 61.95, 366.0, 2.0)),
-            rule_ink: Ink::Mid,
+            rule_ink: Ink::Border,
             tab: None,
             tab_ink: Ink::Fg,
             sel: Frame::new(85.0, 226.0, 366.0, 62.0),
@@ -617,7 +617,7 @@ pub fn mailbox() -> Mailbox {
         panel: MailPanel {
             frame: Some(Frame::new(529.0, 205.0, 750.0, 481.0)),
             frame_fill: None,
-            frame_stroke: Some(Ink::Mid),
+            frame_stroke: Some(Ink::Border),
             frame_width: 2.0,
             frame_trim: Trim::NONE,
             head: Some(Frame::new(531.0, 227.0, 746.0, 61.0)),
@@ -652,7 +652,7 @@ pub fn mailbox() -> Mailbox {
             chevron: false,
             trim: Trim::NONE,
             width: 2.0,
-            stroke: Ink::Mid,
+            stroke: Ink::Border,
             label: Run::new(20.0, 25.0, 22.0, Ink::Fg),
             tab: None,
             labels: &BUTTONS,
@@ -668,7 +668,7 @@ pub fn mailbox() -> Mailbox {
             trim: Trim::NONE,
             width: 2.0,
             fill: None,
-            stroke: Ink::Mid,
+            stroke: Ink::Border,
             label: Run::new(35.0, 43.5, 27.0, Ink::Fg).bold().centered(),
             caption: None,
             caption_text: "",
@@ -980,23 +980,19 @@ pub const STORE: &[Prim] = &[
 // the trace's paint order; the comment on each group names the trace
 // element it came from.
 //
-// Inks are the trace's sampled hex values. Since 2026-09-05 `OUTLINE`
-// carries the stroke (#8fba97, the same measurement); none of the other
-// role consts above carries any of them (BG #110c07 vs the trace's
-// ground #0f0a03; SAGE_SOLID #9cb795 vs the fill #a6d3a7; SAGE_TEXT
+// Inks are the trace's sampled hex values. Two are the roles since
+// 2026-09-05: the frame stroke is `Ink::Border` (`OUTLINE` #8fba97, the
+// 1.25px core of every outlined frame at full resolution, trace header
+// "Stroke profile") and the selected tile's fill is `Ink::Select`
+// (`SAGE_SOLID` #a6d3a7). None of the other role consts above carries
+// any of them (BG #110c07 vs the trace's ground #0f0a03; SAGE_TEXT
 // #94bb94 vs the label #acddb4; ON_SOLID #1f2a1c vs #22301f), so they
 // are spelled here as block-local consts, the way `STORE_BAND` is.
 // Reconciling the rest with the palette is ERAS-DELTA work, not this
-// block's; `HUB_STROKE` stays a local const until that pass folds it
-// onto `Ink::Border` with the login and mailbox outlines.
+// block's.
 
 use crate::style::{hline, Anchor};
 
-/// The 1.25px core of every outlined frame, measured at full resolution
-/// (trace header "Stroke profile").
-const HUB_STROKE: iced::Color = rgb(0x8fba97);
-/// The solid fill of the selected tile and the T2 badge.
-const HUB_SOLID: iced::Color = rgb(0xa6d3a7);
 /// Ink on the solid fill: the selected tile's label and T2.
 const HUB_ON_SOLID: iced::Color = rgb(0x22301f);
 /// The selected tile's caption box, drawn dark on the fill.
@@ -1092,12 +1088,12 @@ macro_rules! tile {
     ($h:expr, $( ($lx:expr, $ly:expr, $label:expr) ),+) => {
         (
             &[
-                fill_rect(0.0, -211.0, 194.0, 211.0, Ink::Fixed(HUB_SOLID)),
+                fill_rect(0.0, -211.0, 194.0, 211.0, Ink::Select),
                 $( label($lx, $ly, Ink::Fixed(HUB_ON_SOLID), $label), )+
                 Prim::At { x: 0.0, y: 0.0, prims: CAPTION_ON },
             ],
             &[
-                line_rect(0.0, -$h, 194.0, $h, Ink::Fixed(HUB_STROKE), 1.25),
+                line_rect(0.0, -$h, 194.0, $h, Ink::Border, 1.25),
                 $( label($lx, $ly, Ink::Fixed(HUB_LABEL), $label), )+
                 Prim::At { x: 0.0, y: 0.0, prims: CAPTION },
             ],
@@ -1151,9 +1147,9 @@ pub const DASHBOARD: &[Prim] = &[
     fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(rgb(0x0f0a03))),
     Prim::Lobe { x: 720.0, y: 405.0, rx: 1200.0, ry: 675.0, stops: LIFT },
     // header strip, y 43..69, dividers at x 465 and 1353
-    line_rect(49.0, 43.0, 1498.0, 26.0, Ink::Fixed(HUB_STROKE), 1.25),
-    vline(465.0, 43.0, 69.0, Ink::Fixed(HUB_STROKE), 1.25),
-    vline(1353.0, 43.0, 69.0, Ink::Fixed(HUB_STROKE), 1.25),
+    line_rect(49.0, 43.0, 1498.0, 26.0, Ink::Border, 1.25),
+    vline(465.0, 43.0, 69.0, Ink::Border, 1.25),
+    vline(1353.0, 43.0, 69.0, Ink::Border, 1.25),
     medium(61.0, 60.0, 17.0, Ink::Fixed(HUB_STRIP), "RIPPERDOC SURGICAL SOFTWAREV2"),
     medium(518.0, 60.0, 17.0, Ink::Fixed(HUB_STRIP), "STORE ACCESS SCREEN"),
     medium(1382.0, 60.0, 17.0, Ink::Fixed(HUB_STRIP), "FLAIR TRS 5MMP"),
@@ -1181,9 +1177,9 @@ pub const DASHBOARD: &[Prim] = &[
     Prim::At { x: 716.0, y: 710.0, prims: MODULE_5 },
     // MESSAGE detail panel, x 1014..1275, y 215..723: heading over a
     // full-width rule at y 281 (`<path d="M 1014,281 H 1275">`)
-    line_rect(1014.0, 215.0, 261.0, 508.0, Ink::Fixed(HUB_STROKE), 1.25),
+    line_rect(1014.0, 215.0, 261.0, 508.0, Ink::Border, 1.25),
     semibold(1033.0, 264.0, 22.0, Ink::Fixed(HUB_LABEL), "BRAINDANCE"),
-    hline(1014.0, 281.0, 1275.0, Ink::Fixed(HUB_STROKE), 1.25),
+    hline(1014.0, 281.0, 1275.0, Ink::Border, 1.25),
     // body copy: 7 lines, blank, 3 lines on a 21px pitch, the group's
     // `transform="translate(1033,0) scale(1.16,1)"` as the stretch
     wide(1033.0, 321.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "Lorem ipsum dolor sit amet,"),
@@ -1199,16 +1195,16 @@ pub const DASHBOARD: &[Prim] = &[
     // SECURITY LEVEL badges: four 68x68 at x 1380, T2 filled. Glyphs
     // bold 27 stretched to the measured runs, centred at x 1414 (T1 26
     // wide, T2 34, T3 36, T4 36), hence the start x here
-    line_rect(1380.0, 214.0, 68.0, 68.0, Ink::Fixed(HUB_STROKE), 1.25),
+    line_rect(1380.0, 214.0, 68.0, 68.0, Ink::Border, 1.25),
     wide(1401.0, 257.0, 27.0, 1.37, Ink::Fixed(HUB_LABEL), Face::Bold, "T1"),
-    fill_rect(1380.0, 304.0, 68.0, 68.0, Ink::Fixed(HUB_SOLID)),
+    fill_rect(1380.0, 304.0, 68.0, 68.0, Ink::Select),
     wide(1397.0, 346.0, 27.0, 1.42, Ink::Fixed(HUB_ON_SOLID), Face::Bold, "T2"),
-    line_rect(1380.0, 393.0, 68.0, 68.0, Ink::Fixed(HUB_STROKE), 1.25),
+    line_rect(1380.0, 393.0, 68.0, 68.0, Ink::Border, 1.25),
     wide(1396.0, 435.0, 27.0, 1.5, Ink::Fixed(HUB_LABEL), Face::Bold, "T3"),
-    line_rect(1380.0, 482.0, 68.0, 68.0, Ink::Fixed(HUB_STROKE), 1.25),
+    line_rect(1380.0, 482.0, 68.0, 68.0, Ink::Border, 1.25),
     wide(1396.0, 524.0, 27.0, 1.38, Ink::Fixed(HUB_LABEL), Face::Bold, "T4"),
     // footer strip, y 847..872, no dividers; only BUILD is end-anchored
-    line_rect(49.0, 847.0, 1498.0, 25.0, Ink::Fixed(HUB_STROKE), 1.25),
+    line_rect(49.0, 847.0, 1498.0, 25.0, Ink::Border, 1.25),
     medium(61.0, 865.0, 17.0, Ink::Fixed(HUB_STRIP), "INTERFACE LOADED"),
     medium(518.0, 865.0, 17.0, Ink::Fixed(HUB_STRIP), "PROVIDED BY NEXUS NETWORK V10.8"),
     Prim::Text { x: 1525.0, y: 865.0, size: 17.0, ink: Ink::Fixed(HUB_STRIP), face: Face::Medium, anchor: Anchor::End, content: "BUILD 6.47.48441.R15" },

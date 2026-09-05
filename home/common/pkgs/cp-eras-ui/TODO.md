@@ -541,8 +541,9 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
   - ~~translucent fills over a composited ground are rebased against
     the flat `palette.bg`~~ — **the premise was wrong on both examples**
     (measured 2026-09-04). Entropism (720,360) is the grown card's
-    *opaque* header fill, `Ink::Select` #9cb795 against the trace's
-    #a8d4a2: the era-role-vs-trace-hex choice `ERAS-DELTA.md` already
+    *opaque* header fill, `Ink::Select` (#9cb795 then; #a6d3a7 since
+    2026-09-05) against the trace's #a8d4a2: the era-role-vs-trace-hex
+    choice `ERAS-DELTA.md` already
     classifies, not blending. Neomil's `c2upper` was a two-stop
     `Prim::Wash` drawn by iced's gradient, which `mix`es in linear
     light and `smoothstep`s between stops — 14 levels off a third of
@@ -857,12 +858,28 @@ gap must be exact.
   against the old ones, both re-taken); dashboard, login and mailbox
   came out byte-identical, which is the follow-up below stated as a
   measurement -- none of the three reads the role. Matrix 21/21.
-  Still open, as the follow-up: fold login's four `Ink::Fixed`s
-  (#75967b / #8aac8c / #20281c / #799d81) and the mailbox's `Ink::Mid`
-  outlines onto the role, and `HUB_STROKE`→`Ink::Border` on the hub,
-  so the four screens stop disagreeing with each other. `store-trace.svg`
-  strokes its frames in #93bd95 — the trace and the role still differ
-  by a hair; a vision-model question, not a code one.
+  The follow-up landed the same day: login's four `Ink::Fixed`s
+  (#75967b / #8aac8c / #20281c / #799d81), the mailbox's nine `Ink::Mid`
+  outlines and dividers, and the hub's `HUB_STROKE`/`HUB_SOLID` now
+  read `Ink::Border` / `Ink::Fg` / `Ink::Select` / `Ink::Cta` /
+  `Ink::OnSelect` — the mapping the login block's own comment gave;
+  the probe values stay in the block as history so nobody re-measures.
+  The dashboard came out byte-identical (`HUB_STROKE` already was the
+  role's value). Doing it surfaced a regression the OUTLINE change had
+  made unnoticed the day before: G2i store had gone 32/32 → 19/32 FAIL
+  at `border` #8fba97, because the k=8 extractor merges inks within
+  ~13 levels and the brightened frames fell into the #9cb795 selection
+  fills, so the filled rects lost their edges (confirmed by flipping
+  `border` back — 32/32 — and restoring it). Resolved by the user's
+  call, off the side-by-sides, to take `select`/`cta` (`SAGE_SOLID`) to
+  #a6d3a7, the fill the three traces agree on (store #a8d4a2, mailbox
+  #a6d2a8, hub #a6d3a7; fills do not dilute in the rescale the way
+  1.25px strokes do): store back to 32/32, mailbox 15/15 → 11/15 →
+  14/15, and the active workspace on the bar again stands off the
+  `nomad` tape. Goldens bar/login/mailbox/store-entropism re-taken
+  (99.77 / 98.41 / 99.28 / 99.53 against the previous); matrix 21/21.
+  `store-trace.svg` strokes its frames in #93bd95 — the trace and the
+  role still differ by a hair; a vision-model question, not a code one.
 
 Housekeeping (the two deletions below landed 2026-09-03; nothing left
 here is blocked):
@@ -1194,19 +1211,28 @@ Open:
       lands past the pointer rather than being clipped. The one edge
       case is a pointer within 8px of the output's right edge, where
       it would run off; the tray never sits that far over.
-    - Neokitsch open-row (submenu parent) box ends ~13px wide of the
-      design — *found 2026-09-05 while measuring the overshoot, not
-      fixed*. `bar.svg` draws the Devices outline at x 1287..1445.2
-      (line 335) but its own prose calls that "6 from the rings' inner
-      edge", which would be 1461.2 — the number the separator rule on
-      line 341 actually uses. The code gives both the same 6
-      (`open_inset.1`, and the rule's own inset), so the rule measures
-      1460..1461 on the golden, dead on, and the open row measures
-      1458.5 where the drawing wants 1445.2. Either the prose or the
-      path in `bar.svg` is wrong; that wants a vision model on the
-      photo before anything moves in `neokitsch.rs`. Pre-existing —
-      the overshoot change did not move this row (its diff was one
-      121x26 box two rows below).
+    - Neokitsch open-row (submenu parent) box — *found 2026-09-05
+      while measuring the overshoot; resolved the same day, and the
+      SVG path was the wrong half*. `bar.svg` drew the Devices outline
+      at x 1287..1445.2 (line 335) while its own prose called that "6
+      from the rings' inner edge", which is 1461.2 — the number the
+      separator rule on line 341 uses, and what the code gives both
+      (`open_inset.1` and the rule's own inset; the golden measured
+      the rule 1460..1461 and the open row 1458.5). `git log -p
+      515c2a0` settled it: 1445.2 is the pre-nesting 1458 shifted by
+      the 12.8 the rings moved, from when the rows began at y 37
+      inside the panel's 22px chamfer and the box had to stop at the
+      chamfer's foot. The rows now start below the innermost ring's
+      9.2px chamfer, which clears 1461.2 by 3px, so the constraint is
+      gone. Box, tab and the `<` glyph moved in `bar.svg` (path and
+      prose); `neokitsch.rs` unchanged. One thing the prose said that
+      the code did not do: "the "<" glyph right-aligned … so it clears
+      the tab" — the marker sat under the tab's footprint.
+      `bar::menu_row` now pads the trailing marker by `tab.base +
+      tab.inset + icon_gap` (38px) on an open face that carries a tab;
+      only neokitsch's does, the other three bars are byte-identical.
+      Golden bar-neokitsch re-taken (99.994% against the previous);
+      G2i neokitsch bar still the accepted 14%.
     - Neokitsch haze blue annulus — *still open*. On the strip it is a
       faint blue cast on the last ~150px (design #2B2E40 vs #292637 at
       x 1520) plus a mask-faded arc on the left; alpha-stop annuli with
@@ -1442,8 +1468,9 @@ four bars, done in this order so the Rust is written once.
     `themes/<era>/palettes.nix`).
   - Bar/entropism inks and the login `Ink::Fixed`s waited on the
     OUTLINE decision under "Trace improvements" — taken 2026-09-05
-    (`border` → #8fba97); folding the login and mailbox inks onto the
-    role is the follow-up recorded there.
+    (`border` → #8fba97), and the login, mailbox and hub inks were
+    folded onto the roles the same day — recorded there, with the
+    `select` → #a6d3a7 decision that came out of it.
 - [x] **Canvas vs widgets — decided 2026-09-05: retire.** ~~Four screens are now display
   lists over era tables and the widget layer (`widgets/`, `Layout`,
   `Cut`, `Surface`, `Ground`) serves only the dashboard and the bar's
