@@ -1608,6 +1608,20 @@ when that screen assembles from library widgets. Priority order:
   sites with a semantic iced Theme + widget catalogs (surface/
   primary/dim/danger...) so every later widget styles against tokens.
   Everything below is written twice if this comes second.
+  - Re-read 2026-09-05, half of it is already there and the item
+    should not be read as "start from nothing": every canvas call
+    site styles through `Ink` roles resolved by `Palette` (`bar.rs`
+    `ink_of`, `scene.rs` `Scene::ink`, `login.rs`), the era tables
+    name roles rather than values wherever the trace has a role, and
+    the nix theme overlays the roles (`Palette::with_roles`) -- that
+    is the token layer. There are no loose colour consts at call
+    sites left to replace (the `rgb(0x..)` outside `src/eras/` are
+    `soft.rs`/`scene.rs` tests and the floppy icon). What does *not*
+    exist is the iced side: no `Theme`/`Catalog` impls, so every
+    built-in takes an ad-hoc closure (`panels::mail` `rail()` for
+    `scrollable`, `chrome.rs:357` for a `container`) and the form
+    controls below would each carry their own. That closure-per-site
+    is the remaining half.
 - [x] **Migrate to iced 0.14** — done 2026-09-02, before the build-out;
   record under "SVG→iced pre-work" above (the `web-colors` opt-out is
   the part to know about).
