@@ -245,7 +245,7 @@ workflow — by eye, or scripted as
 
 ## Tests
 
-    ./scripts/run_test_matrix.sh              # all 21 cases
+    ./scripts/run_test_matrix.sh              # all 25 cases
     ./scripts/run_test_matrix.sh store        # only cases matching /store/
 
 That is the whole invocation. The script fetches this repo, takes
@@ -265,9 +265,11 @@ anyway: fetch this repo with `git+file:`, **never** `path:`. The reason
 is at the top of `scripts/run_test_matrix.sh`, it cost 1.8 TB of disk,
 and the script now refuses to build if its source path is too big.
 
-`tests.<screen>.<era>` is a matrix over both: four screens (`store`,
-`login`, `mailbox`, `dashboard`) times four eras, each rendered headless
-and diffed against a golden. Every case publishes that era's
+`tests.<screen>.<era>` is a matrix over both: five screens (`store`,
+`login`, `mailbox`, `dashboard`, and `mail`, the working client built
+from iced built-ins and `widgets` rather than a `Prim` table -- the one
+case that holds `catalog` and `panels` still) times four eras, each
+rendered headless and diffed against a golden. Every case publishes that era's
 `theme/current.toml` into the sandbox HOME from
 `home/themes/<era>/scheme.nix`, so it exercises the contract between
 the theme layer and this crate rather than the compiled fallback.

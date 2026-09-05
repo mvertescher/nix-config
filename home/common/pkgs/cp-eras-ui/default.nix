@@ -220,6 +220,11 @@ package.overrideAttrs (old: {
       login = matrix "login";
       mailbox = matrix "mailbox";
       dashboard = matrix "dashboard";
+      # The working mail client: the one screen assembled from iced
+      # built-ins and `widgets` rather than a `Prim` table, so it is the
+      # standing evidence for `catalog` and `panels`. Same frame as the
+      # display-only `mailbox` it mirrors.
+      mail = matrix "mail";
 
       bar = lib.genAttrs eras (era: barCase { inherit era; variant = variantOf era; });
     };
