@@ -842,6 +842,15 @@ gap must be exact.
   Affects every entropism screen and the bar; until decided the login
   conversion carries its inks as `Ink::Fixed` (#75967b / #8aac8c /
   #20281c / #799d81) and the READMEs say "under measurement".
+  2026-09-05: put to the user with side-by-sides (store and bar
+  rendered with `border` #5d7752 and #8fba97 against the photo); they
+  asked to see screenshots before deciding, so it stays open. Two
+  facts for whoever picks it up: the store is the only screen that
+  draws `Ink::Border` (~20 prims) — login has its own `LINE`, the
+  mailbox draws `Ink::Mid`, the hub `HUB_STROKE` #8fba97 — so the
+  four screens already disagree with each other, not only with the
+  role; and `store-trace.svg` itself strokes its frames in #93bd95,
+  so the trace and the role it was cut for have never agreed.
 
 Housekeeping (the two deletions below landed 2026-09-03; nothing left
 here is blocked):
@@ -1355,22 +1364,33 @@ four bars, done in this order so the Rust is written once.
     neokitsch mailbox wire went to `Ink::Tape`, RIFLES to `Ink::Fg`,
     per a re-cut trace). Backgrounds are not optional for the
     extractor (kitsch bloom = 5/8 clusters). Noted in `PIPELINE.md`.
-  - `widgets::row::mail_row` / `row::Mail` have no caller now.
-  - **Live inconsistency:** `src/eras/kitsch.rs` has `border: TEAL`
-    (#7ddec8) where `home/themes/kitsch/scheme.nix` says border
-    #2e5f57; the store samples #5fd6c2. Outlives this crate — decide
-    which is right.
-  - **Live inconsistency, entropism:** `home/themes/entropism/palettes.nix`
-    nexus publishes `tape = "#9cb795"`, the selection sage, where
-    `src/eras/entropism.rs` and `bar.svg` have MID `#728f76` so the
-    host tape does not read as a second selected cell beside workspace
-    3. The bar golden carries the theme's value. Found 2026-09-05; the
-    crate side is right by the trace's own argument, but `tape` is a
-    theme role other consumers read, so the fix is in nix and is the
-    user's call.
+  - ~~`widgets::row::mail_row` / `row::Mail` have no caller now.~~
+    Deleted 2026-09-05 with the rest of the callerless set (below).
+  - **Live inconsistency, kitsch — settled 2026-09-05:** `src/eras/kitsch.rs`
+    had `border: TEAL` (#7ddec8) where `home/themes/kitsch/palettes.nix`
+    said #2e5f57 and the store and mailbox traces sample #5fd6c2. User
+    chose the sampled value: nix `reference.border` is #5fd6c2, the
+    crate's `border` is the new `TEAL_OUTLINE` (same value), and the
+    store's `Ink::Fixed(OUTLINE)` became `Ink::Border` since the role
+    now says what the const said. Moves the kitsch bar's chip, window
+    and menu outlines from the dim teal to the outline teal (bar.svg
+    draws them in #7ddec8, a stop brighter still). `bleach`/`ash`
+    untouched.
+  - **Live inconsistency, entropism — settled 2026-09-05:**
+    `home/themes/entropism/palettes.nix` nexus published `tape =
+    "#9cb795"`, the selection sage, where `src/eras/entropism.rs` and
+    `bar.svg` have MID `#728f76` so the host tape does not read as a
+    second selected cell beside workspace 3. User chose the crate side;
+    nexus `tape` is #728f76 now. `tape` also feeds base16 `base0A` and
+    the starship/tmux/waybar host labels in `lib/era.nix`, so those dim
+    with it on entropism hosts — intended, it is the same label.
+  - `scripts/render.sh` keyed its theme cache on `scheme.nix` +
+    `roles.nix` and not the `palettes.nix` the scheme imports, so a
+    retinted role rendered stale. Fixed 2026-09-05 (key includes
+    `themes/<era>/palettes.nix`).
   - Bar/entropism inks and the login `Ink::Fixed`s wait on the
     OUTLINE decision under "Trace improvements".
-- [ ] **Canvas vs widgets — decide.** ~~Four screens are now display
+- [x] **Canvas vs widgets — decided 2026-09-05: retire.** ~~Four screens are now display
   lists over era tables and the widget layer (`widgets/`, `Layout`,
   `Cut`, `Surface`, `Ground`) serves only the dashboard and the bar's
   window. Either the widget layer grows the gaps above and the screens
@@ -1387,10 +1407,17 @@ four bars, done in this order so the Rust is written once.
   (`bar.rs`, `screens::mail`, `panels::mail`, `style.rs` for
   `Corners`), `chrome::{top_bar, footer}` and `text` (`panels::mail`),
   `floppy_icon` (its example); **no caller** — `banner`, `bracket`,
-  `card`, `glyph`, `input`, `ornament`, `row`, `silhouette`,
-  `floppy_vector` (named only in a neomil comment). The `mod.rs`
-  re-exports keep the dead ones warning-free. Retiring the nine is
-  mechanical once decided; the build-out list below is the other fork.
+  `card`, `glyph`, `input`, `ornament`, `row`, `silhouette`. The
+  2026-09-04 count also listed `floppy_vector` as "named only in a
+  neomil comment"; wrong — `floppy_icon.rs` calls it as
+  `super::floppy_vector::draw_*`, which a `widgets::floppy_vector`
+  grep does not see. Eight, not nine. Deleted 2026-09-05 with their
+  `mod.rs` re-exports; `widgets/` is now `surface`, `ground`, `chrome`,
+  `text`, `floppy_icon`, `floppy_vector`. Build, tests and matrix
+  unchanged (nothing drew them). The "Toolkit build-out" list below is
+  therefore rebuild-from-traces work when a caller appears, not a
+  revival of these files; git has them at `b1e6cb1` if a shape is
+  wanted back.
 
 ## Toolkit infrastructure
 
@@ -1441,7 +1468,10 @@ when that screen assembles from library widgets. Priority order:
 > material has — the neomil traces are the targets now, and the widget
 > set to implement is the one on `docs/<era>/components.svg` (rebuilt
 > from the traces the same day, see "Component sheets"), not the old
-> by-eye mock.
+> by-eye mock. The callerless widget files (`banner`, `card`, `input`,
+> `bracket`, `glyph`, `ornament`, `row`, `silhouette`) were deleted
+> 2026-09-05 under "Canvas vs widgets"; none of the items below start
+> from them.
 
 - [ ] **Theme/Catalog first**: replace loose color consts at call
   sites with a semantic iced Theme + widget catalogs (surface/
