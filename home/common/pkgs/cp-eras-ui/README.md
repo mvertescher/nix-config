@@ -110,7 +110,10 @@ sight.
 
 `Style::from_desktop()` reads the published era *and* overlays its
 palette, so apps re-dress themselves when the desktop switches era —
-no rebuild. `select`/`on_select` are era-owned and never come from the
+no rebuild. `shell::style()` is what a binary calls: the same, unless
+`--era` names one, and `shell::application(..)` does the rest of the
+boot (every face the crate ships, `Style` as the iced theme, the
+1600x900 trace frame). `select`/`on_select` are era-owned and never come from the
 theme file, because across the four eras selection is not one colour
 with four values but four different ideas; `emphasis` is instead
 theme-sourced, overlaid from the optional roles when the theme declares
@@ -272,7 +275,7 @@ the theme layer and this crate rather than the compiled fallback.
 `tests.bar.<era>` is the same idea for the status bar, at 1600x220 via
 `tests/bar.nix`. It renders `examples/cp-eras-ui-bar-window.rs`, a
 plain iced window sharing the live bar's era resolution through
-`examples/bar/style.rs` — weston has no `wlr-layer-shell`, so the real
+`shell::style()` — weston has no `wlr-layer-shell`, so the real
 binary cannot be rendered by this harness at all. It holds `bar()` still;
 it says nothing about mapping a layer surface, the exclusive zone, or any
 sensor producing a reading.

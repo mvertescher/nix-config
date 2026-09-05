@@ -52,6 +52,12 @@ pub enum Message {
     Select { index: usize },
 }
 
+impl crate::shell::Wears for Dashboard {
+    fn wears(&self) -> Style {
+        self.style
+    }
+}
+
 impl Dashboard {
     pub fn new(style: Style) -> Self {
         Dashboard {

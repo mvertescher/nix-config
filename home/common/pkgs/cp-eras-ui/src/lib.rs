@@ -12,14 +12,16 @@
 //! idiom, ground and chrome -- and screens are written once against it.
 //! [`screens::Store`] is the acceptance test for that claim.
 //!
-//! Apps should start from [`style::Style::from_desktop`], which follows
-//! whatever era the nix theme layer has published, so `switch` re-dresses
-//! them without a rebuild.
+//! Apps boot through [`shell`]: [`shell::style`] follows whatever era the
+//! nix theme layer has published (or a `--era` flag), so `switch`
+//! re-dresses them without a rebuild, and [`shell::application`] hands
+//! iced the faces, the theme and the trace frame.
 
 pub mod catalog;
 pub mod eras;
 pub mod palette;
 pub mod screens;
+pub mod shell;
 pub mod style;
 pub mod theme;
 pub mod widgets;

@@ -8,65 +8,28 @@
 //! wired up. hjkl move and switch panes, `a` adds a message, `d`
 //! deletes the selected one, ctrl-f/ctrl-b page the thread.
 //!
-//! See examples/cp-eras-ui-store.rs for the reasoning behind the
-//! --era handling; it is the same here.
+//! `shell` decides the era and loads the faces; see there for the
+//! `--era` reasoning.
 
-use cp_eras_ui::fonts;
 use cp_eras_ui::panels::{
     mail::{mail_list_viewport_height, message_row_pitch},
     mail_panel, Email, MailFocus, ThreadMessage,
 };
-use cp_eras_ui::{Era, Style};
-use cp_eras_ui::Element;
+use cp_eras_ui::shell;
+use cp_eras_ui::{Element, Style};
 use iced::{keyboard, Event, Subscription, Task};
 
-/// Launch size. `scroll_to_selected` derives the message-list viewport
-/// from the height, so both must share this one number.
-const WINDOW_SIZE: (f32, f32) = (1600.0, 900.0);
+/// Launch size: the trace frame `shell::application` opens.
+/// `scroll_to_selected` derives the message-list viewport from the
+/// height, so the two must share this one number.
+const WINDOW_SIZE: iced::Size = shell::FRAME;
 
 pub fn main() -> iced::Result {
-    let style = match era_from_args() {
-        Some(era) => {
-            let mut style = era.style();
-            let theme = cp_eras_ui::theme::Theme::load();
-            if Era::parse(&theme.era) == Some(era) {
-                style.palette = style.palette.with_theme(&theme);
-            }
-            style
-        }
-        None => Style::from_desktop(),
-    };
-
-    iced::application(move || App::new(style), App::update, App::view)
+    let style = shell::style();
+    shell::application(move || App::new(style), App::update, App::view)
         .title(App::title)
-        .theme(|app: &App| app.style)
-        .font(fonts::ORBITRON_REGULAR)
-        .font(fonts::ORBITRON_MEDIUM)
-        .font(fonts::ORBITRON_SEMIBOLD)
-        .font(fonts::ORBITRON_BOLD)
-        .font(fonts::RAJDHANI_LIGHT)
-        .font(fonts::RAJDHANI_REGULAR)
-        .font(fonts::RAJDHANI_MEDIUM)
-        .font(fonts::RAJDHANI_SEMIBOLD)
-        .font(fonts::RAJDHANI_BOLD)
-        .default_font(fonts::FONT_RAJDHANI_REGULAR)
-        .window_size(WINDOW_SIZE)
-        .antialiasing(true)
         .subscription(App::subscription)
         .run()
-}
-
-fn era_from_args() -> Option<Era> {
-    let mut args = std::env::args().skip(1);
-    while let Some(arg) = args.next() {
-        if let Some(name) = arg.strip_prefix("--era=") {
-            return Era::parse(name);
-        }
-        if arg == "--era" {
-            return args.next().as_deref().and_then(Era::parse);
-        }
-    }
-    None
 }
 
 struct App {
@@ -76,6 +39,12 @@ struct App {
     list_scrollable_id: iced::widget::Id,
     content_scrollable_id: iced::widget::Id,
     focus: MailFocus,
+}
+
+impl shell::Wears for App {
+    fn wears(&self) -> Style {
+        self.style
+    }
 }
 
 impl App {
@@ -329,7 +298,7 @@ impl App {
                 // Derived from the panel's own geometry (panels/mail.rs):
                 // row pitch and list viewport, not estimates.
                 let item_height = message_row_pitch(&self.style.metrics);
-                let viewport_height = mail_list_viewport_height(&self.style, WINDOW_SIZE.1);
+                let viewport_height = mail_list_viewport_height(&self.style, WINDOW_SIZE.height);
                 let total_items = self.emails.len();
 
                 let target_y = (index as f32) * item_height;

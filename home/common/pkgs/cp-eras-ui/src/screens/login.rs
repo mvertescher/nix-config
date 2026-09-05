@@ -45,6 +45,12 @@ pub struct Login {
 #[derive(Debug, Clone)]
 pub enum Message {}
 
+impl crate::shell::Wears for Login {
+    fn wears(&self) -> Style {
+        self.style
+    }
+}
+
 impl Login {
     pub fn new(style: Style) -> Self {
         Login { style }
