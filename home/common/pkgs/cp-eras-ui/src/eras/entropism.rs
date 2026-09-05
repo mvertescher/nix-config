@@ -37,7 +37,7 @@ use crate::style::{
 };
 use crate::widgets::surface::Corners;
 // --- login ---
-use crate::style::{Access, Colophon, Fixture, Legend, Masthead, Plate, Plot, Slot, Wash};
+use crate::style::{Access, Colophon, Fixture, Legend, Masthead, Plate, Plot, Slot};
 // --- end login ---
 
 pub const BG: iced::Color = rgb(0x110c07);
@@ -312,6 +312,29 @@ pub fn style() -> Style {
 // about their outline ink was the larger fault; the probe stays here
 // so nobody re-measures it.
 
+/// `#lift` (login-trace.svg :2-6), `cx 0.45 cy 0.4 r 0.8` of the
+/// page: centre (720,360), radii (1280,720), its own hex -- the store
+/// measured its own `STORE_LIFT`, the hub its `LIFT`. The rim colour
+/// is also the page under it, because the frame's far corner sits at
+/// t 1.016, just outside the ellipse.
+///
+/// Why the screen has a lift at all when `Ground::Flat` is the era:
+/// the shape gate proved it. The trace's lift is bright enough at its
+/// centre to be a palette cluster of its own that never reaches the
+/// frame edge, so the extractor bins it as *ink* and reads a 1044x586
+/// shape in the middle of the screen -- 72% of the design's shape
+/// area, against a flat ground that offers nothing to match it.
+const LOGIN_LIFT: &[(f32, iced::Color)] = &[
+    (0.0, rgb(0x1a1810)),
+    (0.7, rgb(0x141107)),
+    (1.0, rgb(0x0f0a04)),
+];
+const LOGIN_GROUND: &[Prim] = &[
+    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(rgb(0x0f0a04))),
+    Prim::Lobe { x: 720.0, y: 360.0, rx: 1280.0, ry: 720.0, stops: LOGIN_LIFT },
+];
+const LOGIN_BACKDROP: &[Prim] = &[Prim::Soft { prims: LOGIN_GROUND }];
+
 /// The footer band is the one solid fill on the screen and it is 12.1%
 /// of the frame; the header strip and the field are hairline outlines.
 ///
@@ -323,7 +346,7 @@ pub fn style() -> Style {
 /// run bold 22 at natural tracking; NEXT medium ls 2 at x 940 baseline
 /// 433; the footer strings to baseline 863 and x 61/519/1383.
 pub const ACCESS: Access = Access {
-    wash: Wash::WarmLift,
+    backdrop: LOGIN_BACKDROP,
     // Header strip, x 49..1547, y 43..69, dividers at 465 and 1353.
     masthead: Masthead::Strip {
         plate: Plate::outlined(Plot::new(49.0, 43.0, 1498.0, 26.0), Ink::Border, 1.25),
@@ -1140,12 +1163,18 @@ const MODULE_3: &[Prim] = module!(3, 211.0, TILE_ON_3, TILE_OFF_3);
 const MODULE_4: &[Prim] = module!(4, 211.0, TILE_ON_4, TILE_OFF_4);
 const MODULE_5: &[Prim] = module!(5, 211.0, TILE_ON_5, TILE_OFF_5);
 
-pub const DASHBOARD: &[Prim] = &[
-    // ground: `<rect width=1600 height=900 fill="url(#lift)">`, the
-    // radial at cx 0.45 cy 0.45 r 0.75 of the page's box -> centre
-    // (720, 405), radii (1200, 675)
+/// The ground, `<rect width=1600 height=900 fill="url(#lift)">`: the
+/// radial at cx 0.45 cy 0.45 r 0.75 of the page's box -> centre
+/// (720, 405), radii (1200, 675). Composited like every other ground
+/// since 2026-09-05; until then it was the last `Lobe` the canvas
+/// drew as annuli, and the only entropism screen with a banded lift.
+const HUB_GROUND: &[Prim] = &[
     fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(rgb(0x0f0a03))),
     Prim::Lobe { x: 720.0, y: 405.0, rx: 1200.0, ry: 675.0, stops: LIFT },
+];
+
+pub const DASHBOARD: &[Prim] = &[
+    Prim::Soft { prims: HUB_GROUND },
     // header strip, y 43..69, dividers at x 465 and 1353
     line_rect(49.0, 43.0, 1498.0, 26.0, Ink::Border, 1.25),
     vline(465.0, 43.0, 69.0, Ink::Border, 1.25),

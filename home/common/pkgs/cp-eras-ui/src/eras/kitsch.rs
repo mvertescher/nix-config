@@ -31,7 +31,7 @@ use crate::style::{
 use crate::widgets::surface::{Corners, Cut};
 // --- login ---
 use crate::style::{
-    Access, Colophon, Emblem, Fixture, Legend, Masthead, Plate, Plot, Slot, Wash,
+    Access, Colophon, Emblem, Fixture, Legend, Masthead, Plate, Plot, Slot,
 };
 // --- end login ---
 
@@ -454,8 +454,41 @@ const NOTE_1: &str = "ACCESS MANAGER WAS DEVE-";
 const NOTE_2: &str = "LOPED BY SEOCHO. SERVING";
 const NOTE_3: &str = "CUSTOMERS SINCE 2006.";
 
+/// The ground as the trace paints it (:148-150): the page `#0a0907`;
+/// `#bloom`, `cx 0.5 cy -0.25 r 0.95` over the 1600x620 rect -> centre
+/// (800,-155), radii (1520,589), the same ellipse as the store's
+/// `ROSE` at this photo's own hex, fading to this page; and
+/// `#leftwash`, `cx 0 cy 0.5 r 0.5` over the 600x780 rect at (0,60) ->
+/// centre (0,450), radii (300,390), the store `MARGIN`'s alphas over
+/// `#262a24` rather than its `#2a2e2a`. The trace's clip rects are
+/// not carried: both ellipses end inside them.
+///
+/// Why the screen does not take `Ground::Bloom`: the era's declared
+/// bloom is a disc out of the top *right* (`x: 0.82`), sampled off
+/// its store sheet, where this photo blooms from the top *centre* and
+/// reaches `#a34e60` at y 10.
+const LOGIN_PAGE: iced::Color = rgb(0x0a0907);
+const LOGIN_BLOOM: &[(f32, iced::Color)] = &[
+    (0.00, rgb(0xa84f62)),
+    (0.35, rgb(0x8e3b52)),
+    (0.60, rgb(0x5a2236)),
+    (0.85, rgb(0x1e0f14)),
+    (1.00, LOGIN_PAGE),
+];
+const LOGIN_WASH: &[(f32, iced::Color)] = &[
+    (0.0, rgb(0x262a24)),
+    (0.6, iced::Color { a: 0.5, ..rgb(0x262a24) }),
+    (1.0, iced::Color { a: 0.0, ..rgb(0x262a24) }),
+];
+const LOGIN_GROUND: &[Prim] = &[
+    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(LOGIN_PAGE)),
+    Prim::Lobe { x: 800.0, y: -155.0, rx: 1520.0, ry: 589.0, stops: LOGIN_BLOOM },
+    Prim::Lobe { x: 0.0, y: 450.0, rx: 300.0, ry: 390.0, stops: LOGIN_WASH },
+];
+const LOGIN_BACKDROP: &[Prim] = &[Prim::Soft { prims: LOGIN_GROUND }];
+
 pub const ACCESS: Access = Access {
-    wash: Wash::RoseBloom,
+    backdrop: LOGIN_BACKDROP,
     masthead: Masthead::Clock {
         labels: &[Legend::new("10:20 PM", 781.0, 74.0, 18.0, Ink::Fixed(rgb(0xb4ece3)))],
     },
@@ -1119,7 +1152,11 @@ const MARGIN: &[(f32, iced::Color)] = &[
 /// The backdrop. Ground rather than ink -- but ground the extractor's
 /// palette split depends on: the source spends five of its eight
 /// clusters on it, so leaving the page flat is not the neutral choice
-/// it looks like.
+/// it looks like. Composited since 2026-09-05, as the mailbox's and
+/// the hub's already were; until then the store was the last kitsch
+/// screen whose lobes the canvas drew as annuli, and `MARGIN`'s alpha
+/// stops landed on the rose through the linear blend rather than the
+/// trace's sRGB one.
 const BACKDROP: &[Prim] = &[
     fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(PAGE)),
     Prim::Lobe { x: 800.0, y: -155.0, rx: 1520.0, ry: 589.0, stops: ROSE },
@@ -1486,7 +1523,7 @@ const SHELF_2: &[Prim] = shelf!(2);
 const SHELF_3: &[Prim] = shelf!(3);
 
 pub const STORE: &[Prim] = &[
-    Prim::At { x: 0.0, y: 0.0, prims: BACKDROP },
+    Prim::Soft { prims: BACKDROP },
     // logotype: a heavy extended face, the T outline-only
     Prim::Wide { x: 155.0, y: 132.0, size: 60.0, stretch: 1.7, ink: Ink::Fixed(LOGO), face: Face::Bold, content: "4S" },
     shut_path(280.0, 88.0, TEE, Ink::Fixed(LOGO), 1.3),
@@ -1571,7 +1608,7 @@ pub const STORE: &[Prim] = &[
 //   124): 176.7 - 7.9 and so on.
 // - the bloom: `radialGradient cx=0.52 cy=-0.05 r=0.85` over the
 //   1600x620 rect is an ellipse centred (832, -31) with radii 1360 x
-//   527, which the `Lobe` draws as rings; its foot stop is the page
+//   527, composited by `soft.rs`; its foot stop is the page
 //   ground, so the rect's clip edge at y 620 (beyond ry) never shows.
 
 use crate::style::Anchor;

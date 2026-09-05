@@ -1233,12 +1233,15 @@ Open:
       only neokitsch's does, the other three bars are byte-identical.
       Golden bar-neokitsch re-taken (99.994% against the previous);
       G2i neokitsch bar still the accepted 14%.
-    - Neokitsch haze blue annulus — *still open*. On the strip it is a
-      faint blue cast on the last ~150px (design #2B2E40 vs #292637 at
-      x 1520) plus a mask-faded arc on the left; alpha-stop annuli with
-      a horizontal fade need even-odd ring paths sliced in x. Not worth
-      it at this size; revisit with the haze unification (three
-      implementations, "conversion wave").
+    - ~~Neokitsch haze blue annulus — *still open*.~~ Landed
+      2026-09-05 with the haze unification (the `[x]` item under
+      "SVG→iced pre-work", findings that outlive the wave): the
+      strip's ground is the dashboard's `HUB_GROUND` composited by
+      `soft.rs`, blue and mask included, so the cast on the last
+      ~150px is there (x 1520 #272b42 vs the trace's #292e41; x 1599
+      exact). It had been a faint blue cast plus a mask-faded arc on
+      the left that alpha-stop annuli with a horizontal fade could not
+      draw without even-odd ring paths sliced in x.
     - Found on the way, **not fixed** (theme, not crate): entropism's
       published `tape` is `#9cb795` (`home/themes/entropism/palettes.nix`
       nexus), the *selection* sage, so on the live bar the host tape
@@ -1432,11 +1435,46 @@ four bars, done in this order so the Rust is written once.
     `Ground` caps at ~6% alpha (neokitsch haze wants
     #4f4262). This is the input to the canvas-vs-widgets decision
     below.
-  - **Three haze implementations coexist**: login `wash_image` (RGBA
-    buffer as a cached canvas image), mailbox `Lobe` annuli/wedges (96
-    bands / 72 wedges), store `Prim::Lobe` annuli. Unify — the image
-    one is the smoothest and the only one that survived a side-by-side
-    without banding.
+  - [x] **Haze unification — landed 2026-09-05.** The item said three
+    implementations; the count was five, and the mailbox one had
+    already gone: login `wash_image` (closures per `Wash` variant,
+    sampled into an RGBA image), `scene.rs`'s `Prim::Lobe` arm (96
+    even-odd annuli, the last user was the entropism dashboard's
+    lift), `bar.rs` `BarGround::Haze` (64 discs, neokitsch strip),
+    `bar.rs` `BarGround::Band` (128 strips, neomil) and
+    `widgets::ground` `Ground::Bloom` (26 discs). Everything radial now
+    goes through `screens/soft.rs` as a `Prim::Soft` group drawn by
+    `scene::Backdrop` — a canvas of its own under the art, because a
+    canvas layer draws its meshes before its images:
+    - Login: `Access.wash: Wash` → `Access.backdrop: &[Prim]`, each
+      era's login ground transcribed from its trace with the existing
+      constructs (`Lobe`, `Ramp`, `Turn`, `Masked`). `Backdrop.stretch`
+      added because the login and the mailbox map the frame axis by
+      axis where a scene letterboxes. The closures were approximations
+      — neomil's vignette alpha was squared where the trace's is two
+      linear stops, neokitsch's haze and blue lacked the trace's 1.3°
+      and 2° turns — and the renders now sit within a level of the
+      rsvg-rendered traces where the goldens were up to 7 off. G2i
+      logins 100/96/72/89, unchanged.
+    - `scene.rs` `Prim::Lobe` outside a `Soft` group draws nothing
+      now (`soft_only_prims_stay_soft` panics on one); the entropism
+      dashboard opens with `Soft { HUB_GROUND }`, the kitsch store's
+      `At { BACKDROP }` became `Soft { BACKDROP }`.
+    - Bar: `BarGround::Haze { prims }` is the era's dashboard ground
+      (`HUB_GROUND`, which `bar.svg` copies its `#haze`/`#hazeblue`
+      from) composited at the strip's own pixels by a `Haze` canvas
+      under `Strip`, k = 1. That brought the blue annulus with it (the
+      item under "Bar restyle"): x 1599 lands on the trace's #202d47
+      exactly, x 1520 #272b42 against the trace's #292e41.
+    - **Kept, on purpose:** neomil's `Band` — a 2-stop horizontal ramp
+      across 1600px steps a level at most every 12px, nothing to gain
+      and the neomil bar golden would move for it; `Ground::Bloom` —
+      since every screen ground is a composited group it paints only
+      the letterbox margins at a non-16:9 window (and nothing under
+      the stretched login and mailbox). Flattening it to `bg` or
+      deleting `widgets::ground` is a follow-up that moves no golden.
+    - Goldens re-taken: login-{neomil,neokitsch}, dashboard-entropism,
+      store-kitsch, bar-neokitsch.
   - **Extractor cluster budget:** with k=8, a haze takes 5 clusters,
     so line art drawn dimmer than measured merges ink families (the
     neokitsch mailbox wire went to `Ink::Tape`, RIFLES to `Ink::Fg`,

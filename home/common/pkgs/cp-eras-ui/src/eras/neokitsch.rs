@@ -33,7 +33,7 @@ use crate::style::{
 use crate::widgets::surface::{Corners, Cut};
 // --- login ---
 use crate::style::{
-    Access, Bevel, Colophon, Fixture, Legend, Masthead, Plate, Plot, Slot, Wash,
+    Access, Bevel, Colophon, Fixture, Legend, Masthead, Plate, Plot, Slot,
 };
 // --- end login ---
 
@@ -198,23 +198,15 @@ pub fn style() -> Style {
             tape_ticks: false,
 
             // The strip is the top 31px of the screen and every trace
-            // is violet there and black at the ends: store-trace's
-            // measured `#haze` lobe, centre (825,-120), r 1030,
-            // y-scale 0.515, stops #574568 / #3a3853 / #16121a /
-            // #0e0a0d.
-            ground: BarGround::Haze {
-                cx: 825.0,
-                cy: -120.0,
-                r: 1030.0,
-                squash: 0.515,
-                stops: [
-                    (0.0, HAZE_CORE),
-                    (0.258, HAZE_CORE),
-                    (0.572, HAZE_MID),
-                    (0.873, HAZE_EDGE),
-                    (1.0, HAZE_OUT),
-                ],
-            },
+            // is violet there and black at the ends. `bar.svg` (:119-
+            // 145, :170-175) copies the dashboard trace's `#haze` and
+            // `#hazeblue` verbatim, so the strip's ground *is* the
+            // dashboard's, composited at the bar's own pixels -- the
+            // blue annulus included, which is what casts the bar's
+            // last 150px (design #2b2e40 at x 1520). Until 2026-09-05
+            // this carried the `#haze` lobe's numbers and the strip
+            // stacked 64 discs from them, without the blue.
+            ground: BarGround::Haze { prims: HUB_GROUND },
             chrome: BarChrome::Loose,
             ornament: BarOrnament::Wire,
 
@@ -444,7 +436,15 @@ const NOTE_1: &str = "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.";
 const NOTE_2: &str = "SERVING CUSTOMERS SINCE 2006.";
 
 pub const ACCESS: Access = Access {
-    wash: Wash::VioletHaze,
+    // The trace's haze is the store's to the number ("identical
+    // backdrop to dashboard-trace.svg; re-verified here by column
+    // profile"), so the ground is `PAGE_BACKDROP` from the store block:
+    // page, haze, lobe, and the blue annulus through its fade. Not
+    // `Ground::Bloom`, whose stacked translucent discs cap out around
+    // 6% alpha and reach a tenth of this -- `#4f4262` at the top centre
+    // where the bloom puts `#1f1f33`, the difference between the
+    // backdrop holding two of the frame's palette clusters and none.
+    backdrop: PAGE_BACKDROP,
     masthead: Masthead::Logotype {
         cell: Plate::outlined(Plot::new(90.0, 100.0, 185.0, 25.0), Ink::Fixed(HAIRLINE), 1.0),
         divider: 195.0,
@@ -1185,7 +1185,7 @@ pub fn mailbox() -> Mailbox {
     Mailbox {
         // The mailbox trace (`:211-213`) opens with the store's haze, lobe
         // and masked blue line for line, so it takes the store's ground.
-        backdrop: MAIL_BACKDROP,
+        backdrop: PAGE_BACKDROP,
         chrome: &CHROME,
         overlay: &[],
         list: MailList {
@@ -1452,8 +1452,9 @@ const BACKDROP: &[Prim] = &[
     Prim::Lobe { x: 430.0, y: -40.0, rx: 560.0, ry: 168.0, stops: LOBE },
     Prim::Masked { prims: BLUE_TURNED, mask: BLUE_MASK },
 ];
-/// The mailbox's ground: `BACKDROP` composited, the way `STORE` opens.
-const MAIL_BACKDROP: &[Prim] = &[Prim::Soft { prims: BACKDROP }];
+/// The mailbox's and the login's ground: `BACKDROP` composited, the way
+/// `STORE` opens.
+const PAGE_BACKDROP: &[Prim] = &[Prim::Soft { prims: BACKDROP }];
 
 /// The 9x9 socket glyph, read off card 1. Not a lattice of equal cells:
 /// the finder blocks are 13.8 and the rest 3.1 or 6.7, so it is spelled

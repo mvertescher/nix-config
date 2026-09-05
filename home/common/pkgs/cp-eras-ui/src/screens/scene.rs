@@ -80,7 +80,7 @@ impl<M: 'static> Scene<M> {
     /// the split puts the image where the era table says it goes.
     pub fn view(self) -> Element<'static, M> {
         iced::widget::stack![
-            canvas(Backdrop { style: self.style, prims: self.prims })
+            canvas(Backdrop { style: self.style, prims: self.prims, stretch: false })
                 .width(iced::Length::Fill)
                 .height(iced::Length::Fill),
             canvas(self).width(iced::Length::Fill).height(iced::Length::Fill),
@@ -98,6 +98,15 @@ impl<M: 'static> Scene<M> {
 pub struct Backdrop {
     pub style: Style,
     pub prims: &'static [Prim],
+    /// Whether the composite is drawn over the whole canvas rather
+    /// than letterboxed at the frame's aspect. A [`Scene`] paints at
+    /// one uniform scale and its backdrop matches; the mailbox and the
+    /// login map the frame onto the window axis by axis, and a
+    /// letterboxed haze under a stretched sheet would put the design's
+    /// features beside the art they belong under. The image is still
+    /// composited at the frame's aspect and stretched on the way out --
+    /// a gradient filtered linearly loses nothing to that.
+    pub stretch: bool,
 }
 
 /// The leading run of [`Prim::Soft`] groups in `prims`.
@@ -127,8 +136,13 @@ impl<M> canvas::Program<M> for Backdrop {
             for prim in leading_soft(self.prims) {
                 let Prim::Soft { prims } = *prim else { continue };
                 let handle = soft.image(prims, &self.style.palette, size, k);
+                let (width, height) = if self.stretch {
+                    (bounds.width, bounds.height)
+                } else {
+                    (size.0 as f32, size.1 as f32)
+                };
                 frame.draw_image(
-                    Rectangle { x: 0.0, y: 0.0, width: size.0 as f32, height: size.1 as f32 },
+                    Rectangle { x: 0.0, y: 0.0, width, height },
                     canvas::Image::new(handle)
                         .filter_method(iced::widget::image::FilterMethod::Linear),
                 );
@@ -159,7 +173,7 @@ impl SoftCache {
     /// The image for `prims` at `size` under `palette`, composited on a
     /// miss. Entries for another size or palette are dropped on the
     /// way: a resize or a theme change invalidates every group at once.
-    fn image(
+    pub(crate) fn image(
         &self,
         prims: &'static [Prim],
         palette: &crate::palette::Palette,
@@ -478,45 +492,6 @@ impl<M> Scene<M> {
                     );
                     self.paint_path(frame, &path, fill, stroke, width, k);
                 }
-                Prim::Lobe { x, y, rx, ry, stops } => {
-                    // Enough rings that the steps are under a level per
-                    // ring at the gradient's steepest, which is what it
-                    // takes for the banding to go away by eye.
-                    const RINGS: usize = 96;
-                    let centre = Point::new((ox + x) * k, (oy + y) * k);
-                    for i in 0..RINGS {
-                        let outer = 1.0 - i as f32 / RINGS as f32;
-                        let inner = 1.0 - (i + 1) as f32 / RINGS as f32;
-                        // Disjoint annuli, not stacked discs. A stop
-                        // table may carry *opacities* -- kitsch's left
-                        // margin is one colour at three alphas over the
-                        // bloom -- and overlapping translucent discs
-                        // composite each other 96 times over. Two
-                        // ellipses in one even-odd path is an exact
-                        // elliptical annulus, so every pixel is painted
-                        // once and alpha lands on the backdrop.
-                        let path = canvas::Path::new(|b| {
-                            b.ellipse(elliptical(centre, rx * outer * k, ry * outer * k));
-                            if inner > 0.0 {
-                                b.ellipse(elliptical(centre, rx * inner * k, ry * inner * k));
-                            }
-                        });
-                        frame.fill(
-                            &path,
-                            canvas::Fill {
-                                // The stop table is interpolated in sRGB
-                                // like rsvg's, then each ring's colour is
-                                // rebased for the linear blend like any
-                                // other translucent fill.
-                                style: canvas::Style::Solid(self.blend(soft::stop(
-                                    stops,
-                                    (outer + inner) * 0.5,
-                                ))),
-                                rule: canvas::fill::Rule::EvenOdd,
-                            },
-                        );
-                    }
-                }
                 Prim::Ellipse { x, y, rx, ry, fill, stroke, width } => {
                     let path = ellipse(
                         Point::new((ox + x) * k, (oy + y) * k),
@@ -584,9 +559,13 @@ impl<M> Scene<M> {
                 // `Scene::view`.
                 Prim::Soft { .. } => {}
                 // Composited only: a luminance mask has no canvas
-                // drawing, and `soft_only_prims_stay_soft` keeps it
-                // inside a `Soft` group where `Backdrop` finds it.
-                Prim::Masked { .. } => {}
+                // drawing, and a radial gradient has no exact one --
+                // until 2026-09-05 a `Lobe` here was 96 even-odd
+                // annuli, each rebased for the linear blend, which
+                // banded where `soft.rs` reads the gradient at every
+                // pixel. `soft_only_prims_stay_soft` keeps both inside
+                // a `Soft` group where `Backdrop` finds them.
+                Prim::Masked { .. } | Prim::Lobe { .. } => {}
             }
         }
     }
@@ -853,20 +832,21 @@ mod tests {
             check(style.dashboard, &format!("{era:?} dashboard"));
             check(style.store, &format!("{era:?} store"));
             check(style.mailbox.backdrop, &format!("{era:?} mailbox backdrop"));
+            check(style.access.backdrop, &format!("{era:?} login backdrop"));
         }
     }
 
-    /// `Prim::Masked` has no canvas drawing (`paint` skips it), so one
-    /// outside a `Soft` group would vanish without a word; and the
-    /// canvas draws `Prim::Ramp` as strips along one axis, so a diagonal
-    /// one outside a `Soft` group would come out wrong rather than
-    /// vanish.
+    /// `Prim::Masked` and `Prim::Lobe` have no canvas drawing (`paint`
+    /// skips them), so one outside a `Soft` group would vanish without
+    /// a word; and the canvas draws `Prim::Ramp` as strips along one
+    /// axis, so a diagonal one outside a `Soft` group would come out
+    /// wrong rather than vanish.
     #[test]
     fn soft_only_prims_stay_soft() {
         fn check(prims: &[Prim], where_: &str) {
             for prim in prims {
                 match *prim {
-                    Prim::Masked { .. } => {
+                    Prim::Masked { .. } | Prim::Lobe { .. } => {
                         panic!("{where_}: a composited-only prim outside a Soft group")
                     }
                     Prim::Ramp { from, to, .. } => {
@@ -890,6 +870,7 @@ mod tests {
             check(style.dashboard, &format!("{era:?} dashboard"));
             check(style.store, &format!("{era:?} store"));
             check(style.mailbox.backdrop, &format!("{era:?} mailbox backdrop"));
+            check(style.access.backdrop, &format!("{era:?} login backdrop"));
         }
     }
 
@@ -918,6 +899,7 @@ mod tests {
                 (style.dashboard, "dashboard"),
                 (style.store, "store"),
                 (style.mailbox.backdrop, "mailbox backdrop"),
+                (style.access.backdrop, "login backdrop"),
             ] {
                 let where_ = format!("{era:?} {screen}");
                 let lead = leading_soft(prims).len();

@@ -30,17 +30,15 @@
 //! screen is not pinned to that size.
 
 use crate::style::{
-    Access, Colophon, Emblem, Fixture, Ink, Legend, Masthead, Plate, Plot, Slot, Style, Wash,
+    Access, Colophon, Emblem, Fixture, Ink, Legend, Masthead, Plate, Plot, Slot, Style,
 };
+use crate::screens::scene::Backdrop;
 use crate::widgets::ground;
 use iced::widget::{canvas, stack};
 use iced::{mouse, Color, Element, Length, Point, Rectangle, Renderer, Size, Theme, Vector};
 
 pub struct Login {
     pub style: Style,
-    /// The wash is rasterised a pixel at a time (see [`wash_image`]),
-    /// which is work worth doing once rather than every frame.
-    backdrop: canvas::Cache,
 }
 
 #[derive(Debug, Clone)]
@@ -48,10 +46,7 @@ pub enum Message {}
 
 impl Login {
     pub fn new(style: Style) -> Self {
-        Login {
-            style,
-            backdrop: canvas::Cache::new(),
-        }
+        Login { style }
     }
 
     pub fn title(&self) -> String {
@@ -61,17 +56,20 @@ impl Login {
     pub fn update(&mut self, _message: Message) {}
 
     pub fn view(&self) -> Element<'_, Message> {
-        // Three layers, and the wash has to be its own: `iced_wgpu`
+        // Three layers, and the backdrop has to be its own: `iced_wgpu`
         // buckets a canvas's geometry into meshes, images and text and
         // draws the buckets in that order, so an image is painted over
         // every shape in the same canvas no matter when it was asked
-        // for. The wash is an image (see `wash_image`), so it goes in a
-        // canvas of its own, under the one that draws the screen.
+        // for. The backdrop is an image (`scene::Backdrop`, the same
+        // canvas the mailbox and the scenes put under themselves), so
+        // it goes in a canvas of its own, under the one that draws
+        // the screen. Stretched, because `Grid` stretches the art.
         stack![
             ground(&self.style),
             canvas(Backdrop {
                 style: self.style,
-                cache: &self.backdrop,
+                prims: self.style.access.backdrop,
+                stretch: true,
             })
             .width(Length::Fill)
             .height(Length::Fill),
@@ -336,35 +334,6 @@ impl Pen<'_> {
 
 // ------------------------------------------------------------------- art
 
-/// The era's wash, on its own layer. See [`Login::view`].
-struct Backdrop<'a> {
-    style: Style,
-    cache: &'a canvas::Cache,
-}
-
-impl<Message> canvas::Program<Message> for Backdrop<'_> {
-    type State = ();
-
-    fn draw(
-        &self,
-        _state: &Self::State,
-        renderer: &Renderer,
-        _theme: &Theme,
-        bounds: Rectangle,
-        _cursor: mouse::Cursor,
-    ) -> Vec<canvas::Geometry> {
-        let style = self.style;
-        vec![self.cache.draw(renderer, bounds.size(), move |frame| {
-            let mut pen = Pen {
-                frame,
-                grid: Grid::new(bounds.size()),
-                style: &style,
-            };
-            wash(&mut pen, style.access.wash);
-        })]
-    }
-}
-
 struct Art {
     style: Style,
 }
@@ -400,287 +369,6 @@ impl<Message> canvas::Program<Message> for Art {
         colophon(&mut pen, &access.colophon);
 
         vec![frame.into_geometry()]
-    }
-}
-
-// ------------------------------------------------------------------ wash
-
-/// A wash is a smooth function of position, and the way to draw one is
-/// to sample it.
-///
-/// The first version of this stepped each wash out as a grid of filled
-/// cells, and at the cell size that kept the geometry count sane the
-/// steps were plainly visible -- 25x20px blocks across the whole right
-/// half of the neokitsch screen, against a design that is smooth. Every
-/// alternative inside the canvas vocabulary has the same shape of
-/// problem: `iced` has linear gradients and no radial one, nested
-/// ellipses band in the radial direction and cannot carry a horizontal
-/// fade at all, and a grid fine enough to hide the steps is tens of
-/// thousands of rectangles a frame.
-///
-/// So the wash is rasterised into an RGBA buffer and drawn as an image.
-/// `image-without-codecs` is already on for the bar's tray icons, so
-/// this adds nothing to the build, and `Login` keeps a `canvas::Cache`
-/// so the buffer is built once rather than every frame.
-///
-/// One pixel of buffer per pixel of screen, not a small buffer scaled
-/// up. A scaled one is geometrically smooth but *tonally* banded: at
-/// 480x270 the entropism lift came out in 36 distinct colours across
-/// the whole page where the design's has 234, because bilinear
-/// interpolation between two neighbouring 8-bit samples keeps landing
-/// on the same rounded value. That is visible as contour rings, and the
-/// extractor saw it too -- the design's backdrop is rich enough to hold
-/// a palette cluster of its own and the scaled one was not.
-const WASH_MAX_PX: u32 = 1 << 23;
-
-fn wash_image(pen: &mut Pen, sample: impl Fn(f32, f32) -> Color) {
-    let (mut w, mut h) = (
-        (DESIGN_W * pen.grid.sx).round().max(1.0) as u32,
-        (DESIGN_H * pen.grid.sy).round().max(1.0) as u32,
-    );
-    while w * h > WASH_MAX_PX {
-        w = (w / 2).max(1);
-        h = (h / 2).max(1);
-    }
-    let (wash_w, wash_h) = (w, h);
-
-    let mut pixels = Vec::with_capacity((wash_w * wash_h * 4) as usize);
-    for row in 0..wash_h {
-        let y = (row as f32 + 0.5) / wash_h as f32 * DESIGN_H;
-        for col in 0..wash_w {
-            let x = (col as f32 + 0.5) / wash_w as f32 * DESIGN_W;
-            let c = sample(x, y);
-            // Premultiplied, because that is what the image pipeline
-            // blends: a straight-alpha buffer darkens every partially
-            // transparent pixel towards black on the way in.
-            let a = c.a.clamp(0.0, 1.0);
-            let enc = |v: f32| (v.clamp(0.0, 1.0) * a * 255.0).round() as u8;
-            pixels.extend_from_slice(&[enc(c.r), enc(c.g), enc(c.b), (a * 255.0).round() as u8]);
-        }
-    }
-    let handle = iced::widget::image::Handle::from_rgba(wash_w, wash_h, pixels);
-    let bounds = Rectangle {
-        x: 0.0,
-        y: 0.0,
-        width: DESIGN_W * pen.grid.sx,
-        height: DESIGN_H * pen.grid.sy,
-    };
-    pen.frame.draw_image(
-        bounds,
-        canvas::Image::new(handle).filter_method(iced::widget::image::FilterMethod::Linear),
-    );
-}
-
-/// Distance from an ellipse's centre in units of its own radii: 0 at the
-/// centre, 1 on the ellipse. The one shape every wash in the four traces
-/// is built from, and what an SVG `radialGradient` measures its stops
-/// along.
-fn radial(x: f32, y: f32, cx: f32, cy: f32, rx: f32, ry: f32) -> f32 {
-    (((x - cx) / rx).powi(2) + ((y - cy) / ry).powi(2)).sqrt()
-}
-
-fn ramp(stops: &[(f32, f32)], t: f32) -> f32 {
-    let mut prev = stops[0];
-    for &stop in stops {
-        if t <= stop.0 {
-            let span = stop.0 - prev.0;
-            let k = if span <= 0.0 { 0.0 } else { (t - prev.0) / span };
-            return prev.1 + (stop.1 - prev.1) * k;
-        }
-        prev = stop;
-    }
-    prev.1
-}
-
-fn ramp_color(stops: &[(f32, u32)], t: f32) -> Color {
-    let mut prev = stops[0];
-    for &stop in stops {
-        if t <= stop.0 {
-            let span = stop.0 - prev.0;
-            let k = if span <= 0.0 { 0.0 } else { (t - prev.0) / span };
-            let a = crate::palette::rgb(prev.1);
-            let b = crate::palette::rgb(stop.1);
-            return Color {
-                r: a.r + (b.r - a.r) * k,
-                g: a.g + (b.g - a.g) * k,
-                b: a.b + (b.b - a.b) * k,
-                a: 1.0,
-            };
-        }
-        prev = stop;
-    }
-    crate::palette::rgb(prev.1)
-}
-
-/// The page ground each trace paints before its wash: entropism's lift
-/// covers the frame on its own, the other three fill first and wash
-/// over the top.
-///
-/// The wash carries it rather than leaning on `widgets::ground`
-/// underneath, because the two disagree -- the era's declared
-/// `Ground::Bloom` is a different disc from the one this screen's photo
-/// shows, and where the wash went transparent the era's bloom came
-/// through it. Kitsch's rose ran to the bottom edge of the frame that
-/// way, against a design that is black below y 620.
-const GROUND_KITSCH: u32 = 0x0a0907;
-const GROUND_NEOMIL: u32 = 0x080405;
-
-/// `over`, as the compositor means it: `top` at its own alpha on `under`.
-fn over(top: Color, under: Color) -> Color {
-    let a = top.a + under.a * (1.0 - top.a);
-    if a <= 0.0 {
-        return Color::TRANSPARENT;
-    }
-    let mix = |t: f32, u: f32| (t * top.a + u * under.a * (1.0 - top.a)) / a;
-    Color {
-        r: mix(top.r, under.r),
-        g: mix(top.g, under.g),
-        b: mix(top.b, under.b),
-        a,
-    }
-}
-
-/// Neomil's cold-blue glow: a horizontal ramp under a vertical falloff,
-/// straight off `docs/neomil/login-trace.svg`'s `glowh` and `glowv`.
-const GLOW_H: [(f32, u32); 10] = [
-    (0.000, 0x282824),
-    (0.063, 0x273743),
-    (0.188, 0x263953),
-    (0.313, 0x202b56),
-    (0.438, 0x1b2253),
-    (0.563, 0x171f51),
-    (0.688, 0x121f51),
-    (0.813, 0x0d1f4e),
-    (0.938, 0x082447),
-    (1.000, 0x080b0e),
-];
-const GLOW_V: [(f32, f32); 9] = [
-    (0.00, 1.000),
-    (0.25, 1.000),
-    (0.30, 0.890),
-    (0.35, 0.729),
-    (0.40, 0.549),
-    (0.45, 0.329),
-    (0.50, 0.169),
-    (0.55, 0.071),
-    (0.60, 0.000),
-];
-/// The warm near-black vignette down its left margin.
-const VIGNETTE: u32 = 0x241012;
-
-/// Entropism's warm lift: a faint radial over the near-black ground,
-/// `docs/entropism/login-trace.svg`'s `lift`.
-const LIFT: [(f32, u32); 3] = [(0.0, 0x1a1810), (0.7, 0x141107), (1.0, 0x0f0a04)];
-
-/// Kitsch's rose bloom out of the top edge, and the grey-green cast down
-/// the left margin.
-const BLOOM: [(f32, u32); 5] = [
-    (0.00, 0xa84f62),
-    (0.35, 0x8e3b52),
-    (0.60, 0x5a2236),
-    (0.85, 0x1e0f14),
-    (1.00, 0x0a0907),
-];
-const LEFTWASH: u32 = 0x262a24;
-const LEFTWASH_A: [(f32, f32); 3] = [(0.0, 1.0), (0.6, 0.5), (1.0, 0.0)];
-
-/// Neokitsch's violet haze, its brighter top-left lobe, and the
-/// cold-blue band inside it. Retuned to this photo on the 2026-09-03
-/// trace pass: the haze centre moved 825 -> 770 with `r` 1030 -> 1000
-/// and the y-scale 0.515 -> 0.49, its stops to 0.35/0.66/0.85, the blue
-/// band to 850/1000/0.47, and `hazelobe` is new.
-const HAZE: [(f32, u32); 4] = [
-    (0.00, 0x574568),
-    (0.35, 0x574568),
-    (0.66, 0x3a3853),
-    (0.85, 0x16121a),
-];
-const HAZE_BASE: u32 = 0x0e0a0d;
-const HAZE_LOBE: u32 = 0x7a5288;
-const HAZE_LOBE_A: [(f32, f32); 3] = [(0.00, 0.85), (0.45, 0.55), (1.00, 0.0)];
-const HAZE_BLUE: [(f32, u32); 5] = [
-    (0.00, 0x223350),
-    (0.60, 0x223350),
-    (0.68, 0x223350),
-    (0.76, 0x1a2c46),
-    (0.84, 0x101d30),
-];
-const HAZE_BLUE_A: [(f32, f32); 5] =
-    [(0.00, 0.0), (0.60, 0.0), (0.68, 0.85), (0.76, 0.80), (0.84, 0.0)];
-const HAZE_BLUE_FADE: [(f32, f32); 5] = [
-    (0.00, 0.000),
-    (0.12, 0.102),
-    (0.22, 0.478),
-    (0.40, 1.000),
-    (1.00, 1.000),
-];
-
-fn wash(pen: &mut Pen, wash: Wash) {
-    match wash {
-        Wash::Plain => {}
-        Wash::WarmLift => wash_image(pen, |x, y| {
-            ramp_color(&LIFT, radial(x, y, 0.45 * DESIGN_W, 0.4 * DESIGN_H, 0.8 * DESIGN_W, 0.8 * DESIGN_H))
-        }),
-        Wash::ColdGlow => wash_image(pen, |x, y| {
-            let glow = Color {
-                a: ramp(&GLOW_V, y / DESIGN_H),
-                ..ramp_color(&GLOW_H, x / DESIGN_W)
-            };
-            let vignette = Color {
-                a: (1.0
-                    - radial(x, y, 0.02 * DESIGN_W, 0.60 * DESIGN_H, 0.34 * DESIGN_W, 0.34 * DESIGN_H))
-                .clamp(0.0, 1.0)
-                .powi(2),
-                ..crate::palette::rgb(VIGNETTE)
-            };
-            over(vignette, over(glow, crate::palette::rgb(GROUND_NEOMIL)))
-        }),
-        Wash::RoseBloom => wash_image(pen, |x, y| {
-            let bloom = if y <= 620.0 {
-                ramp_color(&BLOOM, radial(x, y, 800.0, -155.0, 1520.0, 589.0))
-            } else {
-                Color::TRANSPARENT
-            };
-            let wash = Color {
-                a: ramp(&LEFTWASH_A, radial(x, y, 0.0, 450.0, 300.0, 390.0)),
-                ..crate::palette::rgb(LEFTWASH)
-            };
-            over(wash, over(bloom, crate::palette::rgb(GROUND_KITSCH)))
-        }),
-        Wash::VioletHaze => wash_image(pen, |x, y| {
-            let haze = {
-                let t = radial(x, y, 770.0, -120.0, 1000.0, 490.0);
-                if t >= 0.85 {
-                    // The trace's last stop runs out to the page ground.
-                    ramp_color(
-                        &[(0.85, 0x16121a), (1.00, HAZE_BASE)],
-                        t.min(1.0),
-                    )
-                } else {
-                    ramp_color(&HAZE, t)
-                }
-            };
-            let lobe = Color {
-                a: if y <= 300.0 {
-                    ramp(&HAZE_LOBE_A, radial(x, y, 430.0, -40.0, 560.0, 168.0))
-                } else {
-                    0.0
-                },
-                ..crate::palette::rgb(HAZE_LOBE)
-            };
-            let blue = {
-                let t = radial(x, y, 850.0, -120.0, 1000.0, 470.0);
-                Color {
-                    a: if y <= 560.0 {
-                        ramp(&HAZE_BLUE_A, t) * ramp(&HAZE_BLUE_FADE, x / DESIGN_W)
-                    } else {
-                        0.0
-                    },
-                    ..ramp_color(&HAZE_BLUE, t)
-                }
-            };
-            over(blue, over(lobe, haze))
-        }),
     }
 }
 
