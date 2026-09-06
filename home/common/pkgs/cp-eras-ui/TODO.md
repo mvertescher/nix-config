@@ -1776,9 +1776,14 @@ when that screen assembles from library widgets. Priority order:
   entropism (EMAILS) and neokitsch (EMAIL) label a mailbox and only
   kitsch and neomil (PRODUCTS) a store, so the other screen in each
   era is **stood in** by the last module (DEVICES, LOCATIONS,
-  CORPORATIONS) and says so at the table entry. Decide the six-module
-  lists per era and retire the stand-ins; a module with `None` behind
-  it selects and stays. Content is the tables' own mock inbox and
+  CORPORATIONS) and says so at the table entry. The lists themselves
+  are not open: they are the photos' labels (`docs/sources.md`), a
+  personal hub in entropism/neokitsch and a catalogue hub in
+  kitsch/neomil, and no source shows both screens. Retiring the
+  stand-ins is a decision about what this desktop's modules mean
+  (keep the labels and route the missing screen by a key, or relabel
+  and move the goldens); a module with `None` behind it selects and
+  stays. Content is the tables' own mock inbox and
   shelf, nothing live. The store's keyboard has a `focus` the mouse
   also sets, and a move selects what it lands on, so there is no
   separate cursor to draw -- which is also why nothing here needed a
