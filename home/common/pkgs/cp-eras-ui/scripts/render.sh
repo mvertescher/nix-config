@@ -112,6 +112,10 @@ fi
 # names a path has usually just built it somewhere else on purpose.
 if [ -n "$bin" ]; then
   [ -x "$bin" ] || { echo "render.sh: $bin is not executable" >&2; exit 2; }
+  # Absolute, because weston is started from a scratch cwd below and
+  # execs the path as given: a relative one fails with weston's
+  # unhelpful "Failed to execute command line command".
+  bin=$(realpath "$bin")
   [ -n "$name" ] || name=$(basename "$bin")
 else
   [ -n "$name" ] || { echo "render.sh: need a binary name or --bin PATH" >&2; usage >&2; exit 2; }
