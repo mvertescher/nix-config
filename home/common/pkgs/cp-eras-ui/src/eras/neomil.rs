@@ -476,7 +476,7 @@ pub const ACCESS: Access = Access {
             // were typed. The caret is on the Login button, not in the
             // field, so it stays put.
             entry: Some(Entry {
-                rest: Legend::new("**********  __", 381.0, 626.0, 12.0, Ink::Fg),
+                rest: Legend::new("**********  __", 381.0, 626.0, 12.0, Ink::Fg).tracked(3.0),
                 mask: '*',
                 tail: "  __",
                 caret: Caret::Fixed,

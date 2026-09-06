@@ -616,7 +616,11 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
     (1.2). The traces use `letter-spacing` ~180 times; the rest is
     per-era transcription work (neokitsch header 1.5 / LEVEL 2 /
     annotations 0.4, neomil header and tabs, every store), not a
-    renderer limit any more.
+    renderer limit any more. 2026-09-06: neomil's masked password run
+    (`letter-spacing="3"` on the trace) is now `Legend::tracked(3.0)`;
+    the stars span the trace's width and the `__` tail sits within
+    ~5px. login.neomil golden re-taken from the passing render
+    (0.0085% of pixels moved, AE 0 against `render.sh`).
   - Rotated text landed earlier (`Prim::Text` `rotate`); kitsch's blade
     labels are on the blades.
   - Goldens moved: bar.neokitsch, all four dashboards, mailbox.neokitsch
@@ -1762,11 +1766,25 @@ when that screen assembles from library widgets. Priority order:
 - [ ] **Motion**: hover flicker + panel boot-in as canned animations
   (the Cache-invalidation pattern the deleted diamond_menu used is the
   plumbing; see git history).
-  - Still the item with the least material: the traces are stills.
-    What a hover *is* per era is the open question, and it is also
+  - [x] **Phase 1 (2026-09-06): the traces are no longer stills.**
+    Motion is written on the trace as SMIL (`docs/PIPELINE.md`
+    "Motion"): `<animate id=..>` on the element it moves, frame 0 equal
+    to the static design so rsvg and the goldens never see it.
+    `scripts/frame.sh --at T` seeks a trace in headless Firefox;
+    `src/motion.rs` is the crate's clock (`--at-ms` / `CP_ERAS_UI_AT_MS`
+    freezes it; `render.sh --at`, `triptych.sh --at`; `tests/visual.nix`
+    pins 0). One animation end to end: the login caret blink
+    (`#caret-blink`, 1.2s discrete, neomil's `__` tail and the
+    kitsch/entropism caret plate; neokitsch shows none).
+  - Still open: hover and press. The traces still show no such state,
+    so what a hover *is* per era remains the question, and it is also
     why `catalog` gives buttons and fields no hover/press treatment
-    (see "Form controls"). Decide the hover reading from the source
-    footage before plumbing anything.
+    (see "Form controls"). Decide the reading from the source footage
+    and annotate it on `components.svg` before plumbing anything.
+  - Phase 2, not started: eased transitions (`iced::animation` driven
+    from `motion::now()`, the vocabulary table in PIPELINE.md maps
+    `keySplines` to lilt's easings) and the panel boot-in, which needs
+    a trace-side annotation first.
 
 ## Headless check: feasibility settled (2026-08-22)
 

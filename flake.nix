@@ -75,8 +75,14 @@
       # is a private wrapper whose call sites cannot be updated from
       # here, so `lib` has no in-repo user and nothing would notice an
       # API break until someone else's pin bump. See the file's header.
-      checks.${system}.builder-api = pkgs.callPackage ./lib/tests/builder-api.nix {
-        inherit (self.lib) mkNixos mkHome;
+      checks.${system} = {
+        builder-api = pkgs.callPackage ./lib/tests/builder-api.nix {
+          inherit (self.lib) mkNixos mkHome;
+        };
+
+        # The cp-eras-ui greeter signing in on a virtual seat. A VM test:
+        # about four minutes under TCG on terra, less with /dev/kvm.
+        greeter = pkgs.testers.runNixOSTest ./tests/greeter.nix;
       };
 
       # Installer ISO with SSH keys baked in, for unattended provisioning

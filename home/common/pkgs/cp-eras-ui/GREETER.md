@@ -114,7 +114,8 @@ PAM session for `greeter` on the VT; libseat's logind backend hands
 wlroots the devices), which is the documented greetd + cage setup and
 needs no groups; the render node wgpu opens is world-readable under
 udev's defaults. `video` is belt-and-braces for libseat's direct
-fallback. **None of this has been exercised on a real seat.**
+fallback. Exercised on a virtio-gpu seat by `tests/greeter.nix`
+(below); a real card is not.
 
 ## Verified / not verified
 
@@ -129,12 +130,29 @@ Verified:
 - `nix build '.?submodules=1#nixosConfigurations.terra.config.system.build.toplevel'`
   from the wrapper succeeds; terra's greetd command is still tuigreet.
 
+- `tests/greeter.nix` (`nix build .#checks.x86_64-linux.greeter`,
+  added 2026-09-06 after the first draft of this file): a NixOS VM
+  with a virtio GPU boots greetd with `custom.greetd.greeter =
+  "cp-eras-ui"`, and the test finds cage and the login running as
+  `greeter`, screenshots the neomil access screen drawn on the seat,
+  types a wrong password (greetd logs `pam_authenticate: AUTH_ERR`,
+  the screen shows "access denied", the greeter stays), then the
+  right one: greetd closes the greeter session, opens one for the
+  user, runs the session command, and the greeter process is gone.
+  So greetd's conversation, PAM, cage under logind, wgpu under the
+  `greeter` account and the handover on `start_session` are all
+  covered -- on mesa software rendering (the virtio-gpu has no virgl;
+  whether wgpu took lavapipe or llvmpipe the log does not say). Under
+  TCG (terra has no /dev/kvm; SVM is off in its BIOS) the run takes
+  about four minutes.
+
 Not verified:
 
-- greetd itself, PAM, cage on a real seat, wgpu under the `greeter`
-  account, the handover on `start_session`. All of it needs a switch
-  on a host set to `custom.greetd.greeter = "cp-eras-ui"`, and the
-  recovery path if it fails is a VT (`cage -s`) or SSH.
+- A real GPU under the `greeter` account. The VM path is the same wgpu
+  code but a software driver, and a real card is where a missing ICD or
+  a permission on the render node would show up; the first switch on
+  a host set to `custom.greetd.greeter = "cp-eras-ui"` should still be
+  made with a VT (`cage -s`) or SSH as the way back.
 - The awake states of the screen (typed runs, trailing carets, the
   notices) have no golden and were not rendered: the golden harness
   cannot type. Their geometry is measured through the same shaper
