@@ -1,5 +1,4 @@
-| `<clipPath>` with an animated `<rect>` | `Prim::Motion` + `Change::Clip` on the scene    |
-| `begin="1.2s"`                        | `.delay(..)` -- the value holds at `from` until then |# Design pipeline: original image → SVG → iced
+# Design pipeline: original image → SVG → iced
 
 The crate's render chain is a three-stage pipeline, each stage the
 verifiable input to the next:
@@ -226,7 +225,10 @@ design, and the G1 gates will say so.
 | SMIL                                  | iced `Animation`                              |
 |---------------------------------------|-----------------------------------------------|
 | `dur="400ms"`                         | `.duration(Duration::from_millis(400))`       |
-| `begin="1.2s"`                        | `.delay(..)`, or a later `.go(.., at)`        |
+| `begin="1.2s"`                        | `Motion::begin` -- the value holds at `from` until then |
+| `<set to="from" begin="0s" end="<id>.begin"/>` beside it | nothing: the hold above. SMIL shows the *base* value before an animation begins, and the base is the rest value, so a delayed transition hides its `from` behind a `<set>` for the trace's sake |
+| `<clipPath>` with an animated `<rect>` | `Prim::Motion` + `Change::Clip` on the scene    |
+| `<animate attributeName="opacity">` on a `<g>` | `Prim::Motion` + `Change::Opacity`: a fade on each prim's ink, a group alpha only where the prims do not overlap |
 | `repeatCount="indefinite"` / `"3"`    | `.repeat_forever()` / `.repeat(3)`            |
 | `values="a;b;a"` with `keyTimes`      | `.auto_reverse()` (only the symmetric case)   |
 | `calcMode="discrete"`                 | a phase of the clock: `motion::blink` and kin  |
@@ -255,6 +257,14 @@ gives the transition both: `begin="click; 0.6s"`, the clock-based
 start there so that `frame.sh --at 0.8` can show the state
 mid-transition.
 
+A clock-based `begin` later than 0 has a catch: SMIL shows an
+element's *base* value until its animation begins, and the base is
+the rest value, so a `from="0"` that starts at 0.4 s would be drawn at
+1 for the first 0.4 s. The hold is written as its own `<set
+attributeName=".." to="<from>" begin="0s" end="<id>.begin"/>` beside
+the `<animate>` (neokitsch's `#panel-fade`); the iced side transcribes
+nothing for it, because `Motion::begin` already holds at `from`.
+
 **Boot-ins.** A transition from the document's clock — `begin="0s"`,
 or a hold and then a start — is how a screen comes up: neomil's GO
 HOME panel wipes in under `#panel-open`, a `<clipPath>` whose `<rect>`
@@ -266,7 +276,21 @@ group is wrapped in a `Prim::Motion` carrying the `<animate>`'s
 `motion::progress` gives for the scene's moment. A screen with a
 boot-in ticks every frame until `motion::REST` and then stops asking
 (`screens::dashboard::subscription`); a screen with nothing moving
-hands the scene its clock anyway. The two states themselves — rest and hovered, closed
+hands the scene its clock anyway.
+
+Each era comes up its own way, not neomil's wipe copied. Neokitsch's
+cascade is wiped *on from the left* (`#cards-open`, 0.5 s), so the
+staircase steps up in the hub's reading order, and its detail panel
+then *fades* in (`#panel-fade`, 0.3 s from 0.4 s): the one solid body
+on the screen, and a wipe on it would have read as neomil. A fade is
+`Change::Opacity`, painted by fading every prim's ink on its way to
+the linear rebase. iced's canvas has no group alpha, so where the prims
+of a fading group overlap, the stack shows through more than the
+trace's group opacity does -- the panel's dark paragraph bars sit
+lighter on the gold mid-fade -- which is the limit `scene::blend`
+states, and lasts a few frames.
+
+The two states themselves — rest and hovered, closed
 and open — are drawn as sibling groups in `components.svg` next to the
 element they belong to, cited back to the trace like everything else
 on that sheet, so the design of the *destination* is reviewable without
@@ -301,7 +325,7 @@ annotation as text — attribute, values, timing, easing — and the table
 above to transcribe it with; the transcription cites the `<animate>`'s
 `id` in a comment beside the `Animation`.
 
-Two animations are carried end to end this way. The login caret's
+Four animations are carried end to end this way. The login caret's
 blink is the cycle, the worked example to read when the description
 above is not enough: `#caret-blink` in three of the four `login-trace.svg`s
 (neokitsch's field draws no caret in the photo, so it has none) —
@@ -318,6 +342,13 @@ transition: the `<clipPath>` in the trace's `<defs>`, the group's
 `clip-path`, the `Prim::Motion` around `GO_HOME` in `src/eras/neomil.rs`,
 and `triptych.sh --at 0.15 neomil dashboard` for the panel four fifths
 of the way in.
+Neokitsch's dashboard carries the other two: `#cards-open`, the same
+construction with the clip's `width` growing, and `#panel-fade`, the
+first `opacity` transition and the first with a later `begin` -- so
+the first that needs the `<set>` hold. `src/eras/neokitsch.rs` wraps
+`CASCADE` and `PANEL`; `triptych.sh --at 0.15 neokitsch dashboard`
+shows the wipe crossing the second triplet and `--at 0.55` the panel
+half lit.
 
 ## Iteration loop
 

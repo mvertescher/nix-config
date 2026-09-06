@@ -305,8 +305,9 @@ pub(crate) fn plates(prims: &[Prim], ox: f32, oy: f32, out: &mut Vec<(Group, usi
 impl<M> Scene<M> {
     /// Resolve one of the scene's inks against the live palette, so a
     /// published theme still re-dresses the screen.
-    fn ink(&self, ink: Ink) -> Color {
-        self.blend(ink.of(&self.style.palette))
+    fn ink(&self, ink: Ink, alpha: f32) -> Color {
+        let c = ink.of(&self.style.palette);
+        self.blend(Color { a: c.a * alpha, ..c })
     }
 
     /// Rebase a translucent colour for wgpu's linear-light compositing.
@@ -354,7 +355,9 @@ impl<M> Scene<M> {
     }
 
     /// Paint one primitive. `(ox, oy)` is the running translation
-    /// [`Prim::At`] accumulates and `k` the frame-to-canvas scale.
+    /// [`Prim::At`] accumulates, `k` the frame-to-canvas scale, and
+    /// `alpha` the fade the enclosing [`Change::Opacity`] groups have
+    /// come to, 1 at the top.
     fn paint(
         &self,
         frame: &mut canvas::Frame,
@@ -362,6 +365,7 @@ impl<M> Scene<M> {
         ox: f32,
         oy: f32,
         k: f32,
+        alpha: f32,
     ) {
         for prim in prims {
             match *prim {
@@ -370,7 +374,7 @@ impl<M> Scene<M> {
                         Point::new((ox + x) * k, (oy + y) * k),
                         Size::new(w * k, h * k),
                     );
-                    self.paint_path(frame, &path, fill, stroke, width, k);
+                    self.paint_path(frame, &path, fill, stroke, width, k, alpha);
                 }
                 Prim::Path { x, y, segs, close, fill, stroke, width } => {
                     let path = canvas::Path::new(|b| {
@@ -402,16 +406,16 @@ impl<M> Scene<M> {
                             b.close();
                         }
                     });
-                    self.paint_path(frame, &path, fill, stroke, width, k);
+                    self.paint_path(frame, &path, fill, stroke, width, k, alpha);
                 }
                 Prim::Text { x, y, size, ink, face, anchor, content } => {
-                    self.paint_text(frame, content, (ox + x) * k, (oy + y) * k, size * k, ink, face, anchor);
+                    self.paint_text(frame, content, (ox + x) * k, (oy + y) * k, size * k, ink, face, anchor, alpha);
                 }
                 Prim::Wide { x, y, size, stretch, ink, face, content } => {
                     // A non-uniform transform makes iced convert the run
                     // to filled glyph outlines, which is exactly what
                     // `lengthAdjust="spacingAndGlyphs"` asks for.
-                    let color = self.ink(ink);
+                    let color = self.ink(ink, alpha);
                     let (px, py) = ((ox + x) * k, (oy + y) * k - size * k * BASELINE);
                     let font = Self::font(face);
                     let size = size * k;
@@ -452,6 +456,7 @@ impl<M> Scene<M> {
                             ink,
                             face,
                             Anchor::Start,
+                            alpha,
                         );
                         gx += advance + tracking;
                     }
@@ -469,11 +474,12 @@ impl<M> Scene<M> {
                             ink,
                             face,
                             Anchor::Start,
+                            alpha,
                         );
                     }
                 }
                 Prim::Grain { x, y, w, h, pitch, width, ink } => {
-                    let color = self.ink(ink);
+                    let color = self.ink(ink, alpha);
                     let mut gy = y + pitch;
                     while gy < y + h {
                         frame.fill_rectangle(
@@ -485,7 +491,7 @@ impl<M> Scene<M> {
                     }
                 }
                 Prim::Dots { x, y, cell, pitch, ink, rows } => {
-                    let color = self.ink(ink);
+                    let color = self.ink(ink, alpha);
                     for (r, row) in rows.iter().enumerate() {
                         for (c, mark) in row.chars().enumerate() {
                             if mark == '.' || mark == ' ' {
@@ -508,7 +514,7 @@ impl<M> Scene<M> {
                         Size::new(w * k, h * k),
                         (r * k).into(),
                     );
-                    self.paint_path(frame, &path, fill, stroke, width, k);
+                    self.paint_path(frame, &path, fill, stroke, width, k, alpha);
                 }
                 Prim::Ellipse { x, y, rx, ry, fill, stroke, width } => {
                     let path = ellipse(
@@ -516,12 +522,12 @@ impl<M> Scene<M> {
                         rx * k,
                         ry * k,
                     );
-                    self.paint_path(frame, &path, fill, stroke, width, k);
+                    self.paint_path(frame, &path, fill, stroke, width, k, alpha);
                 }
                 Prim::Circle { x, y, r, fill, stroke, width } => {
                     let path =
                         canvas::Path::circle(Point::new((ox + x) * k, (oy + y) * k), r * k);
-                    self.paint_path(frame, &path, fill, stroke, width, k);
+                    self.paint_path(frame, &path, fill, stroke, width, k, alpha);
                 }
                 Prim::Ramp { x, y, w, h, from, to, stops } => {
                     // Flat strips at design-pixel pitch along the axis,
@@ -556,9 +562,9 @@ impl<M> Scene<M> {
                 }
                 Prim::Plate { group, index, on, off, .. } => {
                     let prims = if self.picked.get(group) == index { on } else { off };
-                    self.paint(frame, prims, ox, oy, k);
+                    self.paint(frame, prims, ox, oy, k, alpha);
                 }
-                Prim::At { x, y, prims } => self.paint(frame, prims, ox + x, oy + y, k),
+                Prim::At { x, y, prims } => self.paint(frame, prims, ox + x, oy + y, k, alpha),
                 Prim::Motion { motion, prims } => {
                     let t = motion::progress(&motion, self.at);
                     match motion.change {
@@ -577,7 +583,22 @@ impl<M> Scene<M> {
                                 height: Change::lerp(h, t) * k,
                             };
                             if region.width > 0.0 && region.height > 0.0 {
-                                frame.with_clip(region, |f| self.paint(f, prims, ox, oy, k));
+                                frame.with_clip(region, |f| self.paint(f, prims, ox, oy, k, alpha));
+                            }
+                        }
+                        Change::Opacity { alpha: fade } => {
+                            // A group alpha the canvas does not have:
+                            // each prim's ink is faded on its way to
+                            // the linear rebase (`ink`), which is what
+                            // rsvg's group opacity comes to for prims
+                            // that do not overlap. Where they do, the
+                            // stack shows through more than the trace's
+                            // -- the same limit `blend` states, and a
+                            // fading group is at most a few frames from
+                            // rest. Nothing is painted at 0.
+                            let a = alpha * Change::lerp(fade, t);
+                            if a > 0.0 {
+                                self.paint(frame, prims, ox, oy, k, a);
                             }
                         }
                     }
@@ -593,7 +614,7 @@ impl<M> Scene<M> {
                     frame.with_save(|f| {
                         f.translate(iced::Vector::new((ox + x) * k, (oy + y) * k));
                         f.rotate(iced::Radians(angle.to_radians()));
-                        self.paint(f, prims, 0.0, 0.0, k);
+                        self.paint(f, prims, 0.0, 0.0, k, alpha);
                     });
                 }
                 // Painted by the `Backdrop` canvas underneath; see
@@ -619,12 +640,13 @@ impl<M> Scene<M> {
         stroke: Option<Ink>,
         width: f32,
         k: f32,
+        alpha: f32,
     ) {
         if let Some(ink) = fill {
             frame.fill(
                 path,
                 canvas::Fill {
-                    style: canvas::Style::Solid(self.ink(ink)),
+                    style: canvas::Style::Solid(self.ink(ink, alpha)),
                     // Even-odd throughout: it is what a one-subpath
                     // shape already does, and it is what cuts the
                     // counter out of a logotype glyph.
@@ -636,7 +658,7 @@ impl<M> Scene<M> {
             frame.stroke(
                 path,
                 canvas::Stroke::default()
-                    .with_color(self.ink(ink))
+                    .with_color(self.ink(ink, alpha))
                     .with_width(width * k),
             );
         }
@@ -653,11 +675,12 @@ impl<M> Scene<M> {
         ink: Ink,
         face: Face,
         anchor: Anchor,
+        alpha: f32,
     ) {
         frame.fill_text(canvas::Text {
             content: content.to_string(),
             position: Point::new(x, baseline - size * BASELINE),
-            color: self.ink(ink),
+            color: self.ink(ink, alpha),
             size: size.into(),
             font: Self::font(face),
             align_x: Self::align(anchor),
@@ -808,7 +831,7 @@ impl<M> canvas::Program<M, Style> for Scene<M> {
         let mut frame = canvas::Frame::new(renderer, bounds.size());
         let k = scale(bounds);
         if k > 0.0 {
-            self.paint(&mut frame, self.prims, 0.0, 0.0, k);
+            self.paint(&mut frame, self.prims, 0.0, 0.0, k, 1.0);
         }
         vec![frame.into_geometry()]
     }
@@ -990,6 +1013,58 @@ mod tests {
             let style = era.style();
             check(style.dashboard, false, &format!("{era:?} dashboard"));
             check(style.store, false, &format!("{era:?} store"));
+        }
+    }
+
+    /// A `Change::Opacity` fade is the ink at that `fill-opacity`: a
+    /// solid ink faded to .4 is rebased exactly as the trace's `.4`
+    /// would be, and at 1 it is untouched.
+    #[test]
+    fn a_faded_ink_is_the_translucent_one() {
+        let style = crate::style::Era::Neokitsch.style();
+        let scene: Scene<()> = Scene {
+            style,
+            prims: &[],
+            picked: Picked { category: 0, card: 0, module: 0 },
+            at: crate::motion::REST,
+            on_select: |_, _| (),
+        };
+        let gold = rgb(0xf2b463);
+        let ink = Ink::Fixed(gold);
+        assert_eq!(scene.ink(ink, 1.0), gold);
+        let faded = scene.ink(ink, 0.4);
+        let translucent = blend_over(Color { a: 0.4, ..gold }, style.palette.bg);
+        assert_eq!(faded, translucent);
+        assert!(faded.a < 0.4, "the linear rebase darkens a fade over a dark ground: {}", faded.a);
+        assert_eq!(scene.ink(ink, 0.0).a, 0.0);
+    }
+
+    /// Every boot-in in every era table is over by `motion::REST`, so
+    /// the goldens -- taken at REST -- are the traces at rest and not
+    /// a frame of something still moving.
+    #[test]
+    fn every_motion_rests_before_rest() {
+        fn check(prims: &[Prim], where_: &str) {
+            for prim in prims {
+                match *prim {
+                    Prim::Motion { motion, prims } => {
+                        let ends = std::time::Duration::from_millis(u64::from(motion.begin + motion.dur));
+                        assert!(ends <= crate::motion::REST, "{where_}: #{} ends at {ends:?}", motion.id);
+                        check(prims, where_);
+                    }
+                    Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Soft { prims } => check(prims, where_),
+                    Prim::Plate { on, off, .. } => {
+                        check(on, where_);
+                        check(off, where_);
+                    }
+                    _ => {}
+                }
+            }
+        }
+        for era in crate::style::Era::ALL {
+            let style = era.style();
+            check(style.dashboard, &format!("{era:?} dashboard"));
+            check(style.store, &format!("{era:?} store"));
         }
     }
 

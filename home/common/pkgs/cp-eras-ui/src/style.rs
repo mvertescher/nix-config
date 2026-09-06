@@ -2202,6 +2202,13 @@ pub enum Change {
         w: (f32, f32),
         h: (f32, f32),
     },
+    /// The trace's `<animate attributeName="opacity">` on the group:
+    /// `(from, to)` for the group's alpha. Painted as a fade on every
+    /// prim's ink (`scene.rs`), which is a group opacity exactly where
+    /// the prims do not overlap.
+    Opacity {
+        alpha: (f32, f32),
+    },
 }
 
 impl Change {

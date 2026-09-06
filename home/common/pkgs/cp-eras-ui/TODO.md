@@ -1824,11 +1824,45 @@ when that screen assembles from library widgets. Priority order:
     matches Firefox's frame); the wipe on terra's display is unseen
     until a switch. Other eras' dashboards and the store/mailbox have
     no boot-in annotated yet -- that is trace work per era, and each
-    should read as *that* era comes up, not neomil's wipe copied.
-    `Change` has one variant; opacity (`<animate attributeName=
+    should read as *that* era comes up, not neomil's wipe copied
+    (neokitsch has one since phase 3, below).
+    `Change` had one variant then; opacity (`<animate attributeName=
     "opacity">`) is the obvious second and needs a group-alpha path
     the canvas does not have (a `with_clip` draft has no alpha), so
-    it is a `Soft`-style composite or a per-prim ink blend.
+    it was a `Soft`-style composite or a per-prim ink blend -- the
+    blend, in phase 3.
+  - [x] **Phase 3 (2026-09-06): the neokitsch boot-in, and opacity.**
+    The live era's dashboard comes up its own way: `#cards-open` wipes
+    the cascade (cards, labels, captions) on from the left over 0.5 s
+    EaseOutCubic, so the staircase steps up in reading order, and
+    `#panel-fade` fades the detail panel in over 0.3 s from 0.4 s,
+    EaseOut. `Change::Opacity` is the per-prim ink blend: `scene.rs`
+    threads an `alpha` through `paint` beside `k`, and `ink` fades the
+    source alpha before the linear rebase, so a solid ink at .4 is
+    rebased exactly as the trace's `.4` (`a_faded_ink_is_the_
+    translucent_one`). The stack limit is real and visible on this
+    very panel: the dark paragraph bars over the gold body sit lighter
+    mid-fade than the trace's group opacity draws them (the diff row
+    of `triptych.sh --at 0.55 neokitsch dashboard` lights them solid),
+    for 0.3 s at boot. iced's canvas has no group alpha (only `image`
+    and `svg` widgets carry an `opacity`), so the exact route is the
+    `Soft`-style composite -- rasterise the group and draw it as an
+    image at alpha -- which needs `soft.rs` to rasterise text; not
+    worth it for a few frames unless a longer fade wants it. Two
+    conventions learned: a delayed `begin` needs a `<set>` holding the
+    `from` in the trace (SMIL shows the base value before begin, and
+    the base is the rest value; `Motion::begin` already holds on the
+    iced side), and a clip must clear the halo, not just the ink --
+    the first rect at x 180..920 nicked the DEVICES card's glow at 919
+    (54 px in the rest frame), so the rule is a rest-frame pixel diff
+    against the unannotated trace before anything else. The phase-2
+    commit had also put two vocabulary-table rows at the top of
+    `PIPELINE.md`, fused to the title; put back. `every_motion_rests_
+    before_rest` checks every era's boot-ins end by `motion::REST`.
+    Goldens untouched (rest frame). Wipe verified against Firefox at
+    0.15 s (0.2% of pixels), fade at 0.55 s; on terra's display unseen
+    until a switch. Entropism and kitsch dashboards and every store and
+    mailbox still have no boot-in.
 
 ## Headless check: feasibility settled (2026-08-22)
 

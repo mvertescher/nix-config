@@ -243,6 +243,23 @@
       <feGaussianBlur stdDeviation="1.5 4.5"/>
       <feColorMatrix type="matrix" values="0.43 0 0 0 0  0 0.32 0 0 0  0 0 0.21 0 0  0 0 0 1.45 0"/>
     </filter>
+    <!-- #cards-open: the six cascade cards, their labels and captions
+         are wiped on from the left at boot, so the staircase steps up
+         EMAIL to BRAINDANCE, then PRIVATE to DEVICES, in the order the
+         hub reads. The clip rect grows from no width to the block's
+         (x 180..940, which takes in the right-anchored labels and the halo) over
+         0.5 s, eased out: 0.33 1 0.68 1 is easings.net's EaseOutCubic.
+         The rect's own width is the value the animation freezes at, so
+         rsvg, which plays nothing, draws the cards whole: the rest frame
+         is the trace (docs/PIPELINE.md, Motion). Transcribed as the
+         Prim::Motion in src/eras/neokitsch.rs. -->
+    <clipPath id="cards-open-clip">
+      <rect x="180" y="160" width="760" height="630">
+        <animate id="cards-open" attributeName="width" from="0" to="760"
+                 begin="0s" dur="0.5s" calcMode="spline" keyTimes="0;1"
+                 keySplines="0.33 1 0.68 1" fill="freeze"/>
+      </rect>
+    </clipPath>
   </defs>
 
   <rect width="1600" height="900" fill="#0e0a0d"/>
@@ -335,6 +352,7 @@
     </g>
   </g>
 
+  <g clip-path="url(#cards-open-clip)">
   <!-- ==== the six cascade cards ==== -->
   <!-- onion stacks: concentric rings on the five unselected cards,
        fading outward. The EMAIL selection card has none — in the source
@@ -437,11 +455,27 @@
   <use href="#ncaption" x="630" y="723"/>
   <use href="#ncaption" x="730" y="622"/>
   <use href="#ncaption" x="832" y="520"/>
+  </g>
 
   <!-- ==== the detail panel ==== -->
   <!-- placed at its measured left edge / top line (source x 2810,
        y 623.5); the four rings nest inside and fade inward -->
-  <g>
+  <!-- #panel-fade: the detail panel comes up after the cascade, as a
+       fade rather than a wipe: it is the one solid gold body on the
+       screen and a wipe on it would read as neomil's GO HOME. Opacity
+       0 -> 1 over 0.3 s from 0.4 s, eased out (0.61 1 0.88 1 is
+       easings.net's EaseOut), frozen; the group's own opacity is the
+       value it freezes at, so rsvg draws the panel whole. Transcribed
+       as the Prim::Motion (Change::Opacity) in src/eras/neokitsch.rs. -->
+  <g opacity="1">
+    <animate id="panel-fade" attributeName="opacity" from="0" to="1"
+             begin="0.4s" dur="0.3s" calcMode="spline" keyTimes="0;1"
+             keySplines="0.61 1 0.88 1" fill="freeze"/>
+    <!-- SMIL shows the base value until an animation begins, and the
+         base is the rest value; so the hold at `from` before 0.4 s is
+         its own <set>. The iced side needs nothing for it: Motion.begin
+         already holds at `from` (docs/PIPELINE.md, Motion). -->
+    <set attributeName="opacity" to="0" begin="0s" end="panel-fade.begin"/>
     <g fill="none" stroke="#bd8951" stroke-width="1" transform="translate(1170.8 259.7)">
       <use href="#npring4" stroke-opacity="0.25"/>
       <use href="#npring3" stroke-opacity="0.55"/>

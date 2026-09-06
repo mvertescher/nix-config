@@ -1386,8 +1386,9 @@ pub fn mailbox() -> Mailbox {
 
 use crate::style::{
     fill_path, fill_rect, line_path, shut_path, txt, txt_bold, txt_end, txt_mid, Anchor,
-    Group, Prim,
+    Change, Group, Motion, Prim,
 };
+use iced::animation::Easing;
 
 /// The run's ink families, sampled by k-means over the photo: a bright
 /// gold for the plate, the selection and the tabs; a mid gold for the
@@ -1959,7 +1960,7 @@ const CONTENT: &[Prim] = &[
 //
 // What is not transcribed, and why:
 //
-//   * the halo (:252, `<use href="#content" filter="url(#halo)"
+//   * the halo (:269, `<use href="#content" filter="url(#halo)"
 //     class="photo">`): the photograph's glow, hidden by G2i and never
 //     drawn by any screen here (docs/PIPELINE.md).
 //   * `letter-spacing` on every text (1.5 on the header, 2 on LEVEL,
@@ -1985,22 +1986,22 @@ const CONTENT: &[Prim] = &[
 /// the `HAZE_*` stops are reused where the trace samples the same hex.
 /// Mid gold: header text, onion rings, captions, the tape, letterbox strokes.
 pub const HUB_MID: iced::Color = rgb(0xbd8951);
-/// The front outline of every card and of the panel (:389, :451).
+/// The front outline of every card and of the panel (:407, :485).
 pub const HUB_EDGE: iced::Color = rgb(0xe8ab66);
 /// The solid gold: EMAIL's card, the panel body, the labels, T2's tab.
 pub const HUB_FILL: iced::Color = rgb(0xf2b463);
-/// The tab plates on the cards' left edges (:400-406).
+/// The tab plates on the cards' left edges (:418-424).
 pub const HUB_PLATE: iced::Color = rgb(0xfcbe6d);
-/// The dark paragraph bars on the panel body (:460).
+/// The dark paragraph bars on the panel body (:494).
 pub const HUB_DARK: iced::Color = rgb(0x3b2416);
-/// The T2 badge's front outline and its "T2" (:287, :290).
+/// The T2 badge's front outline and its "T2" (:304, :307).
 pub const BADGE_LIT: iced::Color = rgb(0xe8c186);
-/// The interior of the A/B letterboxes where they mask the wire band (:312).
+/// The interior of the A/B letterboxes where they mask the wire band (:329).
 pub const BOX_FILL: iced::Color = rgb(0x4c3f5f);
 
 /// `HUB_MID` at the trace's ring opacities over `PAGE`. The cards' six
 /// rings run 0.85 0.73 0.61 0.49 0.37 0.25 outermost to innermost
-/// (:344-349); the panel's four run 0.70 0.70 0.55 0.25 (:446-449).
+/// (:362-367); the panel's four run 0.70 0.70 0.55 0.25 (:480-483).
 pub const RING_85: iced::Color = rgb(0xa37647);
 pub const RING_73: iced::Color = rgb(0x8e673f);
 pub const RING_70: iced::Color = rgb(0x89633d);
@@ -2009,7 +2010,7 @@ pub const RING_55: iced::Color = rgb(0x6e5032);
 pub const RING_49: iced::Color = rgb(0x64482e);
 pub const RING_37: iced::Color = rgb(0x4f3926);
 pub const RING_25: iced::Color = rgb(0x3a2a1e);
-/// `MICRO` at the T2 badge's seven ring opacities 0.55..0.85 (:279-285)
+/// `MICRO` at the T2 badge's seven ring opacities 0.55..0.85 (:296-302)
 /// over `HAZE_MID`, the haze stop nearest the badge's ground.
 pub const BADGE_55: iced::Color = rgb(0x775d4d);
 pub const BADGE_60: iced::Color = rgb(0x7d614c);
@@ -2024,7 +2025,7 @@ pub const BADGE_85: iced::Color = rgb(0x98724a);
 /// y-scaled 0.515, turned 1.3 degrees (:133). The blue annulus
 /// (`#hazeblue`, :108-116) is the store's `BLUE` table stop for stop,
 /// at (900,-120) and the same radii, turned 2 degrees (:110), and laid
-/// through the store's `BLUE_MASK` (`#bluemask`, :128-130, :250).
+/// through the store's `BLUE_MASK` (`#bluemask`, :128-130, :267).
 const HUB_HAZE: &[(f32, iced::Color)] = &[
     (0.0, HAZE_CORE),
     (0.258, HAZE_CORE),
@@ -2118,7 +2119,7 @@ const NRING6: &[Seg] = &[
 ];
 
 /// A card's idle dress, card-local: the six rings innermost first
-/// (:343-349, the trace's order), the front outline (:389-395) and the
+/// (:361-367, the trace's order), the front outline (:407-413) and the
 /// 6x38.3 r1.5 plate on the left edge at local y 54.6 (:401: MATRIX's
 /// is at 346.4 = 347 - 0.6, 338.6 = 284 + 54.6).
 const CARD_IDLE: &[Prim] = &[
@@ -2131,7 +2132,7 @@ const CARD_IDLE: &[Prim] = &[
     shut_path(0.0, 6.5, NCARD, Ink::Fixed(HUB_EDGE), 1.2),
     Prim::Round { x: -0.6, y: 54.6, w: 6.0, h: 38.3, r: 1.5, fill: Some(Ink::Fixed(HUB_PLATE)), stroke: None, width: 0.0 },
 ];
-/// A card's selected dress, from EMAIL (:413-414): the well silhouette
+/// A card's selected dress, from EMAIL (:431-432): the well silhouette
 /// filled AND stroked `#f2b463` 1.2, no rings, and the smaller
 /// 4.6x32.1 plate standing 1.25 proud of the edge inside the well
 /// (244.75 = 246 - 1.25, 442.3 = 384 + 58.3).
@@ -2219,7 +2220,7 @@ const NPRING4: &[Seg] = &[
     Seg::Quad { cx: 0.0, cy: 452.5, x: 0.0, y: 445.5 },
 ];
 /// The panel's outline group, panel-local to `translate(1170.8 259.7)`
-/// (:445-451): rings innermost first, then the front.
+/// (:479-485): rings innermost first, then the front.
 const PANEL_FRAME: &[Prim] = &[
     line_path(64.0, 30.3, NPRING4, Ink::Fixed(RING_25), 1.0),
     line_path(64.0, 30.3, NPRING3, Ink::Fixed(RING_55), 1.0),
@@ -2228,7 +2229,7 @@ const PANEL_FRAME: &[Prim] = &[
     shut_path(0.0, 37.8, NPANEL, Ink::Fixed(HUB_EDGE), 1.2),
 ];
 
-/// The T2 badge (:270-290): seven hairline rings of the folder outline
+/// The T2 badge (:287-307): seven hairline rings of the folder outline
 /// fading inward, the front, and the solid trapezoid tab pointing up
 /// off the inside bottom edge. Each ring is closed (`Z`) and opens at
 /// its own top-left, (1286.8,40.3) for the outermost.
@@ -2330,7 +2331,7 @@ const T2_7: &[Seg] = &[
     Seg::Line(1286.4, 57.2),
     Seg::Quad { cx: 1286.4, cy: 53.2, x: 1290.4, y: 53.2 },
 ];
-/// The front (:287), opening at (1291,55).
+/// The front (:304), opening at (1291,55).
 const T2_FRONT: &[Seg] = &[
     Seg::Line(1302.0, 55.0),
     Seg::Quad { cx: 1309.0, cy: 55.0, x: 1312.0, y: 50.0 },
@@ -2345,7 +2346,7 @@ const T2_FRONT: &[Seg] = &[
     Seg::Line(1287.0, 59.0),
     Seg::Quad { cx: 1287.0, cy: 55.0, x: 1291.0, y: 55.0 },
 ];
-/// The tab (:288), opening at (1293,104.5).
+/// The tab (:305), opening at (1293,104.5).
 const T2_TAB: &[Seg] = &[
     Seg::Line(1297.0, 100.0),
     Seg::Line(1322.0, 100.0),
@@ -2365,7 +2366,7 @@ const T2_BADGE: &[Prim] = &[
     Prim::Text { x: 1296.0, y: 95.0, size: 21.0, ink: Ink::Fixed(BADGE_LIT), face: Face::SemiBold, anchor: Anchor::Start, content: "T2" },
 ];
 
-/// One strand of the wire band (:299-306): in low at the left at `yl`,
+/// One strand of the wire band (:316-323): in low at the left at `yl`,
 /// a cubic up onto the tight line at `yb`, the long run to x 1040, a
 /// cubic back down to `yr` under the badges, and the curl at x 1568.
 macro_rules! wire {
@@ -2382,7 +2383,7 @@ macro_rules! wire {
     };
 }
 
-/// A boxed section letter on this screen (:308-335): the store's
+/// A boxed section letter on this screen (:325-352): the store's
 /// `LETTERBOX` silhouette in `HUB_MID`, the 15px letter in `CAPTION`
 /// centred on the plate at (+12, +19).
 macro_rules! hub_box {
@@ -2399,11 +2400,64 @@ macro_rules! hub_box {
     };
 }
 
+/// The six cascade cards, their labels and captions (:356-432): its own
+/// table because `DASHBOARD` wipes it on under `#cards-open`.
+const CASCADE: &[Prim] = &[
+    // ==== the six cascade cards (:356-432) ====
+    // in the trace's reading order, at the `<use>` positions of :408-412
+    // and :431; the trace paints all rings, then all fronts, then all
+    // plates, which is the same picture since no two cards overlap
+    module!(0, 246.0, 384.0),
+    module!(1, 347.0, 284.0),
+    module!(2, 449.0, 182.0),
+    module!(3, 624.0, 384.0),
+    module!(4, 724.0, 284.0),
+    module!(5, 826.0, 182.0),
+    // labels (:441-449), right-anchored beside each card
+    txt_end(238.0, 466.7, 17.0, Ink::Fixed(HUB_FILL), "EMAIL"),
+    txt_end(338.0, 366.3, 17.0, Ink::Fixed(HUB_FILL), "MATRIX"),
+    txt_end(440.0, 264.6, 17.0, Ink::Fixed(HUB_FILL), "BRAINDANCE"),
+    txt_end(615.0, 466.7, 17.0, Ink::Fixed(HUB_FILL), "PRIVATE"),
+    txt_end(714.0, 356.3, 17.0, Ink::Fixed(HUB_FILL), "SECURITY"),
+    txt_end(714.0, 377.9, 17.0, Ink::Fixed(HUB_FILL), "SYSTEMS"),
+    txt_end(817.0, 264.6, 17.0, Ink::Fixed(HUB_FILL), "DEVICES"),
+    // captions under each foot (:452-457)
+    Prim::At { x: 253.0, y: 723.0, prims: NCAPTION },
+    Prim::At { x: 352.0, y: 622.0, prims: NCAPTION },
+    Prim::At { x: 455.0, y: 520.0, prims: NCAPTION },
+    Prim::At { x: 630.0, y: 723.0, prims: NCAPTION },
+    Prim::At { x: 730.0, y: 622.0, prims: NCAPTION },
+    Prim::At { x: 832.0, y: 520.0, prims: NCAPTION },
+];
+
+/// The detail panel (:460-514): the rings and front outline, the solid
+/// body, its paragraphs, the tape and the module name. Its own table
+/// because `DASHBOARD` fades it in under `#panel-fade`.
+const PANEL: &[Prim] = &[
+    // ==== the detail panel (:460-514) ====
+    Prim::At { x: 1170.8, y: 259.7, prims: PANEL_FRAME },
+    // the solid body (:488)
+    fill_rect(1170.8, 326.0, 230.4, 309.0, Ink::Fixed(HUB_FILL)),
+    // two dark paragraphs, six lines and two, 11 tall at 19.5 pitch (:494-503)
+    fill_rect(1181.5, 343.0, 182.0, 11.0, Ink::Fixed(HUB_DARK)),
+    fill_rect(1181.5, 362.5, 200.0, 11.0, Ink::Fixed(HUB_DARK)),
+    fill_rect(1181.5, 382.0, 195.0, 11.0, Ink::Fixed(HUB_DARK)),
+    fill_rect(1181.5, 401.5, 170.0, 11.0, Ink::Fixed(HUB_DARK)),
+    fill_rect(1181.5, 421.0, 202.0, 11.0, Ink::Fixed(HUB_DARK)),
+    fill_rect(1181.5, 440.5, 101.0, 11.0, Ink::Fixed(HUB_DARK)),
+    fill_rect(1181.5, 480.0, 202.0, 11.0, Ink::Fixed(HUB_DARK)),
+    fill_rect(1181.5, 499.5, 207.0, 11.0, Ink::Fixed(HUB_DARK)),
+    // the micro-text tape (:509-510) and the module name (:512)
+    fill_rect(1194.0, 641.2, 174.0, 4.2, Ink::Fixed(HUB_MID)),
+    fill_rect(1194.0, 647.5, 181.0, 4.2, Ink::Fixed(HUB_MID)),
+    Prim::Text { x: 1286.7, y: 692.0, size: 20.0, ink: Ink::Fixed(HUB_FILL), face: Face::SemiBold, anchor: Anchor::Middle, content: "EMAIL" },
+];
+
 pub const DASHBOARD: &[Prim] = &[
     // Composited in software, as the store's backdrop is: the two
     // lobes carry opacities and stack.
     Prim::Soft { prims: HUB_GROUND },
-    // ==== header (:254-291) ====
+    // ==== header (:271-308) ====
     txt(120.0, 42.0, 15.0, Ink::Fixed(HUB_MID), "CUSTOMER #NC488402"),
     txt(120.0, 70.0, 12.0, Ink::Fixed(HUB_MID), "LEVEL"),
     Prim::Text { x: 126.0, y: 90.0, size: 21.0, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T1" },
@@ -2416,7 +2470,7 @@ pub const DASHBOARD: &[Prim] = &[
     Prim::Text { x: 1361.0, y: 86.0, size: 20.0, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T3" },
     Prim::Text { x: 1424.0, y: 86.0, size: 20.0, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T4" },
     Prim::At { x: 0.0, y: 0.0, prims: T2_BADGE },
-    // the wire band (:299-306): eight strands, low runs 2.9 apart on the
+    // the wire band (:316-323): eight strands, low runs 2.9 apart on the
     // left, 0.16 apart on the tight line, 1.8 apart on the right ribbon
     wire!(122.0, 86.40, 123.0),
     wire!(124.9, 86.56, 124.8),
@@ -2426,7 +2480,7 @@ pub const DASHBOARD: &[Prim] = &[
     wire!(136.5, 87.20, 132.0),
     wire!(139.4, 87.36, 133.8),
     wire!(142.3, 87.52, 135.6),
-    // boxed letters (:308-335): A/B mask the strands with an r3 interior
+    // boxed letters (:325-352): A/B mask the strands with an r3 interior
     Prim::Round { x: 238.0, y: 98.0, w: 26.0, h: 26.0, r: 3.0, fill: Some(Ink::Fixed(BOX_FILL)), stroke: None, width: 0.0 },
     Prim::Round { x: 1011.0, y: 98.0, w: 26.0, h: 26.0, r: 3.0, fill: Some(Ink::Fixed(BOX_FILL)), stroke: None, width: 0.0 },
     hub_box!(238.0, 98.0, "A"),
@@ -2441,47 +2495,34 @@ pub const DASHBOARD: &[Prim] = &[
     txt(620.0, 837.0, 8.0, Ink::Fixed(MICRO), "SERVING CUSTOMERS SINCE 2006."),
     txt(1208.0, 826.0, 8.0, Ink::Fixed(MICRO), "MAPS ARE PROVIDED BY SEOCHO. SATELITE SERVICES"),
     txt(1208.0, 837.0, 8.0, Ink::Fixed(MICRO), "SINCE 2006."),
-    // ==== the six cascade cards (:338-414) ====
-    // in the trace's reading order, at the `<use>` positions of :390-394
-    // and :413; the trace paints all rings, then all fronts, then all
-    // plates, which is the same picture since no two cards overlap
-    module!(0, 246.0, 384.0),
-    module!(1, 347.0, 284.0),
-    module!(2, 449.0, 182.0),
-    module!(3, 624.0, 384.0),
-    module!(4, 724.0, 284.0),
-    module!(5, 826.0, 182.0),
-    // labels (:423-431), right-anchored beside each card
-    txt_end(238.0, 466.7, 17.0, Ink::Fixed(HUB_FILL), "EMAIL"),
-    txt_end(338.0, 366.3, 17.0, Ink::Fixed(HUB_FILL), "MATRIX"),
-    txt_end(440.0, 264.6, 17.0, Ink::Fixed(HUB_FILL), "BRAINDANCE"),
-    txt_end(615.0, 466.7, 17.0, Ink::Fixed(HUB_FILL), "PRIVATE"),
-    txt_end(714.0, 356.3, 17.0, Ink::Fixed(HUB_FILL), "SECURITY"),
-    txt_end(714.0, 377.9, 17.0, Ink::Fixed(HUB_FILL), "SYSTEMS"),
-    txt_end(817.0, 264.6, 17.0, Ink::Fixed(HUB_FILL), "DEVICES"),
-    // captions under each foot (:434-439)
-    Prim::At { x: 253.0, y: 723.0, prims: NCAPTION },
-    Prim::At { x: 352.0, y: 622.0, prims: NCAPTION },
-    Prim::At { x: 455.0, y: 520.0, prims: NCAPTION },
-    Prim::At { x: 630.0, y: 723.0, prims: NCAPTION },
-    Prim::At { x: 730.0, y: 622.0, prims: NCAPTION },
-    Prim::At { x: 832.0, y: 520.0, prims: NCAPTION },
-    // ==== the detail panel (:441-480) ====
-    Prim::At { x: 1170.8, y: 259.7, prims: PANEL_FRAME },
-    // the solid body (:454)
-    fill_rect(1170.8, 326.0, 230.4, 309.0, Ink::Fixed(HUB_FILL)),
-    // two dark paragraphs, six lines and two, 11 tall at 19.5 pitch (:460-469)
-    fill_rect(1181.5, 343.0, 182.0, 11.0, Ink::Fixed(HUB_DARK)),
-    fill_rect(1181.5, 362.5, 200.0, 11.0, Ink::Fixed(HUB_DARK)),
-    fill_rect(1181.5, 382.0, 195.0, 11.0, Ink::Fixed(HUB_DARK)),
-    fill_rect(1181.5, 401.5, 170.0, 11.0, Ink::Fixed(HUB_DARK)),
-    fill_rect(1181.5, 421.0, 202.0, 11.0, Ink::Fixed(HUB_DARK)),
-    fill_rect(1181.5, 440.5, 101.0, 11.0, Ink::Fixed(HUB_DARK)),
-    fill_rect(1181.5, 480.0, 202.0, 11.0, Ink::Fixed(HUB_DARK)),
-    fill_rect(1181.5, 499.5, 207.0, 11.0, Ink::Fixed(HUB_DARK)),
-    // the micro-text tape (:475-476) and the module name (:478)
-    fill_rect(1194.0, 641.2, 174.0, 4.2, Ink::Fixed(HUB_MID)),
-    fill_rect(1194.0, 647.5, 181.0, 4.2, Ink::Fixed(HUB_MID)),
-    Prim::Text { x: 1286.7, y: 692.0, size: 20.0, ink: Ink::Fixed(HUB_FILL), face: Face::SemiBold, anchor: Anchor::Middle, content: "EMAIL" },
+    // the six cascade cards, wiped on from the left at boot: `#cards-open`
+    // (:256-262) grows the block's clip from no width to 760 over 0.5 s
+    // from 0, `keySplines="0.33 1 0.68 1"` = EaseOutCubic, and freezes;
+    // at rest it is the trace's own group (:355-433)
+    Prim::Motion {
+        motion: Motion {
+            id: "cards-open",
+            begin: 0,
+            dur: 500,
+            ease: Easing::EaseOutCubic,
+            change: Change::Clip { x: 180.0, y: 160.0, w: (0.0, 760.0), h: (630.0, 630.0) },
+        },
+        prims: CASCADE,
+    },
+    // the detail panel, faded in after the cascade: `#panel-fade`
+    // (:471-473) takes the group's opacity from 0 to 1 over 0.3 s from
+    // 0.4 s, `keySplines="0.61 1 0.88 1"` = EaseOut, and freezes; the
+    // `<set>` under it (:478) is the hold at 0 until then, which
+    // `Motion::begin` already is
+    Prim::Motion {
+        motion: Motion {
+            id: "panel-fade",
+            begin: 400,
+            dur: 300,
+            ease: Easing::EaseOut,
+            change: Change::Opacity { alpha: (0.0, 1.0) },
+        },
+        prims: PANEL,
+    },
 ];
 // --- end dashboard -------------------------------------------------------
