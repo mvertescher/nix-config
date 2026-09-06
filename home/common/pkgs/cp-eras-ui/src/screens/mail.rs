@@ -51,6 +51,7 @@ use crate::style::{
     Style, Ticket, Trim, BL, BR, TL, TR,
 };
 use crate::widgets::surface::{outline, Corners, Cut};
+use crate::screens::nav::{Dir, Stroke};
 use crate::screens::scene::Backdrop;
 use crate::widgets::ground;
 use crate::Element;
@@ -85,6 +86,9 @@ pub struct MailBox {
 pub enum Message {
     /// A row was clicked. Carries the row's index in the visible list.
     Select(usize),
+    /// A key moved the selection: `j`/`k` walk the list, and the list
+    /// is the only thing here to walk, so `h`/`l` do nothing.
+    Move(Dir),
 }
 
 impl crate::shell::Wears for MailBox {
@@ -114,6 +118,18 @@ impl MailBox {
                 self.selected = row.min(self.style.mailbox.list.rows.len().saturating_sub(1));
                 self.showing = self.selected;
             }
+            Message::Move(Dir::Down) => self.update(Message::Select(self.selected + 1)),
+            Message::Move(Dir::Up) => self.update(Message::Select(self.selected.saturating_sub(1))),
+            Message::Move(Dir::Left | Dir::Right) => {}
+        }
+    }
+
+    /// The keyboard's part in this screen: moves. Enter and Esc are the
+    /// hub's, so on its own the mailbox drops them.
+    pub fn stroke(stroke: Stroke) -> Option<Message> {
+        match stroke {
+            Stroke::Move(dir) => Some(Message::Move(dir)),
+            Stroke::Open | Stroke::Back => None,
         }
     }
 

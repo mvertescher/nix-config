@@ -817,6 +817,15 @@ pub struct Style {
     /// diamond, entropism BRAINDANCE, kitsch EVENTS, neokitsch EMAIL --
     /// so the opening state is era data, not a constant of the screen.
     pub dashboard_selection: usize,
+    /// Where each of the six modules leads when it is opened -- Enter
+    /// or a click on it in `screens::hub` -- indexed like the plates.
+    /// `None` is a module with no screen behind it yet. The labels are
+    /// the era's own, and only two eras label a mailbox (entropism's
+    /// EMAILS, neokitsch's EMAIL) and only two a store (kitsch's and
+    /// neomil's PRODUCTS); where an era has no module for a screen the
+    /// table stands one in, and says so at the entry, so every screen
+    /// is reachable in every era until the module lists are decided.
+    pub dashboard_destinations: [Option<Destination>; 6],
     // --- end dashboard ---
 }
 
@@ -2122,6 +2131,15 @@ pub enum Group {
     Card,
     /// A dashboard menu unit, indexed 0..6.
     Module,
+}
+
+/// A screen a dashboard module opens onto. The hub (`screens::hub`)
+/// routes on it; the dashboard itself only reports which one its
+/// selection carries.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Destination {
+    Mail,
+    Store,
 }
 
 /// Horizontal anchoring of a run of scene text, matching SVG's

@@ -1763,6 +1763,29 @@ when that screen assembles from library widgets. Priority order:
     is drawn as per-era `Prim` paths inside the screens that use them.
     An `icon(..)` entry point is worth building the day two screens
     want the same glyph; today none do.
+- [x] **The screens as one app (2026-09-06)**: `screens::hub` runs the
+  dashboard with the mailbox and the store behind its modules, and
+  `cp-eras-ui-dashboard` runs the hub. `h j k l` (and the arrows) walk
+  every trace-driven screen *spatially* -- `screens::nav::step` picks
+  the nearest plate ahead by centre, along + 2 x across, because none
+  of the menus is a grid (neomil's stagger, kitsch's blades, the
+  neokitsch cascade, the store's nav-beside-shelf) -- Enter or a
+  click on a module opens its screen, Esc comes back; the mailbox
+  walks rows with `j`/`k`. Which module leads where is era data,
+  `Style::dashboard_destinations`, from the module labels: only
+  entropism (EMAILS) and neokitsch (EMAIL) label a mailbox and only
+  kitsch and neomil (PRODUCTS) a store, so the other screen in each
+  era is **stood in** by the last module (DEVICES, LOCATIONS,
+  CORPORATIONS) and says so at the table entry. Decide the six-module
+  lists per era and retire the stand-ins; a module with `None` behind
+  it selects and stays. Content is the tables' own mock inbox and
+  shelf, nothing live. The store's keyboard has a `focus` the mouse
+  also sets, and a move selects what it lands on, so there is no
+  separate cursor to draw -- which is also why nothing here needed a
+  new golden: the opening frame is the dashboard's own. Only
+  exercised headless and by unit test; the keys on a real window are
+  unproven until `cp-eras-ui-dashboard --era neokitsch` is run on ws
+  10.
 - [ ] **Motion**: hover flicker + panel boot-in as canned animations
   (the Cache-invalidation pattern the deleted diamond_menu used is the
   plumbing; see git history).
