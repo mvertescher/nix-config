@@ -129,10 +129,35 @@ pub fn settings() -> Settings {
     }
 }
 
+/// The window's app id: the binary's own name, `cp-eras-ui-store` and
+/// so on. It is what a compositor rule matches on (`class` in
+/// Hyprland), and without one every screen is a window with an empty
+/// class that no rule can tell from any other. The executable name
+/// rather than a constant so the six binaries need not each say it.
+pub fn app_id() -> String {
+    std::env::current_exe()
+        .ok()
+        .and_then(|exe| exe.file_name().map(|name| name.to_string_lossy().into_owned()))
+        .unwrap_or_else(|| "cp-eras-ui".to_string())
+}
+
+/// The window an era app opens in: the trace [`FRAME`], named by
+/// [`app_id`].
+pub fn window() -> iced::window::Settings {
+    iced::window::Settings {
+        size: FRAME,
+        platform_specific: iced::window::settings::PlatformSpecific {
+            application_id: app_id(),
+            ..Default::default()
+        },
+        ..Default::default()
+    }
+}
+
 /// [`iced::application()`] with the ritual done: [`settings`], the
-/// state's era as the theme, the trace [`FRAME`] as the window. Chain
-/// `.title(..)`, `.subscription(..)`, or another `.window_size(..)` on
-/// the result as usual.
+/// state's era as the theme, the trace [`FRAME`] as the window under
+/// the binary's app id. Chain `.title(..)`, `.subscription(..)`, or
+/// another `.window_size(..)` on the result as usual.
 pub fn application<State, Message>(
     boot: impl BootFn<State, Message>,
     update: impl UpdateFn<State, Message>,
@@ -145,7 +170,7 @@ where
     iced::application(boot, update, view)
         .theme(|state: &State| state.wears())
         .settings(settings())
-        .window_size(FRAME)
+        .window(window())
 }
 
 #[cfg(test)]

@@ -295,6 +295,20 @@ lib.mkMerge [
           text_color = eraOverride (rgba "bg");
         };
       };
+
+      # The era's screens -- dashboard, mailbox, store, login -- are
+      # 1600x900 windows drawn in the traces' frame, and each names
+      # itself by its binary (`shell::app_id`). On a host that gives
+      # the dashboard a workspace, any of them launched from anywhere
+      # (`cp-eras-ui-store --era kitsch` in a terminal, say) lands on
+      # that workspace and fills the screen, so a screen is looked at
+      # the way its reference was: alone, edge to edge, over the era's
+      # ground rather than in a tiled cell beside a shell. Hyprland
+      # 0.56's rule syntax; the older `fullscreen, class:` form is
+      # rejected with "missing a value".
+      windowrule = lib.mkIf config.custom.workspaceApp.enable [
+        "match:class ^(cp-eras-ui-(dashboard|mailbox|mail|store|login))$, workspace ${toString config.custom.workspaceApp.workspace}, fullscreen on"
+      ];
     };
 
     # --- wallpaper -----------------------------------------------------
