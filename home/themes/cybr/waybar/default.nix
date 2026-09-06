@@ -5,8 +5,9 @@ let
 
   # Rust replacement for upstream's mediaplayer.py, which needed python3 plus
   # PyGObject and the Playerctl GIR typelib. Talks D-Bus directly, so the
-  # music module has no interpreter dependency at runtime.
-  mpris-status = pkgs.callPackage ../../../common/pkgs/mpris-status { };
+  # music module has no interpreter dependency at runtime. Built once in
+  # `lib/overlays.nix`.
+  inherit (pkgs) mpris-status;
 
   # NixOS stand-in for upstream's `waybar-updates`, an Arch/AUR pacman
   # helper that is not in nixpkgs. ./nix-updates.sh documents what it

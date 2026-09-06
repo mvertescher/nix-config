@@ -1,12 +1,11 @@
 { pkgs, ... }:
 
 let
-  cargo-index = pkgs.callPackage ../pkgs/cargo-index.nix { };
-  cargo-local-registry = pkgs.callPackage ../pkgs/cargo-local-registry.nix { };
+  # Pinned precompiled 0.47.2. This let-binding wins over the `with pkgs`
+  # below, so it is this one and not nixpkgs' dprint that is installed;
+  # it cannot move into `lib/overlays.nix` without shadowing nixpkgs'
+  # (0.56.1) for every consumer. repo-rs and mpris-status did move there.
   dprint = pkgs.callPackage ../pkgs/dprint.nix { };
-  form-rs = pkgs.callPackage ../pkgs/form-rs.nix { };
-  puncover = pkgs.python311Packages.callPackage ../pkgs/puncover { };
-  repo-rs = pkgs.callPackage ../pkgs/repo-rs.nix { };
 in
 {
   imports = [
