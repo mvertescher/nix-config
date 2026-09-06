@@ -1,12 +1,5 @@
 { pkgs, ... }:
 
-let
-  # Pinned precompiled 0.47.2. This let-binding wins over the `with pkgs`
-  # below, so it is this one and not nixpkgs' dprint that is installed;
-  # it cannot move into `lib/overlays.nix` without shadowing nixpkgs'
-  # (0.56.1) for every consumer. repo-rs and mpris-status did move there.
-  dprint = pkgs.callPackage ../pkgs/dprint.nix { };
-in
 {
   imports = [
     ./bat.nix

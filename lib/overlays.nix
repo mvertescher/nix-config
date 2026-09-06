@@ -33,11 +33,6 @@ let
     # rather than "Orbitron-Light.ttf"; taking the name would silently
     # swap the font under any consumer of the nixpkgs one. The in-tree
     # build tracks googlefonts/orbitron-vf, so it is `orbitron-vf` here.
-    #
-    # `dprint` is the other name deliberately left out: `home/common/cli`
-    # pins a precompiled 0.47.2 under a name nixpkgs already resolves to
-    # 0.56.1, so it stays a local `callPackage` there rather than
-    # becoming a shadow here.
     inTreePkgs = final: prev: {
         orbitron-vf = final.callPackage ../home/common/pkgs/orbitron { };
         rajdhani-fontshare = final.callPackage ../home/common/pkgs/rajdhani-fontshare { };
