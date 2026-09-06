@@ -25,7 +25,7 @@ let
     # Additive, which `PLAN.md` requires of anything the work wrapper
     # consumes -- its call sites cannot be updated from here. All three
     # names below are absent from nixpkgs, so nothing that already
-    # resolves changes meaning.
+    # resolves changes meaning (checked by eval, not assumed).
     #
     # `orbitron` is *not* absent, which is why the in-tree font is not
     # called that. nixpkgs ships `orbitron-2011-05-25`, a different and
@@ -33,6 +33,11 @@ let
     # rather than "Orbitron-Light.ttf"; taking the name would silently
     # swap the font under any consumer of the nixpkgs one. The in-tree
     # build tracks googlefonts/orbitron-vf, so it is `orbitron-vf` here.
+    #
+    # `dprint` is the other name deliberately left out: `home/common/cli`
+    # pins a precompiled 0.47.2 under a name nixpkgs already resolves to
+    # 0.56.1, so it stays a local `callPackage` there rather than
+    # becoming a shadow here.
     inTreePkgs = final: prev: {
         orbitron-vf = final.callPackage ../home/common/pkgs/orbitron { };
         rajdhani-fontshare = final.callPackage ../home/common/pkgs/rajdhani-fontshare { };
@@ -40,6 +45,8 @@ let
         cp-eras-ui = final.callPackage ../home/common/pkgs/cp-eras-ui {
             orbitron = final.orbitron-vf;
         };
+        repo-rs = final.callPackage ../home/common/pkgs/repo-rs.nix { };
+        mpris-status = final.callPackage ../home/common/pkgs/mpris-status { };
     };
 in
 [
