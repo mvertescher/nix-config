@@ -112,11 +112,15 @@ in
         "none"
         "scanlines"
         "noise"
+        "trace"
       ];
       default = "none";
       description = ''
-        Wallpaper treatment generated from `bg`. Off by default; the
-        references are clean panels rather than degraded ones.
+        Wallpaper treatment. "none" is a flat field of `bg`; "scanlines"
+        and "noise" degrade it; "trace" is the reference dashboard's own
+        ground -- its gradients, from the design trace -- at monitor
+        size. Off by default; the references are clean panels rather
+        than degraded ones.
       '';
     };
 
