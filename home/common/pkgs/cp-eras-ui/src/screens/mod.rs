@@ -11,12 +11,15 @@
 
 pub mod dashboard;
 pub mod login;
+pub mod hub;
 pub mod mail;
+pub mod nav;
 pub mod scene;
 pub mod soft;
 pub mod store;
 
 pub use dashboard::Dashboard;
+pub use hub::Hub;
 pub use login::Login;
 pub use mail::MailBox;
 pub use store::Store;

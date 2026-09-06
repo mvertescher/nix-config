@@ -10,11 +10,13 @@
 //! binary to. `shell` decides the era and loads the faces; see there
 //! for the `--era` reasoning.
 //!
-//! The screen is live: clicking a category or a card selects it, and
-//! the era's own table says which drawing each wears. It opens on the
+//! The screen is live: clicking a category or a card selects it, `h j
+//! k l` walk to the nearest one, and the era's own table says which
+//! drawing each wears. It opens on the
 //! selection its trace shows -- entropism's first card, everyone
 //! else's second -- so a capture of it is comparable with the trace.
 
+use cp_eras_ui::screens::nav;
 use cp_eras_ui::screens::store::Store;
 use cp_eras_ui::shell;
 
@@ -22,5 +24,6 @@ fn main() -> iced::Result {
     let style = shell::style();
     shell::application(move || Store::new(style), Store::update, Store::view)
         .title(Store::title)
+        .subscription(|_| nav::strokes().filter_map(Store::stroke))
         .run()
 }

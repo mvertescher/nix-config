@@ -274,9 +274,9 @@ fn turned(x: f32, y: f32, angle: f32) -> (f32, f32) {
 }
 
 /// Every plate in a scene as `(group, index, centre)`, the centre in
-/// frame coordinates. The screens' tests use it to prove a table wrapped
-/// its choosers in plates and that a click at each centre lands.
-#[cfg(test)]
+/// frame coordinates. The keyboard walks these centres
+/// (`screens::nav`), and the screens' tests use them to prove a table
+/// wrapped its choosers in plates and that a click at each centre lands.
 pub(crate) fn plates(prims: &[Prim], ox: f32, oy: f32, out: &mut Vec<(Group, usize, Point)>) {
     for prim in prims {
         match *prim {

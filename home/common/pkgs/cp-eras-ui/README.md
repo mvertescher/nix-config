@@ -138,7 +138,8 @@ src/
                   bar and panels draw with; the screens are Prim tables
   screens/        store, login, mailbox, dashboard — era-agnostic by
                   construction; scene is the Prim renderer the store
-                  and dashboard share
+                  and dashboard share; nav walks their plates by key,
+                  hub routes between them (cp-eras-ui-dashboard)
   panels/         mail — the interactive counterpart to screens::mail
 ```
 

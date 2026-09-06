@@ -27,7 +27,7 @@
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
     Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Coat, Compliance, Controls,
-    Corner, Dress,
+    Corner, Destination, Dress,
     Era, Face, Footnotes, Ground, Ink, MenuMarker, MenuRule, Metrics, Nameplate,
     PanelEcho, Selection, Style, Tab, Ticket, WindowLabel,
 };
@@ -409,6 +409,9 @@ pub fn style() -> Style {
         // --- dashboard ---
         dashboard: DASHBOARD,
         dashboard_selection: 0,
+        // EMAIL is card 0; nothing on this hub says "store", so the
+        // last card, DEVICES, stands in for it until the list is decided.
+        dashboard_destinations: [Some(Destination::Mail), None, None, None, None, Some(Destination::Store)],
         // --- end dashboard ---
         metrics: Metrics {
             stroke: 2.0,

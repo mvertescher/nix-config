@@ -25,7 +25,7 @@
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
     Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Coat, Compliance, Controls,
-    Corner, Dress,
+    Corner, Destination, Dress,
     Era, Face, Footnotes, Ground, Ink, MenuMarker, MenuRule, Metrics, Nameplate,
     PanelEcho, Selection, Style, Ticket, WindowLabel,
 };
@@ -412,6 +412,10 @@ pub fn style() -> Style {
         // fill="#f5cb23" stroke="#fce89a">` under the comment "the
         // selection"); the other five fill `#2c9798`.
         dashboard_selection: 4,
+        // Both PRODUCTS blades (2 and 3) open the store; no blade says
+        // "mail", so LOCATIONS, the last, stands in for the mailbox
+        // until the list is decided.
+        dashboard_destinations: [None, None, Some(Destination::Store), Some(Destination::Store), None, Some(Destination::Mail)],
         // --- end dashboard ---
         metrics: Metrics {
             stroke: 1.5,

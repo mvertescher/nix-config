@@ -28,12 +28,16 @@
 //! prims), so like the store this screen stacks its canvas over
 //! [`crate::widgets::ground()`] and nothing else.
 //!
-//! Run it with `cp-eras-ui-dashboard --era <name>`; with no flag it
-//! follows the desktop theme.
+//! `h j k l` walk the menu (`screens::nav`, by the plates' centres,
+//! since no era's menu is a grid) and the selected module names the
+//! screen behind it, [`Style::dashboard_destinations`]; opening it is
+//! `screens::hub`'s business, which is what `cp-eras-ui-dashboard`
+//! runs. With no flag it follows the desktop theme.
 
 use crate::motion;
-use crate::screens::scene::{Picked, Scene};
-use crate::style::Style;
+use crate::screens::nav::{self, Dir, Stroke};
+use crate::screens::scene::{plates, Picked, Scene};
+use crate::style::{Destination, Group, Style};
 use crate::widgets::ground;
 use crate::Element;
 use iced::widget::stack;
@@ -58,6 +62,8 @@ pub struct Dashboard {
 pub enum Message {
     /// A module plate was clicked: make it the selection.
     Select { index: usize },
+    /// A key moved the selection to the nearest module that way.
+    Move(Dir),
     /// The clock, while the boot-in runs.
     Tick(Instant),
 }
@@ -84,7 +90,41 @@ impl Dashboard {
     pub fn update(&mut self, message: Message) {
         match message {
             Message::Select { index } => self.selected = index,
+            Message::Move(dir) => {
+                if let Some(index) = self.neighbour(dir) {
+                    self.selected = index;
+                }
+            }
             Message::Tick(at) => self.now = at,
+        }
+    }
+
+    /// The module nearest the selection in `dir`, from the plates'
+    /// centres (`nav::step`); `None` at the menu's edge.
+    fn neighbour(&self, dir: Dir) -> Option<usize> {
+        let mut found = Vec::new();
+        plates(self.style.dashboard, 0.0, 0.0, &mut found);
+        let from = found.iter().find(|(g, i, _)| *g == Group::Module && *i == self.selected)?.2;
+        nav::step(
+            found.iter().filter(|(g, ..)| *g == Group::Module).map(|&(_, i, c)| (i, c)),
+            from,
+            dir,
+        )
+    }
+
+    /// The screen behind the selected module, if the era's table puts
+    /// one there: what Enter or a click opens. The dashboard reports
+    /// it and the hub goes.
+    pub fn destination(&self) -> Option<Destination> {
+        self.style.dashboard_destinations.get(self.selected).copied().flatten()
+    }
+
+    /// The keyboard's part in this screen: moves. Enter and Esc are the
+    /// hub's, so on its own the dashboard drops them.
+    pub fn stroke(stroke: Stroke) -> Option<Message> {
+        match stroke {
+            Stroke::Move(dir) => Some(Message::Move(dir)),
+            Stroke::Open | Stroke::Back => None,
         }
     }
 

@@ -22,7 +22,8 @@
 //! Run it with `cp-eras-ui-store --era <name>`; with no flag it
 //! follows the desktop theme.
 
-use crate::screens::scene::{Picked, Scene};
+use crate::screens::nav::{self, Dir, Stroke};
+use crate::screens::scene::{plates, Picked, Scene};
 use crate::style::{Group, Style};
 use crate::widgets::ground;
 use crate::Element;
@@ -35,12 +36,20 @@ pub struct Store {
     /// opening state match each era's own material.
     pub category: usize,
     pub card: usize,
+    /// Where the keyboard is: the plate a move sets out from. A click
+    /// puts it on the clicked plate, and a move lands it on the nearest
+    /// plate that way in either group and selects that plate for its
+    /// group, so walking the shelf and choosing from it are one motion.
+    /// Opens on the card, the choice the trace grows.
+    focus: (Group, usize),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Message {
     /// A plate was clicked: pick it for its group.
     Select { group: Group, index: usize },
+    /// A key moved the focus to the nearest plate that way.
+    Move(Dir),
 }
 
 impl crate::shell::Wears for Store {
@@ -56,6 +65,7 @@ impl Store {
             style,
             category,
             card,
+            focus: (Group::Card, card),
         }
     }
 
@@ -65,14 +75,25 @@ impl Store {
 
     pub fn update(&mut self, message: Message) {
         match message {
+            Message::Move(dir) => {
+                if let Some(landing) = self.neighbour(dir) {
+                    self.update(Message::Select { group: landing.0, index: landing.1 });
+                }
+            }
             Message::Select {
                 group: Group::Category,
                 index,
-            } => self.category = index,
+            } => {
+                self.category = index;
+                self.focus = (Group::Category, index);
+            }
             Message::Select {
                 group: Group::Card,
                 index,
-            } => self.card = index,
+            } => {
+                self.card = index;
+                self.focus = (Group::Card, index);
+            }
             // No store scene carries a module plate; one arriving here
             // would be a table error, and ignoring it is the answer
             // that keeps this screen from knowing about the dashboard.
@@ -80,6 +101,24 @@ impl Store {
                 group: Group::Module,
                 ..
             } => {}
+        }
+    }
+
+    /// The plate nearest the focus in `dir`, in either group, from the
+    /// plates' centres (`nav::step`); `None` at the shelf's edge.
+    fn neighbour(&self, dir: Dir) -> Option<(Group, usize)> {
+        let mut found = Vec::new();
+        plates(self.style.store, 0.0, 0.0, &mut found);
+        let from = found.iter().find(|&&(g, i, _)| (g, i) == self.focus)?.2;
+        nav::step(found.iter().map(|&(g, i, c)| ((g, i), c)), from, dir)
+    }
+
+    /// The keyboard's part in this screen: moves. Enter and Esc are the
+    /// hub's, so on its own the store drops them.
+    pub fn stroke(stroke: Stroke) -> Option<Message> {
+        match stroke {
+            Stroke::Move(dir) => Some(Message::Move(dir)),
+            Stroke::Open | Stroke::Back => None,
         }
     }
 
@@ -192,5 +231,34 @@ mod tests {
         });
         assert_eq!(store.category, 4);
         assert_eq!(store.card, 3);
+    }
+
+    /// The keyboard reaches both groups in every era: `h` from the shelf
+    /// lands on the nav, `j` walks the nav down, `l` from the nav lands
+    /// back on the shelf. The eras hang the two differently, so this is
+    /// the one thing `nav::step`'s scoring is held to on real tables.
+    #[test]
+    fn the_keys_walk_between_nav_and_shelf_in_every_era() {
+        for era in Era::ALL {
+            let mut store = Store::new(era.style());
+            assert_eq!(store.focus.0, Group::Card, "{}", era.name());
+            for _ in 0..4 {
+                store.update(Message::Move(Dir::Left));
+                if store.focus.0 == Group::Category {
+                    break;
+                }
+            }
+            assert_eq!(store.focus.0, Group::Category, "{}: h never reaches the nav", era.name());
+            let top = store.category;
+            store.update(Message::Move(Dir::Down));
+            assert_ne!(store.category, top, "{}: j does not walk the nav", era.name());
+            for _ in 0..4 {
+                store.update(Message::Move(Dir::Right));
+                if store.focus.0 == Group::Card {
+                    break;
+                }
+            }
+            assert_eq!(store.focus.0, Group::Card, "{}: l never reaches the shelf", era.name());
+        }
     }
 }
