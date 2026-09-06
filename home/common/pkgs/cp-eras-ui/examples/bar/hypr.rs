@@ -66,6 +66,7 @@ const RETRY: Duration = Duration::from_secs(5);
 /// The bar's handle on the compositor.
 pub struct Monitor {
     latest: Latest<Hypr>,
+    changed: async_channel::Receiver<()>,
 }
 
 impl Monitor {
@@ -76,16 +77,20 @@ impl Monitor {
     pub fn spawn() -> Self {
         let shared = Snapshot::new(Hypr::default());
         let writer = shared.clone();
+        // Capacity one: a wake is a fact, not a count. If the bar has
+        // not yet taken the last one, another would say nothing new.
+        let (wake, changed) = async_channel::bounded(1);
 
         // Deliberately never joined, like the other sensors. If the
         // thread fails to start, or later dies, the reading stays
         // whatever was last written and the bar carries on.
         let _ = thread::Builder::new()
             .name("cp-eras-hypr".to_string())
-            .spawn(move || run(&writer));
+            .spawn(move || run(&writer, &wake));
 
         Monitor {
             latest: Latest::new(shared, Hypr::default()),
+            changed,
         }
     }
 
@@ -93,24 +98,41 @@ impl Monitor {
     pub fn reading(&mut self) -> Hypr {
         self.latest.get()
     }
+
+    /// Rings once per completed read, so the bar can redraw when the
+    /// compositor changed something rather than at the next tick. A
+    /// workspace switch that showed up to a second late was the one
+    /// thing waybar was visibly better at (2026-09-06, at the desk);
+    /// the thread had the answer within 50 ms, and the tick was the
+    /// whole delay.
+    ///
+    /// A clone of one queue, like the tray's `opened`, so the
+    /// subscription can hold its own handle.
+    pub fn changed(&self) -> async_channel::Receiver<()> {
+        self.changed.clone()
+    }
 }
 
-fn run(shared: &Snapshot<Hypr>) {
+fn run(shared: &Snapshot<Hypr>, wake: &async_channel::Sender<()>) {
     loop {
-        publish(shared);
+        publish(shared, wake);
         if let Some(events) = connect(".socket2.sock") {
-            follow(events, || publish(shared));
+            follow(events, || publish(shared, wake));
         }
         thread::sleep(RETRY);
     }
 }
 
-/// Read both facts and publish them.
-fn publish(shared: &Snapshot<Hypr>) {
+/// Read both facts, publish them, and ring the bar. A full queue
+/// means a wake is already waiting and this one is the same news; a
+/// closed one means the bar is gone, which the thread finds out when
+/// the process does.
+fn publish(shared: &Snapshot<Hypr>, wake: &async_channel::Sender<()>) {
     shared.set(Hypr {
         workspaces: workspaces(),
         window: active_window(),
     });
+    let _ = wake.try_send(());
 }
 
 /// Sit on the event stream until it ends. Re-reads after any burst of

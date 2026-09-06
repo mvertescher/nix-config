@@ -180,6 +180,10 @@ struct BarApp {
 #[derive(Debug, Clone)]
 enum Message {
     Tick,
+    /// The compositor changed a workspace or the focused window. The
+    /// reading is already in the snapshot; this only says to look now
+    /// rather than at the next tick.
+    Hypr,
     /// A pointer event on the tray cell at this index. The bar is
     /// otherwise entirely non-interactive, and this is the only reason
     /// it accepts pointer input at all.
@@ -217,6 +221,16 @@ struct MenuStream(async_channel::Receiver<tray::Opened>);
 impl std::hash::Hash for MenuStream {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         std::hash::Hash::hash("cp-eras-ui-bar-tray-menus", state);
+    }
+}
+
+/// The Hyprland thread's wake stream, on the same terms.
+#[derive(Debug, Clone)]
+struct HyprStream(async_channel::Receiver<()>);
+
+impl std::hash::Hash for HyprStream {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        std::hash::Hash::hash("cp-eras-ui-bar-hypr", state);
     }
 }
 
@@ -263,6 +277,7 @@ impl BarApp {
                     return self.dismiss();
                 }
             }
+            Message::Hypr => self.refresh_hypr(),
             Message::Pointer(x) => self.pointer = x,
             // Handed to the tray thread rather than acted on here: the
             // call goes to another process, and the bar must not wait
@@ -522,6 +537,13 @@ impl BarApp {
             iced::Subscription::run_with(MenuStream(self.tray.opened()), |menus| {
                 futures_lite::StreamExt::map(menus.0.clone(), Message::Opened)
             }),
+            // Workspace and window changes, as the Hyprland thread
+            // reads them. Same reasoning: the thread has the new
+            // workspace within 50 ms of the keypress, and waiting for
+            // the tick to notice was the visible lag against waybar.
+            iced::Subscription::run_with(HyprStream(self.hypr.changed()), |wakes| {
+                futures_lite::StreamExt::map(wakes.0.clone(), |()| Message::Hypr)
+            }),
         ])
     }
 
@@ -540,14 +562,20 @@ impl BarApp {
         // must not wait on it.
         self.readings.audio = self.audio.reading();
         self.readings.network = self.network.reading();
-        let hypr = self.hypr.reading();
-        self.readings.workspaces = hypr.workspaces;
-        self.readings.window = hypr.window;
+        self.refresh_hypr();
         self.readings.tray = self.tray.reading();
 
         let now = chrono::Local::now();
         self.readings.clock = now.format("%H:%M").to_string();
         self.readings.date = now.format("%Y-%m-%d").to_string();
+    }
+
+    /// The compositor's part of the readings alone: what `Message::Hypr`
+    /// refreshes, and what the tick refreshes with everything else.
+    fn refresh_hypr(&mut self) {
+        let hypr = self.hypr.reading();
+        self.readings.workspaces = hypr.workspaces;
+        self.readings.window = hypr.window;
     }
 }
 
