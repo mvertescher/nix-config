@@ -148,10 +148,10 @@ runCommand "cp-eras-ui-visual-test${suffix}"
     export VK_ICD_FILENAMES="$icd"
     # Without this wgpu picks GLES and panics on a missing EGL display.
     export WGPU_BACKEND=vulkan
-    # Frame 0 of the trace's motion (src/motion.rs): the goldens are the
-    # static design, not whichever half of a caret blink the settle
-    # happened to land in.
-    export CP_ERAS_UI_AT_MS=0
+    # The trace at rest, `motion::REST` (src/motion.rs): the goldens are
+    # the static design -- every boot-in frozen where it ends, the caret
+    # lit -- not whichever moment the settle happened to land in.
+    export CP_ERAS_UI_AT_MS=2400
 
     cd "$TMPDIR"
 

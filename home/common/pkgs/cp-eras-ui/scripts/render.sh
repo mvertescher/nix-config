@@ -30,10 +30,10 @@
 #                   waits 15.
 #   --at SECONDS    freeze the app's clock at this moment (`motion::now`,
 #                   via CP_ERAS_UI_AT_MS) so the capture is that frame of
-#                   the trace's motion. Default 0: frame 0, the static
-#                   design, which is what the goldens hold and what a
-#                   capture with no `--at` has always meant. Fractions
-#                   are fine; frame.sh takes the same number.
+#                   the trace's motion. Default 2.4, `motion::REST`: the
+#                   trace at rest, every boot-in done, which is the static
+#                   design the goldens hold. Fractions are fine; frame.sh
+#                   takes the same number.
 #   --keep-log      accepted and ignored: the log is always kept.
 #
 # Examples:
@@ -92,7 +92,8 @@ out=""
 bin=""
 settle=$DEFAULT_SETTLE
 name=""
-at=0
+# motion::REST in seconds; keep the two together.
+at=2.4
 
 while [ $# -gt 0 ]; do
   case "$1" in

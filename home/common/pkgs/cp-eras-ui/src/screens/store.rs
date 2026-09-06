@@ -95,6 +95,12 @@ impl Store {
                     module: 0,
                 },
                 on_select: |group, index| Message::Select { group, index },
+                // The store has no clock yet: nothing in any era's store
+                // table moves. Frame 0 rather than rest so that the first
+                // `Prim::Motion` added to one is seen stuck at its `from`
+                // -- and by the goldens, at rest -- until the screen
+                // ticks the way the dashboard does.
+                at: std::time::Duration::ZERO,
             }
             .view(),
         ]

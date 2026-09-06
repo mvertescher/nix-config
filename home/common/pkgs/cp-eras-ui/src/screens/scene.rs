@@ -17,10 +17,12 @@
 //! the pick for its [`Group`] and `off` otherwise, and reports clicks
 //! on plates back through the screen's own message constructor.
 
+use crate::motion;
 use crate::screens::soft;
-use crate::style::{Anchor, Face, Group, Ink, Prim, Seg, Style};
+use crate::style::{Anchor, Change, Face, Group, Ink, Prim, Seg, Style};
 use crate::Element;
 use std::cell::RefCell;
+use std::time::Duration;
 use iced::widget::canvas;
 use iced::mouse::Interaction;
 use iced::{mouse, Color, Point, Rectangle, Renderer, Size};
@@ -65,6 +67,11 @@ pub struct Scene<M> {
     pub style: Style,
     pub prims: &'static [Prim],
     pub picked: Picked,
+    /// The moment to paint, counted from `motion::origin()`: what every
+    /// [`Prim::Motion`] in the list is read at. A screen with nothing
+    /// moving still says where its clock is; `motion::REST` is the
+    /// trace as drawn.
+    pub at: Duration,
     pub on_select: fn(Group, usize) -> M,
 }
 
@@ -233,6 +240,15 @@ fn hit_at(prims: &[Prim], ox: f32, oy: f32, k: f32, at: Point) -> Option<(Group,
                     return Some(f);
                 }
             }
+            // A plate under a wipe is hit whether or not the wipe has
+            // uncovered it: the scene has no plates that move yet, and
+            // a hit box that fades in with its drawing is a decision for
+            // the first one that does.
+            Prim::Motion { prims, .. } => {
+                if let Some(f) = hit_at(prims, ox, oy, k, at) {
+                    return Some(f);
+                }
+            }
             Prim::Turn { x, y, angle, prims } => {
                 // Carry the point into the turned frame: subtract the
                 // pivot, undo the rotation, and the sub-scene's own
@@ -270,6 +286,7 @@ pub(crate) fn plates(prims: &[Prim], ox: f32, oy: f32, out: &mut Vec<(Group, usi
                 Point::new(ox + x + w / 2.0, oy + y + h / 2.0),
             )),
             Prim::At { x, y, prims } => plates(prims, ox + x, oy + y, out),
+            Prim::Motion { prims, .. } => plates(prims, ox, oy, out),
             Prim::Turn { x, y, angle, prims } => {
                 // Collect the sub-scene's centres about its own origin,
                 // then turn them out about the pivot.
@@ -542,6 +559,29 @@ impl<M> Scene<M> {
                     self.paint(frame, prims, ox, oy, k);
                 }
                 Prim::At { x, y, prims } => self.paint(frame, prims, ox + x, oy + y, k),
+                Prim::Motion { motion, prims } => {
+                    let t = motion::progress(&motion, self.at);
+                    match motion.change {
+                        Change::Clip { x, y, w, h } => {
+                            // `with_clip` drafts a frame whose
+                            // coordinates are this one's and applies
+                            // the region as a scissor when it pastes,
+                            // so the sub-scene paints with the same
+                            // running translation. An empty region
+                            // is skipped rather than handed to wgpu
+                            // as a zero-sized scissor.
+                            let region = Rectangle {
+                                x: (ox + x) * k,
+                                y: (oy + y) * k,
+                                width: Change::lerp(w, t) * k,
+                                height: Change::lerp(h, t) * k,
+                            };
+                            if region.width > 0.0 && region.height > 0.0 {
+                                frame.with_clip(region, |f| self.paint(f, prims, ox, oy, k));
+                            }
+                        }
+                    }
+                }
                 Prim::Turn { x, y, angle, prims } => {
                     // iced's `Frame::rotate` composes euclid's
                     // `[cos sin; -sin cos]`, the same matrix as SVG's
@@ -819,7 +859,7 @@ mod tests {
                             "{where_}: a Soft group holds a prim soft.rs does not rasterise"
                         );
                     }
-                    Prim::At { prims, .. } | Prim::Turn { prims, .. } => check(prims, where_),
+                    Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Motion { prims, .. } => check(prims, where_),
                     Prim::Plate { on, off, .. } => {
                         check(on, where_);
                         check(off, where_);
@@ -856,7 +896,7 @@ mod tests {
                             "{where_}: a diagonal Ramp outside a Soft group"
                         );
                     }
-                    Prim::At { prims, .. } | Prim::Turn { prims, .. } => check(prims, where_),
+                    Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Motion { prims, .. } => check(prims, where_),
                     Prim::Plate { on, off, .. } => {
                         check(on, where_);
                         check(off, where_);
@@ -885,7 +925,7 @@ mod tests {
             for prim in prims {
                 match *prim {
                     Prim::Soft { .. } => panic!("{where_}: a Soft group is not at the top level"),
-                    Prim::At { prims, .. } | Prim::Turn { prims, .. } => none_nested(prims, where_),
+                    Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Motion { prims, .. } => none_nested(prims, where_),
                     Prim::Plate { on, off, .. } => {
                         none_nested(on, where_);
                         none_nested(off, where_);
@@ -910,7 +950,7 @@ mod tests {
                 );
                 for prim in prims {
                     match *prim {
-                        Prim::At { prims, .. } | Prim::Turn { prims, .. } => none_nested(prims, &where_),
+                        Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Motion { prims, .. } => none_nested(prims, &where_),
                         Prim::Plate { on, off, .. } => {
                             none_nested(on, &where_);
                             none_nested(off, &where_);
@@ -919,6 +959,37 @@ mod tests {
                     }
                 }
             }
+        }
+    }
+
+    /// A `Prim::Motion`'s clip is a rectangle in the scene's frame:
+    /// `with_clip` drafts a fresh frame, so a transform set by an
+    /// enclosing `Turn` would not reach it and the clip would land
+    /// unrotated over a rotated drawing. Nothing needs one yet; the
+    /// day something does, this is where to start.
+    #[test]
+    fn motion_groups_are_not_turned() {
+        fn check(prims: &[Prim], turned: bool, where_: &str) {
+            for prim in prims {
+                match *prim {
+                    Prim::Motion { motion, prims } => {
+                        assert!(!turned, "{where_}: #{} is inside a Turn", motion.id);
+                        check(prims, turned, where_);
+                    }
+                    Prim::Turn { prims, .. } => check(prims, true, where_),
+                    Prim::At { prims, .. } | Prim::Soft { prims } => check(prims, turned, where_),
+                    Prim::Plate { on, off, .. } => {
+                        check(on, turned, where_);
+                        check(off, turned, where_);
+                    }
+                    _ => {}
+                }
+            }
+        }
+        for era in crate::style::Era::ALL {
+            let style = era.style();
+            check(style.dashboard, false, &format!("{era:?} dashboard"));
+            check(style.store, false, &format!("{era:?} store"));
         }
     }
 

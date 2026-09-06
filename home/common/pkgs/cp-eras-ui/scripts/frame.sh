@@ -6,15 +6,17 @@
 #
 # The traces carry their motion as SMIL (`<animate>`, `<animateTransform>`,
 # `<set>` on the element they move; docs/PIPELINE.md, "Motion"). rsvg
-# ignores SMIL and renders frame 0, which is why every static gate and
-# golden is unaffected by an annotation -- and why none of them can see
-# one. This renders the frame at `--at` seconds instead: the SVG is
-# copied with a script appended that pauses the document's timeline and
-# seeks it, and headless Firefox screenshots the result. Firefox because
-# it is the one rasteriser on hand that runs SMIL and can be told the
-# time; its frame 0 of the neomil login trace differed from rsvg's on
-# 0.016% of pixels (2026-09-06, --no-photo, 8-level fuzz), so a frame
-# from here is comparable with one from the static pipeline.
+# ignores SMIL and draws each element where its animation rests (the
+# convention: the rest frame is the trace), which is why every static
+# gate and golden is unaffected by an annotation -- and why none of
+# them can see one. This renders the frame at `--at` seconds instead:
+# the SVG is copied with a script appended that pauses the document's
+# timeline and seeks it, and headless Firefox screenshots the result.
+# Firefox because it is the one rasteriser on hand that runs SMIL and
+# can be told the time; its frame 0 of the neomil login trace differed
+# from rsvg's on 0.016% of pixels (2026-09-06, --no-photo, 8-level
+# fuzz), so a frame from here is comparable with one from the static
+# pipeline.
 #
 # The seek has to be a <script> *inside* the SVG. Loading the file
 # through an <object> and seeking its contentDocument from the page
@@ -34,14 +36,17 @@
 #
 # Times are SVG document seconds: `--at 0.4` is 400 ms after the
 # document's begin, which is what the traces' `begin=` values count
-# from. Elements with `begin="click"` or other event-based starts never
+# from. With no `--at` the frame is 2.4 s in, `motion::REST`, where every
+# boot-in has frozen and the frame is the one rsvg draws. Elements with `begin="click"` or other event-based starts never
 # run under this and render in their unstarted state, on purpose --
 # a trace that wants an interaction shown at a moment gives it a
 # clock-based begin as well (see the convention).
 
 set -euo pipefail
 
-at=0
+# motion::REST in seconds, the same default as render.sh: the trace at
+# rest, which is what rsvg draws.
+at=2.4
 photo=1
 size=1600x900
 args=()
