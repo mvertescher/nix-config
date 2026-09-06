@@ -315,9 +315,18 @@ lib.mkMerge [
     # from us -- home-manager already gives it a reload trigger against
     # waybar's SIGUSR2 ExecReload -- but the module list is read only at
     # startup, so config.jsonc has to restart.
-    systemd.user.services.waybar.Unit.X-Restart-Triggers = lib.mkIf (!useOwnBar) [
-      "${config.xdg.configFile."waybar/config.jsonc".source}"
-    ];
+    #
+    # The mkIf has to sit on the whole service, not on the trigger list: a
+    # `services.waybar = { Unit.X-Restart-Triggers = mkIf false [...] }`
+    # still declares the service, and home-manager renders that as an
+    # empty unit file, which systemd reads as masked. The first switch
+    # off waybar then fails activation trying to restart a masked unit
+    # (seen 2026-09-06, cybr -> neomil).
+    systemd.user.services.waybar = lib.mkIf (!useOwnBar) {
+      Unit.X-Restart-Triggers = [
+        "${config.xdg.configFile."waybar/config.jsonc".source}"
+      ];
+    };
 
     # The native bar has no home-manager module, so its unit is written
     # here. It re-reads theme/current.toml at startup, which is what makes
