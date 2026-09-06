@@ -40,10 +40,12 @@ in
         theme to follow and no username to remember, so both are
         options here rather than state on disk.
 
-        Left on tuigreet by default: the cp-eras-ui session has not
-        been exercised on a real seat yet (see the crate's GREETER.md),
-        and a greeter that fails to draw is a host with no way in
-        short of a tty.
+        Left on tuigreet by default. `tests/greeter.nix` (the flake's
+        `checks.x86_64-linux.greeter`) signs a user in through this
+        greeter on a virtio GPU in a NixOS VM, so the seat, PAM and the
+        handover are covered; a real card under the `greeter` account
+        is the one thing it cannot stand in for, and a greeter that
+        fails to draw is a host with no way in short of a tty.
       '';
     };
 
@@ -70,6 +72,19 @@ in
         shows the account already chosen -- so the name is given
         here, the way `lastUser` gives tuigreet its first guess.
         Required when `greeter = "cp-eras-ui"`.
+      '';
+    };
+
+    session = lib.mkOption {
+      type = lib.types.str;
+      default = "${lib.getExe pkgs.uwsm} start hyprland-uwsm.desktop";
+      defaultText = lib.literalExpression ''"''${lib.getExe pkgs.uwsm} start hyprland-uwsm.desktop"'';
+      description = ''
+        What the greeter starts once the password is accepted: the
+        session command greetd runs as the signed-in user. Both
+        greeters hand it over verbatim. One option rather than a string
+        in each branch so the two cannot drift, and so a test can point
+        it at something that leaves a mark (`tests/greeter.nix`).
       '';
     };
   };
@@ -132,9 +147,9 @@ in
               # `cp-eras-ui-login --greet` exits 0 once greetd has
               # accepted `start_session`, which is greetd's cue to
               # tear the greeter down and start the user's session.
-              "${pkgs.cage}/bin/cage -s -d -- ${pkgs.cp-eras-ui}/bin/cp-eras-ui-login --greet --era ${cfg.era} --user ${cfg.user} --cmd '${pkgs.uwsm}/bin/uwsm start hyprland-uwsm.desktop'"
+              "${pkgs.cage}/bin/cage -s -d -- ${pkgs.cp-eras-ui}/bin/cp-eras-ui-login --greet --era ${cfg.era} --user ${cfg.user} --cmd '${cfg.session}'"
             else
-              "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session --cmd '${pkgs.uwsm}/bin/uwsm start hyprland-uwsm.desktop'";
+              "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session --cmd '${cfg.session}'";
           user = "greeter";
         };
       };
@@ -147,8 +162,8 @@ in
     # groups; the render node wgpu opens for Vulkan is world-readable
     # under udev's default rules. `video` is added anyway for libseat's
     # direct fallback, because a greeter that cannot open the GPU is a
-    # black screen with no message. Unverified on a real seat as of
-    # 2026-09-06.
+    # black screen with no message. Exercised on a virtio-gpu seat by
+    # tests/greeter.nix (2026-09-06); a real card is not.
     users.users.greeter.extraGroups = lib.mkIf (cfg.greeter == "cp-eras-ui") [ "video" ];
 
     # Only the file, not the directory: nixpkgs' own greetd module already
