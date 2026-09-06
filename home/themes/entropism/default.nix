@@ -119,11 +119,14 @@ in
         "none"
         "scanlines"
         "noise"
+        "trace"
       ];
       default = "none";
       description = ''
-        Wallpaper treatment. "none" is a flat field of `bg`; the others
-        add a degraded-display artefact generated from the same colour.
+        Wallpaper treatment. "none" is a flat field of `bg`; "scanlines"
+        and "noise" add a degraded-display artefact generated from the
+        same colour; "trace" is the reference dashboard's own ground
+        (its `#lift` gradient, from the design trace) at monitor size.
         Off by default -- an entropism display earns its texture from
         age, not from decoration.
       '';

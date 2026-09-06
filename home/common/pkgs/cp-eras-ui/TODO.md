@@ -1133,10 +1133,10 @@ Open:
   widget on every screen (badges BL, login cards TR 46 + BL 22, buttons
   BR 9, panels TR 8 + BL), so the second is the honest fix and affects
   every neomil screen, not just the bar.
-- [ ] **Neomil idle label contrast**: RED_FILL on RED_DEEP is faithful
-  to the badges but the dimmest strip of the four at 14px. Lift the
-  idle ink (OFF_WHITE or RED_HOT) if it is hard to read on the real
-  monitor; the SVG is the place to decide, then the delta.
+- [x] **Neomil idle label contrast**: RED_FILL on RED_DEEP is faithful
+  to the badges but the dimmest strip of the four at 14px. Checked on
+  the real monitor 2026-09-06: reads fine at the desk. Keep RED_FILL;
+  do not lift the idle ink.
 - [x] **`bar.rs` follows the four deltas** — landed 2026-09-03:
   `bar.rs` rewritten against `Style::bar` tables (`Dress`, `BarGround`,
   `BarChrome`, `BarOrnament`, `WindowLabel`, `Tab`, `MenuRule`,

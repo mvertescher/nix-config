@@ -24,7 +24,7 @@
   # { package, name } for bar/launcher/notification chrome. Terminal
   # content keeps stylix.fonts.monospace so code stays legible.
   font,
-  # "none" | "scanlines" | "noise"
+  # "none" | "scanlines" | "noise" | "trace"
   texture ? "none",
   # Restart a running Firefox when the theme changes. userChrome is only
   # read at startup, so an open window otherwise keeps the old look.
@@ -84,6 +84,20 @@ let
 
   # Generated rather than shipped, so the wallpaper follows a colour
   # override instead of going stale as an asset with a baked-in tint.
+  #
+  # "trace" is the exception that proves it: the era's dashboard trace
+  # (home/common/pkgs/cp-eras-ui/docs/<era>/dashboard-trace.svg) opens
+  # with its ground -- the run of full-frame <rect>s straight after
+  # </defs>, before any content group -- and those are the gradients the
+  # reference photo shows under its panels, measured off the photo and
+  # transcribed once. The toolkit draws the same rects under the
+  # dashboard, so the desktop and the app share one ground. The rects
+  # are kept and everything after them dropped; the gradients are
+  # bounding-box relative, so the 1600x900 trace renders at monitor size
+  # without a seam. Its colours are the *photo's*, not the variant's:
+  # a recoloured palette still gets the reference ground.
+  trace =
+    ../../common/pkgs/cp-eras-ui/docs + "/${lib.toLower name}/dashboard-trace.svg";
   wallpaper =
     pkgs.runCommand "${lib.toLower name}-${variant}-${texture}.png"
       {
@@ -106,6 +120,15 @@ let
               -colorspace Gray grain.png
             ${magick} -size 3840x2160 xc:"$bg" grain.png \
               -compose blend -define compose:args=7 -composite png32:$out
+          '';
+
+          trace = ''
+            ${lib.getExe pkgs.perl} -0ne '
+              my ($head) = /\A(.*?<\/defs>)/s;
+              my ($ground) = /<\/defs>((?:\s*<rect[^>]*\/>)+)/s;
+              print "$head$ground\n</svg>\n";
+            ' ${trace} > ground.svg
+            ${lib.getExe' pkgs.librsvg "rsvg-convert"} -w 3840 -h 2160 ground.svg -o $out
           '';
         }
         .${texture}
