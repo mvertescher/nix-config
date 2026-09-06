@@ -28,6 +28,12 @@
 #                   4; the note on DEFAULT_SETTLE below has the measurements
 #                   (and why ICED_PRESENT_MODE is set) when tests/visual.nix
 #                   waits 15.
+#   --at SECONDS    freeze the app's clock at this moment (`motion::now`,
+#                   via CP_ERAS_UI_AT_MS) so the capture is that frame of
+#                   the trace's motion. Default 0: frame 0, the static
+#                   design, which is what the goldens hold and what a
+#                   capture with no `--at` has always meant. Fractions
+#                   are fine; frame.sh takes the same number.
 #   --keep-log      accepted and ignored: the log is always kept.
 #
 # Examples:
@@ -86,6 +92,7 @@ out=""
 bin=""
 settle=$DEFAULT_SETTLE
 name=""
+at=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -94,6 +101,7 @@ while [ $# -gt 0 ]; do
     --out)    out=$2; shift 2 ;;
     --bin)    bin=$2; shift 2 ;;
     --settle) settle=$2; shift 2 ;;
+    --at)     at=$2; shift 2 ;;
     --keep-log) shift ;;
     -h|--help) usage; exit 0 ;;
     -*) echo "render.sh: unknown option $1" >&2; usage >&2; exit 2 ;;
@@ -276,6 +284,10 @@ export WGPU_BACKEND=vulkan
 # headless compositor is slow to send; the DEFAULT_SETTLE note has the
 # measurement. Pixel content is unaffected -- it is when the frame lands.
 export ICED_PRESENT_MODE=mailbox
+# The frame of the motion to capture, in ms (`--at`, seconds). Always set:
+# an app left on its own clock blinks its caret against the settle time.
+CP_ERAS_UI_AT_MS=$(perl -e "printf q{%d}, $at * 1000")
+export CP_ERAS_UI_AT_MS
 [ -n "$app_ld_path" ] && export LD_LIBRARY_PATH="$app_ld_path${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 log="$run/app.log"

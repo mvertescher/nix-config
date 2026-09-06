@@ -166,7 +166,8 @@
 
   <!-- card 1: input field + ENTER -->
   <rect x="257" y="413" width="335" height="51" rx="2" fill="#162826"/>
-  <rect x="266" y="421" width="2" height="22" fill="#8af0d8"/>
+  <!-- the cursor blinks: 1.2s period, lit for the first half (docs/PIPELINE.md, Motion) -->
+  <rect id="caret" x="266" y="421" width="2" height="22" fill="#8af0d8"><animate id="caret-blink" attributeName="opacity" values="1;0" keyTimes="0;0.5" calcMode="discrete" dur="1.2s" repeatCount="indefinite"/></rect>
   <path d="M 257,470 H 418 L 430,463 H 591.5 V 497.5 H 257 Z" fill="#8afada"/>
   <text x="510" y="486" font-family="Rajdhani" font-size="14" font-weight="600" letter-spacing="2.5"
         text-anchor="middle" fill="#0f3a33">ENTER</text>

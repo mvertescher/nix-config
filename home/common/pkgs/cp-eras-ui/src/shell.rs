@@ -77,17 +77,36 @@ where
     I: IntoIterator,
     I::Item: AsRef<str>,
 {
+    flag(args, "--era").and_then(|name| Era::parse(&name))
+}
+
+/// The value of `--name <value>` or `--name=<value>` in an argument
+/// list, `None` when absent or when the flag ends the list.
+pub fn flag<I>(args: I, name: &str) -> Option<String>
+where
+    I: IntoIterator,
+    I::Item: AsRef<str>,
+{
     let mut args = args.into_iter();
     while let Some(arg) = args.next() {
         let arg = arg.as_ref();
-        if let Some(name) = arg.strip_prefix("--era=") {
-            return Era::parse(name);
+        if let Some(value) = arg.strip_prefix(name).and_then(|rest| rest.strip_prefix('=')) {
+            return Some(value.to_string());
         }
-        if arg == "--era" {
-            return args.next().and_then(|n| Era::parse(n.as_ref()));
+        if arg == name {
+            return args.next().map(|v| v.as_ref().to_string());
         }
     }
     None
+}
+
+/// Whether a bare `--name` is in an argument list.
+pub fn switch<I>(args: I, name: &str) -> bool
+where
+    I: IntoIterator,
+    I::Item: AsRef<str>,
+{
+    args.into_iter().any(|arg| arg.as_ref() == name)
 }
 
 /// Every face the crate ships, for the fonts an app loads at boot.
@@ -190,6 +209,18 @@ mod tests {
         assert_eq!(era_from(["--era"]), None);
         assert_eq!(era_from(["--era", "brutalism"]), None);
         assert_eq!(era_from(["--era=", "kitsch"]), None);
+    }
+
+    #[test]
+    fn flags_and_switches() {
+        let args = ["--greet", "--user", "mverte", "--cmd=uwsm start x", "--era", "kitsch"];
+        assert!(switch(args, "--greet"));
+        assert!(!switch(args, "--nope"));
+        assert_eq!(flag(args, "--user").as_deref(), Some("mverte"));
+        assert_eq!(flag(args, "--cmd").as_deref(), Some("uwsm start x"));
+        assert_eq!(flag(args, "--era").as_deref(), Some("kitsch"));
+        assert_eq!(flag(args, "--use"), None);
+        assert_eq!(flag(["--user"], "--user"), None);
     }
 
     /// Every byte constant in `fonts.rs` is loaded, so no screen can

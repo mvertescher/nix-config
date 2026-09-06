@@ -35,6 +35,8 @@ pub mod panels;
 
 pub mod bar;
 pub mod fonts;
+pub mod greetd;
+pub mod motion;
 
 pub use style::{Era, Style};
 

@@ -38,7 +38,9 @@ use crate::style::{
 };
 use crate::widgets::surface::Corners;
 // --- login ---
-use crate::style::{Access, Colophon, Fixture, Legend, Masthead, Plate, Plot, Slot};
+use crate::style::{
+    Access, Blink, Caret, Colophon, Entry, Fixture, Legend, Masthead, Plate, Plot, Slot,
+};
 // --- end login ---
 
 pub const BG: iced::Color = rgb(0x110c07);
@@ -390,7 +392,17 @@ pub const ACCESS: Access = Access {
         // Eleven asterisks, and the photo's are 7px glyphs at a ~9.7
         // pitch, not the 4-5px at pitch 10 an earlier reading drew: a
         // bold 22 at natural tracking, run 94 wide.
-        value: Some(Legend::new("***********", 578.0, 439.0, 22.0, Ink::Fg).bold()),
+        // Typed, one bold star per character and nothing after; the
+        // underline caret trails the run.
+        entry: Some(Entry {
+            rest: Legend::new("***********", 578.0, 439.0, 22.0, Ink::Fg).bold(),
+            mask: '*',
+            tail: "",
+            caret: Caret::Trails,
+            blink: Blink::Caret,
+            busy: "VERIFYING:",
+            failed: "ACCESS DENIED:",
+        }),
         // The short caret underline under the first pair of characters.
         caret: Some(Plate::filled(Plot::new(577.0, 439.5, 17.0, 1.25), Ink::Border)),
         action: Some(Plate::filled(Plot::new(932.0, 413.0, 105.0, 33.0), Ink::Cta)),

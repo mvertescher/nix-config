@@ -34,7 +34,7 @@ use crate::style::{
 use crate::widgets::surface::{Corners, Cut};
 // --- login ---
 use crate::style::{
-    Access, Bevel, Colophon, Fixture, Legend, Masthead, Plate, Plot, Slot,
+    Access, Bevel, Blink, Caret, Colophon, Entry, Fixture, Legend, Masthead, Plate, Plot, Slot,
 };
 // --- end login ---
 
@@ -502,6 +502,18 @@ pub const ACCESS: Access = Access {
                 Plot::new(417.0, 361.0, 345.0, 42.0),
                 Ink::Inset,
             )),
+            // The trace shows the well empty: no run, no cursor. A typed
+            // run goes in the name's face and ink, inset the way the name
+            // is, on a baseline centred in the well.
+            entry: Some(Entry {
+                rest: Legend::new("", 429.0, 389.0, 19.5, Ink::Fg).medium().tracked(0.15),
+                mask: '*',
+                tail: "",
+                caret: Caret::Fixed,
+                blink: Blink::Still,
+                busy: "VERIFYING",
+                failed: "ACCESS DENIED",
+            }),
             // Bottom-left chamfer only, 16 wide by 13 tall; the table
             // carries the one figure, so this is 16 square.
             action: Some(
@@ -538,6 +550,15 @@ pub const ACCESS: Access = Access {
                 Plot::new(837.0, 361.0, 345.0, 42.0),
                 Ink::Inset,
             )),
+            entry: Some(Entry {
+                rest: Legend::new("", 849.0, 389.0, 19.5, Ink::Fg).medium().tracked(0.15),
+                mask: '*',
+                tail: "",
+                caret: Caret::Fixed,
+                blink: Blink::Still,
+                busy: "VERIFYING",
+                failed: "ACCESS DENIED",
+            }),
             action: Some(
                 Plate::filled(Plot::new(837.0, 414.0, 344.0, 27.0), Ink::Cta)
                     .bevelled(Bevel::bl(16.0)),

@@ -28,22 +28,95 @@
 //! whole screen this way -- `screens::dashboard`'s ops backdrop. The
 //! design frame is 1600x900 and everything scales from it, so the
 //! screen is not pinned to that size.
+//!
+//! Since 2026-09-06 the screen is also a working greeter. The live
+//! slot's field takes the keyboard -- printable characters append,
+//! Backspace deletes, Escape clears, Enter submits -- and draws the
+//! secret as the era's mask glyphs the way [`crate::style::Entry`]
+//! says to. Nothing typed shows: the field at rest is the trace's
+//! mock, so the goldens are the idle frame. Run with a
+//! [`Greeter`], Enter hands the secret to greetd on a thread of its
+//! own (`crate::greetd`) and the screen exits when the session
+//! starts; without one it is the demo it always was and Enter
+//! clears the field.
 
+use crate::greetd::{self, Refusal, Secret};
+use crate::motion;
 use crate::style::{
-    Access, Colophon, Emblem, Fixture, Ink, Legend, Masthead, Plate, Plot, Slot, Style,
+    Access, Blink, Caret, Colophon, Emblem, Entry, Fixture, Ink, Legend, Masthead, Plate, Plot,
+    Slot,
+    Style,
 };
 use crate::screens::scene::Backdrop;
 use crate::widgets::ground;
 use crate::Element;
+use iced::keyboard::{self, key::Named, Key};
 use iced::widget::{canvas, stack};
-use iced::{mouse, Color, Length, Point, Rectangle, Renderer, Size, Vector};
+use iced::{mouse, Color, Length, Point, Rectangle, Renderer, Size, Subscription, Task, Vector};
+use std::time::Instant;
+
+/// The greetd side of the screen: whom to sign in, and what to start.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Greeter {
+    pub user: String,
+    /// The session command, as greetd's `start_session` wants it: the
+    /// elements are joined with spaces and run by the user's shell, so
+    /// one element holding the whole command line is the usual shape.
+    pub cmd: Vec<String>,
+}
+
+/// Where a sign-in is.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Phase {
+    Idle,
+    /// The secret is with greetd; keys are ignored until it answers.
+    Submitting,
+    /// greetd said no. The next key clears the notice.
+    Failed,
+    /// The session is starting; the screen is on its way out.
+    Success,
+}
 
 pub struct Login {
     pub style: Style,
+    secret: Secret,
+    /// Whether the keyboard has been touched. Until it has, the live
+    /// field shows the trace's mock rather than an empty run, so the
+    /// idle frame is the golden.
+    awake: bool,
+    phase: Phase,
+    greeter: Option<Greeter>,
+    /// The moment the last frame was asked for: what the caret blink
+    /// (`motion::CARET_BLINK`) is read at. Advanced by [`Message::Tick`]
+    /// while the clock runs; pinned when it is frozen.
+    now: Instant,
 }
 
-#[derive(Debug, Clone)]
-pub enum Message {}
+#[derive(Clone)]
+pub enum Message {
+    /// Printable text from a key press. The `Debug` impl below does
+    /// not show it: a message log must never carry the secret.
+    Typed(String),
+    Backspace,
+    Clear,
+    Submit,
+    Outcome(Result<(), Refusal>),
+    /// The clock moved far enough for the caret to flip.
+    Tick(Instant),
+}
+
+impl std::fmt::Debug for Message {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Message::Typed(_) => f.write_str("Typed(..)"),
+            Message::Backspace => f.write_str("Backspace"),
+            Message::Clear => f.write_str("Clear"),
+            Message::Submit => f.write_str("Submit"),
+            Message::Outcome(o) => write!(f, "Outcome({o:?})"),
+            Message::Tick(_) => f.write_str("Tick"),
+        }
+    }
+}
 
 impl crate::shell::Wears for Login {
     fn wears(&self) -> Style {
@@ -52,15 +125,125 @@ impl crate::shell::Wears for Login {
 }
 
 impl Login {
+    /// The demo: every key works, and Enter clears the field.
     pub fn new(style: Style) -> Self {
-        Login { style }
+        Login::greeting(style, None)
+    }
+
+    /// The greeter, when `greeter` is `Some`.
+    pub fn greeting(style: Style, greeter: Option<Greeter>) -> Self {
+        Login {
+            style,
+            secret: Secret::new(),
+            awake: false,
+            phase: Phase::Idle,
+            greeter,
+            now: motion::now(),
+        }
     }
 
     pub fn title(&self) -> String {
         format!("ACCESS — {}", self.style.era.name())
     }
 
-    pub fn update(&mut self, _message: Message) {}
+    pub fn phase(&self) -> Phase {
+        self.phase
+    }
+
+    /// How many characters are in the field.
+    pub fn typed(&self) -> usize {
+        self.secret.len()
+    }
+
+    pub fn update(&mut self, message: Message) -> Task<Message> {
+        match message {
+            Message::Tick(at) => {
+                self.now = at;
+                return Task::none();
+            }
+            Message::Outcome(Ok(())) => {
+                self.phase = Phase::Success;
+                return iced::exit();
+            }
+            Message::Outcome(Err(refusal)) => {
+                // greetd's wording, never the secret. `Denied` is the
+                // expected kind and stays quiet; a broken socket is
+                // worth a line in the journal.
+                if let Refusal::Broken(_) = refusal {
+                    eprintln!("cp-eras-ui-login: {refusal}");
+                }
+                self.secret.clear();
+                self.phase = Phase::Failed;
+                return Task::none();
+            }
+            _ => {}
+        }
+        if matches!(self.phase, Phase::Submitting | Phase::Success) {
+            return Task::none();
+        }
+        self.awake = true;
+        self.phase = Phase::Idle;
+        match message {
+            Message::Typed(text) => self.secret.push_str(&text),
+            Message::Backspace => self.secret.pop(),
+            Message::Clear => self.secret.clear(),
+            Message::Submit => return self.submit(),
+            Message::Outcome(_) | Message::Tick(_) => unreachable!(),
+        }
+        Task::none()
+    }
+
+    fn submit(&mut self) -> Task<Message> {
+        let Some(greeter) = self.greeter.clone() else {
+            self.secret.clear();
+            return Task::none();
+        };
+        self.phase = Phase::Submitting;
+        let secret = std::mem::take(&mut self.secret);
+        // A thread rather than a task on the runtime: `greetd::login`
+        // blocks on a PAM stack, which is nobody's executor's business.
+        // The answer comes back over a channel the task awaits.
+        let (tx, rx) = async_channel::bounded(1);
+        std::thread::spawn(move || {
+            let outcome = match greetd::socket() {
+                Some(sock) => greetd::login(&sock, &greeter.user, &secret, &greeter.cmd),
+                None => Err(Refusal::Broken("GREETD_SOCK is not set".into())),
+            };
+            let _ = tx.send_blocking(outcome);
+        });
+        Task::perform(
+            async move {
+                rx.recv()
+                    .await
+                    .unwrap_or_else(|_| Err(Refusal::Broken("greetd thread went away".into())))
+            },
+            Message::Outcome,
+        )
+    }
+
+    /// The keyboard, whole: there is one field and it always has the
+    /// focus, so no widget captures anything and every key is ours.
+    /// And the caret's tick -- one per half-period, which is every
+    /// time the blink changes -- unless the clock is frozen, when the
+    /// frame never changes and a redraw is only work.
+    pub fn subscription(&self) -> Subscription<Message> {
+        let keys = iced::event::listen_with(|event, _status, _window| match event {
+            iced::Event::Keyboard(keyboard::Event::KeyPressed {
+                key,
+                modifiers,
+                text,
+                ..
+            }) => key_message(key, modifiers, text.as_deref()),
+            _ => None,
+        });
+        if motion::frozen() {
+            return keys;
+        }
+        Subscription::batch([
+            keys,
+            iced::time::every(motion::CARET_BLINK / 2).map(Message::Tick),
+        ])
+    }
 
     pub fn view(&self) -> Element<'_, Message> {
         // Three layers, and the backdrop has to be its own: `iced_wgpu`
@@ -80,11 +263,80 @@ impl Login {
             })
             .width(Length::Fill)
             .height(Length::Fill),
-            canvas(Art { style: self.style })
-                .width(Length::Fill)
-                .height(Length::Fill),
+            canvas(Art {
+                style: self.style,
+                shown: Shown {
+                    awake: self.awake,
+                    typed: self.secret.len(),
+                    phase: self.phase,
+                    lit: motion::blink(motion::CARET_BLINK, self.now),
+                },
+            })
+            .width(Length::Fill)
+            .height(Length::Fill),
         ]
         .into()
+    }
+}
+
+/// What a key press means to the field. `None` is a key the field
+/// has no use for -- a modifier on its own, an arrow, a chord.
+fn key_message(key: Key, modifiers: keyboard::Modifiers, text: Option<&str>) -> Option<Message> {
+    match key.as_ref() {
+        Key::Named(Named::Enter) => return Some(Message::Submit),
+        Key::Named(Named::Backspace) => return Some(Message::Backspace),
+        Key::Named(Named::Escape) => return Some(Message::Clear),
+        Key::Character("u") if modifiers.control() => return Some(Message::Clear),
+        _ => {}
+    }
+    if modifiers.control() || modifiers.alt() || modifiers.logo() {
+        return None;
+    }
+    let text: String = text?.chars().filter(|c| !c.is_control()).collect();
+    (!text.is_empty()).then_some(Message::Typed(text))
+}
+
+/// The state the art draws with: what the field shows, what the
+/// prompt says, and which half of the caret's blink this frame is in.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct Shown {
+    awake: bool,
+    typed: usize,
+    phase: Phase,
+    /// `#caret-blink` is in its lit half. Frame 0 is lit.
+    lit: bool,
+}
+
+impl Shown {
+    /// The run the live field carries: the trace's mock until the
+    /// keyboard is touched, then the typed count in masks. Without its
+    /// tail in the dark half of the blink when the tail is the caret
+    /// (neomil's `__`).
+    fn run(&self, entry: &Entry) -> String {
+        let run = if self.awake {
+            let mut run: String = std::iter::repeat(entry.mask).take(self.typed).collect();
+            run.push_str(entry.tail);
+            run
+        } else {
+            entry.rest.text.to_string()
+        };
+        if entry.blink == Blink::Tail && !self.lit {
+            return run.strip_suffix(entry.tail).unwrap_or(&run).to_string();
+        }
+        run
+    }
+
+    /// The masks alone -- what a trailing caret stands after.
+    fn masks(&self, entry: &Entry) -> String {
+        std::iter::repeat(entry.mask).take(self.typed).collect()
+    }
+
+    fn word(&self, entry: &Entry) -> Option<&'static str> {
+        match self.phase {
+            Phase::Submitting | Phase::Success => Some(entry.busy),
+            Phase::Failed => Some(entry.failed),
+            Phase::Idle => None,
+        }
     }
 }
 
@@ -192,6 +444,29 @@ fn plate_path(g: Grid, plate: &Plate) -> canvas::Path {
 /// glyph.
 use super::scene::advances;
 
+/// The face a legend is set in.
+fn font_of(legend: &Legend) -> iced::Font {
+    iced::Font {
+        family: iced::font::Family::Name("Rajdhani"),
+        weight: legend.weight,
+        ..iced::Font::DEFAULT
+    }
+}
+
+/// The width of `content` set as `legend` would set it, in design
+/// units: the natural advances plus the legend's tracking between
+/// them, measured in the window and scaled back through the grid.
+fn run_extent(g: Grid, legend: &Legend, content: &str) -> f32 {
+    if content.is_empty() {
+        return 0.0;
+    }
+    let size = g.span(legend.size);
+    let advances = advances(content, size, font_of(legend));
+    let window = advances.iter().sum::<f32>()
+        + g.span(legend.tracking) * (advances.len().max(1) - 1) as f32;
+    window * legend.stretch / g.sx
+}
+
 struct Pen<'a> {
     frame: &'a mut canvas::Frame,
     grid: Grid,
@@ -267,16 +542,18 @@ impl Pen<'_> {
     }
 
     fn legend(&mut self, legend: &Legend) {
+        self.legend_text(legend, legend.text);
+    }
+
+    /// `legend`'s geometry, face and ink carrying `content` instead of
+    /// its own text: the live field's run, the prompt's notice.
+    fn legend_text(&mut self, legend: &Legend, content: &str) {
         let g = self.grid;
         let size = g.span(legend.size);
         let color = self.ink(legend.ink);
-        let font = iced::Font {
-            family: iced::font::Family::Name("Rajdhani"),
-            weight: legend.weight,
-            ..iced::Font::DEFAULT
-        };
+        let font = font_of(legend);
         let text = canvas::Text {
-            content: legend.text.to_string(),
+            content: content.to_string(),
             position: Point::ORIGIN,
             color,
             size: size.into(),
@@ -316,11 +593,11 @@ impl Pen<'_> {
                 return;
             }
 
-            let advances = advances(legend.text, size, font);
+            let advances = advances(content, size, font);
             let total: f32 = advances.iter().sum::<f32>()
                 + tracking * (advances.len().max(1) - 1) as f32;
             let mut x = if legend.centred { -total / 2.0 } else { 0.0 };
-            for (glyph, advance) in legend.text.chars().zip(advances) {
+            for (glyph, advance) in content.chars().zip(advances) {
                 frame.fill_text(canvas::Text {
                     content: glyph.to_string(),
                     position: Point::new(x, 0.0),
@@ -343,6 +620,7 @@ impl Pen<'_> {
 
 struct Art {
     style: Style,
+    shown: Shown,
 }
 
 impl<Message> canvas::Program<Message, Style> for Art {
@@ -370,8 +648,17 @@ impl<Message> canvas::Program<Message, Style> for Art {
         // it, and neokitsch's wire band is the floor the entry groups
         // stand on.
         fixture(&mut pen, &access.fixture);
+        // The keyboard goes to the first live slot. Neokitsch offers two
+        // (A and B, both with a field); the second stays at rest.
+        let mut live = true;
         for slot in access.slots {
-            draw_slot(&mut pen, slot);
+            let shown = if live && slot.entry.is_some() {
+                live = false;
+                Some(&self.shown)
+            } else {
+                None
+            };
+            draw_slot(&mut pen, slot, shown);
         }
         colophon(&mut pen, &access.colophon);
 
@@ -482,7 +769,9 @@ fn masthead(pen: &mut Pen, masthead: &Masthead) {
 /// 46 wide, 7 tall, with a short diagonal off its trailing end.
 const TAB: (f32, f32, f32) = (46.0, 7.0, 6.0);
 
-fn draw_slot(pen: &mut Pen, slot: &Slot) {
+/// One slot. `shown` is `Some` on the live slot the keyboard is
+/// writing into, and says what its field carries.
+fn draw_slot(pen: &mut Pen, slot: &Slot, shown: Option<&Shown>) {
     if let Some(body) = &slot.body {
         pen.plate(body);
     }
@@ -524,23 +813,48 @@ fn draw_slot(pen: &mut Pen, slot: &Slot) {
     if let Some(name) = &slot.name {
         pen.legend(name);
     }
-    if let Some(prompt) = &slot.prompt {
-        pen.legend(prompt);
+    // What the prompt says: its own text, or -- on the live slot, while
+    // greetd is asked and after it refused -- the entry's notice. An
+    // era with no prompt (kitsch, neokitsch) puts the notice on its
+    // action label instead. No new geometry: the word takes the
+    // legend's place in the legend's face.
+    let word = shown.zip(slot.entry.as_ref()).and_then(|(s, e)| s.word(e));
+    match (&slot.prompt, word) {
+        (Some(prompt), Some(word)) => pen.legend_text(prompt, word),
+        (Some(prompt), None) => pen.legend(prompt),
+        (None, _) => {}
     }
     if let Some(field) = &slot.field {
         pen.plate(field);
     }
-    if let Some(value) = &slot.value {
-        pen.legend(value);
+    // The run in the field, and how far a trailing caret has moved.
+    let mut carried = 0.0;
+    if let Some(entry) = &slot.entry {
+        match shown {
+            Some(shown) => {
+                pen.legend_text(&entry.rest, &shown.run(entry));
+                if shown.awake && entry.caret == Caret::Trails {
+                    carried = run_extent(pen.grid, &entry.rest, &shown.masks(entry));
+                }
+            }
+            None => pen.legend(&entry.rest),
+        }
     }
-    if let Some(caret) = &slot.caret {
-        pen.plate(caret);
+    // The caret plate, unless it is what blinks and this is the dark
+    // half.
+    let dark = shown.zip(slot.entry.as_ref()).is_some_and(|(s, e)| e.blink == Blink::Caret && !s.lit);
+    if let Some(caret) = slot.caret.filter(|_| !dark) {
+        let mut caret = caret;
+        caret.at.x += carried;
+        pen.plate(&caret);
     }
     if let Some(action) = &slot.action {
         pen.plate(action);
     }
-    if let Some(label) = &slot.action_label {
-        pen.legend(label);
+    match (&slot.action_label, word, slot.prompt.is_some()) {
+        (Some(label), Some(word), false) => pen.legend_text(label, word),
+        (Some(label), _, _) => pen.legend(label),
+        (None, _, _) => {}
     }
     if let Some(badge) = &slot.badge {
         badge_plate(pen, badge);
@@ -1120,5 +1434,209 @@ mod tests {
         assert_eq!(live(Era::Neomil), 1);
         assert_eq!(live(Era::Kitsch), 1);
         assert_eq!(live(Era::Neokitsch), 2);
+    }
+
+    /// A field is something you type into, so every slot with one
+    /// says how typed input looks, and no slot without one does.
+    #[test]
+    fn every_field_has_an_entry() {
+        for era in Era::ALL {
+            let style = era.style();
+            for (i, slot) in style.access.slots.iter().enumerate() {
+                assert_eq!(
+                    slot.field.is_some(),
+                    slot.entry.is_some(),
+                    "{}: slot {i} has a field without an entry, or the reverse",
+                    era.name()
+                );
+            }
+        }
+    }
+
+    /// The rest run is the trace's mock of the same field with some
+    /// number of characters in it: `mask` repeated, then `tail`. So
+    /// typing that many characters reproduces the trace exactly, and
+    /// the golden is one state of the live field rather than a picture
+    /// the field replaces.
+    #[test]
+    fn the_rest_run_is_a_typed_run() {
+        for era in Era::ALL {
+            for slot in era.style().access.slots {
+                let Some(entry) = slot.entry else { continue };
+                let stars = entry
+                    .rest
+                    .text
+                    .strip_suffix(entry.tail)
+                    .unwrap_or_else(|| panic!("{}: rest run does not end in its tail", era.name()));
+                assert!(
+                    stars.chars().all(|c| c == entry.mask),
+                    "{}: rest run {:?} is not masks then tail",
+                    era.name(),
+                    entry.rest.text
+                );
+                let shown = Shown {
+                    awake: true,
+                    typed: stars.chars().count(),
+                    phase: Phase::Idle,
+                    lit: true,
+                };
+                assert_eq!(shown.run(&entry), entry.rest.text);
+                assert!(!entry.busy.is_empty() && !entry.failed.is_empty());
+            }
+        }
+    }
+
+
+    /// The dark half of the blink: neomil loses its `__` (the tail is
+    /// its caret), asleep or awake; kitsch keeps its run whole, its
+    /// caret being a plate; neokitsch has nothing to lose.
+    #[test]
+    fn the_dark_half_hides_what_the_trace_animates() {
+        let neomil = Era::Neomil.style().access.slots[0].entry.unwrap();
+        assert_eq!(neomil.blink, Blink::Tail);
+        let dark = Shown {
+            awake: false,
+            typed: 0,
+            phase: Phase::Idle,
+            lit: false,
+        };
+        assert_eq!(dark.run(&neomil), "**********");
+        assert_eq!(Shown { awake: true, typed: 3, ..dark }.run(&neomil), "***");
+        assert_eq!(Shown { lit: true, ..dark }.run(&neomil), "**********  __");
+
+        let kitsch = Era::Kitsch.style().access.slots[0].entry.unwrap();
+        assert_eq!(kitsch.blink, Blink::Caret);
+        assert_eq!(Shown { awake: true, typed: 2, ..dark }.run(&kitsch), "**");
+        for era in Era::ALL {
+            for slot in era.style().access.slots {
+                if let Some(entry) = slot.entry {
+                    // A blinking plate needs a plate to blink.
+                    assert!(entry.blink != Blink::Caret || slot.caret.is_some(), "{}", era.name());
+                    assert!(entry.blink != Blink::Tail || !entry.tail.is_empty(), "{}", era.name());
+                }
+            }
+        }
+    }
+
+    /// Asleep, the field shows the mock whatever the count says;
+    /// awake, it shows the count.
+    #[test]
+    fn asleep_is_the_mock_and_awake_is_the_count() {
+        let entry = Era::Neomil.style().access.slots[0].entry.unwrap();
+        let asleep = Shown {
+            awake: false,
+            typed: 0,
+            phase: Phase::Idle,
+            lit: true,
+        };
+        assert_eq!(asleep.run(&entry), "**********  __");
+        let awake = Shown {
+            awake: true,
+            typed: 4,
+            phase: Phase::Idle,
+            lit: true,
+        };
+        assert_eq!(awake.run(&entry), "****  __");
+        assert_eq!(awake.masks(&entry), "****");
+        let empty = Shown {
+            awake: true,
+            typed: 0,
+            phase: Phase::Idle,
+            lit: true,
+        };
+        assert_eq!(empty.run(&entry), "  __");
+        assert_eq!(empty.word(&entry), None);
+        assert_eq!(
+            Shown {
+                phase: Phase::Failed,
+                ..empty
+            }
+            .word(&entry),
+            Some("access denied:")
+        );
+    }
+
+    #[test]
+    fn keys_become_field_messages() {
+        use iced::keyboard::Modifiers;
+        let none = Modifiers::empty();
+        let typed = |m: Option<Message>| match m {
+            Some(Message::Typed(t)) => t,
+            other => panic!("{other:?}"),
+        };
+        assert_eq!(
+            typed(key_message(Key::Character("a".into()), none, Some("a"))),
+            "a"
+        );
+        assert_eq!(
+            typed(key_message(Key::Character("A".into()), Modifiers::SHIFT, Some("A"))),
+            "A"
+        );
+        assert!(matches!(
+            key_message(Key::Named(Named::Enter), none, Some("\r")),
+            Some(Message::Submit)
+        ));
+        assert!(matches!(
+            key_message(Key::Named(Named::Backspace), none, Some("\u{8}")),
+            Some(Message::Backspace)
+        ));
+        assert!(matches!(
+            key_message(Key::Named(Named::Escape), none, Some("\u{1b}")),
+            Some(Message::Clear)
+        ));
+        assert!(matches!(
+            key_message(Key::Character("u".into()), Modifiers::CTRL, Some("\u{15}")),
+            Some(Message::Clear)
+        ));
+        assert!(key_message(Key::Character("c".into()), Modifiers::CTRL, None).is_none());
+        assert!(key_message(Key::Named(Named::Shift), Modifiers::SHIFT, None).is_none());
+        assert!(key_message(Key::Named(Named::ArrowLeft), none, None).is_none());
+    }
+
+    /// The demo: keys edit the field, Enter empties it, and the secret
+    /// is never in a message's `Debug`.
+    #[test]
+    fn the_demo_edits_and_enter_clears() {
+        let mut login = Login::new(Era::Entropism.style());
+        assert!(!login.awake);
+        let _ = login.update(Message::Typed("ab".into()));
+        let _ = login.update(Message::Typed("c".into()));
+        assert!(login.awake);
+        assert_eq!(login.typed(), 3);
+        let _ = login.update(Message::Backspace);
+        assert_eq!(login.typed(), 2);
+        let _ = login.update(Message::Submit);
+        assert_eq!(login.typed(), 0);
+        assert_eq!(login.phase(), Phase::Idle);
+        let _ = login.update(Message::Typed("z".into()));
+        let _ = login.update(Message::Clear);
+        assert_eq!(login.typed(), 0);
+        assert_eq!(format!("{:?}", Message::Typed("hunter2".into())), "Typed(..)");
+    }
+
+    /// The greeter: Enter takes the secret away and waits; a refusal
+    /// shows until the next key; keys while waiting are dropped.
+    #[test]
+    fn the_greeter_waits_and_shows_a_refusal() {
+        let mut login = Login::greeting(
+            Era::Kitsch.style(),
+            Some(Greeter {
+                user: "mverte".into(),
+                cmd: vec!["true".into()],
+            }),
+        );
+        let _ = login.update(Message::Typed("x".into()));
+        let _ = login.update(Message::Submit);
+        assert_eq!(login.phase(), Phase::Submitting);
+        assert_eq!(login.typed(), 0, "the secret left with the request");
+        let _ = login.update(Message::Typed("y".into()));
+        assert_eq!(login.typed(), 0, "keys are ignored while greetd is asked");
+        let _ = login.update(Message::Outcome(Err(Refusal::Denied("no".into()))));
+        assert_eq!(login.phase(), Phase::Failed);
+        let _ = login.update(Message::Typed("y".into()));
+        assert_eq!(login.phase(), Phase::Idle);
+        assert_eq!(login.typed(), 1);
+        let _ = login.update(Message::Outcome(Ok(())));
+        assert_eq!(login.phase(), Phase::Success);
     }
 }
