@@ -1,9 +1,25 @@
-{ pkgs ? import <nixpkgs> { } }:
+# The crate's dev shell: `nix develop -f shell.nix` (or `nix-shell`)
+# from this directory, for `cargo build`/`cargo test` and the headless
+# screenshot scripts.
+#
+# Not the flake, on purpose: `builtins.getFlake` on this repo costs
+# about a minute per entry (a git+file copy plus every input's eval),
+# which is not a dev-shell price. NixOS's default flake registry pins
+# `<nixpkgs>` to the nixpkgs the running system was built from (the
+# flake's, once switched; /etc/nix/registry.json says which), and
+# `lib/in-tree.nix` is the overlay the flake applies, so the fonts
+# staged into `fonts/` below are the overlay's instances -- the same
+# store paths `pkgs.cp-eras-ui`'s preBuild copies -- and not a second
+# `callPackage` free to drift from them.
+{ pkgs ? import <nixpkgs> { overlays = [ (import ../../../../lib/in-tree.nix) ]; } }:
 
 let
-  rajdhani-fontshare = pkgs.callPackage ../rajdhani-fontshare { };
-  noto-cjk-subset = pkgs.callPackage ../noto-cjk-subset { };
-  orbitron = pkgs.callPackage ../orbitron { };
+  inherit (pkgs) rajdhani-fontshare noto-cjk-subset;
+  orbitron = pkgs.orbitron-vf;
+
+  # Where `fonts/` goes: this directory, not the cwd. Entering the
+  # shell from `public/` used to leave a stray `public/fonts/` behind.
+  crate = toString ./.;
 
   driversPath = "${pkgs.mesa}/lib/dri";
   vulkanICD = "${pkgs.mesa}/share/vulkan/icd.d/lvp_icd.x86_64.json";
@@ -39,19 +55,14 @@ pkgs.mkShell {
   ];
 
   shellHook = ''
-    # Ensure fonts are present for include_bytes! in cargo builds
-    mkdir -p fonts
-    if [ -f "${orbitron}/share/fonts/truetype/Orbitron-Regular.ttf" ]; then
-      cp -f ${orbitron}/share/fonts/truetype/*.ttf fonts/
-    else
-      cp -f "${orbitron}/share/fonts/truetype/Orbitron Light.ttf" fonts/Orbitron-Regular.ttf
-      cp -f "${orbitron}/share/fonts/truetype/Orbitron Medium.ttf" fonts/Orbitron-Medium.ttf
-      cp -f "${orbitron}/share/fonts/truetype/Orbitron Bold.ttf" fonts/Orbitron-SemiBold.ttf
-      cp -f "${orbitron}/share/fonts/truetype/Orbitron Bold.ttf" fonts/Orbitron-Bold.ttf
-    fi
-    cp -f ${rajdhani-fontshare}/share/fonts/truetype/*.ttf fonts/
-    cp -f ${noto-cjk-subset}/share/fonts/opentype/*.otf fonts/
-    chmod +w fonts/*.ttf fonts/*.otf
+    # Stage the fonts `include_bytes!` reads. `orbitron-vf`'s files are
+    # already named as `src/fonts.rs` expects; the nixpkgs-orbitron
+    # rename that `default.nix` tolerates cannot arise here.
+    mkdir -p "${crate}/fonts"
+    cp -f ${orbitron}/share/fonts/truetype/*.ttf "${crate}/fonts/"
+    cp -f ${rajdhani-fontshare}/share/fonts/truetype/*.ttf "${crate}/fonts/"
+    cp -f ${noto-cjk-subset}/share/fonts/opentype/*.otf "${crate}/fonts/"
+    chmod +w "${crate}"/fonts/*.ttf "${crate}"/fonts/*.otf
 
     # If running in headless/software-force mode, configure the drivers
     if [ -n "''${FORCE_SOFTWARE_GL:-}" ]; then

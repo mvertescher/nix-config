@@ -13,36 +13,8 @@ let
         antigravity-cli = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}.antigravity-cli;
     };
 
-    # This repo's own packages, so there is exactly one instance of each.
-    #
-    # They used to be `callPackage`d at each use site: cp-eras-ui in
-    # both `home/common/gui/default.nix` and `home/themes/lib/era.nix`,
-    # the fonts in those two plus `themes/neomil`. Two definitions free
-    # to drift apart is the shape of the Firefox duplication that left
-    # Sidebery installed under the vendored theme and absent under all
-    # four generated eras.
-    #
-    # Additive, which `PLAN.md` requires of anything the work wrapper
-    # consumes -- its call sites cannot be updated from here. All three
-    # names below are absent from nixpkgs, so nothing that already
-    # resolves changes meaning (checked by eval, not assumed).
-    #
-    # `orbitron` is *not* absent, which is why the in-tree font is not
-    # called that. nixpkgs ships `orbitron-2011-05-25`, a different and
-    # much older release whose files are named "Orbitron Light.ttf"
-    # rather than "Orbitron-Light.ttf"; taking the name would silently
-    # swap the font under any consumer of the nixpkgs one. The in-tree
-    # build tracks googlefonts/orbitron-vf, so it is `orbitron-vf` here.
-    inTreePkgs = final: prev: {
-        orbitron-vf = final.callPackage ../home/common/pkgs/orbitron { };
-        rajdhani-fontshare = final.callPackage ../home/common/pkgs/rajdhani-fontshare { };
-        noto-cjk-subset = final.callPackage ../home/common/pkgs/noto-cjk-subset { };
-        cp-eras-ui = final.callPackage ../home/common/pkgs/cp-eras-ui {
-            orbitron = final.orbitron-vf;
-        };
-        repo-rs = final.callPackage ../home/common/pkgs/repo-rs.nix { };
-        mpris-status = final.callPackage ../home/common/pkgs/mpris-status { };
-    };
+    # This repo's own packages; see the file for why it is one.
+    inTreePkgs = import ./in-tree.nix;
 in
 [
     overlays

@@ -257,7 +257,7 @@ through, and takes `pkgs` if you want the cases in an expression of
 your own.
 
 This section used to show a `nix build .#...` line that was never a
-real command — the package is created once in `lib/overlays.nix` and
+real command — the package is created once in `lib/in-tree.nix` and
 exposed as `pkgs.cp-eras-ui`, and this repo still exports no
 configurations to hang one off — so anyone who needed a
 golden wrote a throwaway instantiation under /tmp. If you write one
