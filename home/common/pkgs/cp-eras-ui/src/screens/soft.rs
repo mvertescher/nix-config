@@ -427,6 +427,9 @@ pub fn supported(prim: &Prim) -> bool {
             prims.iter().all(supported)
         }
         Prim::Masked { prims, mask } => prims.iter().all(supported) && mask.iter().all(supported),
+        // A composited group is rasterised once and cached; it has
+        // no clock to move against.
+        Prim::Motion { .. } => false,
         Prim::Text { .. }
         | Prim::Wide { .. }
         | Prim::Spaced { .. }
@@ -550,6 +553,7 @@ fn walk(buf: &mut Buf, prims: &[Prim], palette: &Palette, xf: Xf) {
             | Prim::Tracked { .. }
             | Prim::Grain { .. }
             | Prim::Dots { .. }
+            | Prim::Motion { .. }
             | Prim::Plate { .. } => {
                 debug_assert!(false, "Prim::Soft holds fills only; see soft.rs");
             }

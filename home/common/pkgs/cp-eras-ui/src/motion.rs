@@ -14,16 +14,20 @@
 //!   pass no arguments (`scripts/render.sh`, `tests/visual.nix`), pins
 //!   [`now`] to `origin + n ms` for the life of the process and turns
 //!   [`frozen`] on so the screens stop asking for ticks. The goldens
-//!   are captured at 0 -- frame 0 of the trace is what they hold, and
-//!   a golden that depends on when the compositor got round to the
-//!   capture is not a golden.
+//!   are captured at [`REST`] -- the trace at rest is what they hold,
+//!   and a golden that depends on when the compositor got round to
+//!   the capture is not a golden.
 //!
 //! What is here is what the vocabulary in `docs/PIPELINE.md` needs and
 //! iced's `Animation` does not give: the discrete cycle
-//! (`calcMode="discrete"`), which is a phase and not an interpolation.
-//! Eased transitions go through `iced::animation::Animation` with the
-//! [`now`] from here as their `at`.
+//! (`calcMode="discrete"`), which is a phase and not an interpolation,
+//! and the one-shot eased transition ([`progress`]) read off the same
+//! clock, so a scene table can carry a `<animate>` as data
+//! ([`Motion`](crate::style::Motion)) instead of each screen keeping an
+//! `iced::animation::Animation` per moving thing. lilt's `Easing`
+//! is the curve, as the vocabulary table says.
 
+use crate::style::Motion;
 use std::sync::OnceLock;
 use std::time::{Duration, Instant};
 
@@ -32,6 +36,18 @@ use std::time::{Duration, Instant};
 /// dur="1.2s" repeatCount="indefinite"` -- lit for the first 600 ms of
 /// every 1.2 s, counted from the document's begin.
 pub const CARET_BLINK: Duration = Duration::from_millis(1200);
+
+/// The moment the traces are at rest: every boot-in has frozen at its
+/// `to` and every cycle is at its frame-0 phase. This is the frame the
+/// static pipeline sees -- rsvg plays no SMIL, so a trace draws each
+/// moving element at the value its animation freezes at, and a frame
+/// of the app at `REST` is what the goldens and `render.sh` capture by
+/// default (`docs/PIPELINE.md`, "The rest frame is the trace").
+///
+/// 2.4 s: after the longest boot-in any trace annotates, with room,
+/// and two whole [`CARET_BLINK`]s so the caret is lit here as it is
+/// at 0. Lengthen it in that step if a trace ever needs longer.
+pub const REST: Duration = Duration::from_millis(2400);
 
 struct Clock {
     origin: Instant,
@@ -89,6 +105,21 @@ fn blink_since(period: Duration, elapsed: Duration) -> bool {
     (elapsed.as_micros() % period) * 2 < period
 }
 
+/// How far along a one-shot transition is at `elapsed` since the
+/// origin, 0..=1 through its easing: 0 (its `from`) until `begin`, its
+/// eased fraction through `dur`, and 1 (its `to`) ever after, which is
+/// `fill="freeze"`. A hold before `begin` is SMIL's `begin="0.4s"` and
+/// lilt's `.delay(..)`: the value stays at `from` until then.
+pub fn progress(motion: &Motion, elapsed: Duration) -> f32 {
+    let begin = Duration::from_millis(u64::from(motion.begin));
+    let dur = Duration::from_millis(u64::from(motion.dur));
+    let Some(into) = elapsed.checked_sub(begin) else { return 0.0 };
+    if dur.is_zero() || into >= dur {
+        return 1.0;
+    }
+    motion.ease.value(into.as_secs_f32() / dur.as_secs_f32())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -105,6 +136,40 @@ mod tests {
         // The seconds frame.sh was checked at.
         assert!(blink_since(CARET_BLINK, Duration::from_millis(300)));
         assert!(!blink_since(CARET_BLINK, Duration::from_millis(900)));
+    }
+
+    /// `#panel-open` as neomil's dashboard table carries it: at `from`
+    /// before it begins, frozen at `to` after, eased between -- and at
+    /// REST, done, which is what makes the rest frame the trace.
+    #[test]
+    fn a_transition_holds_then_eases_then_freezes() {
+        use crate::style::{Change, Motion};
+        use iced::animation::Easing;
+        let open = Motion {
+            id: "panel-open",
+            begin: 100,
+            dur: 360,
+            ease: Easing::EaseOutCubic,
+            change: Change::Clip { x: 0.0, y: 0.0, w: (1.0, 1.0), h: (0.0, 1.0) },
+        };
+        let ms = Duration::from_millis;
+        assert_eq!(progress(&open, ms(0)), 0.0);
+        assert_eq!(progress(&open, ms(99)), 0.0);
+        assert_eq!(progress(&open, ms(100)), 0.0);
+        let mid = progress(&open, ms(250));
+        // EaseOutCubic at 150/360: 1 - (1 - 0.4167)^3.
+        assert!((mid - 0.8016).abs() < 0.01, "{mid}");
+        assert_eq!(progress(&open, ms(460)), 1.0);
+        assert_eq!(progress(&open, REST), 1.0);
+        assert!(REST > ms(460));
+    }
+
+    /// The caret is lit at REST as it is at 0, so the login's rest
+    /// frame is its frame 0.
+    #[test]
+    fn rest_is_a_whole_number_of_blinks() {
+        assert_eq!(REST.as_millis() % CARET_BLINK.as_millis(), 0);
+        assert!(blink_since(CARET_BLINK, REST));
     }
 
     #[test]

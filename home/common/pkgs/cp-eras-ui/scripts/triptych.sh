@@ -46,8 +46,9 @@
 #                   (headless Firefox running the trace's SMIL, seeked to
 #                   this time) and row 3 from render.sh --at, the app's
 #                   clock frozen there. Written as <era>-<screen>-at<t>.png
-#                   next to the static one. Without it the rows are frame
-#                   0, rasterised by rsvg as ever (docs/PIPELINE.md, Motion).
+#                   next to the static one. Without it the rows are the
+#                   trace at rest, rasterised by rsvg as ever, and the app
+#                   at `motion::REST` (docs/PIPELINE.md, Motion).
 #   --bin-dir DIR   where the cp-eras-ui-<screen> binaries are; default
 #                   target/debug, which `cargo build --bin ...` writes.
 #   --out DIR       where to write <era>-<screen>.png; default
@@ -108,8 +109,8 @@ fi
 scratch=$(mktemp -d "${TMPDIR:-/tmp}/tri.XXXXXX")
 trap 'rm -rf "$scratch"' EXIT
 
-# Row 2 and the diff's reference: the trace rasterised at frame 0 by
-# rsvg, or at `--at` by frame.sh. $1 svg, $2 out, $3 "photo"|"no-photo".
+# Row 2 and the diff's reference: the trace rasterised at rest by rsvg,
+# or at `--at` by frame.sh. $1 svg, $2 out, $3 "photo"|"no-photo".
 trace_png() {
   if [ -n "$at" ]; then
     local opt=()
@@ -218,7 +219,7 @@ for era in "${eras[@]}"; do
     # goldens were captured with no fontconfig override; keep it that way
     # so row 3 is the same capture the matrix would take.
     env -u FONTCONFIG_FILE "$here/render.sh" \
-      --era "$era" --size "${w}x${h}" --bin "$bin" --out "$impl" --at "${at:-0}" >/dev/null \
+      --era "$era" --size "${w}x${h}" --bin "$bin" --out "$impl" --at "${at:-2.4}" >/dev/null \
       || { echo "FAIL $era/$screen: render.sh could not capture $app (see $impl.log)"; fail=1; continue; }
 
     rows=("$photo" "$trace" "$impl")

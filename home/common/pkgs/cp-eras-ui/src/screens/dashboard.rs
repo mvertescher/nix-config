@@ -31,11 +31,14 @@
 //! Run it with `cp-eras-ui-dashboard --era <name>`; with no flag it
 //! follows the desktop theme.
 
+use crate::motion;
 use crate::screens::scene::{Picked, Scene};
 use crate::style::Style;
 use crate::widgets::ground;
 use crate::Element;
 use iced::widget::stack;
+use iced::Subscription;
+use std::time::Instant;
 
 pub struct Dashboard {
     pub style: Style,
@@ -44,12 +47,19 @@ pub struct Dashboard {
     /// [`Style::dashboard_selection`], which is what makes the opening
     /// state match each era's own material.
     pub selected: usize,
+    /// The moment the scene is painted at, for its `Prim::Motion`s:
+    /// the boot-in (neomil's `#panel-open`) runs against this.
+    /// Advanced by [`Message::Tick`] while anything is still moving,
+    /// then left where it is.
+    now: Instant,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Message {
     /// A module plate was clicked: make it the selection.
     Select { index: usize },
+    /// The clock, while the boot-in runs.
+    Tick(Instant),
 }
 
 impl crate::shell::Wears for Dashboard {
@@ -63,6 +73,7 @@ impl Dashboard {
         Dashboard {
             style,
             selected: style.dashboard_selection,
+            now: motion::now(),
         }
     }
 
@@ -73,7 +84,25 @@ impl Dashboard {
     pub fn update(&mut self, message: Message) {
         match message {
             Message::Select { index } => self.selected = index,
+            Message::Tick(at) => self.now = at,
         }
+    }
+
+    /// Where the scene's clock is, counted from the origin.
+    fn at(&self) -> std::time::Duration {
+        self.now.saturating_duration_since(motion::origin())
+    }
+
+    /// A redraw every frame until the scene is at rest -- the boot-in
+    /// has frozen and nothing else moves -- and none at all when the
+    /// clock is pinned, where a redraw is only work the capture waits
+    /// on. Read again after every update, so the ticks stop by
+    /// themselves the first time `at` passes `motion::REST`.
+    pub fn subscription(&self) -> Subscription<Message> {
+        if motion::frozen() || self.at() >= motion::REST {
+            return Subscription::none();
+        }
+        iced::time::every(std::time::Duration::from_millis(16)).map(Message::Tick)
     }
 
     pub fn view(&self) -> Element<'_, Message> {
@@ -89,6 +118,7 @@ impl Dashboard {
                 // The dashboard has one chooser, so the group is not
                 // worth carrying: any plate in this scene is a module.
                 on_select: |_group, index| Message::Select { index },
+                at: self.at(),
             }
             .view(),
         ]

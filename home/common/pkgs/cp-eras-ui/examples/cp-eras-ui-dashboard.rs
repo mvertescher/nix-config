@@ -13,6 +13,7 @@ fn main() -> iced::Result {
     let style = shell::style();
     shell::application(move || Dashboard::new(style), Dashboard::update, Dashboard::view)
         .title(Dashboard::title)
+        .subscription(Dashboard::subscription)
         .run()
 }
 

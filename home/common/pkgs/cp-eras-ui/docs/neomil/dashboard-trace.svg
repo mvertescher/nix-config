@@ -133,6 +133,20 @@
     </g>
     <!-- header badge: 59x57, bottom-left chamfer 15 -->
     <path id="badge" d="M 0,0 H 59 V 57 H 15 L 0,42 Z"/>
+    <!-- #panel-open: the GO HOME panel wipes in from the top at boot:
+         its clip grows from nothing to the whole panel (plus the glitch
+         echoes to its right) over 0.36 s, eased out: 0.33 1 0.68 1 is
+         easings.net's EaseOutCubic. The rect's own height is the value
+         the animation freezes at, so rsvg, which plays nothing, draws
+         the panel whole: the rest frame is the trace (docs/PIPELINE.md,
+         Motion). Transcribed as the Prim::Motion in src/eras/neomil.rs. -->
+    <clipPath id="panel-open-clip">
+      <rect x="1120" y="306" width="260" height="460">
+        <animate id="panel-open" attributeName="height" from="0" to="460"
+                 begin="0s" dur="0.36s" calcMode="spline" keyTimes="0;1"
+                 keySplines="0.33 1 0.68 1" fill="freeze"/>
+      </rect>
+    </clipPath>
   </defs>
 
   <rect width="1600" height="900" fill="#070304"/>
@@ -213,7 +227,7 @@
   </g>
 
   <!-- ==== GO HOME info panel, x 1128..1366, y 314..756 ==== -->
-  <g>
+  <g clip-path="url(#panel-open-clip)">
     <path d="M 1128,314 H 1358 L 1366,322 V 508 L 1358,516 V 756 H 1170 L 1128,714 Z"
           fill="#671b21" fill-opacity="0.55" stroke="#ef3333" stroke-width="1.5"/>
     <!-- the bright bar on the right edge, y 405..516, chamfered 8 at both ends -->

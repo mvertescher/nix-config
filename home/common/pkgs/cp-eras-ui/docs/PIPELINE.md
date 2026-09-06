@@ -1,4 +1,5 @@
-# Design pipeline: original image → SVG → iced
+| `<clipPath>` with an animated `<rect>` | `Prim::Motion` + `Change::Clip` on the scene    |
+| `begin="1.2s"`                        | `.delay(..)` -- the value holds at `from` until then |# Design pipeline: original image → SVG → iced
 
 The crate's render chain is a three-stage pipeline, each stage the
 verifiable input to the next:
@@ -192,8 +193,9 @@ The traces are still pictures of a running interface, and the material
 is stiller than they are: a photo cannot say how the caret blinks or
 how a panel opens. Motion is the one layer of the design with no source
 to be faithful to, so the convention is built around making it cost
-frame 0 nothing — frame 0 stays the design the gates measure against
-the photo, and everything that moves is written *on top* of it.
+the still frame nothing — the trace at rest stays the design the gates
+measure against the photo, and everything that moves is written *on
+top* of it.
 
 **Where it lives.** SMIL, in the trace, on the element it moves: an
 `<animate>`, `<animateTransform>` or `<set>` as a child of the `<rect>`
@@ -204,13 +206,18 @@ carries an `id` — `caret-blink`, `panel-open` — which is how the iced
 side and the review tools cite it, exactly as an element's `id` cites
 its geometry.
 
-**Frame 0 is the trace.** rsvg ignores SMIL, so every static gate, the
-goldens and `triptych.sh` render frame 0 and see no difference whether
-a trace is annotated or not. The rule that keeps that true: the
-element's own attribute must equal the animation's value at t=0 — its
-`from` (or the first of its `values`) for an animation that begins at
-0, and its rest value for one that begins later. An annotation that
-moves frame 0 has changed the design, and the G1 gates will say so.
+**The rest frame is the trace.** rsvg ignores SMIL, so every static
+gate, the goldens and `triptych.sh` see the trace with nothing played,
+and see no difference whether it is annotated or not. The rule that
+keeps that true: the element's own attribute must equal the value its
+animation has *at rest* — where it freezes (`fill="freeze"`, its `to`
+or the last of its `values`) for a transition, and its frame-0 value
+for a cycle. Rest is `motion::REST`, 2.4 s: after every boot-in the
+traces annotate and a whole number of caret blinks, so the caret is
+lit there as at 0. A boot-in is therefore written *backwards* from the
+drawing: the element as traced is the `to`, and the `from` is where it
+comes in from. An annotation that moves the rest frame has changed the
+design, and the G1 gates will say so.
 
 **Vocabulary.** Only what the iced side can play back --
 `iced::animation::Animation` (lilt 0.8) for the eased transitions,
@@ -246,7 +253,20 @@ hover, focus, a press — is `begin="<id>.click"` or `.mouseover`, and a
 review tool cannot fire those; so a state that is reached by input
 gives the transition both: `begin="click; 0.6s"`, the clock-based
 start there so that `frame.sh --at 0.8` can show the state
-mid-transition. The two states themselves — rest and hovered, closed
+mid-transition.
+
+**Boot-ins.** A transition from the document's clock — `begin="0s"`,
+or a hold and then a start — is how a screen comes up: neomil's GO
+HOME panel wipes in under `#panel-open`, a `<clipPath>` whose `<rect>`
+grows from no height to the panel's over 0.36 s, eased out. On the
+iced side that is data on the era table, not code on the screen: the
+group is wrapped in a `Prim::Motion` carrying the `<animate>`'s
+`begin`, `dur`, easing and what it changes (`Change::Clip`), and
+`scene.rs` paints it through `Frame::with_clip` at the width and height
+`motion::progress` gives for the scene's moment. A screen with a
+boot-in ticks every frame until `motion::REST` and then stops asking
+(`screens::dashboard::subscription`); a screen with nothing moving
+hands the scene its clock anyway. The two states themselves — rest and hovered, closed
 and open — are drawn as sibling groups in `components.svg` next to the
 element they belong to, cited back to the trace like everything else
 on that sheet, so the design of the *destination* is reviewable without
@@ -266,10 +286,12 @@ in the environment, which is how the harnesses say it) pins that
 clock, so `scripts/render.sh --at <seconds>` captures the same moment
 `frame.sh` renders. `triptych.sh --at <seconds> --diff` stacks the
 two with the photo and the heat row, which is the review view for an
-animation: run it at a few moments across the cycle. The goldens are
-frame 0 — `tests/visual.nix` exports `CP_ERAS_UI_AT_MS=0` — which is
-why a trace annotation and its transcription leave every golden
-untouched: the static design *is* frame 0, on both sides.
+animation: run it at a few moments across the cycle. With no `--at`
+all three scripts take `motion::REST` (2.4 s), and the goldens are
+that frame — `tests/visual.nix` exports `CP_ERAS_UI_AT_MS=2400` —
+which is why a trace annotation and its transcription leave every
+golden untouched: the static design *is* the rest frame, on both
+sides.
 
 **Who annotates.** Annotating is trace work and falls under the same
 rule as the rest of `docs/`: a vision model, judging how the motion
@@ -279,9 +301,9 @@ annotation as text — attribute, values, timing, easing — and the table
 above to transcribe it with; the transcription cites the `<animate>`'s
 `id` in a comment beside the `Animation`.
 
-The first animation carried end to end this way is the login caret's
-blink, the worked example to read when the description above is not
-enough: `#caret-blink` in three of the four `login-trace.svg`s
+Two animations are carried end to end this way. The login caret's
+blink is the cycle, the worked example to read when the description
+above is not enough: `#caret-blink` in three of the four `login-trace.svg`s
 (neokitsch's field draws no caret in the photo, so it has none) —
 `values="1;0" keyTimes="0;0.5" calcMode="discrete" dur="1.2s"
 repeatCount="indefinite"` on the caret, which is a `<rect>` in kitsch,
@@ -291,7 +313,11 @@ masked run, split into a `<tspan>` so it could be animated alone.
 `style::Blink` says per era which of those three things the frame
 turns off, and `screens::login` ticks once per half-period unless the
 clock is frozen. `triptych.sh --at 0.3 neomil login` and `--at 0.9`
-are the two halves.
+are the two halves. The neomil dashboard's `#panel-open` is the
+transition: the `<clipPath>` in the trace's `<defs>`, the group's
+`clip-path`, the `Prim::Motion` around `GO_HOME` in `src/eras/neomil.rs`,
+and `triptych.sh --at 0.15 neomil dashboard` for the panel four fifths
+of the way in.
 
 ## Iteration loop
 

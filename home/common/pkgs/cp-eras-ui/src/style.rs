@@ -2152,6 +2152,47 @@ pub enum Seg {
     Cubic { c1x: f32, c1y: f32, c2x: f32, c2y: f32, x: f32, y: f32 },
 }
 
+/// A transition from the trace's SMIL, as data: one `<animate>` with a
+/// clock-based `begin`, a `dur`, a `keySplines` easing and
+/// `fill="freeze"`, applied to the [`Prim::Motion`] group it sits on.
+/// `motion::progress` reads it against the scene's clock. The `id` is
+/// the `<animate>`'s own, which is how a table cites its annotation.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Motion {
+    pub id: &'static str,
+    /// `begin`, in ms after the document's 0. The value holds at `from`
+    /// until then (lilt's `.delay`).
+    pub begin: u32,
+    /// `dur`, in ms.
+    pub dur: u32,
+    /// `keySplines`, by the lookup table in `docs/PIPELINE.md`.
+    pub ease: iced::animation::Easing,
+    pub change: Change,
+}
+
+/// What a [`Motion`] moves between its `from` and its `to`.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Change {
+    /// The trace's `<clipPath>` holding one `<rect>` whose `width` and
+    /// `height` animate: the group shows only inside `(x, y, w(t), h(t))`,
+    /// in the scene's own coordinates. Each pair is `(from, to)`; a side
+    /// that does not move has both the same. A wipe is this with one
+    /// side growing from 0.
+    Clip {
+        x: f32,
+        y: f32,
+        w: (f32, f32),
+        h: (f32, f32),
+    },
+}
+
+impl Change {
+    /// `(from, to)` at fraction `t`.
+    pub fn lerp((from, to): (f32, f32), t: f32) -> f32 {
+        from + (to - from) * t
+    }
+}
+
 /// One drawing operation of a scene (a store or dashboard display list).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Prim {
@@ -2405,6 +2446,18 @@ pub enum Prim {
     Masked {
         prims: &'static [Prim],
         mask: &'static [Prim],
+    },
+    /// `prims` under a [`Motion`]: the trace's `<g clip-path=..>` (or
+    /// whichever attribute the [`Change`] names) with the `<animate>`
+    /// on it, played back against the scene's clock. Where the frame
+    /// is at rest (`motion::REST`) it paints exactly what the trace
+    /// draws; before that, the transition. The clip is a rectangle in
+    /// the scene's frame, so a `Motion` sits at the top level or under
+    /// an [`Prim::At`], never inside a [`Prim::Turn`] --
+    /// `motion_groups_are_not_turned` in `scene.rs` checks.
+    Motion {
+        motion: Motion,
+        prims: &'static [Prim],
     },
 }
 

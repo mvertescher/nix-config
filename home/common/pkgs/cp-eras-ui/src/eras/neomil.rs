@@ -1050,8 +1050,9 @@ pub fn mailbox() -> Mailbox {
 
 use crate::style::{
     fill_path, fill_rect, line_rect, shut_path, txt, txt_bold, txt_bold_mid, txt_end, Anchor,
-    Group, Prim, Seg,
+    Change, Group, Motion, Prim, Seg,
 };
+use iced::animation::Easing;
 
 /// The three card fills, sampled down each card's own column: card 1
 /// carries the warm wash, card 3 the last of the blue glow, card 4 the
@@ -1703,7 +1704,7 @@ pub const STORE: &[Prim] = &[
 // used to head this list: until 2026-09-04 `glow()` rasterised it at
 // compile time into 640 strips, three linear pieces standing in for
 // the mask's nine stops. It is now `HUB_GLOW`, the construct itself.)
-// The `next` logotype (:151-152) is
+// The `next` logotype (:165-166) is
 // *outlined* Orbitron, and the
 // scene has neither a stroked text nor an Orbitron face, so it is set
 // filled in the bold Rajdhani face. Letter-spacing on the header and
@@ -1711,15 +1712,15 @@ pub const STORE: &[Prim] = &[
 // carries it since 2026-09-04; only the module labels below use it
 // so far). The body copy of
 // the GO HOME panel is drawn as the trace's measured run boxes
-// (:232-239) because the trace carries no copy for it.
+// (:246-253) because the trace carries no copy for it.
 
 /// The ground: `#070304`, the k-means' largest cluster (38.8%), two
 /// levels off the era's `BG`.
 pub const HUB_GROUND: iced::Color = rgb(0x070304);
 /// The panel's translucent fill: `#671b21` at `fill-opacity 0.55`
-/// (:218) -- the deep red *over* the ground, not a fourth red.
+/// (:232) -- the deep red *over* the ground, not a fourth red.
 const PANEL_FILL: iced::Color = iced::Color { a: 0.55, ..rgb(0x671b21) };
-/// The ground, the masked glow and the vignette (:138-140), composited
+/// The ground, the masked glow and the vignette (:152-154), composited
 /// as one: see `HUB_GLOW`.
 const HUB_BACK: &[Prim] = &[
     fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(HUB_GROUND)),
@@ -1821,7 +1822,7 @@ const UNIT_3: &[Prim] = unit!(3, -104.0, CELL_DOWN);
 const UNIT_4: &[Prim] = unit!(4, -104.0, CELL_DOWN);
 const UNIT_5: &[Prim] = unit!(5, -104.0, CELL_DOWN);
 
-/// The code tape under the logotype (:154), chamfered 2 at both bottom
+/// The code tape under the logotype (:168), chamfered 2 at both bottom
 /// corners.
 const CODE_TAPE: &[Seg] = &[
     Seg::Line(379.0, 151.0),
@@ -1830,7 +1831,7 @@ const CODE_TAPE: &[Seg] = &[
     Seg::Line(259.0, 160.0),
     Seg::Line(257.0, 158.0),
 ];
-/// The DESCRIPTION tab (:181): a box with its left end chamfered 7 at
+/// The DESCRIPTION tab (:195): a box with its left end chamfered 7 at
 /// both corners.
 const DESCRIPTION_TAB: &[Seg] = &[
     Seg::Line(1354.0, 237.0),
@@ -1839,7 +1840,7 @@ const DESCRIPTION_TAB: &[Seg] = &[
     Seg::Line(1132.0, 251.0),
     Seg::Line(1132.0, 244.0),
 ];
-/// The GO HOME panel's outline (:217): square top-left and
+/// The GO HOME panel's outline (:231): square top-left and
 /// bottom-right, an 8px top-right chamfer, the right edge stepping 8
 /// inward at y 516 below the bright bar, a 42px bottom-left chamfer.
 const PANEL: &[Seg] = &[
@@ -1852,13 +1853,13 @@ const PANEL: &[Seg] = &[
     Seg::Line(1128.0, 714.0),
 ];
 /// The bright bar on the panel's right edge, y 405..516, chamfered 8
-/// at both ends (:220).
+/// at both ends (:234).
 const PANEL_BAR: &[Seg] = &[
     Seg::Line(1366.0, 508.0),
     Seg::Line(1358.0, 516.0),
     Seg::Line(1358.0, 414.0),
 ];
-/// The maker's mark (:241-252): a stencil "M" with both stems leaning
+/// The maker's mark (:255-266): a stencil "M" with both stems leaning
 /// in from the top, a shoulder on the left stem and a diagonal notch
 /// on the right one around a detached square dot. Absolute points of
 /// the trace's path, which starts at (1238.8,682.1).
@@ -1881,63 +1882,11 @@ const MAKER_MARK: &[Seg] = &[
     Seg::Line(1229.2, 697.1),
 ];
 
-pub const DASHBOARD: &[Prim] = &[
-    // ground, glow, vignette (:138-140)
-    Prim::Soft { prims: HUB_BACK },
-    // header, left (:144-154)
-    txt(109.0, 90.0, 14.0, Ink::Fg, "CUSTOMER"),
-    Prim::At { x: 117.0, y: 104.0, prims: BADGE },
-    txt(125.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
-    txt_bold(132.0, 140.0, 20.0, Ink::Fg, "T1"),
-    txt(240.0, 90.0, 14.0, Ink::Fg, "#NC488402"),
-    txt_bold(242.0, 132.0, 42.0, Ink::Fg, "next"),
-    fill_path(257.0, 151.0, CODE_TAPE, Ink::Fg),
-    // header, right (:156-169): four badges, T2 filled
-    txt(1125.0, 90.0, 14.0, Ink::Fg, "SECURITY LEVEL"),
-    Prim::At { x: 1133.0, y: 104.0, prims: BADGE },
-    Prim::At { x: 1193.0, y: 104.0, prims: BADGE_ON },
-    Prim::At { x: 1253.0, y: 104.0, prims: BADGE },
-    Prim::At { x: 1313.0, y: 104.0, prims: BADGE },
-    txt(1141.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
-    txt(1201.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
-    txt(1261.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
-    txt(1321.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
-    txt_bold(1148.0, 140.0, 20.0, Ink::Fg, "T1"),
-    txt_bold(1208.0, 140.0, 20.0, Ink::Fg, "T2"),
-    txt_bold(1268.0, 140.0, 20.0, Ink::Fg, "T3"),
-    txt_bold(1328.0, 140.0, 20.0, Ink::Fg, "T4"),
-    // the hairline rule (:174)
-    fill_rect(42.0, 187.0, 1516.0, 2.0, Ink::Dim),
-    // tab row (:178-184)
-    Prim::Rect { x: 27.0, y: 240.0, w: 55.0, h: 17.0, fill: Some(Ink::Border), stroke: Some(Ink::Fg), width: 1.0 },
-    Prim::Rect { x: 475.0, y: 237.0, w: 211.0, h: 21.0, fill: Some(Ink::Border), stroke: Some(Ink::Dim), width: 1.0 },
-    txt(515.0, 252.0, 12.0, Ink::Fg, "COMPUTER SYSTEMS"),
-    Prim::Path { x: 1139.0, y: 237.0, segs: DESCRIPTION_TAB, close: true, fill: Some(Ink::Border), stroke: Some(Ink::Dim), width: 1.0 },
-    txt(1145.0, 252.0, 12.0, Ink::Fg, "DESCRIPTION"),
-    Prim::Rect { x: 1516.0, y: 239.0, w: 54.0, h: 17.0, fill: Some(Ink::Border), stroke: Some(Ink::Fg), width: 1.0 },
-    // the six-diamond menu (:190-195), each cell at its centre
-    Prim::At { x: 334.0, y: 460.0, prims: UNIT_0 },
-    Prim::At { x: 530.0, y: 460.0, prims: UNIT_1 },
-    Prim::At { x: 725.0, y: 460.0, prims: UNIT_2 },
-    Prim::At { x: 431.0, y: 593.0, prims: UNIT_3 },
-    Prim::At { x: 628.0, y: 592.0, prims: UNIT_4 },
-    Prim::At { x: 822.0, y: 592.0, prims: UNIT_5 },
-    // the separators (:199-202): 16x30 ground-coloured bars on the
-    // midpoint of each same-row pair, cutting the facing side tips
-    fill_rect(424.0, 445.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
-    fill_rect(619.5, 445.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
-    fill_rect(521.5, 577.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
-    fill_rect(717.0, 577.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
-    // labels (:206-212): 600/19, centred on each cell's x, tracked 1.2
-    Prim::Tracked { x: 334.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "VEHICLES" },
-    Prim::Tracked { x: 530.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "LOCATIONS" },
-    Prim::Tracked { x: 725.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "FACTIONS" },
-    Prim::Tracked { x: 431.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "WEAPONS" },
-    Prim::Tracked { x: 628.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "PRODUCTS" },
-    Prim::Tracked { x: 822.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "CORPORATIONS" },
-    // GO HOME panel (:217-244): the outline, the bright edge bar, the
-    // glitch echoes 3 and 5 out, the heading, the body run boxes and
-    // the maker's mark
+/// The GO HOME panel (:231-258): the outline, the bright edge bar, the
+/// glitch echoes 3 and 5 out, the heading, the body run boxes and the
+/// maker's mark. Its own table because `DASHBOARD` plays it in under
+/// `#panel-open`.
+const GO_HOME: &[Prim] = &[
     Prim::Path { x: 1128.0, y: 314.0, segs: PANEL, close: true, fill: Some(Ink::Fixed(PANEL_FILL)), stroke: Some(Ink::Fg), width: 1.5 },
     fill_path(1366.0, 405.0, PANEL_BAR, Ink::Fg),
     fill_rect(1369.0, 322.0, 1.5, 193.0, Ink::Border),
@@ -1957,12 +1906,82 @@ pub const DASHBOARD: &[Prim] = &[
     fill_rect(1273.0, 715.0, 10.75, 11.7, Ink::Fg),
     Prim::Text { x: 1252.0, y: 737.5, size: 8.0, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Middle, content: "PRECISION LIQUID" },
     Prim::Text { x: 1252.0, y: 746.0, size: 8.0, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Middle, content: "POLYMER MUSCLE" },
-    // margins (:249-251): the rotated micro-text runs as the trace's
+];
+
+pub const DASHBOARD: &[Prim] = &[
+    // ground, glow, vignette (:152-154)
+    Prim::Soft { prims: HUB_BACK },
+    // header, left (:158-168)
+    txt(109.0, 90.0, 14.0, Ink::Fg, "CUSTOMER"),
+    Prim::At { x: 117.0, y: 104.0, prims: BADGE },
+    txt(125.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
+    txt_bold(132.0, 140.0, 20.0, Ink::Fg, "T1"),
+    txt(240.0, 90.0, 14.0, Ink::Fg, "#NC488402"),
+    txt_bold(242.0, 132.0, 42.0, Ink::Fg, "next"),
+    fill_path(257.0, 151.0, CODE_TAPE, Ink::Fg),
+    // header, right (:170-183): four badges, T2 filled
+    txt(1125.0, 90.0, 14.0, Ink::Fg, "SECURITY LEVEL"),
+    Prim::At { x: 1133.0, y: 104.0, prims: BADGE },
+    Prim::At { x: 1193.0, y: 104.0, prims: BADGE_ON },
+    Prim::At { x: 1253.0, y: 104.0, prims: BADGE },
+    Prim::At { x: 1313.0, y: 104.0, prims: BADGE },
+    txt(1141.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
+    txt(1201.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
+    txt(1261.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
+    txt(1321.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
+    txt_bold(1148.0, 140.0, 20.0, Ink::Fg, "T1"),
+    txt_bold(1208.0, 140.0, 20.0, Ink::Fg, "T2"),
+    txt_bold(1268.0, 140.0, 20.0, Ink::Fg, "T3"),
+    txt_bold(1328.0, 140.0, 20.0, Ink::Fg, "T4"),
+    // the hairline rule (:188)
+    fill_rect(42.0, 187.0, 1516.0, 2.0, Ink::Dim),
+    // tab row (:192-198)
+    Prim::Rect { x: 27.0, y: 240.0, w: 55.0, h: 17.0, fill: Some(Ink::Border), stroke: Some(Ink::Fg), width: 1.0 },
+    Prim::Rect { x: 475.0, y: 237.0, w: 211.0, h: 21.0, fill: Some(Ink::Border), stroke: Some(Ink::Dim), width: 1.0 },
+    txt(515.0, 252.0, 12.0, Ink::Fg, "COMPUTER SYSTEMS"),
+    Prim::Path { x: 1139.0, y: 237.0, segs: DESCRIPTION_TAB, close: true, fill: Some(Ink::Border), stroke: Some(Ink::Dim), width: 1.0 },
+    txt(1145.0, 252.0, 12.0, Ink::Fg, "DESCRIPTION"),
+    Prim::Rect { x: 1516.0, y: 239.0, w: 54.0, h: 17.0, fill: Some(Ink::Border), stroke: Some(Ink::Fg), width: 1.0 },
+    // the six-diamond menu (:204-209), each cell at its centre
+    Prim::At { x: 334.0, y: 460.0, prims: UNIT_0 },
+    Prim::At { x: 530.0, y: 460.0, prims: UNIT_1 },
+    Prim::At { x: 725.0, y: 460.0, prims: UNIT_2 },
+    Prim::At { x: 431.0, y: 593.0, prims: UNIT_3 },
+    Prim::At { x: 628.0, y: 592.0, prims: UNIT_4 },
+    Prim::At { x: 822.0, y: 592.0, prims: UNIT_5 },
+    // the separators (:213-216): 16x30 ground-coloured bars on the
+    // midpoint of each same-row pair, cutting the facing side tips
+    fill_rect(424.0, 445.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
+    fill_rect(619.5, 445.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
+    fill_rect(521.5, 577.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
+    fill_rect(717.0, 577.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
+    // labels (:220-226): 600/19, centred on each cell's x, tracked 1.2
+    Prim::Tracked { x: 334.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "VEHICLES" },
+    Prim::Tracked { x: 530.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "LOCATIONS" },
+    Prim::Tracked { x: 725.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "FACTIONS" },
+    Prim::Tracked { x: 431.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "WEAPONS" },
+    Prim::Tracked { x: 628.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "PRODUCTS" },
+    Prim::Tracked { x: 822.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "CORPORATIONS" },
+    // GO HOME panel (:231-258), wiped in at boot: `#panel-open` (:143-150)
+    // grows the panel's clip from nothing to 460 tall over 0.36 s from 0,
+    // `keySplines="0.33 1 0.68 1"` = EaseOutCubic, and freezes; at rest
+    // it is the trace's own group.
+    Prim::Motion {
+        motion: Motion {
+            id: "panel-open",
+            begin: 0,
+            dur: 360,
+            ease: Easing::EaseOutCubic,
+            change: Change::Clip { x: 1120.0, y: 306.0, w: (260.0, 260.0), h: (0.0, 460.0) },
+        },
+        prims: GO_HOME,
+    },
+    // margins (:263-265): the rotated micro-text runs as the trace's
     // own bars
     fill_rect(33.0, 463.0, 8.0, 113.0, Ink::Border),
     fill_rect(1533.0, 527.0, 8.0, 238.0, Ink::Border),
     fill_rect(1348.0, 341.0, 4.0, 49.0, Ink::Border),
-    // footer tape (:262-271): the dim echo 3px right and down, the
+    // footer tape (:276-285): the dim echo 3px right and down, the
     // bright frame, the divider and the two cells' text
     line_rect(1212.5, 867.5, 144.0, 24.0, Ink::Border, 1.0),
     line_rect(1209.5, 864.5, 144.0, 24.0, Ink::Fg, 1.0),

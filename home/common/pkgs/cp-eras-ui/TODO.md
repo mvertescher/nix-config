@@ -1768,12 +1768,12 @@ when that screen assembles from library widgets. Priority order:
   plumbing; see git history).
   - [x] **Phase 1 (2026-09-06): the traces are no longer stills.**
     Motion is written on the trace as SMIL (`docs/PIPELINE.md`
-    "Motion"): `<animate id=..>` on the element it moves, frame 0 equal
-    to the static design so rsvg and the goldens never see it.
+    "Motion"): `<animate id=..>` on the element it moves, the element
+    drawn at its *rest* value so rsvg and the goldens never see it.
     `scripts/frame.sh --at T` seeks a trace in headless Firefox;
     `src/motion.rs` is the crate's clock (`--at-ms` / `CP_ERAS_UI_AT_MS`
     freezes it; `render.sh --at`, `triptych.sh --at`; `tests/visual.nix`
-    pins 0). One animation end to end: the login caret blink
+    pins `motion::REST`, 2.4 s, as do the scripts with no `--at`). One animation end to end: the login caret blink
     (`#caret-blink`, 1.2s discrete, neomil's `__` tail and the
     kitsch/entropism caret plate; neokitsch shows none).
   - Still open: hover and press. The traces still show no such state,
@@ -1781,10 +1781,26 @@ when that screen assembles from library widgets. Priority order:
     why `catalog` gives buttons and fields no hover/press treatment
     (see "Form controls"). Decide the reading from the source footage
     and annotate it on `components.svg` before plumbing anything.
-  - Phase 2, not started: eased transitions (`iced::animation` driven
-    from `motion::now()`, the vocabulary table in PIPELINE.md maps
-    `keySplines` to lilt's easings) and the panel boot-in, which needs
-    a trace-side annotation first.
+  - [x] **Phase 2 (2026-09-06): one boot-in.** Eased transitions as
+    scene data: `Prim::Motion { motion: Motion { id, begin, dur, ease,
+    change }, prims }` with `Change::Clip` (the trace's `<clipPath>`
+    with an animated `<rect>`), painted by `scene.rs` through
+    `Frame::with_clip` at `motion::progress` for the scene's `at`;
+    `Easing` is lilt's, straight off the PIPELINE.md lookup. Carried
+    end to end for neomil's GO HOME panel (`#panel-open`, 0.36 s
+    EaseOutCubic top-down wipe from 0): the dashboard ticks at 16 ms
+    until `REST` and then stops. Convention change that came with it:
+    the rest frame is the trace, not frame 0, so a boot-in is written
+    backwards from the drawing (the traced element is the `to`).
+    Verified on the headless pipeline only (`triptych.sh --at 0.15`
+    matches Firefox's frame); the wipe on terra's display is unseen
+    until a switch. Other eras' dashboards and the store/mailbox have
+    no boot-in annotated yet -- that is trace work per era, and each
+    should read as *that* era comes up, not neomil's wipe copied.
+    `Change` has one variant; opacity (`<animate attributeName=
+    "opacity">`) is the obvious second and needs a group-alpha path
+    the canvas does not have (a `with_clip` draft has no alpha), so
+    it is a `Soft`-style composite or a per-prim ink blend.
 
 ## Headless check: feasibility settled (2026-08-22)
 
