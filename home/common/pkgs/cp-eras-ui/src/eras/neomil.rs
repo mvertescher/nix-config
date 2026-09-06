@@ -24,7 +24,7 @@ use crate::style::{
 use crate::widgets::surface::{Corners, Cut};
 // --- login ---
 use crate::style::{
-    Access, Bevel, Colophon, Emblem, Fixture, Legend, Masthead, Plate, Plot, Slot,
+    Access, Bevel, Blink, Caret, Colophon, Emblem, Entry, Fixture, Legend, Masthead, Plate, Plot, Slot,
 };
 // --- end login ---
 
@@ -471,7 +471,19 @@ pub const ACCESS: Access = Access {
                 Plate::filled(Plot::new(372.5, 602.5, 252.0, 32.0), Ink::Fixed(WELL))
                     .edged(Ink::Dim, 1.0),
             ),
-            value: Some(Legend::new("**********  __", 381.0, 626.0, 12.0, Ink::Fg)),
+            // The trace's mock is ten stars and two open slots; typed,
+            // the field keeps the two slots after however many stars
+            // were typed. The caret is on the Login button, not in the
+            // field, so it stays put.
+            entry: Some(Entry {
+                rest: Legend::new("**********  __", 381.0, 626.0, 12.0, Ink::Fg),
+                mask: '*',
+                tail: "  __",
+                caret: Caret::Fixed,
+                blink: Blink::Tail,
+                busy: "verifying:",
+                failed: "access denied:",
+            }),
             action: Some(
                 Plate::filled(Plot::new(372.0, 635.0, 253.0, 48.0), Ink::Fixed(COMMIT))
                     .bevelled(Bevel::br(9.0)),

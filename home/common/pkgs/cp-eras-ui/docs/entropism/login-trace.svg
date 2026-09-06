@@ -98,8 +98,8 @@
     <!-- field, x 563..922, y 414..447 -->
     <rect x="563" y="414" width="359" height="33" fill="none" stroke="#75967b" stroke-width="1.25"/>
     <text x="578" y="439" font-size="22" font-weight="bold" fill="#8aac8c">***********</text>
-    <!-- caret underline under the first pair of characters -->
-    <path d="M 577,440 H 594" fill="none" stroke="#75967b" stroke-width="1.25"/>
+    <!-- caret underline under the first pair of characters; it blinks: 1.2s period, lit for the first half (docs/PIPELINE.md, Motion) -->
+    <path id="caret" d="M 577,440 H 594" fill="none" stroke="#75967b" stroke-width="1.25"><animate id="caret-blink" attributeName="opacity" values="1;0" keyTimes="0;0.5" calcMode="discrete" dur="1.2s" repeatCount="indefinite"/></path>
 
     <!-- NEXT, filled, x 932..1037, y 413..446 -->
     <rect x="932" y="413" width="105" height="33" fill="#8aac8c"/>

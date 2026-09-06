@@ -1323,6 +1323,74 @@ pub enum Emblem {
     Chip,
 }
 
+/// How a live slot's field takes typed input.
+///
+/// The traces draw every field at rest with a mock in it -- neomil's
+/// `**********  __`, entropism's eleven bold asterisks -- or with
+/// nothing but a cursor (kitsch's mint block, neokitsch's bare
+/// chocolate well). That rest run is `rest`, exactly as transcribed,
+/// and it is what the screen draws until somebody touches the
+/// keyboard; the login goldens hold because of it. Once awake, the
+/// field shows one `mask` per typed character followed by `tail`:
+/// neomil's mock leaves two slots open after its ten stars, so its
+/// tail is `"  __"` and four typed characters read `****  __`; the
+/// other three tails are empty. The typed run is drawn where `rest`
+/// is drawn, in `rest`'s face and ink, so `rest` doubles as the
+/// field's typography -- which is why kitsch and neokitsch carry a
+/// `rest` with no text: the trace shows an empty well, and the
+/// legend says where a run would go.
+///
+/// Table data rather than code, the way the rest of the era is: a
+/// fifth era says what its field looks like typed into by filling
+/// this in, and `screens::login` never asks which era it is.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Entry {
+    /// The run at rest, as the trace shows it.
+    pub rest: Legend,
+    /// The glyph one typed character shows as.
+    pub mask: char,
+    /// What follows the typed run while the field is awake.
+    pub tail: &'static str,
+    pub caret: Caret,
+    /// What `docs/<era>/login-trace.svg#caret-blink` animates
+    /// (`motion::CARET_BLINK`): the slot's caret plate, the run's tail,
+    /// or nothing.
+    pub blink: Blink,
+    /// What the prompt (or the action label -- see [`Slot::prompt`])
+    /// says while the secret is being checked, and after it was
+    /// refused. The era's own register: neomil's prompt is lowercase,
+    /// the others shout.
+    pub busy: &'static str,
+    pub failed: &'static str,
+}
+
+/// What a slot's caret does while a run is typed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Caret {
+    /// Stays where the trace puts it. Neomil's caret is a text cursor
+    /// on the Login button, not in the field, and neokitsch has none.
+    Fixed,
+    /// Follows the run: drawn where the table puts it, moved right by
+    /// the width of the masks typed so far. Entropism's underline and
+    /// kitsch's block both stand at the head of the field in the trace,
+    /// which is where a run of nothing ends.
+    Trails,
+}
+
+/// The thing a login's `#caret-blink` turns on and off. The traces
+/// disagree on what their caret *is*: kitsch's block and entropism's
+/// underline are the slot's caret plate, neomil's is the `__` that
+/// ends its masked run -- the tail -- and neokitsch draws none.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Blink {
+    /// Nothing blinks: the trace has no `#caret-blink`.
+    Still,
+    /// The slot's `caret` plate is drawn only in the lit half.
+    Caret,
+    /// The entry's `tail` is drawn only in the lit half.
+    Tail,
+}
+
 /// One account slot.
 ///
 /// The grammar all four traces share, and the reason this screen is one
@@ -1344,10 +1412,15 @@ pub struct Slot {
     pub mark: Option<Plate>,
     pub emblem: Emblem,
     pub name: Option<Legend>,
-    /// The label over the field, where the era sets one.
+    /// The label over the field, where the era sets one. It is also
+    /// where the screen says how a sign-in went: [`Entry::busy`] and
+    /// [`Entry::failed`] take the prompt's place in the prompt's own
+    /// face, or the action label's where the era sets no prompt.
     pub prompt: Option<Legend>,
     pub field: Option<Plate>,
-    pub value: Option<Legend>,
+    /// How the field takes typed input, and what it shows at rest.
+    /// `Some` on exactly the live slots.
+    pub entry: Option<Entry>,
     /// The insertion mark: entropism's underline beneath the first pair
     /// of masked characters, kitsch's block in the field, neomil's on
     /// its Login button.
@@ -1371,7 +1444,7 @@ impl Slot {
         name: None,
         prompt: None,
         field: None,
-        value: None,
+        entry: None,
         caret: None,
         action: None,
         action_label: None,

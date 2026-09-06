@@ -38,9 +38,16 @@
 #   triptych.sh neomil dashboard       # one pair
 #   triptych.sh --diff kitsch dashboard
 #   triptych.sh --bin-dir /tmp/bins kitsch
+#   triptych.sh --at 0.9 --diff neomil login
 #   triptych.sh --out /tmp/tri --no-labels
 #
 #   --diff          add the trace-vs-iced difference as a fourth row.
+#   --at SECONDS    the moment to show: rows 2 and 4 come from frame.sh
+#                   (headless Firefox running the trace's SMIL, seeked to
+#                   this time) and row 3 from render.sh --at, the app's
+#                   clock frozen there. Written as <era>-<screen>-at<t>.png
+#                   next to the static one. Without it the rows are frame
+#                   0, rasterised by rsvg as ever (docs/PIPELINE.md, Motion).
 #   --bin-dir DIR   where the cp-eras-ui-<screen> binaries are; default
 #                   target/debug, which `cargo build --bin ...` writes.
 #   --out DIR       where to write <era>-<screen>.png; default
@@ -68,10 +75,12 @@ bin_dir="$crate/target/debug"
 out_dir="$crate/images/triptych"
 labels=1
 diff=0
+at=""
 targets=()
 while [ $# -gt 0 ]; do
   case "$1" in
     --diff)      diff=1; shift ;;
+    --at)        at=$2; shift 2 ;;
     --bin-dir)   bin_dir=$2; shift 2 ;;
     --out)       out_dir=$2; shift 2 ;;
     --no-labels) labels=0; shift ;;
@@ -98,6 +107,23 @@ fi
 
 scratch=$(mktemp -d "${TMPDIR:-/tmp}/tri.XXXXXX")
 trap 'rm -rf "$scratch"' EXIT
+
+# Row 2 and the diff's reference: the trace rasterised at frame 0 by
+# rsvg, or at `--at` by frame.sh. $1 svg, $2 out, $3 "photo"|"no-photo".
+trace_png() {
+  if [ -n "$at" ]; then
+    local opt=()
+    [ "$3" = no-photo ] && opt=(--no-photo)
+    "$here/frame.sh" --at "$at" "${opt[@]}" --size "${w}x${h}" "$1" "$2"
+  elif [ "$3" = no-photo ]; then
+    # The sed is fidelity_check.sh's.
+    local hidden="$scratch/$(basename "$2" .png).svg"
+    sed '0,/<svg[^>]*>/s//&<style>.photo{display:none}<\/style>/' "$1" > "$hidden"
+    "${rsvg[@]}" -w "$w" -h "$h" "$hidden" -o "$2" 2>/dev/null
+  else
+    "${rsvg[@]}" -w "$w" -h "$h" "$1" -o "$2" 2>/dev/null
+  fi
+}
 
 # Pin the fonts for the SVG render, exactly as fidelity_check.sh does:
 # the traces name Rajdhani / Orbitron and the crate ships both in fonts/,
@@ -180,39 +206,37 @@ for era in "${eras[@]}"; do
     photo="$scratch/$era-$screen-photo.png"
     trace="$scratch/$era-$screen-trace.png"
     impl="$scratch/$era-$screen-impl.png"
-    out="$out_dir/$era-$screen.png"
+    out="$out_dir/$era-$screen${at:+-at$at}.png"
 
     # The photos are 3840x2160; the other two rows are 1600x900. Fit the
     # photo into the same box rather than assuming its aspect.
     "${magick[@]}" "$src" -resize "${w}x${h}" -background black \
       -gravity center -extent "${w}x${h}" "$photo" || { echo "FAIL $era/$screen: photo"; fail=1; continue; }
-    "${rsvg[@]}" -w "$w" -h "$h" "$svg" -o "$trace" 2>/dev/null \
-      || { echo "FAIL $era/$screen: rsvg-convert on $svg"; fail=1; continue; }
+    trace_png "$svg" "$trace" photo \
+      || { echo "FAIL $era/$screen: rasterising $svg"; fail=1; continue; }
     # `env -u FONTCONFIG_FILE`: the app embeds its own faces and the
     # goldens were captured with no fontconfig override; keep it that way
     # so row 3 is the same capture the matrix would take.
     env -u FONTCONFIG_FILE "$here/render.sh" \
-      --era "$era" --size "${w}x${h}" --bin "$bin" --out "$impl" >/dev/null \
+      --era "$era" --size "${w}x${h}" --bin "$bin" --out "$impl" --at "${at:-0}" >/dev/null \
       || { echo "FAIL $era/$screen: render.sh could not capture $app (see $impl.log)"; fail=1; continue; }
 
     rows=("$photo" "$trace" "$impl")
     if [ "$diff" = 1 ]; then
       # The same design G2i scores: the trace with its `class="photo"`
-      # elements hidden (the sed is fidelity_check.sh's).
-      g2i_svg="$scratch/$era-$screen-g2i.svg"
+      # elements hidden.
       g2i="$scratch/$era-$screen-g2i.png"
       heat="$scratch/$era-$screen-diff.png"
-      sed '0,/<svg[^>]*>/s//&<style>.photo{display:none}<\/style>/' "$svg" > "$g2i_svg"
-      "${rsvg[@]}" -w "$w" -h "$h" "$g2i_svg" -o "$g2i" 2>/dev/null \
-        || { echo "FAIL $era/$screen: rsvg-convert on $g2i_svg"; fail=1; continue; }
+      trace_png "$svg" "$g2i" no-photo \
+        || { echo "FAIL $era/$screen: rasterising $svg without photo"; fail=1; continue; }
       off=$(heat "$g2i" "$impl" "$heat") \
         || { echo "FAIL $era/$screen: diff"; fail=1; continue; }
       rows+=("$heat")
     fi
 
     caption "$photo" "$era / $screen — 1 source photo: images/$(basename "$src")"
-    caption "$trace" "2 trace: docs/$era/$screen-trace.svg"
-    caption "$impl"  "3 iced: $app --era $era"
+    caption "$trace" "2 trace: docs/$era/$screen-trace.svg${at:+ at ${at}s (frame.sh)}"
+    caption "$impl"  "3 iced: $app --era $era${at:+ at ${at}s (render.sh --at)}"
     [ "$diff" = 1 ] && caption "$heat" \
       "4 diff: |trace − iced|, trace without class=photo — ${off}% of pixels off by >8 levels"
     "${magick[@]}" "${rows[@]}" -append "$out" \

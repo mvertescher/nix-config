@@ -32,7 +32,7 @@ use crate::style::{
 use crate::widgets::surface::{Corners, Cut};
 // --- login ---
 use crate::style::{
-    Access, Colophon, Emblem, Fixture, Legend, Masthead, Plate, Plot, Slot,
+    Access, Blink, Caret, Colophon, Emblem, Entry, Fixture, Legend, Masthead, Plate, Plot, Slot,
 };
 // --- end login ---
 
@@ -555,6 +555,19 @@ pub const ACCESS: Access = Access {
                 Plot::new(266.0, 421.0, 2.0, 22.0),
                 Ink::Fixed(BARCODE),
             )),
+            // The trace shows the well empty but for the cursor, so the
+            // rest run has no text; it says where a typed run goes: in
+            // the cursor's mint, at the cursor's height (22, its y
+            // 421..443), starting just past it, and the cursor trails.
+            entry: Some(Entry {
+                rest: Legend::new("", 272.0, 439.0, 22.0, Ink::Fixed(BARCODE)).medium(),
+                mask: '*',
+                tail: "",
+                caret: Caret::Trails,
+                blink: Blink::Caret,
+                busy: "WAIT",
+                failed: "DENIED",
+            }),
             action: Some(
                 Plate::filled(Plot::new(257.0, 463.0, 334.5, 34.5), Ink::Fixed(LIT))
                     .stepped(418.0, 7.0, 12.0),

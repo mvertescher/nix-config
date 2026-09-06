@@ -186,6 +186,113 @@ caption. Text always lights a little (two rasterisers, two AAs); a
 filled shape lit solid is a colour miss, an outline lit is a placement
 miss, and a whole frame lit dimly is a ground drawn from memory.
 
+## Motion
+
+The traces are still pictures of a running interface, and the material
+is stiller than they are: a photo cannot say how the caret blinks or
+how a panel opens. Motion is the one layer of the design with no source
+to be faithful to, so the convention is built around making it cost
+frame 0 nothing — frame 0 stays the design the gates measure against
+the photo, and everything that moves is written *on top* of it.
+
+**Where it lives.** SMIL, in the trace, on the element it moves: an
+`<animate>`, `<animateTransform>` or `<set>` as a child of the `<rect>`
+or `<g>` whose attribute changes, never a CSS animation and never a
+script. SMIL because the timeline can be seeked from outside (below);
+CSS animations cannot be, and rsvg draws neither. Each `<animate>`
+carries an `id` — `caret-blink`, `panel-open` — which is how the iced
+side and the review tools cite it, exactly as an element's `id` cites
+its geometry.
+
+**Frame 0 is the trace.** rsvg ignores SMIL, so every static gate, the
+goldens and `triptych.sh` render frame 0 and see no difference whether
+a trace is annotated or not. The rule that keeps that true: the
+element's own attribute must equal the animation's value at t=0 — its
+`from` (or the first of its `values`) for an animation that begins at
+0, and its rest value for one that begins later. An annotation that
+moves frame 0 has changed the design, and the G1 gates will say so.
+
+**Vocabulary.** Only what the iced side can play back --
+`iced::animation::Animation` (lilt 0.8) for the eased transitions,
+`src/motion.rs` for the discrete cycles it has no notion of:
+
+| SMIL                                  | iced `Animation`                              |
+|---------------------------------------|-----------------------------------------------|
+| `dur="400ms"`                         | `.duration(Duration::from_millis(400))`       |
+| `begin="1.2s"`                        | `.delay(..)`, or a later `.go(.., at)`        |
+| `repeatCount="indefinite"` / `"3"`    | `.repeat_forever()` / `.repeat(3)`            |
+| `values="a;b;a"` with `keyTimes`      | `.auto_reverse()` (only the symmetric case)   |
+| `calcMode="discrete"`                 | a phase of the clock: `motion::blink` and kin  |
+| `calcMode="spline"` + `keySplines`    | `Easing::EaseInOutCubic` and family           |
+| `fill="freeze"`                       | the default: the state stays where it went    |
+
+`keySplines` are cubic beziers; lilt's named easings are the
+easings.net curves (`EaseInOut` is the sine, `EaseInOutCubic` the
+cubic polynomial, and so on), which are not beziers, but easings.net
+publishes a bezier beside each that tracks it closely enough at trace
+scale: `0.37 0 0.63 1` for `EaseInOut`, `0.65 0 0.35 1` for
+`EaseInOutCubic`, `0.45 0 0.55 1` for `EaseInOutQuad`, `0.33 1 0.68 1`
+for `EaseOutCubic`, `0.61 1 0.88 1` for `EaseOut`. Write one of those,
+so the transcription is a lookup and not a curve fit (`Easing::Custom`
+exists for the day a trace needs a curve nothing named tracks).
+Anything else — `keyTimes` with more than three stops, additive
+animations, `<animateMotion>` along a path — is not in the vocabulary
+until the iced side has a way to play it, and a trace that needs it
+says so in its README instead of annotating.
+
+**Two kinds of begin.** `begin="0s"` and friends are the document clock,
+which is what a frame at time t is a frame *of*. An interaction —
+hover, focus, a press — is `begin="<id>.click"` or `.mouseover`, and a
+review tool cannot fire those; so a state that is reached by input
+gives the transition both: `begin="click; 0.6s"`, the clock-based
+start there so that `frame.sh --at 0.8` can show the state
+mid-transition. The two states themselves — rest and hovered, closed
+and open — are drawn as sibling groups in `components.svg` next to the
+element they belong to, cited back to the trace like everything else
+on that sheet, so the design of the *destination* is reviewable without
+seeking.
+
+**Seeing a frame.** `scripts/frame.sh --at <seconds> <trace> out.png`
+renders the trace at a moment — headless Firefox with the timeline
+paused and seeked from a script appended to a scratch copy; the header
+explains why Firefox and why the script has to be inside the SVG. Its
+frame 0 matches rsvg's on all but 0.016% of the neomil login's pixels
+(8-level fuzz), so a frame from it is comparable with one from the
+static pipeline. Pass `--no-photo` for a frame to set beside an
+implementation capture, as G2i does. The implementation's side is
+`src/motion.rs`: every screen reads its time from `motion::now()`,
+counted from one origin, and `--at-ms <n>` (or `CP_ERAS_UI_AT_MS=<n>`
+in the environment, which is how the harnesses say it) pins that
+clock, so `scripts/render.sh --at <seconds>` captures the same moment
+`frame.sh` renders. `triptych.sh --at <seconds> --diff` stacks the
+two with the photo and the heat row, which is the review view for an
+animation: run it at a few moments across the cycle. The goldens are
+frame 0 — `tests/visual.nix` exports `CP_ERAS_UI_AT_MS=0` — which is
+why a trace annotation and its transcription leave every golden
+untouched: the static design *is* frame 0, on both sides.
+
+**Who annotates.** Annotating is trace work and falls under the same
+rule as the rest of `docs/`: a vision model, judging how the motion
+reads, and never a coding model reaching into a trace to make its
+implementation's timing match. What the coding model gets is the
+annotation as text — attribute, values, timing, easing — and the table
+above to transcribe it with; the transcription cites the `<animate>`'s
+`id` in a comment beside the `Animation`.
+
+The first animation carried end to end this way is the login caret's
+blink, the worked example to read when the description above is not
+enough: `#caret-blink` in three of the four `login-trace.svg`s
+(neokitsch's field draws no caret in the photo, so it has none) —
+`values="1;0" keyTimes="0;0.5" calcMode="discrete" dur="1.2s"
+repeatCount="indefinite"` on the caret, which is a `<rect>` in kitsch,
+an underline `<path>` in entropism and the `__` at the end of neomil's
+masked run, split into a `<tspan>` so it could be animated alone.
+`motion::CARET_BLINK` is the period, `motion::blink` the phase,
+`style::Blink` says per era which of those three things the frame
+turns off, and `screens::login` ticks once per half-period unless the
+clock is frozen. `triptych.sh --at 0.3 neomil login` and `--at 0.9`
+are the two halves.
+
 ## Iteration loop
 
 ```

@@ -222,7 +222,8 @@
     <text x="378" y="595" font-family="Rajdhani" font-size="14" fill="#f63333">password:</text>
     <!-- password field y 602..634 -->
     <rect x="372.5" y="602.5" width="252" height="32" fill="#430e0f" stroke="#ae2729" stroke-width="1"/>
-    <text x="381" y="626" font-family="Rajdhani" font-size="12" letter-spacing="3" fill="#f63333">**********  __</text>
+    <!-- the caret ("__") blinks: 1.2s period, lit for the first half (docs/PIPELINE.md, Motion) -->
+    <text x="381" y="626" font-family="Rajdhani" font-size="12" letter-spacing="3" fill="#f63333">**********  <tspan id="caret">__<animate id="caret-blink" attributeName="opacity" values="1;0" keyTimes="0;0.5" calcMode="discrete" dur="1.2s" repeatCount="indefinite"/></tspan></text>
     <!-- Login button y 635..683, bottom-right chamfer 9 -->
     <path d="M 372,635 H 625 V 674 L 616,683 H 372 Z" fill="#a52223"/>
     <text x="383" y="657" font-family="Rajdhani" font-size="17" fill="#420f10">Login</text>

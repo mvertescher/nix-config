@@ -23,6 +23,55 @@ in
         runs with `--remember` and writes the file itself afterwards.
       '';
     };
+
+    greeter = lib.mkOption {
+      type = lib.types.enum [ "tuigreet" "cp-eras-ui" ];
+      default = "tuigreet";
+      description = ''
+        Which greeter greetd runs on the console.
+
+        `tuigreet` is the text greeter on the tty, with the username
+        remembered across boots. `cp-eras-ui` is this repo's own login
+        screen (`home/common/pkgs/cp-eras-ui`, `cp-eras-ui-login
+        --greet`) run under the `cage` kiosk compositor: the era's
+        access screen from the traces, password field live, dressed in
+        `custom.greetd.era` and signing in `custom.greetd.user`. It
+        asks nothing about the account -- the greeter user has no
+        theme to follow and no username to remember, so both are
+        options here rather than state on disk.
+
+        Left on tuigreet by default: the cp-eras-ui session has not
+        been exercised on a real seat yet (see the crate's GREETER.md),
+        and a greeter that fails to draw is a host with no way in
+        short of a tty.
+      '';
+    };
+
+    era = lib.mkOption {
+      type = lib.types.enum [ "entropism" "kitsch" "neomil" "neokitsch" ];
+      default = "neomil";
+      description = ''
+        The era `cp-eras-ui-login` is dressed in when it is the
+        greeter. Only read when `greeter = "cp-eras-ui"`. Not tied to
+        `hosts/<host>/theme.nix` on purpose: the greeter runs as the
+        `greeter` account, which never sees the user's published
+        theme, and the login screen's era is a fact about the console
+        rather than about a session.
+      '';
+    };
+
+    user = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = cfg.lastUser;
+      defaultText = lib.literalExpression "config.custom.greetd.lastUser";
+      description = ''
+        The account `cp-eras-ui-login` signs in. The screen has a
+        password field and no username field -- every era's trace
+        shows the account already chosen -- so the name is given
+        here, the way `lastUser` gives tuigreet its first guess.
+        Required when `greeter = "cp-eras-ui"`.
+      '';
+    };
   };
 
   config = {
@@ -51,7 +100,7 @@ in
     # would install and configure hyprlock a second time.
     security.pam.services.hyprlock = { };
 
-    # Enable greetd display manager with tuigreet
+    # greetd, with whichever greeter `custom.greetd.greeter` names.
     systemd.services.greetd.serviceConfig = {
       Type = "idle";
       StandardInput = "tty";
@@ -62,15 +111,45 @@ in
       TTYVDisallocate = true;
     };
 
+    assertions = [
+      {
+        assertion = cfg.greeter != "cp-eras-ui" || cfg.user != null;
+        message = "custom.greetd.greeter = \"cp-eras-ui\" needs custom.greetd.user (or lastUser): the login screen has no username field.";
+      }
+    ];
+
     services.greetd = {
       enable = true;
       settings = {
         default_session = {
-          command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session --cmd '${pkgs.uwsm}/bin/uwsm start hyprland-uwsm.desktop'";
+          command =
+            if cfg.greeter == "cp-eras-ui" then
+              # `cage -s` allows VT switching so a broken greeter still
+              # leaves a tty reachable; `-d` asks the client not to draw
+              # its own decorations. cage has no "exit with the app"
+              # flag because that is what it does: it runs one
+              # application and terminates when it exits, and
+              # `cp-eras-ui-login --greet` exits 0 once greetd has
+              # accepted `start_session`, which is greetd's cue to
+              # tear the greeter down and start the user's session.
+              "${pkgs.cage}/bin/cage -s -d -- ${pkgs.cp-eras-ui}/bin/cp-eras-ui-login --greet --era ${cfg.era} --user ${cfg.user} --cmd '${pkgs.uwsm}/bin/uwsm start hyprland-uwsm.desktop'"
+            else
+              "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-session --cmd '${pkgs.uwsm}/bin/uwsm start hyprland-uwsm.desktop'";
           user = "greeter";
         };
       };
     };
+
+    # cage under greetd gets its seat from logind: greetd opens a PAM
+    # session for `greeter` on the VT, and libseat's logind backend
+    # hands wlroots the DRM and input devices of the active session.
+    # That is the documented greetd + cage arrangement and needs no
+    # groups; the render node wgpu opens for Vulkan is world-readable
+    # under udev's default rules. `video` is added anyway for libseat's
+    # direct fallback, because a greeter that cannot open the GPU is a
+    # black screen with no message. Unverified on a real seat as of
+    # 2026-09-06.
+    users.users.greeter.extraGroups = lib.mkIf (cfg.greeter == "cp-eras-ui") [ "video" ];
 
     # Only the file, not the directory: nixpkgs' own greetd module already
     # emits `d '/var/cache/tuigreet' - greeter greeter - -` whenever greetd
