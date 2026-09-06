@@ -10,7 +10,7 @@
 # committed.
 #
 # The package is now `pkgs.cp-eras-ui`, from this repo's overlay
-# (../../../../lib/overlays.nix), so this file no longer instantiates
+# (../../../../lib/in-tree.nix), so this file no longer instantiates
 # anything -- which is the point. A matrix rendering its *own* build of
 # the crate would be a second instance free to drift from the one the
 # desktop ships, and the whole value of the goldens is that they are

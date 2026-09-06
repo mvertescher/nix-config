@@ -1,6 +1,6 @@
 # The cp-eras-ui toolkit and its screens.
 #
-# Do not `callPackage` this at a use site: `lib/overlays.nix` does it
+# Do not `callPackage` this at a use site: `lib/in-tree.nix` does it
 # once, and `pkgs.cp-eras-ui` is the canonical instance that the GUI
 # module, the era builder and the golden matrix all name. Two
 # instantiations of one package are two things free to drift, and the
