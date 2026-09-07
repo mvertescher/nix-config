@@ -69,8 +69,9 @@ let
     radius = 0;
     # Terminal window opacity. The wallpaper carries the era's ground
     # (the trace, since 2026-09-06), and a terminal at 1.0 hid it on
-    # the one workspace that is nearly always a terminal.
-    terminalOpacity = 0.85;
+    # the one workspace that is nearly always a terminal. 0.85 read as
+    # too see-through at the desk (2026-09-07); a tenth is the taste.
+    terminalOpacity = 0.9;
     # Compositor blur under translucent windows. Off is the house
     # style: the ground is a flat field and a hard-edged era shows it
     # sharp. An era whose reference already has a haze turns it on.
@@ -899,9 +900,12 @@ lib.mkMerge [
     # and urlbar sitting in it as the bar's modules sit in the bar --
     # the current tab in the selected treatment, the rest on `dim`, the
     # urlbar a `bg` well with a `border` hairline that lights to `fg` on
-    # focus. Sidebery is the same panel turned on its side: its own
-    # background goes transparent so the sidebar box's `panel` shows
-    # through, rows on `dim` with the active one in the selected
+    # focus. Sidebery is the same panel turned on its side: it paints
+    # `panel` itself (it sat on a transparent frame over the sidebar
+    # box until 2026-09-07, and at the desk that read as neither the
+    # panel nor opaque -- rgb(54,54,58) sampled where #16161f was due;
+    # whichever layer let go, the sheet no longer depends on it), rows
+    # on `dim` with the active one in the selected
     # treatment, a `border` hairline between it and the page. This used
     # to stop at the toolbox and leave Sidebery on its defaults, so the
     # left third of every window wore a different theme from the top.
@@ -1010,8 +1014,9 @@ lib.mkMerge [
             color: var(--era-alert) !important;
           }
 
-          /* The sidebar: Sidebery paints nothing of its own (see the
-             stylesheet below), so this box is the panel it sits on.
+          /* The sidebar box behind Sidebery, which paints the same
+             `panel` itself (see the stylesheet below); this box only
+             shows in the instant before the extension has loaded.
              Its header is Firefox's own "Sidebery v" strip, which the
              extension's tab tree already says. */
           #sidebar-box {
@@ -1048,7 +1053,7 @@ lib.mkMerge [
             /* ${header} */
             #root.root {
               --tabs-font: ${toString weight} 0.85rem "${font.name}", sans-serif;
-              --frame-bg: transparent !important;
+              --frame-bg: ${c.panel} !important;
               --frame-fg: ${c.fg};
 
               --tabs-normal-bg: transparent;
@@ -1068,7 +1073,7 @@ lib.mkMerge [
             }
 
             :root {
-              background-color: transparent !important;
+              background-color: ${c.panel} !important;
               --tabs-padding: 4px;
             }
 
