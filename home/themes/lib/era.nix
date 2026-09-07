@@ -218,9 +218,174 @@ let
     )}
   '';
 
-  # Everything the browser chrome is generated from. Hashing the inputs
-  # rather than the stylesheet means the stamp moves exactly when the
-  # theme does.
+  # The browser chrome, lifted out of programs.firefox so the restart
+  # stamp below can hash the text.
+  firefoxChrome = ''
+    /* ${header} */
+    :root {
+      --era-bg: ${c.bg};
+      --era-panel: ${c.panel};
+      --era-border: ${c.border};
+      --era-dim: ${c.dim};
+      --era-fg: ${c.fg};
+      --era-alert: ${c.alert};
+      --era-selected-bg: var(--era-${if k.invertActive then "fg" else "border"});
+      --era-selected-fg: var(--era-${if k.invertActive then "bg" else "fg"});
+
+      --toolbar-bgcolor: var(--era-panel) !important;
+      --toolbar-color: var(--era-fg) !important;
+      --tab-border-radius: ${toString k.radius}px !important;
+      --toolbarbutton-border-radius: ${toString k.radius}px !important;
+      --urlbar-min-height: 26px !important;
+      --sidebar-background-color: var(--era-panel) !important;
+      --sidebar-text-color: var(--era-fg) !important;
+    }
+
+    #navigator-toolbox {
+      background: var(--era-panel) !important;
+      border-bottom: 1px solid var(--era-border) !important;
+      font-family: "${font.name}" !important;
+      font-weight: ${toString weight} !important;
+    }
+
+    #TabsToolbar, #nav-bar, #PersonalToolbar {
+      background: var(--era-panel) !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    .tabbrowser-tab .tab-background {
+      border-radius: ${toString k.radius}px !important;
+      border: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+    }
+
+    .tabbrowser-tab:hover:not([selected]) .tab-background {
+      background: var(--era-border) !important;
+    }
+
+    .tabbrowser-tab[selected] .tab-background {
+      background: var(--era-selected-bg) !important;
+    }
+
+    .tabbrowser-tab[selected] .tab-label {
+      color: var(--era-selected-fg) !important;
+    }
+
+    .tabbrowser-tab:not([selected]) .tab-label {
+      color: var(--era-dim) !important;
+    }
+
+    #urlbar, #urlbar-background, #searchbar {
+      border-radius: ${toString k.radius}px !important;
+      box-shadow: none !important;
+      background: var(--era-bg) !important;
+      border: 1px solid var(--era-border) !important;
+    }
+
+    #urlbar[focused] > #urlbar-background {
+      border-color: var(--era-fg) !important;
+    }
+
+    #urlbar-input, #searchbar .searchbar-textbox {
+      color: var(--era-fg) !important;
+    }
+
+    .urlbarView {
+      background: var(--era-panel) !important;
+      border: 1px solid var(--era-border) !important;
+    }
+
+    .urlbarView-row[selected], .urlbarView-row:hover {
+      background: var(--era-border) !important;
+      border-radius: ${toString k.radius}px !important;
+    }
+
+    menupopup, panel {
+      --panel-background: var(--era-panel) !important;
+      --panel-color: var(--era-fg) !important;
+      --panel-border-color: var(--era-border) !important;
+      --panel-border-radius: ${toString k.radius}px !important;
+    }
+
+    toolbarbutton .toolbarbutton-icon {
+      border-radius: ${toString k.radius}px !important;
+      box-shadow: none !important;
+    }
+
+    #identity-box.notSecure #identity-icon {
+      color: var(--era-alert) !important;
+    }
+
+    /* The sidebar box behind Sidebery, which paints the same
+       `panel` itself (see the stylesheet below); this box only
+       shows in the instant before the extension has loaded.
+       Its header is Firefox's own "Sidebery v" strip, which the
+       extension's tab tree already says. */
+    #sidebar-box {
+      background: var(--era-panel) !important;
+      border-right: 1px solid var(--era-border) !important;
+    }
+    #sidebar-header { display: none !important; }
+    #sidebar-splitter {
+      width: 1px !important;
+      border: none !important;
+      background: var(--era-border) !important;
+    }
+  '';
+
+  # Sidebery's sheet, lifted out for the same reason.
+  sideberyCSS = ''
+    /* ${header} */
+    #root.root {
+      --tabs-font: ${toString weight} 0.85rem "${font.name}", sans-serif;
+      --frame-bg: ${c.panel} !important;
+      --frame-fg: ${c.fg};
+
+      --tabs-normal-bg: transparent;
+      --tabs-normal-fg: ${c.dim};
+      --tabs-activated-bg: ${if k.invertActive then c.fg else c.border};
+      --tabs-activated-fg: ${if k.invertActive then c.bg else c.fg};
+      --active-el-bg: ${c.border};
+      --tabs-border-radius: ${toString k.radius}px;
+      --tabs-margin: 1px;
+      --tabs-height: 26px;
+      --tabs-inner-gap: 5px;
+
+      --ctx-menu-bg: ${c.panel};
+      --ctx-menu-fg: ${c.fg};
+      --ctx-menu-border: ${c.border};
+      --ctx-menu-separator: ${c.border};
+    }
+
+    :root {
+      background-color: ${c.panel} !important;
+      --tabs-padding: 4px;
+    }
+
+    .Tab {
+      background-color: transparent !important;
+      color: ${c.dim} !important;
+    }
+    .Tab:hover {
+      background-color: ${c.border} !important;
+      color: ${c.fg} !important;
+    }
+    /* The active row keeps its treatment under the pointer;
+       cybr's sheet lost its label to the hover colour here. */
+    .Tab[data-active="true"], .Tab[data-active="true"]:hover {
+      background-color: ${if k.invertActive then c.fg else c.border} !important;
+      color: ${if k.invertActive then c.bg else c.fg} !important;
+    }
+  '';
+
+  # Everything the browser chrome is generated from, and the two sheets
+  # themselves. Until 2026-09-07 this hashed the inputs alone, on the
+  # reasoning that the stamp should move exactly when the theme does --
+  # and then an edit to the Sidebery template shipped under the same
+  # stamp, so the switch left Firefox running the old sheet. A template
+  # is part of the theme; hashing its output covers both.
   themeStamp = builtins.hashString "sha256" (
     builtins.toJSON {
       inherit variant name;
@@ -228,6 +393,8 @@ let
       font = font.name;
       inherit weight;
       radius = k.radius;
+      chrome = firefoxChrome;
+      sidebery = sideberyCSS;
     }
   );
 in
@@ -916,120 +1083,7 @@ lib.mkMerge [
           "toolkit.cosmeticAnimations.enabled" = false;
         };
 
-        userChrome = ''
-          /* ${header} */
-          :root {
-            --era-bg: ${c.bg};
-            --era-panel: ${c.panel};
-            --era-border: ${c.border};
-            --era-dim: ${c.dim};
-            --era-fg: ${c.fg};
-            --era-alert: ${c.alert};
-            --era-selected-bg: var(--era-${if k.invertActive then "fg" else "border"});
-            --era-selected-fg: var(--era-${if k.invertActive then "bg" else "fg"});
-
-            --toolbar-bgcolor: var(--era-panel) !important;
-            --toolbar-color: var(--era-fg) !important;
-            --tab-border-radius: ${toString k.radius}px !important;
-            --toolbarbutton-border-radius: ${toString k.radius}px !important;
-            --urlbar-min-height: 26px !important;
-            --sidebar-background-color: var(--era-panel) !important;
-            --sidebar-text-color: var(--era-fg) !important;
-          }
-
-          #navigator-toolbox {
-            background: var(--era-panel) !important;
-            border-bottom: 1px solid var(--era-border) !important;
-            font-family: "${font.name}" !important;
-            font-weight: ${toString weight} !important;
-          }
-
-          #TabsToolbar, #nav-bar, #PersonalToolbar {
-            background: var(--era-panel) !important;
-            border: none !important;
-            box-shadow: none !important;
-          }
-
-          .tabbrowser-tab .tab-background {
-            border-radius: ${toString k.radius}px !important;
-            border: none !important;
-            box-shadow: none !important;
-            background: transparent !important;
-          }
-
-          .tabbrowser-tab:hover:not([selected]) .tab-background {
-            background: var(--era-border) !important;
-          }
-
-          .tabbrowser-tab[selected] .tab-background {
-            background: var(--era-selected-bg) !important;
-          }
-
-          .tabbrowser-tab[selected] .tab-label {
-            color: var(--era-selected-fg) !important;
-          }
-
-          .tabbrowser-tab:not([selected]) .tab-label {
-            color: var(--era-dim) !important;
-          }
-
-          #urlbar, #urlbar-background, #searchbar {
-            border-radius: ${toString k.radius}px !important;
-            box-shadow: none !important;
-            background: var(--era-bg) !important;
-            border: 1px solid var(--era-border) !important;
-          }
-
-          #urlbar[focused] > #urlbar-background {
-            border-color: var(--era-fg) !important;
-          }
-
-          #urlbar-input, #searchbar .searchbar-textbox {
-            color: var(--era-fg) !important;
-          }
-
-          .urlbarView {
-            background: var(--era-panel) !important;
-            border: 1px solid var(--era-border) !important;
-          }
-
-          .urlbarView-row[selected], .urlbarView-row:hover {
-            background: var(--era-border) !important;
-            border-radius: ${toString k.radius}px !important;
-          }
-
-          menupopup, panel {
-            --panel-background: var(--era-panel) !important;
-            --panel-color: var(--era-fg) !important;
-            --panel-border-color: var(--era-border) !important;
-            --panel-border-radius: ${toString k.radius}px !important;
-          }
-
-          toolbarbutton .toolbarbutton-icon {
-            border-radius: ${toString k.radius}px !important;
-            box-shadow: none !important;
-          }
-
-          #identity-box.notSecure #identity-icon {
-            color: var(--era-alert) !important;
-          }
-
-          /* The sidebar box behind Sidebery, which paints the same
-             `panel` itself (see the stylesheet below); this box only
-             shows in the instant before the extension has loaded.
-             Its header is Firefox's own "Sidebery v" strip, which the
-             extension's tab tree already says. */
-          #sidebar-box {
-            background: var(--era-panel) !important;
-            border-right: 1px solid var(--era-border) !important;
-          }
-          #sidebar-header { display: none !important; }
-          #sidebar-splitter {
-            width: 1px !important;
-            border: none !important;
-            background: var(--era-border) !important;
-          }
-        '';
+        userChrome = firefoxChrome;
 
         # Sidebery keeps its custom styles in storage.local under the
         # top-level sidebarCSS key (src/types/storage.ts upstream), so the
@@ -1049,49 +1103,7 @@ lib.mkMerge [
         # the weight.
         extensions.settings.${sideberyId} = {
           force = true;
-          settings.sidebarCSS = ''
-            /* ${header} */
-            #root.root {
-              --tabs-font: ${toString weight} 0.85rem "${font.name}", sans-serif;
-              --frame-bg: ${c.panel} !important;
-              --frame-fg: ${c.fg};
-
-              --tabs-normal-bg: transparent;
-              --tabs-normal-fg: ${c.dim};
-              --tabs-activated-bg: ${if k.invertActive then c.fg else c.border};
-              --tabs-activated-fg: ${if k.invertActive then c.bg else c.fg};
-              --active-el-bg: ${c.border};
-              --tabs-border-radius: ${toString k.radius}px;
-              --tabs-margin: 1px;
-              --tabs-height: 26px;
-              --tabs-inner-gap: 5px;
-
-              --ctx-menu-bg: ${c.panel};
-              --ctx-menu-fg: ${c.fg};
-              --ctx-menu-border: ${c.border};
-              --ctx-menu-separator: ${c.border};
-            }
-
-            :root {
-              background-color: ${c.panel} !important;
-              --tabs-padding: 4px;
-            }
-
-            .Tab {
-              background-color: transparent !important;
-              color: ${c.dim} !important;
-            }
-            .Tab:hover {
-              background-color: ${c.border} !important;
-              color: ${c.fg} !important;
-            }
-            /* The active row keeps its treatment under the pointer;
-               cybr's sheet lost its label to the hover colour here. */
-            .Tab[data-active="true"], .Tab[data-active="true"]:hover {
-              background-color: ${if k.invertActive then c.fg else c.border} !important;
-              color: ${if k.invertActive then c.bg else c.fg} !important;
-            }
-          '';
+          settings.sidebarCSS = sideberyCSS;
         };
       };
     };
