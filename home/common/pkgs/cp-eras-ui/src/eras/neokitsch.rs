@@ -1886,6 +1886,10 @@ const GROWN_BODY: &[Prim] = &[
     txt(5.9, 539.0, 19.0, Ink::OnSelect, "Bonus"),
     txt(5.9, 560.0, 19.0, Ink::OnSelect, "+9 Reflexes"),
     txt(5.9, 580.0, 19.0, Ink::OnSelect, "+2 Modules Slots"),
+    // the socket rows: two rules the width of the card, three dividers
+    // between them (store-trace :662-663, 1.1 wide, centred on the line)
+    fill_rect(0.0, 603.25, 262.1, 1.1, Ink::OnSelect),
+    fill_rect(0.0, 651.15, 262.1, 1.1, Ink::OnSelect),
     fill_rect(50.75, 603.8, 1.1, 47.9, Ink::OnSelect),
     fill_rect(118.25, 603.8, 1.1, 47.9, Ink::OnSelect),
     fill_rect(189.85, 603.8, 1.1, 47.9, Ink::OnSelect),
