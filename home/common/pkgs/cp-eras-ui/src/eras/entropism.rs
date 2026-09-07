@@ -1089,12 +1089,18 @@ const fn label(x: f32, y: f32, ink: Ink, content: &'static str) -> Prim {
     Prim::Text { x, y, size: 22.0, ink, face: Face::SemiBold, anchor: Anchor::Middle, content }
 }
 
-/// A stretched glyph run, trace `transform="translate(..) scale(sx,1)"`.
-/// The trace centres these (`text-anchor="middle"`) and `Prim::Wide` is
-/// start-anchored, so `x` here is the trace's centre less half the run
-/// the header measured for it; the caller says which.
+/// A stretched glyph run, trace `transform="translate(x,y) scale(sx,1)"`,
+/// start-anchored: the caption cells and the panel's body copy.
 const fn wide(x: f32, y: f32, size: f32, stretch: f32, ink: Ink, face: Face, content: &'static str) -> Prim {
-    Prim::Wide { x, y, size, stretch, ink, face, content }
+    Prim::Wide { x, y, size, stretch, ink, face, anchor: Anchor::Start, content }
+}
+
+/// [`wide`] with `text-anchor="middle"`: `x` is the trace's
+/// `translate()` x, the centre of the stretched run. The section
+/// letters and the T1-T4 badges, which until 2026-09-07 were `wide` at
+/// the centre less half a run measured by hand.
+const fn wide_mid(x: f32, y: f32, size: f32, stretch: f32, ink: Ink, face: Face, content: &'static str) -> Prim {
+    Prim::Wide { x, y, size, stretch, ink, face, anchor: Anchor::Middle, content }
 }
 
 // One caption box, trace `<g id="caption">` (defs): drawn at the tile's
@@ -1215,14 +1221,14 @@ pub const DASHBOARD: &[Prim] = &[
     medium(518.0, 60.0, 17.0, Ink::Fixed(HUB_STRIP), "STORE ACCESS SCREEN"),
     medium(1382.0, 60.0, 17.0, Ink::Fixed(HUB_STRIP), "FLAIR TRS 5MMP"),
     // section headings: 26x26 boxes holding a bold letter stretched
-    // 1.5-1.6, centred at the trace's translate() x and placed here by
-    // its measured run (A 18 wide at x 137..154, B and C 15 wide)
+    // 1.5-1.6, centred at the trace's translate() x (:154-158; a run
+    // measured by hand placed them until 2026-09-07)
     line_rect(133.0, 145.0, 26.0, 26.0, Ink::Fixed(HUB_LETTER_BOX), 1.5),
-    wide(137.0, 165.0, 22.0, 1.6, Ink::Fixed(HUB_SECTION), Face::Bold, "A"),
+    wide_mid(146.0, 165.0, 22.0, 1.6, Ink::Fixed(HUB_SECTION), Face::Bold, "A"),
     line_rect(1014.0, 145.0, 26.0, 26.0, Ink::Fixed(HUB_LETTER_BOX), 1.5),
-    wide(1019.5, 165.0, 22.0, 1.5, Ink::Fixed(HUB_SECTION), Face::Bold, "B"),
+    wide_mid(1027.0, 165.0, 22.0, 1.5, Ink::Fixed(HUB_SECTION), Face::Bold, "B"),
     line_rect(1329.0, 142.0, 26.0, 26.0, Ink::Fixed(HUB_LETTER_BOX), 1.5),
-    wide(1334.5, 162.0, 22.0, 1.5, Ink::Fixed(HUB_SECTION), Face::Bold, "C"),
+    wide_mid(1342.0, 162.0, 22.0, 1.5, Ink::Fixed(HUB_SECTION), Face::Bold, "C"),
     semibold(169.0, 164.0, 23.0, Ink::Fixed(HUB_SECTION), "MAIL BOX"),
     semibold(1047.0, 164.0, 23.0, Ink::Fixed(HUB_SECTION), "MESSAGE"),
     semibold(1380.0, 162.0, 23.0, Ink::Fixed(HUB_SECTION), "SECURITY"),
@@ -1254,16 +1260,16 @@ pub const DASHBOARD: &[Prim] = &[
     wide(1033.0, 510.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "ecenas accumsan lacus vel"),
     wide(1033.0, 531.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "facilisis."),
     // SECURITY LEVEL badges: four 68x68 at x 1380, T2 filled. Glyphs
-    // bold 27 stretched to the measured runs, centred at x 1414 (T1 26
-    // wide, T2 34, T3 36, T4 36), hence the start x here
+    // bold 27 stretched to the measured runs, centred at x 1414
+    // (:227-233)
     line_rect(1380.0, 214.0, 68.0, 68.0, Ink::Border, 1.25),
-    wide(1401.0, 257.0, 27.0, 1.37, Ink::Fixed(HUB_LABEL), Face::Bold, "T1"),
+    wide_mid(1414.0, 257.0, 27.0, 1.37, Ink::Fixed(HUB_LABEL), Face::Bold, "T1"),
     fill_rect(1380.0, 304.0, 68.0, 68.0, Ink::Select),
-    wide(1397.0, 346.0, 27.0, 1.42, Ink::Fixed(HUB_ON_SOLID), Face::Bold, "T2"),
+    wide_mid(1414.0, 346.0, 27.0, 1.42, Ink::Fixed(HUB_ON_SOLID), Face::Bold, "T2"),
     line_rect(1380.0, 393.0, 68.0, 68.0, Ink::Border, 1.25),
-    wide(1396.0, 435.0, 27.0, 1.5, Ink::Fixed(HUB_LABEL), Face::Bold, "T3"),
+    wide_mid(1414.0, 435.0, 27.0, 1.5, Ink::Fixed(HUB_LABEL), Face::Bold, "T3"),
     line_rect(1380.0, 482.0, 68.0, 68.0, Ink::Border, 1.25),
-    wide(1396.0, 524.0, 27.0, 1.38, Ink::Fixed(HUB_LABEL), Face::Bold, "T4"),
+    wide_mid(1414.0, 524.0, 27.0, 1.38, Ink::Fixed(HUB_LABEL), Face::Bold, "T4"),
     // footer strip, y 847..872, no dividers; only BUILD is end-anchored
     line_rect(49.0, 847.0, 1498.0, 25.0, Ink::Border, 1.25),
     medium(61.0, 865.0, 17.0, Ink::Fixed(HUB_STRIP), "INTERFACE LOADED"),

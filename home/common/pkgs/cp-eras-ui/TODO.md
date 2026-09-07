@@ -628,9 +628,52 @@ from there into `src/style.rs`, `src/screens/dashboard.rs` and the
     G2i is blind to weight and tracking — entropism 98, kitsch 69 (was
     68), neomil 96, neokitsch 94, neokitsch mailbox 84, all unchanged —
     so these are by-eye verifications only.
-  - Still open, small: no stroked text (neomil's outlined `next`
-    logotype is drawn filled); `Wide` is start-anchored only (centred
-    stretched glyphs are placed by hand at `cx - run/2`). Gradient
+  - The two small leftovers — no stroked text (neomil's outlined
+    `next` logotype drawn filled) and `Wide` start-anchored only
+    (centred stretched glyphs placed by hand at `cx - run/2`) — landed
+    2026-09-07.
+    **Stroked text** is `Prim::Outlined`: `Text`'s fields with the ink
+    as the stroke and a `width`, SVG's `fill="none" stroke=".."
+    stroke-width=".."` on a `<text>`. No new machinery: iced's canvas
+    fills text only, but the glyph outlines it falls back to under a
+    stretch or a turn are public (`canvas::Text::draw_with`), so the
+    scene lays the run out exactly as `fill_text` would and strokes
+    each glyph path. `next` (`dashboard-trace.svg:165-166`) is set
+    that way, and in `Face::OrbitronBold` — the trace's Orbitron 700,
+    the one non-Rajdhani face in any trace, in every binary already
+    via `shell::faces` — with its own baseline fraction
+    (`scene::ORBITRON_BASELINE` 0.984, the glyph box centred in the
+    canvas's 1.2 line, `0.6 + (asc - desc)/2` from Orbitron's hhea
+    1011/-243; at Rajdhani's 0.84 the logotype sat 6px under the
+    trace's). The logotype's ink box is 105x34 at (243,99) against the
+    trace render's 103x34 at (243,99), and the pixels off by more than
+    8 levels in that crop fell from 4.3% to 2.2%, the rest being the
+    heavier stroke coverage `docs/PIPELINE.md` notes. G2i neomil
+    dashboard 44/53 -> 46/53 matched (the `x` of `next` pairs now),
+    98% area and PASS both sides. dashboard-neomil and
+    dashboard-fallback re-taken from the harness (0.028% of pixels;
+    the two are still byte-identical to each other).
+    **`Wide` anchoring**: `Prim::Wide` carries `anchor: Anchor`
+    (`text-anchor`, taken on the *stretched* run, as SVG applies it
+    inside the `scale(sx,1)`), and `scene::anchored` is the one
+    start-of-run arithmetic for `Wide` and `Tracked`, unit-tested.
+    Entropism's A/B/C and T1-T4 (`wide_mid`) and kitsch's boxed
+    A/C/D/B are `Anchor::Middle` at the trace's `translate()` x. Meant
+    as a pure refactor, it was not one: the hand values were the
+    centre less half a *rounded* run (entropism: "A 18 wide, B and C
+    15") or half the trace's cap *ink* width (kitsch's 15.8, narrower
+    than the shaped advance), so those letters sat 1-2px right of
+    where rsvg draws the trace's. Anchored, their ink boxes measure
+    identical to the trace render's (entropism A 18x14 at +3, B at +5,
+    T1 26x17 at +16; before +4 / +7 / +18). dashboard-entropism (305
+    px, 0.021%) and dashboard-kitsch (35 px, 0.002%) re-taken; both
+    had passed the 99.9 gate against the old goldens at 99.979 /
+    99.998, which is the drift the maker's-mark item below warns of.
+    Of the other 21 cases, twenty render byte-identical to their goldens;
+    login-kitsch does not: 8 pixels off by one level (bbox 203x305 at
+    (34,63)), 100.000% at the gate, and a HEAD binary built in a clean
+    worktree draws the same 8, so that golden (2026-09-03) went stale
+    under a later commit and is not re-taken here. Gradient
     masks are `Prim::Masked` since later the same day (the "four
     grounds" item above); neokitsch's `#bluemask` landed as `BLUE_MASK`
     under the neokitsch backdrops item, done the same day.

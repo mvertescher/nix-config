@@ -1898,7 +1898,7 @@ pub const STORE: &[Prim] = &[
 
 const CONTENT: &[Prim] = &[
     // logotype: a very heavy face, "4S" solid and the "T" outline only
-    Prim::Wide { x: 109.0, y: 117.0, size: 70.0, stretch: 1.73, ink: Ink::Fixed(BRIGHT), face: Face::Bold, content: "4S" },
+    Prim::Wide { x: 109.0, y: 117.0, size: 70.0, stretch: 1.73, ink: Ink::Fixed(BRIGHT), face: Face::Bold, anchor: Anchor::Start, content: "4S" },
     shut_path(237.0, 66.0, TEE, Ink::Fixed(BRIGHT), 1.4),
     Prim::Spaced { x: 113.0, y: 138.0, size: 16.5, ink: Ink::Fixed(LABEL), face: Face::Bold, pitch: 39.0, content: "STORE" },
     // BASKET plate

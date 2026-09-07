@@ -39,6 +39,22 @@ pub const FRAME: (f32, f32) = (1600.0, 900.0);
 /// every text run its SVG baseline, so the scene has to convert.
 const BASELINE: f32 = 0.84;
 
+/// [`BASELINE`] for Orbitron, whose ascender stands taller (hhea
+/// 1011 / -243 against Rajdhani's 930 / -346): the canvas centres
+/// the glyph box in its 1.2 line, so the baseline sits at
+/// `0.6 + (ascent - descent) / 2`. Measured as well as computed: at
+/// `BASELINE` the neomil `next` sat 6px under the trace's, at this it
+/// lands on it.
+const ORBITRON_BASELINE: f32 = 0.984;
+
+/// The baseline fraction of a face.
+fn baseline(face: Face) -> f32 {
+    match face {
+        Face::OrbitronBold => ORBITRON_BASELINE,
+        _ => BASELINE,
+    }
+}
+
 /// The current selection, one index per [`Group`]. A screen fills in
 /// the groups its scene uses and leaves the rest at zero.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -343,6 +359,7 @@ impl<M> Scene<M> {
             Face::Medium => crate::fonts::FONT_RAJDHANI_MEDIUM,
             Face::SemiBold => crate::fonts::FONT_RAJDHANI_SEMIBOLD,
             Face::Bold => crate::fonts::FONT_RAJDHANI_BOLD,
+            Face::OrbitronBold => crate::fonts::FONT_ORBITRON_BOLD,
         }
     }
 
@@ -411,14 +428,31 @@ impl<M> Scene<M> {
                 Prim::Text { x, y, size, ink, face, anchor, content } => {
                     self.paint_text(frame, content, (ox + x) * k, (oy + y) * k, size * k, ink, face, anchor, alpha);
                 }
-                Prim::Wide { x, y, size, stretch, ink, face, content } => {
+                Prim::Outlined { x, y, size, ink, face, anchor, width, content } => {
+                    // The canvas fills text and cannot stroke it, but
+                    // the outlines it falls back to under a stretch or
+                    // a turn are reachable directly: `draw_with` lays
+                    // the run out exactly as `fill_text` would and
+                    // hands over one path per glyph.
+                    let text =
+                        Self::text(content, (ox + x) * k, (oy + y) * k, size * k, Color::TRANSPARENT, face, anchor);
+                    let stroke = canvas::Stroke::default()
+                        .with_color(self.ink(ink, alpha))
+                        .with_width(width * k);
+                    text.draw_with(|path, _| frame.stroke(&path, stroke));
+                }
+                Prim::Wide { x, y, size, stretch, ink, face, anchor, content } => {
                     // A non-uniform transform makes iced convert the run
                     // to filled glyph outlines, which is exactly what
-                    // `lengthAdjust="spacingAndGlyphs"` asks for.
+                    // `lengthAdjust="spacingAndGlyphs"` asks for. The
+                    // anchor is taken on the stretched run, as SVG
+                    // applies `text-anchor` inside the `scale(sx,1)`.
                     let color = self.ink(ink, alpha);
-                    let (px, py) = ((ox + x) * k, (oy + y) * k - size * k * BASELINE);
                     let font = Self::font(face);
                     let size = size * k;
+                    let run = run_width(content, size, font) * stretch;
+                    let px = anchored((ox + x) * k, anchor, run);
+                    let py = (oy + y) * k - size * baseline(face);
                     frame.with_save(|f| {
                         f.translate(iced::Vector::new(px, py));
                         f.scale_nonuniform(iced::Vector::new(stretch, 1.0));
@@ -439,12 +473,7 @@ impl<M> Scene<M> {
                     let advances = advances(content, size, Self::font(face));
                     let total: f32 = advances.iter().sum::<f32>()
                         + tracking * advances.len().saturating_sub(1) as f32;
-                    let mut gx = (ox + x) * k
-                        - match anchor {
-                            Anchor::Start => 0.0,
-                            Anchor::Middle => total / 2.0,
-                            Anchor::End => total,
-                        };
+                    let mut gx = anchored((ox + x) * k, anchor, total);
                     for (glyph, advance) in content.chars().zip(advances) {
                         let mut buf = [0u8; 4];
                         self.paint_text(
@@ -677,16 +706,43 @@ impl<M> Scene<M> {
         anchor: Anchor,
         alpha: f32,
     ) {
-        frame.fill_text(canvas::Text {
+        frame.fill_text(Self::text(content, x, baseline, size, self.ink(ink, alpha), face, anchor));
+    }
+
+    /// A run on its SVG baseline, as the canvas lays it out: what
+    /// `paint_text` fills and what `Prim::Outlined` strokes, built in
+    /// one place so the two land on the same pixels.
+    fn text(
+        content: &str,
+        x: f32,
+        baseline: f32,
+        size: f32,
+        color: Color,
+        face: Face,
+        anchor: Anchor,
+    ) -> canvas::Text {
+        canvas::Text {
             content: content.to_string(),
-            position: Point::new(x, baseline - size * BASELINE),
-            color: self.ink(ink, alpha),
+            position: Point::new(x, baseline - size * self::baseline(face)),
+            color,
             size: size.into(),
             font: Self::font(face),
             align_x: Self::align(anchor),
             align_y: iced::alignment::Vertical::Top,
             ..Default::default()
-        });
+        }
+    }
+}
+
+/// Where a run of width `run` starts when it is anchored at `x`: SVG's
+/// `text-anchor`, for the runs the scene lays out itself
+/// ([`Prim::Tracked`], whose glyphs it places one by one, and
+/// [`Prim::Wide`], whose `run` is the stretched width).
+pub(crate) fn anchored(x: f32, anchor: Anchor, run: f32) -> f32 {
+    x - match anchor {
+        Anchor::Start => 0.0,
+        Anchor::Middle => run / 2.0,
+        Anchor::End => run,
     }
 }
 
@@ -1113,6 +1169,32 @@ mod tests {
         // An ink equal to its ground has no alpha to solve for.
         let same = Color { a: 0.3, ..ground };
         assert_eq!(blend_over(same, ground), same);
+    }
+
+    /// SVG's `text-anchor` on a run the scene lays out itself: a start
+    /// anchor is the pen position, a middle anchor halves the run
+    /// about it, an end anchor ends there. For a stretched run the
+    /// anchor is taken on the stretched width -- kitsch's boxed `A`,
+    /// a 9.3 advance under `scale(1.7 1)` centred at 176.7, starts at
+    /// 176.7 - 15.8 / 2 and its far end mirrors that about the centre.
+    #[test]
+    fn anchors_place_a_run_as_text_anchor_does() {
+        assert_eq!(anchored(100.0, Anchor::Start, 40.0), 100.0);
+        assert_eq!(anchored(100.0, Anchor::Middle, 40.0), 80.0);
+        assert_eq!(anchored(100.0, Anchor::End, 40.0), 60.0);
+        // An empty run anchors at its position whatever the anchor.
+        for anchor in [Anchor::Start, Anchor::Middle, Anchor::End] {
+            assert_eq!(anchored(12.5, anchor, 0.0), 12.5);
+        }
+        let (cx, advance, stretch) = (176.7, 9.3, 1.7);
+        let run = advance * stretch;
+        let start = anchored(cx, Anchor::Middle, run);
+        assert!((start - (176.7 - 15.81 / 2.0)).abs() < 1e-3, "start {start}");
+        assert!(((start + run) - cx - (cx - start)).abs() < 1e-4, "not symmetric about cx");
+        // The stretch is in the run, not the anchor: at 1.0 the same
+        // advance centres a narrower run about the same point.
+        let plain = anchored(cx, Anchor::Middle, advance);
+        assert!(plain > start && (plain + advance) < start + run);
     }
 
     /// A tall plate standing 60 right of a `Turn` pivot, turned +30: its

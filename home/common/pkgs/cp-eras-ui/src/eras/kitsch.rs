@@ -1564,7 +1564,7 @@ const SHELF_3: &[Prim] = shelf!(3);
 pub const STORE: &[Prim] = &[
     Prim::Soft { prims: BACKDROP },
     // logotype: a heavy extended face, the T outline-only
-    Prim::Wide { x: 155.0, y: 132.0, size: 60.0, stretch: 1.7, ink: Ink::Fixed(LOGO), face: Face::Bold, content: "4S" },
+    Prim::Wide { x: 155.0, y: 132.0, size: 60.0, stretch: 1.7, ink: Ink::Fixed(LOGO), face: Face::Bold, anchor: Anchor::Start, content: "4S" },
     shut_path(280.0, 88.0, TEE, Ink::Fixed(LOGO), 1.3),
     Prim::Spaced { x: 154.0, y: 155.0, size: 15.0, ink: Ink::Fg, face: Face::Medium, pitch: 32.0, content: "STORE" },
     // customer chip and account lines
@@ -1641,10 +1641,15 @@ pub const STORE: &[Prim] = &[
 //   rasterised in sRGB by `screens/soft.rs` rather than blended in
 //   linear light by wgpu -- the difference is 4-10 levels per channel
 //   on the faint tails, and it is what G2i failed this screen on.
-// - the two `text-anchor="middle"` letters under a `scale(1.7 1)` --
-//   `Prim::Wide` is start-anchored, so A / C / D / B are placed at the
-//   box centreline minus half the trace's stated cap width (15.8, line
-//   124): 176.7 - 7.9 and so on.
+// - the `text-anchor="middle"` letters under a `scale(1.7 1)` (lines
+//   130-134, 308) are `Prim::Wide` at `Anchor::Middle` on the trace's
+//   `translate()` x, 176.7 and so on. Until 2026-09-07 `Wide` was
+//   start-anchored and A / C / D / B sat at the box centreline minus
+//   half the trace's stated cap *ink* width (15.8, line 124); the
+//   shaped advance is about a pixel wider than the ink, so the anchor
+//   moved each letter under a pixel left -- onto the columns rsvg
+//   draws the trace's on (A / B ink boxes measured identical to the
+//   trace render after, a pixel right before).
 // - the bloom: `radialGradient cx=0.52 cy=-0.05 r=0.85` over the
 //   1600x620 rect is an ellipse centred (832, -31) with radii 1360 x
 //   527, composited by `soft.rs`; its foot stop is the page
@@ -1921,26 +1926,26 @@ const HUB_BACK: &[Prim] = &[
 pub const DASHBOARD: &[Prim] = &[
     Prim::Soft { prims: HUB_BACK },
     // header notes: Rajdhani 600 8 stretched 1.3 (lines 107-122)
-    Prim::Wide { x: 205.0, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "SPARE TIME MANAGER WAS DEVELO-" },
-    Prim::Wide { x: 205.0, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "PED BY SEOCHO. SERVING CUSTO-" },
-    Prim::Wide { x: 205.0, y: 131.9, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "MERS SINCE 2006." },
-    Prim::Wide { x: 715.3, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "SPARE TIME MANAGER WAS DEVELO-" },
-    Prim::Wide { x: 715.3, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "PED BY SEOCHO. SERVING CUSTO-" },
-    Prim::Wide { x: 715.3, y: 131.9, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "MERS SINCE 2006." },
-    Prim::Wide { x: 1253.8, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "MAPS ARE PROVIDED BY SEOCHO." },
-    Prim::Wide { x: 1253.8, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "SATELITE SERVICES SINCE 2006." },
+    Prim::Wide { x: 205.0, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "SPARE TIME MANAGER WAS DEVELO-" },
+    Prim::Wide { x: 205.0, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "PED BY SEOCHO. SERVING CUSTO-" },
+    Prim::Wide { x: 205.0, y: 131.9, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "MERS SINCE 2006." },
+    Prim::Wide { x: 715.3, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "SPARE TIME MANAGER WAS DEVELO-" },
+    Prim::Wide { x: 715.3, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "PED BY SEOCHO. SERVING CUSTO-" },
+    Prim::Wide { x: 715.3, y: 131.9, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "MERS SINCE 2006." },
+    Prim::Wide { x: 1253.8, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "MAPS ARE PROVIDED BY SEOCHO." },
+    Prim::Wide { x: 1253.8, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "SATELITE SERVICES SINCE 2006." },
     // boxed A / C / D: 24x24 2px squares (lines 125-129) holding a
     // size-18 cap stretched 1.7, centred on the box (lines 130-134)
     line_rect(164.6, 109.8, 24.2, 24.2, Ink::Fixed(BRIGHT), 2.0),
     line_rect(673.3, 109.8, 24.2, 24.2, Ink::Fixed(BRIGHT), 2.0),
     line_rect(1215.2, 109.8, 24.0, 24.2, Ink::Fixed(BRIGHT), 2.0),
-    Prim::Wide { x: 168.8, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "A" },
-    Prim::Wide { x: 677.5, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "C" },
-    Prim::Wide { x: 1219.3, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "D" },
+    Prim::Wide { x: 176.7, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Middle, content: "A" },
+    Prim::Wide { x: 685.4, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Middle, content: "C" },
+    Prim::Wide { x: 1227.2, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Middle, content: "D" },
     // section labels: Rajdhani 600 12.3 stretched 1.37 (lines 137-141)
-    Prim::Wide { x: 165.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "USER" },
-    Prim::Wide { x: 674.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "SECURITY LEVEL" },
-    Prim::Wide { x: 1216.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "DESCRIPTION" },
+    Prim::Wide { x: 165.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "USER" },
+    Prim::Wide { x: 674.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "SECURITY LEVEL" },
+    Prim::Wide { x: 1216.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "DESCRIPTION" },
     // USER box and GUES 7702 (lines 148-151)
     shut_path(155.5, 189.5, USER_STEP, Ink::Fixed(MARK), 1.25),
     Prim::Text { x: 164.0, y: 218.0, size: 21.5, ink: Ink::Fixed(NAME_INK), face: Face::SemiBold, anchor: Anchor::Start, content: "GUES 7702" },
@@ -1980,11 +1985,11 @@ pub const DASHBOARD: &[Prim] = &[
     fill_rect(1224.0, 508.0, 98.0, 11.0, Ink::Fixed(GROWN_MICRO)),
     // B DEVICE SOFTWARE mark: notes Rajdhani 700 8 stretched 1.3, the
     // boxed B, the label (lines 302-308)
-    Prim::Wide { x: 609.9, y: 746.0, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::Bold, content: "MAPS ARE PROVIDED BY SEOCHO." },
-    Prim::Wide { x: 609.9, y: 755.0, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::Bold, content: "SATELITE SERVICES SINCE 2006." },
+    Prim::Wide { x: 609.9, y: 746.0, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::Bold, anchor: Anchor::Start, content: "MAPS ARE PROVIDED BY SEOCHO." },
+    Prim::Wide { x: 609.9, y: 755.0, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::Bold, anchor: Anchor::Start, content: "SATELITE SERVICES SINCE 2006." },
     line_rect(574.3, 741.0, 24.0, 24.2, Ink::Fixed(BRIGHT), 2.0),
-    Prim::Wide { x: 578.4, y: 761.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "B" },
-    Prim::Wide { x: 575.0, y: 794.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, content: "DEVICE SOFTWARE" },
+    Prim::Wide { x: 586.3, y: 761.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Middle, content: "B" },
+    Prim::Wide { x: 575.0, y: 794.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "DEVICE SOFTWARE" },
     // the foot line, one bold weight, two runs (lines 318-321)
     txt_bold(503.0, 870.0, 9.0, Ink::Fixed(BRIGHT), "ARASAKA CONSUMER TECHNOLOGY"),
     txt_bold(641.0, 870.0, 9.0, Ink::Fixed(BRIGHT), "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),

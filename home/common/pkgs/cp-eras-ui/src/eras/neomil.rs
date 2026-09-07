@@ -1708,9 +1708,10 @@ pub const STORE: &[Prim] = &[
 // compile time into 640 strips, three linear pieces standing in for
 // the mask's nine stops. It is now `HUB_GLOW`, the construct itself.)
 // The `next` logotype (:165-166) is
-// *outlined* Orbitron, and the
-// scene has neither a stroked text nor an Orbitron face, so it is set
-// filled in the bold Rajdhani face. Letter-spacing on the header and
+// *outlined* Orbitron; until 2026-09-07 the scene had neither a
+// stroked text nor an Orbitron face and it was set filled in bold
+// Rajdhani. It is `Prim::Outlined` in `Face::OrbitronBold` now, the
+// trace's `stroke-width="2"` as drawn. Letter-spacing on the header and
 // tab labels is dropped, as the store block drops it (`Prim::Tracked`
 // carries it since 2026-09-04; only the module labels below use it
 // so far). The body copy of
@@ -1920,7 +1921,9 @@ pub const DASHBOARD: &[Prim] = &[
     txt(125.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
     txt_bold(132.0, 140.0, 20.0, Ink::Fg, "T1"),
     txt(240.0, 90.0, 14.0, Ink::Fg, "#NC488402"),
-    txt_bold(242.0, 132.0, 42.0, Ink::Fg, "next"),
+    // the `next` logotype (:165-166): Orbitron 700/42, `fill="none"`,
+    // stroked 2 in the header red
+    Prim::Outlined { x: 242.0, y: 132.0, size: 42.0, ink: Ink::Fg, face: Face::OrbitronBold, anchor: Anchor::Start, width: 2.0, content: "next" },
     fill_path(257.0, 151.0, CODE_TAPE, Ink::Fg),
     // header, right (:170-183): four badges, T2 filled
     txt(1125.0, 90.0, 14.0, Ink::Fg, "SECURITY LEVEL"),

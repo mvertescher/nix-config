@@ -432,6 +432,7 @@ pub fn supported(prim: &Prim) -> bool {
         Prim::Motion { .. } => false,
         Prim::Text { .. }
         | Prim::Wide { .. }
+        | Prim::Outlined { .. }
         | Prim::Spaced { .. }
         | Prim::Tracked { .. }
         | Prim::Grain { .. }
@@ -549,6 +550,7 @@ fn walk(buf: &mut Buf, prims: &[Prim], palette: &Palette, xf: Xf) {
             Prim::Soft { prims } => walk(buf, prims, palette, xf),
             Prim::Text { .. }
             | Prim::Wide { .. }
+            | Prim::Outlined { .. }
             | Prim::Spaced { .. }
             | Prim::Tracked { .. }
             | Prim::Grain { .. }

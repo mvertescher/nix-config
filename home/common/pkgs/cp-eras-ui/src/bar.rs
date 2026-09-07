@@ -249,10 +249,11 @@ fn era_face(style: &Style, bold: bool) -> iced::Font {
     font_of(style.bar.face)
 }
 
-/// The loaded Rajdhani file a [`Face`] names.
+/// The loaded font file a [`Face`] names.
 fn font_of(face: Face) -> iced::Font {
     use crate::fonts::{
-        FONT_RAJDHANI_BOLD, FONT_RAJDHANI_MEDIUM, FONT_RAJDHANI_REGULAR, FONT_RAJDHANI_SEMIBOLD,
+        FONT_ORBITRON_BOLD, FONT_RAJDHANI_BOLD, FONT_RAJDHANI_MEDIUM, FONT_RAJDHANI_REGULAR,
+        FONT_RAJDHANI_SEMIBOLD,
     };
     match face {
         Face::Regular => FONT_RAJDHANI_REGULAR,
@@ -261,6 +262,7 @@ fn font_of(face: Face) -> iced::Font {
         // otherwise the shaper hands back Bold (see `fonts.rs`).
         Face::SemiBold => FONT_RAJDHANI_SEMIBOLD,
         Face::Bold => FONT_RAJDHANI_BOLD,
+        Face::OrbitronBold => FONT_ORBITRON_BOLD,
     }
 }
 

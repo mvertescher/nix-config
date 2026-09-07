@@ -122,12 +122,18 @@ impl Ink {
 /// disagree only about how heavy. Kitsch's note is the reason it is a
 /// table entry and not a constant -- "a 1.25px line next to 400-weight
 /// Rajdhani reads heavier than the text", so the era compensates.
+///
+/// One exception, and it is a logotype rather than chrome: neomil's
+/// `next` (`dashboard-trace.svg:165`) is Orbitron 700, the only
+/// Orbitron in any trace, and `OrbitronBold` names it. The bytes are
+/// in every era binary already (`shell::faces`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Face {
     Regular,
     Medium,
     SemiBold,
     Bold,
+    OrbitronBold,
 }
 
 /// How one class of bar module is dressed: its silhouette and its inks.
@@ -2266,6 +2272,30 @@ pub enum Prim {
         stretch: f32,
         ink: Ink,
         face: Face,
+        /// `text-anchor` of the run, applied to the *stretched* width:
+        /// the traces centre their boxed section letters as
+        /// `<text text-anchor="middle" transform="translate(cx,y)
+        /// scale(sx,1)">`, and `Middle` at `cx` is that. Until
+        /// 2026-09-07 the run was start-anchored only and those sites
+        /// were placed by hand at `cx - run/2`.
+        anchor: Anchor,
+        content: &'static str,
+    },
+    /// A run of text painted as an outline -- SVG's `fill="none"
+    /// stroke=".." stroke-width=".."` on a `<text>` -- with `ink` the
+    /// stroke and `width` its width in design units. iced's canvas
+    /// text is fill-only, so the scene takes the glyph outlines the
+    /// same way it already does for a stretched or turned run
+    /// (`canvas::Text::draw_with`) and strokes them instead of filling.
+    /// Neomil's `next` logotype is the one reader.
+    Outlined {
+        x: f32,
+        y: f32,
+        size: f32,
+        ink: Ink,
+        face: Face,
+        anchor: Anchor,
+        width: f32,
         content: &'static str,
     },
     /// Letter-spaced text: glyph `i` sits at `x + i * pitch`. The
