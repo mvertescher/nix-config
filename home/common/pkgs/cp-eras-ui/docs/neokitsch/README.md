@@ -109,7 +109,7 @@ EaseOut, with a `<set>` hold before it begins). Everything is frozen by
 | screen | id | what | trace element(s) | timing |
 |---|---|---|---|---|
 | dashboard | `#cards-open` | wipe | the six cascade cards, labels, captions; clip rect (180,160) 760x630 | 0 s, 0.5 s |
-| dashboard | `#panel-fade` | fade | the detail panel group (rings, outline, body, paragraphs, tape, label) | 0.4 s, 0.3 s |
+| dashboard | `#panel-fade` | fade | the detail panel group (rings, outline, body and its grain, paragraph text, tape, label) | 0.4 s, 0.3 s |
 | store | `#shelf-open` | wipe | the four weapon cards in `#lines` and their labels in `#text` (one clipPath, two groups); clip rect (340,205) 1240x530 | 0 s, 0.5 s |
 | store | `#body-fade` + `#body-fade-text` | fade | card 2's gold body: fill, grain, socket rules, QR (`#lines`) and its dark printing (`#text`) — one fade, two `<animate>`s because glyphs are haloed separately | 0.4 s, 0.3 s |
 | mailbox | `#list-open` | wipe | the seven rows: rules and tabs, envelopes (`#lines`), titles and FROM: lines (`#text`); clip rect (15,240) 520x460 | 0 s, 0.5 s |
@@ -144,9 +144,23 @@ are inside every clip).
   DEVICES) each carrying nested onion outlines, a detail panel with a
   **stepped top edge** (a shoulder at the left climbing through an
   S-curve to the top line — not the cascade card mirrored, which the
-  first pass drew), four onion outlines nested *inside* it, a solid
-  gold body and the EMAIL label, and boxed C and D in the foot.
-  Gate: PASS, inks 0.68 (panel re-measured 2026-09-03; was 0.67).
+  first pass drew), four onion outlines nested *inside* it, a veneer
+  body carrying two paragraphs of text (the inbox's selected message,
+  re-wrapped to the panel's measured line ends), a two-line micro-text
+  tape and the EMAIL label, and boxed C and D in the foot. Both solid
+  fills, EMAIL's card and the panel body, carry wood-veneer grain since
+  2026-09-07 (vertical strands at the photo's 2.1 / 2.7 pitches, EMAIL's
+  swinging into its two book-match seams), drawn as the store's and
+  mailbox's grain is; until then they were flat and the paragraphs,
+  captions and tape were bars. Gate: PASS, inks 0.64 (0.68 with the
+  bars: k-means bins the dark family by glyph area now, and the
+  photo-vs-trace layout / edge correlations went 0.958 / 0.809 to
+  0.980 / 0.942). G2i against the crate reads 34% by shape inventory
+  since the grain (94% before, 89% with the panel grain hidden): the
+  extractor segments a 2.7-pitch striped body one way from rsvg and
+  another from iced although the two renders agree in mean and spread
+  to half a level, so the number is the extractor's, not the screen's;
+  the same pair by compare_ref is 0.999 / 0.989 / 0.869.
 - `mailbox-trace.svg` — `images/neokitsch-mail.png` (#71): the hub's
   header block verbatim; a seven-row message list with a rule and small
   tab under each row and row 2 the selection as a wood-veneer bar with

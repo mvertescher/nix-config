@@ -1444,20 +1444,22 @@ pub const MAILBOX_MOTIONS: &[MailMotion] = &[
 // anyway it does real damage -- widened strokes turn every card frame
 // into a thick dark slab.
 //
-// What else is not transcribed, and why. The trace spends about four fifths
-// of its bytes on **wood-veneer grain** -- hundreds of 0.7px polylines
-// clipped to the three gold fills -- and its own comment says why they
-// are there: "drawn here as clipped 0.7 strokes in a mid gold over the
-// fill *so the average stays at the sampled mean*". A flat fill at that
-// mean says the same thing to anything measuring the render, and the
-// grain is a photographic texture rather than structure. The soft
-// `#38261a` halo under every stroke is the photograph's glow and is out
-// for the same reason (docs/PIPELINE.md). Everything structural -- the
-// wire band, the echo strands, the BASKET plate, the card frames, the
-// socket rows, the tabs -- is here.
+// The trace spends about four fifths of its bytes on **wood-veneer
+// grain** -- hundreds of 0.7px polylines clipped to the three gold
+// fills, "drawn as clipped 0.7 strokes in a mid gold over the fill *so
+// the average stays at the sampled mean*". That IS transcribed, as
+// `Prim::Grain` in `GRAIN_LINE` at each fill's pitch (`GROWN_BODY`, the
+// nav bar, the BASKET plate), with one simplification `Prim::Grain`
+// makes and its doc owns: the strands are straight, and the source's
+// wander. (This comment said until 2026-09-07 that the grain was left
+// out as photographic texture; the tables below had carried it since
+// the store's first pass.) The soft `#38261a` halo under every stroke
+// is the photograph's glow and is out (docs/PIPELINE.md). Everything
+// structural -- the wire band, the echo strands, the BASKET plate, the
+// card frames, the socket rows, the tabs -- is here.
 
 use crate::style::{
-    fill_path, fill_rect, line_path, shut_path, txt, txt_bold, txt_end, txt_mid, Anchor,
+    fill_path, fill_rect, line_path, shut_path, txt, txt_bold, txt_end, txt_mid, vline, Anchor,
     Change, Group, Motion, Prim,
 };
 use iced::animation::Easing;
@@ -2084,7 +2086,7 @@ const CONTENT: &[Prim] = &[
 // --- end store -----------------------------------------------------------
 // --- dashboard -----------------------------------------------------------
 //
-// `docs/neokitsch/dashboard-trace.svg` (revised 2026-09-03), transcribed
+// `docs/neokitsch/dashboard-trace.svg` (revised 2026-09-07), transcribed
 // the way the store block above is: coordinates are the trace's own in
 // the 1600x900 frame, elements in the trace's paint order, every `<use>`
 // expanded through `Prim::At` at the trace's `x`/`y` or `translate`, so
@@ -2109,8 +2111,27 @@ const CONTENT: &[Prim] = &[
 //   * the r4 foot fillet on the cards and their rings is an SVG arc
 //     (`A 4 4 0 0 1`, :154 and :217-222); `Seg` has no arc, so each is
 //     one cubic through the same two endpoints (k = 4/3 tan(135/4 deg)
-//     = 0.891, within 0.02 px of the arc). The control points are the
-//     only figures in this block that are derived rather than copied.
+//     = 0.891, within 0.02 px of the arc). The control points and the
+//     EMAIL grain's strand ends (below) are the only figures in this
+//     block that are derived rather than copied.
+//   * the veneer grain's wander. Both solid gold fills carry it since
+//     2026-09-07 (EMAIL's card :503-546, the panel body :619-705): the
+//     trace's strands wave, lean into the card's top and swing into its
+//     two book-match seams, and `Prim::Grain` paints straight strands
+//     (its doc says so). The pitch, width, ink and coverage are the
+//     trace's, so the average over each fill is the sampled mean the
+//     trace holds itself to. Two more things `Grain` cannot say, and how
+//     this block says them instead: the strands run VERTICAL (the
+//     trace's `l 0,5` steps; `Grain` paints horizontal strands only),
+//     and EMAIL's are clipped to a chamfered, footed silhouette (`Grain`
+//     fills a rectangle). The panel body is a rectangle, so its grain
+//     is one `Grain` under a `Prim::Turn` of -90 about the body's
+//     bottom-left corner, which lays the strands on the body's x pitch
+//     from the bottom edge up; EMAIL's is one `vline` per strand with
+//     its ends on the silhouette, computed by `email_grain` from the
+//     `#ncardsel` geometry. The strands' wander would need a polyline
+//     grain prim, or `Grain` with a `wave`; neither exists, and neither
+//     is added here (the style vocabulary is another agent's).
 
 /// The run's dashboard ink families, the trace's hex values. None of
 /// them is an existing era const (`GOLD_TEXT #e7c686` and `AMBER
@@ -2125,8 +2146,16 @@ pub const HUB_EDGE: iced::Color = rgb(0xe8ab66);
 pub const HUB_FILL: iced::Color = rgb(0xf2b463);
 /// The tab plates on the cards' left edges (:418-424).
 pub const HUB_PLATE: iced::Color = rgb(0xfcbe6d);
-/// The dark paragraph bars on the panel body (:494).
-pub const HUB_DARK: iced::Color = rgb(0x3b2416);
+/// The panel paragraphs' glyph ink (:724), the darkest 5% of the text
+/// block in the photo. Until 2026-09-07 this was `#3b2416`, the k-means
+/// family of the bars the paragraphs were drawn as, which is the halo
+/// blend of glyph and gold rather than the glyph.
+pub const HUB_DARK: iced::Color = rgb(0x4b341f);
+/// The captions' glyph ink (`#ncaption`, :289): brighter than `HUB_MID`,
+/// which was the bars' average of glyph and ground.
+pub const HUB_CAPTION: iced::Color = rgb(0xce9754);
+/// The panel tape's glyph ink (:742), a step brighter again.
+pub const HUB_TAPE: iced::Color = rgb(0xdea45c);
 /// The T2 badge's front outline and its "T2" (:304, :307).
 pub const BADGE_LIT: iced::Color = rgb(0xe8c186);
 /// The interior of the A/B letterboxes where they mask the wire band (:329).
@@ -2265,14 +2294,62 @@ const CARD_IDLE: &[Prim] = &[
     shut_path(0.0, 6.5, NCARD, Ink::Fixed(HUB_EDGE), 1.2),
     Prim::Round { x: -0.6, y: 54.6, w: 6.0, h: 38.3, r: 1.5, fill: Some(Ink::Fixed(HUB_PLATE)), stroke: None, width: 0.0 },
 ];
-/// A card's selected dress, from EMAIL (:431-432): the well silhouette
-/// filled AND stroked `#f2b463` 1.2, no rings, and the smaller
-/// 4.6x32.1 plate standing 1.25 proud of the edge inside the well
-/// (244.75 = 246 - 1.25, 442.3 = 384 + 58.3).
+/// A card's selected dress, from EMAIL (:489-547): the well silhouette
+/// filled AND stroked `#f2b463` 1.2, no rings, the veneer grain clipped
+/// to it, and the smaller 4.6x32.1 plate standing 1.25 proud of the
+/// edge inside the well (244.75 = 246 - 1.25, 442.3 = 384 + 58.3).
 const CARD_SELECTED: &[Prim] = &[
     Prim::Path { x: 0.0, y: 6.5, segs: NCARDSEL, close: true, fill: Some(Ink::Fixed(HUB_FILL)), stroke: Some(Ink::Fixed(HUB_FILL)), width: 1.2 },
+    Prim::At { x: 0.0, y: 0.0, prims: &EMAIL_GRAIN },
     Prim::Round { x: -1.25, y: 58.3, w: 4.6, h: 32.1, r: 1.5, fill: Some(Ink::Fixed(HUB_PLATE)), stroke: None, width: 0.0 },
 ];
+
+/// The strand count of [`EMAIL_GRAIN`]: the trace's 42 strands at 2.1
+/// (:504-545), plus the two the plate well cuts in two.
+const EMAIL_STRANDS: usize = 44;
+/// EMAIL's veneer grain (:503-546): 42 vertical strands on the trace's
+/// 2.1 pitch, 0.7 wide in `GRAIN_LINE`, each clipped to `#ncardsel`
+/// (see the block comment above on why these are `vline`s and not a
+/// `Grain`). Card-local, like `CARD_SELECTED`.
+static EMAIL_GRAIN: [Prim; EMAIL_STRANDS] = email_grain();
+/// Each strand's ends on the `NCARDSEL` silhouette, at local x = 2.1 k:
+/// the top edge, or the 45-degree chamfer (`L 90.5,42.5` from (48,0))
+/// past x 48; the foot diagonal (`L 0,241.5` from (83.7,325.2), also
+/// slope 1) to x 83.7, then the chord of the r4 fillet to (90.5,322.3),
+/// which lies inside the arc so no strand leaves the fill. The two
+/// strands inside the well (x < 5) break over it, between its slants
+/// (`L 5,90.8` from (0,94.2), `L 0,54.2` from (5,57.1)). The trace's
+/// `clip-path` does all of this at once; here it is arithmetic, the
+/// one place in this block a figure is computed rather than read.
+const fn email_grain() -> [Prim; EMAIL_STRANDS] {
+    const PITCH: f32 = 2.1;
+    const WIDTH: f32 = 0.7;
+    const INK: Ink = Ink::Fixed(GRAIN_LINE);
+    let mut out = [fill_rect(0.0, 0.0, 0.0, 0.0, INK); EMAIL_STRANDS];
+    let mut n = 0;
+    let mut k = 1;
+    while k <= 42 {
+        let x = PITCH * k as f32;
+        let top = if x <= 48.0 { 0.0 } else { x - 48.0 };
+        let bottom = if x <= 83.7 {
+            241.5 + x
+        } else {
+            325.2 - (x - 83.7) * (2.9 / 6.8)
+        };
+        if x < 5.0 {
+            // the well: its top slant runs (0,54.2) to (5,57.1), its
+            // bottom slant (5,90.8) to (0,94.2)
+            out[n] = vline(x, top, 54.2 + x * (2.9 / 5.0), INK, WIDTH);
+            out[n + 1] = vline(x, 94.2 - x * (3.4 / 5.0), bottom, INK, WIDTH);
+            n += 2;
+        } else {
+            out[n] = vline(x, top, bottom, INK, WIDTH);
+            n += 1;
+        }
+        k += 1;
+    }
+    out
+}
 /// One menu unit: the plate's hit box is the stroke-centre silhouette
 /// (90.5x327) at the trace's `<use x y>`, and both dresses are the
 /// card-local consts placed there.
@@ -2291,13 +2368,27 @@ macro_rules! module {
     };
 }
 
-/// The five-line caption block under a card's foot (`#ncaption`, :231-237).
+/// One line of the caption micro-text, or of the panel's tape: Rajdhani
+/// 7.5 at weight 600, `Start`-anchored at `x` on the baseline `y`.
+macro_rules! micro {
+    ($x:expr, $y:expr, $ink:expr, $s:expr) => {
+        Prim::Text { x: $x, y: $y, size: 7.5, ink: Ink::Fixed($ink), face: Face::SemiBold, anchor: Anchor::Start, content: $s }
+    };
+}
+macro_rules! caption {
+    ($y:expr, $s:expr) => {
+        micro!(0.0, $y, HUB_CAPTION, $s)
+    };
+}
+/// The five-line caption block under a card's foot (`#ncaption`,
+/// :289-295): micro-text, 7.5 semibold on a 6.77 pitch from the first
+/// baseline at the origin. Bars until 2026-09-07.
 const NCAPTION: &[Prim] = &[
-    fill_rect(0.0, 0.0, 84.0, 5.0, Ink::Fixed(HUB_MID)),
-    fill_rect(0.0, 8.0, 90.0, 5.0, Ink::Fixed(HUB_MID)),
-    fill_rect(0.0, 16.0, 82.0, 5.0, Ink::Fixed(HUB_MID)),
-    fill_rect(0.0, 24.0, 88.0, 5.0, Ink::Fixed(HUB_MID)),
-    fill_rect(0.0, 32.0, 38.0, 5.0, Ink::Fixed(HUB_MID)),
+    caption!(0.0, "ONLY CC35 CERTIFIED AND"),
+    caption!(6.77, "DHSF 5TH CLASS OFFICERS"),
+    caption!(13.54, "ARE ALLOWED TO MANIPU-"),
+    caption!(20.31, "LATE, ACCESS OR DISABLE"),
+    caption!(27.08, "THIS DEVICE."),
 ];
 
 /// The detail panel (`#npanel`, :180): the shoulder at local y 30.3
@@ -2554,35 +2645,82 @@ const CASCADE: &[Prim] = &[
     txt_end(714.0, 356.3, 17.0, Ink::Fixed(HUB_FILL), "SECURITY"),
     txt_end(714.0, 377.9, 17.0, Ink::Fixed(HUB_FILL), "SYSTEMS"),
     txt_end(817.0, 264.6, 17.0, Ink::Fixed(HUB_FILL), "DEVICES"),
-    // captions under each foot (:452-457)
-    Prim::At { x: 253.0, y: 723.0, prims: NCAPTION },
-    Prim::At { x: 352.0, y: 622.0, prims: NCAPTION },
-    Prim::At { x: 455.0, y: 520.0, prims: NCAPTION },
-    Prim::At { x: 630.0, y: 723.0, prims: NCAPTION },
-    Prim::At { x: 730.0, y: 622.0, prims: NCAPTION },
-    Prim::At { x: 832.0, y: 520.0, prims: NCAPTION },
+    // captions under each foot (:571-576), at the first line's text
+    // origin: 4.2..5.2 in from the card's left edge, 347.2 below its top
+    Prim::At { x: 250.7, y: 731.25, prims: NCAPTION },
+    Prim::At { x: 351.2, y: 630.8, prims: NCAPTION },
+    Prim::At { x: 453.2, y: 529.6, prims: NCAPTION },
+    Prim::At { x: 628.2, y: 731.25, prims: NCAPTION },
+    Prim::At { x: 728.7, y: 630.8, prims: NCAPTION },
+    Prim::At { x: 830.75, y: 529.2, prims: NCAPTION },
 ];
 
-/// The detail panel (:460-514): the rings and front outline, the solid
-/// body, its paragraphs, the tape and the module name. Its own table
-/// because `DASHBOARD` fades it in under `#panel-fade`.
+/// The panel body's veneer grain (:619-705): 85 vertical strands on the
+/// trace's 2.7 pitch, 0.7 in `GRAIN_LINE`, clipped to the body. Turned
+/// -90 about the body's bottom-left corner (1170.8,635), a `Grain` of
+/// the body's height by its width lays its strands at screen x =
+/// 1170.8 + 2.7 k running from the bottom edge up to the top (:620
+/// starts them at x 1173.5); the -0.35 centres each 0.7 strand on the
+/// trace's stroke.
+const PANEL_GRAIN: &[Prim] = &[Prim::Grain {
+    x: 0.0,
+    y: -0.35,
+    w: 309.0,
+    h: 230.4,
+    pitch: 2.7,
+    width: 0.7,
+    ink: Ink::Fixed(GRAIN_LINE),
+}];
+/// The panel's paragraph text: Rajdhani 16.3 regular, `Start`-anchored
+/// at the trace's x 1180.4 so the L's stem lands on the measured ink
+/// left, in `HUB_DARK`.
+macro_rules! para {
+    ($y:expr, $s:expr) => {
+        txt(1180.4, $y, 16.3, Ink::Fixed(HUB_DARK), $s)
+    };
+}
+/// The panel's copy (:725-732): the inbox's selected message, the first
+/// three lines of `PARAGRAPHS` (URGENT INFORMATION (!) from MOM, the
+/// same words the mailbox sets), re-wrapped to the body's measured line
+/// ends. Paragraph one runs out in five lines, "aliqua." alone on the
+/// fifth; the sixth slot is blank; paragraph two takes the last three.
+/// `panel_copy_is_the_inbox_message` pins this to `PARAGRAPHS`.
+const PANEL_COPY: [&str; 8] = [
+    "Lorem ipsum dolor sit amet,",
+    "consectetur adipisicing elit, sed",
+    "do eiusmod tempor incididunt",
+    "ut labore et dolore magna",
+    "aliqua.",
+    "Ut enim ad minim veniam, quis",
+    "nostrud exercitation ullamco",
+    "laboris nisi ut aliquip ex ea",
+];
+
+/// The detail panel (:460-748): the rings and front outline, the gold
+/// body and its grain, the paragraphs, the tape and the module name.
+/// Its own table because `DASHBOARD` fades it in under `#panel-fade`.
 const PANEL: &[Prim] = &[
-    // ==== the detail panel (:460-514) ====
+    // ==== the detail panel (:460-748) ====
     Prim::At { x: 1170.8, y: 259.7, prims: PANEL_FRAME },
-    // the solid body (:488)
-    fill_rect(1170.8, 326.0, 230.4, 309.0, Ink::Fixed(HUB_FILL)),
-    // two dark paragraphs, six lines and two, 11 tall at 19.5 pitch (:494-503)
-    fill_rect(1181.5, 343.0, 182.0, 11.0, Ink::Fixed(HUB_DARK)),
-    fill_rect(1181.5, 362.5, 200.0, 11.0, Ink::Fixed(HUB_DARK)),
-    fill_rect(1181.5, 382.0, 195.0, 11.0, Ink::Fixed(HUB_DARK)),
-    fill_rect(1181.5, 401.5, 170.0, 11.0, Ink::Fixed(HUB_DARK)),
-    fill_rect(1181.5, 421.0, 202.0, 11.0, Ink::Fixed(HUB_DARK)),
-    fill_rect(1181.5, 440.5, 101.0, 11.0, Ink::Fixed(HUB_DARK)),
-    fill_rect(1181.5, 480.0, 202.0, 11.0, Ink::Fixed(HUB_DARK)),
-    fill_rect(1181.5, 499.5, 207.0, 11.0, Ink::Fixed(HUB_DARK)),
-    // the micro-text tape (:509-510) and the module name (:512)
-    fill_rect(1194.0, 641.2, 174.0, 4.2, Ink::Fixed(HUB_MID)),
-    fill_rect(1194.0, 647.5, 181.0, 4.2, Ink::Fixed(HUB_MID)),
+    // the body (:612): `HUB_PLATE`, not `HUB_FILL`, because `#f2b463`
+    // is the body's sampled AVERAGE and the grain takes 26% of it in
+    // `GRAIN_LINE`; `#fcbe6d` under that averages back to it
+    fill_rect(1170.8, 326.0, 230.4, 309.0, Ink::Fixed(HUB_PLATE)),
+    Prim::Turn { x: 1170.8, y: 635.0, angle: -90.0, prims: PANEL_GRAIN },
+    // two paragraphs on the 19.5 pitch from the first baseline 354.2,
+    // one slot blank between them (:725-732)
+    para!(354.2, PANEL_COPY[0]),
+    para!(373.7, PANEL_COPY[1]),
+    para!(393.2, PANEL_COPY[2]),
+    para!(412.7, PANEL_COPY[3]),
+    para!(432.2, PANEL_COPY[4]),
+    para!(471.2, PANEL_COPY[5]),
+    para!(490.7, PANEL_COPY[6]),
+    para!(510.2, PANEL_COPY[7]),
+    // the micro-text tape (:743-744), the caption sentence on two
+    // lines, and the module name (:747)
+    micro!(1193.7, 645.8, HUB_TAPE, "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE"),
+    micro!(1193.7, 652.1, HUB_TAPE, "ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
     Prim::Text { x: 1286.7, y: 692.0, size: 20.0, ink: Ink::Fixed(HUB_FILL), face: Face::SemiBold, anchor: Anchor::Middle, content: "EMAIL" },
 ];
 
@@ -2659,3 +2797,28 @@ pub const DASHBOARD: &[Prim] = &[
     },
 ];
 // --- end dashboard -------------------------------------------------------
+
+#[cfg(test)]
+mod dashboard_tests {
+    use super::{PANEL_COPY, PARAGRAPHS};
+
+    /// The detail panel previews the inbox: its eight lines are the
+    /// selected message's first two paragraphs, re-wrapped to the
+    /// panel's measured line ends, and nothing else. Word for word a
+    /// prefix of `PARAGRAPHS`, paragraph by paragraph.
+    #[test]
+    fn panel_copy_is_the_inbox_message() {
+        let panel: Vec<Vec<&str>> = [&PANEL_COPY[..5], &PANEL_COPY[5..]]
+            .iter()
+            .map(|lines| lines.iter().flat_map(|l| l.split_whitespace()).collect())
+            .collect();
+        for (i, lines) in panel.iter().enumerate() {
+            let source: Vec<&str> = PARAGRAPHS[i].iter().flat_map(|l| l.split_whitespace()).collect();
+            assert!(
+                source.starts_with(lines),
+                "panel paragraph {i} is not a prefix of the inbox's: {lines:?}"
+            );
+        }
+        assert_eq!(panel[0].len(), PARAGRAPHS[0].iter().flat_map(|l| l.split_whitespace()).count(), "paragraph one runs out on the panel");
+    }
+}
