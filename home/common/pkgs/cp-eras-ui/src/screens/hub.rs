@@ -10,11 +10,14 @@
 //! back to the dashboard. That is the whole grammar, and the eras own
 //! nothing of it: they say which module leads where, and draw.
 //!
-//! The clock is the dashboard's. Its boot-in runs once, when the hub
-//! starts, and a return from a screen finds the panel where the
-//! boot-in left it rather than replaying it -- the dashboard's `now`
-//! carries on across the route change because the dashboard is never
-//! rebuilt.
+//! Each screen keeps its own clock. The dashboard's boot-in runs once,
+//! when the hub starts, and a return from a screen finds the panel
+//! where the boot-in left it rather than replaying it -- Esc is a
+//! close, not an open (`motion`, the module note, has the reasoning).
+//! The store and the mailbox come up when Enter opens them, so
+//! [`Hub::open`] re-enters the screen it goes to and its boot-in plays
+//! from that moment; under a pinned clock nothing re-bases and every
+//! screen draws at the pinned moment.
 //!
 //! `cp-eras-ui-dashboard` runs this; the goldens see its opening
 //! frame, which is the dashboard's own.
@@ -101,24 +104,33 @@ impl Hub {
         }
     }
 
-    /// Go where the dashboard's selection leads, if anywhere.
+    /// Go where the dashboard's selection leads, if anywhere, and
+    /// start that screen's clock: it is coming up now.
     fn open(&mut self) {
-        self.route = match self.dashboard.destination() {
-            Some(Destination::Mail) => Route::Mail,
-            Some(Destination::Store) => Route::Store,
-            None => return,
-        };
+        match self.dashboard.destination() {
+            Some(Destination::Mail) => {
+                self.mail.enter();
+                self.route = Route::Mail;
+            }
+            Some(Destination::Store) => {
+                self.store.enter();
+                self.route = Route::Store;
+            }
+            None => {}
+        }
     }
 
-    /// The keyboard, whole, plus the dashboard's clock while its
+    /// The keyboard, whole, plus the showing screen's clock while its
     /// boot-in runs. The screens' own `stroke` maps are not used here:
     /// the hub reads every stroke itself, because Open and Back are
     /// route changes and the screens do not know they are in one.
     pub fn subscription(&self) -> Subscription<Message> {
-        Subscription::batch([
-            nav::strokes().map(Message::Stroke),
-            self.dashboard.subscription().map(Message::Dashboard),
-        ])
+        let clock = match self.route {
+            Route::Dashboard => self.dashboard.subscription().map(Message::Dashboard),
+            Route::Mail => self.mail.subscription().map(Message::Mail),
+            Route::Store => self.store.subscription().map(Message::Store),
+        };
+        Subscription::batch([nav::strokes().map(Message::Stroke), clock])
     }
 
     pub fn view(&self) -> Element<'_, Message> {
@@ -134,6 +146,7 @@ impl Hub {
 mod tests {
     use super::*;
     use crate::screens::nav::Dir;
+    use crate::motion;
     use crate::style::Era;
 
     /// In every era both screens are behind some module, so a hub that
@@ -205,6 +218,31 @@ mod tests {
         hub.update(Message::Stroke(Stroke::Open));
         assert_eq!(hub.route, Route::Store);
         assert_eq!(hub.dashboard.selected, 2, "the store's keys never reach the dashboard");
+    }
+
+    /// Opening a screen starts its clock: a store that has been ticking
+    /// for seconds comes up from its own t = 0 when Enter reaches it,
+    /// and the dashboard's clock is not touched by the trip. Under a
+    /// pinned clock (`CP_ERAS_UI_AT_MS`) nothing re-bases, and the
+    /// assertion is that the pinned moment holds.
+    #[test]
+    fn opening_a_screen_starts_its_clock() {
+        use std::time::{Duration, Instant};
+        let mut hub = Hub::new(Era::Kitsch.style());
+        hub.store.update(store::Message::Tick(Instant::now() + Duration::from_secs(5)));
+        assert!(hub.store.at() >= Duration::from_secs(5) || motion::frozen());
+        hub.update(Message::Dashboard(dashboard::Message::Select { index: 2 }));
+        assert_eq!(hub.route, Route::Store);
+        if motion::frozen() {
+            assert_eq!(hub.store.at(), motion::now() - motion::origin());
+        } else {
+            assert!(hub.store.at() < Duration::from_millis(100), "{:?}", hub.store.at());
+        }
+        hub.update(Message::Stroke(Stroke::Back));
+        hub.update(Message::Dashboard(dashboard::Message::Select { index: 2 }));
+        if !motion::frozen() {
+            assert!(hub.store.at() < Duration::from_millis(100), "a second open re-bases too");
+        }
     }
 
     /// Every era's dashboard can be walked: from the opening selection

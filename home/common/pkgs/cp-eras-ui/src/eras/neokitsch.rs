@@ -629,8 +629,8 @@ pub const ACCESS: Access = Access {
 // The wire band's eight strands are the trace's beziers stepped into
 // short segments; at 1.1px they read the same.
 use crate::style::{
-    Frame, Mail, MailBadges, MailButtons, MailList, MailPanel, Mailbox, Note, Piece,
-    RowDecor, Run, Seg, Trim, Veneer, FromAt, BL, TR,
+    Frame, Mail, MailBadges, MailButtons, MailList, MailMotion, MailPanel, MailPart, Mailbox,
+    Note, Piece, RowDecor, Run, Seg, Trim, Veneer, FromAt, BL, TR,
 };
 
 /// The selection bar's own two tones, measured off the photograph at
@@ -1355,8 +1355,80 @@ pub fn mailbox() -> Mailbox {
             caption_text: "",
             labels: &LEVELS,
         },
+        motions: MAILBOX_MOTIONS,
     }
 }
+
+/// The mailbox's boot-in (mailbox-trace :208-250 and :322-348), the
+/// neokitsch way -- the dashboard's left-to-right wipes and the hub
+/// panel's fade: the rows scan on from the left, the buttons follow as
+/// they finish, and the selection bar fades up last. The mailbox is a
+/// layout, not a display list, so these name the sheet's regions
+/// (`MailMotion`, `Mailbox::motions`; `screens/mail.rs` paints
+/// them) where the store's `#shelf-open` wraps its prims:
+///
+///   * `#list-open` (:226-231): the rows' rules and tabs, their
+///     envelopes and their titles, rect x 15 y 240 h 460, w 0 -> 520
+///     over 0.5 s from 0, `keySplines="0.33 1 0.68 1"` = EaseOutCubic
+///     -- `MailPart::List`. The one clipPath is referenced from the
+///     rows' group in `#lines` and their glyphs' group in `#text`,
+///     split only for the halo: one animation, one entry;
+///   * `#bar-fade` + `#bar-fade-text` (:341-348, :545-548): the
+///     selection bar with its grain, inverted tab, envelope and dark
+///     printing, opacity 0 -> 1 over 0.3 s from 0.4 s,
+///     `keySplines="0.61 1 0.88 1"` = EaseOut -- ONE motion, as the
+///     trace says, over `MailPart::Fills` and `MailPart::Printing`;
+///     `Fills` in this era is the bar alone (`buttons.filled` and `badges.selected` are `None`, the
+///     panel has no head). The sheet draws a fill under its region's
+///     cover as well, so the bar also sits under `#list-open`; that is
+///     invisible, the wipe has cleared x 512 (EaseOutCubic at 0.4 of
+///     0.5 s is 0.992 of 520) before the fade begins;
+///   * `#buttons-open` (:244-250): the four RIFLES buttons, outlines,
+///     tabs and labels, rect x 715 y 660 h 90, w 0 -> 810 over 0.4 s
+///     from 0.3 s, EaseOutCubic -- `MailPart::Buttons`. The `<set>`
+///     holding the width at 0 until 0.3 s needs nothing here:
+///     `Motion::begin` holds at `from`.
+///
+/// The selected row's printing -- the inverted tab (`sel_notch`), its
+/// envelope, its title and FROM: line -- fades in with the bar here
+/// (:404-418, :538-550), which is what `MailPart::Printing` beside
+/// `Fills` says; without it the dark glyphs and the tab's bright
+/// outline would stand on the bare ground for 0.4 s. The fade is an
+/// ink fade, so the grain over the fill and the envelope over the
+/// grain show the stack for those 0.3 s, as the hub's panel does (the
+/// `Change::Opacity` caveat, docs/PIPELINE.md).
+pub const MAILBOX_MOTIONS: &[MailMotion] = &[
+    MailMotion {
+        motion: Motion {
+            id: "list-open",
+            begin: 0,
+            dur: 500,
+            ease: Easing::EaseOutCubic,
+            change: Change::Clip { x: 15.0, y: 240.0, w: (0.0, 520.0), h: (460.0, 460.0) },
+        },
+        parts: &[MailPart::List],
+    },
+    MailMotion {
+        motion: Motion {
+            id: "bar-fade",
+            begin: 400,
+            dur: 300,
+            ease: Easing::EaseOut,
+            change: Change::Opacity { alpha: (0.0, 1.0) },
+        },
+        parts: &[MailPart::Fills, MailPart::Printing],
+    },
+    MailMotion {
+        motion: Motion {
+            id: "buttons-open",
+            begin: 300,
+            dur: 400,
+            ease: Easing::EaseOutCubic,
+            change: Change::Clip { x: 715.0, y: 660.0, w: (0.0, 810.0), h: (90.0, 90.0) },
+        },
+        parts: &[MailPart::Buttons],
+    },
+];
 // --- end mailbox ---
 // --- store ---------------------------------------------------------------
 //
@@ -1756,14 +1828,51 @@ const GROWN: &[Prim] = &[
     grown_echo!(3.0, Ink::Fixed(ECHO3)),
     grown_echo!(4.0, Ink::Fixed(ECHO4)),
     fill_path(99.0, 703.8, GROWN_TAB, Ink::Fixed(TAB)),
-    // the gold body, and the veneer grain the source fills it with
-    fill_rect(0.0, 411.2, 262.1, 241.7, Ink::Fixed(BODY_FILL)),
-    Prim::Grain { x: 0.0, y: 411.2, w: 262.1, h: 241.7, pitch: 2.4, width: 0.7, ink: Ink::Fixed(GRAIN_LINE) },
     Prim::At { x: 37.2, y: 302.3, prims: GUN },
     txt(22.0, 403.3, 16.5, Ink::Fixed(BRIGHT), "DPS"),
     txt(86.0, 403.3, 16.5, Ink::Fixed(BRIGHT), "PNT"),
     txt(137.0, 403.3, 16.5, Ink::Fixed(BRIGHT), "ACC"),
     txt(192.0, 403.3, 16.5, Ink::Fixed(BRIGHT), "ROF"),
+    txt_bold(24.0, 683.9, 19.0, Ink::Fixed(BRIGHT), "MAGNUM 650"),
+    txt(133.0, 683.9, 19.0, Ink::Fixed(BRIGHT), "HAND GUN"),
+    // the gold body, faded in after the shelf's wipe: `#body-fade`
+    // (store-trace :516-666) and `#body-fade-text` (:756-794) take its
+    // opacity from 0 to 1 over 0.3 s from 0.4 s, `keySplines="0.61 1
+    // 0.88 1"` = EaseOut, and freeze -- two `<animate>`s because the
+    // trace keeps glyphs apart from lines for the halo, one Motion
+    // here; the `<set>` under each is the hold at 0 until then, which
+    // `Motion::begin` already is. The trace paints the body *after* the
+    // shelf's clip group so no fade nests in a wipe; here it stays on
+    // the selected card because the card is a `Prim::Plate` and the
+    // body must follow the selection, which no top-level group can do
+    // without a second plate (and `every_era_offers_..._four_cards`
+    // wants exactly four). The frames are the same either way: the
+    // wipe has cleared the selected card's right edge (x 929) before
+    // 0.25 s, so nothing of the fade is ever clipped. Moved from
+    // between the tab and the gun to the card's end, as the trace
+    // moved it; nothing painted between overlaps the body (the gun
+    // ends at y 364, the labels' baselines are 403.3 and 683.9).
+    Prim::Motion {
+        motion: Motion {
+            id: "body-fade",
+            begin: 400,
+            dur: 300,
+            ease: Easing::EaseOut,
+            change: Change::Opacity { alpha: (0.0, 1.0) },
+        },
+        prims: GROWN_BODY,
+    },
+];
+
+/// The selected card's solid gold body (store-trace :516-666 and
+/// :756-794): the veneer fill and its grain, the dark values and meta
+/// lines, the dark socket rules and QR and the EMPTY / SOCKET pairs --
+/// every dark run that sits on the gold. Its own table because `GROWN`
+/// fades it in under `#body-fade`.
+const GROWN_BODY: &[Prim] = &[
+    // the gold body, and the veneer grain the source fills it with
+    fill_rect(0.0, 411.2, 262.1, 241.7, Ink::Fixed(BODY_FILL)),
+    Prim::Grain { x: 0.0, y: 411.2, w: 262.1, h: 241.7, pitch: 2.4, width: 0.7, ink: Ink::Fixed(GRAIN_LINE) },
     Prim::Text { x: 15.0, y: 440.3, size: 27.0, ink: Ink::OnSelect, face: Face::Medium, anchor: Anchor::Start, content: "620" },
     txt(88.0, 437.3, 21.0, Ink::OnSelect, "30"),
     txt(147.0, 437.3, 21.0, Ink::OnSelect, "5"),
@@ -1787,8 +1896,6 @@ const GROWN: &[Prim] = &[
     txt_mid(154.6, 639.8, 11.5, Ink::OnSelect, "SOCKET"),
     txt_mid(226.3, 624.3, 11.5, Ink::OnSelect, "EMPTY"),
     txt_mid(226.3, 639.8, 11.5, Ink::OnSelect, "SOCKET"),
-    txt_bold(24.0, 683.9, 19.0, Ink::Fixed(BRIGHT), "MAGNUM 650"),
-    txt(133.0, 683.9, 19.0, Ink::Fixed(BRIGHT), "HAND GUN"),
 ];
 
 /// The BASKET plate: a gold slab with its bottom-left corner cut, split
@@ -1886,6 +1993,14 @@ const SHELF_0: &[Prim] = shelf!(0);
 const SHELF_1: &[Prim] = shelf!(1);
 const SHELF_2: &[Prim] = shelf!(2);
 const SHELF_3: &[Prim] = shelf!(3);
+/// The four cards at their columns (:394-514): its own table because
+/// `CONTENT` wipes it on under `#shelf-open`.
+const SHELF: &[Prim] = &[
+    Prim::At { x: 360.8, y: 0.0, prims: SHELF_0 },
+    Prim::At { x: 667.1, y: 0.0, prims: SHELF_1 },
+    Prim::At { x: 978.8, y: 0.0, prims: SHELF_2 },
+    Prim::At { x: 1288.8, y: 0.0, prims: SHELF_3 },
+];
 
 pub const STORE: &[Prim] = &[
     // Composited in software: the blue lobe is translucent over the
@@ -1938,11 +2053,25 @@ const CONTENT: &[Prim] = &[
     Prim::Plate { group: Group::Category, index: 2, x: 92.9, y: 479.3, w: 200.6, h: 38.6, on: NAV_ON_2, off: NAV_OFF_2 },
     Prim::Plate { group: Group::Category, index: 3, x: 92.9, y: 540.0, w: 200.6, h: 38.6, on: NAV_ON_3, off: NAV_OFF_3 },
     Prim::Plate { group: Group::Category, index: 4, x: 92.9, y: 600.7, w: 200.6, h: 38.6, on: NAV_ON_4, off: NAV_OFF_4 },
-    // the shelf
-    Prim::At { x: 360.8, y: 0.0, prims: SHELF_0 },
-    Prim::At { x: 667.1, y: 0.0, prims: SHELF_1 },
-    Prim::At { x: 978.8, y: 0.0, prims: SHELF_2 },
-    Prim::At { x: 1288.8, y: 0.0, prims: SHELF_3 },
+    // the shelf, wiped on from the left at boot: `#shelf-open`
+    // (:246-252) grows one clip over all four cards from no width to
+    // 1240 over 0.5 s from 0, `keySplines="0.33 1 0.68 1"` =
+    // EaseOutCubic, and freezes, so the cards arrive in reading order
+    // as the hub's cascade does under `#cards-open`; at rest it is the
+    // trace's own groups (:393-515 for the lines, :704-755 for the
+    // labels -- split for the halo, one animation). The selected
+    // card's gold body is not under it: it fades in on its own
+    // (`#body-fade`, in `GROWN`).
+    Prim::Motion {
+        motion: Motion {
+            id: "shelf-open",
+            begin: 0,
+            dur: 500,
+            ease: Easing::EaseOutCubic,
+            change: Change::Clip { x: 340.0, y: 205.0, w: (0.0, 1240.0), h: (530.0, 530.0) },
+        },
+        prims: SHELF,
+    },
     // foot
     letterbox!(675.0, 775.0, "B"),
     txt(715.0, 780.5, 6.5, Ink::Fixed(STORE_MICRO), "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO."),

@@ -169,8 +169,12 @@ impl Buf {
     /// Premultiplied 8-bit RGBA, which is what the image pipeline
     /// blends.
     fn bytes(&self) -> Vec<u8> {
-        let enc = |v: f32| (v.clamp(0.0, 1.0) * 255.0).round() as u8;
-        self.px.iter().flat_map(|p| p.map(enc)).collect()
+        self.px.iter().flat_map(|p| Self::encode(*p)).collect()
+    }
+
+    /// One pixel of [`bytes`](Self::bytes).
+    fn encode(p: [f32; 4]) -> [u8; 4] {
+        p.map(|v| (v.clamp(0.0, 1.0) * 255.0).round() as u8)
     }
 
     /// Fill the even-odd interior of `rings` (pixel-space polygons),
@@ -428,7 +432,9 @@ pub fn supported(prim: &Prim) -> bool {
         }
         Prim::Masked { prims, mask } => prims.iter().all(supported) && mask.iter().all(supported),
         // A composited group is rasterised once and cached; it has
-        // no clock to move against.
+        // no clock to move against. The way round is the other
+        // nesting -- a `Soft` group under a `Motion`, which `Backdrop`
+        // rasterises with `composite_over` and clips as an image.
         Prim::Motion { .. } => false,
         Prim::Text { .. }
         | Prim::Wide { .. }
@@ -447,6 +453,50 @@ pub fn composite(prims: &[Prim], palette: &Palette, w: u32, h: u32, k: f32) -> V
     let mut buf = Buf::new(w as usize, h as usize);
     walk(&mut buf, prims, palette, Xf::scaled(k));
     buf.bytes()
+}
+
+/// Rasterise `prims` over the groups `under` it -- all of them, in
+/// order, as one composite -- and return only the pixels `prims`
+/// itself touches, as premultiplied RGBA8: the composite's own value
+/// (opaque, where the ground is) there, transparent everywhere else.
+///
+/// This is how a translucent group gets to *move* over a composited
+/// backdrop without leaving sRGB. Drawn as its own image over the
+/// ground's, a stack of ghosts would be blended by wgpu in linear
+/// light -- the very thing the module note says cannot land the
+/// trace. Drawn as the full composite cut to its own coverage, every
+/// pixel it puts down is the pixel the one-buffer composite would have
+/// put there (same prims, same order, same float walk), and its clip
+/// can then move across it as a scissor. The cut is exact at rest
+/// wherever the groups over it touch none of its pixels; where they
+/// do, the later group's cut includes this one and paints last, so
+/// the rest frame is still the one-buffer composite -- only a frame
+/// mid-wipe could show a later group's pixel early. Kitsch's two fans
+/// share a bounding box but no pixel (`the_kitsch_fans_share_no_pixel`
+/// in `scene.rs`).
+pub fn composite_over(under: &[&[Prim]], prims: &[Prim], palette: &Palette, w: u32, h: u32, k: f32) -> Vec<u8> {
+    let (w, h) = (w as usize, h as usize);
+    let mut all = Buf::new(w, h);
+    for group in under {
+        walk(&mut all, group, palette, Xf::scaled(k));
+    }
+    walk(&mut all, prims, palette, Xf::scaled(k));
+    let mut own = Buf::new(w, h);
+    walk(&mut own, prims, palette, Xf::scaled(k));
+    all.px
+        .iter()
+        .zip(&own.px)
+        .flat_map(|(p, o)| if o[3] > 0.0 { Buf::encode(*p) } else { [0; 4] })
+        .collect()
+}
+
+/// Which pixels `prims` touches at all -- the cut [`composite_over`]
+/// makes, for a test to check two moving groups against.
+#[cfg(test)]
+pub(crate) fn touched(prims: &[Prim], palette: &Palette, w: u32, h: u32, k: f32) -> Vec<bool> {
+    let mut own = Buf::new(w as usize, h as usize);
+    walk(&mut own, prims, palette, Xf::scaled(k));
+    own.px.iter().map(|o| o[3] > 0.0).collect()
 }
 
 fn walk(buf: &mut Buf, prims: &[Prim], palette: &Palette, xf: Xf) {

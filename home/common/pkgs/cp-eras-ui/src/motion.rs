@@ -9,6 +9,20 @@
 //!   asks for it, the way a trace's document begins at 0 when it
 //!   loads. Every animation is a function of `at - origin`, so two
 //!   screens asked for the same instant agree.
+//! - **A screen opened from another starts its own clock.** A trace's
+//!   boot-in is the screen coming up, and in the hub the store and the
+//!   mailbox come up when Enter opens them, not when the process did:
+//!   a store opened five seconds in would otherwise have booted
+//!   unseen. So each screen keeps the origin it was *entered* at
+//!   ([`onset`]), and `Hub::open` re-enters the screen it goes to. The
+//!   dashboard is the exception: it is the resident screen, the store
+//!   and the mailbox are opened *from* it and closed *back to* it, and
+//!   its selection survives the trip -- Esc is a close, not an open,
+//!   so the panel is found where the boot-in left it rather than
+//!   re-booted. (Practically too: the Esc round trip is the commonest
+//!   move, and a wipe on every return would be the first thing turned
+//!   off.) The standalone binaries see no difference: nothing enters
+//!   a screen there, so its origin is the process's.
 //! - **The clock can be frozen.** `--at-ms <n>` on the command line, or
 //!   `CP_ERAS_UI_AT_MS=<n>` in the environment for the harnesses that
 //!   pass no arguments (`scripts/render.sh`, `tests/visual.nix`), pins
@@ -16,7 +30,9 @@
 //!   [`frozen`] on so the screens stop asking for ticks. The goldens
 //!   are captured at [`REST`] -- the trace at rest is what they hold,
 //!   and a golden that depends on when the compositor got round to
-//!   the capture is not a golden.
+//!   the capture is not a golden. A pinned clock never re-bases:
+//!   [`onset`] is the origin while it is frozen, so a screen entered
+//!   under `--at-ms` draws at the pinned moment like every other.
 //!
 //! What is here is what the vocabulary in `docs/PIPELINE.md` needs and
 //! iced's `Animation` does not give: the discrete cycle
@@ -90,6 +106,20 @@ pub fn now() -> Instant {
 /// redraw that draws the same thing is work the capture waits on.
 pub fn frozen() -> bool {
     clock().frozen.is_some()
+}
+
+/// The origin a screen takes when it is entered: this moment, so its
+/// boot-in plays from here -- unless the clock is pinned, when it is
+/// the process's [`origin`] and the screen draws at the pinned moment
+/// like every other. A screen holds what this returns and counts its
+/// `at` from it; `Hub::open` calls the screen's `enter`, which reads
+/// it again. See the module note on why the dashboard does not.
+pub fn onset() -> Instant {
+    if frozen() {
+        origin()
+    } else {
+        Instant::now()
+    }
 }
 
 /// A discrete two-state cycle -- `values="1;0" keyTimes="0;0.5"` --
@@ -176,5 +206,20 @@ mod tests {
     fn origin_is_frame_zero() {
         assert!(blink(CARET_BLINK, origin()));
         assert!(now() >= origin());
+    }
+
+    /// An entered screen starts at or after the process origin and,
+    /// unpinned, from now: its first `at` is 0, not the process's age.
+    /// (The pinned branch cannot be exercised here without an
+    /// environment variable the whole test binary would then share.)
+    #[test]
+    fn an_onset_is_never_before_the_origin() {
+        let before = Instant::now();
+        let onset = onset();
+        assert!(onset >= origin());
+        if !frozen() {
+            assert!(onset >= before);
+            assert!(now().saturating_duration_since(onset) < Duration::from_secs(1));
+        }
     }
 }

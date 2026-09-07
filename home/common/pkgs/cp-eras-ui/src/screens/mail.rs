@@ -45,18 +45,36 @@
 //! screen (`scripts/fidelity_check.sh --implementation <era> mailbox`)
 //! matches shapes by bounding box. Layout that lands a frame two pixels
 //! out is layout that fails a gate the trace passes.
+//!
+//! Motion. A trace's boot-in `<animate>`s are on the table too, as
+//! [`crate::style::MailMotion`]s ([`crate::style::Mailbox::motions`]): each
+//! names the parts of the sheet it moves, and `draw` paints every
+//! region under the clip its motions have come to and the alpha they
+//! have faded to, off the screen's own clock. The rest frame is the
+//! sheet as it was before any of it: a clip at its full rect and an
+//! alpha of 1 draw exactly what an unclipped, unfaded region did.
+//! Two parts are finer than a region because the traces disagree on
+//! where they ride: the panel's heading ([`MailPart::Title`], its own
+//! step after the panel, since neomil's stands above the panel's
+//! clip) and the selected row's printing ([`MailPart::Printing`],
+//! drawn inside the list under a second cover, since neokitsch's
+//! fades in with the bar). An era that names neither gets them where
+//! the region draws them.
 
+use crate::motion;
 use crate::style::{
-    FromAt, Ink, MailBadges, MailButtons, MailList, MailPanel, Piece, RowDecor, Run, Seg,
-    Style, Ticket, Trim, BL, BR, TL, TR,
+    FromAt, Ink, MailBadges, MailButtons, MailList, MailPanel, MailPart, Piece, RowDecor, Run,
+    Seg, Style, Ticket, Trim, BL, BR, TL, TR,
 };
 use crate::widgets::surface::{outline, Corners, Cut};
 use crate::screens::nav::{Dir, Stroke};
-use crate::screens::scene::Backdrop;
+use crate::screens::scene::{blend_over, Backdrop};
 use crate::widgets::ground;
 use crate::Element;
 use iced::widget::{canvas, stack, Action};
-use iced::{mouse, Color, Event, Length, Point, Rectangle, Renderer, Size, Vector};
+use iced::{mouse, Color, Event, Length, Point, Rectangle, Renderer, Size, Subscription, Vector};
+use std::cell::Cell;
+use std::time::{Duration, Instant};
 
 /// The frame every trace measures in.
 const DW: f32 = 1600.0;
@@ -80,6 +98,13 @@ pub struct MailBox {
     /// it -- which is not always the selected row: entropism selects
     /// row 0 and reads row 1 -- and follows the selection thereafter.
     showing: usize,
+    /// The screen's t = 0: the process origin, or the moment the hub
+    /// opened it (`motion::onset`, [`MailBox::enter`]).
+    origin: Instant,
+    /// The moment the sheet is drawn at, for the era's `MailMotion`s.
+    /// Advanced by [`Message::Tick`] while the boot-in runs, then left
+    /// where it is.
+    now: Instant,
 }
 
 #[derive(Debug, Clone)]
@@ -89,6 +114,8 @@ pub enum Message {
     /// A key moved the selection: `j`/`k` walk the list, and the list
     /// is the only thing here to walk, so `h`/`l` do nothing.
     Move(Dir),
+    /// The clock, while the boot-in runs.
+    Tick(Instant),
 }
 
 impl crate::shell::Wears for MailBox {
@@ -105,6 +132,8 @@ impl MailBox {
             style,
             selected,
             showing,
+            origin: motion::origin(),
+            now: motion::now(),
         }
     }
 
@@ -112,8 +141,32 @@ impl MailBox {
         format!("MAIL BOX — {}", self.style.era.name())
     }
 
+    /// The screen is coming up: start its clock here, so its boot-in
+    /// plays from now (`motion`, the module note). Under a pinned
+    /// clock this changes nothing.
+    pub fn enter(&mut self) {
+        self.origin = motion::onset();
+        self.now = motion::now();
+    }
+
+    /// Where the sheet's clock is, counted from the screen's origin.
+    pub(crate) fn at(&self) -> Duration {
+        self.now.saturating_duration_since(self.origin)
+    }
+
+    /// A redraw every frame until the sheet is at rest, and none when
+    /// the clock is pinned: as `Dashboard::subscription`. An era whose
+    /// mailbox has no motion never asks for one.
+    pub fn subscription(&self) -> Subscription<Message> {
+        if motion::frozen() || self.style.mailbox.motions.is_empty() || self.at() >= motion::REST {
+            return Subscription::none();
+        }
+        iced::time::every(Duration::from_millis(16)).map(Message::Tick)
+    }
+
     pub fn update(&mut self, message: Message) {
         match message {
+            Message::Tick(at) => self.now = at,
             Message::Select(row) => {
                 self.selected = row.min(self.style.mailbox.list.rows.len().saturating_sub(1));
                 self.showing = self.selected;
@@ -138,6 +191,8 @@ impl MailBox {
             style: &self.style,
             selected: self.selected,
             showing: self.showing,
+            at: self.at(),
+            alpha: Cell::new(1.0),
         })
         .width(Length::Fill)
         .height(Length::Fill);
@@ -149,7 +204,7 @@ impl MailBox {
         if m.backdrop.is_empty() {
             stack![ground(&self.style), sheet].into()
         } else {
-            let backdrop = canvas(Backdrop { style: self.style, prims: m.backdrop, stretch: true })
+            let backdrop = canvas(Backdrop { style: self.style, prims: m.backdrop, stretch: true, at: self.at() })
                 .width(Length::Fill)
                 .height(Length::Fill);
             stack![backdrop, sheet].into()
@@ -162,6 +217,145 @@ struct Sheet<'a> {
     style: &'a Style,
     selected: usize,
     showing: usize,
+    /// The moment to draw at, counted from the screen's origin: what
+    /// the era's `MailMotion`s are read at.
+    at: Duration,
+    /// The alpha the region being drawn has faded to, 1 outside any
+    /// motion. Set by [`Sheet::under`] around each region, read by
+    /// [`Sheet::paint`] on the way to every ink -- a `Cell` because the
+    /// drawing methods take `&self` and a region's fills fade under
+    /// their own cover inside it.
+    alpha: Cell<f32>,
+}
+
+/// What the motions naming a part of the sheet have come to: the clip
+/// they intersect to, in design coordinates (`None` for no clip at
+/// all), and the alpha they multiply to.
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Cover {
+    clip: Option<crate::style::Frame>,
+    alpha: f32,
+}
+
+impl Cover {
+    const OPEN: Cover = Cover { clip: None, alpha: 1.0 };
+
+    /// Both covers at once: the clips intersected -- `with_clip`
+    /// drafts a fresh frame, so a nested clip does not intersect with
+    /// its outer one by itself -- and the alphas multiplied.
+    fn and(self, other: Cover) -> Cover {
+        let clip = match (self.clip, other.clip) {
+            (None, c) | (c, None) => c,
+            (Some(a), Some(b)) => {
+                let x0 = a.x.max(b.x);
+                let y0 = a.y.max(b.y);
+                let x1 = (a.x + a.w).min(b.x + b.w);
+                let y1 = (a.y + a.h).min(b.y + b.h);
+                Some(crate::style::Frame::new(x0, y0, (x1 - x0).max(0.0), (y1 - y0).max(0.0)))
+            }
+        };
+        Cover { clip, alpha: self.alpha * other.alpha }
+    }
+
+    /// Whether anything under this cover can show at all.
+    fn shown(&self) -> bool {
+        self.alpha > 0.0 && self.clip.map_or(true, |c| c.w > 0.0 && c.h > 0.0)
+    }
+}
+
+/// The style and the alpha every ink is resolved through: what the
+/// drawing functions below take where they took a `&Style`.
+#[derive(Clone, Copy)]
+struct Paint<'a> {
+    style: &'a Style,
+    alpha: f32,
+}
+
+impl Sheet<'_> {
+    /// The inks as the region being drawn wants them.
+    fn paint(&self) -> Paint<'_> {
+        Paint { style: self.style, alpha: self.alpha.get() }
+    }
+
+    /// The cover the era's motions put over `part` at this moment.
+    fn cover(&self, part: MailPart) -> Cover {
+        self.style
+            .mailbox
+            .motions
+            .iter()
+            .filter(|m| m.parts.contains(&part))
+            .fold(Cover::OPEN, |cover, m| {
+                let t = motion::progress(&m.motion, self.at);
+                cover.and(match m.motion.change {
+                    crate::style::Change::Clip { x, y, w, h } => Cover {
+                        clip: Some(crate::style::Frame::new(
+                            x,
+                            y,
+                            crate::style::Change::lerp(w, t),
+                            crate::style::Change::lerp(h, t),
+                        )),
+                        alpha: 1.0,
+                    },
+                    crate::style::Change::Opacity { alpha } => Cover {
+                        clip: None,
+                        alpha: crate::style::Change::lerp(alpha, t),
+                    },
+                })
+            })
+    }
+
+    /// Draw something under a cover: clipped to it, and with its alpha
+    /// on every ink, folded into the alpha already in force. Nothing is
+    /// drawn under a cover nothing can show through. The clip maps to
+    /// the canvas axis by axis, as the sheet does.
+    ///
+    /// Every call drafts a frame, clipped or not. iced's `with_clip`
+    /// pastes the draft's meshes into the frame *ahead of* everything
+    /// the frame drew directly -- a frame's own geometry is only
+    /// batched when it is finished -- so a clipped region would land
+    /// under chrome drawn before it, and its inner edge would show the
+    /// outline it was meant to cover (the entropism REPORT SPAM ring,
+    /// 2026-09-07). Drafting every region keeps the sheet's order the
+    /// paint order: each is pasted as it is drawn and the frame's own
+    /// buffer stays empty. A draft nested in a draft is pasted the same
+    /// way, under its parent's own drawing, which is why [`Sheet::fill`]
+    /// drafts only when it has a clip of its own.
+    fn under(&self, frame: &mut canvas::Frame, scale: Scale, cover: Cover, draw: impl FnOnce(&Self, &mut canvas::Frame)) {
+        if !cover.shown() {
+            return;
+        }
+        let was = self.alpha.replace(self.alpha.get() * cover.alpha);
+        let region = match cover.clip {
+            Some(c) => Rectangle::new(scale.point(c.x, c.y), scale.size(c.w, c.h)),
+            None => Rectangle::with_size(frame.size()),
+        };
+        frame.with_clip(region, |f| draw(self, f));
+        self.alpha.set(was);
+    }
+
+    /// Draw part of a region under a second cover, `part`'s, on top of
+    /// the one already in force. Called from inside the region's own
+    /// draw; a cover with a clip drafts a frame of its own (see
+    /// [`Sheet::under`] for what that does to the order), one with
+    /// only an alpha does not.
+    fn also(&self, frame: &mut canvas::Frame, scale: Scale, part: MailPart, draw: impl FnOnce(&Self, &mut canvas::Frame)) {
+        let cover = self.cover(part);
+        match cover.clip {
+            Some(_) => self.under(frame, scale, cover, draw),
+            None if cover.shown() => {
+                let was = self.alpha.replace(self.alpha.get() * cover.alpha);
+                draw(self, frame);
+                self.alpha.set(was);
+            }
+            None => {}
+        }
+    }
+
+    /// One of a region's reverse-video fills, under the
+    /// [`MailPart::Fills`] cover.
+    fn fill(&self, frame: &mut canvas::Frame, scale: Scale, draw: impl FnOnce(&Self, &mut canvas::Frame)) {
+        self.also(frame, scale, MailPart::Fills, draw);
+    }
 }
 
 impl Sheet<'_> {
@@ -223,8 +417,17 @@ impl Scale {
     }
 }
 
-fn ink(style: &Style, role: Ink) -> Color {
-    role.of(&style.palette)
+/// A role's colour, faded as the region being drawn is: the fade is a
+/// `fill-opacity` on the ink, rebased for wgpu's linear blend the way
+/// `scene::Scene::ink` rebases one (`blend_over`), so the fade lands
+/// the trace's pixel over the era's ground. Untouched at 1.
+fn ink(s: Paint, role: Ink) -> Color {
+    let c = role.of(&s.style.palette);
+    if s.alpha >= 1.0 {
+        c
+    } else {
+        blend_over(Color { a: c.a * s.alpha, ..c }, s.style.palette.bg)
+    }
 }
 
 /// A [`Trim`] as the corner set [`outline`] walks.
@@ -477,7 +680,7 @@ fn cased(content: &str, upper: bool) -> String {
 impl Sheet<'_> {
     /// Region A: the list frame, its rows, their glyphs and their text.
     fn list(&self, frame: &mut canvas::Frame, scale: Scale, list: &MailList) {
-        let s = self.style;
+        let s = self.paint();
 
         if let Some(at) = list.frame {
             box_at(
@@ -508,34 +711,43 @@ impl Sheet<'_> {
             let shift = self.sel_offset();
 
             if selected {
-                if let Some(cell) = list.sel_icon {
-                    box_at(
-                        frame,
-                        scale,
-                        cell.shifted(0.0, shift),
-                        list.sel_icon_trim,
-                        Some(ink(s, list.sel_fill)),
-                        None,
-                    );
-                }
-                self.selection(frame, scale, list, shift);
-                if let Some(n) = list.sel_notch.map(|n| n.shifted(0.0, shift)) {
-                    // The tab motif inverted: a dark trapezoid cut up
-                    // into the bar's bottom edge, outlined in the ink.
-                    poly_at(
-                        frame,
-                        scale,
-                        &[
-                            (n.x, n.y + n.h),
-                            (n.x + n.h * 0.55, n.y),
-                            (n.x + n.w - n.h * 0.55, n.y),
-                            (n.x + n.w, n.y + n.h),
-                        ],
-                        true,
-                        Some(ink(s, Ink::Bg)),
-                        Some((ink(s, list.rule_ink), 1.0)),
-                    );
-                }
+                self.fill(frame, scale, |me, f| {
+                    if let Some(cell) = list.sel_icon {
+                        box_at(
+                            f,
+                            scale,
+                            cell.shifted(0.0, shift),
+                            list.sel_icon_trim,
+                            Some(ink(me.paint(), list.sel_fill)),
+                            None,
+                        );
+                    }
+                    me.selection(f, scale, list, shift);
+                });
+                // What the row prints -- [`MailPart::Printing`], for the
+                // era whose bar fades in with its ink rather than
+                // lighting under it.
+                self.also(frame, scale, MailPart::Printing, |me, f| {
+                    let s = me.paint();
+                    if let Some(n) = list.sel_notch.map(|n| n.shifted(0.0, shift)) {
+                        // The tab motif inverted: a dark trapezoid cut up
+                        // into the bar's bottom edge, outlined in the ink.
+                        poly_at(
+                            f,
+                            scale,
+                            &[
+                                (n.x, n.y + n.h),
+                                (n.x + n.h * 0.55, n.y),
+                                (n.x + n.w - n.h * 0.55, n.y),
+                                (n.x + n.w, n.y + n.h),
+                            ],
+                            true,
+                            Some(ink(s, Ink::Bg)),
+                            Some((ink(s, list.rule_ink), 1.0)),
+                        );
+                    }
+                    me.printing(f, scale, list, mail, row, true);
+                });
             } else {
                 if list.decor == RowDecor::Boxed {
                     box_at(
@@ -586,91 +798,102 @@ impl Sheet<'_> {
                 }
             }
 
-            let title_ink = if selected { Ink::OnSelect } else { Ink::Fg };
-            // A selected row's sender is dark *only where it sits on
-            // the selection*. Kitsch's bar ends above its own from-line
-            // and the trace sets that line in the bright yellow, so the
-            // rule is geometric rather than another table field.
-            let on_fill = selected && row.y + list.from_dy <= list.sel.y + shift + list.sel.h;
-            let from_ink = match (selected, on_fill) {
-                (true, true) => Ink::OnSelect,
-                (true, false) => Ink::Select,
-                _ => Ink::Mid,
-            };
+            if !selected {
+                self.printing(frame, scale, list, mail, row, false);
+            }
+        }
+    }
 
-            envelope(
-                frame,
-                scale,
-                list.glyph_x,
-                row.y + list.glyph_dy,
-                list.glyph_w,
-                mail.unread,
-                ink(s, title_ink),
-                1.2,
-            );
+    /// One row's printing: the envelope, the subject, the sender and
+    /// the NEW pill the era marks unread rows with. The selected row's
+    /// is drawn under [`MailPart::Printing`], from [`Sheet::list`].
+    fn printing(&self, frame: &mut canvas::Frame, scale: Scale, list: &MailList, mail: &crate::style::Mail, row: crate::style::Frame, selected: bool) {
+        let s = self.paint();
+        let shift = self.sel_offset();
+        let title_ink = if selected { Ink::OnSelect } else { Ink::Fg };
+        // A selected row's sender is dark *only where it sits on
+        // the selection*. Kitsch's bar ends above its own from-line
+        // and the trace sets that line in the bright yellow, so the
+        // rule is geometric rather than another table field.
+        let on_fill = selected && row.y + list.from_dy <= list.sel.y + shift + list.sel.h;
+        let from_ink = match (selected, on_fill) {
+            (true, true) => Ink::OnSelect,
+            (true, false) => Ink::Select,
+            _ => Ink::Mid,
+        };
 
-            let title = Run {
-                bold: list.title_bold,
-                ..Run::new(
-                    list.text_x,
-                    row.y + list.title_dy,
-                    list.title_size,
-                    title_ink,
-                )
-            };
-            label(
-                frame,
-                scale,
-                title,
-                ink(s, title_ink),
-                &cased(mail.subject, list.title_upper),
-            );
+        envelope(
+            frame,
+            scale,
+            list.glyph_x,
+            row.y + list.glyph_dy,
+            list.glyph_w,
+            mail.unread,
+            ink(s, title_ink),
+            1.2,
+        );
 
-            let sender = format!("{}{}", list.from_prefix, cased(mail.from, list.from_upper));
-            let at = match list.from_at {
-                FromAt::Beneath => Run::new(
-                    list.text_x,
-                    row.y + list.from_dy,
-                    list.from_size,
-                    from_ink,
-                ),
-                // The one era that sets the sender as a second column,
-                // right-aligned on the subject's own line: neomil's
-                // trace anchors every name's end 7px inside the row's
-                // right edge (x 504 on rows x 241..511).
-                FromAt::Trailing => Run::new(
-                    row.x + row.w - 7.0,
-                    row.y + list.title_dy,
-                    list.from_size,
-                    from_ink,
-                )
-                .right(),
-            };
-            label(frame, scale, at, ink(s, from_ink), &sender);
+        let title = Run {
+            bold: list.title_bold,
+            ..Run::new(
+                list.text_x,
+                row.y + list.title_dy,
+                list.title_size,
+                title_ink,
+            )
+        };
+        label(
+            frame,
+            scale,
+            title,
+            ink(s, title_ink),
+            &cased(mail.subject, list.title_upper),
+        );
 
-            // The NEW pill, on the rows the trace puts one on -- its
-            // unread ones, in the era that marks them this way.
-            if let Some(pill) = list.new_pill {
-                if mail.unread {
-                    let at = pill.shifted(row.x, row.y);
-                    box_at(
-                        frame,
-                        scale,
-                        at,
-                        Trim::round(TL | TR | BR | BL, 4.0),
-                        None,
-                        Some((ink(s, title_ink), 1.5)),
-                    );
-                    label(
-                        frame,
-                        scale,
-                        Run::new(at.x + at.w / 2.0, at.y + at.h - 3.0, 10.0, title_ink)
-                            .bold()
-                            .centered(),
-                        ink(s, title_ink),
-                        "NEW",
-                    );
-                }
+        let sender = format!("{}{}", list.from_prefix, cased(mail.from, list.from_upper));
+        let at = match list.from_at {
+            FromAt::Beneath => Run::new(
+                list.text_x,
+                row.y + list.from_dy,
+                list.from_size,
+                from_ink,
+            ),
+            // The one era that sets the sender as a second column,
+            // right-aligned on the subject's own line: neomil's
+            // trace anchors every name's end 7px inside the row's
+            // right edge (x 504 on rows x 241..511).
+            FromAt::Trailing => Run::new(
+                row.x + row.w - 7.0,
+                row.y + list.title_dy,
+                list.from_size,
+                from_ink,
+            )
+            .right(),
+        };
+        label(frame, scale, at, ink(s, from_ink), &sender);
+
+        // The NEW pill, on the rows the trace puts one on -- its
+        // unread ones, in the era that marks them this way.
+        if let Some(pill) = list.new_pill {
+            if mail.unread {
+                let at = pill.shifted(row.x, row.y);
+                box_at(
+                    frame,
+                    scale,
+                    at,
+                    Trim::round(TL | TR | BR | BL, 4.0),
+                    None,
+                    Some((ink(s, title_ink), 1.5)),
+                );
+                label(
+                    frame,
+                    scale,
+                    Run::new(at.x + at.w / 2.0, at.y + at.h - 3.0, 10.0, title_ink)
+                        .bold()
+                        .centered(),
+                    ink(s, title_ink),
+                    "NEW",
+                );
             }
         }
     }
@@ -679,7 +902,7 @@ impl Sheet<'_> {
     /// [`crate::widgets::surface::Surface::selected`]'s decision, taken
     /// on a canvas this screen already owns.
     fn selection(&self, frame: &mut canvas::Frame, scale: Scale, list: &MailList, shift: f32) {
-        let s = self.style;
+        let s = self.paint();
         let at = list.sel.shifted(0.0, shift);
         let fill = match list.veneer {
             Some(v) => v.base,
@@ -734,7 +957,7 @@ impl Sheet<'_> {
     /// `docs/neomil/mailbox-trace.svg`'s `#cart` / `#tile` / `#disc`,
     /// relative to the icon's top vertex.
     fn cartridge(&self, frame: &mut canvas::Frame, scale: Scale, x: f32, y: f32, selected: bool) {
-        let s = self.style;
+        let s = self.paint();
         let shift = |p: &[(f32, f32)]| -> Vec<(f32, f32)> {
             p.iter().map(|(a, b)| (x + a, y + b)).collect()
         };
@@ -785,7 +1008,7 @@ impl Sheet<'_> {
 
     /// Region B: the message.
     fn panel(&self, frame: &mut canvas::Frame, scale: Scale, panel: &MailPanel, list: &MailList) {
-        let s = self.style;
+        let s = self.paint();
         if let Some(at) = panel.frame {
             box_at(
                 frame,
@@ -797,34 +1020,13 @@ impl Sheet<'_> {
             );
         }
         if let Some(at) = panel.head {
-            box_at(
-                frame,
-                scale,
-                at,
-                panel.head_trim,
-                Some(ink(s, panel.head_ink)),
-                None,
-            );
+            self.fill(frame, scale, |me, f| {
+                box_at(f, scale, at, panel.head_trim, Some(ink(me.paint(), panel.head_ink)), None);
+            });
         }
 
-        // At rest the panel says what the trace says, which two eras
-        // pin explicitly; once a click has moved it off `message` the
-        // heading and sender are the shown row's own.
-        let Some(mail) = list.rows.get(self.showing).or(list.rows.last()) else {
+        if list.rows.is_empty() {
             return;
-        };
-        let at_rest = self.showing == panel.message;
-        let heading = match panel.heading.filter(|_| at_rest) {
-            Some(text) => text.to_string(),
-            None => cased(mail.subject, panel.title_upper),
-        };
-        label(frame, scale, panel.title, ink(s, panel.title.ink), &heading);
-        if let Some(at) = panel.from {
-            let sender = match panel.sender.filter(|_| at_rest) {
-                Some(text) => text.to_string(),
-                None => format!("{}{}", list.from_prefix, cased(mail.from, list.from_upper)),
-            };
-            label(frame, scale, at, ink(s, at.ink), &sender);
         }
 
         // One run per line the trace sets; nothing is wrapped here.
@@ -844,10 +1046,37 @@ impl Sheet<'_> {
         }
     }
 
+    /// The panel's heading and sender line: [`MailPart::Title`], drawn
+    /// after the panel so an era whose heading stands outside the
+    /// panel's clip (neomil's, above `#message-open`) can leave it out
+    /// of that motion.
+    fn title(&self, frame: &mut canvas::Frame, scale: Scale, panel: &MailPanel, list: &MailList) {
+        let s = self.paint();
+        // At rest the panel says what the trace says, which two eras
+        // pin explicitly; once a click has moved it off `message` the
+        // heading and sender are the shown row's own.
+        let Some(mail) = list.rows.get(self.showing).or(list.rows.last()) else {
+            return;
+        };
+        let at_rest = self.showing == panel.message;
+        let heading = match panel.heading.filter(|_| at_rest) {
+            Some(text) => text.to_string(),
+            None => cased(mail.subject, panel.title_upper),
+        };
+        label(frame, scale, panel.title, ink(s, panel.title.ink), &heading);
+        if let Some(at) = panel.from {
+            let sender = match panel.sender.filter(|_| at_rest) {
+                Some(text) => text.to_string(),
+                None => format!("{}{}", list.from_prefix, cased(mail.from, list.from_upper)),
+            };
+            label(frame, scale, at, ink(s, at.ink), &sender);
+        }
+    }
+
     /// Region C: the action buttons, or the chevron tabs an era stacks
     /// down the right where they would go.
     fn buttons(&self, frame: &mut canvas::Frame, scale: Scale, b: &MailButtons) {
-        let s = self.style;
+        let s = self.paint();
         if b.count == 0 {
             return;
         }
@@ -883,10 +1112,19 @@ impl Sheet<'_> {
         for i in 0..b.count {
             let at = b.first.shifted(b.dx * i as f32, b.dy * i as f32);
             let filled = b.filled == Some(i);
-            if b.chevron {
-                self.chevron(frame, scale, at, filled.then_some(ink(s, b.fill)), b.width);
-            } else if filled {
-                box_at(frame, scale, at, b.trim, Some(ink(s, b.fill)), None);
+            if filled {
+                // The reverse-video button is a fill the eras light
+                // separately (`MailPart::Fills`).
+                self.fill(frame, scale, |me, f| {
+                    let fill = ink(me.paint(), b.fill);
+                    if b.chevron {
+                        me.chevron(f, scale, at, Some(fill), b.width);
+                    } else {
+                        box_at(f, scale, at, b.trim, Some(fill), None);
+                    }
+                });
+            } else if b.chevron {
+                self.chevron(frame, scale, at, None, b.width);
             } else if !b.joined {
                 let fill = b.idle_fill.map(|i| ink(s, i));
                 box_at(frame, scale, at, b.trim, fill, Some((ink(s, b.stroke), b.width)));
@@ -934,7 +1172,7 @@ impl Sheet<'_> {
         fill: Option<iced::Color>,
         width: f32,
     ) {
-        let s = self.style;
+        let s = self.paint();
         let (x, y, w, h) = (at.x, at.y, at.w, at.h);
         poly_at(
             frame,
@@ -957,29 +1195,27 @@ impl Sheet<'_> {
 
     /// Region D: the clearance badges.
     fn badges(&self, frame: &mut canvas::Frame, scale: Scale, b: &MailBadges) {
-        let s = self.style;
+        let s = self.paint();
         let cols = b.cols.max(1);
         for i in 0..b.count {
             let at = b
                 .first
                 .shifted(b.dx * (i % cols) as f32, b.dy * (i / cols) as f32);
             let selected = b.selected == Some(i);
-            box_at(
-                frame,
-                scale,
-                at,
-                b.trim,
-                if selected {
-                    Some(ink(s, Ink::Select))
-                } else {
-                    b.fill.map(|r| ink(s, r))
-                },
-                if selected {
-                    None
-                } else {
-                    Some((ink(s, b.stroke), b.width))
-                },
-            );
+            if selected {
+                self.fill(frame, scale, |me, f| {
+                    box_at(f, scale, at, b.trim, Some(ink(me.paint(), Ink::Select)), None);
+                });
+            } else {
+                box_at(
+                    frame,
+                    scale,
+                    at,
+                    b.trim,
+                    b.fill.map(|r| ink(s, r)),
+                    Some((ink(s, b.stroke), b.width)),
+                );
+            }
             if let Some(cap) = b.caption {
                 let role = if selected { Ink::OnSelect } else { cap.ink };
                 label(
@@ -1067,15 +1303,26 @@ impl canvas::Program<Message, Style> for Sheet<'_> {
             sx: w / DW,
             sy: h / DH,
         };
-        let s = self.style;
-        let m = &s.mailbox;
+        let m = &self.style.mailbox;
 
-        pieces(&mut frame, scale, s, m.chrome);
-        self.list(&mut frame, scale, &m.list);
-        self.panel(&mut frame, scale, &m.panel, &m.list);
-        self.buttons(&mut frame, scale, &m.buttons);
-        self.badges(&mut frame, scale, &m.badges);
-        pieces(&mut frame, scale, s, m.overlay);
+        // The chrome is static; the pieces an era moves are in its
+        // motions, and come up under those covers after it. Then the
+        // regions, each under its own cover, and the overlay. All of
+        // it through `under`, so the order here is the paint order.
+        self.under(&mut frame, scale, Cover::OPEN, |me, f| pieces(f, scale, me.paint(), m.chrome));
+        for motion in self.style.mailbox.motions {
+            for part in motion.parts {
+                if let MailPart::Pieces(moving) = *part {
+                    self.under(&mut frame, scale, self.cover(*part), |me, f| pieces(f, scale, me.paint(), moving));
+                }
+            }
+        }
+        self.under(&mut frame, scale, self.cover(MailPart::List), |me, f| me.list(f, scale, &m.list));
+        self.under(&mut frame, scale, self.cover(MailPart::Panel), |me, f| me.panel(f, scale, &m.panel, &m.list));
+        self.under(&mut frame, scale, self.cover(MailPart::Title), |me, f| me.title(f, scale, &m.panel, &m.list));
+        self.under(&mut frame, scale, self.cover(MailPart::Buttons), |me, f| me.buttons(f, scale, &m.buttons));
+        self.under(&mut frame, scale, self.cover(MailPart::Badges), |me, f| me.badges(f, scale, &m.badges));
+        self.under(&mut frame, scale, Cover::OPEN, |me, f| pieces(f, scale, me.paint(), m.overlay));
 
         vec![frame.into_geometry()]
     }
@@ -1083,7 +1330,7 @@ impl canvas::Program<Message, Style> for Sheet<'_> {
 
 /// Draw an era's free-standing pieces -- [`Mailbox::chrome`] under the
 /// four regions, [`Mailbox::overlay`] over them.
-fn pieces(frame: &mut canvas::Frame, scale: Scale, s: &Style, pieces: &[Piece]) {
+fn pieces(frame: &mut canvas::Frame, scale: Scale, s: Paint, pieces: &[Piece]) {
     for piece in pieces {
         match piece {
             Piece::Box {

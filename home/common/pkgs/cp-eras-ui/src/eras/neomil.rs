@@ -601,8 +601,8 @@ pub const ACCESS: Access = Access {
 // margin strings, for the same reason. The 0.8 box around PETROCHEM is
 // drawn, in `OVERLAY` (it sits on the panel, so CHROME is too early).
 use crate::style::{
-    Frame, Icons, Mail, MailBadges, MailButtons, MailList, MailPanel, Mailbox, Note,
-    Piece, RowDecor, Run, Trim, FromAt, BL, BR, TR,
+    Frame, Icons, Mail, MailBadges, MailButtons, MailList, MailMotion, MailPanel, MailPart,
+    Mailbox, Note, Piece, RowDecor, Run, Trim, FromAt, BL, BR, TR,
 };
 
 /// `#wash` (:32-39): "the warm near-black wash under the list and
@@ -1030,8 +1030,58 @@ pub fn mailbox() -> Mailbox {
             caption_text: "LEVEL",
             labels: &LEVELS,
         },
+        motions: MAILBOX_MOTIONS,
     }
 }
+
+/// The mailbox's boot-in (mailbox-trace :143-186), the neomil way --
+/// the dashboard's GO HOME panel under its `#panel-open`: two top-down
+/// wipes, the list first and the message panel a beat after it, in the
+/// screen's reading order. The mailbox is a layout, not a display list,
+/// so these name the sheet's regions (`MailMotion`,
+/// `Mailbox::motions`; `screens/mail.rs` paints them) where the store's
+/// `#shelf-open` wraps its prims:
+///
+///   * `#list-open` (:159-164): the eight disc icons and the eight rows
+///     together, rect x 125 y 305 w 400, h 0 -> 578 over 0.44 s from 0,
+///     `keySplines="0.33 1 0.68 1"` = EaseOutCubic -- `MailPart::List`,
+///     which is where `Sheet::list` draws the cartridges and the rows.
+///     The scroll rail and its R widget, the header and the tabs are
+///     `CHROME` and stand, as the trace keeps them outside the clip;
+///   * `#message-open` (:179-185): the panel and the four buttons under
+///     it as one block, rect x 720 y 304 w 745, h 0 -> 464 over 0.36 s
+///     from 0.15 s, EaseOutCubic -- `MailPart::Panel` and
+///     `MailPart::Buttons`. The `<set>` holding the height at 0 until
+///     0.15 s needs nothing here: `Motion::begin` holds at `from`.
+///
+/// The heading "Urgent Information (!)" (`panel.title`, baseline y 287)
+/// is not under `#message-open`: the trace keeps it above the clip as a
+/// standing label (:369-370, "the heading above the panel stays"), and
+/// the rect's top at 304 would cut it out of the rest frame. So no
+/// motion here names `MailPart::Title`, and the sheet draws it whole
+/// from frame 0.
+pub const MAILBOX_MOTIONS: &[MailMotion] = &[
+    MailMotion {
+        motion: Motion {
+            id: "list-open",
+            begin: 0,
+            dur: 440,
+            ease: Easing::EaseOutCubic,
+            change: Change::Clip { x: 125.0, y: 305.0, w: (400.0, 400.0), h: (0.0, 578.0) },
+        },
+        parts: &[MailPart::List],
+    },
+    MailMotion {
+        motion: Motion {
+            id: "message-open",
+            begin: 150,
+            dur: 360,
+            ease: Easing::EaseOutCubic,
+            change: Change::Clip { x: 720.0, y: 304.0, w: (745.0, 745.0), h: (0.0, 464.0) },
+        },
+        parts: &[MailPart::Panel, MailPart::Buttons],
+    },
+];
 // --- end mailbox ---
 // --- store ---------------------------------------------------------------
 //
@@ -1632,6 +1682,15 @@ const SLANT: &[Seg] = &[
 ];
 const ARROW: &[Seg] = &[Seg::Line(985.0, 35.0), Seg::Line(985.0, 45.0)];
 
+/// The four product cards at their columns (:341-514): its own table
+/// because `STORE` wipes it in under `#shelf-open`.
+const SHELF: &[Prim] = &[
+    Prim::At { x: 437.0, y: 0.0, prims: SHELF_0 },
+    Prim::At { x: 769.0, y: 0.0, prims: SHELF_1 },
+    Prim::At { x: 1096.0, y: 0.0, prims: SHELF_2 },
+    Prim::At { x: 1425.0, y: 0.0, prims: SHELF_3 },
+];
+
 pub const STORE: &[Prim] = &[
     // the hub backdrop: near-black, the masked cold blue over the top,
     // the warm wash under the left half, the black field at the
@@ -1670,11 +1729,29 @@ pub const STORE: &[Prim] = &[
     // left margin
     Prim::At { x: 62.0, y: 186.0, prims: CHIP },
     txt_bold(65.0, 197.0, 10.0, Ink::OnSelect, "1"),
-    // the shelf
-    Prim::At { x: 437.0, y: 0.0, prims: SHELF_0 },
-    Prim::At { x: 769.0, y: 0.0, prims: SHELF_1 },
-    Prim::At { x: 1096.0, y: 0.0, prims: SHELF_2 },
-    Prim::At { x: 1425.0, y: 0.0, prims: SHELF_3 },
+    // the shelf, wiped in from the top at boot: `#shelf-open` (:240-246)
+    // grows one clip over all four cards from no height to 664 over
+    // 0.5 s from 0, `keySplines="0.33 1 0.68 1"` = EaseOutCubic, and
+    // freezes; at rest it is the trace's own group (:340-515). One
+    // curtain, not four: the cards share a top edge at y 151, and the
+    // selected card, the taller one, is what the wipe ends on. The nav,
+    // the logotype, the customer block and the footer are chrome and
+    // stay, as the dashboard's diamonds do under `#panel-open`. The
+    // trace's rect stops at x 1570 because its card 4 is cut by its own
+    // `#c4clip` at 1557; here the cut is `CARD4`'s covering strip out
+    // to the frame edge, part of the card's drawing and under the same
+    // curtain, so the rect runs to 1600 -- ink-free in the trace, so
+    // the frames agree, and the rest frame stays the golden.
+    Prim::Motion {
+        motion: Motion {
+            id: "shelf-open",
+            begin: 0,
+            dur: 500,
+            ease: Easing::EaseOutCubic,
+            change: Change::Clip { x: 430.0, y: 144.0, w: (1170.0, 1170.0), h: (0.0, 664.0) },
+        },
+        prims: SHELF,
+    },
     // footer
     Prim::Rect { x: 153.5, y: 851.5, w: 144.0, h: 22.0, fill: Some(Ink::Border), stroke: Some(Ink::Fg), width: 1.0 },
     fill_rect(215.0, 851.5, 1.0, 22.0, Ink::Fg),

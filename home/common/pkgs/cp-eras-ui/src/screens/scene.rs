@@ -104,7 +104,7 @@ impl<M: 'static> Scene<M> {
     /// the split puts the image where the era table says it goes.
     pub fn view(self) -> Element<'static, M> {
         iced::widget::stack![
-            canvas(Backdrop { style: self.style, prims: self.prims, stretch: false })
+            canvas(Backdrop { style: self.style, prims: self.prims, stretch: false, at: self.at })
                 .width(iced::Length::Fill)
                 .height(iced::Length::Fill),
             canvas(self).width(iced::Length::Fill).height(iced::Length::Fill),
@@ -117,7 +117,12 @@ impl<M: 'static> Scene<M> {
 /// [`Scene::view`] for why they cannot share the scene's. It paints
 /// only the groups that *lead* the scene's list -- a composited
 /// backdrop is what `Soft` is for, and `soft_groups_lead_their_scene`
-/// keeps every era table to that.
+/// keeps every era table to that. A leading group may sit inside a
+/// [`Prim::Motion`] with a [`Change::Clip`]: it is then composited
+/// over the groups before it and cut to its own coverage
+/// (`soft::composite_over`), so the image can be clipped as the
+/// motion says without wgpu blending its translucency in linear
+/// light. That is how kitsch's ghost fans extrude.
 #[derive(Debug, Clone, Copy)]
 pub struct Backdrop {
     pub style: Style,
@@ -131,12 +136,120 @@ pub struct Backdrop {
     /// composited at the frame's aspect and stretched on the way out --
     /// a gradient filtered linearly loses nothing to that.
     pub stretch: bool,
+    /// The moment to paint, as [`Scene::at`]: what a motion over a
+    /// leading group is read at.
+    pub at: Duration,
 }
 
-/// The leading run of [`Prim::Soft`] groups in `prims`.
+/// Whether `prim` is one [`Backdrop`] paints: a [`Prim::Soft`] group,
+/// or a [`Prim::Motion`] holding nothing but those.
+fn is_soft(prim: &Prim) -> bool {
+    match prim {
+        Prim::Soft { .. } => true,
+        Prim::Motion { prims, .. } => !prims.is_empty() && prims.iter().all(is_soft),
+        _ => false,
+    }
+}
+
+/// The leading run of [`Prim::Soft`] groups in `prims`, moving ones
+/// included.
 fn leading_soft(prims: &'static [Prim]) -> &'static [Prim] {
-    let n = prims.iter().take_while(|p| matches!(p, Prim::Soft { .. })).count();
+    let n = prims.iter().take_while(|p| is_soft(p)).count();
     &prims[..n]
+}
+
+impl Backdrop {
+    /// Paint one leading group, or a motion of them, `under` the
+    /// groups already painted. `region` is the clip the enclosing
+    /// motions have come to, in canvas coordinates, `None` when there
+    /// is none; an empty one paints nothing.
+    fn paint(
+        &self,
+        frame: &mut canvas::Frame,
+        soft: &SoftCache,
+        prim: &'static Prim,
+        under: &mut Vec<&'static [Prim]>,
+        size: (u32, u32),
+        k: f32,
+        region: Option<Rectangle>,
+    ) {
+        match *prim {
+            Prim::Soft { prims } => {
+                let handle = if region.is_some() {
+                    soft.cut(under, prims, &self.style.palette, size, k)
+                } else {
+                    soft.image(prims, &self.style.palette, size, k)
+                };
+                under.push(prims);
+                let (width, height) = if self.stretch {
+                    (frame.width(), frame.height())
+                } else {
+                    (size.0 as f32, size.1 as f32)
+                };
+                let image = canvas::Image::new(handle)
+                    .filter_method(iced::widget::image::FilterMethod::Linear);
+                let bounds = Rectangle { x: 0.0, y: 0.0, width, height };
+                match region {
+                    Some(region) => frame.with_clip(region, |f| f.draw_image(bounds, image)),
+                    None => frame.draw_image(bounds, image),
+                }
+            }
+            Prim::Motion { motion, prims } => {
+                let t = motion::progress(&motion, self.at);
+                let region = match motion.change {
+                    Change::Clip { x, y, w, h } => {
+                        // The same rectangle `Scene::paint` clips to; a
+                        // stretched backdrop maps it axis by axis as
+                        // the sheet over it does.
+                        let (sx, sy) = if self.stretch {
+                            (frame.width() / FRAME.0, frame.height() / FRAME.1)
+                        } else {
+                            (k, k)
+                        };
+                        let own = Rectangle {
+                            x: x * sx,
+                            y: y * sy,
+                            width: Change::lerp(w, t) * sx,
+                            height: Change::lerp(h, t) * sy,
+                        };
+                        match region {
+                            Some(outer) => outer.intersection(&own).unwrap_or(Rectangle::new(Point::ORIGIN, Size::ZERO)),
+                            None => own,
+                        }
+                    }
+                    // A fade of a composited group would want the
+                    // image drawn at an opacity, which lands in linear
+                    // light; `soft_motions_only_clip` keeps the tables
+                    // off it until something needs it.
+                    Change::Opacity { .. } => region.unwrap_or(Rectangle::new(
+                        Point::ORIGIN,
+                        Size::new(frame.width(), frame.height()),
+                    )),
+                };
+                if region.width <= 0.0 || region.height <= 0.0 {
+                    // Nothing shows, but the groups are still under
+                    // whatever follows.
+                    for p in prims {
+                        push_soft(p, under);
+                    }
+                    return;
+                }
+                for p in prims {
+                    self.paint(frame, soft, p, under, size, k, Some(region));
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+/// Record the groups of a leading prim as painted, without painting.
+fn push_soft(prim: &'static Prim, under: &mut Vec<&'static [Prim]>) {
+    match *prim {
+        Prim::Soft { prims } => under.push(prims),
+        Prim::Motion { prims, .. } => prims.iter().for_each(|p| push_soft(p, under)),
+        _ => {}
+    }
 }
 
 impl<M> canvas::Program<M, Style> for Backdrop {
@@ -157,19 +270,9 @@ impl<M> canvas::Program<M, Style> for Backdrop {
             // matrix's 1600x900 the composite lands byte-for-byte;
             // scaled, it is filtered like any other image.
             let size = ((FRAME.0 * k).round().max(1.0) as u32, (FRAME.1 * k).round().max(1.0) as u32);
+            let mut under = Vec::new();
             for prim in leading_soft(self.prims) {
-                let Prim::Soft { prims } = *prim else { continue };
-                let handle = soft.image(prims, &self.style.palette, size, k);
-                let (width, height) = if self.stretch {
-                    (bounds.width, bounds.height)
-                } else {
-                    (size.0 as f32, size.1 as f32)
-                };
-                frame.draw_image(
-                    Rectangle { x: 0.0, y: 0.0, width, height },
-                    canvas::Image::new(handle)
-                        .filter_method(iced::widget::image::FilterMethod::Linear),
-                );
+                self.paint(&mut frame, soft, prim, &mut under, size, k, None);
             }
         }
         vec![frame.into_geometry()]
@@ -204,14 +307,55 @@ impl SoftCache {
         size: (u32, u32),
         k: f32,
     ) -> iced::widget::image::Handle {
-        let mut cache = self.0.borrow_mut();
-        cache.retain(|e| e.size == size && e.palette == *palette);
-        if let Some(e) = cache.iter().find(|e| e.prims == prims.as_ptr() as usize && e.len == prims.len()) {
-            return e.handle.clone();
+        if let Some(handle) = self.find(prims, palette, size) {
+            return handle;
         }
         let pixels = soft::composite(prims, palette, size.0, size.1, k);
+        self.keep(prims, palette, size, pixels)
+    }
+
+    /// The image for a *moving* `prims`: the composite of `under` and
+    /// `prims` cut to what `prims` touches (`soft::composite_over`).
+    /// Keyed like [`image`](Self::image) on `prims` alone -- what is
+    /// under a group is fixed by its table.
+    pub(crate) fn cut(
+        &self,
+        under: &[&'static [Prim]],
+        prims: &'static [Prim],
+        palette: &crate::palette::Palette,
+        size: (u32, u32),
+        k: f32,
+    ) -> iced::widget::image::Handle {
+        if let Some(handle) = self.find(prims, palette, size) {
+            return handle;
+        }
+        let pixels = soft::composite_over(under, prims, palette, size.0, size.1, k);
+        self.keep(prims, palette, size, pixels)
+    }
+
+    fn find(
+        &self,
+        prims: &'static [Prim],
+        palette: &crate::palette::Palette,
+        size: (u32, u32),
+    ) -> Option<iced::widget::image::Handle> {
+        let mut cache = self.0.borrow_mut();
+        cache.retain(|e| e.size == size && e.palette == *palette);
+        cache
+            .iter()
+            .find(|e| e.prims == prims.as_ptr() as usize && e.len == prims.len())
+            .map(|e| e.handle.clone())
+    }
+
+    fn keep(
+        &self,
+        prims: &'static [Prim],
+        palette: &crate::palette::Palette,
+        size: (u32, u32),
+        pixels: Vec<u8>,
+    ) -> iced::widget::image::Handle {
         let handle = iced::widget::image::Handle::from_rgba(size.0, size.1, pixels);
-        cache.push(SoftEntry {
+        self.0.borrow_mut().push(SoftEntry {
             prims: prims.as_ptr() as usize,
             len: prims.len(),
             size,
@@ -605,6 +749,17 @@ impl<M> Scene<M> {
                             // running translation. An empty region
                             // is skipped rather than handed to wgpu
                             // as a zero-sized scissor.
+                            //
+                            // The paste lands the draft's meshes
+                            // *under* everything this frame draws
+                            // directly, before or after: a frame's
+                            // own geometry is batched only when it
+                            // is finished. So a clipped group must
+                            // not overlap a prim outside it that is
+                            // meant to paint under it. No table does
+                            // today (the goldens would show it);
+                            // `mail.rs`'s `Sheet::under` says how a
+                            // scene that needed to would be drawn.
                             let region = Rectangle {
                                 x: (ox + x) * k,
                                 y: (oy + y) * k,
@@ -812,7 +967,7 @@ fn srgb_over(c: Color, b: Color) -> [f32; 3] {
 /// 116, darkened ink 102) and it also shifts the hue, so the alpha is
 /// what moves. Measured on the kitsch dashboard, G2i 31% -> 45% with
 /// the alpha, 32% with the ink.
-fn blend_over(c: Color, b: Color) -> Color {
+pub(crate) fn blend_over(c: Color, b: Color) -> Color {
     if c.a <= 0.0 || c.a >= 1.0 {
         return c;
     }
@@ -997,7 +1152,10 @@ mod tests {
     /// A `Prim::Soft` group is a backdrop, and `Backdrop` paints only
     /// the groups that lead a scene's list: one after any other prim
     /// would be silently dropped, and one nested in an `At`, `Turn` or
-    /// plate would be too.
+    /// plate would be too. The one nesting `Backdrop` does see is a
+    /// leading `Motion` holding nothing but `Soft` groups (`is_soft`);
+    /// a `Motion` that mixes a `Soft` group with anything else is
+    /// neither backdrop nor scene, and is caught here as nested.
     #[test]
     fn soft_groups_lead_their_scene() {
         fn none_nested(prims: &[Prim], where_: &str) {
@@ -1023,11 +1181,8 @@ mod tests {
             ] {
                 let where_ = format!("{era:?} {screen}");
                 let lead = leading_soft(prims).len();
-                assert!(
-                    !prims[lead..].iter().any(|p| matches!(p, Prim::Soft { .. })),
-                    "{where_}: a Soft group follows a non-Soft prim"
-                );
-                for prim in prims {
+                for prim in &prims[lead..] {
+                    assert!(!matches!(prim, Prim::Soft { .. }), "{where_}: a Soft group follows a non-Soft prim");
                     match *prim {
                         Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Motion { prims, .. } => none_nested(prims, &where_),
                         Prim::Plate { on, off, .. } => {
@@ -1039,6 +1194,63 @@ mod tests {
                 }
             }
         }
+    }
+
+    /// A motion over a leading `Soft` group is a clip: `Backdrop` cuts
+    /// the composite and scissors it, and has no exact way to fade an
+    /// image (the opacity would blend in linear light). Nothing needs
+    /// a fade there yet; this is where to start if something does.
+    #[test]
+    fn soft_motions_only_clip() {
+        for era in crate::style::Era::ALL {
+            let style = era.style();
+            for (prims, screen) in [
+                (style.dashboard, "dashboard"),
+                (style.store, "store"),
+                (style.mailbox.backdrop, "mailbox backdrop"),
+                (style.access.backdrop, "login backdrop"),
+            ] {
+                for prim in leading_soft(prims) {
+                    if let Prim::Motion { motion, .. } = prim {
+                        assert!(
+                            matches!(motion.change, Change::Clip { .. }),
+                            "{era:?} {screen}: #{} fades a Soft group",
+                            motion.id
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    /// The cut `Backdrop` draws a moving `Soft` group as is exact at
+    /// rest only where the groups after it touch none of its pixels
+    /// (`soft::composite_over`). Kitsch's two ghost fans overlap in
+    /// their clip boxes -- x 668..774 -- but no ghost of one lands on
+    /// a pixel of the other, so the rest frame is the one-buffer
+    /// composite and a frame mid-wipe shows nothing early.
+    #[test]
+    fn the_kitsch_fans_share_no_pixel() {
+        let style = crate::style::Era::Kitsch.style();
+        let fans: Vec<&'static [Prim]> = leading_soft(style.dashboard)
+            .iter()
+            .filter_map(|p| match p {
+                Prim::Motion { prims, .. } => Some(prims.iter()),
+                _ => None,
+            })
+            .flatten()
+            .filter_map(|p| match *p {
+                Prim::Soft { prims } => Some(prims),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(fans.len(), 2, "two fans");
+        let (w, h) = (FRAME.0 as u32, FRAME.1 as u32);
+        let left = soft::touched(fans[0], &style.palette, w, h, 1.0);
+        let right = soft::touched(fans[1], &style.palette, w, h, 1.0);
+        let shared = left.iter().zip(&right).filter(|(l, r)| **l && **r).count();
+        assert_eq!(shared, 0, "{shared} pixels under both fans");
+        assert!(left.iter().any(|&t| t) && right.iter().any(|&t| t), "both fans paint");
     }
 
     /// A `Prim::Motion`'s clip is a rectangle in the scene's frame:
@@ -1100,12 +1312,15 @@ mod tests {
     /// a frame of something still moving.
     #[test]
     fn every_motion_rests_before_rest() {
+        fn rests(motion: &crate::style::Motion, where_: &str) {
+            let ends = std::time::Duration::from_millis(u64::from(motion.begin + motion.dur));
+            assert!(ends <= crate::motion::REST, "{where_}: #{} ends at {ends:?}", motion.id);
+        }
         fn check(prims: &[Prim], where_: &str) {
             for prim in prims {
                 match *prim {
                     Prim::Motion { motion, prims } => {
-                        let ends = std::time::Duration::from_millis(u64::from(motion.begin + motion.dur));
-                        assert!(ends <= crate::motion::REST, "{where_}: #{} ends at {ends:?}", motion.id);
+                        rests(&motion, where_);
                         check(prims, where_);
                     }
                     Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Soft { prims } => check(prims, where_),
@@ -1121,6 +1336,12 @@ mod tests {
             let style = era.style();
             check(style.dashboard, &format!("{era:?} dashboard"));
             check(style.store, &format!("{era:?} store"));
+            check(style.mailbox.backdrop, &format!("{era:?} mailbox backdrop"));
+            check(style.access.backdrop, &format!("{era:?} login backdrop"));
+            for m in style.mailbox.motions {
+                rests(&m.motion, &format!("{era:?} mailbox"));
+                assert!(!m.parts.is_empty(), "{era:?} mailbox: #{} moves nothing", m.motion.id);
+            }
         }
     }
 

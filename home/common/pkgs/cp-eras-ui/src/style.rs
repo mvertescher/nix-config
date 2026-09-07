@@ -2081,7 +2081,64 @@ pub struct Mailbox {
     pub panel: MailPanel,
     pub buttons: MailButtons,
     pub badges: MailBadges,
+    /// The boot-in: the trace's `<animate>`s over the parts of the
+    /// sheet they move, in the trace's order. Empty for a mailbox that
+    /// comes up whole.
+    pub motions: &'static [MailMotion],
 }
+
+/// One of a mailbox trace's boot-in `<animate>`s, applied to the parts
+/// of the sheet it moves. The mailbox is a layout ([`Mailbox`]), not a
+/// display list, so a [`Motion`] cannot wrap its prims the way
+/// [`Prim::Motion`] wraps a scene's: it names the *regions* instead,
+/// and `screens::mail` draws each region under every motion that names
+/// it -- the clips intersected, the alphas multiplied.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct MailMotion {
+    pub motion: Motion,
+    pub parts: &'static [MailPart],
+}
+
+/// A part of the mailbox a [`MailMotion`] moves.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum MailPart {
+    /// Free-standing pieces that move: drawn after [`Mailbox::chrome`]
+    /// and before the list, in the order the era's motions list them.
+    /// The pieces that stand still stay in `chrome`, which is what makes
+    /// an era's header stand while its body scans in.
+    Pieces(&'static [Piece]),
+    List,
+    /// The message panel: its frame, head, and body copy -- but not
+    /// its heading, which is [`MailPart::Title`].
+    Panel,
+    /// The panel's heading and sender (`MailPanel::title`, `from`),
+    /// which two traces set inside the panel's motion and one keeps
+    /// outside it: entropism's "URGENT INFORMATION (!)" and kitsch's
+    /// "YOU'LL REGRET THAT" sit on the head, inside `#body-scan` and
+    /// `#message-extrude`; neomil's "Urgent Information (!)" is a
+    /// standing label above `#message-open`'s clip (its rect starts
+    /// at y 304 under a baseline of 287), so no motion of neomil's
+    /// names it. Drawn after the panel, so it reads over the head.
+    Title,
+    Buttons,
+    Badges,
+    /// The reverse-video fills, wherever they sit: the list's selection
+    /// plate (and its icon box), the panel's head, the filled button and
+    /// the selected badge. Entropism lights them after the scan has
+    /// drawn the frames and text around them (`#select-lit`). A fill
+    /// also moves with the region it sits in.
+    Fills,
+    /// The selected row's printing: its inverted notch, envelope,
+    /// title and FROM line. Always inside [`MailPart::List`]; named
+    /// besides by the era whose trace moves it with the selection --
+    /// neokitsch fades the bar *and* its dark printing in together
+    /// (`#bar-fade` + `#bar-fade-text`), where entropism's
+    /// `#select-lit` lights the fill under ink that already stands,
+    /// neomil's row 1 is inside the list wipe with the others, and
+    /// kitsch's selected row does not move at all.
+    Printing,
+}
+
 // --- end mailbox ---
 // --- store ---------------------------------------------------------------
 //

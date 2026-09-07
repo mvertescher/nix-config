@@ -455,13 +455,16 @@ pub const ACCESS: Access = Access {
 // BOX stay `Ink::Mid`: they are the screen's faintest text, not frames.
 
 use crate::style::{
-    Frame, Mail, MailBadges, MailButtons, MailList, MailPanel, Mailbox, Note, Piece,
-    RowDecor, Run, Trim, FromAt,
+    Change, Frame, Mail, MailBadges, MailButtons, MailList, MailMotion, MailPanel, MailPart,
+    Mailbox, Motion, Note, Piece, RowDecor, Run, Trim, FromAt,
 };
+use iced::animation::Easing;
 
-/// Header strip, footer strip, the three boxed section letters, and
-/// every fixed string the trace prints around them.
-static CHROME: [Piece; 22] = [
+/// Header strip and footer strip: the chrome that stands from frame 0.
+/// The section headings are the body's (`BODY_HEADINGS`, under
+/// `#body-scan`) and the footer strings type on last (`FOOTER_STRINGS`,
+/// under `#footer-type`); see `MAILBOX_MOTIONS`.
+static CHROME: [Piece; 7] = [
     // header strip x 49..1547, y 43..69, dividers at x 465 and 1353
     Piece::Box {
         at: Frame::new(49.0, 43.0, 1498.0, 26.0),
@@ -496,6 +499,19 @@ static CHROME: [Piece; 22] = [
         at: Run::new(1382.0, 60.0, 17.0, Ink::Fg).medium(),
         text: "FLAIR TRS 5MMP",
     }),
+    // footer strip x 49..1547, y 847..873, no dividers
+    Piece::Box {
+        at: Frame::new(49.0, 847.0, 1498.0, 26.0),
+        fill: None,
+        stroke: Some(Ink::Border),
+        width: 2.0,
+        trim: Trim::NONE,
+    },
+];
+
+/// The three boxed section letters and their strings: the top of the
+/// body, scanned in with it.
+static BODY_HEADINGS: [Piece; 12] = [
     // A MAIL BOX, with the two lines of micro-print under it
     Piece::Box {
         at: Frame::new(100.0, 98.0, 26.0, 26.0),
@@ -557,14 +573,10 @@ static CHROME: [Piece; 22] = [
         at: Run::new(1383.0, 144.0, 22.0, Ink::Fg),
         text: "LEVEL",
     }),
-    // footer strip x 49..1547, y 847..873, no dividers
-    Piece::Box {
-        at: Frame::new(49.0, 847.0, 1498.0, 26.0),
-        fill: None,
-        stroke: Some(Ink::Border),
-        width: 2.0,
-        trim: Trim::NONE,
-    },
+];
+
+/// The footer strip's three strings, typed on from the left.
+static FOOTER_STRINGS: [Piece; 3] = [
     Piece::Label(Note {
         at: Run::new(61.0, 865.0, 17.0, Ink::Fg).medium(),
         text: "INTERFACE LOADED",
@@ -578,6 +590,88 @@ static CHROME: [Piece; 22] = [
         text: "BUILD 6.47.48441.R15",
     }),
 ];
+
+// --- motion ---
+//
+// The three boot-in animations of every entropism screen (the traces'
+// `<defs>`, and `docs/entropism/README.md`): the body scans down, the
+// selection lights, the footer types. The three screens share the
+// ids, the timing and the easing, and differ only in the rectangles,
+// so the two shared ones are consts and each screen sets its own clip.
+
+/// `#select-lit`: the solid selection fills come up as one group
+/// opacity 0 -> 1 over 0.15 s from 0.45 s, `keySplines="0.61 1 0.88 1"`
+/// = EaseOut. Only the fills: the dark ink on them is painted after
+/// and stands from frame 0, as the traces draw it.
+pub const SELECT_LIT: Motion = Motion {
+    id: "select-lit",
+    begin: 450,
+    dur: 150,
+    ease: Easing::EaseOut,
+    change: Change::Opacity { alpha: (0.0, 1.0) },
+};
+
+/// `#body-scan` for a given body rectangle: a clip on `height`, 0 to
+/// the whole, over 0.45 s from 0, `keySplines="0.45 0 0.55 1"` =
+/// EaseInOutQuad -- a scan, not a wipe.
+pub const fn body_scan(x: f32, y: f32, w: f32, h: f32) -> Motion {
+    Motion {
+        id: "body-scan",
+        begin: 0,
+        dur: 450,
+        ease: Easing::EaseInOutQuad,
+        change: Change::Clip { x, y, w: (w, w), h: (0.0, h) },
+    }
+}
+
+/// `#footer-type` for the footer strip's text box: a clip on `width`,
+/// 0 to the whole, over 0.35 s from 0.6 s, EaseInOutQuad again (a
+/// teletype). The strip's frame is chrome and does not move.
+pub const fn footer_type(x: f32, y: f32, w: f32, h: f32) -> Motion {
+    Motion {
+        id: "footer-type",
+        begin: 600,
+        dur: 350,
+        ease: Easing::EaseInOutQuad,
+        change: Change::Clip { x, y, w: (0.0, w), h: (h, h) },
+    }
+}
+
+/// The mailbox's three, over the sheet's regions
+/// (`Mailbox::motions`; `screens/mail.rs` paints them):
+///
+///   * `#body-scan` over the body rect x 70 y 90 w 1490 h 670 -- the
+///     section headings, the list, the message panel with its heading,
+///     the buttons and the badges, which is everything between the
+///     strips;
+///   * `#select-lit` over the four solid fills (row 1's plate, the
+///     message's title bar, REPORT SPAM, the T2 badge) -- the sheet's
+///     `MailPart::Fills`, each inside its region's own cover as the
+///     trace nests the group inside the clip;
+///   * `#footer-type` over the three footer strings, x 49 y 835 w 1498
+///     h 50.
+pub const MAILBOX_MOTIONS: &[MailMotion] = &[
+    MailMotion {
+        motion: body_scan(70.0, 90.0, 1490.0, 670.0),
+        parts: &[
+            MailPart::Pieces(&BODY_HEADINGS),
+            MailPart::List,
+            MailPart::Panel,
+            MailPart::Title,
+            MailPart::Buttons,
+            MailPart::Badges,
+        ],
+    },
+    MailMotion {
+        motion: SELECT_LIT,
+        parts: &[MailPart::Fills],
+    },
+    MailMotion {
+        motion: footer_type(49.0, 835.0, 1498.0, 50.0),
+        parts: &[MailPart::Pieces(&FOOTER_STRINGS)],
+    },
+];
+// --- end motion ---
 
 static BUTTONS: [&str; 4] = ["REPLY", "FORWARD", "DELETE", "REPORT SPAM"];
 /// The trace reads them T1 T3 over T2 T4, and T2 -- bottom left -- is
@@ -729,6 +823,7 @@ pub fn mailbox() -> Mailbox {
             caption_text: "",
             labels: &LEVELS,
         },
+        motions: MAILBOX_MOTIONS,
     }
 }
 // --- end mailbox ---
@@ -820,7 +915,9 @@ const CARD: &[Prim] = &[
 /// solid, the outline runs 412 tall, and the detail block takes the
 /// room the unselected card spends on its compliance notice.
 const GROWN: &[Prim] = &[
-    fill_rect(0.0, 0.0, 265.0, 234.0, Ink::Select),
+    // the header fill lights with the SMG row (`#select-lit`, :285);
+    // the dark ink on it below stands from frame 0
+    Prim::Motion { motion: SELECT_LIT, prims: &[fill_rect(0.0, 0.0, 265.0, 234.0, Ink::Select)] },
     line_rect(0.0, 0.0, 265.0, 412.0, Ink::Border, 2.0),
     txt(13.0, 26.0, 24.0, Ink::OnSelect, "MAGNUM 650"),
     txt(13.0, 45.0, 20.0, Ink::OnSelect, "HAND GUN"),
@@ -915,7 +1012,8 @@ macro_rules! nav {
     ($top:expr, $h:expr, $base:expr, $label:expr) => {
         (
             &[
-                fill_rect(112.0, $top, 218.0, $h, Ink::Select),
+                // the row's fill lights (`#select-lit`); its label does not
+                Prim::Motion { motion: SELECT_LIT, prims: &[fill_rect(112.0, $top, 218.0, $h, Ink::Select)] },
                 txt(140.0, $base, 24.0, Ink::OnSelect, $label),
             ],
             &[txt(140.0, $base, 24.0, Ink::Select, $label)],
@@ -971,13 +1069,32 @@ const STORE_GROUND: &[Prim] = &[
 pub const STORE: &[Prim] = &[
     // ground (:168), composited
     Prim::Soft { prims: STORE_GROUND },
-    // header strip, y 43..69, dividers at x 467 and 1357
+    // header strip, y 43..69, dividers at x 467 and 1357: chrome,
+    // standing from frame 0
     line_rect(49.0, 43.0, 1502.0, 26.0, Ink::Border, 1.5),
     vline(467.0, 43.0, 69.0, Ink::Border, 1.5),
     vline(1357.0, 43.0, 69.0, Ink::Border, 1.5),
     txt(61.0, 61.0, 15.0, Ink::Fg, "DIGITAL DISTRIBUTION SOFTWAREV2"),
     txt(506.0, 61.0, 15.0, Ink::Fg, "STORE ACCESS SCREEN"),
     txt(1372.0, 61.0, 15.0, Ink::Fg, "FLAIR TRS 5MMP"),
+    // the body: everything between the strips, scanned down at boot
+    // (`#body-scan`, :193, rect x 100 y 90 w 1500 h 730)
+    Prim::Motion { motion: body_scan(100.0, 90.0, 1500.0, 730.0), prims: STORE_BODY },
+    // footer strip, y 847..873, no dividers: the frame is chrome, the
+    // strings type on (`#footer-type`, :206, x 52 y 835 w 1497 h 50)
+    line_rect(52.0, 847.0, 1497.0, 26.0, Ink::Border, 1.5),
+    Prim::Motion { motion: footer_type(52.0, 835.0, 1497.0, 50.0), prims: STORE_FOOTER },
+];
+
+/// The footer's three strings.
+const STORE_FOOTER: &[Prim] = &[
+    txt(61.0, 865.0, 15.0, Ink::Fg, "INTERFACE LOADED"),
+    txt(506.0, 865.0, 15.0, Ink::Fg, "PROVIDED BY NEXUS NETWORK V10.8"),
+    txt(1400.0, 865.0, 15.0, Ink::Fg, "BUILD 6.47.48441.R15"),
+];
+
+/// The store's body (:235-365), in the trace's paint order.
+const STORE_BODY: &[Prim] = &[
     // 4ST logotype
     fill_path(170.0, 105.0, FOUR, Ink::Select),
     fill_path(202.0, 102.0, ESS, Ink::Select),
@@ -1017,11 +1134,6 @@ pub const STORE: &[Prim] = &[
     txt(300.0, 799.0, 19.0, Ink::Fg, "A"),
     line_rect(464.0, 779.0, 26.0, 26.0, Ink::Fg, 1.5),
     txt(470.0, 799.0, 19.0, Ink::Fg, "B"),
-    // footer strip, y 847..873, no dividers
-    line_rect(52.0, 847.0, 1497.0, 26.0, Ink::Border, 1.5),
-    txt(61.0, 865.0, 15.0, Ink::Fg, "INTERFACE LOADED"),
-    txt(506.0, 865.0, 15.0, Ink::Fg, "PROVIDED BY NEXUS NETWORK V10.8"),
-    txt(1400.0, 865.0, 15.0, Ink::Fg, "BUILD 6.47.48441.R15"),
 ];
 
 // --- end store -----------------------------------------------------------
@@ -1149,7 +1261,8 @@ macro_rules! tile {
     ($h:expr, $( ($lx:expr, $ly:expr, $label:expr) ),+) => {
         (
             &[
-                fill_rect(0.0, -211.0, 194.0, 211.0, Ink::Select),
+                // the tile's fill lights (`#select-lit`); its label does not
+                Prim::Motion { motion: SELECT_LIT, prims: &[fill_rect(0.0, -211.0, 194.0, 211.0, Ink::Select)] },
                 $( label($lx, $ly, Ink::Fixed(HUB_ON_SOLID), $label), )+
                 Prim::At { x: 0.0, y: 0.0, prims: CAPTION_ON },
             ],
@@ -1220,6 +1333,24 @@ pub const DASHBOARD: &[Prim] = &[
     medium(61.0, 60.0, 17.0, Ink::Fixed(HUB_STRIP), "RIPPERDOC SURGICAL SOFTWAREV2"),
     medium(518.0, 60.0, 17.0, Ink::Fixed(HUB_STRIP), "STORE ACCESS SCREEN"),
     medium(1382.0, 60.0, 17.0, Ink::Fixed(HUB_STRIP), "FLAIR TRS 5MMP"),
+    // the body: everything between the strips, scanned down at boot
+    // (`#body-scan`, :156, rect x 100 y 130 w 1400 h 605)
+    Prim::Motion { motion: body_scan(100.0, 130.0, 1400.0, 605.0), prims: HUB_SCAN },
+    // footer strip, y 847..872, no dividers: the frame is chrome, the
+    // strings type on (`#footer-type`, :169, x 49 y 835 w 1498 h 50)
+    line_rect(49.0, 847.0, 1498.0, 25.0, Ink::Border, 1.25),
+    Prim::Motion { motion: footer_type(49.0, 835.0, 1498.0, 50.0), prims: HUB_FOOTER },
+];
+
+/// The footer's three strings; only BUILD is end-anchored.
+const HUB_FOOTER: &[Prim] = &[
+    medium(61.0, 865.0, 17.0, Ink::Fixed(HUB_STRIP), "INTERFACE LOADED"),
+    medium(518.0, 865.0, 17.0, Ink::Fixed(HUB_STRIP), "PROVIDED BY NEXUS NETWORK V10.8"),
+    Prim::Text { x: 1525.0, y: 865.0, size: 17.0, ink: Ink::Fixed(HUB_STRIP), face: Face::Medium, anchor: Anchor::End, content: "BUILD 6.47.48441.R15" },
+];
+
+/// The dashboard's body (:198-316), in the trace's paint order.
+const HUB_SCAN: &[Prim] = &[
     // section headings: 26x26 boxes holding a bold letter stretched
     // 1.5-1.6, centred at the trace's translate() x (:154-158; a run
     // measured by hand placed them until 2026-09-07)
@@ -1264,17 +1395,13 @@ pub const DASHBOARD: &[Prim] = &[
     // (:227-233)
     line_rect(1380.0, 214.0, 68.0, 68.0, Ink::Border, 1.25),
     wide_mid(1414.0, 257.0, 27.0, 1.37, Ink::Fixed(HUB_LABEL), Face::Bold, "T1"),
-    fill_rect(1380.0, 304.0, 68.0, 68.0, Ink::Select),
+    // T2's fill lights with the tile's (`#select-lit`, :237)
+    Prim::Motion { motion: SELECT_LIT, prims: &[fill_rect(1380.0, 304.0, 68.0, 68.0, Ink::Select)] },
     wide_mid(1414.0, 346.0, 27.0, 1.42, Ink::Fixed(HUB_ON_SOLID), Face::Bold, "T2"),
     line_rect(1380.0, 393.0, 68.0, 68.0, Ink::Border, 1.25),
     wide_mid(1414.0, 435.0, 27.0, 1.5, Ink::Fixed(HUB_LABEL), Face::Bold, "T3"),
     line_rect(1380.0, 482.0, 68.0, 68.0, Ink::Border, 1.25),
     wide_mid(1414.0, 524.0, 27.0, 1.38, Ink::Fixed(HUB_LABEL), Face::Bold, "T4"),
-    // footer strip, y 847..872, no dividers; only BUILD is end-anchored
-    line_rect(49.0, 847.0, 1498.0, 25.0, Ink::Border, 1.25),
-    medium(61.0, 865.0, 17.0, Ink::Fixed(HUB_STRIP), "INTERFACE LOADED"),
-    medium(518.0, 865.0, 17.0, Ink::Fixed(HUB_STRIP), "PROVIDED BY NEXUS NETWORK V10.8"),
-    Prim::Text { x: 1525.0, y: 865.0, size: 17.0, ink: Ink::Fixed(HUB_STRIP), face: Face::Medium, anchor: Anchor::End, content: "BUILD 6.47.48441.R15" },
 ];
 
 // --- end dashboard -------------------------------------------------------

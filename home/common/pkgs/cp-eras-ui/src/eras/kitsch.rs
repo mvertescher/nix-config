@@ -724,9 +724,10 @@ pub const ACCESS: Access = Access {
 // row's body cuts a *diagonal* trailing corner on an era that rounds
 // everything else.
 use crate::style::{
-    Frame, Mail, MailBadges, MailButtons, MailList, MailPanel, Mailbox, Note, Piece,
-    RowDecor, Run, Trim, FromAt, BL, BR, TL, TR,
+    Change, Frame, Mail, MailBadges, MailButtons, MailList, MailMotion, MailPanel, MailPart,
+    Mailbox, Motion, Note, Piece, RowDecor, Run, Trim, FromAt, BL, BR, TL, TR,
 };
+use iced::animation::Easing;
 
 const fn text(x: f32, y: f32, size: f32, ink: Ink, s: &'static str) -> Piece {
     Piece::Label(Note {
@@ -848,7 +849,7 @@ static FLAG: [(f32, f32); 5] = [
     (1127.5, 360.7),
 ];
 
-static CHROME: [Piece; 29] = [
+static CHROME: [Piece; 26] = [
     mid(205.0, 110.0, "SPARE TIME MANAGER WAS DEVELO-"),
     mid(205.0, 119.0, "PED BY SEOCHO. SERVING CUSTO-"),
     mid(205.0, 128.0, "MERS SINCE 2006."),
@@ -927,6 +928,20 @@ static CHROME: [Piece; 29] = [
         width: 1.25,
         close: false,
     },
+    Piece::Label(Note {
+        at: Run::new(503.0, 870.0, 9.0, Ink::Fg).bold(),
+        text: "ARASAKA CONSUMER TECHNOLOGY",
+    }),
+    Piece::Label(Note {
+        at: Run::new(641.0, 870.0, 9.0, Ink::Fg).bold(),
+        text:
+        "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.",
+    }),
+];
+
+/// The message's flag band and the two lines of micro-print on it:
+/// the message's, extruded with it (`MAILBOX_MOTIONS`), not chrome.
+static MESSAGE_FLAG: [Piece; 3] = [
     Piece::Poly {
         points: &FLAG,
         fill: None,
@@ -948,16 +963,25 @@ static CHROME: [Piece; 29] = [
         Ink::Select,
         "ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.",
     ),
-    Piece::Label(Note {
-        at: Run::new(503.0, 870.0, 9.0, Ink::Fg).bold(),
-        text: "ARASAKA CONSUMER TECHNOLOGY",
-    }),
-    Piece::Label(Note {
-        at: Run::new(641.0, 870.0, 9.0, Ink::Fg).bold(),
-        text:
-        "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.",
-    }),
 ];
+
+/// `#message-extrude` (trace lines 164-170): the message -- its tab
+/// with the title on it, its flag, the body outline and paragraphs,
+/// and the DETAILS column
+/// beside it -- is wiped on from the left over 0.45 s from 0,
+/// `keySplines="0.33 1 0.68 1"` = EaseOutCubic, the way the hub's
+/// depth extrudes; the list and the badges stand from frame 0. The
+/// rect x 534 y 300 w 850 h 456 takes the whole group with margin.
+pub const MAILBOX_MOTIONS: &[MailMotion] = &[MailMotion {
+    motion: Motion {
+        id: "message-extrude",
+        begin: 0,
+        dur: 450,
+        ease: Easing::EaseOutCubic,
+        change: Change::Clip { x: 534.0, y: 300.0, w: (0.0, 850.0), h: (456.0, 456.0) },
+    },
+    parts: &[MailPart::Pieces(&MESSAGE_FLAG), MailPart::Panel, MailPart::Title, MailPart::Buttons],
+}];
 
 static TABS: [&str; 4] = ["DETAILS", "MODS", "PRICE", "DAMAGE"];
 static LEVELS: [&str; 4] = ["01", "02", "03", "04"];
@@ -1108,6 +1132,7 @@ pub fn mailbox() -> Mailbox {
             caption_text: "",
             labels: &LEVELS,
         },
+        motions: MAILBOX_MOTIONS,
     }
 }
 // --- end mailbox ---
@@ -1561,6 +1586,14 @@ const SHELF_1: &[Prim] = shelf!(1);
 const SHELF_2: &[Prim] = shelf!(2);
 const SHELF_3: &[Prim] = shelf!(3);
 
+/// The four cards, tops at y 218.
+const SHELF: &[Prim] = &[
+    Prim::At { x: 484.0, y: 218.0, prims: SHELF_0 },
+    Prim::At { x: 804.0, y: 218.0, prims: SHELF_1 },
+    Prim::At { x: 1123.0, y: 218.0, prims: SHELF_2 },
+    Prim::At { x: 1443.0, y: 218.0, prims: SHELF_3 },
+];
+
 pub const STORE: &[Prim] = &[
     Prim::Soft { prims: BACKDROP },
     // logotype: a heavy extended face, the T outline-only
@@ -1585,11 +1618,20 @@ pub const STORE: &[Prim] = &[
     Prim::Plate { group: Group::Category, index: 2, x: 140.0, y: 417.0, w: 216.0, h: 39.0, on: NAV_ON_2, off: NAV_OFF_2 },
     Prim::Plate { group: Group::Category, index: 3, x: 140.0, y: 477.0, w: 216.0, h: 39.0, on: NAV_ON_3, off: NAV_OFF_3 },
     Prim::Plate { group: Group::Category, index: 4, x: 140.0, y: 537.0, w: 216.0, h: 39.0, on: NAV_ON_4, off: NAV_OFF_4 },
-    // the shelf, on a 320px pitch; the fourth runs off the frame edge
-    Prim::At { x: 484.0, y: 218.0, prims: SHELF_0 },
-    Prim::At { x: 804.0, y: 218.0, prims: SHELF_1 },
-    Prim::At { x: 1123.0, y: 218.0, prims: SHELF_2 },
-    Prim::At { x: 1443.0, y: 218.0, prims: SHELF_3 },
+    // the shelf, on a 320px pitch; the fourth runs off the frame edge.
+    // Wiped on from the left over 0.45 s from 0, EaseOutCubic
+    // (`#cards-extrude`, trace lines 303-309): the rect x 450 y 210
+    // w 1150 h 505 takes the four cards with margin, to the frame edge
+    Prim::Motion {
+        motion: Motion {
+            id: "cards-extrude",
+            begin: 0,
+            dur: 450,
+            ease: Easing::EaseOutCubic,
+            change: Change::Clip { x: 450.0, y: 210.0, w: (0.0, 1150.0), h: (505.0, 505.0) },
+        },
+        prims: SHELF,
+    },
     // footer marks
     txt(181.0, 738.0, 7.5, Ink::Dim, "SPARE TIME MANAGER WAS DEVELO-"),
     txt(181.0, 747.0, 7.5, Ink::Dim, "PED BY SEOCHO. SERVING CUSTO-"),
@@ -1875,10 +1917,20 @@ const HUB_BACK: &[Prim] = &[
     // ground and bloom (trace lines 89-94, 100-101)
     fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(HUB_GROUND)),
     Prim::Lobe { x: 832.0, y: -31.0, rx: 1360.0, ry: 527.0, stops: HUB_ROSE },
-    // the ghosts, farthest first, every trail stepping (+20,-20) in
-    // screen space from its solid card (lines 196-239); they belong to
-    // no plate because they do not change with the selection and the
-    // solid cards paint over them in one pass
+];
+
+// The ghosts, farthest first, every trail stepping (+20,-20) in screen
+// space from its solid card (lines 196-239); they belong to no plate
+// because they do not change with the selection and the solid cards
+// paint over them in one pass. Two groups, one per fan, because each
+// fan's depth extrudes under its own clip (`#fan-left-extrude`,
+// `#fan-right-extrude`, trace lines 123-135): a `Prim::Soft` under a
+// `Prim::Motion` is composited over the ground the way the one group
+// was (`scene::Backdrop`), so at rest the pixels are the old group's.
+// The order across the two is the old group's, left then right.
+
+/// The left fan's ghosts: VEHICLES, WEAPONS, the left PRODUCTS.
+const FAN_LEFT: &[Prim] = &[
     // VEHICLES c(364,413) rot 30, 6 ghosts (lines 198-203)
     Prim::At { x: 484.0, y: 293.0, prims: GHOST_CW[1] },
     Prim::At { x: 464.0, y: 313.0, prims: GHOST_CW[2] },
@@ -1901,6 +1953,10 @@ const HUB_BACK: &[Prim] = &[
     Prim::At { x: 518.0, y: 515.0, prims: GHOST_V[4] },
     Prim::At { x: 498.0, y: 535.0, prims: GHOST_V[5] },
     Prim::At { x: 478.0, y: 555.0, prims: GHOST_V[6] },
+];
+
+/// The right fan's ghosts: the right PRODUCTS, EVENTS, LOCATIONS.
+const FAN_RIGHT: &[Prim] = &[
     // right PRODUCTS c(825,424) rot 90, 6 ghosts (lines 220-225)
     Prim::At { x: 945.0, y: 304.0, prims: GHOST_V[1] },
     Prim::At { x: 925.0, y: 324.0, prims: GHOST_V[2] },
@@ -1925,6 +1981,29 @@ const HUB_BACK: &[Prim] = &[
 
 pub const DASHBOARD: &[Prim] = &[
     Prim::Soft { prims: HUB_BACK },
+    // the two fans' depth, each wiped on from the left over 0.45 s from
+    // 0, `keySplines="0.33 1 0.68 1"` = EaseOutCubic (lines 123-135);
+    // the rects are each fan's whole ghost box plus a 5px margin
+    Prim::Motion {
+        motion: Motion {
+            id: "fan-left-extrude",
+            begin: 0,
+            dur: 450,
+            ease: Easing::EaseOutCubic,
+            change: Change::Clip { x: 296.0, y: 206.0, w: (0.0, 484.0), h: (436.0, 436.0) },
+        },
+        prims: &[Prim::Soft { prims: FAN_LEFT }],
+    },
+    Prim::Motion {
+        motion: Motion {
+            id: "fan-right-extrude",
+            begin: 0,
+            dur: 450,
+            ease: Easing::EaseOutCubic,
+            change: Change::Clip { x: 663.0, y: 217.0, w: (0.0, 465.0), h: (418.0, 418.0) },
+        },
+        prims: &[Prim::Soft { prims: FAN_RIGHT }],
+    },
     // header notes: Rajdhani 600 8 stretched 1.3 (lines 107-122)
     Prim::Wide { x: 205.0, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "SPARE TIME MANAGER WAS DEVELO-" },
     Prim::Wide { x: 205.0, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "PED BY SEOCHO. SERVING CUSTO-" },
@@ -1967,7 +2046,33 @@ pub const DASHBOARD: &[Prim] = &[
     blade!(4, 731.0, 586.0, -30.0, BLADE_CCW_ON, BLADE_CCW_OFF, "EVENTS"),
     blade!(5, 919.0, 586.0, 30.0, BLADE_CW_ON, BLADE_CW_OFF, "LOCATIONS"),
     // BRAINDANCE panel: tab, warning tape, outlined body, two
-    // paragraphs of yellow bars (lines 273-295)
+    // paragraphs of yellow bars (lines 273-295), wiped on from the
+    // left once the fans have all but finished (`#panel-extrude`,
+    // lines 151-158: 0.35 s from 0.25 s, EaseOutCubic)
+    Prim::Motion {
+        motion: Motion {
+            id: "panel-extrude",
+            begin: 250,
+            dur: 350,
+            ease: Easing::EaseOutCubic,
+            change: Change::Clip { x: 1166.0, y: 255.0, w: (0.0, 272.0), h: (418.0, 418.0) },
+        },
+        prims: HUB_PANEL,
+    },
+    // B DEVICE SOFTWARE mark: notes Rajdhani 700 8 stretched 1.3, the
+    // boxed B, the label (lines 302-308)
+    Prim::Wide { x: 609.9, y: 746.0, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::Bold, anchor: Anchor::Start, content: "MAPS ARE PROVIDED BY SEOCHO." },
+    Prim::Wide { x: 609.9, y: 755.0, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::Bold, anchor: Anchor::Start, content: "SATELITE SERVICES SINCE 2006." },
+    line_rect(574.3, 741.0, 24.0, 24.2, Ink::Fixed(BRIGHT), 2.0),
+    Prim::Wide { x: 586.3, y: 761.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Middle, content: "B" },
+    Prim::Wide { x: 575.0, y: 794.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "DEVICE SOFTWARE" },
+    // the foot line, one bold weight, two runs (lines 318-321)
+    txt_bold(503.0, 870.0, 9.0, Ink::Fixed(BRIGHT), "ARASAKA CONSUMER TECHNOLOGY"),
+    txt_bold(641.0, 870.0, 9.0, Ink::Fixed(BRIGHT), "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
+];
+
+/// The BRAINDANCE panel, the D DESCRIPTION of the selection.
+const HUB_PANEL: &[Prim] = &[
     fill_path(1213.0, 261.0, TAB, Ink::Fixed(HUB_YELLOW)),
     Prim::Text { x: 1222.0, y: 288.0, size: 20.0, ink: Ink::Fixed(ON_HUB_YELLOW), face: Face::SemiBold, anchor: Anchor::Start, content: "BRAINDANCE" },
     line_rect(1172.0, 306.0, 180.0, 24.0, Ink::Fixed(HUB_YELLOW), 1.0),
@@ -1983,15 +2088,5 @@ pub const DASHBOARD: &[Prim] = &[
     fill_rect(1224.0, 468.0, 184.0, 11.0, Ink::Fixed(GROWN_MICRO)),
     fill_rect(1224.0, 488.0, 188.0, 11.0, Ink::Fixed(GROWN_MICRO)),
     fill_rect(1224.0, 508.0, 98.0, 11.0, Ink::Fixed(GROWN_MICRO)),
-    // B DEVICE SOFTWARE mark: notes Rajdhani 700 8 stretched 1.3, the
-    // boxed B, the label (lines 302-308)
-    Prim::Wide { x: 609.9, y: 746.0, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::Bold, anchor: Anchor::Start, content: "MAPS ARE PROVIDED BY SEOCHO." },
-    Prim::Wide { x: 609.9, y: 755.0, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::Bold, anchor: Anchor::Start, content: "SATELITE SERVICES SINCE 2006." },
-    line_rect(574.3, 741.0, 24.0, 24.2, Ink::Fixed(BRIGHT), 2.0),
-    Prim::Wide { x: 586.3, y: 761.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Middle, content: "B" },
-    Prim::Wide { x: 575.0, y: 794.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "DEVICE SOFTWARE" },
-    // the foot line, one bold weight, two runs (lines 318-321)
-    txt_bold(503.0, 870.0, 9.0, Ink::Fixed(BRIGHT), "ARASAKA CONSUMER TECHNOLOGY"),
-    txt_bold(641.0, 870.0, 9.0, Ink::Fixed(BRIGHT), "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
 ];
 // --- end dashboard -------------------------------------------------------

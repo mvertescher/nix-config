@@ -1906,6 +1906,120 @@ when that screen assembles from library widgets. Priority order:
     0.15 s (0.2% of pixels), fade at 0.55 s; on terra's display unseen
     until a switch. Entropism and kitsch dashboards and every store and
     mailbox still have no boot-in.
+  - [x] **Phase 4, iced half, neomil and neokitsch (2026-09-07): the
+    stores wipe in; the mailboxes are transcribed but not wired.** The
+    two store tables carry their traces' `#shelf-open`: neomil's
+    `STORE` wraps the four cards (now the `SHELF` table, one
+    `Prim::At` per column) in a top-down clip x 430 y 144 w 1170, h 0
+    -> 664 over 0.5 s EaseOutCubic; neokitsch's `CONTENT` wraps its
+    `SHELF` in a left-to-right clip x 340 y 205 h 530, w 0 -> 1240,
+    same curve, and `GROWN` holds the grown card's body (`GROWN_BODY`:
+    the dark plate, its grain, the 620 and the socket rows) under
+    `#body-fade` + `#body-fade-text` as ONE `Change::Opacity` 0 -> 1
+    over 0.3 s from 0.4 s EaseOut. Two deliberate departures from the
+    trace's letter, both invisible in frames: neomil's rect runs to x
+    1600 rather than the trace's 1570 because the iced card 4 is cut
+    by `CARD4`'s covering strip out to the frame edge (the trace cuts
+    it with its own `#c4clip`), and a rect ending at 1570 shaved 30 px
+    of that strip (43 px, <= 7 levels, the golden no longer
+    byte-identical); and neokitsch's body fade sits inside the
+    selected card's `Plate::on` rather than after the shelf, where the
+    trace paints it, because the body must follow the selection and a
+    second Plate per card is forbidden (`every_era_offers_five_
+    categories_and_four_cards`) -- the wipe has cleared x 929 before
+    the fade begins, so the stacking is the same in every frame. The
+    mailboxes are layouts, not display lists, so their five `<animate>`s
+    are `MAILBOX_MOTIONS` tables (`MailMotion` over `MailPart`s, the
+    phase-4 mechanism `screens/mail.rs` paints) at the foot of each
+    era's mailbox section: neomil `#list-open` (List; x 125 y 305 w
+    400, h 0 -> 578, 0.44 s) and `#message-open` (Panel + Buttons; x
+    720 y 304 w 745, h 0 -> 464, 0.36 s from 0.15 s); neokitsch
+    `#list-open` (List; x 15 y 240 h 460, w 0 -> 520, 0.5 s),
+    `#bar-fade` (Fills, which in this era is the selection bar alone;
+    0 -> 1 over 0.3 s from 0.4 s EaseOut) and `#buttons-open`
+    (Buttons; x 715 y 660 h 90, w 0 -> 810, 0.4 s from 0.3 s). Not
+    live on that agent's pass: `Style::mailbox_motions` (style.rs)
+    answered `&[]` for both eras, left so because the era files and
+    the shared files were two agents' on the day (wired later that
+    day; see the sub-item below). Verified with the arms flipped in a scratch
+    copy: neokitsch's mailbox is byte-identical to its golden at REST
+    and its frames are within 0.2 of the screen's own 2.1% baseline
+    (0.15 s 1.8%, 0.35 s 1.9%, 0.55 s 2.3%); neomil's frames 0.5% /
+    0.8% / 0.8% against a 0.8% baseline, but its rest frame loses the
+    "Urgent Information (!)" heading (179x17 px at 743,272) because
+    `Sheet::panel` draws `panel.title` under the Panel cover and the
+    trace keeps that label above the clip. Two `mail.rs` details
+    before the arms flip: draw the panel heading outside the Panel
+    cover (its own `MailPart`, or unclipped when it sits outside
+    `panel.frame`), and let an era say its selected row's printing --
+    `sel_notch`, envelope, title, FROM: -- rides the Fills cover, as
+    neokitsch's fades in with the bar (:404-418, :538-550); today it
+    rides the List wipe and stands dark on the bare ground for 0.4 s
+    (`triptych.sh --at 0.15 neokitsch mailbox` shows it). Entropism
+    must keep the opposite (its scan draws the text, `#select-lit`
+    lights the plate after), so it is a table knob, not a rule.
+    Stores verified against Firefox: neomil 0.5% at 0.15 s and 0.35 s
+    (rest 0.5%), neokitsch 0.7% / 0.8% / 1.0% at 0.15 / 0.35 / 0.55 s
+    (rest 1.1%); goldens byte-identical at REST. Matrix 25/25 once
+    `store.rs` ticked (it pinned its scene at `Duration::ZERO` until
+    this day, which held every store clip at `from` and failed both
+    store cases at 16.5% / 9.3%). Unseen on terra's display until a
+    switch.
+    - [x] **Wired (2026-09-07, later the same day).** `Style::mailbox_
+      motions` and its era `match` are gone: `motions: &'static
+      [MailMotion]` is a `Mailbox` field, and every era's literal names
+      its own `MAILBOX_MOTIONS` (entropism's and kitsch's are the
+      phase-4 tables from the same day; `every_motion_rests_before_
+      rest` walks `style.mailbox.motions`). The two `mail.rs` details
+      became two `MailPart`s, so each era's table says which cover
+      its heading and its selected row's printing ride rather than
+      the sheet assuming: `MailPart::Title` is the panel heading and
+      sender, drawn by `Sheet::title` as its own step after the Panel
+      -- entropism's `body-scan` and kitsch's `message-extrude` name
+      it (their traces put the heading inside the clip), neomil's
+      `#message-open` does not (the trace keeps "Urgent Information
+      (!)" at y 287 above the clip's y 304), so the rest frame keeps
+      it; `MailPart::Printing` is the selected row's `sel_notch`,
+      envelope, title, FROM and NEW pill, drawn under `Sheet::also`
+      inside the List cover -- neokitsch's `#bar-fade` names it beside
+      `Fills` (trace :340-550: bar, grain, inverted tab, envelope,
+      title, FROM all fade together), entropism / neomil / kitsch do
+      not (`#select-lit` lights only the fill under ink the scan drew;
+      `#row1` is inside the list wipe; kitsch's row is static). Numbers
+      after the wiring: matrix 25/25, every cell 100.000%; 93 lib + 45
+      integration tests; Firefox triptychs neomil 0.5% / 0.8% / 0.8%
+      at 0.15 / 0.35 / 0.55 s (rest 0.8%), neokitsch 1.8% / 1.9% /
+      2.3% (rest 2.1%) -- the same as the scratch flip, now with the
+      heading at rest and no dark printing on bare ground at 0.15 s.
+      Headless; unseen on terra's display until a switch.
+    - Three things the sheet's mechanism learned that are not in its
+      module doc's one paragraph:
+      - **Draft ordering.** iced 0.14's `Frame::with_clip` pastes the
+        draft's meshes into the parent *ahead of* everything the
+        parent drew directly (a frame's own buffer is batched only at
+        `into_geometry`), so a clipped region lands under chrome drawn
+        before it -- the entropism REPORT SPAM ring showed through its
+        own 2 px inner edge, 638 px off the golden. `Sheet::under`
+        therefore drafts every region, clipped or not (a full-frame
+        clip when unclipped), so paint order stays draw order; a draft
+        nested in a draft (`Sheet::also` with a clip) is pasted under
+        its parent's own drawing the same way. The same hazard holds
+        for `scene.rs`: a clipped `Prim::Motion` paints under any
+        sibling drawn directly before it, so a display list must not
+        rely on a clipped Motion covering an earlier unclipped prim
+        (the kitsch fans are disjoint in pixel coverage for this
+        reason; `the_kitsch_fans_share_no_pixel` pins it).
+      - **`Fills` granularity.** `MailPart::Fills` is every
+        reverse-video fill on the sheet as one part -- the selection
+        bar, the panel `head`, the filled chevron / button, the badge's
+        selected fill -- because entropism's `#select-lit` lights all
+        of them at once. An era that ever lights one and not another
+        needs the part split, not a second alpha.
+      - **`Store::at` is `pub(crate)`** for the hub test
+        (`opening_a_screen_starts_its_clock`), which reads a screen's
+        clock after `Hub::open` re-bases it via `motion::onset()`;
+        `login.rs` was touched for one line (the Backdrop `at:` field)
+        and nothing else.
 
 ## Headless check: feasibility settled (2026-08-22)
 

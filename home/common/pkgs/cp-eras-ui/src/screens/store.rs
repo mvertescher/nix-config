@@ -22,12 +22,15 @@
 //! Run it with `cp-eras-ui-store --era <name>`; with no flag it
 //! follows the desktop theme.
 
+use crate::motion;
 use crate::screens::nav::{self, Dir, Stroke};
 use crate::screens::scene::{plates, Picked, Scene};
 use crate::style::{Group, Style};
 use crate::widgets::ground;
 use crate::Element;
 use iced::widget::stack;
+use iced::Subscription;
+use std::time::{Duration, Instant};
 
 pub struct Store {
     pub style: Style,
@@ -42,6 +45,13 @@ pub struct Store {
     /// group, so walking the shelf and choosing from it are one motion.
     /// Opens on the card, the choice the trace grows.
     focus: (Group, usize),
+    /// The screen's t = 0: the process origin, or the moment the hub
+    /// opened it (`motion::onset`, [`Store::enter`]).
+    origin: Instant,
+    /// The moment the scene is painted at, for its `Prim::Motion`s.
+    /// Advanced by [`Message::Tick`] while the boot-in runs, then left
+    /// where it is.
+    now: Instant,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -50,6 +60,8 @@ pub enum Message {
     Select { group: Group, index: usize },
     /// A key moved the focus to the nearest plate that way.
     Move(Dir),
+    /// The clock, while the boot-in runs.
+    Tick(Instant),
 }
 
 impl crate::shell::Wears for Store {
@@ -66,6 +78,8 @@ impl Store {
             category,
             card,
             focus: (Group::Card, card),
+            origin: motion::origin(),
+            now: motion::now(),
         }
     }
 
@@ -73,8 +87,31 @@ impl Store {
         format!("4ST STORE — {}", self.style.era.name())
     }
 
+    /// The screen is coming up: start its clock here, so its boot-in
+    /// plays from now (`motion`, the module note). Under a pinned
+    /// clock this changes nothing.
+    pub fn enter(&mut self) {
+        self.origin = motion::onset();
+        self.now = motion::now();
+    }
+
+    /// Where the scene's clock is, counted from the screen's origin.
+    pub(crate) fn at(&self) -> Duration {
+        self.now.saturating_duration_since(self.origin)
+    }
+
+    /// A redraw every frame until the scene is at rest, and none when
+    /// the clock is pinned: as `Dashboard::subscription`.
+    pub fn subscription(&self) -> Subscription<Message> {
+        if motion::frozen() || self.at() >= motion::REST {
+            return Subscription::none();
+        }
+        iced::time::every(Duration::from_millis(16)).map(Message::Tick)
+    }
+
     pub fn update(&mut self, message: Message) {
         match message {
+            Message::Tick(at) => self.now = at,
             Message::Move(dir) => {
                 if let Some(landing) = self.neighbour(dir) {
                     self.update(Message::Select { group: landing.0, index: landing.1 });
@@ -134,12 +171,7 @@ impl Store {
                     module: 0,
                 },
                 on_select: |group, index| Message::Select { group, index },
-                // The store has no clock yet: nothing in any era's store
-                // table moves. Frame 0 rather than rest so that the first
-                // `Prim::Motion` added to one is seen stuck at its `from`
-                // -- and by the goldens, at rest -- until the screen
-                // ticks the way the dashboard does.
-                at: std::time::Duration::ZERO,
+                at: self.at(),
             }
             .view(),
         ]

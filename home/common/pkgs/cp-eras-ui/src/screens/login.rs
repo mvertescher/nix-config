@@ -260,6 +260,7 @@ impl Login {
                 style: self.style,
                 prims: self.style.access.backdrop,
                 stretch: true,
+                at: self.now.saturating_duration_since(motion::origin()),
             })
             .width(Length::Fill)
             .height(Length::Fill),
