@@ -127,6 +127,84 @@ annotating differ by 0 pixels, and `frame.sh --at 2.4` of each matches
 the unannotated file's frame at 8-level fuzz on 0 pixels (the halos
 are inside every clip).
 
+## Hover and press
+
+Read 2026-09-07 from the whole run, still by still: `images/run-neokitsch/`
+64 (mood board, no UI), 65 (login over the circuit ground), 66 (the
+annotated hub), 67 and 68 (wall pairs login + store, hub + mail),
+69..72 (the four screens), plus the four 3840x2160 masters
+`neokitsch-dashboard.png` / `-login.png` / `-mail.png` / `-store.png`
+cropped at 1:1 and 2:1 on every RIFLES button, store nav cell, product
+card, mail row, login entry, T1..T4 badge and cascade card, and on the
+ground between them. Drawn as band 11 of `components.svg`
+(`nk-button-{rest,hover,press}`, `nk-field-{rest,hover,press}`,
+`nk-row-{rest,hover,press}`, `nk-card-{rest,hover,press}`, each
+group's comment citing the trace and still or saying INFERRED).
+
+**The run shows no hover and no press.** No still carries a pointer, a
+held cell or a second ink on any sibling: the four RIFLES buttons on
+#71 measure the same to a quarter of a level, the store's nav cells
+and cards 1 / 3 / 4 are one outline, the five unselected cascade cards
+one ring stack, both login entries identical on #65, #67 and #70 (flat
+chocolate, sd < 2.1: no caret, no text). The one cell per list that
+differs is the **selection**, and it always differs the same way — the
+veneer (SMG, mail row 2, EMAIL, product card 2, the panel body), or on
+the badge row an outline with echo rings (T2). Neokitsch does *not*
+have entropism's cursor tell: mail row 2, the veneer, is also the
+message the panel shows (Urgent information (!) / FROM: MOM, on #71
+and #68), and the envelope glyph is not tied to it (row 2 is closed;
+rows 1, 3, 7 open). So every hover and the field's focus on the sheet
+is **inferred**, every rest and press **sourced**.
+
+**The reading: hover = echo, press = veneer.** The era draws emphasis
+on one ladder, every rung sourced: plain type on the ground (T1, a
+plain row); an outline with a bright tab (RIFLES, nav cell, product
+card); the outline *echoed* as fading hairlines (cascade card, six
+inside; product card, four; T2, seven *outside*, fanning up and right
+— the only cell in the run marked against plain siblings by an echo
+alone); the *veneer* — bright base, grain, book-match seam, outline
+and rings dropped, tab kept, dark ink (SMG, row 2, EMAIL, card 2); and
+above it all the flat amber CTA, which is an action, not a selection.
+Hence:
+
+- *Rest* — sourced for all four: RIFLES #71 (`nk-button-rest`), the
+  login plate #70 (`nk-field-rest`, and neokitsch is the one era whose
+  field is photographed at rest rather than focused), the plain mail
+  row #71 drawn with row 2's content (`nk-row-rest`), MATRIX #69
+  (`nk-card-rest`).
+- *Hover* — inferred. The cell's edge echoes **outward on T2's
+  recipe**: seven rings `#a97c48` 0.7, opacity 0.85 innermost to 0.55
+  outermost, each ring 2.1 up / 1.6 right / 0.6 left / 0.3 down; face,
+  tab, label unchanged. The button and the field take it as is; the
+  plain row first gains the selection's own silhouette as an outline
+  (`#e8c186` 1.1, the step T2 takes against T1) and echoes that. The
+  cascade card already echoes and its neighbours sit 100 apart, so an
+  outer fan would cross them: its rings and outline lift one tier of
+  the three-tier gold instead (`#bd8951` → `#e8ab66`, `#e8ab66` →
+  `#f2b463`). On the field the stack's top reaches the label 11 above
+  the plate; the label is painted over the rings.
+- *Press* — the veneer, the cell's sourced selected look spliced
+  verbatim: SMG #72 on the button (as a press: inferred; release
+  returns the outline), row 2 #71 on the row, EMAIL #69 with its 42
+  grain strands on the card. A press that selects simply stays. The
+  field takes no veneer (its plate is already a slot of the era's
+  ink); its press is **focus**, inferred: a 2x24 caret in the label
+  gold `#f5bf75` at the label's inset. Adopting that in the crate
+  means a later vision pass adds `#caret-blink` to `login-trace.svg`,
+  which has none because the photo shows none.
+
+Not drawn, because nothing in the run shows it: a pointer glyph, a
+brightened or thickened outline alone, an underline, a dimmer second
+fill, any change of geometry (selection never moves a cell; card 2's
+growth is its selection). The CTA bar, the store nav cell and the
+product card take the button's pair (echo outside, then the SMG / card
+2 veneer) and are not drawn separately. The canvas grew from 1080 to
+1560 for the band; the top 1080 rows render pixel-identical to before.
+Not yet plumbed: `catalog` gives neokitsch buttons and fields no
+hover/press treatment, and the transitions (echo in, veneer poured)
+are not annotated as SMIL anywhere — this is the destination design
+only, per `PIPELINE.md` § "Motion".
+
 ## Files
 
 - `login-trace.svg` — `images/neokitsch-login.png` (#70): the ARASAKA
@@ -192,7 +270,10 @@ are inside every clip).
   observed era rules and an implementation-delta box listing where
   `src/eras/neokitsch.rs` still disagrees with the traces (DeviceFrame,
   ClipTopRight 30, FRAME/STRATA unsampled, Bloom, the "#54-62" doc).
-  Not gated — the traces are.
+  Band 11 (2026-09-07, canvas 1920x1560) adds rest / hover / press
+  siblings for the RIFLES button, the login field, the mail row and
+  the cascade card — see "Hover and press" above for what is sourced
+  and what is inferred. Not gated — the traces are.
 - `bar.svg` — the status bar: host tape, workspaces, tray, the
   wired/audio/CPU/MEM modules and the clock, at the 1600x220 geometry
   the bar golden tests render. The bar has no photo source, so this is
