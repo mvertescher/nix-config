@@ -825,12 +825,12 @@ pub struct Style {
     pub dashboard_selection: usize,
     /// Where each of the six modules leads when it is opened -- Enter
     /// or a click on it in `screens::hub` -- indexed like the plates.
-    /// `None` is a module with no screen behind it yet. The labels are
-    /// the era's own, and only two eras label a mailbox (entropism's
-    /// EMAILS, neokitsch's EMAIL) and only two a store (kitsch's and
-    /// neomil's PRODUCTS); where an era has no module for a screen the
-    /// table stands one in, and says so at the entry, so every screen
-    /// is reachable in every era until the module lists are decided.
+    /// `None` is a module with no screen behind it: it selects and
+    /// stays. The labels are the era's own, and only two eras label a
+    /// mailbox (entropism's EMAILS, neokitsch's EMAIL) and only two a
+    /// store (kitsch's and neomil's PRODUCTS); the screen an era has
+    /// no module for is reached by a key from the hub (`m` the mailbox,
+    /// `s` the store), not by standing the last module in for it.
     pub dashboard_destinations: [Option<Destination>; 6],
     // --- end dashboard ---
 }

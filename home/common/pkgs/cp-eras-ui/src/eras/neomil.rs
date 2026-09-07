@@ -331,9 +331,9 @@ pub fn style() -> Style {
         // state"), so every plate wears one dress and the opening
         // selection is the first unit by convention.
         dashboard_selection: 0,
-        // PRODUCTS is unit 4; no unit says "mail", so CORPORATIONS, the
-        // last, stands in for the mailbox until the list is decided.
-        dashboard_destinations: [None, None, None, None, Some(Destination::Store), Some(Destination::Mail)],
+        // PRODUCTS is unit 4; no unit says "mail", and the mailbox is
+        // `m` from the hub instead (`screens::hub`).
+        dashboard_destinations: [None, None, None, None, Some(Destination::Store), None],
         // --- end dashboard ---
         metrics: Metrics {
             stroke: 1.5,

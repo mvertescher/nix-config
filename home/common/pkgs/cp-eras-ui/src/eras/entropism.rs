@@ -284,9 +284,9 @@ pub fn style() -> Style {
         // under "the selection: solid sage fill, dark caption box and
         // text").
         dashboard_selection: 2,
-        // EMAILS is tile 0; nothing on this hub says "store", so the
-        // last tile, DEVICES, stands in for it until the list is decided.
-        dashboard_destinations: [Some(Destination::Mail), None, None, None, None, Some(Destination::Store)],
+        // EMAILS is tile 0; nothing on this hub says "store", and the
+        // store is `s` from the hub instead (`screens::hub`).
+        dashboard_destinations: [Some(Destination::Mail), None, None, None, None, None],
         // --- end dashboard ---
         metrics: Metrics {
             // Traces measure 1.25 (login/dashboard/store) and 2.0

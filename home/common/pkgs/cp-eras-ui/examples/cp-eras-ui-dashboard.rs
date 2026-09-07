@@ -4,8 +4,9 @@
 //!     cp-eras-ui-dashboard --era kitsch   # force one
 //!
 //! Opens on the dashboard. `h j k l` walk the menu, Enter or a click
-//! opens the module's screen (the mailbox, the store), `h j k l` move
-//! inside it and Esc comes back: `screens::hub`. `shell` decides the
+//! opens the module's screen (the mailbox, the store) and `m` / `s`
+//! open those two from anywhere on the menu, `h j k l` move inside a
+//! screen and Esc comes back: `screens::hub`. `shell` decides the
 //! era and loads the faces; see there for the `--era` reasoning.
 
 use cp_eras_ui::screens::hub::{Hub, Message};

@@ -10,14 +10,24 @@
 //! back to the dashboard. That is the whole grammar, and the eras own
 //! nothing of it: they say which module leads where, and draw.
 //!
+//! The module labels are the photos' own, and no era labels both
+//! screens: entropism and neokitsch have a mailbox module and no store,
+//! kitsch and neomil the reverse. The screen no module names is a key
+//! away instead -- `m` opens the mailbox and `s` the store, from the
+//! dashboard whatever is selected -- so a module with nothing behind it
+//! selects and stays, and the tables no longer stand the last module
+//! in for the missing screen. The keys are the hub's ([`hotkey`]), not
+//! [`nav::Stroke`]'s: a stroke is what every screen reads, and inside
+//! a screen `m` and `s` mean nothing.
+//!
 //! Each screen keeps its own clock. The dashboard's boot-in runs once,
 //! when the hub starts, and a return from a screen finds the panel
 //! where the boot-in left it rather than replaying it -- Esc is a
 //! close, not an open (`motion`, the module note, has the reasoning).
-//! The store and the mailbox come up when Enter opens them, so
-//! [`Hub::open`] re-enters the screen it goes to and its boot-in plays
-//! from that moment; under a pinned clock nothing re-bases and every
-//! screen draws at the pinned moment.
+//! The store and the mailbox come up when Enter or a key opens them,
+//! so [`Hub::go`] re-enters the screen it goes to and its boot-in
+//! plays from that moment; under a pinned clock nothing re-bases and
+//! every screen draws at the pinned moment.
 //!
 //! `cp-eras-ui-dashboard` runs this; the goldens see its opening
 //! frame, which is the dashboard's own.
@@ -28,6 +38,7 @@ use crate::screens::nav::{self, Stroke};
 use crate::screens::store::{self, Store};
 use crate::style::{Destination, Style};
 use crate::Element;
+use iced::keyboard::{self, Key};
 use iced::Subscription;
 
 /// Which screen is showing.
@@ -51,6 +62,8 @@ pub enum Message {
     Mail(mail::Message),
     Store(store::Message),
     Stroke(Stroke),
+    /// `m` or `s` on the dashboard: straight to that screen.
+    Go(Destination),
 }
 
 impl crate::shell::Wears for Hub {
@@ -101,36 +114,54 @@ impl Hub {
                 }
             }
             Message::Stroke(Stroke::Back) => self.route = Route::Dashboard,
+            Message::Go(to) => {
+                if self.route == Route::Dashboard {
+                    self.go(to);
+                }
+            }
         }
     }
 
-    /// Go where the dashboard's selection leads, if anywhere, and
-    /// start that screen's clock: it is coming up now.
+    /// Go where the dashboard's selection leads, if anywhere.
     fn open(&mut self) {
-        match self.dashboard.destination() {
-            Some(Destination::Mail) => {
+        if let Some(to) = self.dashboard.destination() {
+            self.go(to);
+        }
+    }
+
+    /// Go to a screen and start its clock: it is coming up now. Enter,
+    /// a click and the `m`/`s` keys all come through here, so a screen
+    /// boots in the same way however it was reached.
+    fn go(&mut self, to: Destination) {
+        match to {
+            Destination::Mail => {
                 self.mail.enter();
                 self.route = Route::Mail;
             }
-            Some(Destination::Store) => {
+            Destination::Store => {
                 self.store.enter();
                 self.route = Route::Store;
             }
-            None => {}
         }
     }
 
     /// The keyboard, whole, plus the showing screen's clock while its
     /// boot-in runs. The screens' own `stroke` maps are not used here:
     /// the hub reads every stroke itself, because Open and Back are
-    /// route changes and the screens do not know they are in one.
+    /// route changes and the screens do not know they are in one. The
+    /// `m`/`s` keys ride alongside as [`hotkeys`], and `update` is
+    /// what confines them to the dashboard.
     pub fn subscription(&self) -> Subscription<Message> {
         let clock = match self.route {
             Route::Dashboard => self.dashboard.subscription().map(Message::Dashboard),
             Route::Mail => self.mail.subscription().map(Message::Mail),
             Route::Store => self.store.subscription().map(Message::Store),
         };
-        Subscription::batch([nav::strokes().map(Message::Stroke), clock])
+        Subscription::batch([
+            nav::strokes().map(Message::Stroke),
+            hotkeys().map(Message::Go),
+            clock,
+        ])
     }
 
     pub fn view(&self) -> Element<'_, Message> {
@@ -142,33 +173,101 @@ impl Hub {
     }
 }
 
+/// The screen a key goes to, if it is one of the two: `m` the mailbox,
+/// `s` the store. Chords are not, as in [`nav::stroke`].
+pub fn hotkey(key: &Key, modifiers: keyboard::Modifiers) -> Option<Destination> {
+    if modifiers.control() || modifiers.alt() || modifiers.logo() {
+        return None;
+    }
+    match key.as_ref() {
+        Key::Character("m") => Some(Destination::Mail),
+        Key::Character("s") => Some(Destination::Store),
+        _ => None,
+    }
+}
+
+/// Every key press on the window that is a [`hotkey`].
+fn hotkeys() -> Subscription<Destination> {
+    iced::event::listen_with(|event, _status, _window| match event {
+        iced::Event::Keyboard(keyboard::Event::KeyPressed { key, modifiers, .. }) => {
+            hotkey(&key, modifiers)
+        }
+        _ => None,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::screens::nav::Dir;
     use crate::motion;
+    use crate::screens::nav::Dir;
     use crate::style::Era;
+    use iced::keyboard::Modifiers;
 
-    /// In every era both screens are behind some module, so a hub that
-    /// only has a keyboard can reach all three screens.
-    #[test]
-    fn every_era_leads_to_both_screens() {
-        for era in Era::ALL {
-            let leads = era.style().dashboard_destinations;
-            assert!(leads.contains(&Some(Destination::Mail)), "{} has no way to the mail", era.name());
-            assert!(leads.contains(&Some(Destination::Store)), "{} has no way to the store", era.name());
+    /// The modules that label a screen, per era: the photos' own
+    /// lists (`docs/sources.md`). Everything else selects and stays.
+    fn labelled(era: Era) -> Vec<(usize, Destination)> {
+        match era {
+            Era::Entropism => vec![(0, Destination::Mail)],
+            Era::Neokitsch => vec![(0, Destination::Mail)],
+            Era::Kitsch => vec![(2, Destination::Store), (3, Destination::Store)],
+            Era::Neomil => vec![(4, Destination::Store)],
         }
     }
 
-    /// The labelled modules lead where their labels say.
+    /// The labelled modules lead where their labels say, and no other
+    /// module leads anywhere: the stand-ins are gone.
     #[test]
-    fn labelled_modules_lead_where_they_say() {
-        let leads = |era: Era| era.style().dashboard_destinations;
-        assert_eq!(leads(Era::Entropism)[0], Some(Destination::Mail), "entropism EMAILS");
-        assert_eq!(leads(Era::Neokitsch)[0], Some(Destination::Mail), "neokitsch EMAIL");
-        assert_eq!(leads(Era::Kitsch)[2], Some(Destination::Store), "kitsch PRODUCTS");
-        assert_eq!(leads(Era::Kitsch)[3], Some(Destination::Store), "kitsch PRODUCTS");
-        assert_eq!(leads(Era::Neomil)[4], Some(Destination::Store), "neomil PRODUCTS");
+    fn only_labelled_modules_lead_anywhere() {
+        for era in Era::ALL {
+            let labelled = labelled(era);
+            for index in 0..6 {
+                let mut hub = Hub::new(era.style());
+                hub.update(Message::Dashboard(dashboard::Message::Select { index }));
+                assert_eq!(hub.dashboard.selected, index);
+                let want = match labelled.iter().find(|(i, _)| *i == index) {
+                    Some((_, Destination::Mail)) => Route::Mail,
+                    Some((_, Destination::Store)) => Route::Store,
+                    None => Route::Dashboard,
+                };
+                assert_eq!(hub.route, want, "{} module {}", era.name(), index);
+            }
+        }
+    }
+
+    /// `m` and `s` are the keys and nothing else is; chords are left
+    /// to the terminal.
+    #[test]
+    fn the_keys_decode() {
+        let none = Modifiers::empty();
+        assert_eq!(hotkey(&Key::Character("m".into()), none), Some(Destination::Mail));
+        assert_eq!(hotkey(&Key::Character("s".into()), none), Some(Destination::Store));
+        assert_eq!(hotkey(&Key::Character("h".into()), none), None);
+        assert_eq!(hotkey(&Key::Character("m".into()), Modifiers::CTRL), None);
+        assert_eq!(hotkey(&Key::Character("s".into()), Modifiers::ALT), None);
+    }
+
+    /// `m` opens the mailbox and `s` the store from every module of
+    /// every era, labelled or not; Esc comes back and the selection
+    /// survives. Inside a screen the keys mean nothing.
+    #[test]
+    fn the_keys_open_the_screens_from_any_selection() {
+        for era in Era::ALL {
+            for index in 0..6 {
+                let mut hub = Hub::new(era.style());
+                hub.dashboard.selected = index;
+                for (to, route) in [(Destination::Mail, Route::Mail), (Destination::Store, Route::Store)] {
+                    hub.update(Message::Go(to));
+                    assert_eq!(hub.route, route, "{} module {}", era.name(), index);
+                    hub.update(Message::Go(Destination::Mail));
+                    hub.update(Message::Go(Destination::Store));
+                    assert_eq!(hub.route, route, "a key inside a screen is not a route change");
+                    hub.update(Message::Stroke(Stroke::Back));
+                    assert_eq!(hub.route, Route::Dashboard);
+                    assert_eq!(hub.dashboard.selected, index);
+                }
+            }
+        }
     }
 
     /// Enter on the email module opens the mail, Esc comes back, and
@@ -189,18 +288,24 @@ mod tests {
     #[test]
     fn a_click_on_a_module_opens_it() {
         let mut hub = Hub::new(Era::Entropism.style());
-        hub.update(Message::Dashboard(dashboard::Message::Select { index: 5 }));
-        assert_eq!(hub.route, Route::Store);
-        assert_eq!(hub.dashboard.selected, 5);
+        hub.update(Message::Dashboard(dashboard::Message::Select { index: 0 }));
+        assert_eq!(hub.route, Route::Mail);
+        assert_eq!(hub.dashboard.selected, 0);
     }
 
-    /// A module with nothing behind it selects and stays.
+    /// A module with nothing behind it selects and stays -- and that
+    /// now includes the last module, which used to stand in for the
+    /// screen the era does not label.
     #[test]
     fn an_empty_module_only_selects() {
         let mut hub = Hub::new(Era::Neomil.style());
         hub.update(Message::Dashboard(dashboard::Message::Select { index: 1 }));
         assert_eq!(hub.route, Route::Dashboard);
         assert_eq!(hub.dashboard.selected, 1);
+        hub.update(Message::Stroke(Stroke::Open));
+        assert_eq!(hub.route, Route::Dashboard);
+        hub.update(Message::Dashboard(dashboard::Message::Select { index: 5 }));
+        assert_eq!(hub.route, Route::Dashboard, "CORPORATIONS no longer stands in for the mailbox");
         hub.update(Message::Stroke(Stroke::Open));
         assert_eq!(hub.route, Route::Dashboard);
     }
@@ -242,6 +347,24 @@ mod tests {
         hub.update(Message::Dashboard(dashboard::Message::Select { index: 2 }));
         if !motion::frozen() {
             assert!(hub.store.at() < Duration::from_millis(100), "a second open re-bases too");
+        }
+    }
+
+    /// A key opens a screen by the same path as Enter, so the mailbox
+    /// `m` reaches in kitsch -- which no module there leads to -- comes
+    /// up from its own t = 0 just the same.
+    #[test]
+    fn opening_by_key_starts_the_clock_too() {
+        use std::time::{Duration, Instant};
+        let mut hub = Hub::new(Era::Kitsch.style());
+        hub.mail.update(mail::Message::Tick(Instant::now() + Duration::from_secs(5)));
+        assert!(hub.mail.at() >= Duration::from_secs(5) || motion::frozen());
+        hub.update(Message::Go(Destination::Mail));
+        assert_eq!(hub.route, Route::Mail);
+        if motion::frozen() {
+            assert_eq!(hub.mail.at(), motion::now() - motion::origin());
+        } else {
+            assert!(hub.mail.at() < Duration::from_millis(100), "{:?}", hub.mail.at());
         }
     }
 

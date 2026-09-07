@@ -409,9 +409,9 @@ pub fn style() -> Style {
         // --- dashboard ---
         dashboard: DASHBOARD,
         dashboard_selection: 0,
-        // EMAIL is card 0; nothing on this hub says "store", so the
-        // last card, DEVICES, stands in for it until the list is decided.
-        dashboard_destinations: [Some(Destination::Mail), None, None, None, None, Some(Destination::Store)],
+        // EMAIL is card 0; nothing on this hub says "store", and the
+        // store is `s` from the hub instead (`screens::hub`).
+        dashboard_destinations: [Some(Destination::Mail), None, None, None, None, None],
         // --- end dashboard ---
         metrics: Metrics {
             stroke: 2.0,
