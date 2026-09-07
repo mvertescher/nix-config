@@ -220,6 +220,30 @@
     <!-- applied inside card 4's translate(1425,0) group, so in card-local x;
          the cut is at canvas x 1557 = local 132 -->
     <clipPath id="c4clip"><rect x="0" y="151" width="132" height="470"/></clipPath>
+    <!-- #shelf-open: the four product cards wipe in from the top at
+         boot, the neomil way (the dashboard's GO HOME panel under
+         #panel-open): one clip over the whole shelf, x 437..1557, grows
+         from no height to the shelf's over 0.5 s, eased out: 0.33 1
+         0.68 1 is easings.net's EaseOutCubic. One curtain, not four,
+         because the cards share a top edge at y 151 and the photo shows
+         them as one row; and it is the selected card, the taller one,
+         that keeps coming after cards 1, 3 and 4 have stopped at y 613
+         - the selection is what the wipe ends on, with no second
+         animation for it. 0.5 s for 664 px is the dashboard's rate
+         (460 px in 0.36 s). The nav column and the logotype are chrome
+         and stay, as the dashboard's diamonds do. The rect's own height
+         is the value the animation freezes at, so rsvg, which plays
+         nothing, draws the shelf whole: the rest frame is the trace
+         (docs/PIPELINE.md, Motion). The rect clears the cards' 1.2px
+         strokes on every side (x 430..1570, y 144..808). Transcribed as
+         the Prim::Motion in src/eras/neomil.rs. -->
+    <clipPath id="shelf-open-clip">
+      <rect x="430" y="144" width="1140" height="664">
+        <animate id="shelf-open" attributeName="height" from="0" to="664"
+                 begin="0s" dur="0.5s" calcMode="spline" keyTimes="0;1"
+                 keySplines="0.33 1 0.68 1" fill="freeze"/>
+      </rect>
+    </clipPath>
   </defs>
 
   <rect width="1600" height="900" fill="#0b0405"/>
@@ -312,6 +336,8 @@
   <!-- card frame: L,R = left/right edge; the right edge has a 13px top
        chamfer, runs down to the bar at y 266, and continues 12px inward
        below the bar's foot at y 416 -->
+  <!-- the shelf: all four cards, wiped in together under #shelf-open (defs) -->
+  <g clip-path="url(#shelf-open-clip)">
   <!-- card 1, x 437..721 -->
   <g font-family="Rajdhani" fill="#df3131">
     <path d="M 437,151 H 708 L 721,164 V 270 L 709,282 V 613 H 437 Z"
@@ -485,6 +511,7 @@
         <text x="90" y="534">EMPTY</text><text x="90" y="547.5">SOCKET</text>
       </g>
     </g>
+  </g>
   </g>
 
   <!-- ==== footer ==== -->

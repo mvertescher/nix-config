@@ -280,6 +280,33 @@
         <text x="4" y="349">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
       </g>
     </g>
+
+    <!-- #cards-extrude: kitsch comes up as DEPTH extruding out of a solid
+         face (the hub's ghost stacks under #fan-left-extrude and
+         #fan-right-extrude in dashboard-trace.svg). Here the solid
+         thing is the nav — the bracket, its wave and the five chevrons
+         with SMG selected — and what belongs to the selection is the
+         rail of four product cards to its right, which is wiped on
+         from the LEFT out of the nav: the first card, the grown amber
+         card, the third, the fourth running off the edge, the way a
+         shelf slides in. The chrome never moves. Width from 0 over
+         0.45 s, eased out: 0.33 1 0.68 1 is easings.net's EaseOutCubic.
+         The rect takes in every card from card 1's flag (x 457) to the
+         right edge of the canvas (card 4 runs off it, so nothing
+         visible is beyond x 1600) and from the outlines' top (y 217.9
+         with the 1.25px stroke) to card 2's micro-text (baseline 707)
+         with margin; its own width is the value the animation freezes
+         at, so rsvg, which plays nothing, draws the rail whole: the rest
+         frame is the trace (docs/PIPELINE.md, Motion). Transcribed as
+         the Prim::Motion (Change::Clip) around the four cards in
+         src/eras/kitsch.rs. -->
+    <clipPath id="cards-extrude-clip">
+      <rect x="450" y="210" width="1150" height="505">
+        <animate id="cards-extrude" attributeName="width" from="0" to="1150"
+                 begin="0s" dur="0.45s" calcMode="spline" keyTimes="0;1"
+                 keySplines="0.33 1 0.68 1" fill="freeze"/>
+      </rect>
+    </clipPath>
   </defs>
 
   <rect width="1600" height="900" fill="#0e0e0d"/>
@@ -339,7 +366,8 @@
     <text x="170" y="567">PISTOL</text>
   </g>
 
-  <!-- ==== product cards ==== -->
+  <!-- ==== product cards: the rail, wiped on under #cards-extrude (defs) ==== -->
+  <g clip-path="url(#cards-extrude-clip)">
   <use href="#card" x="484"  y="218"/>
   <use href="#card" x="1123" y="218"/>
   <use href="#card" x="1443" y="218"/>
@@ -400,6 +428,7 @@
       <text x="4" y="481">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
       <text x="4" y="489">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
     </g>
+  </g>
   </g>
 
   <!-- ==== footer marks ==== -->

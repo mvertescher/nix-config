@@ -138,6 +138,58 @@
       <rect x="0" y="4.5" width="17" height="11.5"/>
       <path d="M 0,4.5 L 8.5,0 L 17,4.5 L 8.5,10.5 Z"/>
     </g>
+    <!-- ==== motion (docs/PIPELINE.md, Motion): how entropism comes up.
+         A monochrome terminal boots in passes, not with a panel sliding
+         open: the fixed chrome (header and footer frames) is simply
+         there; the body is drawn in raster order, frames and text
+         together, row after row; then the reverse-video cells — the
+         solid sage selections — are painted over what was drawn; and
+         last the footer's build tape types on, INTERFACE LOADED being
+         the last thing the screen says. Three animations, the same
+         three as the hub (dashboard-trace.svg) and the store, so the
+         era reads as one. Every animated value rests where the trace
+         draws it, so rsvg (which plays nothing) renders the rest frame
+         unchanged.
+
+         #body-scan: everything between the header and footer strips —
+         the section headings, the MAIL BOX list, the MESSAGE panel, the
+         button row and the badge grid — is revealed by a clip whose
+         height grows from 0 at the body's top edge to the whole body
+         over 0.45 s, so the seven list rows arrive one after another.
+         The rate is as even as the vocabulary allows (0.45 0 0.55 1 is
+         easings.net's EaseInOutQuad, the flattest of the listed curves):
+         a raster, not a settling panel. The rect is oversize (x 70..1560,
+         y 90..760) against the body's ink AND its photo-class halos
+         (the 7px halo strokes reach x 80.5 and 1490.5, y 201.5 and
+         749.5; the headings' A box top is 97.25), so nothing is nicked
+         at rest, halos shown or hidden. Transcribed as a
+         Prim::Motion (Change::Clip) around the body's prims in
+         src/eras/entropism.rs. -->
+    <clipPath id="body-scan-clip">
+      <rect x="70" y="90" width="1490" height="670">
+        <animate id="body-scan" attributeName="height" from="0" to="670"
+                 begin="0s" dur="0.45s" calcMode="spline" keyTimes="0;1"
+                 keySplines="0.45 0 0.55 1" fill="freeze"/>
+      </rect>
+    </clipPath>
+    <!-- #footer-type: the footer strip's frame (and its halo) is chrome
+         and stands with the header from frame 0; its three strings type
+         on from the left once the selection is lit — a clip on the text
+         only, width 0 -> 1498 over 0.35 s from 0.6 s (EaseInOutQuad
+         again: a teletype, not a wipe). The rect is the strip's own box
+         widened 12px above and below for the glyphs' AA. -->
+    <clipPath id="footer-type-clip">
+      <rect x="49" y="835" width="1498" height="50">
+        <animate id="footer-type" attributeName="width" from="0" to="1498"
+                 begin="0.6s" dur="0.35s" calcMode="spline" keyTimes="0;1"
+                 keySplines="0.45 0 0.55 1" fill="freeze"/>
+        <!-- the hold at `from` before 0.6 s: SMIL shows the base
+             value until an animation begins, and the base is the rest
+             value (the trace's). Nothing to transcribe: Motion.begin
+             already holds at `from`. -->
+        <set attributeName="width" to="0" begin="0s" end="footer-type.begin"/>
+      </rect>
+    </clipPath>
   </defs>
 
   <rect width="1600" height="900" fill="url(#lift)"/>
@@ -156,6 +208,9 @@
     </g>
   </g>
 
+  <!-- ==== the body: everything between the strips, drawn in raster
+       order at boot (#body-scan, in <defs>) ==== -->
+  <g clip-path="url(#body-scan-clip)">
   <!-- ==== section headings, boxes y 98..124 ==== -->
   <g font-family="Rajdhani" fill="#8aaf8d">
     <rect x="100" y="98" width="26" height="26" fill="none" stroke="#8aaf8d" stroke-width="1.5"/>
@@ -174,16 +229,63 @@
     <text x="1383" y="144" font-size="22" letter-spacing="1">LEVEL</text>
   </g>
 
-  <!-- ==== A: MAIL BOX list, frame x 84..451, y 205..686, 62px rows ==== -->
-  <g font-family="Rajdhani">
-    <g fill="none">
-      <use href="#a-chrome" stroke="#25281d" stroke-width="7" class="photo"/>
-      <use href="#a-chrome" stroke="#0a0a02" stroke-width="4" class="photo"/>
-      <use href="#a-chrome" stroke="#709174" stroke-width="2"/>
-    </g>
+  <!-- ==== the outlined chrome of A, B and the button row: each path
+       drawn three times (halo / undershoot / stroke, see the edge-profile
+       note above). Drawn here, ahead of the four selection fills in
+       #select-lit, because every fill paints over its frame's inner edge
+       (row 1 covers the list's right stroke at x 450..451; the title bar
+       and REPORT SPAM sit on their frames' halos) and the paint order of
+       every overlapping pair is what it was: chrome under fill under ink.
+       Nothing else overlaps these frames, so the rest frame is unchanged.
+       C's chrome stays in its section: the T2 fill touches none of it. ==== -->
+  <g fill="none">
+    <use href="#a-chrome" stroke="#25281d" stroke-width="7" class="photo"/>
+    <use href="#a-chrome" stroke="#0a0a02" stroke-width="4" class="photo"/>
+    <use href="#a-chrome" stroke="#709174" stroke-width="2"/>
+    <use href="#b-chrome" stroke="#25281d" stroke-width="7" class="photo"/>
+    <use href="#b-chrome" stroke="#0a0a02" stroke-width="4" class="photo"/>
+    <use href="#b-chrome" stroke="#709174" stroke-width="2"/>
+    <use href="#btn-chrome" stroke="#25281d" stroke-width="7" class="photo"/>
+    <use href="#btn-chrome" stroke="#0a0a02" stroke-width="4" class="photo"/>
+    <use href="#btn-chrome" stroke="#709174" stroke-width="2"/>
+  </g>
 
-    <!-- row 1, the selection: solid fill y 226..288, dark ink -->
+  <!-- #select-lit: the reverse-video pass. The four solid selection
+       fills — list row 1, the message's title bar, the REPORT SPAM
+       button and the T2 badge — light after the scan has drawn the
+       frames and text: opacity 0 -> 1 over 0.15 s from 0.45 s, eased
+       out (0.61 1 0.88 1 is easings.net's EaseOut): short enough to
+       read as a highlight snapping on, with a hint of phosphor rise.
+       Only the fill rects are in the group; their dark ink (row 1's
+       glyph and two lines, URGENT INFORMATION (!) / from: Mom, REPORT
+       SPAM, T2) stays in the sections below, painted over the fills as
+       before, and is dark-on-dark until the fill arrives — so the
+       group's prims do not overlap and Change::Opacity's per-prim fade
+       is exact here (docs/PIPELINE.md, Motion). The rects' own opacity
+       is the value the animation freezes at. Transcribed as a
+       Prim::Motion (Change::Opacity) around the four fills in
+       src/eras/entropism.rs. -->
+  <g opacity="1">
+    <animate id="select-lit" attributeName="opacity" from="0" to="1"
+             begin="0.45s" dur="0.15s" calcMode="spline" keyTimes="0;1"
+             keySplines="0.61 1 0.88 1" fill="freeze"/>
+    <!-- the hold at 0 until 0.45 s (see #footer-type for why) -->
+    <set attributeName="opacity" to="0" begin="0s" end="select-lit.begin"/>
+    <!-- list row 1: x 85..451, y 226..288 -->
     <rect x="85" y="226" width="366" height="62" fill="#a6d2a8"/>
+    <!-- the message's title bar: x 531..1277, y 227..288 -->
+    <rect x="531" y="227" width="746" height="61" fill="#a6d2a8"/>
+    <!-- REPORT SPAM: x 1091..1279, y 694..746 -->
+    <rect x="1091" y="694" width="188" height="52" fill="#a6d2a8"/>
+    <!-- the T2 badge: x 1341..1410, y 305..374 -->
+    <rect x="1341" y="305" width="69" height="69" fill="#a6d2a8"/>
+  </g>
+
+  <!-- ==== A: MAIL BOX list, frame x 84..451, y 205..686, 62px rows
+       (chrome above) ==== -->
+  <g font-family="Rajdhani">
+    <!-- row 1, the selection: solid fill y 226..288 (in #select-lit
+         above), dark ink -->
     <use href="#env" x="102" y="244" stroke="#25281d"/>
     <text x="138" y="256" font-size="20" fill="#25281d" letter-spacing="1">YOU'LL REGRET THAT</text>
     <text x="138" y="274" font-size="14" fill="#25281d">FROM: JACKIE</text>
@@ -216,15 +318,9 @@
     </g>
   </g>
 
-  <!-- ==== B: MESSAGE panel, frame x 529..1279, y 205..686 ==== -->
+  <!-- ==== B: MESSAGE panel, frame x 529..1279, y 205..686 (chrome above) ==== -->
   <g font-family="Rajdhani">
-    <g fill="none">
-      <use href="#b-chrome" stroke="#25281d" stroke-width="7" class="photo"/>
-      <use href="#b-chrome" stroke="#0a0a02" stroke-width="4" class="photo"/>
-      <use href="#b-chrome" stroke="#709174" stroke-width="2"/>
-    </g>
-    <!-- filled title bar y 227..288 -->
-    <rect x="531" y="227" width="746" height="61" fill="#a6d2a8"/>
+    <!-- filled title bar y 227..288 (the fill is in #select-lit above) -->
     <text x="557" y="253" font-size="22" fill="#25281d" letter-spacing="1">URGENT INFORMATION (!)</text>
     <text x="557" y="279" font-size="17" fill="#25281d">from: Mom</text>
 
@@ -243,18 +339,13 @@
     </g>
   </g>
 
-  <!-- ==== button row, y 694..746, cells at x 529 / 716 / 903 / 1091 / 1279 ==== -->
+  <!-- ==== button row, y 694..746, cells at x 529 / 716 / 903 / 1091 / 1279
+       (chrome above) ==== -->
   <g font-family="Rajdhani" font-size="22" letter-spacing="1">
-    <g fill="none">
-      <use href="#btn-chrome" stroke="#25281d" stroke-width="7" class="photo"/>
-      <use href="#btn-chrome" stroke="#0a0a02" stroke-width="4" class="photo"/>
-      <use href="#btn-chrome" stroke="#709174" stroke-width="2"/>
-    </g>
     <text x="549" y="719" fill="#a6d2a8">REPLY</text>
     <text x="736" y="719" fill="#a6d2a8">FORWARD</text>
     <text x="923" y="719" fill="#a6d2a8">DELETE</text>
-    <!-- REPORT SPAM: the filled button -->
-    <rect x="1091" y="694" width="188" height="52" fill="#a6d2a8"/>
+    <!-- REPORT SPAM: the filled button (the fill is in #select-lit above) -->
     <text x="1111" y="719" fill="#25281d">REPORT SPAM</text>
   </g>
 
@@ -269,10 +360,13 @@
     </g>
     <text transform="translate(1376,271) scale(1.42,1)" fill="#a6d2a8">T1</text>
     <text transform="translate(1453,271) scale(1.46,1)" fill="#a6d2a8">T3</text>
-    <rect x="1341" y="305" width="69" height="69" fill="#a6d2a8"/>
+    <!-- T2's solid fill is in #select-lit above -->
     <text transform="translate(1375.5,348) scale(1.42,1)" fill="#25281d">T2</text>
     <text transform="translate(1453,348) scale(1.42,1)" fill="#a6d2a8">T4</text>
   </g>
+
+  </g>
+  <!-- ==== end of the body ==== -->
 
   <!-- ==== footer strip, y 847..873, no dividers ==== -->
   <g>
@@ -281,7 +375,9 @@
       <use href="#ftr-chrome" stroke="#0a0a02" stroke-width="4" class="photo"/>
       <use href="#ftr-chrome" stroke="#709174" stroke-width="2"/>
     </g>
-    <g font-family="Rajdhani" font-size="17" font-weight="500" fill="#97c4a0">
+    <!-- the strings type on last (#footer-type, in <defs>); the frame
+         above is chrome and does not move -->
+    <g clip-path="url(#footer-type-clip)" font-family="Rajdhani" font-size="17" font-weight="500" fill="#97c4a0">
       <text x="61" y="865">INTERFACE LOADED</text>
       <text x="518" y="865">PROVIDED BY NEXUS NETWORK V10.8</text>
       <text x="1382" y="865">BUILD 6.47.48441.R15</text>

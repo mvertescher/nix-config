@@ -49,6 +49,40 @@ Each is held to its photo by
   with bottom-left chamfers, and four MAGNUM 650 HAND GUN cards with
   the second selected and grown. Gate: PASS, 71% area.
 
+## Motion
+
+The traces carry their boot-ins as SMIL on the element that moves
+(`docs/PIPELINE.md` § Motion); rsvg draws none of it, so the gate
+numbers above are unchanged by the annotations, and
+`scripts/frame.sh --at <s>` shows a moment. Neomil comes up as
+top-down wipes — a `<clipPath>` whose rect grows from no height,
+EaseOutCubic (`0.33 1 0.68 1`), at ~1280 px/s — and the cycle on the
+login. The ids, all frozen well before `motion::REST` (2.4 s):
+
+- `login-trace.svg` `#caret-blink` — the `__` at the end of the masked
+  password run, 1.2 s discrete cycle.
+- `dashboard-trace.svg` `#panel-open` — the GO HOME panel and its
+  glitch echoes, clip x 1120..1380, y 306..766, 0.36 s from 0 s.
+  Transcribed (`src/eras/neomil.rs`).
+- `store-trace.svg` `#shelf-open` — all four product cards as one
+  curtain, clip x 430..1570, y 144..808, 0.5 s from 0 s; cards 1, 3, 4
+  are whole at y 613 and the selected card keeps coming to y 800, so
+  the wipe ends on the selection. The nav column and logotype stay.
+- `mailbox-trace.svg` `#list-open` — the eight disc icons and the
+  eight message rows, clip x 125..525, y 305..883, 0.44 s from 0 s;
+  and `#message-open` — the Urgent Information panel and its four
+  buttons, clip x 720..1465, y 304..768, 0.36 s from 0.15 s (a `<set>`
+  holds the rect at 0 until then). Heading, scroll rail and R widget
+  stay. Not `#panel-open` because the dashboard's has that id and
+  both tables share `src/eras/neomil.rs`.
+
+Rest-frame check 2026-09-07 for the store and mailbox annotations:
+rsvg before/after 0 px on both; `frame.sh --at 2.4` before/after 0 px
+on both; `frame.sh --at 2.4` against the unannotated rsvg render at
+8-level fuzz 838 px (store) / 703 px (mailbox), identical to the
+unannotated files' own Firefox-vs-rsvg residue (glyph rasterising,
+the kanji among it), so the clips nick nothing at rest.
+
 ## The widget sheet — derived from the traces
 
 - `components.svg` — every reusable component of the four screens,

@@ -95,6 +95,67 @@
     <!-- one fan card, centred on its own origin -->
     <rect id="card"  x="-81" y="-25" width="162" height="50" rx="8"/>
     <rect id="badge" width="57" height="52"/>
+    <!-- #fan-left-extrude / #fan-right-extrude: kitsch comes up as DEPTH.
+         The solid blades stand from frame 0 (the fan is a physical
+         rotor laid on the table, run image #45) and each fan's ghost
+         stack — the extrusion every blade trails (+20,-20) up-right —
+         is wiped on from the LEFT, so the bright near ghost shows first
+         and the trail extends away from the card into the dark: the
+         depth extrudes out of the face. It is not neomil's top-down
+         panel wipe or neokitsch's cards curtain: the wipe runs over the
+         translucent trail only, and the opaque things it belongs to
+         never move. One clip per fan, both from 0 s, so each rotor
+         grows its own depth at once (their ghost boxes overlap in x
+         668..774, which is why they are not one rect). Each rect is
+         the fan's whole ghost box plus a 5px margin (left fan: ghosts
+         x 301.4..773.6, y 211.8..636; right fan: x 668.4..1121.6,
+         y 223..628.2, from the card's rotated 162x50 extents 82.65 x
+         62.15 for +-30 deg and 25 x 81 for 90 deg), so at rest nothing
+         of any stack is nicked. Width from 0 over 0.45 s, eased out:
+         0.33 1 0.68 1 is easings.net's EaseOutCubic. The rect's own
+         width is the value the animation freezes at, so rsvg, which
+         plays nothing, draws the stacks whole: the rest frame is the
+         trace (docs/PIPELINE.md, Motion). Transcribed as two
+         Prim::Motion (Change::Clip) in src/eras/kitsch.rs, one around
+         each fan's ghosts — which today sit in the HUB_BACK Soft
+         group with the ground and bloom, and soft.rs takes no Motion
+         inside a Soft group, so the ghosts want their own group(s). -->
+    <clipPath id="fan-left-extrude-clip">
+      <rect x="296" y="206" width="484" height="436">
+        <animate id="fan-left-extrude" attributeName="width" from="0" to="484"
+                 begin="0s" dur="0.45s" calcMode="spline" keyTimes="0;1"
+                 keySplines="0.33 1 0.68 1" fill="freeze"/>
+      </rect>
+    </clipPath>
+    <clipPath id="fan-right-extrude-clip">
+      <rect x="663" y="217" width="465" height="418">
+        <animate id="fan-right-extrude" attributeName="width" from="0" to="465"
+                 begin="0s" dur="0.45s" calcMode="spline" keyTimes="0;1"
+                 keySplines="0.33 1 0.68 1" fill="freeze"/>
+      </rect>
+    </clipPath>
+    <!-- #panel-extrude: the BRAINDANCE panel is the D DESCRIPTION of the
+         selection, and it comes on the same way the depth did — wiped
+         on from the left, its yellow tab leading — once the fans have
+         all but finished extruding (0.25 s in, the ghosts are 91% out).
+         Width from 0 to the panel's over 0.35 s, the same EaseOutCubic.
+         The rect takes in the tab (x 1200..1432), the warning tape
+         (x 1172, 1px stroke) and the body (to 1432.6 with its 1.25px
+         stroke, y 261..667.1) with margin. Its own width is the rest
+         value; the <set> beside the <animate> holds it at 0 until the
+         begin, because SMIL shows the base value — the rest — before
+         an animation starts (docs/PIPELINE.md, Motion; the iced side
+         transcribes nothing for the hold, Motion.begin already holds at
+         `from`). Transcribed as the Prim::Motion (Change::Clip) around
+         the BRAINDANCE prims in src/eras/kitsch.rs. -->
+    <clipPath id="panel-extrude-clip">
+      <rect x="1166" y="255" width="272" height="418">
+        <animate id="panel-extrude" attributeName="width" from="0" to="272"
+                 begin="0.25s" dur="0.35s" calcMode="spline" keyTimes="0;1"
+                 keySplines="0.33 1 0.68 1" fill="freeze"/>
+        <set attributeName="width" to="0" begin="0s" end="panel-extrude.begin"/>
+      </rect>
+    </clipPath>
   </defs>
 
   <rect width="1600" height="900" fill="#0d0d0c"/>
@@ -193,7 +254,8 @@
            opacity 0.58 / 0.48 / 0.40 / 0.30 / 0.21 / 0.12
        (An earlier version drew 190x60 r14 cards with 6-9 ghosts on
        13-21px steps; the ink gate at 80x45 passed both at ~0.54.) -->
-  <g fill="#0f9f80" stroke="#6cc4bd" stroke-width="1.2">
+  <!-- the left fan's ghosts, extruded under #fan-left-extrude (defs) -->
+  <g fill="#0f9f80" stroke="#6cc4bd" stroke-width="1.2" clip-path="url(#fan-left-extrude-clip)">
     <!-- VEHICLES: c(364,413) rot 30, 6 ghosts -->
     <use href="#card" transform="translate(484 293) rotate(30)" fill-opacity="0.12" stroke-opacity="0.24"/>
     <use href="#card" transform="translate(464 313) rotate(30)" fill-opacity="0.21" stroke-opacity="0.34"/>
@@ -216,6 +278,9 @@
     <use href="#card" transform="translate(518 515) rotate(90)" fill-opacity="0.40" stroke-opacity="0.56"/>
     <use href="#card" transform="translate(498 535) rotate(90)" fill-opacity="0.48" stroke-opacity="0.68"/>
     <use href="#card" transform="translate(478 555) rotate(90)" fill-opacity="0.58" stroke-opacity="0.80"/>
+  </g>
+  <!-- the right fan's ghosts, extruded under #fan-right-extrude (defs) -->
+  <g fill="#0f9f80" stroke="#6cc4bd" stroke-width="1.2" clip-path="url(#fan-right-extrude-clip)">
     <!-- right PRODUCTS: c(825,424) rot 90, 6 ghosts -->
     <use href="#card" transform="translate(945 304) rotate(90)" fill-opacity="0.12" stroke-opacity="0.24"/>
     <use href="#card" transform="translate(925 324) rotate(90)" fill-opacity="0.21" stroke-opacity="0.34"/>
@@ -267,8 +332,8 @@
     </g>
   </g>
 
-  <!-- ==== BRAINDANCE panel ==== -->
-  <g>
+  <!-- ==== BRAINDANCE panel: wiped on under #panel-extrude (defs) ==== -->
+  <g clip-path="url(#panel-extrude-clip)">
     <!-- header tab, chamfered tl/tr/bl -->
     <path d="M 1213,261 H 1419 L 1432,274 V 299 H 1213 L 1200,286 V 274 Z"
           fill="#f5cb23"/>

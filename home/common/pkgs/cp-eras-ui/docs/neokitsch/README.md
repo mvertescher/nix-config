@@ -94,6 +94,39 @@ Role mapping: `bg`=bg, `panel`=bloom field, `border`=frame gold,
   four traces draw it once as a blurred copy of the content group under
   the crisp content.
 
+## Motion
+
+Boot-ins, annotated on the traces as SMIL per `docs/PIPELINE.md`
+§ "Motion" (the rest frame is the trace; rsvg draws nothing of this,
+`scripts/frame.sh --at <s>` does). The era comes up one way on every
+screen: the plated or cascaded elements are *wiped on from the left*
+in reading order (a `<clipPath>` whose rect grows in width, 0.33 1 0.68
+1 = EaseOutCubic), and the one solid veneer body on the screen then
+*fades* in (opacity 0 -> 1 over 0.3 s from 0.4 s, 0.61 1 0.88 1 =
+EaseOut, with a `<set>` hold before it begins). Everything is frozen by
+0.7 s. The login has no motion: its field draws no caret in the photo.
+
+| screen | id | what | trace element(s) | timing |
+|---|---|---|---|---|
+| dashboard | `#cards-open` | wipe | the six cascade cards, labels, captions; clip rect (180,160) 760x630 | 0 s, 0.5 s |
+| dashboard | `#panel-fade` | fade | the detail panel group (rings, outline, body, paragraphs, tape, label) | 0.4 s, 0.3 s |
+| store | `#shelf-open` | wipe | the four weapon cards in `#lines` and their labels in `#text` (one clipPath, two groups); clip rect (340,205) 1240x530 | 0 s, 0.5 s |
+| store | `#body-fade` + `#body-fade-text` | fade | card 2's gold body: fill, grain, socket rules, QR (`#lines`) and its dark printing (`#text`) — one fade, two `<animate>`s because glyphs are haloed separately | 0.4 s, 0.3 s |
+| mailbox | `#list-open` | wipe | the seven rows: rules and tabs, envelopes (`#lines`), titles and FROM: lines (`#text`); clip rect (15,240) 520x460 | 0 s, 0.5 s |
+| mailbox | `#bar-fade` + `#bar-fade-text` | fade | the veneer selection bar, its grain, the inverted tab and outline, the dark envelope (`#lines`) and the dark title / FROM: MOM (`#text`) | 0.4 s, 0.3 s |
+| mailbox | `#buttons-open` | wipe | the four RIFLES buttons (`#lines`) and labels (`#text`); clip rect (715,660) 810x90, held at 0 until it begins | 0.3 s, 0.4 s |
+
+The store's and mailbox's fading bodies were moved out of the wipe
+groups in the trace (painted after / before them, over elements they
+do not overlap, so the rest pixels are unchanged) so that no fade nests
+inside a wipe. Each pair of `*-fade` / `*-fade-text` is one
+`Prim::Motion` on the iced side; the per-prim ink fade shows the
+fill / grain / glyph stack for those 0.3 s, as the dashboard's panel
+does. Verified 2026-09-07: rsvg renders of each trace before and after
+annotating differ by 0 pixels, and `frame.sh --at 2.4` of each matches
+the unannotated file's frame at 8-level fuzz on 0 pixels (the halos
+are inside every clip).
+
 ## Files
 
 - `login-trace.svg` — `images/neokitsch-login.png` (#70): the ARASAKA

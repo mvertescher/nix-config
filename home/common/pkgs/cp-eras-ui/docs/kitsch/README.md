@@ -108,6 +108,45 @@ yellow is *selection*, not alarm.
   it dim, and the hub's had it yellow).
 - Device screens sit inside an orange rounded bezel.
 
+## Motion
+
+Boot-ins, annotated 2026-09-07 as SMIL on the traces under the
+`docs/PIPELINE.md` § "Motion" convention (the rest frame is the trace;
+rsvg and every static gate see nothing). Kitsch comes up as **depth**:
+its one signature the other eras lack is the extrusion — every fan
+blade trails a ghost stack receding (+20,−20) up-right from its solid
+face, and run image #45 shows the fan as a physical rotor laid on a
+table. So the solid thing (the blades; the nav with SMG selected; the
+selected mail row) stands from frame 0, and what belongs to it
+*extrudes out to its right* under a width-growing `<clipPath>` —
+never neomil's top-down panel wipe or neokitsch's fade. Every
+transition is 0.45 s EaseOutCubic (`keySplines="0.33 1 0.68 1"`),
+`fill="freeze"`, frozen well before `motion::REST` (2.4 s):
+
+| id | trace | group | clip rect (rest) | animates | begin |
+|---|---|---|---|---|---|
+| `#fan-left-extrude` | `dashboard-trace.svg` | the left fan's ghosts (VEHICLES, WEAPONS, left PRODUCTS) | x 296 y 206 w 484 h 436 | width 0 → 484 | 0 s |
+| `#fan-right-extrude` | `dashboard-trace.svg` | the right fan's ghosts (right PRODUCTS, EVENTS, LOCATIONS) | x 663 y 217 w 465 h 418 | width 0 → 465 | 0 s |
+| `#panel-extrude` | `dashboard-trace.svg` | the BRAINDANCE panel (tab, tape, body, paragraphs) | x 1166 y 255 w 272 h 418 | width 0 → 272, 0.35 s, with a `<set>` hold | 0.25 s |
+| `#cards-extrude` | `store-trace.svg` | the four product cards | x 450 y 210 w 1150 h 505 | width 0 → 1150 | 0 s |
+| `#message-extrude` | `mailbox-trace.svg` | the message panel and the DETAILS / MODS / PRICE / DAMAGE tabs | x 534 y 300 w 850 h 456 | width 0 → 850 | 0 s |
+
+Each `<animate>` carries a comment in its trace saying what moves and
+why. Verified 2026-09-07: rsvg renders of each trace before and after
+the annotation differ on 0 pixels, and `scripts/frame.sh --at 2.4` of
+the annotated trace equals the same frame of the unannotated one on 0
+pixels (no fuzz), so no clip nicks a ghost stack or a stroke at rest.
+`frame.sh --at 0.08 / 0.2 / 0.4 kitsch dashboard`, `--at 0.1 / 0.25`
+for the store and mailbox, are the moments to look at.
+
+Not yet transcribed into `src/eras/kitsch.rs`. One thing the coding
+side will meet: the hub's ghosts sit in `HUB_BACK`, one `Prim::Soft`
+group with the ground and bloom, and `screens/soft.rs` takes no
+`Prim::Motion` inside a `Soft` group (a composited group is rasterised
+once and cached), so the two fans' ghosts need their own group(s) —
+each clip rect above contains its fan's whole stack, as `PIPELINE.md`
+asks.
+
 ## What this does to the crate decision
 
 The sampled kitsch **weakens** the ornament worry recorded in the

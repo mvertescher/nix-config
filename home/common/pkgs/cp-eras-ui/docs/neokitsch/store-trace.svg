@@ -226,6 +226,30 @@
     <g id="qr">
       <path d="M0.00,0.00h3.2v3.2h-3.2z M10.47,0.00h3.2v3.2h-3.2z M17.45,0.00h3.2v3.2h-3.2z M27.92,0.00h3.2v3.2h-3.2z M3.49,3.49h3.2v3.2h-3.2z M20.94,3.49h3.2v3.2h-3.2z M6.98,6.98h3.2v3.2h-3.2z M27.92,6.98h3.2v3.2h-3.2z M0.00,10.47h3.2v3.2h-3.2z M10.47,10.47h3.2v3.2h-3.2z M17.45,10.47h3.2v3.2h-3.2z M24.43,10.47h3.2v3.2h-3.2z M3.49,17.45h3.2v3.2h-3.2z M10.47,17.45h3.2v3.2h-3.2z M20.94,17.45h3.2v3.2h-3.2z M27.92,17.45h3.2v3.2h-3.2z M0.00,20.94h3.2v3.2h-3.2z M6.98,20.94h3.2v3.2h-3.2z M17.45,20.94h3.2v3.2h-3.2z M3.49,24.43h3.2v3.2h-3.2z M24.43,24.43h3.2v3.2h-3.2z M0.00,27.92h3.2v3.2h-3.2z M10.47,27.92h3.2v3.2h-3.2z M17.45,27.92h3.2v3.2h-3.2z M27.92,27.92h3.2v3.2h-3.2z"/>
     </g>
+    <!-- #shelf-open: the four weapon cards — outlines, echo strands,
+         rifles, socket rows, tabs and (in #text) their labels — are
+         wiped on from the left at boot, so the shelf arrives card 1 to
+         card 4 in reading order, as the hub's cascade does under its
+         #cards-open. The clip rect grows from no width to the shelf's
+         (x 340..1580, y 205..735: the cards span 360.8..1550.8 and
+         232.9..712.3, and the rules' halo smears 4.5 px sideways and
+         13.5 px vertically, so the rect clears every edge by 20+; the
+         hub's first clip nicked the DEVICES glow) over 0.5 s, eased
+         out: 0.33 1 0.68 1 is easings.net's EaseOutCubic. The rect's
+         own width is the value the animation freezes at, so rsvg,
+         which plays nothing, draws the shelf whole: the rest frame is
+         the trace (docs/PIPELINE.md, Motion). The same clipPath is
+         referenced from the cards' group in #lines and their labels'
+         group in #text, which are split only for the halo; it is one
+         animation. Transcribed as a Prim::Motion (Change::Clip) in
+         src/eras/neokitsch.rs. -->
+    <clipPath id="shelf-open-clip">
+      <rect x="340" y="205" width="1240" height="530">
+        <animate id="shelf-open" attributeName="width" from="0" to="1240"
+                 begin="0s" dur="0.5s" calcMode="spline" keyTimes="0;1"
+                 keySplines="0.33 1 0.68 1" fill="freeze"/>
+      </rect>
+    </clipPath>
   </defs>
 
   <rect width="1600" height="900" fill="#0e0a0d"/>
@@ -366,6 +390,7 @@
   <path d="M 97,600.7 H 289.5 Q 293.5,600.7 293.5,604.7 V 635.3 Q 293.5,639.3 289.5,639.3 H 108 L 92.9,627.7 V 604.7 Q 92.9,600.7 97,600.7 Z" fill="none" stroke="#dab176" stroke-width="1.3"/>
   <path d="M 241.7,636.9 H 275.5 L 272.5,640.3 H 244.7 Z" fill="#f7cc8c"/>
   <!-- ==== weapon cards ==== -->
+  <g clip-path="url(#shelf-open-clip)"><!-- #shelf-open: the four cards, see <defs> -->
   <g><!-- card x0=360.8 -->
     <path d="M 360.8,618.0 V 358.0 Q 360.8,345.0 373.8,345.0 H 497.0 L 537.0,314.6 H 604.9 Q 622.9,314.6 622.9,332.6 V 632.4 Q 622.9,640.4 614.9,640.4 H 380.0 L 380.0,640.4 Z"
           fill="none" stroke="#dab176" stroke-width="1.3"/>
@@ -409,6 +434,114 @@
     <path d="M 823.6,263.3 L 850.6,242.7 H 911.2 Q 917.0,242.7 917.0,248.5 V 697.6 Q 917.0,699.1 915.5,699.1 H 675.8"
           fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.18"/>
     <path d="M 766.1,703.8 H 830.6 L 827.1,712.3 H 769.1 Z" fill="#fed08d"/>
+    <g transform="translate(704.3,302.3)" fill="#f2c06e" stroke="#2d2518" stroke-width="0.8">
+      <rect x="0" y="0" width="162" height="9"/>
+      <path d="M 0,9 H 70 V 43 Q 70,47 66,47 H 4 Q 0,47 0,43 Z"/>
+      <path d="M 70,9 H 117 V 28 H 102 L 95,43 H 85 L 82,28 H 70 Z"/>
+      <path d="M 117,9 H 162 L 187,20 V 53 H 175 L 167,28 L 162,26 H 117 Z"/>
+      <g fill="none" stroke="#2d2518" stroke-width="0.6"><path d="M 6,16 H 64 M 6,23 H 64 M 6,30 H 64 M 6,37 H 64"/></g>
+    </g>
+    <g font-family="Rajdhani" font-size="16.5" fill="#f5c689">
+    </g>
+    <g font-family="Rajdhani" fill="#3a2010">
+    </g>
+    <g font-family="Rajdhani" font-size="19" fill="#3a2010">
+    </g>
+    <g font-family="Rajdhani" font-size="11.5" text-anchor="middle" fill="#3a2010">
+    </g>
+  </g>
+  <g><!-- card x0=978.8 -->
+    <path d="M 978.8,618.0 V 358.0 Q 978.8,345.0 991.8,345.0 H 1115.0 L 1155.0,314.6 H 1222.9 Q 1240.9,314.6 1240.9,332.6 V 632.4 Q 1240.9,640.4 1232.9,640.4 H 998.0 L 998.0,640.4 Z"
+          fill="none" stroke="#dab176" stroke-width="1.3"/>
+    <path d="M 1120.1,345.0 L 1156.8,317.0 H 1222.9 Q 1237.9,317.0 1237.9,332.0 V 632.4 Q 1237.9,637.4 1232.9,637.4 H 995.4"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.55"/>
+    <path d="M 1125.2,345.0 L 1158.7,319.5 H 1222.9 Q 1234.8,319.5 1234.8,331.4 V 632.4 Q 1234.8,634.3 1232.9,634.3 H 992.8"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.40"/>
+    <path d="M 1130.3,345.0 L 1160.5,321.9 H 1222.9 Q 1231.8,321.9 1231.8,330.8 V 629.8 Q 1231.8,631.2 1230.2,631.2 H 990.2"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.28"/>
+    <path d="M 1135.3,345.0 L 1162.3,324.4 H 1222.9 Q 1228.7,324.4 1228.7,330.2 V 626.7 Q 1228.7,628.2 1227.2,628.2 H 987.5"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.18"/>
+    <path d="M 1077.8,632.9 H 1142.3 L 1138.8,641.4 H 1080.8 Z" fill="#fed08d"/>
+    <g transform="translate(1016.0,384.0)" fill="#f2c06e" stroke="#2d2518" stroke-width="0.8">
+      <rect x="0" y="0" width="162" height="9"/>
+      <path d="M 0,9 H 70 V 43 Q 70,47 66,47 H 4 Q 0,47 0,43 Z"/>
+      <path d="M 70,9 H 117 V 28 H 102 L 95,43 H 85 L 82,28 H 70 Z"/>
+      <path d="M 117,9 H 162 L 187,20 V 53 H 175 L 167,28 L 162,26 H 117 Z"/>
+      <g fill="none" stroke="#2d2518" stroke-width="0.6"><path d="M 6,16 H 64 M 6,23 H 64 M 6,30 H 64 M 6,37 H 64"/></g>
+    </g>
+    <g font-family="Rajdhani" font-size="16.5" fill="#f5c689">
+    </g>
+    <g font-family="Rajdhani" fill="#f5c689">
+    </g>
+    <g fill="none" stroke="#c5965a" stroke-width="1.1">
+      <path d="M 978.8,532.9 H 1240.9 M 978.8,580.8 H 1240.9"/>
+      <path d="M 1030.1,532.9 V 580.8 M 1097.6,532.9 V 580.8 M 1169.2,532.9 V 580.8"/>
+    </g>
+    <use href="#qr" x="988.6" y="542.2" fill="#e9bd7a"/>
+    <g font-family="Rajdhani" font-size="11.5" text-anchor="middle" fill="#e9bd7a">
+    </g>
+  </g>
+  <g><!-- card x0=1288.8 -->
+    <path d="M 1288.8,618.0 V 358.0 Q 1288.8,345.0 1301.8,345.0 H 1425.0 L 1465.0,314.6 H 1532.9 Q 1550.9,314.6 1550.9,332.6 V 632.4 Q 1550.9,640.4 1542.9,640.4 H 1308.0 L 1308.0,640.4 Z"
+          fill="none" stroke="#dab176" stroke-width="1.3"/>
+    <path d="M 1430.1,345.0 L 1466.8,317.0 H 1532.9 Q 1547.9,317.0 1547.9,332.0 V 632.4 Q 1547.9,637.4 1542.9,637.4 H 1305.4"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.55"/>
+    <path d="M 1435.2,345.0 L 1468.7,319.5 H 1532.9 Q 1544.8,319.5 1544.8,331.4 V 632.4 Q 1544.8,634.3 1542.9,634.3 H 1302.8"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.40"/>
+    <path d="M 1440.3,345.0 L 1470.5,321.9 H 1532.9 Q 1541.8,321.9 1541.8,330.8 V 629.8 Q 1541.8,631.2 1540.2,631.2 H 1300.2"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.28"/>
+    <path d="M 1445.3,345.0 L 1472.3,324.4 H 1532.9 Q 1538.7,324.4 1538.7,330.2 V 626.7 Q 1538.7,628.2 1537.2,628.2 H 1297.5"
+          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.18"/>
+    <path d="M 1387.8,632.9 H 1452.3 L 1448.8,641.4 H 1390.8 Z" fill="#fed08d"/>
+    <g transform="translate(1326.0,384.0)" fill="#f2c06e" stroke="#2d2518" stroke-width="0.8">
+      <rect x="0" y="0" width="162" height="9"/>
+      <path d="M 0,9 H 70 V 43 Q 70,47 66,47 H 4 Q 0,47 0,43 Z"/>
+      <path d="M 70,9 H 117 V 28 H 102 L 95,43 H 85 L 82,28 H 70 Z"/>
+      <path d="M 117,9 H 162 L 187,20 V 53 H 175 L 167,28 L 162,26 H 117 Z"/>
+      <g fill="none" stroke="#2d2518" stroke-width="0.6"><path d="M 6,16 H 64 M 6,23 H 64 M 6,30 H 64 M 6,37 H 64"/></g>
+    </g>
+    <g font-family="Rajdhani" font-size="16.5" fill="#f5c689">
+    </g>
+    <g font-family="Rajdhani" fill="#f5c689">
+    </g>
+    <g fill="none" stroke="#c5965a" stroke-width="1.1">
+      <path d="M 1288.8,532.9 H 1550.9 M 1288.8,580.8 H 1550.9"/>
+      <path d="M 1340.1,532.9 V 580.8 M 1407.6,532.9 V 580.8 M 1479.2,532.9 V 580.8"/>
+    </g>
+    <use href="#qr" x="1298.6" y="542.2" fill="#e9bd7a"/>
+    <g font-family="Rajdhani" font-size="11.5" text-anchor="middle" fill="#e9bd7a">
+    </g>
+  </g>
+  </g><!-- /shelf-open -->
+  <!-- #body-fade: card 2's solid gold body — the veneer fill, its
+       grain, the dark socket rules and QR that sit on it — comes up
+       after the shelf, as a fade rather than a wipe: it is the one
+       solid body on the screen (the hub's detail panel takes the same
+       fade under #panel-fade; a wipe on it would read as neomil).
+       Opacity 0 -> 1 over 0.3 s from 0.4 s, eased out (0.61 1 0.88 1
+       is easings.net's EaseOut), frozen; the group's own opacity is the
+       value it freezes at, so rsvg draws the body whole. The body is
+       painted here, after the shelf's clip group, rather than inside
+       card 2 where it used to sit, so the fade is not nested in the
+       wipe; nothing painted between the two places overlaps the body
+       (the pixels are the same: the outline and echo strands under it
+       are still under it, the dark rules and QR still over it). The
+       dark values and meta lines on the body are glyphs in #text and
+       stay in the shelf's wipe: they are near-black on the near-black
+       ground until the gold comes up under them, which is what makes
+       them appear, and keeps every prim of this group non-overlapping
+       but the grain over its fill (the Change::Opacity caveat,
+       docs/PIPELINE.md). Transcribed as the Prim::Motion
+       (Change::Opacity) in src/eras/neokitsch.rs. -->
+  <g opacity="1">
+    <animate id="body-fade" attributeName="opacity" from="0" to="1"
+             begin="0.4s" dur="0.3s" calcMode="spline" keyTimes="0;1"
+             keySplines="0.61 1 0.88 1" fill="freeze"/>
+    <!-- SMIL shows the base value until an animation begins, and the
+         base is the rest value; so the hold at `from` before 0.4 s is
+         its own <set>. The iced side needs nothing for it: Motion.begin
+         already holds at `from` (docs/PIPELINE.md, Motion). -->
+    <set attributeName="opacity" to="0" begin="0s" end="body-fade.begin"/>
     <path d="M 667.1,411.2 H 929.2 V 652.9 H 667.1 Z" fill="#f6c27a"/>
     <!-- card-2 veneer grain: wavy horizontals at ~2.4 pitch; right of
          x~781 the lines within ~48px of y=531 fan into ONE dark stripe
@@ -525,89 +658,12 @@
         <line x1="864" y1="411.2" x2="864" y2="652.9" stroke-width="0.7" stroke-opacity="0.7"/>
       </g>
     </g>
-    <g transform="translate(704.3,302.3)" fill="#f2c06e" stroke="#2d2518" stroke-width="0.8">
-      <rect x="0" y="0" width="162" height="9"/>
-      <path d="M 0,9 H 70 V 43 Q 70,47 66,47 H 4 Q 0,47 0,43 Z"/>
-      <path d="M 70,9 H 117 V 28 H 102 L 95,43 H 85 L 82,28 H 70 Z"/>
-      <path d="M 117,9 H 162 L 187,20 V 53 H 175 L 167,28 L 162,26 H 117 Z"/>
-      <g fill="none" stroke="#2d2518" stroke-width="0.6"><path d="M 6,16 H 64 M 6,23 H 64 M 6,30 H 64 M 6,37 H 64"/></g>
-    </g>
-    <g font-family="Rajdhani" font-size="16.5" fill="#f5c689">
-    </g>
-    <g font-family="Rajdhani" fill="#3a2010">
-    </g>
-    <g font-family="Rajdhani" font-size="19" fill="#3a2010">
-    </g>
     <g fill="none" stroke="#3a2010" stroke-width="1.1">
       <path d="M 667.1,603.8 H 929.2 M 667.1,651.7 H 929.2"/>
       <path d="M 718.4,603.8 V 651.7 M 785.9,603.8 V 651.7 M 857.5,603.8 V 651.7"/>
     </g>
     <use href="#qr" x="676.9" y="613.1" fill="#3a2010"/>
-    <g font-family="Rajdhani" font-size="11.5" text-anchor="middle" fill="#3a2010">
-    </g>
-  </g>
-  <g><!-- card x0=978.8 -->
-    <path d="M 978.8,618.0 V 358.0 Q 978.8,345.0 991.8,345.0 H 1115.0 L 1155.0,314.6 H 1222.9 Q 1240.9,314.6 1240.9,332.6 V 632.4 Q 1240.9,640.4 1232.9,640.4 H 998.0 L 998.0,640.4 Z"
-          fill="none" stroke="#dab176" stroke-width="1.3"/>
-    <path d="M 1120.1,345.0 L 1156.8,317.0 H 1222.9 Q 1237.9,317.0 1237.9,332.0 V 632.4 Q 1237.9,637.4 1232.9,637.4 H 995.4"
-          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.55"/>
-    <path d="M 1125.2,345.0 L 1158.7,319.5 H 1222.9 Q 1234.8,319.5 1234.8,331.4 V 632.4 Q 1234.8,634.3 1232.9,634.3 H 992.8"
-          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.40"/>
-    <path d="M 1130.3,345.0 L 1160.5,321.9 H 1222.9 Q 1231.8,321.9 1231.8,330.8 V 629.8 Q 1231.8,631.2 1230.2,631.2 H 990.2"
-          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.28"/>
-    <path d="M 1135.3,345.0 L 1162.3,324.4 H 1222.9 Q 1228.7,324.4 1228.7,330.2 V 626.7 Q 1228.7,628.2 1227.2,628.2 H 987.5"
-          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.18"/>
-    <path d="M 1077.8,632.9 H 1142.3 L 1138.8,641.4 H 1080.8 Z" fill="#fed08d"/>
-    <g transform="translate(1016.0,384.0)" fill="#f2c06e" stroke="#2d2518" stroke-width="0.8">
-      <rect x="0" y="0" width="162" height="9"/>
-      <path d="M 0,9 H 70 V 43 Q 70,47 66,47 H 4 Q 0,47 0,43 Z"/>
-      <path d="M 70,9 H 117 V 28 H 102 L 95,43 H 85 L 82,28 H 70 Z"/>
-      <path d="M 117,9 H 162 L 187,20 V 53 H 175 L 167,28 L 162,26 H 117 Z"/>
-      <g fill="none" stroke="#2d2518" stroke-width="0.6"><path d="M 6,16 H 64 M 6,23 H 64 M 6,30 H 64 M 6,37 H 64"/></g>
-    </g>
-    <g font-family="Rajdhani" font-size="16.5" fill="#f5c689">
-    </g>
-    <g font-family="Rajdhani" fill="#f5c689">
-    </g>
-    <g fill="none" stroke="#c5965a" stroke-width="1.1">
-      <path d="M 978.8,532.9 H 1240.9 M 978.8,580.8 H 1240.9"/>
-      <path d="M 1030.1,532.9 V 580.8 M 1097.6,532.9 V 580.8 M 1169.2,532.9 V 580.8"/>
-    </g>
-    <use href="#qr" x="988.6" y="542.2" fill="#e9bd7a"/>
-    <g font-family="Rajdhani" font-size="11.5" text-anchor="middle" fill="#e9bd7a">
-    </g>
-  </g>
-  <g><!-- card x0=1288.8 -->
-    <path d="M 1288.8,618.0 V 358.0 Q 1288.8,345.0 1301.8,345.0 H 1425.0 L 1465.0,314.6 H 1532.9 Q 1550.9,314.6 1550.9,332.6 V 632.4 Q 1550.9,640.4 1542.9,640.4 H 1308.0 L 1308.0,640.4 Z"
-          fill="none" stroke="#dab176" stroke-width="1.3"/>
-    <path d="M 1430.1,345.0 L 1466.8,317.0 H 1532.9 Q 1547.9,317.0 1547.9,332.0 V 632.4 Q 1547.9,637.4 1542.9,637.4 H 1305.4"
-          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.55"/>
-    <path d="M 1435.2,345.0 L 1468.7,319.5 H 1532.9 Q 1544.8,319.5 1544.8,331.4 V 632.4 Q 1544.8,634.3 1542.9,634.3 H 1302.8"
-          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.40"/>
-    <path d="M 1440.3,345.0 L 1470.5,321.9 H 1532.9 Q 1541.8,321.9 1541.8,330.8 V 629.8 Q 1541.8,631.2 1540.2,631.2 H 1300.2"
-          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.28"/>
-    <path d="M 1445.3,345.0 L 1472.3,324.4 H 1532.9 Q 1538.7,324.4 1538.7,330.2 V 626.7 Q 1538.7,628.2 1537.2,628.2 H 1297.5"
-          fill="none" stroke="#c5965a" stroke-width="1" stroke-opacity="0.18"/>
-    <path d="M 1387.8,632.9 H 1452.3 L 1448.8,641.4 H 1390.8 Z" fill="#fed08d"/>
-    <g transform="translate(1326.0,384.0)" fill="#f2c06e" stroke="#2d2518" stroke-width="0.8">
-      <rect x="0" y="0" width="162" height="9"/>
-      <path d="M 0,9 H 70 V 43 Q 70,47 66,47 H 4 Q 0,47 0,43 Z"/>
-      <path d="M 70,9 H 117 V 28 H 102 L 95,43 H 85 L 82,28 H 70 Z"/>
-      <path d="M 117,9 H 162 L 187,20 V 53 H 175 L 167,28 L 162,26 H 117 Z"/>
-      <g fill="none" stroke="#2d2518" stroke-width="0.6"><path d="M 6,16 H 64 M 6,23 H 64 M 6,30 H 64 M 6,37 H 64"/></g>
-    </g>
-    <g font-family="Rajdhani" font-size="16.5" fill="#f5c689">
-    </g>
-    <g font-family="Rajdhani" fill="#f5c689">
-    </g>
-    <g fill="none" stroke="#c5965a" stroke-width="1.1">
-      <path d="M 1288.8,532.9 H 1550.9 M 1288.8,580.8 H 1550.9"/>
-      <path d="M 1340.1,532.9 V 580.8 M 1407.6,532.9 V 580.8 M 1479.2,532.9 V 580.8"/>
-    </g>
-    <use href="#qr" x="1298.6" y="542.2" fill="#e9bd7a"/>
-    <g font-family="Rajdhani" font-size="11.5" text-anchor="middle" fill="#e9bd7a">
-    </g>
-  </g>
+  </g><!-- /body-fade -->
   <!-- ==== foot ==== -->
   <g stroke="#e0b67a" fill="none">
     <use href="#letterbox" x="675" y="775"/>
@@ -643,6 +699,9 @@
     <text x="115" y="505.8" font-family="Rajdhani" font-size="17" letter-spacing="1" fill="#f5c689">SNIPER</text>
     <text x="115" y="566.5" font-family="Rajdhani" font-size="17" letter-spacing="1" fill="#f5c689">SHOTGUN</text>
     <text x="115" y="627.2" font-family="Rajdhani" font-size="17" letter-spacing="1" fill="#f5c689">PISTOL</text>
+    <!-- the four cards' labels, under the shelf's wipe (see #shelf-open
+         in <defs>); the same clipPath as the cards' group in #lines -->
+    <g clip-path="url(#shelf-open-clip)">
     <text font-family="Rajdhani" font-size="16.5" fill="#f5c689" x="382.8" y="485.0">DPS</text>
     <text font-family="Rajdhani" font-size="16.5" fill="#f5c689" x="446.8" y="485.0">PNT</text>
     <text font-family="Rajdhani" font-size="16.5" fill="#f5c689" x="497.8" y="485.0">ACC</text>
@@ -662,25 +721,6 @@
     <text font-family="Rajdhani" font-size="16.5" fill="#f5c689" x="753.1" y="403.3">PNT</text>
     <text font-family="Rajdhani" font-size="16.5" fill="#f5c689" x="804.1" y="403.3">ACC</text>
     <text font-family="Rajdhani" font-size="16.5" fill="#f5c689" x="859.1" y="403.3">ROF</text>
-    <text font-family="Rajdhani" fill="#3a2010" x="682.1" y="440.3" font-size="27" font-weight="600">620</text>
-    <text font-family="Rajdhani" fill="#3a2010" x="755.1" y="437.3" font-size="21">30</text>
-    <text font-family="Rajdhani" fill="#3a2010" x="814.1" y="437.3" font-size="21">5</text>
-    <text font-family="Rajdhani" fill="#3a2010" x="867.1" y="437.3" font-size="21">5</text>
-    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="468">20</text>
-    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="700" y="468">Recoil</text>
-    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="488">22</text>
-    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="700" y="488">Sperad</text>
-    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="509">12</text>
-    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="700" y="509">Range</text>
-    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="539">Bonus</text>
-    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="560">+9 Reflexes</text>
-    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="580">+2 Modules Slots</text>
-    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="752.2" y="624.3">EMPTY</text>
-    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="752.2" y="639.8">SOCKET</text>
-    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="821.7" y="624.3">EMPTY</text>
-    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="821.7" y="639.8">SOCKET</text>
-    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="893.4" y="624.3">EMPTY</text>
-    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="893.4" y="639.8">SOCKET</text>
     <text x="691.1" y="683.9" font-family="Rajdhani" font-size="19" fill="#f5c689"><tspan font-weight="700">MAGNUM 650</tspan> HAND GUN</text>
     <text font-family="Rajdhani" font-size="16.5" fill="#f5c689" x="1000.8" y="485.0">DPS</text>
     <text font-family="Rajdhani" font-size="16.5" fill="#f5c689" x="1064.8" y="485.0">PNT</text>
@@ -712,6 +752,46 @@
     <text font-family="Rajdhani" font-size="11.5" fill="#e9bd7a" text-anchor="middle" x="1515.1" y="553.4">EMPTY</text>
     <text font-family="Rajdhani" font-size="11.5" fill="#e9bd7a" text-anchor="middle" x="1515.1" y="568.9">SOCKET</text>
     <text x="1312.8" y="613.0" font-family="Rajdhani" font-size="19" fill="#f5c689"><tspan font-weight="700">MAGNUM 650</tspan> HAND GUN</text>
+    </g><!-- /shelf-open (labels) -->
+    <!-- #body-fade-text: the printing on card 2's gold body — the
+         values 620 30 5 5, the six meta lines and the three EMPTY /
+         SOCKET pairs, all near-black on the gold — fades in WITH the
+         body: the same 0 -> 1 over 0.3 s from 0.4 s, eased out, as
+         #body-fade on the fill and grain in #lines. Glyphs live in
+         #text for the halo's sake, so the one fade is two <animate>s;
+         the iced side transcribes them as ONE Prim::Motion
+         (Change::Opacity) holding the body and its printing. Its ink
+         fade shows the stack for those 0.3 s (the dark glyphs sit
+         lighter on the gold mid-fade), as the hub's panel paragraphs
+         do under #panel-fade: docs/PIPELINE.md, Motion. The
+         alternative, leaving the dark glyphs in the shelf's wipe,
+         drew them as ghost text on the black ground for 0.4 s, which
+         read as a bug, not a boot-in. -->
+    <g opacity="1">
+      <animate id="body-fade-text" attributeName="opacity" from="0" to="1"
+               begin="0.4s" dur="0.3s" calcMode="spline" keyTimes="0;1"
+               keySplines="0.61 1 0.88 1" fill="freeze"/>
+      <set attributeName="opacity" to="0" begin="0s" end="body-fade-text.begin"/>
+    <text font-family="Rajdhani" fill="#3a2010" x="682.1" y="440.3" font-size="27" font-weight="600">620</text>
+    <text font-family="Rajdhani" fill="#3a2010" x="755.1" y="437.3" font-size="21">30</text>
+    <text font-family="Rajdhani" fill="#3a2010" x="814.1" y="437.3" font-size="21">5</text>
+    <text font-family="Rajdhani" fill="#3a2010" x="867.1" y="437.3" font-size="21">5</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="468">20</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="700" y="468">Recoil</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="488">22</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="700" y="488">Sperad</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="509">12</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="700" y="509">Range</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="539">Bonus</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="560">+9 Reflexes</text>
+    <text font-family="Rajdhani" font-size="19" fill="#3a2010" x="673" y="580">+2 Modules Slots</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="752.2" y="624.3">EMPTY</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="752.2" y="639.8">SOCKET</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="821.7" y="624.3">EMPTY</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="821.7" y="639.8">SOCKET</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="893.4" y="624.3">EMPTY</text>
+    <text font-family="Rajdhani" font-size="11.5" fill="#3a2010" text-anchor="middle" x="893.4" y="639.8">SOCKET</text>
+    </g><!-- /body-fade-text -->
     <text fill="#e0b67a" stroke="none" x="683" y="795" font-family="Rajdhani" font-size="17" font-weight="600">B</text>
     <text font-family="Rajdhani" font-size="6.5" fill="#d9a877" x="715" y="780.5" letter-spacing="0.55">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
     <text font-family="Rajdhani" font-size="6.5" fill="#d9a877" x="715" y="787" letter-spacing="0.55">SERVING CUSTOMERS SINCE 2006.</text>

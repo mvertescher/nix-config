@@ -140,6 +140,34 @@
     <!-- outlined envelope glyph, 20x13, origin top-left -->
     <path id="env" d="M 0,0 H 20 V 13 H 0 Z M 0,0 L 10,8 L 20,0"/>
     <rect id="badge" width="56" height="34" rx="2"/>
+    <!-- #message-extrude: kitsch comes up as DEPTH extruding out of a
+         solid face (the hub's ghost stacks under #fan-left-extrude and
+         #fan-right-extrude in dashboard-trace.svg, the store's rail
+         under #cards-extrude). Here the solid thing is the selected
+         row — YOU'LL REGRET THAT, yellow, in its bracket with the list
+         — and what belongs to it is the message: the yellow panel at
+         its right, on the same top line (y 313), and the DETAILS / MODS
+         / PRICE / DAMAGE tabs beyond that. Both are wiped on from the
+         LEFT out of the row's chamfered end, the solid tab leading,
+         the outlined body and its paragraphs behind it, the tabs last,
+         so the read pulls rightward through the screen along the era's
+         extrusion axis. The list, the bracket and the header never
+         move. Width from 0 over 0.45 s, eased out: 0.33 1 0.68 1 is
+         easings.net's EaseOutCubic. The rect takes in the flag band's
+         left tip (x 540, 1.25px stroke), the panel body (to 1128.1,
+         y 313..749.1) and the tabs (to 1378.1, from y 306) with margin;
+         its own width is the value the animation freezes at, so rsvg,
+         which plays nothing, draws the message whole: the rest frame
+         is the trace (docs/PIPELINE.md, Motion). Transcribed as the
+         Prim::Motion (Change::Clip) around the panel and the four tabs
+         in src/eras/kitsch.rs. -->
+    <clipPath id="message-extrude-clip">
+      <rect x="534" y="300" width="850" height="456">
+        <animate id="message-extrude" attributeName="width" from="0" to="850"
+                 begin="0s" dur="0.45s" calcMode="spline" keyTimes="0;1"
+                 keySplines="0.33 1 0.68 1" fill="freeze"/>
+      </rect>
+    </clipPath>
   </defs>
 
   <rect width="1600" height="900" fill="#0e0d0c"/>
@@ -251,7 +279,8 @@
     </g>
   </g>
 
-  <!-- ==== message panel ==== -->
+  <!-- ==== message panel and the right column: wiped on together under #message-extrude (defs) ==== -->
+  <g clip-path="url(#message-extrude-clip)">
   <!-- solid tab, top-right chamfered -->
   <path d="M 578,313 H 1105 L 1127,337 V 349 H 575 V 316 Z" fill="#fbd42c"/>
   <text x="590" y="340" font-family="Rajdhani" font-size="17" letter-spacing="0.5" fill="#5a4a14">YOU'LL REGRET THAT</text>
@@ -288,6 +317,7 @@
     <text x="1243" y="393" fill="#7fe0c8">MODS</text>
     <text x="1243" y="447" fill="#7fe0c8">PRICE</text>
     <text x="1243" y="501" fill="#7fe0c8">DAMAGE</text>
+  </g>
   </g>
 
   <!-- ==== footer micro-text, y 864..869, x 503..1095 ==== -->

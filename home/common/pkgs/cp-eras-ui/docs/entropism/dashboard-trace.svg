@@ -129,6 +129,55 @@
       <text transform="translate(103,-15) scale(0.685,1)" font-size="12">COMBAT COLONIZATION</text>
       <text transform="translate(103,-6) scale(0.82,1)" font-size="10.5">DEFENCE PROGRAM</text>
     </g>
+    <!-- ==== motion (docs/PIPELINE.md, Motion): how entropism comes up.
+         A monochrome terminal boots in passes, not with a panel sliding
+         open: the fixed chrome (header and footer frames) is simply
+         there; the body is drawn in raster order, frames and text
+         together, row after row; then the reverse-video cells — the
+         solid sage selections — are painted over what was drawn; and
+         last the footer's build tape types on, INTERFACE LOADED being
+         the last thing the screen says. Three animations, the same
+         three on the store and the mailbox, so the era reads as one.
+         Every animated value rests where the trace draws it, so rsvg
+         (which plays nothing) renders the rest frame unchanged.
+
+         #body-scan: everything between the header and footer strips —
+         the section headings, the 3x2 grid, the MESSAGE panel and the
+         badge column — is revealed by a clip whose height grows from 0
+         at the body's top edge to the whole body over 0.45 s. The rate
+         is as even as the vocabulary allows (0.45 0 0.55 1 is
+         easings.net's EaseInOutQuad, the flattest of the listed curves):
+         a raster, not a settling panel. The rect is oversize (x 100..1500,
+         y 130..735) against the body's ink (x 133..1466, y 141..724: the
+         SECURITY label runs to 1466, past the badges),
+         and this trace has no photo halos, so nothing is nicked at rest.
+         Transcribed as a Prim::Motion (Change::Clip) around the body's
+         prims in src/eras/entropism.rs. -->
+    <clipPath id="body-scan-clip">
+      <rect x="100" y="130" width="1400" height="605">
+        <animate id="body-scan" attributeName="height" from="0" to="605"
+                 begin="0s" dur="0.45s" calcMode="spline" keyTimes="0;1"
+                 keySplines="0.45 0 0.55 1" fill="freeze"/>
+      </rect>
+    </clipPath>
+    <!-- #footer-type: the footer strip's frame is chrome and stands
+         with the header from frame 0; its three strings type on from
+         the left once the selection is lit — a clip on the text only,
+         width 0 -> 1498 over 0.35 s from 0.6 s (EaseInOutQuad again:
+         a teletype, not a wipe). The rect is the strip's own box widened
+         12px above and below for the glyphs' AA. -->
+    <clipPath id="footer-type-clip">
+      <rect x="49" y="835" width="1498" height="50">
+        <animate id="footer-type" attributeName="width" from="0" to="1498"
+                 begin="0.6s" dur="0.35s" calcMode="spline" keyTimes="0;1"
+                 keySplines="0.45 0 0.55 1" fill="freeze"/>
+        <!-- the hold at `from` before 0.6 s: SMIL shows the base
+             value until an animation begins, and the base is the rest
+             value (the trace's). Nothing to transcribe: Motion.begin
+             already holds at `from`. -->
+        <set attributeName="width" to="0" begin="0s" end="footer-type.begin"/>
+      </rect>
+    </clipPath>
   </defs>
 
   <rect width="1600" height="900" fill="url(#lift)"/>
@@ -144,6 +193,9 @@
     </g>
   </g>
 
+  <!-- ==== the body: everything between the strips, drawn in raster
+       order at boot (#body-scan, in <defs>) ==== -->
+  <g clip-path="url(#body-scan-clip)">
   <!-- ==== section headings: boxes 26x26 holding a bold extended letter
        (photo A is 18x14, B/C 15x14 — Rajdhani Bold 22 stretched 1.5-1.6),
        labels Rajdhani 600 at 23 (cap 15, natural tracking hits the
@@ -165,6 +217,34 @@
     </g>
   </g>
 
+  <!-- #select-lit: the reverse-video pass. The two solid selection
+       fills — the BRAINDANCE tile and the T2 badge — light after the
+       scan has drawn the frames and text: opacity 0 -> 1 over 0.15 s
+       from 0.45 s, eased out (0.61 1 0.88 1 is easings.net's EaseOut):
+       short enough to read as a highlight snapping on, with a hint of
+       phosphor rise. Only the fill rects are in the group; their dark
+       ink (the BRAINDANCE label, its caption box, the T2 glyph) stays
+       in the grid and badge groups below, painted over the fills as
+       before, and is dark-on-dark until the fill arrives — so the
+       group's prims do not overlap and Change::Opacity's per-prim fade
+       is exact here (docs/PIPELINE.md, Motion). The group sits before
+       the grid because nothing painted between here and the rects'
+       former places overlaps them; the rest frame is pixel-identical.
+       The rects' own opacity is the value the animation freezes at.
+       Transcribed as a Prim::Motion (Change::Opacity) around the two
+       fills in src/eras/entropism.rs. -->
+  <g opacity="1">
+    <animate id="select-lit" attributeName="opacity" from="0" to="1"
+             begin="0.45s" dur="0.15s" calcMode="spline" keyTimes="0;1"
+             keySplines="0.61 1 0.88 1" fill="freeze"/>
+    <!-- the hold at 0 until 0.45 s (see #footer-type for why) -->
+    <set attributeName="opacity" to="0" begin="0s" end="select-lit.begin"/>
+    <!-- the selection tile, row 1 tile 3: x 716..910, y 227..438 -->
+    <rect x="716" y="227" width="194" height="211" fill="#a6d3a7"/>
+    <!-- the T2 badge: x 1380..1448, y 304..372 -->
+    <rect x="1380" y="304" width="68" height="68" fill="#a6d3a7"/>
+  </g>
+
   <!-- ==== the 3x2 tile grid ==== -->
   <!-- row 1: y 226..438, caption box top rule at y 410 -->
   <g font-family="Rajdhani" font-size="22" font-weight="600" text-anchor="middle" letter-spacing="0.3">
@@ -176,8 +256,8 @@
     <text x="514" y="327" fill="#acddb4">MATRIX</text>
     <use href="#caption" x="418" y="438" fill="#a8d7a7" stroke="#a8d7a7"/>
 
-    <!-- the selection: solid sage fill, dark caption box and text -->
-    <rect x="716" y="227" width="194" height="211" fill="#a6d3a7"/>
+    <!-- the selection: its solid sage fill is in #select-lit above;
+         dark caption box and text -->
     <text x="813" y="327" fill="#22301f">BRAINDANCE</text>
     <use href="#caption" x="716" y="438" fill="#2e4a2c" stroke="#2e4a2c"/>
 
@@ -225,13 +305,16 @@
   <g font-family="Rajdhani" font-size="27" font-weight="bold" text-anchor="middle">
     <rect x="1380" y="214" width="68" height="68" fill="none" stroke="#8fba97" stroke-width="1.25"/>
     <text transform="translate(1414,257) scale(1.37,1)" fill="#acddb4">T1</text>
-    <rect x="1380" y="304" width="68" height="68" fill="#a6d3a7"/>
+    <!-- T2's solid fill is in #select-lit above -->
     <text transform="translate(1414,346) scale(1.42,1)" fill="#22301f">T2</text>
     <rect x="1380" y="393" width="68" height="68" fill="none" stroke="#8fba97" stroke-width="1.25"/>
     <text transform="translate(1414,435) scale(1.5,1)" fill="#acddb4">T3</text>
     <rect x="1380" y="482" width="68" height="68" fill="none" stroke="#8fba97" stroke-width="1.25"/>
     <text transform="translate(1414,524) scale(1.38,1)" fill="#acddb4">T4</text>
   </g>
+
+  </g>
+  <!-- ==== end of the body ==== -->
 
   <!-- ==== footer strip, y 847..872 ==== -->
   <!-- text runs measured on the 1600-wide rescale (threshold+trim over the
@@ -243,7 +326,9 @@
        frame's right edge (1547), so it is anchored at its end. -->
   <g>
     <rect x="49" y="847" width="1498" height="25" fill="none" stroke="#8fba97" stroke-width="1.25"/>
-    <g font-family="Rajdhani" font-size="17" font-weight="500" fill="#97c4a0">
+    <!-- the strings type on last (#footer-type, in <defs>); the frame
+         above is chrome and does not move -->
+    <g clip-path="url(#footer-type-clip)" font-family="Rajdhani" font-size="17" font-weight="500" fill="#97c4a0">
       <text x="61" y="865">INTERFACE LOADED</text>
       <text x="518" y="865">PROVIDED BY NEXUS NETWORK V10.8</text>
       <text x="1525" y="865" text-anchor="end">BUILD 6.47.48441.R15</text>

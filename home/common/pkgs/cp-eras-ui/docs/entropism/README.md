@@ -82,6 +82,51 @@ PETROCHEM / BETTERLIFE TEC band (`store-trace.svg` samples it at
 - Menu tiles carry two-cell caption strips at their foot.
 - Dense small maintenance captions throughout.
 
+## Motion
+
+How the era comes up, annotated 2026-09-07 as SMIL on three of the
+traces per `docs/PIPELINE.md` § Motion (the login carries only its
+`#caret-blink`). Entropism is a monochrome terminal, so it boots in
+passes rather than with a panel sliding open — neither neomil's
+top-down panel wipe nor neokitsch's left wipe and fade. The same three
+animations, with the same ids and timing, sit on `dashboard-trace.svg`,
+`store-trace.svg` and `mailbox-trace.svg`:
+
+- `#body-scan` (0 → 0.45 s, EaseInOutQuad `0.45 0 0.55 1`): a
+  `<clipPath>` whose rect's `height` grows from 0 at the body's top
+  edge. Everything between the header and footer strips — section
+  headings, frames and text together — is drawn in raster order, so
+  the mailbox's seven rows and the hub's two tile rows arrive one after
+  another. The header and footer *frames* are chrome and stand from
+  frame 0. Rect: hub x 100 y 130 w 1400 h 605; store x 100 y 90 w 1500
+  h 730; mailbox x 70 y 90 w 1490 h 670 (oversize against the ink and,
+  on the mailbox, the photo-class halos).
+- `#select-lit` (0.45 → 0.6 s, EaseOut `0.61 1 0.88 1`, with a `<set>`
+  hold at 0 before it): the solid sage selection fills — the
+  reverse-video cells — fade 0 → 1 *after* the scan has drawn their
+  frames and text. Only the fill rects are in the group; their dark
+  ink stays in the sections and is dark-on-dark until the fill
+  arrives, so the group's prims never overlap and the iced side's
+  per-prim `Change::Opacity` is exact. Hub: the BRAINDANCE tile and
+  T2. Store: the SMG row and card 1's header block. Mailbox: row 1, the
+  title bar, REPORT SPAM and T2. To put four fills in one group the
+  mailbox's A/B/button chrome triplets were moved ahead of the fills
+  (same paint order for every overlapping pair; rest frame unchanged).
+- `#footer-type` (0.6 → 0.95 s, EaseInOutQuad, `<set>` hold): the
+  footer strip's three strings type on from the left under a
+  `<clipPath>` whose rect's `width` grows from 0 — INTERFACE LOADED is
+  the last thing the screen says. Rect x 49 (store: 52) y 835 w 1498
+  (store: 1497) h 50; the strip's frame does not move.
+
+Everything is frozen by 0.95 s, well inside `motion::REST` (2.4 s).
+Verified 2026-09-07: rsvg renders of each trace before and after the
+annotation differ by 0 pixels; `frame.sh --at 2.4` of the annotated
+traces is pixel-identical to the same frame of the unannotated ones
+(with and, on the mailbox, without the photo halos), and differs from
+rsvg's render by exactly the pre-existing Firefox-vs-rsvg text-AA
+baseline (1545 / 1707 / 8987 px at 3% fuzz for hub / store / mailbox).
+`frame.sh --at 0.2`, `0.5` and `0.8` are the three beats.
+
 ## Toolkit divergence (handoff) — historical
 
 This section was written when entropism lived in its own crate. The

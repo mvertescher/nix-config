@@ -140,6 +140,50 @@
     </g>
     <!-- one action button: 175x56, bottom-right chamfer 9 -->
     <path id="btn" d="M 0,0 H 175 V 47 L 166,56 H 0 Z"/>
+
+    <!-- Boot-in, the neomil way (the dashboard's GO HOME panel under
+         its #panel-open): two top-down wipes, the list first and the
+         message panel a beat after it, in the screen's reading order.
+         Both are <clipPath>s whose rect grows from no height, eased
+         out (0.33 1 0.68 1 is easings.net's EaseOutCubic), at the
+         dashboard's rate of ~1280 px/s. Each rect's own height is the
+         value its animation freezes at, so rsvg, which plays nothing,
+         draws both blocks whole: the rest frame is the trace
+         (docs/PIPELINE.md, Motion). Transcribed as the Prim::Motions in
+         src/eras/neomil.rs. -->
+    <!-- #list-open: the eight disc icons and the eight message rows
+         together (x 133..511 with the spines at 237; y 313..876 plus
+         the icons' 2px strokes), 0.44 s from 0 s. The scroll rail and
+         its R widget are chrome and stay, as do the header and tabs.
+         Rect x 125..525, y 305..883 clears every stroke. -->
+    <clipPath id="list-open-clip">
+      <rect x="125" y="305" width="400" height="578">
+        <animate id="list-open" attributeName="height" from="0" to="578"
+                 begin="0s" dur="0.44s" calcMode="spline" keyTimes="0;1"
+                 keySplines="0.33 1 0.68 1" fill="freeze"/>
+      </rect>
+    </clipPath>
+    <!-- #message-open: the Urgent Information panel (x 729..1455 with its
+         edge bar, y 312..699) and the four buttons under it (y 702..758,
+         one block with the panel in the photo), 0.36 s from 0.15 s: the
+         dashboard's panel timing, started a beat after the list so the
+         screen fills left to right. The heading above the panel stays,
+         a label like the dashboard's diamond labels. Rect x 720..1465,
+         y 304..768 clears the 1.2px strokes. Named for the panel, not
+         "panel-open", because the dashboard's wipe already has that id
+         and both tables live in one src/eras/neomil.rs.
+         SMIL shows the base value until an animation begins, and the
+         base is the rest value; so the hold at `from` before 0.15 s is
+         its own <set>. The iced side needs nothing for it: Motion.begin
+         already holds at `from` (docs/PIPELINE.md, Motion). -->
+    <clipPath id="message-open-clip">
+      <rect x="720" y="304" width="745" height="464">
+        <animate id="message-open" attributeName="height" from="0" to="464"
+                 begin="0.15s" dur="0.36s" calcMode="spline" keyTimes="0;1"
+                 keySplines="0.33 1 0.68 1" fill="freeze"/>
+        <set attributeName="height" to="0" begin="0s" end="message-open.begin"/>
+      </rect>
+    </clipPath>
   </defs>
 
   <rect width="1600" height="900" fill="#070304"/>
@@ -213,6 +257,8 @@
     <text transform="translate(58,578) rotate(-90)" textLength="88" fill="#a8282b">00032 05 54 08 CP</text>
   </g>
 
+  <!-- icons and list together under #list-open (defs) -->
+  <g clip-path="url(#list-open-clip)">
   <!-- ==== disc icons, one per row; top vertices at x 185, measured off
        the bright mass (disc top = vertex + 11) ==== -->
   <g>
@@ -296,6 +342,7 @@
       <text x="441" y="509.5">NEW</text>
     </g>
   </g>
+  </g>
 
   <!-- ==== scroll rail x 542..548 and the R widget ==== -->
   <g>
@@ -322,6 +369,8 @@
   <!-- ==== Urgent Information panel, x 729..1450 y 312..699 ==== -->
   <text x="742" y="287" font-family="Rajdhani" font-size="20" font-weight="600"
         fill="#e63132">Urgent Information (!)</text>
+  <!-- panel and buttons together under #message-open (defs) -->
+  <g clip-path="url(#message-open-clip)">
   <g>
     <path d="M 729,312 H 1442 L 1450,320 V 691 L 1442,699 H 729 Z"
           fill="#1c0608" stroke="#a8282b" stroke-width="1.2"/>
@@ -371,6 +420,7 @@
       <text x="1097" y="746">Confirm / Jump</text>
       <text x="1276" y="746">Confirm / Jump</text>
     </g>
+  </g>
   </g>
 
   <!-- ==== footer ==== -->

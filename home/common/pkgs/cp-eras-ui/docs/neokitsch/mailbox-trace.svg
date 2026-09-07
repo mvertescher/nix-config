@@ -205,6 +205,50 @@
       <feGaussianBlur stdDeviation="1.0 1.6"/>
       <feColorMatrix type="matrix" values="0.43 0 0 0 0  0 0.32 0 0 0  0 0 0.21 0 0  0 0 0 1.45 0"/>
     </filter>
+    <!-- #list-open: the seven message rows — rules and tabs, envelope
+         glyphs and (in #text) titles and FROM: lines — are wiped on
+         from the left at boot, the rules drawing themselves out to
+         their tabs, as the hub's cascade arrives under its #cards-open.
+         The clip rect grows from no width to the list's (x 15..535,
+         y 240..700: the rules run 35..483 and the rows 262..671, and
+         the rules' halo smears 4.5 px sideways and 13.5 px vertically,
+         so the rect clears every edge by 15+; the hub's first clip
+         nicked the DEVICES glow) over 0.5 s, eased out: 0.33 1 0.68 1
+         is easings.net's EaseOutCubic. The rect's own width is the
+         value the animation freezes at, so rsvg, which plays nothing,
+         draws the list whole: the rest frame is the trace
+         (docs/PIPELINE.md, Motion). The same clipPath is referenced
+         from the rows' group in #lines and their glyphs' group in
+         #text, which are split only for the halo; it is one animation.
+         The selection bar is NOT under it: it fades in on its own
+         (#bar-fade, below). Transcribed as a Prim::Motion (Change::Clip)
+         in src/eras/neokitsch.rs. -->
+    <clipPath id="list-open-clip">
+      <rect x="15" y="240" width="520" height="460">
+        <animate id="list-open" attributeName="width" from="0" to="520"
+                 begin="0s" dur="0.5s" calcMode="spline" keyTimes="0;1"
+                 keySplines="0.33 1 0.68 1" fill="freeze"/>
+      </rect>
+    </clipPath>
+    <!-- #buttons-open: the four RIFLES buttons (outlines, tabs and, in
+         #text, their labels) are wiped on from the left as the list
+         finishes, so the foot arrives left to right in reading order:
+         the clip rect (x 715..1525, y 660..750 round the buttons'
+         735..1494 x 684..723 and their halo) grows from no width to
+         the row's over 0.4 s from 0.3 s, eased out (EaseOutCubic).
+         The <set> holds the width at 0 until the animation begins,
+         because SMIL shows the base — rest — value before then; the
+         iced side transcribes nothing for it, Motion.begin already
+         holds at `from`. Transcribed as a Prim::Motion (Change::Clip)
+         in src/eras/neokitsch.rs. -->
+    <clipPath id="buttons-open-clip">
+      <rect x="715" y="660" width="810" height="90">
+        <animate id="buttons-open" attributeName="width" from="0" to="810"
+                 begin="0.3s" dur="0.4s" calcMode="spline" keyTimes="0;1"
+                 keySplines="0.33 1 0.68 1" fill="freeze"/>
+        <set attributeName="width" to="0" begin="0s" end="buttons-open.begin"/>
+      </rect>
+    </clipPath>
   </defs>
 
   <rect width="1600" height="900" fill="#0e0a0d"/>
@@ -275,20 +319,33 @@
        x 35..483; core ~3.5px at 3840, so 1.5 here) with a 5px filled
        trapezoid tab (#fdcf8c, the brightest ink on the screen) on top of
        each at x 422..452; the k=1 rule is the selection bar's bottom edge -->
-  <g stroke="#e0b67a" stroke-width="1.5" fill="#fdcf8c">
-    <line x1="35" y1="309.0" x2="483" y2="309.0"/>
-    <path d="M 421.5,309.0 L 425,304.0 H 449 L 452.5,309.0 Z" stroke="none"/>
-    <line x1="35" y1="429.4" x2="483" y2="429.4"/>
-    <path d="M 421.5,429.4 L 425,424.4 H 449 L 452.5,429.4 Z" stroke="none"/>
-    <line x1="35" y1="489.6" x2="483" y2="489.6"/>
-    <path d="M 421.5,489.6 L 425,484.6 H 449 L 452.5,489.6 Z" stroke="none"/>
-    <line x1="35" y1="549.8" x2="483" y2="549.8"/>
-    <path d="M 421.5,549.8 L 425,544.8 H 449 L 452.5,549.8 Z" stroke="none"/>
-    <line x1="35" y1="610.0" x2="483" y2="610.0"/>
-    <path d="M 421.5,610.0 L 425,605.0 H 449 L 452.5,610.0 Z" stroke="none"/>
-    <line x1="35" y1="670.2" x2="483" y2="670.2"/>
-    <path d="M 421.5,670.2 L 425,665.2 H 449 L 452.5,670.2 Z" stroke="none"/>
-  </g>
+  <!-- #bar-fade: the selection — the veneer bar, its grain, the
+       inverted tab and its dark outline, and the dark envelope on it —
+       comes up after the rows, as a fade rather than a wipe: it is the
+       one solid body on the screen (the hub's detail panel takes the
+       same fade under #panel-fade; a wipe on it would read as neomil).
+       Opacity 0 -> 1 over 0.3 s from 0.4 s, eased out (0.61 1 0.88 1
+       is easings.net's EaseOut), frozen; the group's own opacity is
+       the value it freezes at, so rsvg draws the bar whole. Painted
+       before the rows' clip group rather than between the rules and
+       the envelopes where it used to sit, so the fade is not nested in
+       the wipe; the bar overlaps no rule (315..372 against 309 and
+       429) and the row-2 envelope came with it, so the pixels are the
+       same. The dark title and FROM: line on the bar are glyphs in
+       #text and fade with it under #bar-fade-text. The grain lies over
+       the fill and the envelope over the grain, so the iced ink fade
+       shows the stack for those 0.3 s (the Change::Opacity caveat,
+       docs/PIPELINE.md), as the hub's panel does. Transcribed as the
+       Prim::Motion (Change::Opacity) in src/eras/neokitsch.rs. -->
+  <g opacity="1">
+    <animate id="bar-fade" attributeName="opacity" from="0" to="1"
+             begin="0.4s" dur="0.3s" calcMode="spline" keyTimes="0;1"
+             keySplines="0.61 1 0.88 1" fill="freeze"/>
+    <!-- SMIL shows the base value until an animation begins, and the
+         base is the rest value; so the hold at `from` before 0.4 s is
+         its own <set>. The iced side needs nothing for it: Motion.begin
+         already holds at `from` (docs/PIPELINE.md, Motion). -->
+    <set attributeName="opacity" to="0" begin="0s" end="bar-fade.begin"/>
   <!-- the selection: solid gold bar [35,315]..[512,370], 22px chamfer on
        the top-RIGHT corner only, and the row tab INVERTED on its bottom
        edge (measured 2026-09-03): a gold tab x 420.4..456.3 hanging to
@@ -355,18 +412,38 @@
   </g>
   <!-- the inverted tab's dark outline, over the grain -->
   <path d="M 418.6,370.3 L 420.9,366.25 H 456.1 L 458.1,370.3" fill="none" stroke="#644621" stroke-width="1.25"/>
+    <!-- the selected row's envelope, dark on the veneer (the others are
+         in the rows' group below) -->
+    <g fill="none" stroke-width="1" stroke="#865c39" transform="translate(429 335.4)"><rect x="0" y="0" width="16" height="10.5"/><path d="M 0,0 L 8,6 L 16,0"/></g>
+  </g><!-- /bar-fade -->
+  <g clip-path="url(#list-open-clip)"><!-- #list-open: the rows, see <defs> -->
+  <g stroke="#e0b67a" stroke-width="1.5" fill="#fdcf8c">
+    <line x1="35" y1="309.0" x2="483" y2="309.0"/>
+    <path d="M 421.5,309.0 L 425,304.0 H 449 L 452.5,309.0 Z" stroke="none"/>
+    <line x1="35" y1="429.4" x2="483" y2="429.4"/>
+    <path d="M 421.5,429.4 L 425,424.4 H 449 L 452.5,429.4 Z" stroke="none"/>
+    <line x1="35" y1="489.6" x2="483" y2="489.6"/>
+    <path d="M 421.5,489.6 L 425,484.6 H 449 L 452.5,489.6 Z" stroke="none"/>
+    <line x1="35" y1="549.8" x2="483" y2="549.8"/>
+    <path d="M 421.5,549.8 L 425,544.8 H 449 L 452.5,549.8 Z" stroke="none"/>
+    <line x1="35" y1="610.0" x2="483" y2="610.0"/>
+    <path d="M 421.5,610.0 L 425,605.0 H 449 L 452.5,610.0 Z" stroke="none"/>
+    <line x1="35" y1="670.2" x2="483" y2="670.2"/>
+    <path d="M 421.5,670.2 L 425,665.2 H 449 L 452.5,670.2 Z" stroke="none"/>
+  </g>
   <!-- envelope glyphs at x 429..445: rows 1,3,7 OPEN (flap raised, 14.5
        tall), the rest CLOSED (10.5 tall); the selected row's in dark -->
   <g fill="none" stroke-width="1">
     <g stroke="#f0bf7b" transform="translate(429 271.7)"><path d="M 0,4 L 8,0 L 16,4 V 14.5 H 0 Z"/><path d="M 0,4 L 8,9.5 L 16,4"/></g>
-    <g stroke="#865c39" transform="translate(429 335.4)"><rect x="0" y="0" width="16" height="10.5"/><path d="M 0,0 L 8,6 L 16,0"/></g>
     <g stroke="#f0bf7b" transform="translate(429 392.1)"><path d="M 0,4 L 8,0 L 16,4 V 14.5 H 0 Z"/><path d="M 0,4 L 8,9.5 L 16,4"/></g>
     <g stroke="#f0bf7b" transform="translate(429 455.8)"><rect x="0" y="0" width="16" height="10.5"/><path d="M 0,0 L 8,6 L 16,0"/></g>
     <g stroke="#f0bf7b" transform="translate(429 516.0)"><rect x="0" y="0" width="16" height="10.5"/><path d="M 0,0 L 8,6 L 16,0"/></g>
     <g stroke="#f0bf7b" transform="translate(429 576.2)"><rect x="0" y="0" width="16" height="10.5"/><path d="M 0,0 L 8,6 L 16,0"/></g>
     <g stroke="#f0bf7b" transform="translate(429 632.9)"><path d="M 0,4 L 8,0 L 16,4 V 14.5 H 0 Z"/><path d="M 0,4 L 8,9.5 L 16,4"/></g>
   </g>
+  </g><!-- /list-open -->
 
+  <g clip-path="url(#buttons-open-clip)"><!-- #buttons-open: the four buttons, see <defs> -->
   <!-- ==== four RIFLES buttons ==== -->
   <!-- outlined in #ecbe82 at 1.25 (the 2026-09-03 re-cut, see the header;
        this comment said the darker #c29a65 at 1.7 until 2026-09-04 — only
@@ -383,6 +460,7 @@
   <use href="#riflebox" x="194"/>
   <use href="#riflebox" x="385"/>
   <use href="#riflebox" x="575"/>
+  </g><!-- /buttons-open -->
 
   <!-- ==== foot: C and D letter boxes with their annotations ==== -->
   <g>
@@ -441,11 +519,11 @@
   </g>
 
   <!-- ==== the message list ==== -->
-  <g font-family="Rajdhani">
+  <!-- the rows' titles and FROM: lines, under the rows' wipe (see
+       #list-open in <defs>); the same clipPath as the rows' group in #lines -->
+  <g font-family="Rajdhani" clip-path="url(#list-open-clip)">
     <text x="193" y="276.0" font-size="18" font-weight="600" fill="#f3c583">You'll regret that</text>
     <text x="193" y="297.0" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: JACKIE</text>
-    <text x="193.5" y="336.2" font-size="18" font-weight="600" fill="#7b5438" letter-spacing="-0.22">Urgent information (!)</text>
-    <text x="193" y="357.2" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#895f3b">FROM: MOM</text>
     <text x="193" y="396.4" font-size="18" font-weight="600" fill="#f3c583">Heist data sent to you</text>
     <text x="193" y="417.4" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: 805000451</text>
     <text x="193" y="456.6" font-size="18" font-weight="600" fill="#f3c583">I'm worried man</text>
@@ -457,6 +535,20 @@
     <text x="193" y="637.2" font-size="18" font-weight="600" fill="#f3c583">Special offer to you!</text>
     <text x="193" y="658.2" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: RACHEL ROSS</text>
   </g>
+  <!-- #bar-fade-text: the selected row's title and FROM: line, dark on
+       the veneer, fade in WITH the bar: the same 0 -> 1 over 0.3 s from
+       0.4 s, eased out, as #bar-fade in #lines. Glyphs live in #text
+       for the halo's sake, so the one fade is two <animate>s; the iced
+       side transcribes them as ONE Prim::Motion (Change::Opacity)
+       holding the bar and its printing. -->
+  <g font-family="Rajdhani" opacity="1">
+    <animate id="bar-fade-text" attributeName="opacity" from="0" to="1"
+             begin="0.4s" dur="0.3s" calcMode="spline" keyTimes="0;1"
+             keySplines="0.61 1 0.88 1" fill="freeze"/>
+    <set attributeName="opacity" to="0" begin="0s" end="bar-fade-text.begin"/>
+    <text x="193.5" y="336.2" font-size="18" font-weight="600" fill="#7b5438" letter-spacing="-0.22">Urgent information (!)</text>
+    <text x="193" y="357.2" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#895f3b">FROM: MOM</text>
+  </g><!-- /bar-fade-text -->
 
   <!-- ==== the message body: plain text, no panel ==== -->
   <g font-family="Rajdhani" fill="#f8c884">
@@ -476,13 +568,16 @@
     </g>
   </g>
 
-  <!-- RIFLES labels (boxes are in #lines) -->
+  <!-- RIFLES labels (boxes are in #lines), under the buttons' wipe (see
+       #buttons-open in <defs>); the same clipPath as the boxes' group -->
+  <g clip-path="url(#buttons-open-clip)">
   <g id="rifletext">
     <text x="757" y="710.5" font-size="16" font-weight="500" letter-spacing="1" fill="#f9cb8a">RIFLES</text>
   </g>
   <use href="#rifletext" x="192"/>
   <use href="#rifletext" x="385"/>
   <use href="#rifletext" x="575"/>
+  </g><!-- /buttons-open (labels) -->
 
   <!-- foot annotations -->
   <g>
