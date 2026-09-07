@@ -1705,8 +1705,9 @@ when that screen assembles from library widgets. Priority order:
     rounded rectangle, so neomil's br-chamfer, kitsch's stepped bar
     and neokitsch's tabbed bl-chamfer stay `widgets::surface` plates
     inside a `bare` button; the coat sets only fill/edge/ink/radius.
-    *Hover/press*: the traces are stills with no such state; nothing
-    to read, left for "Motion". *override-hatch*: no era sheet has a
+    *Hover/press*: the traces are stills with no such state; the
+    reading is on the sheets since 2026-09-07 (see "Motion"), the
+    plumbing still open. *override-hatch*: no era sheet has a
     hatched button; iced has no pattern fill either. *Icon buttons*:
     nothing to style beyond `bare`; blocked on "Icon set". *Slider
     ticks*: `slider::Style` has no ticks; would be a widget, not a
@@ -1818,15 +1819,19 @@ when that screen assembles from library widgets. Priority order:
   `Style::dashboard_destinations`, from the module labels: only
   entropism (EMAILS) and neokitsch (EMAIL) label a mailbox and only
   kitsch and neomil (PRODUCTS) a store, so the other screen in each
-  era is **stood in** by the last module (DEVICES, LOCATIONS,
-  CORPORATIONS) and says so at the table entry. The lists themselves
-  are not open: they are the photos' labels (`docs/sources.md`), a
-  personal hub in entropism/neokitsch and a catalogue hub in
-  kitsch/neomil, and no source shows both screens. Retiring the
-  stand-ins is a decision about what this desktop's modules mean
-  (keep the labels and route the missing screen by a key, or relabel
-  and move the goldens); a module with `None` behind it selects and
-  stays. Content is the tables' own mock inbox and
+  era was at first **stood in** by the last module (DEVICES,
+  LOCATIONS, CORPORATIONS). The lists themselves are not open: they
+  are the photos' labels (`docs/sources.md`), a personal hub in
+  entropism/neokitsch and a catalogue hub in kitsch/neomil, and no
+  source shows both screens. **Decided at the desk 2026-09-07: keep
+  the photo labels, route by key.** `m` opens the mailbox and `s`
+  the store from the dashboard whatever is selected (`Hub::hotkey`,
+  hub-local rather than a `nav::Stroke` because every screen matches
+  `Stroke` exhaustively and inside a screen the keys mean nothing);
+  the four stand-in entries are `None`, and a module with `None`
+  behind it selects and stays. Enter, a click and a key all go
+  through `Hub::go`, so a screen boots in the same way however it was
+  reached. Content is the tables' own mock inbox and
   shelf, nothing live. The store's keyboard has a `focus` the mouse
   also sets, and a move selects what it lands on, so there is no
   separate cursor to draw -- which is also why nothing here needed a
@@ -1847,11 +1852,53 @@ when that screen assembles from library widgets. Priority order:
     pins `motion::REST`, 2.4 s, as do the scripts with no `--at`). One animation end to end: the login caret blink
     (`#caret-blink`, 1.2s discrete, neomil's `__` tail and the
     kitsch/entropism caret plate; neokitsch shows none).
-  - Still open: hover and press. The traces still show no such state,
-    so what a hover *is* per era remains the question, and it is also
-    why `catalog` gives buttons and fields no hover/press treatment
-    (see "Form controls"). Decide the reading from the source footage
-    and annotate it on `components.svg` before plumbing anything.
+  - [x] **Hover and press, the reading (2026-09-07).** The traces
+    show no such state, and that is also why `catalog` gives buttons
+    and fields no hover/press treatment (see "Form controls"). The
+    reading was taken from the run footage (`images/run-<era>/` and
+    the full-res stills) by one vision agent per era and annotated
+    on every `components.svg` as rest / hover / press sibling groups
+    for the button, the field, a list row and a nav cell, each
+    flagged SOURCED (still, position, pixel box) or INFERRED (from the
+    era's own emphasis rungs), with a band comment listing what was
+    looked at; each README has a "Hover and press" section. What the
+    run settled: **entropism's sage fill is a cursor, not a
+    selection** -- the mail photo fills Jackie's row, the panel
+    carries Mom's message and row 2 has the open envelope -- so
+    hover is sourced there as the cursor fill and press inferred as
+    the fill dropping while held. Kitsch shows no pointer, lit
+    sibling or held cell in any still; hover = lift (one ghost step
+    at +20,-20 from #45's fan-up and #49's extrusion), press = the
+    selection fill landing flat, inferred. Neomil: only the field's
+    focus is sourced; hover a wash, press the spine, inferred from
+    the flat/outlined pair. Neokitsch: no pointer, held cell or
+    second ink on any sibling in nine stills and four masters (the
+    four RIFLES buttons measure the same to a tenth of a level), and
+    it does *not* have entropism's cursor tell -- mail row 2's veneer
+    is the message the panel shows, and the open envelopes sit on
+    rows 1, 3, 7. The reading is off the era's one ladder (plain
+    type; outline with tab; the outline echoed as fading hairlines,
+    T2 the only cell marked by echo alone; the veneer): hover = ECHO
+    on T2's recipe (seven rings `#a97c48` 0.7, 0.85 to 0.55, fanning
+    up and right), press = VENEER (the cell's sourced selected look
+    spliced verbatim), the login plate takes a caret instead. Every
+    hover inferred, every rest and press sourced. The one sourced
+    interactive state in every era is the field's focus (the caret;
+    neokitsch photographs its field at rest only, so even that is
+    inferred there). **Still open: plumbing it.** `catalog` and the hub's
+    screens draw none of these yet; the sheets are the spec, and the
+    `Style` needs a hover/press ink pair (or a rung index) per
+    family before anything moves.
+    - Left by the readers, outside their scope: entropism's
+      `mailbox-trace.svg` headers and era-rules box (:26, :146,
+      :253, :287) still call the fill "selection" -- vision-model
+      edit; `docs/sources.md:22` names `5707b7` the neomil login and
+      the neomil reader says that still is the title card, the login
+      being still 59 (unverified); the neomil login trace's `__`
+      caret at (381,626) is, per the reader, a hollow 3x19 slot at
+      x 497.5..500.6, y 635..654 in the photo (`#login-slot-observed`
+      on the sheet; unverified); kitsch's mail row 1 open envelope is
+      read/unread, not a state.
   - [x] **Phase 2 (2026-09-06): one boot-in.** Eased transitions as
     scene data: `Prim::Motion { motion: Motion { id, begin, dur, ease,
     change }, prims }` with `Change::Clip` (the trace's `<clipPath>`
@@ -2020,6 +2067,51 @@ when that screen assembles from library widgets. Priority order:
         clock after `Hub::open` re-bases it via `motion::onset()`;
         `login.rs` was touched for one line (the Backdrop `at:` field)
         and nothing else.
+  - [x] **Phase 4 at the desk (2026-09-07): the delay and the flash.**
+    The first look on terra: "a strange delay when going from
+    dashboard to email or back. Same for store. On initial dashboard
+    app load, I do see some incomplete lines drawn for a second
+    before the dashboard app shows." Not motion's fault -- the soft
+    ground's. `SoftCache` composited the whole 4K surface on one
+    thread (~600 ms), keyed on the tree's *shape* so a route change
+    threw the ground away and recomposited, and handed iced one ~66
+    MB image that `iced_wgpu` uploads asynchronously above
+    `MAX_SYNC_SIZE` (2 MiB, `iced_wgpu/src/image/cache.rs`) -- so the
+    first frame to hold it drew the lines and not the haze. Now
+    `soft.rs` composites in horizontal bands under 2 MiB each on a
+    thread per band (`std::thread::scope`; `composite_bands`,
+    `composite_over_bands`; `bands_are_the_one_buffer_composite`
+    pins that the bands are the single-buffer result cut up), and
+    `SoftCache::shared()` is one process-wide store holding every
+    screen's bands (`scene::Bands`; the bar's haze draws the same
+    bands). First composite 102 ms, hits in microseconds, every band
+    a synchronous upload. ~66 MB RGBA resident at 4K, on purpose.
+    Measured in the sandbox only: the desk has not yet confirmed the
+    delay gone or the haze in the first frame, and Hyprland's
+    initial resize may cost one more ~110 ms composite.
+  - [x] **Neokitsch dashboard at the desk (2026-09-07): veneer and
+    words.** "The email shard gold selector should be textured iirc"
+    and "the email folder on the right should probably display some
+    preview context" -- both the photo's own, both flattened by the
+    first pass. Grain at the photo's pitches (2.1 card, 2.7 panel)
+    on the EMAIL card and the panel body, drawn as the store's and
+    mailbox's is (`Prim::Turn { angle: -90 }` over `Prim::Grain`,
+    which is horizontal-only and rectangular; the photo's contours
+    wander and the prim cannot, left as its limit); the panel reads
+    the inbox's selected message re-wrapped to its measured line
+    ends (`PANEL_COPY`, `panel_copy_is_the_inbox_message`), the
+    two-line tape under it, and each cascade card its "ONLY CC35
+    CERTIFIED" caption as micro text at the `CASCADE` origins. Trace
+    gains the same; gate PASS, inks 0.64. Golden re-blessed.
+    - [ ] **G2i shape inventory on dashboard-neokitsch reads 34%
+      (was 94) and it is the extractor, not the screen.**
+      `extract_spec.py` segments a 2.7-pitch striped body one way
+      from rsvg and another from iced although the two renders agree
+      in mean and spread to half a level: 89% with the panel grain
+      hidden, and the equally grained store passes at 89. Recorded in
+      the era README; not gated on. Fix is in the script (a striped
+      region should segment as one body, e.g. a close before
+      labelling at the grain's pitch), not the trace or the crate.
 
 ## Headless check: feasibility settled (2026-08-22)
 
