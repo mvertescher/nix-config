@@ -21,7 +21,7 @@ use crate::motion;
 use crate::screens::soft;
 use crate::style::{Anchor, Change, Face, Group, Ink, Prim, Seg, Style};
 use crate::Element;
-use std::cell::RefCell;
+use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Duration;
 use iced::widget::canvas;
 use iced::mouse::Interaction;
@@ -175,23 +175,31 @@ impl Backdrop {
     ) {
         match *prim {
             Prim::Soft { prims } => {
-                let handle = if region.is_some() {
+                let bands = if region.is_some() {
                     soft.cut(under, prims, &self.style.palette, size, k)
                 } else {
                     soft.image(prims, &self.style.palette, size, k)
                 };
                 under.push(prims);
-                let (width, height) = if self.stretch {
-                    (frame.width(), frame.height())
+                // The bands tile the frame top to bottom; stretched,
+                // each is scaled by the same factor, so their edges
+                // meet where the rows do.
+                let (width, sy) = if self.stretch {
+                    (frame.width(), frame.height() / size.1 as f32)
                 } else {
-                    (size.0 as f32, size.1 as f32)
+                    (size.0 as f32, 1.0)
                 };
-                let image = canvas::Image::new(handle)
-                    .filter_method(iced::widget::image::FilterMethod::Linear);
-                let bounds = Rectangle { x: 0.0, y: 0.0, width, height };
+                let draw = |f: &mut canvas::Frame| {
+                    for (y, h, handle) in bands.iter() {
+                        let image = canvas::Image::new(handle.clone())
+                            .filter_method(iced::widget::image::FilterMethod::Linear);
+                        let bounds = Rectangle { x: 0.0, y: *y as f32 * sy, width, height: *h as f32 * sy };
+                        f.draw_image(bounds, image);
+                    }
+                };
                 match region {
-                    Some(region) => frame.with_clip(region, |f| f.draw_image(bounds, image)),
-                    None => frame.draw_image(bounds, image),
+                    Some(region) => frame.with_clip(region, draw),
+                    None => draw(frame),
                 }
             }
             Prim::Motion { motion, prims } => {
@@ -253,16 +261,17 @@ fn push_soft(prim: &'static Prim, under: &mut Vec<&'static [Prim]>) {
 }
 
 impl<M> canvas::Program<M, Style> for Backdrop {
-    type State = SoftCache;
+    type State = ();
 
     fn draw(
         &self,
-        soft: &Self::State,
+        _state: &Self::State,
         renderer: &Renderer,
         _theme: &Style,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
+        let soft = SoftCache::shared();
         let mut frame = canvas::Frame::new(renderer, bounds.size());
         let k = scale(bounds);
         if k > 0.0 {
@@ -279,13 +288,29 @@ impl<M> canvas::Program<M, Style> for Backdrop {
     }
 }
 
-/// The rasterised [`Prim::Soft`] groups of one [`Backdrop`] canvas, the
-/// widget's `Program::State`. A group is rebuilt only when the canvas
+/// The rasterised [`Prim::Soft`] groups of every [`Backdrop`], one
+/// cache for the process. A group is rebuilt only when the canvas
 /// size or the palette changes (a published theme re-dresses the screen
 /// through the palette), so the software composite is paid once, not
 /// per frame -- clicks and hovers redraw the scene without it.
+///
+/// The process's and not the widget's (`Program::State`), because a
+/// widget's state lives as long as its place in the tree: the hub
+/// rebuilds the tree when its route changes, and the mailbox's stack
+/// is not shaped like the dashboard's, so every Enter into the mail
+/// and every Esc out of it discarded the cache and paid the composite
+/// again -- 600 ms a trip at 3840x2160, measured 2026-09-07. Held
+/// here, the dashboard's ground survives the trip, and a screen's
+/// first open is the only composite it costs. What is held: every
+/// group at the current size and palette -- neokitsch's two grounds
+/// (the store and the mailbox share one) are 66 MB of RGBA at 4K --
+/// and nothing at any other.
 #[derive(Debug, Default)]
-pub struct SoftCache(RefCell<Vec<SoftEntry>>);
+pub struct SoftCache(Mutex<Vec<SoftEntry>>);
+
+/// A composite as the canvas draws it: `(y, rows, image)` bands in
+/// frame order (`soft::Band`).
+pub(crate) type Bands = Arc<[(u32, u32, iced::widget::image::Handle)]>;
 
 #[derive(Debug)]
 struct SoftEntry {
@@ -293,10 +318,16 @@ struct SoftEntry {
     len: usize,
     size: (u32, u32),
     palette: crate::palette::Palette,
-    handle: iced::widget::image::Handle,
+    bands: Bands,
 }
 
 impl SoftCache {
+    /// The one cache.
+    pub(crate) fn shared() -> &'static SoftCache {
+        static SHARED: OnceLock<SoftCache> = OnceLock::new();
+        SHARED.get_or_init(SoftCache::default)
+    }
+
     /// The image for `prims` at `size` under `palette`, composited on a
     /// miss. Entries for another size or palette are dropped on the
     /// way: a resize or a theme change invalidates every group at once.
@@ -306,16 +337,16 @@ impl SoftCache {
         palette: &crate::palette::Palette,
         size: (u32, u32),
         k: f32,
-    ) -> iced::widget::image::Handle {
-        if let Some(handle) = self.find(prims, palette, size) {
-            return handle;
+    ) -> Bands {
+        if let Some(bands) = self.find(prims, palette, size) {
+            return bands;
         }
-        let pixels = soft::composite(prims, palette, size.0, size.1, k);
-        self.keep(prims, palette, size, pixels)
+        let bands = soft::composite_bands(prims, palette, size.0, size.1, k);
+        self.keep(prims, palette, size, bands)
     }
 
     /// The image for a *moving* `prims`: the composite of `under` and
-    /// `prims` cut to what `prims` touches (`soft::composite_over`).
+    /// `prims` cut to what `prims` touches (`soft::composite_over_bands`).
     /// Keyed like [`image`](Self::image) on `prims` alone -- what is
     /// under a group is fixed by its table.
     pub(crate) fn cut(
@@ -325,12 +356,12 @@ impl SoftCache {
         palette: &crate::palette::Palette,
         size: (u32, u32),
         k: f32,
-    ) -> iced::widget::image::Handle {
-        if let Some(handle) = self.find(prims, palette, size) {
-            return handle;
+    ) -> Bands {
+        if let Some(bands) = self.find(prims, palette, size) {
+            return bands;
         }
-        let pixels = soft::composite_over(under, prims, palette, size.0, size.1, k);
-        self.keep(prims, palette, size, pixels)
+        let bands = soft::composite_over_bands(under, prims, palette, size.0, size.1, k);
+        self.keep(prims, palette, size, bands)
     }
 
     fn find(
@@ -338,13 +369,13 @@ impl SoftCache {
         prims: &'static [Prim],
         palette: &crate::palette::Palette,
         size: (u32, u32),
-    ) -> Option<iced::widget::image::Handle> {
-        let mut cache = self.0.borrow_mut();
+    ) -> Option<Bands> {
+        let mut cache = self.0.lock().unwrap_or_else(|e| e.into_inner());
         cache.retain(|e| e.size == size && e.palette == *palette);
         cache
             .iter()
             .find(|e| e.prims == prims.as_ptr() as usize && e.len == prims.len())
-            .map(|e| e.handle.clone())
+            .map(|e| e.bands.clone())
     }
 
     fn keep(
@@ -352,17 +383,20 @@ impl SoftCache {
         prims: &'static [Prim],
         palette: &crate::palette::Palette,
         size: (u32, u32),
-        pixels: Vec<u8>,
-    ) -> iced::widget::image::Handle {
-        let handle = iced::widget::image::Handle::from_rgba(size.0, size.1, pixels);
-        self.0.borrow_mut().push(SoftEntry {
+        bands: Vec<soft::Band>,
+    ) -> Bands {
+        let bands: Bands = bands
+            .into_iter()
+            .map(|b| (b.y, b.h, iced::widget::image::Handle::from_rgba(size.0, b.h, b.rgba)))
+            .collect();
+        self.0.lock().unwrap_or_else(|e| e.into_inner()).push(SoftEntry {
             prims: prims.as_ptr() as usize,
             len: prims.len(),
             size,
             palette: *palette,
-            handle: handle.clone(),
+            bands: bands.clone(),
         });
-        handle
+        bands
     }
 }
 

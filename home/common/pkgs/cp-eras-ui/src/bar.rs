@@ -612,11 +612,12 @@ impl<Message> canvas::Program<Message, Style> for Haze {
         let mut frame = Frame::new(renderer, bounds.size());
         let size = (bounds.width.round() as u32, bounds.height.round() as u32);
         if size.0 > 0 && size.1 > 0 {
-            let handle = soft.image(self.prims, &self.style.palette, size, 1.0);
-            frame.draw_image(
-                Rectangle { x: 0.0, y: 0.0, width: bounds.width, height: bounds.height },
-                canvas::Image::new(handle).filter_method(image::FilterMethod::Linear),
-            );
+            for (y, h, handle) in soft.image(self.prims, &self.style.palette, size, 1.0).iter() {
+                frame.draw_image(
+                    Rectangle { x: 0.0, y: *y as f32, width: bounds.width, height: *h as f32 },
+                    canvas::Image::new(handle.clone()).filter_method(image::FilterMethod::Linear),
+                );
+            }
         }
         vec![frame.into_geometry()]
     }

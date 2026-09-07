@@ -117,16 +117,27 @@ impl Xf {
     }
 }
 
-/// A premultiplied RGBA float buffer.
+/// A premultiplied RGBA float buffer: rows `y0..y0 + h` of a frame
+/// `w` wide. A whole frame has `y0 = 0`; a [`Band`] of one is drawn
+/// with the frame's own geometry and keeps only its rows, so the
+/// bands of a composite are the composite, row for row.
 struct Buf {
     w: usize,
     h: usize,
+    y0: usize,
     px: Vec<[f32; 4]>,
 }
 
 impl Buf {
-    fn new(w: usize, h: usize) -> Self {
-        Buf { w, h, px: vec![[0.0; 4]; w * h] }
+    fn band(w: usize, y0: usize, h: usize) -> Self {
+        Buf { w, h, y0, px: vec![[0.0; 4]; w * h] }
+    }
+
+    /// The rows this buffer holds, clipped to `y0..y1` of the frame.
+    fn rows(&self, y0: f32, y1: f32) -> (usize, usize) {
+        let top = self.y0;
+        let bottom = self.y0 + self.h;
+        (clamp_lo(y0, bottom).max(top), clamp_hi(y1, bottom).max(top))
     }
 
     /// Composite `c` over pixel `(x, y)` at coverage `cov`: the sRGB
@@ -136,7 +147,7 @@ impl Buf {
         if a <= 0.0 {
             return;
         }
-        let p = &mut self.px[y * self.w + x];
+        let p = &mut self.px[(y - self.y0) * self.w + x];
         let keep = 1.0 - a;
         p[0] = p[0] * keep + c.r * a;
         p[1] = p[1] * keep + c.g * a;
@@ -194,7 +205,7 @@ impl Buf {
             return;
         };
         let (col0, col1) = (clamp_lo(x0, self.w), clamp_hi(x1, self.w));
-        let (row0, row1) = (clamp_lo(y0, self.h), clamp_hi(y1, self.h));
+        let (row0, row1) = self.rows(y0, y1);
         if col0 >= col1 || row0 >= row1 {
             return;
         }
@@ -243,7 +254,7 @@ impl Buf {
         };
         let pad = hw + 1.0;
         let (col0, col1) = (clamp_lo(x0 - pad, self.w), clamp_hi(x1 + pad, self.w));
-        let (row0, row1) = (clamp_lo(y0 - pad, self.h), clamp_hi(y1 + pad, self.h));
+        let (row0, row1) = self.rows(y0 - pad, y1 + pad);
         // Only the segments within reach of a row are measured against
         // it; a rounded card is a few dozen chords and most of them are
         // on the far side.
@@ -447,18 +458,96 @@ pub fn supported(prim: &Prim) -> bool {
     }
 }
 
-/// Rasterise `prims` over a transparent `w`x`h` buffer, the design's
-/// 1600x900 frame scaled by `k`, and return it as premultiplied RGBA8.
-pub fn composite(prims: &[Prim], palette: &Palette, w: u32, h: u32, k: f32) -> Vec<u8> {
-    let mut buf = Buf::new(w as usize, h as usize);
-    walk(&mut buf, prims, palette, Xf::scaled(k));
-    buf.bytes()
+/// One horizontal band of a composite: rows `y..y + h` of the frame,
+/// as premultiplied RGBA8. A composite is handed to the canvas as
+/// bands rather than one image for two reasons, both measured on a
+/// 3840x2160 window (the desk report of 2026-09-07):
+///
+/// - **Time.** One buffer walked on one thread took 560-610 ms for
+///   neokitsch's dashboard ground at that size, paid inside `draw`
+///   with the whole app stalled; the bands are walked in parallel.
+/// - **The first frame.** iced 0.14 uploads an image over 2 MiB on a
+///   worker thread (`MAX_SYNC_SIZE` in `iced_wgpu/src/image/cache.rs`)
+///   and draws the frame that first names it *without* it, so a
+///   33 MB ground came up one frame late: a boot-in over a bare page,
+///   then the haze popped in. A band stays under that limit
+///   ([`BAND_BYTES`]) and is uploaded in the frame it is drawn in.
+///
+/// Each band is drawn with the frame's whole geometry and keeps only
+/// its rows -- the same edges, the same scanlines, the same float
+/// walk -- so the bands laid end to end are the one-buffer composite
+/// byte for byte (`bands_are_the_one_buffer_composite`).
+#[derive(Debug, Clone)]
+pub struct Band {
+    pub y: u32,
+    pub h: u32,
+    pub rgba: Vec<u8>,
+}
+
+/// The most bytes a band carries: under iced's synchronous-upload
+/// limit, so it lands in the frame that draws it.
+const BAND_BYTES: usize = 2 * 1024 * 1024 - 1;
+
+/// The bands a `w`x`h` frame is walked in: at most [`BAND_BYTES`]
+/// each, and no fewer than there are threads to walk them, as
+/// `(y, h)` pairs covering `0..h` in order.
+fn bands(w: u32, h: u32) -> Vec<(u32, u32)> {
+    let per_row = (w as usize * 4).max(1);
+    let cap = (BAND_BYTES / per_row).max(1) as u32;
+    let threads = std::thread::available_parallelism().map_or(1, |n| n.get() as u32);
+    let rows = cap.min(h.div_ceil(threads.max(1))).max(1);
+    (0..h).step_by(rows as usize).map(|y| (y, rows.min(h - y))).collect()
+}
+
+/// Walk one band per thread, in `f`, and return them in frame order.
+fn in_bands<F>(w: u32, h: u32, f: F) -> Vec<Band>
+where
+    F: Fn(&mut Buf) + Sync,
+{
+    let plan = bands(w, h);
+    std::thread::scope(|scope| {
+        let workers: Vec<_> = plan
+            .iter()
+            .map(|&(y, rows)| {
+                let f = &f;
+                scope.spawn(move || {
+                    let mut buf = Buf::band(w as usize, y as usize, rows as usize);
+                    f(&mut buf);
+                    Band { y, h: rows, rgba: buf.bytes() }
+                })
+            })
+            .collect();
+        workers.into_iter().map(|w| w.join().expect("a band walker panicked")).collect()
+    })
+}
+
+/// [`Band`]s laid end to end: the frame, top to bottom.
+#[cfg(test)]
+fn join(bands: Vec<Band>) -> Vec<u8> {
+    let mut out = Vec::with_capacity(bands.iter().map(|b| b.rgba.len()).sum());
+    for band in bands {
+        out.extend_from_slice(&band.rgba);
+    }
+    out
+}
+
+/// Rasterise `prims` over a transparent `w`x`h` frame, the design's
+/// 1600x900 scaled by `k`, as premultiplied RGBA8 [`Band`]s.
+pub fn composite_bands(prims: &[Prim], palette: &Palette, w: u32, h: u32, k: f32) -> Vec<Band> {
+    in_bands(w, h, |buf| walk(buf, prims, palette, Xf::scaled(k)))
+}
+
+/// [`composite_bands`] as one image, for the tests that read pixels.
+#[cfg(test)]
+pub(crate) fn composite(prims: &[Prim], palette: &Palette, w: u32, h: u32, k: f32) -> Vec<u8> {
+    join(composite_bands(prims, palette, w, h, k))
 }
 
 /// Rasterise `prims` over the groups `under` it -- all of them, in
 /// order, as one composite -- and return only the pixels `prims`
-/// itself touches, as premultiplied RGBA8: the composite's own value
-/// (opaque, where the ground is) there, transparent everywhere else.
+/// itself touches, as premultiplied RGBA8 [`Band`]s: the composite's
+/// own value (opaque, where the ground is) there, transparent
+/// everywhere else.
 ///
 /// This is how a translucent group gets to *move* over a composited
 /// backdrop without leaving sRGB. Drawn as its own image over the
@@ -474,27 +563,40 @@ pub fn composite(prims: &[Prim], palette: &Palette, w: u32, h: u32, k: f32) -> V
 /// mid-wipe could show a later group's pixel early. Kitsch's two fans
 /// share a bounding box but no pixel (`the_kitsch_fans_share_no_pixel`
 /// in `scene.rs`).
-pub fn composite_over(under: &[&[Prim]], prims: &[Prim], palette: &Palette, w: u32, h: u32, k: f32) -> Vec<u8> {
-    let (w, h) = (w as usize, h as usize);
-    let mut all = Buf::new(w, h);
-    for group in under {
-        walk(&mut all, group, palette, Xf::scaled(k));
-    }
-    walk(&mut all, prims, palette, Xf::scaled(k));
-    let mut own = Buf::new(w, h);
-    walk(&mut own, prims, palette, Xf::scaled(k));
-    all.px
-        .iter()
-        .zip(&own.px)
-        .flat_map(|(p, o)| if o[3] > 0.0 { Buf::encode(*p) } else { [0; 4] })
-        .collect()
+pub fn composite_over_bands(
+    under: &[&[Prim]],
+    prims: &[Prim],
+    palette: &Palette,
+    w: u32,
+    h: u32,
+    k: f32,
+) -> Vec<Band> {
+    in_bands(w, h, |all| {
+        for group in under {
+            walk(all, group, palette, Xf::scaled(k));
+        }
+        walk(all, prims, palette, Xf::scaled(k));
+        let mut own = Buf::band(all.w, all.y0, all.h);
+        walk(&mut own, prims, palette, Xf::scaled(k));
+        for (p, o) in all.px.iter_mut().zip(&own.px) {
+            if o[3] <= 0.0 {
+                *p = [0.0; 4];
+            }
+        }
+    })
+}
+
+/// [`composite_over_bands`] as one image, for the tests.
+#[cfg(test)]
+pub(crate) fn composite_over(under: &[&[Prim]], prims: &[Prim], palette: &Palette, w: u32, h: u32, k: f32) -> Vec<u8> {
+    join(composite_over_bands(under, prims, palette, w, h, k))
 }
 
 /// Which pixels `prims` touches at all -- the cut [`composite_over`]
 /// makes, for a test to check two moving groups against.
 #[cfg(test)]
 pub(crate) fn touched(prims: &[Prim], palette: &Palette, w: u32, h: u32, k: f32) -> Vec<bool> {
-    let mut own = Buf::new(w as usize, h as usize);
+    let mut own = Buf::band(w as usize, 0, h as usize);
     walk(&mut own, prims, palette, Xf::scaled(k));
     own.px.iter().map(|o| o[3] > 0.0).collect()
 }
@@ -586,9 +688,9 @@ fn walk(buf: &mut Buf, prims: &[Prim], palette: &Palette, xf: Xf) {
                 // Both sides rasterised over transparency at the frame's
                 // size, the layer thinned by the mask's luminance, then
                 // laid as one: what rsvg does with `mask="url(#m)"`.
-                let mut layer = Buf::new(buf.w, buf.h);
+                let mut layer = Buf::band(buf.w, buf.y0, buf.h);
                 walk(&mut layer, prims, palette, xf);
-                let mut lum = Buf::new(buf.w, buf.h);
+                let mut lum = Buf::band(buf.w, buf.y0, buf.h);
                 walk(&mut lum, mask, palette, xf);
                 layer.mask(&lum);
                 buf.over(&layer);
@@ -804,5 +906,39 @@ mod tests {
         assert_eq!(stop(STOPS, 1.0), STOPS[1].1, "past the last");
         let mid = stop(STOPS, 0.4);
         assert!((mid.r - 0.5).abs() < 1e-6 && (mid.a - 0.5).abs() < 1e-6);
+    }
+    #[test]
+    fn bands_are_the_one_buffer_composite() {
+        // Neokitsch's dashboard ground: a page, a turned haze lobe and a
+        // masked layer, every kind of walk a band can clip. At 160x90
+        // the plan is a few rows a band, so nearly every scanline
+        // borders another band's; one buffer walked alone must match.
+        let style = crate::style::Era::Neokitsch.style();
+        let Prim::Soft { prims } = style.dashboard[0] else {
+            panic!("neokitsch's dashboard opens with its soft ground")
+        };
+        let (w, h, k) = (160, 90, 0.1);
+        let plan = bands(w, h);
+        assert!(plan.len() > 1, "one band would test nothing: {plan:?}");
+        assert_eq!(plan.iter().map(|b| b.1).sum::<u32>(), h);
+        let mut one = Buf::band(w as usize, 0, h as usize);
+        walk(&mut one, prims, &style.palette, Xf::scaled(k));
+        assert_eq!(composite(prims, &style.palette, w, h, k), one.bytes());
+        // And the cut, which is where a band's own scratch buffers must
+        // share its rows.
+        let under: &[&[Prim]] = &[&[fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(RED))]];
+        let mut all = Buf::band(w as usize, 0, h as usize);
+        for group in under {
+            walk(&mut all, group, &style.palette, Xf::scaled(k));
+        }
+        walk(&mut all, prims, &style.palette, Xf::scaled(k));
+        let mut own = Buf::band(w as usize, 0, h as usize);
+        walk(&mut own, prims, &style.palette, Xf::scaled(k));
+        for (p, o) in all.px.iter_mut().zip(&own.px) {
+            if o[3] <= 0.0 {
+                *p = [0.0; 4];
+            }
+        }
+        assert_eq!(composite_over(under, prims, &style.palette, w, h, k), all.bytes());
     }
 }
