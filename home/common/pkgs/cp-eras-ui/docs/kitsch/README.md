@@ -147,6 +147,65 @@ once and cached), so the two fans' ghosts need their own group(s) —
 each clip rect above contains its fan's whole stack, as `PIPELINE.md`
 asks.
 
+## Hover and press
+
+**Not sourced.** Read 2026-09-07 for the crate TODO's "what a hover
+*is* per era" question: all nine stills of the run (`images/run-kitsch/`
+#44–52) and the four full-res screens, cropped to the nav column, the
+cards, the mail rows and tabs, the login field and bars and both fans.
+No still carries a cursor, and every unselected sibling is drawn
+identically to its neighbours (RIFLES / SNIPER / SHOTGUN / PISTOL are
+four equal outlines, MODS / PRICE / DAMAGE three, mail rows 2–5 four,
+cards 1 / 3 / 4 three, badges 01 / 03 / 04 three). The states the
+material carries are **rest**, **selected** (yellow), **disabled**
+(PROTECTED) and, on the field, **focus** (the caret in #50). Hover and
+press are therefore *inferred*, and `components.svg` band 11 says so on
+every group and caption.
+
+**The reading**, derived from the era's own two emphasis devices — depth
+and fill. The hub extrudes every blade as a ghost stack stepping
+(+20,−20) in screen space, and #45 (`45-546b0111`, the fan laid flat)
+renders the same fan as physical slabs standing on a table with the
+*selected* one standing tallest: sampled down column x 470 of the
+thumbnail, NETWORK's yellow face runs y 336..370 and its body fades out
+over y 372..426 (54 px); down x 700, EVENTS' teal face runs y 320..358
+and its body over y 362..398 (36 px), so the chosen slab stands about
+1.5x taller than its neighbours. Selection, meanwhile, never moves or
+grows a cell: it keeps the silhouette and swaps outline for fill (era
+rule 5). Hence:
+
+- **Hover = lift.** The cell keeps its silhouette exactly; where it was
+  an outline its face becomes the fan blade's idle slab (fill `#2c9798`,
+  stroke `#a9e6df` 1.8, ink `#123c38` — the one measured solid-teal
+  face), and *one* ghost appears behind it at (+20,−20), the first step
+  of the measured ramp (fill `#0f9f80` at .58, stroke `#6cc4bd` 1.2 at
+  .80). A face that is already solid (the mint ENTER bar, the dark field
+  plate) keeps its fill and only gains the ghost, as EVENTS keeps its
+  teal ghosts under a yellow face. On the 216x39 nav the ghost's top
+  lands 1 px under the cell above (60 px pitch, 21 px gap); on the
+  53.5-pitch tabs it runs 12.5 px under the neighbour, as the fans do.
+- **Press = the selection arriving, flat.** The ghost collapses and the
+  face takes the element's selected fill with no ghost (`#ffbe18` /
+  ink `#5a3a08` on the chevron and the button, `#e8c21f` / `#4a3a05` on
+  the row): the slab pushed into the surface, and the yellow is what it
+  leaves behind. For a cell that becomes the selection nothing changes
+  on release. On the field, press is **focus**, and that one *is*
+  sourced: the plate gains the 2x22 `#8af0d8` caret (`#caret-blink`).
+- **Rest** is sourced for all four (ENTER #50, field plate #50, RIFLES
+  #52, mail row 2 #51), except that the field's caret-*less* state is
+  itself inferred: #50 shows the field focused only.
+
+Groups on the sheet: `k-button-{rest,hover,press}`,
+`k-field-{rest,hover,press}`, `k-chevron-{rest,hover,press}`,
+`k-row-{rest,hover,press}`, each with an XML comment giving the still,
+the photo region and the sourced/inferred flag. The canvas grew from
+1080 to 1392 for the band; the top 1080 rows render pixel-identical to
+before. The tab chevron (161x46) and the fan blade take the same three
+states and are not drawn separately. Not yet plumbed: `catalog` still
+gives buttons and fields no hover/press treatment, and the transitions
+(lift in, collapse on press) are not annotated as SMIL anywhere — this
+is the destination design only, per `PIPELINE.md` § "Motion".
+
 ## What this does to the crate decision
 
 The sampled kitsch **weakens** the ornament worry recorded in the
@@ -210,7 +269,10 @@ the thing the toolkit abstraction should be tested against.
   rules and an implementation-delta box listing where
   `src/eras/kitsch.rs` still disagrees with the traces (Round 16,
   "no chamfers", Ticket 18/15, Banner 12/8, top-right Bloom, stroke
-  1.5, SLAB/BEZEL, YELLOW_SHADE unsampled). Not gated — the traces are.
+  1.5, SLAB/BEZEL, YELLOW_SHADE unsampled). Band 11 (2026-09-07, canvas
+  1920x1392) adds rest / hover / press siblings for the button, field,
+  nav chevron and list row — see "Hover and press" above for what is
+  sourced and what is inferred. Not gated — the traces are.
 - `bar.svg` — the status bar: host tape, workspaces, tray, the
   wired/audio/CPU/MEM modules and the clock, at the 1600x220 geometry
   the bar golden tests render. The bar has no photo source, so this is

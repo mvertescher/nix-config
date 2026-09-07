@@ -83,6 +83,70 @@ on both; `frame.sh --at 2.4` against the unannotated rsvg render at
 unannotated files' own Firefox-vs-rsvg residue (glyph rasterising,
 the kanji among it), so the clips nick nothing at rest.
 
+## Hover and press
+
+Read 2026-09-07 from the whole run, still by still: `images/run-neomil/`
+53 (title card), 54 (mood board), 55 (the login as a tilted 3D mock),
+56 (the hub beside a text column), 57 and 58 (login + store, hub +
+mailbox on tablet mocks), 59..62 (the four screens), plus the four
+full-res photos `img-06..09` with every button, nav row, list row,
+field, badge and diamond cropped at native 3840 scale.
+
+**The run shows no hover and no press.** No still carries a pointer.
+No control is drawn differently from its siblings except the
+selections the traces already transcribe: the filled VIDEO nav row,
+list row 1 and its disc, SECURITY LEVEL T2, the grown and washed
+product card 2, the filled Switch Weapon button. The hub's six
+diamonds are identical in fill, outline and size (VEHICLES carries a
+different barcode and reads 161-9A against the others' 61-9A, which
+is content, not a state); their offset echoes are glitch residue on
+all six. So the reading on `components.svg` § 9 is **inferred, not
+sourced**, and every hover and press group there is captioned so. It
+is built only from the era's own rungs of emphasis, all sourced:
+
+- *rest* — dark translucent fill, thin mid-red stroke, bright ink, dim
+  spine (nav AUDIO, list rows 2..8, the Confirm / Jump buttons).
+- *lit* — the same outline with a translucent wash of the bright red
+  inside it (product card 2 against card 1; on the photo the upper
+  card reads +45 of 193 red levels over card 1, i.e. the bright ink
+  at about 0.22 over the ground).
+- *inverted* — solid bright fill, dark ink, no stroke, bright spine
+  (VIDEO, row 1, Switch Weapon, T2). This is selection.
+- *held* — the darker of the era's two filled-control reds: the Login
+  bar is `#a52223` with `#420f10` ink where every other filled
+  control is `#e63132` / `#df3131`.
+
+The reading: **hover is one rung up** from where the control is. An
+outlined control takes the lit wash (bright ink at 0.22 over its rest
+fill: button `#451010`, nav row `#551719`, field `#6a1617`) and its
+stroke, spine and ink go to the bright ink; a filled control lifts to
+`#f63333`, the lightest ink the traces sample. **Press is the held
+red `#a52223` with the dark ink on every class**, so a press still
+reads on a control that is already selected. Neither changes
+geometry: the selected nav row's extra 5px and the product card's
+growth are selection, not press. The groups are `#button-rest/hover/
+press` (outlined), `#button-filled-rest/hover/press`,
+`#nav-rest/hover/press` (the same reading applies to a list row and a
+product card) and `#field-rest/hover/press`.
+
+The field is the exception in which direction is sourced: the run
+holds one field, the login's password field, and it is drawn
+*focused* (masked run, lit caret), so `#field-press` (= focus) is the
+sourced state and `#field-rest` is the inference, the same box with
+the caret gone.
+
+One mark the run does show and the band does not transcribe as a
+state: the Login bar carries a **hollow slot hanging from its top
+edge at its centre**, 3x19 at trace scale (x 497.5..500.6, y 635..654;
+native x 1194..1202, y 1523..1570), outlined about 0.6 in the bar's
+dark ink, open at the top. It is in stills 55 and 57 too.
+`login-trace.svg` draws it as a solid 2x15 rect at (496,640) and
+calls it a text caret; on the photo it is hollow and 5px higher (a
+trace correction for another pass, not made here). None of the four
+mailbox buttons has one, so a single instance cannot be read as a
+state; focus on the default action is the obvious candidate and a
+candidate is all it is. It is drawn once at 1:1 in § 9
+(`#login-slot-observed`) so the shape is on record.
 ## The widget sheet — derived from the traces
 
 - `components.svg` — every reusable component of the four screens,
@@ -100,7 +164,9 @@ the kanji among it), so the clips nick nothing at rest.
   observed era rules and an implementation-delta box listing where
   `src/eras/neomil.rs` still disagrees with the traces (a global
   Chamfer 15, the RED consts, white tape, `Ground::Flat`, OpsCharts,
-  `Menu::Table`). Not gated — the traces are. It replaces the deleted
+  `Menu::Table`), and since 2026-09-07 a § 9 hover/press band at the
+  foot (canvas 1920x1310; see "Hover and press" above). Not gated —
+  the traces are. It replaces the deleted
   `target-components.svg` below, which sampled nothing.
 
 ## The bar — the one original

@@ -67,8 +67,10 @@ PETROCHEM / BETTERLIFE TEC band (`store-trace.svg` samples it at
   faint sage overshoot a few px out — is a photographic halo, so the
   trace draws it and the iced implementation draws the 2px stroke only.
   The "no glow" rule stands for the implementation.
-- Selection is a solid sage fill — tiles, list rows, nav rows, buttons,
-  T-levels.
+- One solid sage fill per cell group — tiles, list rows, nav rows,
+  buttons, T-levels. Read 2026-09-07 as the *cursor* rather than the
+  selection: on the mail screen the filled row is not the open message
+  (see "Hover and press" below).
 - One full-width outlined header strip on every screen, cut by two
   dividers into a left, a centre and a right string (RIPPERDOC SURGICAL
   SOFTWAREV2 / STORE ACCESS SCREEN / FLAIR TRS 5MMP; the store's left
@@ -126,6 +128,60 @@ traces is pixel-identical to the same frame of the unannotated ones
 rsvg's render by exactly the pre-existing Firefox-vs-rsvg text-AA
 baseline (1545 / 1707 / 8987 px at 3% fuzz for hub / store / mailbox).
 `frame.sh --at 0.2`, `0.5` and `0.8` are the three beats.
+
+## Hover and press
+
+Read 2026-09-07 from the whole run (`images/run-entropism/34..42`,
+every still opened, plus the four 3840x2160 sources cropped cell by
+cell) and drawn as band C of `components.svg` (`row-rest` /
+`row-hover` / `row-press` / `row-open`, `button-rest` / `button-hover`
+/ `button-press`, `field-rest` / `field-hover` / `field-press`, each
+group's comment citing the still and pixel box or saying "inferred").
+
+**What the run shows.** No still carries a pointer, a held cell, an
+underline, a brightened outline or any second ink on a cell; the
+ghosted glyphs on the hub's T1 / T3 / T4 badges are the photo's CRT
+doubling (T2 and every tile edge carry it too). What every screen does
+show is exactly one reverse-video cell per group: NEXT, BRAINDANCE,
+T2, mail row 1, REPORT SPAM, SMG, the grown card's header. And on the
+mail screen that filled cell is **not the open item**: row 1
+(YOU'LL REGRET THAT / FROM: JACKIE, closed envelope) is filled while
+the MESSAGE panel carries row 2 (URGENT INFORMATION (!) / from: Mom),
+the one row drawn with the open-envelope glyph
+(`images/entropism-mail.png` x 202..1082, y 542..691 and y 691..840;
+also on the wall pair `38-3c177311.png`). REPORT SPAM is one of four
+action buttons, which have no selected state to be in, and SMG sits
+over cards that are all HAND GUN. So the fill is the **cursor** — the
+cell the pointer or focus is on — and the *open* item is marked by
+content instead: the open glyph, the filled title bar, the grown card.
+On the hub the cursor happens to sit on the open module.
+
+**The reading.**
+
+- *Rest* — the outlined cell, sage ink. Sourced.
+- *Hover* — the reverse-video fill. Sourced as the cursor (no still
+  shows the pointer itself). The fill *moves* to the hovered cell; a
+  group never carries two. The rest frames keep their fills where the
+  photos left them (BRAINDANCE, SMG, T2, row 1, REPORT SPAM).
+- *Press* — **inferred, not sourced.** The highlight blinks off: the
+  cell reverts to its outline for as long as it is held, and the fill
+  returns on release together with the destination (open glyph,
+  filled title bar, grown card). Reasoning: the era draws two states
+  for a cell and no third ink, underline or inset ring on any of
+  them; a reverse-video terminal signals a key on the cursor cell by
+  blinking the cursor, and swapping the two drawn states is the only
+  press that adds nothing the material lacks.
+- *The login field* is where the press **is** sourced: the field as
+  photographed (`images/entropism-login.png` x 1351..2213, y 994..1073,
+  caret at x 1385..1426, y 1056; `#39`, `#36`, `#35`) is a field after
+  a press, outlined with the caret underline. Its rest (caret off) and
+  hover (the login's own `#8aac8c` fill with the mask in `#20281c`)
+  are inferred by the same rule; the mail title bar is the era's
+  precedent for text in reverse video.
+
+Not drawn, because not in the material: a brightened or thickened
+outline, an underline on a label, an inset ring, a dimmer second
+fill, a pointer glyph.
 
 ## Toolkit divergence (handoff) — historical
 
@@ -186,7 +242,9 @@ build strings) and make it the default.
   ground stops, observed era rules and an implementation-delta box
   listing where `src/eras/entropism.rs` still disagrees with the
   traces (stroke 1.0, palette, OUTLINE/BG, TileRow). Not gated — the
-  traces are; this is derived from them.
+  traces are; this is derived from them. Grown to 1920x1400 on
+  2026-09-07 for band C, the rest / hover / press groups ("Hover and
+  press" above); nothing drawn above y 1080 moved.
 - `bar.svg` — the status bar: host tape, workspaces, tray, the
   wired/audio/CPU/MEM modules and the clock, at the 1600x220 geometry
   the bar golden tests render. The bar has no photo source, so this is

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1310" viewBox="0 0 1920 1310">
   <!-- NEOMIL COMPONENT SHEET, rebuilt 2026-09-03.
 
        What this is: the widget sheet for the neo-militarism era. Every
@@ -46,7 +46,16 @@
        near-black plus the warm left vignette). The glow's vertical mask
        stops are the traces' stops renormalised from 900 to 1080 so the
        fade lands in the same proportion of the frame; the horizontal
-       ramp is verbatim. See the GROUND box for the stop list. -->
+       ramp is verbatim. See the GROUND box for the stop list.
+
+       ADDED 2026-09-07: section 9, HOVER AND PRESS, at the foot, and the
+       canvas grown from 1080 to 1310 to hold it (the glow mask and the
+       vignette keep their 1080 extent, so nothing above moved). The run
+       was read still by still for a pointer or a transient state and
+       shows none, so every hover and press group there is INFERRED from
+       the era's own rungs of emphasis and captioned as such; the one
+       sourced state in that band is the field's focus. Section 9's
+       comment says what was looked at and how the inference was built. -->
 
   <defs>
     <!-- GROUND. Verbatim from all four traces' #glowh; #glowv rescaled
@@ -236,7 +245,7 @@
   </defs>
 
   <!-- ==== the era's ground, under the whole sheet ==== -->
-  <rect width="1920" height="1080" fill="#080405"/>
+  <rect width="1920" height="1310" fill="#080405"/>
   <rect width="1920" height="1080" fill="url(#glowh)" mask="url(#glowmask)"/>
   <rect x="0" y="430" width="1920" height="650" fill="url(#wash)"/>
   <rect width="1920" height="1080" fill="url(#vignette)"/>
@@ -1200,11 +1209,212 @@
     <text x="1178" y="1050">tab: none, square</text>
   </g>
 
+  <!-- ============================================================ -->
+  <!-- 9 . HOVER AND PRESS                                          -->
+  <!-- ============================================================ -->
+  <!-- HOVER AND PRESS, read 2026-09-07 from the whole neomil run and
+       INFERRED where the run is silent. What was looked at: the ten
+       stills images/run-neomil/53..62 (53 title card, 54 mood board,
+       55 the login as a tilted 3D mock, 56 the hub with a text column,
+       57 login + store and 58 hub + mailbox on tablet mocks, 59..62
+       the four screens) and the four full-res photos img-06..09, with
+       every button, nav row, list row, field, badge and diamond
+       cropped at native 3840 scale. NO still carries a pointer, and no
+       control is drawn in a state its siblings do not share except
+       the selections the traces already transcribe (nav VIDEO, list
+       row 1 + its disc, SECURITY LEVEL T2, product card 2, the filled
+       Switch Weapon) and one mark discussed under FIELD below. So the
+       run shows rest and selected and nothing between: every HOVER
+       and PRESS group here is INFERRED, NOT SOURCED, and says so in
+       its caption. The inference uses only the era's own rungs of
+       emphasis, all sourced:
+         rest      dark translucent fill, thin mid-red stroke, bright
+                   ink, dim spine (nav AUDIO, list rows 2..8, the three
+                   Confirm / Jump buttons, product card 1)
+         lit       the SAME outline with a translucent wash of the
+                   bright red inside it and the content gone solid
+                   (product card 2 against card 1: store-trace.svg
+                   #c2upper; on the photo the upper card reads +45 of
+                   193 red levels over card 1, i.e. the bright ink at
+                   about 0.22 over the ground)
+         inverted  solid bright fill, dark ink, no stroke, bright spine
+                   (VIDEO, row 1, Switch Weapon, T2)
+         held      the darker of the era's two filled-control reds:
+                   the Login bar is #a52223 with #420f10 ink where
+                   every other filled control is #e63132 / #df3131
+                   (login-trace.svg y 635..683, sampled 2026-09-02)
+       HOVER is one rung up from where the control is: an outlined
+       control takes the lit wash (bright ink at 0.22 over its rest
+       fill), its stroke, spine and ink go to the bright ink; a filled
+       control lifts to #f63333, the lightest ink the traces sample
+       (era rule 8). PRESS is the held fill #a52223 with the dark ink,
+       on every class, so that a press reads on a control that is
+       already selected. Neither changes geometry: the selected nav
+       row's extra 5px of height and the product card's growth are
+       SELECTION, not press. The field's press is its FOCUS, and that
+       one is sourced: the password field in img-06-private.png is the
+       only field in the run and it is drawn focused (caret lit). -->
+  <text x="30" y="1088" font-family="Rajdhani" font-size="13" letter-spacing="4.5" fill="#df3131">9 // HOVER AND PRESS  (INFERRED, NOT SOURCED, EXCEPT FIELD FOCUS)</text>
+
+  <!-- BUTTON, OUTLINED, three states. Rest is mailbox-trace.svg #btn
+       at (908,702) as drawn in section 2 (img-08-main.png #61,
+       1600-scale box x 908..1083 y 702..758, native x 2179..2599
+       y 1685..1819): fill #1a0607, stroke #8a2024 1, ink #a8282b.
+       Hover: inferred. Wash of #df3131 at 0.22 over #1a0607 = #451010;
+       stroke and ink to #e63132. Press: inferred. Fill #a52223, ink
+       #59171b (the filled button's ink), no stroke. Translated so the
+       rest sits at (30,1100): (-878,+398); the siblings at +185 each. -->
+  <g font-family="Rajdhani" font-size="15">
+    <g id="button-rest" transform="translate(-878,398)">
+      <use href="#btn" x="908" y="702" fill="#1a0607" stroke="#8a2024" stroke-width="1"/>
+      <text x="921" y="746" fill="#a8282b">Confirm / Jump</text>
+    </g>
+    <g id="button-hover" transform="translate(-693,398)">
+      <use href="#btn" x="908" y="702" fill="#451010" stroke="#e63132" stroke-width="1"/>
+      <text x="921" y="746" fill="#e63132">Confirm / Jump</text>
+    </g>
+    <g id="button-press" transform="translate(-508,398)">
+      <use href="#btn" x="908" y="702" fill="#a52223"/>
+      <text x="921" y="746" fill="#59171b">Confirm / Jump</text>
+    </g>
+  </g>
+  <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.2" fill="#96282d">
+    <text x="30" y="1174" font-weight="700" fill="#df3131">BUTTON, OUTLINED . rest / hover / press</text>
+    <text x="30" y="1183">rest SOURCED mailbox #btn (908,702): #1a0607, stroke #8a2024 1, ink #a8282b</text>
+    <text x="30" y="1192">hover INFERRED: wash #451010 (#df3131 at .22), stroke + ink #e63132 . press INFERRED: #a52223, ink #59171b, no stroke</text>
+  </g>
+
+  <!-- NAV CELL, three states. Rest is store-trace.svg #nav62 at
+       (153,318) with its spine, as drawn in section 2 (img-09-store.png
+       #62, 1600-scale box x 148..361 y 318..380, native x 355..866
+       y 763..912): fill #2e1012, stroke #96282d 1.2, ink #df3131, spine
+       #96282d 3x46. Hover: inferred. Wash of #df3131 at 0.22 over
+       #2e1012 = #551719; stroke, spine and ink to #df3131. Press:
+       inferred. Fill #a52223, ink #4a0f10 (the selected row's ink), no
+       stroke, spine #df3131; height stays 62, the selected row's 67 is
+       selection. Translated so the rest spine sits at x 635:
+       (+487,+782); siblings at +226 each. -->
+  <g font-family="Rajdhani" font-size="15" letter-spacing="1">
+    <g id="nav-rest" transform="translate(487,782)">
+      <use href="#nav62" x="153" y="318" fill="#2e1012" stroke="#96282d" stroke-width="1.2"/>
+      <rect x="148" y="318" width="3" height="46" fill="#96282d"/>
+      <text x="163" y="365" fill="#df3131">AUDIO</text>
+    </g>
+    <g id="nav-hover" transform="translate(713,782)">
+      <use href="#nav62" x="153" y="318" fill="#551719" stroke="#df3131" stroke-width="1.2"/>
+      <rect x="148" y="318" width="3" height="46" fill="#df3131"/>
+      <text x="163" y="365" fill="#df3131">AUDIO</text>
+    </g>
+    <g id="nav-press" transform="translate(939,782)">
+      <use href="#nav62" x="153" y="318" fill="#a52223"/>
+      <rect x="148" y="318" width="3" height="46" fill="#df3131"/>
+      <text x="163" y="365" fill="#4a0f10">AUDIO</text>
+    </g>
+  </g>
+  <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.2" fill="#96282d">
+    <text x="640" y="1174" font-weight="700" fill="#df3131">NAV CELL . rest / hover / press  (the same reading for a LIST ROW and a PRODUCT CARD)</text>
+    <text x="640" y="1183">rest SOURCED store #nav62 (153,318): #2e1012, stroke #96282d 1.2, ink #df3131, spine #96282d</text>
+    <text x="640" y="1192">hover INFERRED: wash #551719, stroke + spine + ink #df3131 . press INFERRED: #a52223, ink #4a0f10, spine #df3131, height unchanged</text>
+  </g>
+
+  <!-- BUTTON, FILLED, three states. Rest is mailbox-trace.svg #btn at
+       (728,702), Switch Weapon (img-08-main.png #61, 1600-scale box
+       x 728..903 y 702..758, native x 1747..2167 y 1685..1819): fill
+       #e63132, ink #59171b. Hover: inferred. Fill lifts to #f63333.
+       Press: inferred from the login bar. Fill #a52223, ink #420f10,
+       which is login-trace.svg's Login bar as sampled (y 635..683);
+       whether that bar is drawn held is not known from the photo, it
+       is simply the era's darker filled control. Translated so the
+       rest sits at (1340,1100): (+612,+398); siblings at +185 each. -->
+  <g font-family="Rajdhani" font-size="15">
+    <g id="button-filled-rest" transform="translate(612,398)">
+      <use href="#btn" x="728" y="702" fill="#e63132"/>
+      <text x="741" y="746" fill="#59171b">Switch Weapon</text>
+    </g>
+    <g id="button-filled-hover" transform="translate(797,398)">
+      <use href="#btn" x="728" y="702" fill="#f63333"/>
+      <text x="741" y="746" fill="#59171b">Switch Weapon</text>
+    </g>
+    <g id="button-filled-press" transform="translate(982,398)">
+      <use href="#btn" x="728" y="702" fill="#a52223"/>
+      <text x="741" y="746" fill="#420f10">Switch Weapon</text>
+    </g>
+  </g>
+  <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.2" fill="#96282d">
+    <text x="1340" y="1174" font-weight="700" fill="#df3131">BUTTON, FILLED . rest / hover / press</text>
+    <text x="1340" y="1183">rest SOURCED mailbox #btn (728,702): #e63132, ink #59171b</text>
+    <text x="1340" y="1192">hover INFERRED: #f63333 (era rule 8) . press INFERRED: #a52223, ink #420f10 = the Login bar as sampled</text>
+  </g>
+
+  <!-- FIELD, three states. The run holds ONE field, the password field
+       of img-06-private.png (#59; 1600-scale box x 372..625 y 602..634,
+       native x 893..1500 y 1445..1522; also visible in stills 55 and
+       57), and it is drawn FOCUSED: masked run with a lit caret, fill
+       #430e0f, stroke #ae2729 1 (login-trace.svg rect(372.5,602.5,
+       252x32)). So here it is the PRESS (focus) state that is sourced
+       and the rest that is inferred: the same box with the caret
+       gone. Hover: inferred. Wash of #f63333 at 0.22 over #430e0f =
+       #6a1617, stroke #f63333. The trace's caret is the "__" at the
+       end of the run (its #caret-blink is a 1.2 s cycle, lit at rest).
+       Translated so the rest sits at (30,1220): (-342,+618); siblings
+       at +262 each. -->
+  <g font-family="Rajdhani">
+    <text x="36" y="1213" font-size="14" fill="#f63333">password:</text>
+    <g id="field-rest" transform="translate(-342,618)">
+      <rect x="372.5" y="602.5" width="252" height="32" fill="#430e0f" stroke="#ae2729" stroke-width="1"/>
+      <text x="381" y="626" font-size="12" letter-spacing="3" fill="#f63333">**********</text>
+    </g>
+    <g id="field-hover" transform="translate(-80,618)">
+      <rect x="372.5" y="602.5" width="252" height="32" fill="#6a1617" stroke="#f63333" stroke-width="1"/>
+      <text x="381" y="626" font-size="12" letter-spacing="3" fill="#f63333">**********</text>
+    </g>
+    <g id="field-press" transform="translate(182,618)">
+      <rect x="372.5" y="602.5" width="252" height="32" fill="#430e0f" stroke="#ae2729" stroke-width="1"/>
+      <text x="381" y="626" font-size="12" letter-spacing="3" fill="#f63333">**********  __</text>
+    </g>
+  </g>
+  <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.2" fill="#96282d">
+    <text x="30" y="1264" font-weight="700" fill="#df3131">FIELD . rest / hover / press = focus</text>
+    <text x="30" y="1273">rest INFERRED: the focused box with no caret . hover INFERRED: wash #6a1617, stroke #f63333 . press = FOCUS, SOURCED: login field (372.5,602.5) 252x32, #430e0f, stroke #ae2729 1, caret lit</text>
+  </g>
+
+  <!-- ONE MARK THE RUN DOES SHOW and this band does not transcribe as
+       a state. The Login bar in img-06-private.png carries a HOLLOW
+       slot hanging from its top edge at its centre: at native scale
+       x 1194..1202, y 1523..1570, i.e. 3x19 at trace scale at
+       x 497.5..500.6 from y 635 (the bar's top) to 654, outlined
+       about 0.6 in the bar's dark ink, open at the top and closed at
+       the bottom. It is in stills 55 and 57 too. login-trace.svg
+       draws it as a SOLID 2x15 rect at (496,640) and calls it a text
+       caret; it is hollow and 5px higher on the photo. No sibling on
+       the four mailbox buttons, so with one instance it cannot be
+       read as a state (focus on the default action is the obvious
+       candidate, but a candidate is all it is). Drawn here at 1:1 on
+       a patch of the bar so the shape is on record. -->
+  <g id="login-slot-observed">
+    <path d="M 850,1220 H 990 V 1243 L 981,1252 H 850 Z" fill="#a52223"/>
+    <path d="M 918.5,1220 V 1239 H 921.6 V 1220" fill="none" stroke="#420f10" stroke-width="0.6"/>
+  </g>
+  <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.2" fill="#96282d">
+    <text x="850" y="1264" font-weight="700" fill="#df3131">LOGIN BAR SLOT, OBSERVED, not a state</text>
+    <text x="850" y="1273">hollow 3x19 at x 497.5, hanging from y 635, stroke .6 #420f10 (stills 55, 57, 59; trace draws a solid 2x15 at 496,640)</text>
+  </g>
+
+  <!-- the reading in prose, for the reader who takes the sheet as text -->
+  <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.1" fill="#a8282b">
+    <text x="1340" y="1213" font-weight="700" fill="#df3131">THE READING</text>
+    <text x="1340" y="1222">looked at: run-neomil 53..62 and img-06..09 at native scale; no still carries a pointer, no control</text>
+    <text x="1340" y="1231">differs from its siblings except the transcribed selections. So: hover and press are INFERRED.</text>
+    <text x="1340" y="1240">HOVER = one rung up: an outlined control takes the store card 2 wash (bright ink at .22 over</text>
+    <text x="1340" y="1249">its rest fill) and its stroke, spine and ink go bright; a filled control lifts to #f63333.</text>
+    <text x="1340" y="1258">PRESS = the held red #a52223 with the dark ink on every class (the Login bar's fill, the</text>
+    <text x="1340" y="1267">darker of the era's two filled reds). Geometry never changes: growth and inversion are selection.</text>
+  </g>
   <!-- footer -->
   <g font-family="Rajdhani">
-    <rect x="30" y="1062" width="1860" height="1.5" fill="#59171b"/>
-    <text x="30" y="1076" font-size="10" letter-spacing="2.5" fill="#96282d">NEOMIL / SUBSTANCE OVER STYLE</text>
-    <text x="1890" y="1076" font-size="10" letter-spacing="2.5" text-anchor="end" fill="#96282d">EVERY COMPONENT COPIED 1:1 FROM login / dashboard / mailbox / store-trace.svg . GATES G1i PASS 79 / 94 / 86 / 71</text>
+    <rect x="30" y="1292" width="1860" height="1.5" fill="#59171b"/>
+    <text x="30" y="1306" font-size="10" letter-spacing="2.5" fill="#96282d">NEOMIL / SUBSTANCE OVER STYLE</text>
+    <text x="1890" y="1306" font-size="10" letter-spacing="2.5" text-anchor="end" fill="#96282d">EVERY COMPONENT COPIED 1:1 FROM login / dashboard / mailbox / store-trace.svg . GATES G1i PASS 79 / 94 / 86 / 71</text>
   </g>
 
   <!-- ============================================================ -->

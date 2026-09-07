@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1400" viewBox="0 0 1920 1400">
   <!-- ENTROPISM WIDGET SHEET, rebuilt 2026-09-03.
 
        What this is: every reusable component the entropism screens are
@@ -44,7 +44,18 @@
 
        Hygiene: no external references, no image, no raster, no double
        hyphen inside a comment. Fonts: Rajdhani only (Orbitron is not
-       used by any entropism trace). Ground: the traces' radial lift. -->
+       used by any entropism trace). Ground: the traces' radial lift.
+
+       2026-09-07: the sheet grew from 1080 to 1400 tall for BAND C,
+       the interaction states (rest / hover / press, plus the open row)
+       of the button, the mail row and the login field, read from the
+       run images/run-entropism/34..42 and the four full-res sources.
+       Each state group says whether it is SOURCED (a still shows it,
+       cited by file and pixel box) or INFERRED (derived from what the
+       era does with emphasis; no still shows it). Nothing drawn above
+       y 1080 moved; the radial ground is in bounding-box units so it
+       stretched with the taller rect, at most 5 levels anywhere (rsvg
+       renders before and after: 0 pixels differ at 3% fuzz). -->
   <defs>
     <radialGradient id="lift" cx="0.45" cy="0.4" r="0.8">
       <stop offset="0"   stop-color="#1c1b11"/>
@@ -129,7 +140,7 @@
     </g>
   </defs>
 
-  <rect width="1920" height="1080" fill="url(#lift)"/>
+  <rect width="1920" height="1400" fill="url(#lift)"/>
 
   <!-- ============================================================
        SHEET TITLE and the era's own header strip, used as the sheet's
@@ -167,7 +178,7 @@
        K1  x 40..407   MAILBOX LIST, ENVELOPE GLYPHS, SECTION LETTERS
        ============================================================ -->
   <text x="40" y="106" font-family="Rajdhani" font-size="11" font-weight="600"
-        letter-spacing="1" fill="#8fba97">MAIL LIST ROW &#183; PLAIN / SELECTED / OPEN GLYPH</text>
+        letter-spacing="1" fill="#8fba97">MAIL LIST ROW &#183; PLAIN / CURSOR FILL / OPEN GLYPH (STATES: BAND C)</text>
 
   <!-- MAIL LIST. mailbox-trace.svg A: frame x 84..451, y 205..686 with
        row dividers at y 349 / 411 / 473 / 535 / 596 / 658, seven rows on
@@ -205,7 +216,7 @@
   </g>
   <g font-family="Rajdhani" font-size="9" font-weight="500" fill="#88a789">
     <text x="40" y="396">frame 367x481, stroke 2 #709174 &#183; 7 rows on a 62 pitch, first 21 below the top edge</text>
-    <text x="40" y="407">row 366x62, inset 1px inside the frame &#183; selection is a solid #a6d2a8 fill, ink #25281d</text>
+    <text x="40" y="407">row 366x62, inset 1px inside the frame &#183; cursor fill (row 1, see band C) solid #a6d2a8, ink #25281d</text>
     <text x="40" y="418">glyph x+18; title x+54 baseline +30 (20 ls 1); FROM baseline +48 (14)</text>
     <text x="40" y="429">28px of empty frame below row 7 &#183; no NEW pill anywhere in the material</text>
   </g>
@@ -813,5 +824,244 @@
     <text x="1585" y="1052">NOT ON THIS SHEET: no user card, no</text>
     <text x="1585" y="1064">avatar, no tab row, no scroll rail, no</text>
     <text x="1585" y="1076">NEW pill. The traces have none of them.</text>
+  </g>
+
+  <!-- ============================================================
+       BAND C  y 1090..1390   INTERACTION STATES, read 2026-09-07
+       ============================================================
+
+       What was looked at: every still of the run, images/run-entropism/
+       34-274a8b11 (the style board, no UI), 35-264e0d11 (the login shot
+       at an angle), 36-a42bf711 (the login with the margin essay),
+       37-30ba3611 (login and hub on a wall pair), 38-3c177311 (mail and
+       store on a wall pair), 39-9c990311 (login), 40-a1de3911 (hub),
+       41-48e1d611 (mail), 42-36099411 (store), and the four 3840x2160
+       sources images/entropism-{login,store,mail,dashboard}.png, cropped
+       and zoomed on every button, row, field, nav cell, tile and badge.
+
+       What the run does NOT show: a pointer. No still carries a cursor,
+       a hand, a caret outside the login field, a pressed or held cell,
+       an underline, a brightened outline or a second ink on any cell.
+       The T1 / T3 / T4 badges on the hub source show a ghosted second
+       glyph and a doubled right edge (entropism-store.png x 3260..3520,
+       y 500..1700); T2 and every tile edge carry the same ghost, so it
+       is the photo's CRT doubling, not a state.
+
+       What the run DOES show, and the reading built on it: every cell
+       group on every screen has exactly one reverse-video cell, a solid
+       sage fill that swallows the cell's outline and turns its ink dark.
+       On the mail screen that filled cell is NOT the open item. Row 1
+       (YOU'LL REGRET THAT / FROM: JACKIE, closed envelope) is filled,
+       while the MESSAGE panel shows row 2's message (URGENT INFORMATION
+       (!) / from: Mom) and row 2 is the only row drawn with the open
+       envelope glyph: images/entropism-mail.png rows at x 202..1082,
+       y 542..691 (row 1, filled) and y 691..840 (row 2, outlined, open
+       glyph); panel title bar x 1274..3065, y 545..691; also visible on
+       the wall pair 38-3c177311 at x 105..215, y 205..250. The same
+       fill sits on one of four action buttons (REPORT SPAM, mail, x
+       2618..3070, y 1666..1790 at 3840), which has no selected state to
+       be in, and on the nav's SMG (store, x 269..792, y 859..1010)
+       above cards that are all HAND GUN. So the fill is the cursor:
+       the cell the pointer or focus is on, which on the hub happens to
+       be the open module (BRAINDANCE) and on the mail screen does not.
+       The OPEN item is marked by content, not by fill: the open glyph,
+       the filled title bar, the grown card.
+
+       Reading, per state:
+         REST   = the outlined cell, sage ink.                 SOURCED
+         HOVER  = the reverse-video fill; the fill MOVES to the
+                  cell under the pointer, it is not added.     SOURCED
+                  (as the cursor; no still shows the pointer itself)
+         PRESS  = the highlight blinks off: the cell reverts to
+                  its outline for as long as it is held, and
+                  the fill returns on release together with the
+                  destination (open glyph, title bar, grown
+                  card).                                       INFERRED
+                  Reasoning: the era draws exactly two states for
+                  any cell, outline and reverse video, and uses no
+                  third ink, no underline and no inset ring on any
+                  of them; a reverse-video terminal signals a key
+                  on the cursor cell by blinking the cursor, and
+                  swapping the two drawn states is the only press
+                  that adds no ink the material lacks.
+       The login field is the one place the press IS sourced: the
+       field as photographed is the field after a press, being typed
+       in, outlined with the caret underline (entropism-login.png
+       x 1351..2213, y 994..1073, caret at x 1385..1426, y 1056). Its
+       rest (no caret) and hover (fill) are inferred by the same rule.
+
+       Ids: row-rest / row-hover / row-press / row-open, button-rest /
+       button-hover / button-press, field-rest / field-hover /
+       field-press. Every group is a translate-only copy of the trace
+       element named in its comment, at 1:1. -->
+  <text x="40" y="1100" font-family="Rajdhani" font-size="11" font-weight="600"
+        letter-spacing="1" fill="#8fba97">INTERACTION STATES &#183; REST / HOVER / PRESS &#183; READ FROM THE RUN 2026-09-07 &#183; HOVER SOURCED AS THE CURSOR FILL, PRESS INFERRED, NO STILL SHOWS A POINTER</text>
+
+  <!-- MAIL LIST ROW, REST. mailbox-trace.svg A rows 3..7: a 366x62 cell
+       inside the 2px #709174 frame, closed envelope at x+18 y+18 in
+       #8aaf8d, title 20 ls 1 #a6d2a8 at x+54 baseline +30, FROM 14
+       #8aaf8d baseline +48. SOURCED: images/entropism-mail.png rows
+       3..7, x 202..1082, y 840..1584; every row that is not the cursor
+       row and not the open row is drawn like this. Row 3's strings.
+       Drawn here as a lone cell with its own 2px outline, which is the
+       frame and divider it sits between in the list. -->
+  <text x="40" y="1116" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">ROW &#183; REST</text>
+  <g id="row-rest" transform="translate(40,1122)" font-family="Rajdhani">
+    <rect x="0" y="0" width="366" height="62" fill="none" stroke="#709174" stroke-width="2"/>
+    <use href="#env" x="18" y="18" stroke="#8aaf8d"/>
+    <text x="54" y="30" font-size="20" fill="#a6d2a8" letter-spacing="1">HEIST DATA SENT TO YOU</text>
+    <text x="54" y="48" font-size="14" fill="#8aaf8d">FROM: 805000451</text>
+  </g>
+
+  <!-- MAIL LIST ROW, HOVER. mailbox-trace.svg A row 1: the 366x62 cell
+       filled solid #a6d2a8, flush with the frame (the fill swallows the
+       dividers above and below it), glyph and both strings in #25281d.
+       SOURCED as the cursor: images/entropism-mail.png x 202..1082,
+       y 542..691 (and 38-3c177311.png x 105..215, y 205..225): the
+       filled row is row 1, YOU'LL REGRET THAT / FROM: JACKIE, closed
+       envelope, and it is NOT the message the panel shows (row 2 is).
+       No still shows the pointer over it; the fill is read as where the
+       pointer or focus rests. Hovering another row moves this fill to
+       that row. -->
+  <text x="430" y="1116" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">ROW &#183; HOVER (THE CURSOR FILL, SOURCED)</text>
+  <g id="row-hover" transform="translate(430,1122)" font-family="Rajdhani">
+    <rect x="0" y="0" width="366" height="62" fill="#a6d2a8"/>
+    <use href="#env" x="18" y="18" stroke="#25281d"/>
+    <text x="54" y="30" font-size="20" fill="#25281d" letter-spacing="1">YOU&#39;LL REGRET THAT</text>
+    <text x="54" y="48" font-size="14" fill="#25281d">FROM: JACKIE</text>
+  </g>
+
+  <!-- MAIL LIST ROW, PRESS. INFERRED, no still shows a held row. The
+       hovered row with its highlight blinked off: the same 366x62 cell
+       as row-rest, outline 2px #709174, glyph and strings back in sage,
+       for as long as the button is down; on release the fill returns
+       and the row opens (row-open, and the MESSAGE panel's title bar
+       fills with its strings). Same strings as row-hover so the two
+       read as one row in two states. Reasoning in the band comment:
+       the era has two drawn states for a cell and no third ink, and
+       swapping them is the only press that invents nothing. -->
+  <text x="820" y="1116" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">ROW &#183; PRESS (HIGHLIGHT OFF WHILE HELD, INFERRED)</text>
+  <g id="row-press" transform="translate(820,1122)" font-family="Rajdhani">
+    <rect x="0" y="0" width="366" height="62" fill="none" stroke="#709174" stroke-width="2"/>
+    <use href="#env" x="18" y="18" stroke="#8aaf8d"/>
+    <text x="54" y="30" font-size="20" fill="#a6d2a8" letter-spacing="1">YOU&#39;LL REGRET THAT</text>
+    <text x="54" y="48" font-size="14" fill="#8aaf8d">FROM: JACKIE</text>
+  </g>
+
+  <!-- MAIL LIST ROW, OPEN. mailbox-trace.svg A row 2: outlined like
+       rest, strings in sage, and the OPEN envelope glyph (#env-open,
+       17x16 diamond flap) at x+18 y+17. SOURCED: images/entropism-mail.png
+       x 202..1082, y 691..840, URGENT INFORMATION (!) / FROM: MOM, the
+       one row with the open flap and the one whose strings the MESSAGE
+       panel carries (x 1274..3065, y 545..691). This is the era's
+       SELECTED state for a row: content, not fill. -->
+  <text x="1210" y="1116" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">ROW &#183; OPEN (THE SELECTED ITEM, SOURCED)</text>
+  <g id="row-open" transform="translate(1210,1122)" font-family="Rajdhani">
+    <rect x="0" y="0" width="366" height="62" fill="none" stroke="#709174" stroke-width="2"/>
+    <use href="#env-open" x="18" y="17" stroke="#8aaf8d"/>
+    <text x="54" y="30" font-size="20" fill="#a6d2a8" letter-spacing="1">URGENT INFORMATION (!)</text>
+    <text x="54" y="48" font-size="14" fill="#8aaf8d">FROM: MOM</text>
+  </g>
+  <g font-family="Rajdhani" font-size="9" font-weight="500" fill="#88a789">
+    <text x="40" y="1198">rest: outline 2 #709174, closed glyph, title #a6d2a8 20 ls 1, FROM #8aaf8d 14. Sourced, mail rows 3..7.</text>
+    <text x="430" y="1198">hover: solid #a6d2a8 flush, ink #25281d. Sourced as the cursor fill (mail row 1,</text>
+    <text x="430" y="1209">which is not the open row). One fill per group; it moves with the pointer.</text>
+    <text x="820" y="1198">press: the fill drops while held, the cell reads as rest; fill returns on release. Inferred.</text>
+    <text x="1210" y="1198">open: outline, sage ink, OPEN glyph 17x16 at +18,+17. Sourced, mail row 2. The panel carries its strings.</text>
+  </g>
+
+  <!-- BUTTON, REST. mailbox-trace.svg button row: one 187.33x52 cell
+       of the outlined strip x 529..1279, y 694..746, stroke 2 #709174,
+       label 22 ls 1 #a6d2a8 at cell +20, baseline +25. SOURCED:
+       images/entropism-mail.png x 1270..2618, y 1666..1790, the three
+       bare cells REPLY / FORWARD / DELETE. Drawn as a lone 188x52 cell.
+       The label is REPORT SPAM in all three states so the state is the
+       only thing that changes across them. -->
+  <text x="40" y="1230" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">BUTTON &#183; REST</text>
+  <g id="button-rest" transform="translate(40,1236)" font-family="Rajdhani" font-size="22" letter-spacing="1">
+    <rect x="0" y="0" width="188" height="52" fill="none" stroke="#709174" stroke-width="2"/>
+    <text x="20" y="25" fill="#a6d2a8">REPORT SPAM</text>
+  </g>
+
+  <!-- BUTTON, HOVER. mailbox-trace.svg button row, the REPORT SPAM
+       cell: 188x52 filled solid #a6d2a8 flush with the strip, label
+       #25281d. SOURCED as the cursor: images/entropism-mail.png x
+       2618..3070, y 1666..1790 (38-3c177311.png x 410..465, y 348..362).
+       One of four action buttons is filled; an action button has no
+       selected state to be in, so the fill is the cursor on it. The
+       login's NEXT (images/entropism-login.png x 2237..2489, y 991..1070,
+       105x33 solid #8aac8c, ink #20281c) is the same state on the only
+       button of that screen. -->
+  <text x="252" y="1230" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">BUTTON &#183; HOVER (SOURCED)</text>
+  <g id="button-hover" transform="translate(252,1236)" font-family="Rajdhani" font-size="22" letter-spacing="1">
+    <rect x="0" y="0" width="188" height="52" fill="#a6d2a8"/>
+    <text x="20" y="25" fill="#25281d">REPORT SPAM</text>
+  </g>
+
+  <!-- BUTTON, PRESS. INFERRED, no still shows a held button. The
+       hovered cell with its highlight blinked off: outline 2px #709174
+       and the label back in #a6d2a8 while held; the fill returns on
+       release. See the band comment for why this and not a third ink. -->
+  <text x="464" y="1230" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">BUTTON &#183; PRESS (INFERRED)</text>
+  <g id="button-press" transform="translate(464,1236)" font-family="Rajdhani" font-size="22" letter-spacing="1">
+    <rect x="0" y="0" width="188" height="52" fill="none" stroke="#709174" stroke-width="2"/>
+    <text x="20" y="25" fill="#a6d2a8">REPORT SPAM</text>
+  </g>
+  <g font-family="Rajdhani" font-size="9" font-weight="500" fill="#88a789">
+    <text x="40" y="1304">rest: 188x52, stroke 2 #709174, label 22 ls 1 #a6d2a8 at +20, baseline +25. Sourced, REPLY / FORWARD / DELETE.</text>
+    <text x="40" y="1315">hover: solid #a6d2a8 flush, no outline, ink #25281d. Sourced as the cursor fill: REPORT SPAM, and NEXT on the login (105x33 #8aac8c / #20281c).</text>
+    <text x="40" y="1326">press: highlight off while held, reads as rest; fill returns on release. Inferred. Same rule for the nav cell, the hub tile and the T badge:</text>
+    <text x="40" y="1337">one cursor fill per group (SMG, BRAINDANCE, T2 are where the photos left it), moving with the pointer, blinking off for a press.</text>
+    <text x="40" y="1353">Not in the material and not drawn: a brightened or thickened outline, an underline, an inset ring, a dimmer second fill, a pointer glyph.</text>
+    <text x="40" y="1364">Looked at: run-entropism 34..42 whole, and every cell of the four 3840 sources cropped and zoomed. Ghosted glyphs on T1 / T3 / T4 are CRT doubling.</text>
+  </g>
+
+  <!-- LOGIN FIELD, REST. INFERRED: the photo shows the field only in
+       its typed-in state. Rest is that field with the caret off: the
+       359x33 outline at 1.25 #75967b (login-trace.svg x 563..922,
+       y 414..447) holding the masked run, bold 22 #8aac8c at x+15,
+       baseline +25, and no underline. The caret is the focus mark
+       (#caret-blink turns it off half the time anyway). -->
+  <text x="820" y="1230" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">FIELD &#183; REST (NO CARET, INFERRED)</text>
+  <g id="field-rest" transform="translate(820,1236)" font-family="Rajdhani">
+    <rect x="0" y="0" width="359" height="33" fill="none" stroke="#75967b" stroke-width="1.25"/>
+    <text x="15" y="25" font-size="22" font-weight="bold" fill="#8aac8c">***********</text>
+  </g>
+
+  <!-- LOGIN FIELD, HOVER. INFERRED, no still shows the pointer on the
+       field. The era's one highlight applied to the field: the 359x33
+       reverse-video in the login's own fill #8aac8c (NEXT's fill, x
+       2237..2489, y 991..1070 at 3840) with the masked run in #20281c,
+       no outline. The mail title bar (images/entropism-mail.png x
+       1274..3065, y 545..691) is the era's precedent for a text
+       container in reverse video. -->
+  <text x="820" y="1283" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">FIELD &#183; HOVER (THE CURSOR FILL, INFERRED)</text>
+  <g id="field-hover" transform="translate(820,1289)" font-family="Rajdhani">
+    <rect x="0" y="0" width="359" height="33" fill="#8aac8c"/>
+    <text x="15" y="25" font-size="22" font-weight="bold" fill="#20281c">***********</text>
+  </g>
+
+  <!-- LOGIN FIELD, PRESS. SOURCED: login-trace.svg, the field as
+       photographed in images/entropism-login.png x 1351..2213, y
+       994..1073 (39-9c990311.png x 423..691, y 311..334; 36-a42bf711.png
+       x 351..577, y 256..276): a field after a press, being typed in.
+       Outline 1.25 #75967b, the masked run bold 22 #8aac8c, and the
+       17x1.25 caret underline at x+14..+31, y+26 under the first pair.
+       The highlight is off (the press rule) and the caret is on; this
+       is the state a press lands in and holds while focused. -->
+  <text x="820" y="1336" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">FIELD &#183; PRESS = FOCUS (CARET ON, SOURCED)</text>
+  <g id="field-press" transform="translate(820,1342)" font-family="Rajdhani">
+    <rect x="0" y="0" width="359" height="33" fill="none" stroke="#75967b" stroke-width="1.25"/>
+    <text x="15" y="25" font-size="22" font-weight="bold" fill="#8aac8c">***********</text>
+    <path d="M 14,26 H 31" fill="none" stroke="#75967b" stroke-width="1.25"/>
+  </g>
+  <g font-family="Rajdhani" font-size="9" font-weight="500" fill="#88a789">
+    <text x="1210" y="1246">rest: 359x33, stroke 1.25 #75967b, mask bold 22 #8aac8c at +15 baseline +25, no caret. Inferred:</text>
+    <text x="1210" y="1257">the photo shows the field only focused; rest is that frame with the caret off.</text>
+    <text x="1210" y="1299">hover: solid #8aac8c (the login's fill), no outline, mask in #20281c. Inferred by the</text>
+    <text x="1210" y="1310">cursor rule; precedent for reverse-video text is the mail title bar.</text>
+    <text x="1210" y="1352">press: outline back, caret underline 17x1.25 at +14, +26, held while focused. SOURCED,</text>
+    <text x="1210" y="1363">login #39: the field as photographed is a pressed field being typed in.</text>
+    <text x="1210" y="1379">Release lands the destination, never a third look: open glyph, filled title bar, grown card, caret.</text>
   </g>
 </svg>
