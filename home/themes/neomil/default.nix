@@ -83,6 +83,15 @@ in
             type = lib.types.str;
             default = "Rajdhani";
           };
+          weight = lib.mkOption {
+            type = lib.types.ints.between 300 700;
+            default = 400;
+            description = ''
+              The bar sets its labels at 400 (`src/eras/neomil.rs`,
+              Face::Regular); the launcher, notifications and browser
+              chrome follow it.
+            '';
+          };
         };
       };
       default = { };
@@ -90,6 +99,24 @@ in
         Rajdhani is the typeface Cyberpunk 2077 sets its own in-game
         interface in, with Orbitron secondary; this repo already vendors
         both. Terminal content keeps stylix.fonts.monospace.
+      '';
+    };
+
+    monoFont = lib.mkOption {
+      type = lib.types.nullOr (
+        lib.types.submodule {
+          options = {
+            package = lib.mkOption { type = lib.types.package; };
+            name = lib.mkOption { type = lib.types.str; };
+          };
+        }
+      );
+      default = null;
+      description = ''
+        Face for terminal content, or null to keep stylix.fonts.monospace
+        (GeistMono, home/common/home.nix). Reserved for an era whose
+        material shows a mono face of its own; none sets one by default,
+        so code reads the same on every era.
       '';
     };
 
@@ -182,10 +209,20 @@ in
       (import ../lib/era.nix {
         inherit lib pkgs config;
         name = "Neomil";
+        # neomil's corners are chamfers -- Corner::Chamfer { cut: 15 }
+        # on the bar, 5..12px cuts on cards (`src/eras/neomil.rs`) --
+        # and the only rounded things in its traces are ellipses. CSS
+        # and hyprland have no chamfer, so the honest radius is 0; the
+        # native bar draws the real cut. No haze in the references.
+        knobs = {
+          radius = 0;
+          blur = false;
+        };
         inherit (cfg) variant texture;
         inherit (cfg) bar;
         roles = resolved;
         font = cfg.uiFont;
+        inherit (cfg) monoFont;
         browserRestart = cfg.firefox.restartOnActivation;
         inherit (cfg) lock;
       })

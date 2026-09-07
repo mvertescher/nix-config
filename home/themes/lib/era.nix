@@ -21,9 +21,17 @@
   variant,
   # Resolved seven-role palette.
   roles,
-  # { package, name } for bar/launcher/notification chrome. Terminal
-  # content keeps stylix.fonts.monospace so code stays legible.
+  # { package, name, weight ? 400 } for bar/launcher/notification chrome.
+  # The weight is the era's, not the face's: all four references set
+  # the same family and disagree only about how heavy (the crate's era
+  # tables, `src/eras/*.rs` `face:` -- 400, 400, 500, 600), and chrome
+  # that ignored that read as one era's face on every desk.
   font,
+  # { package, name } for terminal content, or null to leave
+  # stylix.fonts.monospace as the shared GUI module set it. Only for an
+  # era whose material shows a mono face of its own; the default keeps
+  # code legible in the same face on every era.
+  monoFont ? null,
   # "none" | "scanlines" | "noise" | "trace"
   texture ? "none",
   # Restart a running Firefox when the theme changes. userChrome is only
@@ -52,8 +60,21 @@ let
   useOwnBar = bar == "cp-eras-ui";
 
   k = {
-    # Corner radius across hyprland, bar, launcher and browser chrome.
+    # Corner radius across hyprland, launcher, notifications and browser
+    # chrome -- and waybar, when that is the bar. cp-eras-ui draws its
+    # own corner treatment from the crate's era table and never reads
+    # this, so with the native bar a change here shows in four places,
+    # not five. Each era sets it from its own trace; 0 is the hard-edged
+    # house style, which is also what a chamfer becomes in CSS.
     radius = 0;
+    # Terminal window opacity. The wallpaper carries the era's ground
+    # (the trace, since 2026-09-06), and a terminal at 1.0 hid it on
+    # the one workspace that is nearly always a terminal.
+    terminalOpacity = 0.85;
+    # Compositor blur under translucent windows. Off is the house
+    # style: the ground is a flat field and a hard-edged era shows it
+    # sharp. An era whose reference already has a haze turns it on.
+    blur = false;
     # Bar height in pixels.
     barHeight = 22;
     # Drawn between bar modules; "" for none.
@@ -71,6 +92,29 @@ let
     bind = "SUPER, backspace";
   }
   // lock;
+
+  # The face's weight, in the two forms the chrome needs: the CSS number
+  # (waybar, swaync, the browser), and the Pango style word rofi's font
+  # string carries -- Pango names its weights, and "Rajdhani 600 12"
+  # parses as a family called "Rajdhani 600".
+  weight = font.weight or 400;
+  pangoWeight =
+    {
+      "300" = "Light";
+      "400" = "";
+      "500" = "Medium";
+      "600" = "Semi-Bold";
+      "700" = "Bold";
+    }
+    .${toString weight}
+      or (throw "era.nix: font.weight ${toString weight} has no Pango name; use 300..700 by hundreds");
+  pangoFont = size: lib.concatStringsSep " " (lib.filter (s: s != "") [ font.name pangoWeight (toString size) ]);
+
+  # Sidebery's gecko id (src/manifest.json upstream): the key of the
+  # policy entry home/common/gui/firefox.nix installs it under, and of
+  # the browser-extension-data directory its storage.js lives in. The
+  # same literal is in that file and in themes/cybr/firefox/default.nix.
+  sideberyId = "{3c078156-979c-498b-8990-85f7987dd929}";
 
   magick = lib.getExe' pkgs.imagemagick "magick";
 
@@ -165,6 +209,7 @@ let
 
     [font]
     ui = "${font.name}"
+    weight = ${toString weight}
 
     [colors]
     ${lib.concatStringsSep "\n" (
@@ -180,6 +225,8 @@ let
       inherit variant name;
       colors = c;
       font = font.name;
+      inherit weight;
+      radius = k.radius;
     }
   );
 in
@@ -216,6 +263,9 @@ lib.mkMerge [
       enable = true;
       image = lib.mkDefault wallpaper;
       fonts.sansSerif = lib.mkDefault { inherit (font) package name; };
+      # One step stronger than the shared GUI module's plain definition,
+      # for the same reason the hyprland block is.
+      fonts.monospace = lib.mkIf (monoFont != null) (eraOverride { inherit (monoFont) package name; });
     };
 
     # An icon theme, for the first time. `stylix.icons` is off and
@@ -277,7 +327,7 @@ lib.mkMerge [
 
       decoration = {
         rounding = eraOverride k.radius;
-        blur.enabled = eraOverride false;
+        blur.enabled = eraOverride k.blur;
         shadow.enabled = eraOverride false;
       };
 
@@ -310,6 +360,14 @@ lib.mkMerge [
         "match:class ^(cp-eras-ui-(dashboard|mailbox|mail|store|login))$, workspace ${toString config.custom.workspaceApp.workspace}, fullscreen on"
       ];
     };
+
+    # --- terminal ------------------------------------------------------
+    # Content stays on stylix's palette and mono face (or `monoFont`);
+    # the era's contribution is the window itself. stylix's alacritty
+    # target writes `stylix.opacity.terminal` (1.0) here as a plain
+    # definition, so this sits one step stronger, as the hyprland block
+    # does; cybr mkForces its own instead.
+    programs.alacritty.settings.window.opacity = eraOverride k.terminalOpacity;
 
     # --- wallpaper -----------------------------------------------------
     stylix.targets.hyprpaper.enable = lib.mkForce false;
@@ -479,6 +537,7 @@ lib.mkMerge [
           text-shadow: none;
           min-height: 0;
           font-family: "${font.name}";
+          font-weight: ${toString weight};
           font-size: 12px;
         }
 
@@ -557,7 +616,7 @@ lib.mkMerge [
       * {
         background-color: transparent;
         text-color:       ${c.fg};
-        font:             "${font.name} 12";
+        font:             "${pangoFont 12}";
       }
 
       window {
@@ -651,6 +710,7 @@ lib.mkMerge [
           box-shadow: none;
           text-shadow: none;
           font-family: "${font.name}";
+          font-weight: ${toString weight};
           font-size: 12px;
         }
 
@@ -833,6 +893,18 @@ lib.mkMerge [
     # this block and cybr's used to declare the same three things twice,
     # and only cybr declared extensions, so Sidebery vanished under every
     # generated era.
+    #
+    # Two surfaces, one reading. The toolbox is the era's *panel*: a
+    # field on `panel` with a single hairline under it, the tab strip
+    # and urlbar sitting in it as the bar's modules sit in the bar --
+    # the current tab in the selected treatment, the rest on `dim`, the
+    # urlbar a `bg` well with a `border` hairline that lights to `fg` on
+    # focus. Sidebery is the same panel turned on its side: its own
+    # background goes transparent so the sidebar box's `panel` shows
+    # through, rows on `dim` with the active one in the selected
+    # treatment, a `border` hairline between it and the page. This used
+    # to stop at the toolbox and leave Sidebery on its defaults, so the
+    # left third of every window wore a different theme from the top.
     programs.firefox = {
       profiles.default = {
         settings = {
@@ -849,17 +921,23 @@ lib.mkMerge [
             --era-dim: ${c.dim};
             --era-fg: ${c.fg};
             --era-alert: ${c.alert};
+            --era-selected-bg: var(--era-${if k.invertActive then "fg" else "border"});
+            --era-selected-fg: var(--era-${if k.invertActive then "bg" else "fg"});
 
             --toolbar-bgcolor: var(--era-panel) !important;
             --toolbar-color: var(--era-fg) !important;
             --tab-border-radius: ${toString k.radius}px !important;
             --toolbarbutton-border-radius: ${toString k.radius}px !important;
             --urlbar-min-height: 26px !important;
+            --sidebar-background-color: var(--era-panel) !important;
+            --sidebar-text-color: var(--era-fg) !important;
           }
 
           #navigator-toolbox {
             background: var(--era-panel) !important;
             border-bottom: 1px solid var(--era-border) !important;
+            font-family: "${font.name}" !important;
+            font-weight: ${toString weight} !important;
           }
 
           #TabsToolbar, #nav-bar, #PersonalToolbar {
@@ -875,12 +953,16 @@ lib.mkMerge [
             background: transparent !important;
           }
 
+          .tabbrowser-tab:hover:not([selected]) .tab-background {
+            background: var(--era-border) !important;
+          }
+
           .tabbrowser-tab[selected] .tab-background {
-            background: var(--era-${if k.invertActive then "fg" else "panel"}) !important;
+            background: var(--era-selected-bg) !important;
           }
 
           .tabbrowser-tab[selected] .tab-label {
-            color: var(--era-${if k.invertActive then "bg" else "fg"}) !important;
+            color: var(--era-selected-fg) !important;
           }
 
           .tabbrowser-tab:not([selected]) .tab-label {
@@ -927,7 +1009,85 @@ lib.mkMerge [
           #identity-box.notSecure #identity-icon {
             color: var(--era-alert) !important;
           }
+
+          /* The sidebar: Sidebery paints nothing of its own (see the
+             stylesheet below), so this box is the panel it sits on.
+             Its header is Firefox's own "Sidebery v" strip, which the
+             extension's tab tree already says. */
+          #sidebar-box {
+            background: var(--era-panel) !important;
+            border-right: 1px solid var(--era-border) !important;
+          }
+          #sidebar-header { display: none !important; }
+          #sidebar-splitter {
+            width: 1px !important;
+            border: none !important;
+            background: var(--era-border) !important;
+          }
         '';
+
+        # Sidebery keeps its custom styles in storage.local under the
+        # top-level sidebarCSS key (src/types/storage.ts upstream), so the
+        # theme lands declaratively instead of being pasted into the
+        # Style Editor by hand; home-manager writes it to
+        # browser-extension-data/<id>/storage.js and points Firefox at
+        # the JSON backend. Same route as cybr, same trade-off: the file
+        # is a read-only store symlink, so the runtime state Sidebery
+        # keeps beside it (tabsDataCache, snapshots, favicons, UI
+        # settings) no longer persists across restarts -- home-manager
+        # issue #9211.
+        #
+        # The variable names are the ones cybr's sheet exercises, which
+        # is the set known to take effect. `#root.root` outranks
+        # Sidebery's own `:root` declarations; `--tabs-font` is consumed
+        # as the `font` shorthand, so it must carry a size and may carry
+        # the weight.
+        extensions.settings.${sideberyId} = {
+          force = true;
+          settings.sidebarCSS = ''
+            /* ${header} */
+            #root.root {
+              --tabs-font: ${toString weight} 0.85rem "${font.name}", sans-serif;
+              --frame-bg: transparent !important;
+              --frame-fg: ${c.fg};
+
+              --tabs-normal-bg: transparent;
+              --tabs-normal-fg: ${c.dim};
+              --tabs-activated-bg: ${if k.invertActive then c.fg else c.border};
+              --tabs-activated-fg: ${if k.invertActive then c.bg else c.fg};
+              --active-el-bg: ${c.border};
+              --tabs-border-radius: ${toString k.radius}px;
+              --tabs-margin: 1px;
+              --tabs-height: 26px;
+              --tabs-inner-gap: 5px;
+
+              --ctx-menu-bg: ${c.panel};
+              --ctx-menu-fg: ${c.fg};
+              --ctx-menu-border: ${c.border};
+              --ctx-menu-separator: ${c.border};
+            }
+
+            :root {
+              background-color: transparent !important;
+              --tabs-padding: 4px;
+            }
+
+            .Tab {
+              background-color: transparent !important;
+              color: ${c.dim} !important;
+            }
+            .Tab:hover {
+              background-color: ${c.border} !important;
+              color: ${c.fg} !important;
+            }
+            /* The active row keeps its treatment under the pointer;
+               cybr's sheet lost its label to the hover colour here. */
+            .Tab[data-active="true"], .Tab[data-active="true"]:hover {
+              background-color: ${if k.invertActive then c.fg else c.border} !important;
+              color: ${if k.invertActive then c.bg else c.fg} !important;
+            }
+          '';
+        };
       };
     };
   }

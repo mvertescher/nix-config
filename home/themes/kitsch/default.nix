@@ -85,6 +85,16 @@ in
             type = lib.types.str;
             default = "Rajdhani";
           };
+          weight = lib.mkOption {
+            type = lib.types.ints.between 300 700;
+            default = 500;
+            description = ''
+              The bar sets its labels at 500 (`src/eras/kitsch.rs`,
+              Face::Medium: "a 1.25px line next to 400-weight Rajdhani
+              reads heavier than the text"); the launcher, notifications
+              and browser chrome follow it.
+            '';
+          };
         };
       };
       default = { };
@@ -92,6 +102,24 @@ in
         Rajdhani is the typeface Cyberpunk 2077 sets its own in-game
         interface in, with Orbitron secondary; this repo already vendors
         both. Terminal content keeps stylix.fonts.monospace.
+      '';
+    };
+
+    monoFont = lib.mkOption {
+      type = lib.types.nullOr (
+        lib.types.submodule {
+          options = {
+            package = lib.mkOption { type = lib.types.package; };
+            name = lib.mkOption { type = lib.types.str; };
+          };
+        }
+      );
+      default = null;
+      description = ''
+        Face for terminal content, or null to keep stylix.fonts.monospace
+        (GeistMono, home/common/home.nix). Reserved for an era whose
+        material shows a mono face of its own; none sets one by default,
+        so code reads the same on every era.
       '';
     };
 
@@ -184,18 +212,23 @@ in
       (import ../lib/era.nix {
         inherit lib pkgs config;
         name = "Kitsch";
-        # The one era that is not hard-edged. 12px matches the rounded
-        # pills and cards of the references at bar scale, and the
-        # separator goes: the references divide by spacing and colour
-        # rather than by rules.
+        # The one era that is not hard-edged. 12px sits between the
+        # trace's two readings -- Corner::Round { radius: 16 } on the bar
+        # and rx=8 on the store and dashboard cards (`src/eras/kitsch.rs`,
+        # `docs/kitsch/*-trace.svg`) -- and the separator goes: the
+        # references divide by spacing and colour rather than by rules.
+        # The rose bloom behind everything is itself a haze, so the
+        # terminal shows the ground through blur.
         knobs = {
           radius = 12;
           separator = "";
+          blur = true;
         };
         inherit (cfg) variant texture;
         inherit (cfg) bar;
         roles = resolved;
         font = cfg.uiFont;
+        inherit (cfg) monoFont;
         browserRestart = cfg.firefox.restartOnActivation;
         inherit (cfg) lock;
       })

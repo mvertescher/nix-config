@@ -87,6 +87,15 @@ in
             type = lib.types.str;
             default = "Departure Mono";
           };
+          weight = lib.mkOption {
+            type = lib.types.ints.between 300 700;
+            default = 400;
+            description = ''
+              The bar sets its labels at 400 (`src/eras/entropism.rs`,
+              Face::Regular); the launcher, notifications and browser
+              chrome follow it.
+            '';
+          };
         };
       };
       default = { };
@@ -97,6 +106,24 @@ in
 
         Terminal content keeps stylix.fonts.monospace either way, so
         code stays legible.
+      '';
+    };
+
+    monoFont = lib.mkOption {
+      type = lib.types.nullOr (
+        lib.types.submodule {
+          options = {
+            package = lib.mkOption { type = lib.types.package; };
+            name = lib.mkOption { type = lib.types.str; };
+          };
+        }
+      );
+      default = null;
+      description = ''
+        Face for terminal content, or null to keep stylix.fonts.monospace
+        (GeistMono, home/common/home.nix). Reserved for an era whose
+        material shows a mono face of its own; none sets one by default,
+        so code reads the same on every era.
       '';
     };
 
@@ -189,10 +216,20 @@ in
       (import ../lib/era.nix {
         inherit lib pkgs config;
         name = "Entropism";
+        # Read off the era's own trace rather than the house default,
+        # though they agree: `src/eras/entropism.rs` is Corner::Square
+        # and the store cards carry no rx at all. Sharp under the
+        # translucent terminal, too -- the ground is a repaired
+        # monochrome display and a haze would be ornament.
+        knobs = {
+          radius = 0;
+          blur = false;
+        };
         inherit (cfg) variant texture;
         inherit (cfg) bar;
         roles = resolved;
         font = cfg.uiFont;
+        inherit (cfg) monoFont;
         browserRestart = cfg.firefox.restartOnActivation;
         inherit (cfg) lock;
       })

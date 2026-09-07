@@ -2,9 +2,9 @@
 #
 # Gold line-work on true black under a violet haze. Kitsch's later and
 # quieter descendant: the ornament is still there, but it has learned
-# restraint. Corners are square but for a single clipped one, so the
-# radius knob stays at the house default and the era earns its look
-# from palette rather than geometry.
+# restraint. Corners are softly rounded -- the reference hardware is --
+# with the one clipped corner left to the native bar; the radius knob
+# is set from the trace, below.
 #
 # The `reference` palette is transcribed from the pixel reads in
 # home/common/pkgs/cp-eras-ui/docs/neokitsch/README.md, not eyeballed.
@@ -87,6 +87,15 @@ in
             type = lib.types.str;
             default = "Rajdhani";
           };
+          weight = lib.mkOption {
+            type = lib.types.ints.between 300 700;
+            default = 600;
+            description = ''
+              The bar sets its labels at 600 (`src/eras/neokitsch.rs`,
+              Face::SemiBold); the launcher, notifications and browser
+              chrome follow it.
+            '';
+          };
         };
       };
       default = { };
@@ -94,6 +103,24 @@ in
         Rajdhani is the typeface Cyberpunk 2077 sets its own in-game
         interface in, with Orbitron secondary; this repo already vendors
         both. Terminal content keeps stylix.fonts.monospace.
+      '';
+    };
+
+    monoFont = lib.mkOption {
+      type = lib.types.nullOr (
+        lib.types.submodule {
+          options = {
+            package = lib.mkOption { type = lib.types.package; };
+            name = lib.mkOption { type = lib.types.str; };
+          };
+        }
+      );
+      default = null;
+      description = ''
+        Face for terminal content, or null to keep stylix.fonts.monospace
+        (GeistMono, home/common/home.nix). Reserved for an era whose
+        material shows a mono face of its own; none sets one by default,
+        so code reads the same on every era.
       '';
     };
 
@@ -186,10 +213,23 @@ in
       (import ../lib/era.nix {
         inherit lib pkgs config;
         name = "Neokitsch";
+        # This sat at the house 0 until 2026-09-07, on a reading of the
+        # corners as square but for the clipped one; at the desk that
+        # was wrong, the reference hardware is rounded. The trace's
+        # own numbers (`src/eras/neokitsch.rs`): panels round at 6, rows
+        # and the tape at 4, cards and buttons at 3, and the 30px
+        # top-right clip is the native bar's to draw. 6 is the panel
+        # value, and windows, rofi and swaync are panels. The violet haze
+        # in the references is a blur, so the terminal gets one.
+        knobs = {
+          radius = 6;
+          blur = true;
+        };
         inherit (cfg) variant texture;
         inherit (cfg) bar;
         roles = resolved;
         font = cfg.uiFont;
+        inherit (cfg) monoFont;
         browserRestart = cfg.firefox.restartOnActivation;
         inherit (cfg) lock;
       })
