@@ -11,6 +11,10 @@ let
     llmAgentsOverlay = final: prev: {
         claude-code = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}.claude-code;
         antigravity-cli = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}.antigravity-cli;
+        # nixpkgs has codex too, but the pin trails it by a handful of
+        # releases; taken from llm-agents for the same reason
+        # claude-code is, that these move faster than the pin does.
+        codex = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}.codex;
     };
 
     # This repo's own packages; see the file for why it is one.
