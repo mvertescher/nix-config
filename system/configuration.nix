@@ -52,6 +52,25 @@ in
     settings = {
       experimental-features = [ "nix-command" "flakes" ];
       warn-dirty = true;
+
+      # numtide's cache, for the llm-agents packages: claude-code,
+      # antigravity-cli and codex (lib/overlays.nix). They track
+      # upstream closely, which is why they come from that input
+      # rather than the nixpkgs pin -- and codex is a Rust workspace
+      # that takes tens of minutes to build, so without this every
+      # move of the input pays a full compile on every host.
+      #
+      # `extra-` rather than plain: this adds to cache.nixos.org, it
+      # does not replace it. The key is the one llm-agents.nix
+      # declares in its own nixConfig (and its README), which is the
+      # same trust the flake would ask for interactively with
+      # --accept-flake-config; putting it here means it is a decision
+      # recorded in the config rather than a prompt answered per
+      # invocation.
+      extra-substituters = [ "https://cache.numtide.com" ];
+      extra-trusted-public-keys = [
+        "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+      ];
     };
   };
 
