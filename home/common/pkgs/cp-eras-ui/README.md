@@ -206,9 +206,12 @@ still gives click-outside dismissal *and* placement below every bar without this
 any bar is. A submenu chain is drawn *inline in that same surface*
 rather than stacking another -- a second overlay would cover the parent
 and stop its rows answering -- and it opens leftwards, because the tray
-is the last group on the right. Childless `Submenu` rows still answer a
-click, since for a lazily-populated menu that click is what sends
-`AboutToShow`.
+is the last group on the right. Entering an enabled submenu row opens
+it and sends `AboutToShow`, including for childless, lazily-populated
+submenus. Re-entering an open branch preserves its descendants without
+requesting another refresh. Hovering a sibling leaf closes deeper
+branches. Clicking a submenu still toggles it; disabled rows and
+separators do not open branches.
 
 One known gap is left. Middle click used to arrive as `Activate`,
 because `iced_layershell` up to 0.13.7 mapped every button but right to
@@ -219,9 +222,10 @@ the honest state of it. What remains is the scroll *sign*, still
 unverified -- not because the axis is forwarded raw, which an earlier
 version of this file claimed and which is wrong (0.19.1 negates on all
 four paths, as 0.13.7 did, and already matches iced's convention), but
-because nothing on this desktop acts on `Scroll` at all. There is no
-hover-to-open and no keyboard navigation, both deliberate on a surface
-with no grab.
+because nothing on this desktop acts on `Scroll` at all. Keyboard
+navigation remains open: the bar and menu take no keyboard focus.
+Hover-to-open is tested with synthetic menu trees; live tray-app
+interaction verification remains pending.
 
 The readings split by cost. Clock, CPU, memory and Hyprland's two
 socket round trips are taken inline on the tick; audio and network get
@@ -318,16 +322,18 @@ blocks are transcribed and gated (G2i, `docs/PIPELINE.md`).
 The login accepts password input and can authenticate through greetd;
 see `GREETER.md`. The dashboard's inbox and store remain demo content.
 
-Built-in buttons and text fields have neomil and entropism hover/press
-coats. Preview the real catalog styles and try live controls with:
+Native buttons and text fields have feedback in all four eras: Neomil
+and Entropism use catalog coats; Kitsch and Neokitsch use custom material
+wrappers around the native child. Preview their states and try live controls
+with:
 
 ```sh
 nix-shell shell.nix --run 'cargo run --example control-states -- --era neomil'
 ```
 
-Kitsch's extrusion, neokitsch's echo/veneer, and the hub's custom canvas
-interaction treatments remain open in `TODO.md`. The preview labels the
-two pending eras; their built-in coats still keep their rest appearance.
+The preview includes static state comparisons and live controls for every
+era. Animated transitions and live desktop/IME verification remain open;
+Kitsch's hub hover still needs a hub-specific design.
 
 Dashboard and store tiles activate on release over the tile pressed;
 dragging to another tile or losing the window cancels the click.
@@ -335,5 +341,50 @@ Entropism's dashboard also moves its single cursor fill on hover and
 extinguishes it while held, without changing the selected destination.
 Keyboard navigation restores the selection's fill. Neomil's dashboard
 diamonds brighten on hover and take the darker held red while pressed,
-using the component sheet's inferred filled-control rule. Kitsch and
-neokitsch dashboard treatments remain pending.
+using the component sheet's inferred filled-control rule. Neokitsch's
+dashboard lifts its existing gold echo rings on hover and shows the
+selected veneer drawing while held. A selected card keeps its veneer
+under the pointer. Kitsch holds a blade flat in yellow with only that
+blade's ghost trail removed; cancellation restores the trail. Its hover
+treatment remains unchanged pending a hub-specific design.
+
+Mailbox rows also select on release over the row pressed; dragging away,
+leaving the window, losing focus or pressing a key cancels the gesture.
+Entropism's mailbox fill follows hover and disappears while held,
+without changing the message panel. Keyboard input restores the list's
+keyboard selection. Neomil rows use wash/bright-filled hover and held-red
+printing; Neokitsch rows echo their silhouette on hover and take the
+selected veneer while held. Both keep the shown message and unread
+indicators unchanged until selection. Kitsch adds ghosts behind its
+two-piece teal row face and takes flat yellow while held, keeping the
+sender line below the face legible.
+
+The working mail client also draws row and DELETE feedback through custom
+surface materials. Entropism shares one list cursor; other eras use their
+row coats. These widgets keep release-to-activate, touch cancellation and
+viewport-clipped hit targets, including when scrolling under the pointer.
+
+For native form controls, `widgets::controls::{button, field}` add Kitsch
+ghosts/stepped silhouettes and Neokitsch echoes/tabs/veneer around the native
+iced child. The input keeps its own caret, focus, selection and editing.
+See [native control materials](docs/control-materials.md) for the API and
+documented adaptations; `control-states` provides live examples in every era.
+
+Entropism's store category fill also follows hover and blinks off while
+held. Hover leaves the chosen category and product card unchanged;
+release commits the choice. Product-card growth remains tied to selection.
+
+Store categories now have feedback in all four eras: Neomil uses its
+wash/held-red coats, Kitsch lifts a teal face over one offset ghost,
+and Neokitsch echoes its outline before taking the selected veneer.
+Neomil preserves the selected row's taller silhouette; Kitsch and
+Neokitsch retain their selected material on hover. Kitsch's foreground
+ghost uses the canvas's approximate translucent blending.
+
+Product cards in Neomil, Kitsch and Neokitsch also have hover/held
+feedback at their current size: red wash/held coats, teal lift/flat
+amber, and echo/veneer respectively. Selected cards keep their expanded
+content. These are inferred adaptations of the documented material
+rules. Entropism moves its product-header cursor independently of card
+growth: hover highlights one header, holding removes that highlight,
+and the selected card retains its details when the cursor moves away.

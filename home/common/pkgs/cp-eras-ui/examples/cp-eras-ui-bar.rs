@@ -102,7 +102,8 @@ mod sensor;
 mod tray;
 
 use cp_eras_ui::bar::{
-    bar, tray_menu, MenuEntry, MenuPath, Readings, TrayAction, TrayMenu,
+    bar, tray_menu_with_hover, MenuEntry, MenuInteraction, MenuPath, MenuPointer, Readings,
+    TrayAction, TrayMenu,
 };
 use cp_eras_ui::{catalog, shell};
 use cp_eras_ui::{Element, Style};
@@ -139,6 +140,7 @@ struct Open {
     /// alone. State of the panel and not of the item, which is why it
     /// lives here rather than on the [`TrayMenu`].
     path: MenuPath,
+    pointer: MenuPointer,
     /// Where the chain's right edge sits, in output pixels.
     x: f32,
 }
@@ -197,6 +199,8 @@ enum Message {
     /// A submenu row was clicked: open the chain it names, or close it
     /// again when it is the one already open.
     Submenu(MenuPath),
+    /// Enter an enabled row without toggling an already-open branch.
+    MenuHover(MenuPath, MenuInteraction),
     /// Anywhere else on the screen was clicked.
     Dismiss,
     /// The compositor destroyed a surface. Only ever the menu's: the
@@ -313,6 +317,7 @@ impl BarApp {
                         let now = entry_at(&opened.menu, &open.path).map(|entry| entry.id);
                         if was != now {
                             open.path.clear();
+                            open.pointer = MenuPointer::default();
                         }
                         open.menu = opened.menu;
                     }
@@ -364,6 +369,7 @@ impl BarApp {
                     key: opened.key.clone(),
                     menu: opened.menu.clone(),
                     path: MenuPath::new(),
+                    pointer: MenuPointer::default(),
                     x: pending.x,
                 });
                 return open_surface;
@@ -378,24 +384,28 @@ impl BarApp {
                 let Some(open) = &mut self.open else {
                     return Task::none();
                 };
-                // Clicking the row that is already open closes it,
-                // which on a surface that reads no keys is the only
-                // way back up the chain that is not "start again".
-                // Nothing is sent for that: dbusmenu has an event for
-                // closing the *menu*, which `dismiss` sends, and none
-                // for closing one branch of it.
-                if open.path == path {
-                    open.path.pop();
-                    return Task::none();
-                }
-                open.path = path;
                 // The panel is already drawn, from the tree that came
                 // with the menu. This is the protocol courtesy that
                 // gives an application filling a submenu on demand its
                 // chance to; its answer arrives as another `Opened`
                 // and is spliced in above.
-                if let Some(entry) = entry_at(&open.menu, &open.path) {
-                    self.tray.expand(&open.key, entry.id);
+                if let Some(id) = open.pointer.update(
+                    &open.menu, &mut open.path, &path, MenuInteraction::Click,
+                ) {
+                    self.tray.expand(&open.key, id);
+                }
+            }
+            Message::MenuHover(path, interaction) => {
+                let Some(open) = &mut self.open else {
+                    return Task::none();
+                };
+                // Hover opens only once, including a lazy empty branch.
+                // A sibling leaf closes deeper panels without activating
+                // the leaf or sending a protocol event for branch closure.
+                if let Some(id) = open.pointer.update(
+                    &open.menu, &mut open.path, &path, interaction,
+                ) {
+                    self.tray.expand(&open.key, id);
                 }
             }
             Message::Dismiss => return self.dismiss(),
@@ -467,12 +477,13 @@ impl BarApp {
         mouse_area(
             column![row![
                 Space::new().width(Length::Fixed(left)).height(Length::Shrink),
-                tray_menu(
+                tray_menu_with_hover(
                     &self.style,
                     &open.menu,
                     &open.path,
                     Message::Entry,
                     Message::Submenu,
+                    Message::MenuHover,
                 ),
             ]
             .height(Length::Shrink)]

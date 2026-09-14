@@ -32,7 +32,9 @@ Pipeline:
      reach the border; foreground widgets do not. A cluster that never
      reaches the border but sits within a few RGB units of one that does
      is the inner band of the same gradient, and is ground too.
-  4. label connected ink components; split touching/overlapping convex
+  4. close small gaps and recover fine striped material only inside an
+     independently measured similar-colour body; label connected ink
+     components; split touching/overlapping convex
      blobs by nearest-peak (Voronoi) assignment on the distance transform.
   5. fit each component against shape templates (rect, diamond, chamfered
      rect, rule) and keep the best by an occlusion-aware IoU.
@@ -317,6 +319,55 @@ def text_runs(small_mask, rgb):
     return runs
 
 
+def striped_body(mask, support):
+    """Whether a supported body contains repeated fine horizontal/vertical grain.
+
+    Require at least nine strands, mostly 2–7 px apart, across most of the
+    body. Text, isolated rules and the two edges of a shadow are insufficient.
+    The range includes resampling of the traced 2.1/2.7 px veneer pitches.
+    """
+    for pixels, body in ((mask, support), (mask.T, support.T)):
+        eligible = body.sum(axis=1) >= 32
+        if eligible.sum() < 32:
+            continue
+        repeated = 0
+        for row in pixels[eligible]:
+            starts = np.flatnonzero(np.diff(row.astype(np.int8), prepend=0) == 1)
+            gaps = np.diff(starts)
+            if len(gaps) >= 8 and np.mean((gaps >= 2) & (gaps <= 7)) >= 0.7:
+                repeated += 1
+        if repeated / eligible.sum() >= 0.7:
+            return True
+    return False
+
+
+def repair_striped_regions(raw_masks, ink_masks, colours):
+    """Recover grain families inside a separately observed solid body.
+
+    K-means can assign antialiased grain to a sparse palette family. A 5 px
+    close then leaves long slots, even though another similar ink independently
+    measures the complete body. Fill only that measured support, and only when
+    the raw family has repeated fine strands there. No global close, convex
+    hull or merging across background gaps is involved. Use the original masks
+    throughout so one repair cannot grow the support for another.
+    """
+    repaired = [mask.copy() for mask in ink_masks]
+    for anchor, solid in enumerate(ink_masks):
+        labels, _ = ndimage.label(solid)
+        for label, slices in enumerate(ndimage.find_objects(labels), start=1):
+            body = labels[slices] == label
+            if body.sum() < MIN_SHAPE_AREA or body.mean() < 0.7:
+                continue
+            for target, raw in enumerate(raw_masks):
+                if target == anchor or np.linalg.norm(colours[target] - colours[anchor]) > 50:
+                    continue
+                grain = raw[slices] & body
+                coverage = grain.sum() / body.sum()
+                if 0.05 <= coverage <= 0.8 and striped_body(grain, body):
+                    repaired[target][slices] |= body
+    return [ndimage.binary_fill_holes(mask) for mask in repaired]
+
+
 def components(raw, ink, canvas, family):
     """Fit every large component of one ink family.
 
@@ -385,11 +436,14 @@ def extract(path, canvas_wh, k=8):
     # mask they form a single lopsided blob whose centroid sits on neither.
     shapes, smalls = [], []
     inkmask = np.zeros((h, w), bool)
-    for entry in pal:
-        if entry["role"] != "ink" or entry["coverage"] < MIN_INK_COVERAGE:
-            continue
-        raw = ndimage.binary_closing(labels == entry["index"], np.ones((5, 5)))
-        ink = ndimage.binary_fill_holes(raw)
+    entries = [entry for entry in pal
+               if entry["role"] == "ink" and entry["coverage"] >= MIN_INK_COVERAGE]
+    masks = [labels == entry["index"] for entry in entries]
+    closed = [ndimage.binary_closing(mask, np.ones((5, 5))) for mask in masks]
+    filled = [ndimage.binary_fill_holes(mask) for mask in closed]
+    repaired = repair_striped_regions(
+        masks, filled, [centres[entry["index"]] for entry in entries])
+    for entry, raw, ink in zip(entries, closed, repaired):
         inkmask |= ink
         # Family placement: where this colour sits on the canvas, as an 80x45
         # occupancy grid. Unlike the per-component shape fits, this survives

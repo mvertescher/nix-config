@@ -16,10 +16,12 @@
 use crate::catalog;
 use crate::palette::Palette;
 use crate::style::{Chrome, Metrics, Style};
-use crate::widgets::surface::{backdrop, surface, Surface};
+use crate::widgets::surface::{
+    backdrop, cursor_list, face, interactive, surface, Surface, SurfaceFace,
+};
 use crate::widgets::{footer, ground, text, top_bar};
 use crate::Element;
-use iced::widget::{button, column, container, mouse_area, row, scrollable, stack, Space};
+use iced::widget::{column, container, row, scrollable, stack, Space};
 use iced::{Alignment, Color, Length, Padding};
 
 /// One reply in a thread.
@@ -84,17 +86,38 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
     let content_line = fade(s.palette.border, focus == MailFocus::Content);
 
     // --- Left: the message list ---
-    let mut list = column![].spacing(s.metrics.gap * LIST_GAP_FACTOR).width(Length::Fill);
-    for email in emails {
-        list = list.push(message_row(
-            s,
-            email,
-            Some(email.id) == selected_id,
-            (on_select.clone())(email.id),
-            list_ink,
-            list_line,
-        ));
-    }
+    let list: Element<'a, Message> = if s.mailbox_cursor {
+        cursor_list(
+            emails
+                .iter()
+                .map(|email| {
+                    (
+                        email.id as u64,
+                        [false, true].map(|selected| {
+                            message_face(s, email, selected, list_ink, list_line, None)
+                        }),
+                        (on_select.clone())(email.id),
+                    )
+                })
+                .collect(),
+            selected_id.map(|id| id as u64),
+            s.metrics.gap * LIST_GAP_FACTOR,
+        )
+    } else {
+        column(emails.iter().map(|email| {
+            message_row(
+                s,
+                email,
+                Some(email.id) == selected_id,
+                (on_select.clone())(email.id),
+                list_ink,
+                list_line,
+            )
+        }))
+        .spacing(s.metrics.gap * LIST_GAP_FACTOR)
+        .width(Length::Fill)
+        .into()
+    };
 
     let left = column![
         pane_heading(s, "MESSAGES", list_ink, list_line),
@@ -140,7 +163,7 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
             ))
             .height(Length::Fill),
             Space::new().height(s.metrics.gap),
-            actions(s, (on_delete.clone())(email.id)),
+            actions(s, email.id, (on_delete.clone())(email.id)),
         ]
         .into(),
         // The empty state is a well, not a panel: nothing is loaded, so
@@ -172,12 +195,7 @@ pub fn mail_panel<'a, Message: 'static + Clone>(
             s,
             ["PERSONAL LINK SOFTWAREV2", "MAIL BOX", "FLAIR TRS 5MMP"],
         ),
-        row![
-            left,
-            Space::new().width(s.metrics.gap * 2.0),
-            right,
-        ]
-        .height(Length::Fill),
+        row![left, Space::new().width(s.metrics.gap * 2.0), right,].height(Length::Fill),
         footer(
             s,
             "INTERFACE LOADED",
@@ -268,6 +286,46 @@ fn message_row<'a, Message: 'static + Clone>(
     ink: Color,
     line: Color,
 ) -> Element<'a, Message> {
+    let feedback = style.mailbox.list.feedback;
+    let hover = feedback.and_then(|states| {
+        if selected {
+            states.selected_hover
+        } else {
+            Some(states.hover)
+        }
+    });
+    let held = feedback.map(|states| states.pressed);
+    interactive(
+        [None, hover, held].map(|coat| message_face(style, email, selected, ink, line, coat)),
+        email.id as u64,
+        on_press,
+    )
+}
+
+fn row_printing(
+    style: &Style,
+    selected: bool,
+    ink: Color,
+    coat: Option<crate::style::MailRowCoat>,
+) -> (Color, Color) {
+    if let Some(printing) = coat.and_then(|c| c.printing) {
+        let printing = printing.of(&style.palette);
+        (printing, printing)
+    } else if selected || coat.is_some_and(|c| c.selection) {
+        (style.palette.on_select, style.palette.on_select)
+    } else {
+        (ink, Palette::faded(ink, 0.6))
+    }
+}
+
+fn message_face<'a, Message: 'static>(
+    style: &Style,
+    email: &'a Email,
+    selected: bool,
+    ink: Color,
+    line: Color,
+    coat: Option<crate::style::MailRowCoat>,
+) -> Element<'a, Message> {
     let s = style;
 
     let bg = if selected {
@@ -276,11 +334,10 @@ fn message_row<'a, Message: 'static + Clone>(
         Surface::outlined(s).stroke(line)
     };
 
-    let (title_ink, meta_ink) = if selected {
-        (s.palette.on_select, s.palette.on_select)
-    } else {
-        (ink, Palette::faded(ink, 0.6))
-    };
+    let face_material = coat.map_or(SurfaceFace::resting(bg), |coat| {
+        SurfaceFace::feedback(s, bg, coat)
+    });
+    let (title_ink, meta_ink) = row_printing(s, selected, ink, coat);
 
     let flag: Element<'a, Message> = if email.is_new {
         text::caption(s, "NEW").color(title_ink).into()
@@ -305,13 +362,10 @@ fn message_row<'a, Message: 'static + Clone>(
     ]
     .align_y(Alignment::Center);
 
-    mouse_area(
-        container(surface(bg, Padding::from([6, 10]), content))
-            .width(Length::Fill)
-            .height(Length::Fixed(MESSAGE_ROW_HEIGHT)),
-    )
-    .on_press(on_press)
-    .into()
+    container(face(face_material, Padding::from([6, 10]), content))
+        .width(Length::Fill)
+        .height(Length::Fixed(MESSAGE_ROW_HEIGHT))
+        .into()
 }
 
 /// The action row. The destructive one is the only filled control, in
@@ -320,29 +374,59 @@ fn message_row<'a, Message: 'static + Clone>(
 /// `select` are separate roles.
 fn actions<'a, Message: 'static + Clone>(
     style: &Style,
+    email_id: usize,
     on_delete: Message,
 ) -> Element<'a, Message> {
     let s = style;
-    let mut bar = row![].spacing(s.metrics.gap * 0.5).height(Length::Fixed(34.0));
+    let mut bar = row![]
+        .spacing(s.metrics.gap * 0.5)
+        .height(Length::Fixed(34.0));
 
-    // A real `button` under a bare coat: the plate is the face, the
-    // widget supplies the press.
-    bar = bar.push(
-        button(
-            container(surface(
-                Surface::filled(s, s.palette.alert).no_stroke(),
-                Padding::from([5, 8]),
-                container(text::on_select(s, "DELETE")).center_x(Length::Fill),
-            ))
-            .width(Length::Fill)
-            .height(Length::Fill),
-        )
-        .padding(0)
+    // DELETE keeps its alert role. Surface geometry and echo/veneer
+    // feedback are shared with the era's live rows; no extra action is
+    // invented for the three display-only labels beside it.
+    let rest = Surface::filled(s, s.palette.alert).no_stroke();
+    let states = s.mailbox.list.feedback;
+    let faces = [0, 1, 2].map(|state| {
+        let coat = match state {
+            1 => states.map(|v| v.hover),
+            2 => states.map(|v| v.pressed),
+            _ => None,
+        };
+        let mut material = SurfaceFace::resting(rest);
+        let mut printing = s.palette.on_select;
+        if let Some(coat) = coat {
+            material.echo = coat.echo;
+        }
+        // Filled-control coats are an inferred destructive adaptation:
+        // idle retains the alert role, defined hover/held coats retain
+        // their documented pair of surface and printing colors. Eras
+        // whose material needs echoes leave these simple coats empty.
+        let control = match state {
+            1 => s.controls.primary_states.hover,
+            2 => s.controls.primary_states.pressed,
+            _ => None,
+        };
+        if let Some(coat) = control {
+            material.surface.fill = s.ink(coat.fill).map_or(
+                crate::widgets::surface::Fill::None,
+                crate::widgets::surface::Fill::Solid,
+            );
+            material.surface.stroke = s.ink(coat.edge);
+            material.surface.stroke_width = coat.weight;
+            printing = coat.ink.of(&s.palette);
+        }
+        container(face(
+            material,
+            Padding::from([5, 8]),
+            container(text::body(s, "DELETE").color(printing)).center_x(Length::Fill),
+        ))
         .width(Length::Fill)
         .height(Length::Fill)
-        .style(catalog::button::bare)
-        .on_press(on_delete),
-    );
+        .into()
+    });
+
+    bar = bar.push(interactive(faces, email_id as u64, on_delete));
 
     for label in ACTIONS {
         bar = bar.push(
@@ -472,11 +556,7 @@ fn cells(line: &str) -> Vec<&str> {
         .collect()
 }
 
-fn table<'a, Message: 'static>(
-    style: &Style,
-    block: &'a str,
-    ink: Color,
-) -> Element<'a, Message> {
+fn table<'a, Message: 'static>(style: &Style, block: &'a str, ink: Color) -> Element<'a, Message> {
     let s = style;
     let mut grid = column![].width(Length::Fill);
     let lines: Vec<&str> = block.lines().map(str::trim).collect();
@@ -537,11 +617,7 @@ fn table<'a, Message: 'static>(
     grid.into()
 }
 
-fn list<'a, Message: 'static>(
-    style: &Style,
-    block: &'a str,
-    ink: Color,
-) -> Element<'a, Message> {
+fn list<'a, Message: 'static>(style: &Style, block: &'a str, ink: Color) -> Element<'a, Message> {
     let mut col = column![].spacing(6).width(Length::Fill);
 
     for line in block.lines() {
@@ -568,3 +644,20 @@ fn list<'a, Message: 'static>(
     col.into()
 }
 
+#[cfg(test)]
+mod feedback_tests {
+    use super::*;
+    #[test]
+    fn a_held_veneer_row_uses_selection_ink_before_selection_changes() {
+        let style = crate::style::Era::Neokitsch.style();
+        let held = style.mailbox.list.feedback.unwrap().pressed;
+        assert!(held.selection);
+        let (title, meta) = row_printing(&style, false, style.palette.fg, Some(held));
+        assert_eq!(title, style.palette.on_select);
+        assert_eq!(meta, title);
+        assert_eq!(
+            row_printing(&style, false, style.palette.fg, None).0,
+            style.palette.fg
+        );
+    }
+}

@@ -205,6 +205,41 @@ hover/press treatment, and the transitions (echo in, veneer poured)
 are not annotated as SMIL anywhere — this is the destination design
 only, per `PIPELINE.md` § "Motion".
 
+**Dashboard wired 2026-09-14:** the six cascade cards now use the
+sheet's inferred ring/outline lift on hover and the existing selected
+veneer (including grain and tab) while held. Their geometry, labels and
+detail panel stay unchanged. The selected card retains its veneer on
+hover, so a successful release leaves the material in place. Cancelled
+gestures restore the resting drawing without changing selection.
+These are instantaneous states; animated transitions, built-in controls,
+and mailbox controls remain open. Verification is headless;
+desktop interaction verification remains open.
+
+**Store categories wired 2026-09-14:** the five category buttons use
+the inferred seven-ring outward echo on hover, applied to each button's
+existing rounded/cut outline. The unchanged resting face, tab and label
+are painted over the rings. Holding uses that category's existing
+selected veneer drawing, including grain, tab and dark label. A selected
+category keeps its veneer on hover, and release commits selection through
+the shared scene gesture handler; cancellation leaves selection intact.
+These states remain instantaneous; desktop interaction verification is
+pending.
+
+**Store product cards wired 2026-09-14:** hover adds the same inferred
+seven-ring outward echo around the existing stepped/rounded product
+outline. The fan follows the current compact or selected, expanded
+silhouette; it never changes the card's size or contents. Holding an
+unselected card applies the sourced selected card's veneer fill and
+grain to the compact values/socket band, with dark printing and QR at
+their existing positions. That compact veneer band is an inferred
+adaptation, not a photographed held state. The frame, existing inner
+echoes, weapon illustration, tab and name stay in place, as they do on
+the sourced expanded card. A selected card keeps its expanded veneer
+while held and hovered. Only successful release changes selection and
+reveals the expanded body and its additional statistics; cancellation
+restores the original material. No transition animation is added, and
+desktop interaction verification remains pending.
+
 ## Files
 
 - `login-trace.svg` — `images/neokitsch-login.png` (#70): the ARASAKA
@@ -233,12 +268,17 @@ only, per `PIPELINE.md` § "Motion".
   captions and tape were bars. Gate: PASS, inks 0.64 (0.68 with the
   bars: k-means bins the dark family by glyph area now, and the
   photo-vs-trace layout / edge correlations went 0.958 / 0.809 to
-  0.980 / 0.942). G2i against the crate reads 34% by shape inventory
+  0.980 / 0.942). G2i against the crate formerly read 34% by shape inventory
   since the grain (94% before, 89% with the panel grain hidden): the
   extractor segments a 2.7-pitch striped body one way from rsvg and
   another from iced although the two renders agree in mean and spread
   to half a level, so the number is the extractor's, not the screen's;
-  the same pair by compare_ref is 0.999 / 0.989 / 0.869.
+  the same pair by compare_ref is 0.999 / 0.989 / 0.869. Fixed in the
+  extractor on 2026-09-14: secondary grain now borrows only an
+  independently measured solid body in similar ink, after checking for
+  repeated fine strands. Inventory is 97% with unchanged renders and
+  thresholds; store/mailbox improve to 94%/98%. The existing 5x5 close
+  remains; no global widening or UI change was needed.
 - `mailbox-trace.svg` — `images/neokitsch-mail.png` (#71): the hub's
   header block verbatim; a seven-row message list with a rule and small
   tab under each row and row 2 the selection as a wood-veneer bar with
@@ -312,3 +352,15 @@ nix shell nixpkgs#librsvg --command \
 nix shell nixpkgs#librsvg --command \
   rsvg-convert -w 1600 store-trace.svg -o /tmp/nk-store.png
 ```
+
+Mailbox rows wired 2026-09-14 (working tree): an unselected hover gains
+the traced selection silhouette as an outline plus seven outward echoes
+at the component sheet's pitch and fading ink. Holding borrows the traced
+veneer, grain and inverted tab at the target row, with dark printing.
+A selected row retains its veneer on hover. These transient materials
+leave row geometry, subject/sender text, envelope unread state and reader
+selection untouched; successful release commits through the existing
+pointer gate. This is the inferred §11 destination, not a photographed
+pointer state. Boot clips remain in force. Echo opacity uses the canvas renderer and
+remains an approximation of SVG compositing, as with store echoes; live
+desktop review and transition timing remain open.

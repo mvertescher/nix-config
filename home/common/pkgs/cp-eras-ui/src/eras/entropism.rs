@@ -291,6 +291,8 @@ pub fn style() -> Style {
         // Entropism is the era that grows its *first* card; the
         // other three grow their second.
         store_selection: (1, 0),
+        store_cursor: Some(Group::Category),
+        store_states: STORE_STATES,
         // --- end store ---
         // --- dashboard ---
         dashboard: DASHBOARD,
@@ -300,7 +302,9 @@ pub fn style() -> Style {
         // text").
         dashboard_selection: 2,
         dashboard_cursor: true,
+        mailbox_cursor: true,
         dashboard_states: &[],
+        dashboard_held_backdrops: &[],
         // EMAILS is tile 0; nothing on this hub says "store", and the
         // store is `s` from the hub instead (`screens::hub`).
         dashboard_destinations: [Some(Destination::Mail), None, None, None, None, None],
@@ -736,6 +740,7 @@ pub fn mailbox() -> Mailbox {
         chrome: &CHROME,
         overlay: &[],
         list: MailList {
+            feedback: None,
             // frame x 84..451, y 205..686
             frame: Some(Frame::new(84.0, 205.0, 367.0, 481.0)),
             frame_ink: Ink::Border,
@@ -979,6 +984,139 @@ const GROWN: &[Prim] = &[
     txt(5.0, 478.0, 7.5, Ink::Fg, "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO"),
     txt(5.0, 488.0, 7.5, Ink::Fg, "MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
 ];
+
+// Transpose the sourced grown header's reverse video onto the compact
+// card. The compact adaptation and held blink are inferred; growth and
+// socket/detail positions remain selection. Brand inks stay unchanged.
+const fn compact_cursor() -> [Prim; CARD.len() + 1] {
+    let mut out = [CARD[0]; CARD.len() + 1];
+    out[0] = fill_rect(0.0, 0.0, 265.0, 234.0, Ink::Select);
+    let mut i = 0;
+    while i < CARD.len() {
+        let mut prim = CARD[i];
+        match &mut prim {
+            Prim::Text { y, ink, .. } if *y <= 234.0 => {
+                *ink = match *ink {
+                    Ink::Select => Ink::OnSelect,
+                    Ink::OnSelect => Ink::Select,
+                    other => other,
+                };
+            }
+            Prim::Rect { y, fill, stroke, .. } if *y >= 102.0 && *y < 157.0 => {
+                *fill = Some(Ink::OnSelect);
+                *stroke = Some(Ink::Dim);
+            }
+            Prim::Path { fill, stroke, .. } => {
+                *fill = Some(Ink::OnSelect);
+                *stroke = Some(Ink::Dim);
+            }
+            // Invert the existing values strip, not the grown divider.
+            Prim::Rect { y, fill, .. } if *y == 209.0 => *fill = Some(Ink::OnSelect),
+            _ => {}
+        }
+        out[i + 1] = prim;
+        i += 1;
+    }
+    out
+}
+const CARD_CURSOR: &[Prim] = &compact_cursor();
+
+// Remove only the grown header fill, then restore sage printing on the
+// exposed ground. Everything below the header stays unchanged.
+const fn grown_outline() -> [Prim; GROWN.len() - 1] {
+    let mut out = [GROWN[1]; GROWN.len() - 1];
+    let mut i = 1;
+    while i < GROWN.len() {
+        let mut prim = GROWN[i];
+        match &mut prim {
+            Prim::Text { y, ink, .. } if *y <= 234.0 => {
+                if let Ink::OnSelect = *ink { *ink = Ink::Select; }
+            }
+            Prim::Rect { y, fill, stroke, .. } if *y >= 102.0 && *y < 157.0 => {
+                *fill = Some(Ink::Fg);
+                *stroke = Some(Ink::Select);
+            }
+            Prim::Path { fill, stroke, .. } => {
+                *fill = Some(Ink::Fg);
+                *stroke = Some(Ink::Select);
+            }
+            Prim::Rect { y, fill, .. } if *y == 207.25 => *fill = Some(Ink::Select),
+            _ => {}
+        }
+        out[i - 1] = prim;
+        i += 1;
+    }
+    out
+}
+const GROWN_OUTLINE: &[Prim] = &grown_outline();
+
+macro_rules! product_states {
+    ($index:expr) => {
+        crate::style::PlateStates {
+            group: Group::Card, index: $index,
+            hover: CARD_CURSOR,
+            pressed: CARD,
+            selected_hover: Some(GROWN),
+            selected_pressed: Some(GROWN_OUTLINE),
+            selected_away: Some(GROWN_OUTLINE),
+            preserve_selected_hover: false,
+        }
+    };
+}
+const STORE_STATES: &[crate::style::PlateStates] = &[
+    product_states!(0), product_states!(1), product_states!(2), product_states!(3),
+];
+
+#[cfg(test)]
+mod store_interaction_tests {
+    use super::*;
+
+    fn without_ink(mut prim: Prim) -> Prim {
+        match &mut prim {
+            Prim::Rect { fill, stroke, .. } | Prim::Path { fill, stroke, .. } => {
+                *fill = None;
+                *stroke = None;
+            }
+            Prim::Text { ink, .. } => *ink = Ink::Fg,
+            _ => {}
+        }
+        prim
+    }
+
+    #[test]
+    fn cursor_keeps_compact_and_grown_geometry_content_and_socket_rows() {
+        let geometry = |prims: &[Prim]| prims.iter().copied().map(without_ink).collect::<Vec<_>>();
+        assert_eq!(geometry(&CARD_CURSOR[1..]), geometry(CARD));
+        assert_eq!(geometry(GROWN_OUTLINE), geometry(&GROWN[1..]));
+        // Details, sockets, QR and compliance are outside the header;
+        // none follow hover or press, including their original inks.
+        assert_eq!(&CARD_CURSOR[21..], &CARD[20..]);
+        assert_eq!(&GROWN_OUTLINE[20..], &GROWN[21..]);
+        for (index, states) in STORE_STATES.iter().enumerate() {
+            assert_eq!((states.group, states.index), (Group::Card, index));
+            assert_eq!(states.hover, CARD_CURSOR);
+            assert_eq!(states.pressed, CARD);
+            assert_eq!(states.selected_hover, Some(GROWN));
+            assert_eq!(states.selected_pressed, Some(GROWN_OUTLINE));
+            assert_eq!(states.selected_away, Some(GROWN_OUTLINE));
+        }
+    }
+
+    #[test]
+    fn reverse_video_changes_only_header_material_and_keeps_brand_inks() {
+        assert_eq!(CARD_CURSOR[0], fill_rect(0.0, 0.0, 265.0, 234.0, Ink::Select));
+        assert_eq!(&CARD_CURSOR[4..8], &CARD[3..7]);
+        assert_eq!(&GROWN_OUTLINE[3..7], &GROWN[4..8]);
+        for prim in GROWN_OUTLINE {
+            assert!(!matches!(prim, Prim::Motion { .. }));
+            if let Prim::Text { y, ink, .. } = prim {
+                if *y <= 234.0 { assert_ne!(*ink, Ink::OnSelect); }
+            }
+        }
+        assert!(matches!(CARD_CURSOR[2], Prim::Text { ink: Ink::OnSelect, .. }));
+        assert!(matches!(CARD_CURSOR[17], Prim::Text { ink: Ink::Select, .. }));
+    }
+}
 
 /// The "4" of the logotype, drawn at the extractor's own bbox for it.
 /// Two subpaths, filled even-odd: the counter is the hole.

@@ -165,8 +165,8 @@ impl Store {
             Scene {
                 style: self.style,
                 prims: self.style.store,
-                cursor_group: None,
-                states: &[],
+                cursor_group: self.style.store_cursor,
+                states: self.style.store_states,
                 picked: Picked {
                     category: self.category,
                     card: self.card,

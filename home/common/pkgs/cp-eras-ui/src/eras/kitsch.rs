@@ -27,7 +27,7 @@ use crate::style::{
     Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Coat, Compliance, Controls,
     Corner, Destination, Dress,
     Era, Face, Footnotes, Ground, Ink, MenuMarker, MenuRule, Metrics, Nameplate,
-    PanelEcho, Selection, Style, Ticket, WindowLabel,
+    PanelEcho, PlateStates, Selection, Style, Ticket, WindowLabel,
 };
 use crate::widgets::surface::{Corners, Cut};
 // --- login ---
@@ -409,6 +409,8 @@ pub fn style() -> Style {
         // --- store ---
         store: STORE,
         store_selection: (1, 1),
+        store_cursor: None,
+        store_states: STORE_STATES,
         // --- end store ---
         // --- dashboard ---
         dashboard: DASHBOARD,
@@ -418,7 +420,9 @@ pub fn style() -> Style {
         // selection"); the other five fill `#2c9798`.
         dashboard_selection: 4,
         dashboard_cursor: false,
-        dashboard_states: &[],
+        mailbox_cursor: false,
+        dashboard_states: DASHBOARD_STATES,
+        dashboard_held_backdrops: DASHBOARD_HELD_BACKDROPS,
         // Both PRODUCTS blades (2 and 3) open the store; no blade says
         // "mail", and the mailbox is `m` from the hub instead
         // (`screens::hub`).
@@ -731,7 +735,7 @@ pub const ACCESS: Access = Access {
 // row's body cuts a *diagonal* trailing corner on an era that rounds
 // everything else.
 use crate::style::{
-    Change, Frame, Mail, MailBadges, MailButtons, MailList, MailMotion, MailPanel, MailPart,
+    Change, Frame, Mail, MailBadges, MailButtons, MailList, MailRowCoat, MailRowEcho, MailRowStates, MailMotion, MailPanel, MailPart,
     Mailbox, Motion, Note, Piece, RowDecor, Run, Trim, FromAt, BL, BR, TL, TR,
 };
 use iced::animation::Easing;
@@ -1027,6 +1031,13 @@ static PARAGRAPHS: [&[&str]; 3] = [
     ],
 ];
 
+// Inferred component-sheet row lift; both traced pieces retain their own trim.
+const MAIL_GHOST: MailRowEcho = MailRowEcho {
+    rings: 1, step: Frame::new(20.0, -20.0, 0.0, 0.0),
+    fill: Some(Ink::Fixed(rgb(0x0f9f80))), fill_alpha: 0.58,
+    ink: Ink::Fixed(rgb(0x6cc4bd)), width: 1.2, alpha: 0.80, fade: 0.0,
+};
+
 pub fn mailbox() -> Mailbox {
     Mailbox {
         backdrop: MAIL_BACKDROP,
@@ -1043,9 +1054,28 @@ pub fn mailbox() -> Mailbox {
             rows: &ROWS,
             selected: 0,
             decor: RowDecor::Bare,
+            feedback: Some(MailRowStates {
+                hover: MailRowCoat {
+                    fill: Some(Ink::Fixed(rgb(0x2c9798))),
+                    outline: Some(Ink::Fixed(rgb(0xa9e6df))),
+                    printing: Some(Ink::Fixed(rgb(0x123c38))),
+                    sender: Some(Ink::Fixed(rgb(0x7fe0c8))),
+                    spine: None, selection: true, echo: Some(MAIL_GHOST),
+                },
+                pressed: MailRowCoat {
+                    fill: Some(Ink::Fixed(rgb(0xe8c21f))), outline: None,
+                    printing: Some(Ink::Fixed(rgb(0x4a3a05))),
+                    sender: Some(Ink::Fixed(rgb(0xf2c825))),
+                    spine: None, selection: true, echo: None,
+                },
+                selected_hover: Some(MailRowCoat {
+                    fill: None, outline: None, printing: None, sender: None,
+                    spine: None, selection: true, echo: Some(MAIL_GHOST),
+                }),
+            }),
             row_fill: None,
             row_stroke: None,
-            row_width: 0.0,
+            row_width: 1.8,
             row_trim: Trim::NONE,
             spine: None,
             rule: None,
@@ -1249,6 +1279,26 @@ const CHEVRON: &[Seg] = &[
 const NAV_OUTLINE: &[Prim] = &[shut_path(0.0, 39.0, CHEVRON, Ink::Border, 1.5)];
 const NAV_SOLID: &[Prim] = &[fill_path(0.0, 39.0, CHEVRON, Ink::Select)];
 
+// `components.svg` #k-chevron-hover: inferred from the fan's first
+// ghost step, not a cursor state photographed in the source. Keep the
+// rest silhouette, paint its ghost (+20,-20), then the opaque idle slab.
+// These foreground alphas use the canvas blend, not `Soft`'s sRGB blend.
+const NAV_GHOST: &[Prim] = &[Prim::Path {
+    x: 0.0, y: 39.0, segs: CHEVRON, close: true,
+    fill: Some(Ink::Fixed(iced::Color { a: 0.58, ..rgb(0x0f9f80) })),
+    stroke: Some(Ink::Fixed(iced::Color { a: 0.80, ..rgb(0x6cc4bd) })),
+    width: 1.2,
+}];
+const NAV_LIFT: &[Prim] = &[
+    Prim::At { x: 20.0, y: -20.0, prims: NAV_GHOST },
+    Prim::Path {
+        x: 0.0, y: 39.0, segs: CHEVRON, close: true,
+        fill: Some(Ink::Fixed(rgb(0x2c9798))),
+        stroke: Some(Ink::Fixed(rgb(0xa9e6df))),
+        width: 1.8,
+    },
+];
+
 /// The bracket's solid wave, and the single-stroke run of the bracket
 /// itself: a top line, an S-bend around the customer block, the long
 /// left edge, and the wave's own top and right side.
@@ -1405,6 +1455,9 @@ macro_rules! qr {
     };
 }
 const QR_STD: &[Prim] = qr!(Ink::Fixed(MINT_BAR));
+// Same compact socket geometry, printed dark on the transient slab.
+const QR_LIFT: &[Prim] = qr!(Ink::Fixed(ON_MINT_BAR));
+const QR_FLAT: &[Prim] = qr!(Ink::Fixed(ON_BAND));
 
 /// The band's compliance marks, in the band's LOWER half: a
 /// certification square, a disc-in-square, a C-in-C mark and a rounded
@@ -1574,6 +1627,106 @@ const NAV_OFF_3: &[Prim] = nav!(477.0, 507.0, "SHOTGUN").1;
 const NAV_ON_4: &[Prim] = nav!(537.0, 567.0, "PISTOL").0;
 const NAV_OFF_4: &[Prim] = nav!(537.0, 567.0, "PISTOL").1;
 
+macro_rules! nav_states {
+    ($index:expr, $top:expr, $base:expr, $label:expr, $on:expr) => {
+        PlateStates {
+            group: Group::Category,
+            index: $index,
+            hover: &[
+                Prim::At { x: 140.0, y: $top, prims: NAV_LIFT },
+                txt(170.0, $base, 22.0, Ink::Fixed(ON_MINT_BAR), $label),
+            ],
+            pressed: $on,
+            preserve_selected_hover: true,
+            selected_away: None,
+            selected_hover: None,
+            selected_pressed: None,
+        }
+    };
+}
+
+// Product-card feedback extends the sheet's inferred lift/flat reading.
+// Use the SAME card drawing at the idle size: amber material while held
+// must not reveal GROWN's detail block or move its gun/stat/socket rows.
+const fn card_face(pressed: bool) -> [Prim; CARD.len()] {
+    let mut face = [CARD[0]; CARD.len()];
+    let fill = if pressed { Ink::Select } else { Ink::Fixed(rgb(0x2c9798)) };
+    let ink = if pressed { Ink::Fixed(ON_BAND) } else { Ink::Fixed(ON_MINT_BAR) };
+    let mut i = 0;
+    while i < CARD.len() {
+        face[i] = CARD[i];
+        match &mut face[i] {
+            Prim::Text { ink: color @ Ink::Fg, .. } => *color = ink,
+            Prim::Rect { fill: Some(color @ Ink::Border), .. } => *color = ink,
+            _ => {}
+        }
+        i += 1;
+    }
+    face[0] = Prim::Path {
+        x: 6.0, y: 0.0, segs: CARD_EDGE, close: true,
+        fill: Some(fill),
+        stroke: Some(if pressed { Ink::Select } else { Ink::Fixed(rgb(0xa9e6df)) }),
+        width: 1.8,
+    };
+    // A filled slab needs the gun's dark-on-fill treatment, without
+    // GROWN's translation. Both paths keep their original coordinates.
+    face[8] = fill_path(41.0, 131.0, GUN_BODY,
+        if pressed { Ink::Fixed(GROWN_GUN) } else { ink });
+    face[9] = line_path(41.0, 137.0, GUN_DETAIL, fill, 1.0);
+    face[23] = Prim::At {
+        x: 0.0, y: 0.0, prims: if pressed { QR_FLAT } else { QR_LIFT },
+    };
+    face
+}
+
+const fn card_ghost(segs: &'static [Seg]) -> Prim {
+    Prim::Path {
+        x: 6.0, y: 0.0, segs, close: true,
+        fill: Some(Ink::Fixed(iced::Color { a: 0.58, ..rgb(0x0f9f80) })),
+        stroke: Some(Ink::Fixed(iced::Color { a: 0.80, ..rgb(0x6cc4bd) })),
+        width: 1.2,
+    }
+}
+const CARD_LIFT: &[Prim] = &[
+    Prim::At { x: 20.0, y: -20.0, prims: &[card_ghost(CARD_EDGE)] },
+    Prim::At { x: 0.0, y: 0.0, prims: &card_face(false) },
+];
+const CARD_FLAT: &[Prim] = &card_face(true);
+// The selected card already has a solid upper slab; lift that slab's
+// ghost only, keeping the outlined detail body and all selected art.
+const GROWN_LIFT: &[Prim] = &[
+    Prim::At { x: 20.0, y: -20.0, prims: &[card_ghost(GROWN_EDGE)] },
+    Prim::At { x: 0.0, y: 0.0, prims: GROWN },
+];
+macro_rules! card_states {
+    ($index:expr) => {
+        PlateStates {
+            group: Group::Card,
+            index: $index,
+            hover: CARD_LIFT,
+            pressed: CARD_FLAT,
+            preserve_selected_hover: true,
+            selected_away: None,
+            selected_hover: Some(GROWN_LIFT),
+            selected_pressed: Some(GROWN),
+        }
+    };
+}
+
+/// Categories keep their flat selection; product-card growth belongs
+/// only to committed selection, independently of hover/held material.
+pub(crate) const STORE_STATES: &[PlateStates] = &[
+    nav_states!(0, 297.0, 327.0, "RIFLES", NAV_ON_0),
+    nav_states!(1, 357.0, 387.0, "SMG", NAV_ON_1),
+    nav_states!(2, 417.0, 447.0, "SNIPER", NAV_ON_2),
+    nav_states!(3, 477.0, 507.0, "SHOTGUN", NAV_ON_3),
+    nav_states!(4, 537.0, 567.0, "PISTOL", NAV_ON_4),
+    card_states!(0),
+    card_states!(1),
+    card_states!(2),
+    card_states!(3),
+];
+
 macro_rules! shelf {
     ($i:expr) => {
         &[Prim::Plate {
@@ -1655,6 +1808,127 @@ pub const STORE: &[Prim] = &[
 ];
 // --- end store -----------------------------------------------------------
 
+#[cfg(test)]
+mod store_interaction_tests {
+    use super::*;
+
+    #[test]
+    fn card_material_feedback_keeps_idle_geometry_and_content_until_selection() {
+        fn geometry(mut prim: Prim) -> Prim {
+            match &mut prim {
+                Prim::Path { fill, stroke, width, .. }
+                | Prim::Rect { fill, stroke, width, .. } => {
+                    *fill = None;
+                    *stroke = None;
+                    *width = 0.0;
+                }
+                Prim::Text { ink, .. } => *ink = Ink::Fg,
+                Prim::At { prims, .. } if *prims == QR_LIFT || *prims == QR_FLAT => {
+                    *prims = QR_STD;
+                }
+                _ => {}
+            }
+            prim
+        }
+        let states: Vec<_> = STORE_STATES.iter().filter(|s| s.group == Group::Card).collect();
+        assert_eq!(states.len(), 4);
+        for (index, state) in states.into_iter().enumerate() {
+            assert_eq!(state.index, index);
+            let Prim::At { x, y, prims: hover } = state.hover[1] else { panic!("lifted face") };
+            assert_eq!((x, y), (0.0, 0.0));
+            for face in [hover, state.pressed] {
+                assert_eq!(face.len(), CARD.len());
+                assert_eq!(face.iter().copied().map(geometry).collect::<Vec<_>>(),
+                    CARD.iter().copied().map(geometry).collect::<Vec<_>>());
+            }
+            assert_eq!(state.selected_pressed, Some(GROWN));
+            let Prim::At { x, y, prims } = state.selected_hover.unwrap()[1] else { panic!("selected face") };
+            assert_eq!((x, y, prims), (0.0, 0.0, GROWN));
+        }
+    }
+
+    #[test]
+    fn compact_card_qr_keeps_every_cell_and_prints_dark_on_filled_faces() {
+        for (pressed, expected) in [(false, ON_MINT_BAR), (true, ON_BAND)] {
+            let face = card_face(pressed);
+            let Prim::At { x, y, prims } = face[23] else { panic!("compact QR") };
+            assert_eq!((x, y), (0.0, 0.0));
+            assert_eq!(prims.len(), QR_STD.len());
+            for (&cell, &idle) in prims.iter().zip(QR_STD) {
+                let Prim::Rect { x, y, w, h, fill, stroke, width } = cell else { panic!("QR cell") };
+                assert_eq!(fill, Some(Ink::Fixed(expected)));
+                assert_eq!(Prim::Rect { x, y, w, h, fill: Some(Ink::Fixed(MINT_BAR)), stroke, width }, idle);
+            }
+            // The only other nested content is the shelf band's dark
+            // compliance printing, already drawn on its own yellow fill.
+            assert_eq!(face[4], CARD[4]);
+        }
+    }
+
+    #[test]
+    fn card_lift_uses_measured_first_ghost_step_and_flat_amber_press() {
+        for (lift, edge) in [(CARD_LIFT, CARD_EDGE), (GROWN_LIFT, GROWN_EDGE)] {
+            let Prim::At { x, y, prims } = lift[0] else { panic!("ghost") };
+            assert_eq!((x, y), (20.0, -20.0));
+            assert_eq!(prims.len(), 1);
+            let Prim::Path { x, y, segs, fill, stroke, width, close } = prims[0] else { panic!("ghost path") };
+            assert_eq!((x, y, segs, close), (6.0, 0.0, edge, true));
+            assert_eq!(fill, Some(Ink::Fixed(iced::Color { a: 0.58, ..rgb(0x0f9f80) })));
+            assert_eq!(stroke, Some(Ink::Fixed(iced::Color { a: 0.80, ..rgb(0x6cc4bd) })));
+            assert_eq!(width, 1.2);
+        }
+        for (face, expected) in [(card_face(false), Ink::Fixed(rgb(0x2c9798))), (card_face(true), Ink::Select)] {
+            let Prim::Path { fill, .. } = face[0] else { panic!("slab") };
+            assert_eq!(fill, Some(expected));
+            let Prim::Text { ink, .. } = face[1] else { panic!("title") };
+            assert_eq!(ink, if expected == Ink::Select { Ink::Fixed(ON_BAND) } else { Ink::Fixed(ON_MINT_BAR) });
+        }
+    }
+
+    #[test]
+    fn category_lift_preserves_hit_boxes_labels_and_flat_selection() {
+        let plates: Vec<_> = STORE.iter().filter_map(|prim| match prim {
+            Prim::Plate { group: Group::Category, index, x, y, w, h, on, off } =>
+                Some((*index, *x, *y, *w, *h, *on, *off)),
+            _ => None,
+        }).collect();
+        assert_eq!(plates.len(), 5);
+        let states: Vec<_> = STORE_STATES.iter().filter(|state| state.group == Group::Category).collect();
+        assert_eq!(states.len(), plates.len());
+        for (state, (index, x, y, w, h, on, off)) in states.into_iter().zip(plates) {
+            assert_eq!((state.group, state.index), (Group::Category, index));
+            assert_eq!((w, h), (216.0, 39.0));
+            assert_eq!(state.hover[0], Prim::At { x, y, prims: NAV_LIFT });
+            let Prim::Text { x, y, size, face, anchor, content, .. } = off[1] else {
+                panic!("category label is text");
+            };
+            assert_eq!(state.hover[1], Prim::Text {
+                x, y, size, face, anchor, content, ink: Ink::Fixed(ON_MINT_BAR),
+            });
+            assert_eq!(state.pressed, on, "release leaves the same flat selected face");
+            assert!(state.preserve_selected_hover);
+            assert_eq!(state.selected_hover, None);
+            assert_eq!(state.selected_pressed, None);
+        }
+    }
+
+    #[test]
+    fn category_ghost_uses_one_unscaled_first_fan_step() {
+        assert_eq!(NAV_LIFT.len(), 2);
+        assert_eq!(NAV_LIFT[0], Prim::At { x: 20.0, y: -20.0, prims: NAV_GHOST });
+        for prim in [NAV_GHOST[0], NAV_LIFT[1], NAV_SOLID[0], NAV_OUTLINE[0]] {
+            let Prim::Path { x, y, segs, close, .. } = prim else {
+                panic!("same chevron path in every state");
+            };
+            assert_eq!((x, y, segs, close), (0.0, 39.0, CHEVRON, true));
+        }
+        let Prim::Path { fill, stroke, width, .. } = NAV_GHOST[0] else { unreachable!() };
+        assert_eq!(fill, Some(Ink::Fixed(iced::Color { a: 0.58, ..rgb(0x0f9f80) })));
+        assert_eq!(stroke, Some(Ink::Fixed(iced::Color { a: 0.80, ..rgb(0x6cc4bd) })));
+        assert_eq!(width, 1.2);
+    }
+}
+
 // --- dashboard -----------------------------------------------------------
 //
 // `docs/kitsch/dashboard-trace.svg`, transcribed: the module hub.
@@ -1686,8 +1960,8 @@ pub const STORE: &[Prim] = &[
 // - `fill-opacity` / `stroke-opacity` on the ghosts are carried as the
 //   alpha of an `Ink::Fixed` colour (`faded`); nothing is pre-mixed.
 //   They composite onto the bloom the way the SVG does because the
-//   ground, bloom and ghosts are one `Prim::Soft` group (`HUB_BACK`),
-//   rasterised in sRGB by `screens/soft.rs` rather than blended in
+//   ground/bloom and both ghost fans are successive `Prim::Soft`
+//   groups, rasterised in sRGB by `screens/soft.rs` rather than blended in
 //   linear light by wgpu -- the difference is 4-10 levels per channel
 //   on the faint tails, and it is what G2i failed this screen on.
 // - the `text-anchor="middle"` letters under a `scale(1.7 1)` (lines
@@ -1914,7 +2188,7 @@ const USER_STEP: &[Seg] = &[
     Seg::Line(155.5, 240.5),
 ];
 
-/// The ground, the bloom and the ghost trails, composited in software:
+/// The ground and bloom, composited in software:
 /// up to seven translucent cards stack on the haze here, and wgpu's
 /// linear blend cannot land rsvg's sRGB `fill-opacity` on a backdrop
 /// that varies under the stack -- see `screens/soft.rs`. Everything in
@@ -1928,7 +2202,8 @@ const HUB_BACK: &[Prim] = &[
 
 // The ghosts, farthest first, every trail stepping (+20,-20) in screen
 // space from its solid card (lines 196-239); they belong to no plate
-// because they do not change with the selection and the solid cards
+// because they do not change with the selection (held feedback removes
+// only its own trail), and the solid cards
 // paint over them in one pass. Two groups, one per fan, because each
 // fan's depth extrudes under its own clip (`#fan-left-extrude`,
 // `#fan-right-extrude`, trace lines 123-135): a `Prim::Soft` under a
@@ -1984,6 +2259,57 @@ const FAN_RIGHT: &[Prim] = &[
     Prim::At { x: 979.0, y: 526.0, prims: GHOST_CW[4] },
     Prim::At { x: 959.0, y: 546.0, prims: GHOST_CW[5] },
     Prim::At { x: 939.0, y: 566.0, prims: GHOST_CW[6] },
+];
+
+// Held feedback removes only the target trail. Keeping all remaining
+// primitive order and the original fan clips preserves software compositing.
+const fn without_trail<const N: usize>(source: &[Prim], begin: usize, count: usize) -> [Prim; N] {
+    let mut out = [source[0]; N];
+    let mut i = 0;
+    while i < N { out[i] = source[if i < begin { i } else { i + count }]; i += 1; }
+    out
+}
+const LEFT_HELD: [&[Prim]; 3] = [
+    &without_trail::<13>(FAN_LEFT, 0, 6),
+    &without_trail::<12>(FAN_LEFT, 6, 7),
+    &without_trail::<13>(FAN_LEFT, 13, 6),
+];
+const RIGHT_HELD: [&[Prim]; 3] = [
+    &without_trail::<11>(FAN_RIGHT, 0, 6),
+    &without_trail::<12>(FAN_RIGHT, 6, 5),
+    &without_trail::<11>(FAN_RIGHT, 11, 6),
+];
+const fn held_backdrop(index: usize, fan: &'static [Prim]) -> [Prim; 3] {
+    let mut out = [DASHBOARD[0], DASHBOARD[1], DASHBOARD[2]];
+    if let Prim::Motion { motion, .. } = out[index] {
+        out[index] = Prim::Motion { motion, prims: fan };
+    }
+    out
+}
+const DASHBOARD_HELD_BACKDROPS: &[&[Prim]] = &[
+    &held_backdrop(1, &[Prim::Soft { prims: LEFT_HELD[0] }]),
+    &held_backdrop(1, &[Prim::Soft { prims: LEFT_HELD[1] }]),
+    &held_backdrop(1, &[Prim::Soft { prims: LEFT_HELD[2] }]),
+    &held_backdrop(2, &[Prim::Soft { prims: RIGHT_HELD[0] }]),
+    &held_backdrop(2, &[Prim::Soft { prims: RIGHT_HELD[1] }]),
+    &held_backdrop(2, &[Prim::Soft { prims: RIGHT_HELD[2] }]),
+];
+const fn blade_states(index: usize) -> PlateStates {
+    let mut i = 0;
+    while i < DASHBOARD.len() {
+        if let Prim::Plate { index: target, on, off, .. } = DASHBOARD[i] {
+            if target == index {
+                return PlateStates { group: Group::Module, index, hover: off, pressed: on,
+                    selected_hover: None, selected_pressed: Some(on), selected_away: None,
+                    preserve_selected_hover: true };
+            }
+        }
+        i += 1;
+    }
+    panic!("missing dashboard blade")
+}
+const DASHBOARD_STATES: &[PlateStates] = &[
+    blade_states(0), blade_states(1), blade_states(2), blade_states(3), blade_states(4), blade_states(5),
 ];
 
 pub const DASHBOARD: &[Prim] = &[
@@ -2097,3 +2423,42 @@ const HUB_PANEL: &[Prim] = &[
     fill_rect(1224.0, 508.0, 98.0, 11.0, Ink::Fixed(GROWN_MICRO)),
 ];
 // --- end dashboard -------------------------------------------------------
+
+#[cfg(test)]
+mod dashboard_feedback_tests {
+    use super::*;
+
+    #[test]
+    fn holding_a_blade_removes_only_its_trail_and_keeps_the_fan_clips() {
+        for (index, (begin, count)) in [(0, 6), (6, 7), (13, 6), (0, 6), (6, 5), (11, 6)].into_iter().enumerate() {
+            let changed = if index < 3 { 1 } else { 2 };
+            let source = if index < 3 { FAN_LEFT } else { FAN_RIGHT };
+            let variant = DASHBOARD_HELD_BACKDROPS[index];
+            for slot in 0..3 {
+                if slot != changed { assert_eq!(variant[slot], DASHBOARD[slot]); }
+            }
+            let Prim::Motion { motion, prims } = variant[changed] else { panic!("missing fan clip") };
+            let Prim::Motion { motion: original, .. } = DASHBOARD[changed] else { unreachable!() };
+            assert_eq!(motion, original);
+            let [Prim::Soft { prims: trail }] = prims else { panic!("missing soft fan") };
+            let expected: Vec<_> = source.iter().enumerate().filter(|(i, _)| *i < begin || *i >= begin + count).map(|(_, p)| *p).collect();
+            assert_eq!(*trail, expected);
+            let Prim::Plate { on, off, .. } = DASHBOARD.iter().find(|p| matches!(p, Prim::Plate { index: i, .. } if *i == index)).unwrap() else { unreachable!() };
+            assert_eq!(DASHBOARD_STATES[index].hover, *off);
+            assert_eq!(DASHBOARD_STATES[index].pressed, *on);
+            assert!(DASHBOARD_STATES[index].preserve_selected_hover);
+        }
+    }
+
+    // SoftCache's cut key omits the underlying groups. Removal-only
+    // variants are safe because no right-fan pixel covers a left-fan
+    // pixel: changing the left trail cannot alter the right composite.
+    #[test]
+    fn fans_have_disjoint_pixel_coverage() {
+        let palette = crate::style::Era::Kitsch.style().palette;
+        let left = crate::screens::soft::touched(FAN_LEFT, &palette, 1600, 900, 1.0);
+        let right = crate::screens::soft::touched(FAN_RIGHT, &palette, 1600, 900, 1.0);
+        assert!(left.iter().any(|p| *p) && right.iter().any(|p| *p));
+        assert!(!left.iter().zip(right).any(|(a, b)| *a && b));
+    }
+}

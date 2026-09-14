@@ -100,6 +100,10 @@ impl Hub {
                 self.dashboard.update(m);
                 self.open();
             }
+            Message::Dashboard(dashboard::Message::Feedback(feedback)) => {
+                self.dashboard.update(dashboard::Message::Feedback(feedback));
+                if feedback.activated.is_some() { self.open(); }
+            }
             Message::Dashboard(m) => self.dashboard.update(m),
             Message::Mail(m) => self.mail.update(m),
             Message::Store(m) => self.store.update(m),
@@ -109,11 +113,12 @@ impl Hub {
                 Route::Store => self.store.update(store::Message::Move(dir)),
             },
             Message::Stroke(Stroke::Open) => {
+                self.dashboard.clear_feedback();
                 if self.route == Route::Dashboard {
                     self.open();
                 }
             }
-            Message::Stroke(Stroke::Back) => self.route = Route::Dashboard,
+            Message::Stroke(Stroke::Back) => { self.dashboard.clear_feedback(); self.route = Route::Dashboard; }
             Message::Go(to) => {
                 if self.route == Route::Dashboard {
                     self.go(to);
@@ -133,6 +138,7 @@ impl Hub {
     /// a click and the `m`/`s` keys all come through here, so a screen
     /// boots in the same way however it was reached.
     fn go(&mut self, to: Destination) {
+        self.dashboard.clear_feedback();
         match to {
             Destination::Mail => {
                 self.mail.enter();
@@ -198,6 +204,29 @@ fn hotkeys() -> Subscription<Destination> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn held_blade_is_transient_until_release_and_route_changes_restore_it() {
+        use crate::screens::scene::SceneFeedback;
+        use crate::style::Group;
+        let mut hub = Hub::new(Era::Kitsch.style());
+        let selected = hub.dashboard.selected;
+        for index in [selected, 2] {
+            hub.update(Message::Dashboard(dashboard::Message::Feedback(SceneFeedback {
+                held: Some((Group::Module, index)), activated: None,
+            })));
+            assert_eq!(hub.dashboard.selected, selected);
+            assert_eq!(hub.route, Route::Dashboard);
+        }
+        hub.update(Message::Dashboard(dashboard::Message::Feedback(SceneFeedback {
+            held: None, activated: Some((Group::Module, 2)),
+        })));
+        assert_eq!(hub.dashboard.selected, 2);
+        assert_eq!(hub.route, Route::Store);
+        hub.update(Message::Stroke(Stroke::Back));
+        assert_eq!(hub.route, Route::Dashboard);
+        assert_eq!(hub.dashboard.selected, 2);
+    }
+
     use super::*;
     use crate::motion;
     use crate::screens::nav::Dir;

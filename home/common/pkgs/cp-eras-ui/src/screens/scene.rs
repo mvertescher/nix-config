@@ -122,6 +122,65 @@ impl<M: 'static> Scene<M> {
     }
 }
 
+/// One gesture update for an owner that coordinates foreground and backdrop.
+/// Activation and clearing the held appearance travel in the same message.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct SceneFeedback {
+    pub held: Option<(Group, usize)>,
+    pub activated: Option<(Group, usize)>,
+}
+
+struct FeedbackScene<M> {
+    scene: Scene<M>,
+    on_feedback: fn(SceneFeedback) -> M,
+}
+
+impl<M: 'static> Scene<M> {
+    /// Keep the original display list as the pointer identity and hit source,
+    /// while letting the owner choose a composited backdrop for held feedback.
+    pub fn view_with_feedback(
+        self,
+        backdrop_prims: &'static [Prim],
+        on_feedback: fn(SceneFeedback) -> M,
+    ) -> Element<'static, M> {
+        iced::widget::stack![
+            canvas(Backdrop { style: self.style, prims: backdrop_prims, stretch: false, at: self.at })
+                .width(iced::Length::Fill).height(iced::Length::Fill),
+            canvas(FeedbackScene { scene: self, on_feedback })
+                .width(iced::Length::Fill).height(iced::Length::Fill),
+        ].into()
+    }
+}
+
+impl<M> canvas::Program<M, Style> for FeedbackScene<M> {
+    type State = Pointer;
+
+    fn update(&self, state: &mut Pointer, event: &iced::Event, bounds: Rectangle, cursor: mouse::Cursor) -> Option<canvas::Action<M>> {
+        let target = cursor.position_in(bounds).and_then(|at| hit(self.scene.prims, scale(bounds), at));
+        let (action, feedback) = state.feedback_event(self.scene.prims, event, target);
+        let result = if let Some(feedback) = feedback {
+            canvas::Action::publish((self.on_feedback)(feedback))
+        } else {
+            match action {
+                PointerAction::Ignore => return None,
+                _ => canvas::Action::request_redraw(),
+            }
+        };
+        Some(match action {
+            PointerAction::Capture | PointerAction::Activate(_) => result.and_capture(),
+            _ => result,
+        })
+    }
+
+    fn draw(&self, state: &Pointer, renderer: &Renderer, theme: &Style, bounds: Rectangle, cursor: mouse::Cursor) -> Vec<canvas::Geometry> {
+        self.scene.draw(state, renderer, theme, bounds, cursor)
+    }
+
+    fn mouse_interaction(&self, state: &Pointer, bounds: Rectangle, cursor: mouse::Cursor) -> Interaction {
+        self.scene.mouse_interaction(state, bounds, cursor)
+    }
+}
+
 /// The [`Prim::Soft`] groups of a scene, as their own canvas: see
 /// [`Scene::view`] for why they cannot share the scene's. It paints
 /// only the groups that *lead* the scene's list -- a composited
@@ -515,8 +574,27 @@ impl<M> Scene<M> {
         off: &'static [Prim],
     ) -> &'static [Prim] {
         if let Some((target, held)) = interaction {
+            // Some materials use one cursor highlight per group, while
+            // selection owns expanded content independently. Moving the
+            // cursor may remove that highlight without shrinking the plate.
+            if target.0 == group && target.1 != index && self.picked.get(group) == index {
+                if let Some(prims) = self.states.iter()
+                    .find(|s| (s.group, s.index) == (group, index))
+                    .and_then(|s| s.selected_away)
+                {
+                    return prims;
+                }
+            }
             if target == (group, index) {
                 if let Some(states) = self.states.iter().find(|s| (s.group, s.index) == target) {
+                    if self.picked.get(group) == index {
+                        if let Some(prims) = if held { states.selected_pressed } else { states.selected_hover } {
+                            return prims;
+                        }
+                    }
+                    if !held && states.preserve_selected_hover && self.picked.get(group) == index {
+                        return on;
+                    }
                     return if held { states.pressed } else { states.hover };
                 }
             }
@@ -1068,34 +1146,40 @@ type Target = (Group, usize);
 /// Gesture state belongs to the canvas, not the selected content. A
 /// scene change invalidates a held click even if iced reuses the canvas
 /// widget's state for the next route.
-#[derive(Debug, Default)]
-pub struct Pointer {
+#[derive(Debug)]
+pub struct Pointer<T = Target> {
     scene: Option<(usize, usize)>,
-    hovered: Option<Target>,
-    pressed: Option<Target>,
+    hovered: Option<T>,
+    pressed: Option<T>,
+}
+
+impl<T> Default for Pointer<T> {
+    fn default() -> Self {
+        Self { scene: None, hovered: None, pressed: None }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum PointerAction {
+pub(crate) enum PointerAction<T = Target> {
     Ignore,
     Redraw,
     Capture,
-    Activate(Target),
+    Activate(T),
 }
 
-impl Pointer {
-    fn key(prims: &[Prim]) -> (usize, usize) {
+impl<T: Copy + Eq> Pointer<T> {
+    fn key<S>(prims: &[S]) -> (usize, usize) {
         (prims.as_ptr() as usize, prims.len())
     }
 
-    fn sync(&mut self, prims: &[Prim]) {
+    pub(crate) fn sync<S>(&mut self, prims: &[S]) {
         let key = Some(Self::key(prims));
         if self.scene != key {
             *self = Self { scene: key, ..Self::default() };
         }
     }
 
-    fn event(&mut self, event: &iced::Event, target: Option<Target>) -> PointerAction {
+    pub(crate) fn event(&mut self, event: &iced::Event, target: Option<T>) -> PointerAction<T> {
         use iced::Event;
         match event {
             Event::Mouse(mouse::Event::CursorMoved { .. }) => {
@@ -1132,6 +1216,30 @@ impl Pointer {
         }
     }
 
+    pub(crate) fn interaction<S>(&self, prims: &[S]) -> Option<(T, bool)> {
+        if self.scene != Some(Self::key(prims)) {
+            return None;
+        }
+        self.hovered.map(|target| (target, self.pressed == Some(target)))
+    }
+}
+
+impl Pointer {
+    fn feedback_event(&mut self, prims: &[Prim], event: &iced::Event, target: Option<Target>) -> (PointerAction, Option<SceneFeedback>) {
+        // Read the previous gesture before syncing a changed display list:
+        // an era replacement must clear the owner's old backdrop too.
+        let before = self.hovered.filter(|target| Some(*target) == self.pressed);
+        self.sync(prims);
+        let action = self.event(event, target);
+        let held = self.held(prims);
+        let activated = match action { PointerAction::Activate(target) => Some(target), _ => None };
+        let feedback = (held != before || activated.is_some()).then_some(SceneFeedback { held, activated });
+        (action, feedback)
+    }
+
+    fn held(&self, prims: &[Prim]) -> Option<Target> {
+        self.interaction(prims).and_then(|(target, held)| held.then_some(target))
+    }
     fn picked(&self, prims: &[Prim], mut picked: Picked, cursor_group: Option<Group>) -> Picked {
         if self.scene != Some(Self::key(prims)) {
             return picked;
@@ -1154,12 +1262,6 @@ impl Pointer {
         picked
     }
 
-    fn interaction(&self, prims: &[Prim]) -> Option<(Target, bool)> {
-        if self.scene != Some(Self::key(prims)) {
-            return None;
-        }
-        self.hovered.map(|target| (target, self.pressed == Some(target)))
-    }
 }
 
 impl<M> canvas::Program<M, Style> for Scene<M> {
@@ -1226,6 +1328,41 @@ impl<M> canvas::Program<M, Style> for Scene<M> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn coordinated_backdrop_keeps_pointer_identity_and_cancels_held_feedback() {
+        use super::*;
+        let style = crate::style::Era::Kitsch.style();
+        let mut pointer = Pointer::default();
+        pointer.sync(style.dashboard);
+        let target = Some((Group::Module, 2));
+        let press = iced::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left));
+        let release = iced::Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left));
+        pointer.event(&press, target);
+        assert_eq!(pointer.held(style.dashboard), target);
+        // A backdrop swap never changes the canvas display-list identity.
+        pointer.sync(style.dashboard);
+        assert_eq!(pointer.event(&release, target), PointerAction::Activate(target.unwrap()));
+        assert_eq!(pointer.held(style.dashboard), None);
+        for cancel in [
+            iced::Event::Mouse(mouse::Event::CursorLeft),
+            iced::Event::Window(iced::window::Event::Unfocused),
+        ] {
+            pointer.event(&press, target);
+            pointer.event(&cancel, None);
+            assert_eq!(pointer.held(style.dashboard), None);
+            assert_eq!(pointer.event(&release, target), PointerAction::Ignore);
+        }
+        pointer.event(&press, target);
+        pointer.event(&iced::Event::Mouse(mouse::Event::CursorMoved { position: Point::ORIGIN }), None);
+        assert_eq!(pointer.held(style.dashboard), None);
+        assert_eq!(pointer.event(&release, None), PointerAction::Capture);
+        pointer.event(&press, target);
+        let other = crate::style::Era::Neomil.style().dashboard;
+        let (_, feedback) = pointer.feedback_event(other, &iced::Event::Mouse(mouse::Event::CursorMoved { position: Point::ORIGIN }), None);
+        assert_eq!(feedback, Some(SceneFeedback::default()), "source replacement clears the owner's held backdrop");
+
+    }
+
     use super::*;
 
     fn move_pointer() -> iced::Event {
@@ -1271,6 +1408,39 @@ mod tests {
         iced::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
     }
 
+    #[test]
+    fn neokitsch_release_keeps_selected_veneer_under_the_pointer() {
+        let style = crate::style::Era::Neokitsch.style();
+        let mut scene: Scene<()> = Scene {
+            style, prims: style.dashboard, picked: Picked::default(),
+            cursor_group: None, states: style.dashboard_states,
+            at: motion::REST, on_select: |_, _| (),
+        };
+        let mut pointer = Pointer::default();
+        pointer.sync(scene.prims);
+        let target = Some((Group::Module, 1));
+        let states = style.dashboard_states[1];
+        let draw = |scene: &Scene<()>, pointer: &Pointer| {
+            scene.plate_prims(Group::Module, 1, pointer.interaction(scene.prims), states.pressed, &[])
+        };
+        pointer.event(&move_pointer(), target);
+        assert_eq!(draw(&scene, &pointer), states.hover);
+        pointer.event(&press(), target);
+        assert_eq!(draw(&scene, &pointer), states.pressed);
+        // A cancelled drag restores the previous selection and idle card.
+        pointer.event(&move_pointer(), None);
+        assert_eq!(draw(&scene, &pointer), &[]);
+        assert_eq!(pointer.event(&release(), None), PointerAction::Capture);
+        assert_eq!(scene.picked.module, 0);
+        pointer.event(&move_pointer(), target);
+        pointer.event(&press(), target);
+        assert_eq!(pointer.event(&release(), target), PointerAction::Activate(target.unwrap()));
+        scene.picked.module = 1;
+        assert_eq!(draw(&scene, &pointer), states.pressed);
+        pointer.event(&move_pointer(), None);
+        assert_eq!(draw(&scene, &pointer), states.pressed);
+    }
+
     fn release() -> iced::Event {
         iced::Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
     }
@@ -1310,6 +1480,112 @@ mod tests {
             pointer.event(&move_pointer(), elsewhere);
             pointer.event(&move_pointer(), a);
             assert_eq!(pointer.event(&release(), a), PointerAction::Activate(a.unwrap()));
+        }
+    }
+
+    #[test]
+    fn store_cursor_changes_only_category_fill_and_preserves_card_growth() {
+        for era in crate::style::Era::ALL {
+            let style = era.style();
+            let mut pointer = Pointer::default();
+            pointer.sync(style.store);
+            let picked = Picked {
+                category: style.store_selection.0, card: style.store_selection.1,
+                ..Picked::default()
+            };
+            let mut targets = Vec::new();
+            plates(style.store, 0.0, 0.0, &mut targets);
+            for (group, index, centre) in targets {
+                let target = hit(style.store, 1.0, centre);
+                assert_eq!(target, Some((group, index)));
+                pointer.event(&move_pointer(), target);
+                let hover = pointer.picked(style.store, picked, style.store_cursor);
+                let cursor = era == crate::style::Era::Entropism && group == Group::Category;
+                assert_eq!(hover.category, if cursor { index } else { picked.category });
+                assert_eq!(hover.card, picked.card);
+                pointer.event(&press(), target);
+                let held = pointer.picked(style.store, picked, style.store_cursor);
+                assert_eq!(held.category, if cursor { usize::MAX } else { picked.category });
+                assert_eq!(held.card, picked.card);
+                assert_eq!(pointer.event(&release(), target), PointerAction::Activate((group, index)));
+                assert_eq!(pointer.picked(style.store, picked, style.store_cursor), hover);
+                pointer.event(&move_pointer(), None);
+                assert_eq!(pointer.picked(style.store, picked, style.store_cursor), picked);
+            }
+        }
+    }
+
+    #[test]
+    fn store_material_feedback_cancels_and_leaves_other_groups_unchanged() {
+        fn dresses(prims: &'static [Prim], target: Target) -> Option<(&'static [Prim], &'static [Prim])> {
+            prims.iter().find_map(|prim| match prim {
+                Prim::Plate { group, index, on, off, .. } if (*group, *index) == target => Some((*on, *off)),
+                Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Motion { prims, .. } => dresses(prims, target),
+                _ => None,
+            })
+        }
+        for era in crate::style::Era::ALL {
+            let style = era.style();
+            for states in style.store_states {
+                assert!(matches!(states.group, Group::Category | Group::Card));
+                let target = (states.group, states.index);
+                let (on, off) = dresses(style.store, target).expect("feedback must have a plate");
+                let mut scene: Scene<()> = Scene {
+                    style, prims: style.store,
+                    picked: Picked { category: style.store_selection.0, card: style.store_selection.1, ..Picked::default() },
+                    cursor_group: style.store_cursor, states: style.store_states,
+                    at: motion::REST, on_select: |_, _| (),
+                };
+                match target.0 {
+                    Group::Category => scene.picked.category = usize::MAX,
+                    Group::Card => scene.picked.card = usize::MAX,
+                    Group::Module => unreachable!(),
+                }
+                let initial = scene.picked;
+                let mut pointer = Pointer::default();
+                pointer.sync(style.store);
+                pointer.event(&move_pointer(), Some(target));
+                assert_eq!(scene.plate_prims(target.0, target.1, pointer.interaction(style.store), on, off), states.hover);
+                pointer.event(&press(), Some(target));
+                assert_eq!(scene.picked, initial);
+                assert_eq!(scene.plate_prims(target.0, target.1, pointer.interaction(style.store), on, off), states.pressed);
+                pointer.event(&move_pointer(), None);
+                assert_eq!(scene.plate_prims(target.0, target.1, pointer.interaction(style.store), on, off), off);
+                assert_eq!(pointer.event(&release(), None), PointerAction::Capture);
+                pointer.event(&press(), Some(target));
+                assert_eq!(pointer.event(&release(), Some(target)), PointerAction::Activate(target));
+                match target.0 {
+                    Group::Category => scene.picked.category = target.1,
+                    Group::Card => scene.picked.card = target.1,
+                    Group::Module => unreachable!(),
+                }
+                let selected_hover = states.selected_hover.unwrap_or(if states.preserve_selected_hover { on } else { states.hover });
+                assert_eq!(scene.plate_prims(target.0, target.1, pointer.interaction(style.store), on, off), selected_hover);
+                pointer.event(&press(), Some(target));
+                assert_eq!(scene.plate_prims(target.0, target.1, pointer.interaction(style.store), on, off), states.selected_pressed.unwrap_or(states.pressed));
+                let other = if target.0 == Group::Category {
+                    (Group::Card, scene.picked.card)
+                } else {
+                    (Group::Category, scene.picked.category)
+                };
+                let (other_on, other_off) = dresses(style.store, other).unwrap();
+                assert_eq!(scene.plate_prims(other.0, other.1, pointer.interaction(style.store), other_on, other_off), other_on);
+                // A cursor leaving the selected plate may clear only its
+                // highlight. Its group's actual selection stays put.
+                let sibling = (target.0, (target.1 + 1) % if target.0 == Group::Card { 4 } else { 5 });
+                pointer.event(&release(), Some(target));
+                pointer.event(&move_pointer(), Some(sibling));
+                let away = states.selected_away.unwrap_or(on);
+                assert_eq!(scene.plate_prims(target.0, target.1, pointer.interaction(style.store), on, off), away);
+                pointer.event(&press(), Some(sibling));
+                assert_eq!(scene.plate_prims(target.0, target.1, pointer.interaction(style.store), on, off), away);
+                assert_eq!(scene.picked.get(target.0), target.1);
+                // Entering another group must restore the original coat.
+                pointer.event(&move_pointer(), Some(other));
+                assert_eq!(scene.plate_prims(target.0, target.1, pointer.interaction(style.store), on, off), on);
+                pointer.event(&iced::Event::Window(iced::window::Event::Unfocused), None);
+                assert_eq!(scene.plate_prims(target.0, target.1, pointer.interaction(style.store), on, off), on);
+            }
         }
     }
 

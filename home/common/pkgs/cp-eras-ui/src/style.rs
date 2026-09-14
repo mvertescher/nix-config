@@ -808,6 +808,12 @@ pub struct Style {
     /// *first* card and the other three their second -- so the opening
     /// state is era data, not a constant of the screen.
     pub store_selection: (usize, usize),
+    /// A store group whose fill represents pointer/focus, independently
+    /// of content selection. Product-card growth remains selection.
+    pub store_cursor: Option<Group>,
+    /// Optional foreground hover/held drawings for store plates. These
+    /// do not change hit boxes or the selected product's geometry.
+    pub store_states: &'static [PlateStates],
     // --- end store ---
 
     // --- dashboard ---
@@ -826,6 +832,11 @@ pub struct Style {
     /// The module fill follows the pointer without opening/selecting a
     /// destination, and blinks off while held (entropism's cursor).
     pub dashboard_cursor: bool,
+    /// The mailbox list's fill follows the pointer, independently of
+    /// the message shown in the panel. Held rows temporarily lose it.
+    pub mailbox_cursor: bool,
+    /// Backdrop-only lists indexed by held module; empty keeps the resting backdrop.
+    pub dashboard_held_backdrops: &'static [&'static [Prim]],
     /// Optional hover/held drawings in each module plate's own local
     /// coordinates. These change its appearance, never its hit box.
     pub dashboard_states: &'static [PlateStates],
@@ -1900,9 +1911,46 @@ pub struct Mail {
     pub unread: bool,
 }
 
+/// A mailbox row's inferred transient material. Content and hit geometry
+/// always stay in `MailList`; a coat only changes printing and surfaces.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct MailRowCoat {
+    /// Separate ink for sender text outside a transient surface.
+    pub sender: Option<Ink>,
+    pub fill: Option<Ink>,
+    pub outline: Option<Ink>,
+    pub printing: Option<Ink>,
+    pub spine: Option<Ink>,
+    /// Borrow the list's traced selection silhouette, veneer and notch.
+    pub selection: bool,
+    pub echo: Option<MailRowEcho>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct MailRowEcho {
+    pub fill: Option<Ink>,
+    pub fill_alpha: f32,
+    pub rings: u8,
+    /// Per-ring left/top displacement and width/height growth.
+    pub step: Frame,
+    pub ink: Ink,
+    pub width: f32,
+    pub alpha: f32,
+    pub fade: f32,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct MailRowStates {
+    pub hover: MailRowCoat,
+    pub pressed: MailRowCoat,
+    /// None preserves a selected row's resting material on hover.
+    pub selected_hover: Option<MailRowCoat>,
+}
+
 /// Region A of every trace: the message list.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MailList {
+    pub feedback: Option<MailRowStates>,
     /// An outlined frame around the whole list (entropism only).
     pub frame: Option<Frame>,
     pub frame_ink: Ink,
@@ -2226,6 +2274,16 @@ pub struct PlateStates {
     pub index: usize,
     pub hover: &'static [Prim],
     pub pressed: &'static [Prim],
+    /// Optional variants for a selected plate whose resting silhouette
+    /// differs from the unselected one. Interaction never resizes it.
+    pub selected_hover: Option<&'static [Prim]>,
+    pub selected_pressed: Option<&'static [Prim]>,
+    /// Drawing while another target in this group owns the pointer.
+    /// Business selection and content remain unchanged.
+    pub selected_away: Option<&'static [Prim]>,
+    /// Keep a selected material visible when the pointer returns or a
+    /// successful press becomes selection. Held feedback still applies.
+    pub preserve_selected_hover: bool,
 }
 
 /// A screen a dashboard module opens onto. The hub (`screens::hub`)

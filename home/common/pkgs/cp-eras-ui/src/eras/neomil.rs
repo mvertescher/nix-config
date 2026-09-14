@@ -339,6 +339,8 @@ pub fn style() -> Style {
         // --- store ---
         store: STORE,
         store_selection: (0, 1),
+        store_cursor: None,
+        store_states: STORE_STATES,
         // --- end store ---
         // --- dashboard ---
         dashboard: DASHBOARD,
@@ -348,7 +350,9 @@ pub fn style() -> Style {
         // selection is the first unit by convention.
         dashboard_selection: 0,
         dashboard_cursor: false,
+        mailbox_cursor: false,
         dashboard_states: HUB_STATES,
+        dashboard_held_backdrops: &[],
         // PRODUCTS is unit 4; no unit says "mail", and the mailbox is
         // `m` from the hub instead (`screens::hub`).
         dashboard_destinations: [None, None, None, None, Some(Destination::Store), None],
@@ -619,7 +623,7 @@ pub const ACCESS: Access = Access {
 // margin strings, for the same reason. The 0.8 box around PETROCHEM is
 // drawn, in `OVERLAY` (it sits on the panel, so CHROME is too early).
 use crate::style::{
-    Frame, Icons, Mail, MailBadges, MailButtons, MailList, MailMotion, MailPanel, MailPart,
+    Frame, Icons, Mail, MailBadges, MailButtons, MailList, MailRowCoat, MailRowStates, MailMotion, MailPanel, MailPart,
     Mailbox, Note, Piece, RowDecor, Run, Trim, FromAt, BL, BR, TR,
 };
 
@@ -931,6 +935,29 @@ pub fn mailbox() -> Mailbox {
         chrome: &CHROME,
         overlay: &OVERLAY,
         list: MailList {
+            feedback: Some(MailRowStates {
+                hover: MailRowCoat {
+                    fill: Some(Ink::Fixed(rgb(0x551719))),
+                    outline: Some(Ink::Fixed(rgb(0xf63333))),
+                    printing: Some(Ink::Fixed(rgb(0xf63333))),
+                    sender: None,
+                    spine: Some(Ink::Fixed(rgb(0xf63333))),
+                    selection: false, echo: None,
+                },
+                pressed: MailRowCoat {
+                    fill: Some(Ink::Fixed(rgb(0xa52223))), outline: None,
+                    printing: Some(Ink::Fixed(rgb(0x4a0f10))),
+                    sender: None,
+                    spine: Some(Ink::Fixed(rgb(0xf63333))),
+                    selection: false, echo: None,
+                },
+                selected_hover: Some(MailRowCoat {
+                    fill: Some(Ink::Fixed(rgb(0xf63333))), outline: None,
+                    printing: Some(Ink::OnSelect), spine: None,
+                    sender: None,
+                    selection: false, echo: None,
+                }),
+            }),
             frame: None,
             frame_ink: Ink::Dim,
             frame_width: 0.0,
@@ -1606,6 +1633,133 @@ const CARD4: &[Prim] = &[
     shut_path(132.0, 151.0, CARD4_EDGE, Ink::Fg, 1.2),
 ];
 
+// § 9 explicitly extends the inferred nav coats to product cards.
+// Derive drawings from each resting geometry; especially, never borrow
+// GROWN for an unselected hover and never tint CARD4's page-restoring ramps.
+const fn card_wash(c: iced::Color) -> iced::Color {
+    let bright = rgb(0xdf3131);
+    iced::Color { r: c.r * 0.78 + bright.r * 0.22,
+        g: c.g * 0.78 + bright.g * 0.22,
+        b: c.b * 0.78 + bright.b * 0.22, a: c.a }
+}
+
+const fn card_ink(ink: Ink, held: bool) -> Ink {
+    if held {
+        match ink {
+            Ink::Fixed(_) => Ink::Fixed(rgb(0x59171b)),
+            _ => Ink::Fixed(rgb(0x4a0f10)),
+        }
+    } else {
+        match ink { Ink::Dim => Ink::Fg, _ => ink }
+    }
+}
+
+// Only leaf inks change here. Nested drawings are replaced explicitly
+// below, keeping their translations, content and shape ordering intact.
+const fn card_leaf_inks<const N: usize>(source: &[Prim], held: bool) -> [Prim; N] {
+    assert!(source.len() == N);
+    let mut out = [source[0]; N];
+    let mut i = 0;
+    while i < N {
+        out[i] = source[i];
+        match &mut out[i] {
+            Prim::Path { fill, stroke, .. } | Prim::Rect { fill, stroke, .. } | Prim::Circle { fill, stroke, .. } => {
+                if let Some(ink) = fill { *ink = card_ink(*ink, held); }
+                if let Some(ink) = stroke { *ink = card_ink(*ink, held); }
+            }
+            Prim::Text { ink, .. } | Prim::Dots { ink, .. } => *ink = card_ink(*ink, held),
+            _ => {},
+        }
+        i += 1;
+    }
+    out
+}
+
+macro_rules! card_content_states {
+    ($name:ident, $held:expr) => {
+        mod $name {
+            use super::*;
+            pub(super) const HEAD: &[Prim] = &card_leaf_inks::<{ ICONS_HEAD.len() }>(ICONS_HEAD, $held);
+            pub(super) const FOOT: &[Prim] = &card_leaf_inks::<{ ICONS_FOOT.len() }>(ICONS_FOOT, $held);
+            pub(super) const FOOT_SEL: &[Prim] = &card_leaf_inks::<{ ICONS_FOOT_SEL.len() }>(ICONS_FOOT_SEL, $held);
+            pub(super) const GUN: &[Prim] = &card_leaf_inks::<{ GUN_OUTLINED.len() }>(GUN_OUTLINED, $held);
+            pub(super) const GUN_SEL: &[Prim] = &card_leaf_inks::<{ GUN_SOLID.len() }>(GUN_SOLID, $held);
+            pub(super) const SPECS: &[Prim] = &card_leaf_inks::<{ STATS.len() }>(STATS, $held);
+            pub(super) const CUT: &[Prim] = &{
+                let mut out = card_leaf_inks::<{ CARD_CUT.len() }>(CARD_CUT, $held);
+                out[0] = Prim::At { x: 0.0, y: 0.0, prims: HEAD };
+                out[1] = Prim::At { x: 0.0, y: 0.0, prims: FOOT };
+                out[4] = Prim::At { x: 0.0, y: 0.0, prims: GUN };
+                out
+            };
+        }
+    };
+}
+card_content_states!(card_hover, false);
+card_content_states!(card_held, true);
+
+const CARD_GROWN_HOVER_RAMP: &[(f32, iced::Color)] = &[
+    (0.00, card_wash(C2UPPER[0].1)), (0.35, card_wash(C2UPPER[1].1)),
+    (0.75, card_wash(C2UPPER[2].1)), (1.00, card_wash(C2UPPER[3].1)),
+];
+const CARD_GROWN_HELD_RAMP: &[(f32, iced::Color)] = &[
+    (0.00, rgb(0xa52223)), (0.35, rgb(0xa52223)),
+    (0.75, rgb(0xa52223)), (1.00, rgb(0xa52223)),
+];
+
+const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bool, cut: bool, rest: iced::Color) -> [Prim; N] {
+    let mut out = card_leaf_inks::<N>(source, held);
+    let coat = Ink::Fixed(if held { rgb(0xa52223) } else { card_wash(rest) });
+    match &mut out[0] {
+        Prim::Path { fill, stroke, .. } => { *fill = Some(coat); *stroke = if held { None } else { Some(Ink::Fg) }; }
+        Prim::Rect { fill, .. } => *fill = Some(coat),
+        _ => panic!("card must begin with its frame"),
+    }
+    let (head, foot, gun, specs, cut_content) = if held {
+        (card_held::HEAD, if selected { card_held::FOOT_SEL } else { card_held::FOOT },
+         if selected { card_held::GUN_SEL } else { card_held::GUN }, card_held::SPECS, card_held::CUT)
+    } else {
+        (card_hover::HEAD, if selected { card_hover::FOOT_SEL } else { card_hover::FOOT },
+         if selected { card_hover::GUN_SEL } else { card_hover::GUN }, card_hover::SPECS, card_hover::CUT)
+    };
+    if cut {
+        out[1] = Prim::At { x: 0.0, y: 0.0, prims: cut_content };
+        // The cut has no right-hand spine; keep its open edge bright.
+        out[4] = source[4];
+    } else {
+        let offset = if selected { 1 } else { 0 };
+        out[1 + offset] = source[1 + offset]; // the bright spine
+        out[2 + offset] = Prim::At { x: 0.0, y: 0.0, prims: head };
+        out[3 + offset] = Prim::At { x: 0.0, y: 0.0, prims: foot };
+        out[7 + offset] = Prim::At { x: if selected { -14.0 } else { 0.0 }, y: 0.0, prims: gun };
+        if selected {
+            if let Prim::Ramp { stops, .. } = &mut out[1] {
+                *stops = if held { CARD_GROWN_HELD_RAMP } else { CARD_GROWN_HOVER_RAMP };
+            }
+        } else {
+            out[8] = Prim::At { x: 0.0, y: 0.0, prims: specs };
+        }
+    }
+    out
+}
+
+const CARD_GROWN_HOVER: &[Prim] = &card_feedback::<{ GROWN.len() }>(GROWN, false, true, false, CARD2_FILL);
+const CARD_GROWN_HELD: &[Prim] = &card_feedback::<{ GROWN.len() }>(GROWN, true, true, false, CARD2_FILL);
+
+macro_rules! product_states {
+    ($index:expr, $off:ident, $fill:expr, $cut:expr) => {
+        crate::style::PlateStates {
+            group: Group::Card, index: $index,
+            hover: &card_feedback::<{ $off.len() }>($off, false, false, $cut, $fill),
+            pressed: &card_feedback::<{ $off.len() }>($off, true, false, $cut, $fill),
+            selected_hover: Some(CARD_GROWN_HOVER),
+            selected_pressed: Some(CARD_GROWN_HELD),
+            selected_away: None,
+            preserve_selected_hover: false,
+        }
+    };
+}
+
 // The nav's five rows and the shelf's four positions, as plates. The
 // selected nav row is 5px taller and filled where the others are dark
 // boxes, which is what the material shows; the selected card is the
@@ -1675,6 +1829,64 @@ const NAV_ROW: &[Prim] = &[
 const NAV_SELECTED: &[Prim] = &[
     fill_path(0.0, 0.0, NAV67, Ink::Select),
     fill_rect(-5.0, 0.0, 3.0, 51.0, Ink::Fg),
+];
+
+// components.svg § 9 #nav-hover / #nav-press are inferred coats on
+// the existing 62px row. Selected rows keep their 67px silhouette and
+// use the filled-control ladder instead; pointer state never grows or
+// shrinks a row, changes its label, or selects a product card.
+const NAV_HOVER: &[Prim] = &[
+    Prim::Path { x: 0.0, y: 0.0, segs: NAV62, close: true, fill: Some(Ink::Fixed(rgb(0x551719))), stroke: Some(Ink::Fg), width: 1.2 },
+    fill_rect(-5.0, 0.0, 3.0, 46.0, Ink::Fg),
+];
+const NAV_PRESSED: &[Prim] = &[
+    fill_path(0.0, 0.0, NAV62, Ink::Fixed(rgb(0xa52223))),
+    fill_rect(-5.0, 0.0, 3.0, 46.0, Ink::Fg),
+];
+const NAV_SELECTED_HOVER: &[Prim] = &[
+    fill_path(0.0, 0.0, NAV67, Ink::Fixed(rgb(0xf63333))),
+    fill_rect(-5.0, 0.0, 3.0, 51.0, Ink::Fg),
+];
+const NAV_SELECTED_PRESSED: &[Prim] = &[
+    fill_path(0.0, 0.0, NAV67, Ink::Fixed(rgb(0xa52223))),
+    fill_rect(-5.0, 0.0, 3.0, 51.0, Ink::Fg),
+];
+macro_rules! nav_states {
+    ($index:expr, $top:expr, $base:expr, $label:expr) => {
+        crate::style::PlateStates {
+            group: Group::Category,
+            index: $index,
+            hover: &[
+                Prim::At { x: 153.0, y: $top, prims: NAV_HOVER },
+                txt(163.0, $base, 15.0, Ink::Fg, $label),
+            ],
+            pressed: &[
+                Prim::At { x: 153.0, y: $top, prims: NAV_PRESSED },
+                txt(163.0, $base, 15.0, Ink::Fixed(rgb(0x4a0f10)), $label),
+            ],
+            selected_hover: Some(&[
+                Prim::At { x: 153.0, y: $top, prims: NAV_SELECTED_HOVER },
+                txt(163.0, $base, 15.0, Ink::OnSelect, $label),
+            ]),
+            selected_pressed: Some(&[
+                Prim::At { x: 153.0, y: $top, prims: NAV_SELECTED_PRESSED },
+                txt(163.0, $base, 15.0, Ink::Fixed(rgb(0x4a0f10)), $label),
+            ]),
+            selected_away: None,
+            preserve_selected_hover: false,
+        }
+    };
+}
+pub(crate) const STORE_STATES: &[crate::style::PlateStates] = &[
+    nav_states!(0, 248.0, 297.0, "VIDEO"),
+    nav_states!(1, 318.0, 365.0, "AUDIO"),
+    nav_states!(2, 385.0, 432.0, "GAMEPLAY"),
+    nav_states!(3, 452.0, 499.0, "CYBERWARE"),
+    nav_states!(4, 519.0, 566.0, "CONTROLLER"),
+    product_states!(0, CARD1, CARD1_FILL, false),
+    product_states!(1, CARD1, CARD1_FILL, false),
+    product_states!(2, CARD3, CARD3_FILL, false),
+    product_states!(3, CARD4, CARD4_FILL, true),
 ];
 
 /// The left-margin chip: two ticks, a block and the numbered 12.5
@@ -1952,6 +2164,10 @@ const fn hub_states(index: usize, up: bool) -> crate::style::PlateStates {
         index,
         hover: if up { CELL_UP_HOVER } else { CELL_DOWN_HOVER },
         pressed: if up { CELL_UP_PRESSED } else { CELL_DOWN_PRESSED },
+        selected_hover: None,
+        selected_pressed: None,
+        selected_away: None,
+        preserve_selected_hover: false,
     }
 }
 const HUB_STATES: &[crate::style::PlateStates] = &[
@@ -1994,6 +2210,126 @@ mod hub_interaction_tests {
                 assert!(matches!(drawing[2], Prim::Rect { fill: Some(Ink::Fixed(c)), .. } if c == detail));
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod store_interaction_tests {
+    use super::*;
+
+    // Compare the full drawing recursively, allowing only the sheet's
+    // coat changes (the held outline is deliberately removed).
+    fn same_geometry_and_content(actual: &[Prim], original: &[Prim]) {
+        assert_eq!(actual.len(), original.len());
+        for (&actual, &original) in actual.iter().zip(original) {
+            let (mut a, mut b) = (actual, original);
+            match (&mut a, &mut b) {
+                (Prim::At { x: ax, y: ay, prims: ap }, Prim::At { x: bx, y: by, prims: bp }) => {
+                    assert_eq!((ax, ay), (bx, by));
+                    same_geometry_and_content(ap, bp);
+                    continue;
+                }
+                (Prim::Path { fill: af, stroke: as_, width: aw, .. }, Prim::Path { fill: bf, stroke: bs, width: bw, .. }) => {
+                    *af = None; *bf = None;
+                    *as_ = None; *bs = None;
+                    *aw = 0.0; *bw = 0.0;
+                }
+                (Prim::Rect { fill: af, stroke: as_, .. }, Prim::Rect { fill: bf, stroke: bs, .. }) => {
+                    *af = None; *bf = None;
+                    *as_ = None; *bs = None;
+                }
+                (Prim::Text { ink: ai, .. }, Prim::Text { ink: bi, .. }) => {
+                    *ai = Ink::Fg; *bi = Ink::Fg;
+                }
+                (Prim::Circle { fill: af, stroke: as_, .. }, Prim::Circle { fill: bf, stroke: bs, .. }) => {
+                    *af = None; *bf = None;
+                    *as_ = None; *bs = None;
+                }
+                (Prim::Dots { ink: ai, .. }, Prim::Dots { ink: bi, .. }) => {
+                    *ai = Ink::Fg; *bi = Ink::Fg;
+                }
+                (Prim::Ramp { stops: ast, .. }, Prim::Ramp { stops: bst, .. }) => {
+                    assert_eq!(ast.iter().map(|s| s.0).collect::<Vec<_>>(), bst.iter().map(|s| s.0).collect::<Vec<_>>());
+                    *ast = &[]; *bst = &[];
+                }
+                _ => panic!("unexpected store drawing"),
+            }
+            assert_eq!(a, b);
+        }
+    }
+
+    #[test]
+    fn category_states_keep_selected_and_unselected_geometry_and_labels() {
+        let rows: Vec<_> = STORE.iter().filter_map(|prim| match prim {
+            Prim::Plate { group: Group::Category, index, on, off, .. } => Some((*index, *on, *off)),
+            _ => None,
+        }).collect();
+        let states: Vec<_> = STORE_STATES.iter().filter(|state| state.group == Group::Category).collect();
+        assert_eq!(states.len(), rows.len());
+        for (state, (index, on, off)) in states.into_iter().zip(rows) {
+            assert_eq!((state.group, state.index), (Group::Category, index));
+            same_geometry_and_content(state.hover, off);
+            same_geometry_and_content(state.pressed, off);
+            same_geometry_and_content(state.selected_hover.unwrap(), on);
+            same_geometry_and_content(state.selected_pressed.unwrap(), on);
+        }
+    }
+
+    #[test]
+    fn category_coats_follow_the_inferred_nav_and_filled_control_ladders() {
+        for (drawing, fill, stroke) in [
+            (NAV_HOVER, rgb(0x551719), Some(Ink::Fg)),
+            (NAV_PRESSED, rgb(0xa52223), None),
+            (NAV_SELECTED_HOVER, rgb(0xf63333), None),
+            (NAV_SELECTED_PRESSED, rgb(0xa52223), None),
+        ] {
+            assert!(matches!(drawing[0], Prim::Path { fill: Some(Ink::Fixed(c)), stroke: s, .. } if c == fill && s == stroke));
+            assert!(matches!(drawing[1], Prim::Rect { fill: Some(Ink::Fg), .. }));
+        }
+        for state in STORE_STATES.iter().filter(|state| state.group == Group::Category) {
+            for drawing in [state.pressed, state.selected_pressed.unwrap()] {
+                assert!(matches!(drawing[1], Prim::Text { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
+            }
+        }
+    }
+
+    #[test]
+    fn product_feedback_preserves_each_idle_and_grown_drawing() {
+        for (index, (shelf, idle)) in [
+            (SHELF_0, CARD1), (SHELF_1, CARD1), (SHELF_2, CARD3), (SHELF_3, CARD4),
+        ].into_iter().enumerate() {
+            let state = STORE_STATES.iter().find(|s| s.group == Group::Card && s.index == index).unwrap();
+            let Prim::Plate { on, off, .. } = shelf[0] else { panic!("missing card plate") };
+            assert_eq!(off, idle);
+            assert_eq!(on, GROWN);
+            for drawing in [state.hover, state.pressed] {
+                same_geometry_and_content(drawing, off);
+                assert_ne!(drawing, off);
+            }
+            for drawing in [state.selected_hover.unwrap(), state.selected_pressed.unwrap()] {
+                same_geometry_and_content(drawing, on);
+                assert_ne!(drawing, on);
+            }
+        }
+    }
+
+    #[test]
+    fn product_coats_preserve_the_cut_and_keep_held_text_readable() {
+        let states: Vec<_> = STORE_STATES.iter().filter(|s| s.group == Group::Card).collect();
+        assert_eq!(states.len(), 4);
+        for (state, rest) in states.iter().zip([CARD1_FILL, CARD1_FILL, CARD3_FILL, CARD4_FILL]) {
+            for (drawing, fill) in [(state.hover, card_wash(rest)), (state.pressed, rgb(0xa52223))] {
+                assert!(matches!(drawing[0], Prim::Path { fill: Some(Ink::Fixed(c)), .. } | Prim::Rect { fill: Some(Ink::Fixed(c)), .. } if c == fill));
+            }
+            let held = state.selected_pressed.unwrap();
+            assert!(matches!(held[5], Prim::Text { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
+            assert_eq!(held[2], GROWN[2], "selected spine stays bright");
+            assert!(matches!(held[1], Prim::Ramp { stops, .. } if stops.iter().all(|s| s.1 == rgb(0xa52223))));
+        }
+        for drawing in [states[3].hover, states[3].pressed] {
+            assert_eq!(&drawing[2..], &CARD4[2..], "page restoration and cut edge remain untouched");
+        }
+        assert!(matches!(card_held::SPECS[8], Prim::Text { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
     }
 }
 

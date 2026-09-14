@@ -36,7 +36,7 @@
 
 use crate::motion;
 use crate::screens::nav::{self, Dir, Stroke};
-use crate::screens::scene::{plates, Picked, Scene};
+use crate::screens::scene::{plates, Picked, Scene, SceneFeedback};
 use crate::style::{Destination, Group, Style};
 use crate::widgets::ground;
 use crate::Element;
@@ -51,6 +51,7 @@ pub struct Dashboard {
     /// [`Style::dashboard_selection`], which is what makes the opening
     /// state match each era's own material.
     pub selected: usize,
+    held: Option<usize>,
     /// The moment the scene is painted at, for its `Prim::Motion`s:
     /// the boot-in (neomil's `#panel-open`) runs against this.
     /// Advanced by [`Message::Tick`] while anything is still moving,
@@ -62,6 +63,8 @@ pub struct Dashboard {
 pub enum Message {
     /// A module plate was clicked: make it the selection.
     Select { index: usize },
+    /// Transient canvas feedback, with release activation when present.
+    Feedback(SceneFeedback),
     /// A key moved the selection to the nearest module that way.
     Move(Dir),
     /// The clock, while the boot-in runs.
@@ -79,6 +82,7 @@ impl Dashboard {
         Dashboard {
             style,
             selected: style.dashboard_selection,
+            held: None,
             now: motion::now(),
         }
     }
@@ -89,8 +93,13 @@ impl Dashboard {
 
     pub fn update(&mut self, message: Message) {
         match message {
-            Message::Select { index } => self.selected = index,
+            Message::Select { index } => { self.selected = index; self.held = None; }
+            Message::Feedback(feedback) => {
+                self.held = feedback.held.and_then(|(group, index)| (group == Group::Module).then_some(index));
+                if let Some((Group::Module, index)) = feedback.activated { self.selected = index; }
+            }
             Message::Move(dir) => {
+                self.clear_feedback();
                 if let Some(index) = self.neighbour(dir) {
                     self.selected = index;
                 }
@@ -145,6 +154,13 @@ impl Dashboard {
         iced::time::every(std::time::Duration::from_millis(16)).map(Message::Tick)
     }
 
+    pub(crate) fn clear_feedback(&mut self) { self.held = None; }
+
+    fn backdrop(&self) -> &'static [crate::style::Prim] {
+        self.held.and_then(|index| self.style.dashboard_held_backdrops.get(index).copied())
+            .unwrap_or(self.style.dashboard)
+    }
+
     pub fn view(&self) -> Element<'_, Message> {
         stack![
             ground(&self.style),
@@ -162,7 +178,7 @@ impl Dashboard {
                 on_select: |_group, index| Message::Select { index },
                 at: self.at(),
             }
-            .view(),
+            .view_with_feedback(self.backdrop(), Message::Feedback),
         ]
         .into()
     }

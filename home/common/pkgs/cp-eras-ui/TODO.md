@@ -1,3 +1,31 @@
+## Current remaining work (2026-09-14)
+
+The dated entries below preserve the implementation history. Earlier
+"still open" lists are superseded by later completion entries, including
+the five-task feedback/native-control/extractor batch in the working tree.
+
+- **Kitsch dashboard hover:** needs a hub-specific design. Press is done;
+  the existing blade trails do not establish an additional hover state.
+- **Animated interaction transitions:** need reviewed timing/easing and
+  transition rules. Component sheets specify destination drawings only;
+  existing boot-in/caret animation timings are not interaction timings.
+- **Desktop verification:** native input/IME, hub navigation, feedback,
+  and first-frame haze/route latency still need a live check. Headless
+  tests and previews do not close these items.
+- **Future widgets:** slider ticks, shared icons, spec/log rows, meters,
+  tooltips/modals and tab widgets wait for actual callers or reference
+  material, as detailed under the toolkit roadmap. Do not build unused
+  widgets to close its umbrella checkboxes.
+- **Reference follow-ups:** the source-label/caret observations recorded
+  under Motion require visual verification. The Kitsch mailbox yellow
+  extraction diagnostic remains explicitly "do not fix" below.
+
+Follow-up audit: three native-event regression tests now exercise button
+cancellation/disable, touch release/loss and selected-range Unicode commits
+after input re-enabling. All five control tests pass using the headless
+software renderer. No production behavior changed; OS IME/preedit and live
+desktop verification remain open.
+
 - [x] create scripts/download_images.py to download all the neomil related images from:
   - https://www.behance.net/gallery/118663901/Cyberpunk-2077User-Interface-(Part-1)
   - https://www.behance.net/gallery/133185623/Cyberpunk-2077User-Interface-(Part-2)
@@ -1701,13 +1729,16 @@ when that screen assembles from library widgets. Priority order:
     button class is `ghost`; `bare` is for a `widgets::surface` face
     -- `panels::mail`'s DELETE is now a real `button` that way).
     Tests pin the cta fill per era and kitsch's PROTECTED triple.
-  - **Not done, and why.** *Silhouettes*: a built-in `button` is a
-    rounded rectangle, so neomil's br-chamfer, kitsch's stepped bar
-    and neokitsch's tabbed bl-chamfer stay `widgets::surface` plates
-    inside a `bare` button; the coat sets only fill/edge/ink/radius.
+  - **Remaining limits.** *Silhouettes*: the simple catalog sets only
+    fill/edge/ink/radius. Kitsch's stepped bar and Neokitsch's tabbed
+    bl-chamfer now use the native-control wrappers documented in
+    `docs/control-materials.md`; working mail faces use `Surface`.
+    Neomil's generic native controls retain the simple catalog coat.
     *Hover/press*: the reading is on the sheets since 2026-09-07
     (see "Motion"). Neomil and entropism built-in button/field coats
-    are wired as of 2026-09-13; custom faces and the hub remain open.
+    are wired as of 2026-09-13. Kitsch/Neokitsch custom native-control
+    wrappers and working mail faces are wired as of 2026-09-14 (below);
+    Kitsch hub hover still needs a specific interpretation.
     *override-hatch*: no era sheet has a
     hatched button; iced has no pattern fill either. *Icon buttons*:
     nothing to style beyond `bare`; blocked on "Icon set". *Slider
@@ -1895,11 +1926,11 @@ when that screen assembles from library widgets. Priority order:
     are derived through the existing desktop roles, rather than the
     login's fixed sampled shades. Rest coats are unchanged.
     `cargo run --example control-states -- --era neomil` shows all
-    four eras' state coats and live controls; kitsch/neokitsch are
-    labelled as pending there. **Still open:** their ghost extrusion,
-    echo rings and veneer require custom drawing; neither is replaced
-    by a colour-only approximation. The other hub treatments and the
-    custom mail-panel faces still need their own hover/press wiring.
+    four eras' state coats and live controls. As of 2026-09-14,
+    Kitsch/Neokitsch use custom native-control backdrops for ghosts,
+    echoes and veneer; their material is not a color-only catalog
+    approximation. Working mail faces are also wired (below). Kitsch
+    hub hover remains undefined; its pressed destination is implemented.
     These are instantaneous states; animated transitions remain open.
     Desktop interaction verification remains open.
     - **Hub cursor, 2026-09-14:** the shared scene's
@@ -1931,9 +1962,148 @@ when that screen assembles from library widgets. Priority order:
       release/cancellation uses the preceding pass's gesture state.
       Tests cover every diamond's geometry/colours, targeting only the
       hovered plate, clearing feedback and preserving selection.
-      Kitsch/neokitsch dashboard visuals, store hover, mailbox feedback
+      Kitsch dashboard visuals, store hover, mailbox feedback
       and animation between interaction states remain open. Headless
       verification only; desktop interaction verification remains open.
+    - **Neokitsch dashboard states, 2026-09-14 (working tree):** all
+      six cascade cards lift their existing rings `#bd8951` to
+      `#e8ab66` and their front outline to `#f2b463` on hover, keeping
+      the six opacities and every path/tab/label unchanged, per
+      `components.svg`'s inferred `nk-card-hover`. Press reuses the
+      selected veneer drawing with its grain and inset tab. Selected
+      cards retain their veneer under the pointer, including after
+      a successful release; cancelled drags leave selection untouched.
+      Tests cover card origins, unchanged hover geometry, exact reuse
+      of the selected drawing, cancellation and release-to-selection.
+      No trace or golden was edited. Desktop verification, animation,
+      kitsch dashboard feedback and the other custom faces remain open.
+    - **Mailbox cursor and gestures, 2026-09-14 (working tree):**
+      all four mailbox lists now share the scene's release-to-select
+      gesture state, parameterized by row index. Dragging to another
+      row or outside, leaving the window, losing focus, pressing a key
+      or changing the row table cancels activation. Entropism opts
+      into `mailbox_cursor`: the existing reverse-video fill follows
+      hover and disappears while held. Only the list's render pick
+      changes; the message panel and read/unread flags stay put.
+      Keyboard input restores the keyboard selection's fill.
+      Tests exercise every row in every era at uniform and stretched
+      sizes, cancellation, and independent cursor/content state.
+      No trace or golden was edited. Other eras' mailbox feedback,
+      store feedback, animated transitions and desktop verification
+      remain open.
+    - **Entropism store categories, 2026-09-14 (working tree):**
+      `store_cursor = Some(Category)` applies the shared scene cursor
+      to all five category cells. Hover moves the one reverse-video
+      fill; holding the hovered category drops it. The chosen category
+      and product card stay unchanged until release, and keyboard
+      input restores the keyboard selection's fill. Product-card
+      growth remains selection, not hover. Tests traverse every store
+      plate across all four eras, verifying the cursor affects only
+      Entropism categories and never changes the selected card's size.
+      No trace or golden was edited. Store product-card feedback,
+      other eras' store feedback and desktop verification remain open.
+    - **Other store categories, 2026-09-14 (working tree):**
+      Neomil, Kitsch and Neokitsch now supply `store_states` for all
+      five categories; the shared scene applies their sheet's inferred
+      hover/press drawings. Neomil uses the wash and held-red coats,
+      with separate selected-state drawings to preserve its 67px
+      selected row versus 62px rest row. Kitsch adds one ghost at
+      (+20,-20) behind the teal face, then takes the flat selected
+      yellow while held. Its foreground ghost uses the existing
+      approximate canvas alpha blend, not the hub's software composite.
+      Neokitsch adds seven outward echo rings and reuses its selected
+      veneer while held. Kitsch/Neokitsch retain selected material on
+      hover. Product feedback is recorded below. Tests cover the
+      category tables, geometry/material preservation, selected-state
+      precedence and gesture cancellation. No trace or golden changed.
+      Remaining interaction work: Kitsch dashboard ghost layers,
+      remaining custom mailbox/control faces,
+      and animated transitions. Desktop verification remains open.
+    - **Tray submenu hover, 2026-09-14 (working tree):** enabled
+      rows now report enter/exit separately from clicks. Hover opens
+      submenus idempotently, including lazy `AboutToShow` expansion;
+      re-entering ancestors retains descendants, and sibling leaf
+      hover closes deeper branches. A click-closed submenu stays
+      closed through layout-generated re-entry until its row is left.
+      Disabled rows, separators and invalid paths do nothing. Keyboard
+      focus policy is unchanged; keyboard navigation and live tray-app
+      verification remain open.
+    - **Product-card states, 2026-09-14 (working tree):** Neomil,
+      Kitsch and Neokitsch now provide all four `Group::Card` entries
+      alongside category feedback. Hover/hold keeps the current
+      compact or expanded geometry and content, using separate
+      selected-state drawings. Neomil applies the documented 22% red
+      wash and held-red/dark-ink pair, preserving the cut card's page
+      restoration ramps. Kitsch adds the measured offset ghost and
+      teal slab, then flat amber at compact size; selected states keep
+      expanded geometry. Neokitsch echoes the current silhouette and
+      compresses the selected veneer material into the compact values
+      band while held; expanded details remain selection-only.
+      These are inferred material adaptations, not newly observed
+      frames. Foreground alpha approximations and existing shelf clips
+      remain as documented. Tests compare geometry/content, preserve
+      category selection, and cover cancellation and selected variants.
+      Validation: 178 Rust tests and all 25 golden cases pass; headless
+      compact/selected previews reviewed, including Neomil's cut card.
+      Kitsch's compact QR keeps its geometry with dark printing on the
+      filled hover/held faces. No trace or golden changed. The next batch
+      below completes Entropism product feedback and two mailbox materials.
+      Kitsch dashboard/row feedback, other custom controls, animated
+      transitions and desktop verification remain open.
+    - **Next interaction batch, 2026-09-14 (working tree):** Entropism
+      product headers now move the reverse-video cursor independently
+      from selected-card growth. Holding clears the header highlight;
+      moving to another card removes the old highlight but retains its
+      expanded details, sockets and brand inks. `PlateStates.selected_away`
+      supplies that drawing without changing selection or category feedback.
+      Neomil mailbox rows use wash/bright-filled hover and held-red/dark
+      printing; Neokitsch rows use an inferred silhouette echo and the
+      traced veneer while held, preserving selected veneer on hover.
+      Row content, unread glyphs and the shown message remain independent
+      of these transient materials. All 182 Rust tests pass; headless
+      rest/hover/held previews reviewed for both mailbox materials and
+      Entropism cards, including selected targets. All 25 golden cases
+      pass with unchanged goldens. Desktop verification remains open.
+    - **Kitsch dashboard audit, 2026-09-14:** the old claim that ghosts
+      remain in `HUB_BACK` with the ground is stale. `FAN_LEFT` and
+      `FAN_RIGHT` already hold separate software-composited ghost groups
+      under their original motion clips. Held feedback is unblocked:
+      remove the target blade's trail and show its existing yellow face.
+      This needs coordinated foreground/backdrop pointer state, stable
+      hit-test identity, and target-only static backdrop variants. Hover
+      needs a hub-specific rule: its five-to-seven resting ghosts do not
+      map directly to the component sheet's one-ghost lift. Keep that
+      choice open; do not invent an additional layer or reduce the stack.
+    - **Kitsch row and dashboard follow-up, 2026-09-14 (working
+      tree):** trace mailbox rows now draw filled ghosts behind their
+      two-piece teal hover faces, then flat yellow while held. The
+      separate sender line keeps its own ink; selected hover preserves
+      the traced yellow material. Dashboard held variants remove only
+      the target blade's ghost trail and use its existing yellow face.
+      Shared foreground/backdrop feedback preserves scene identity and
+      clears together with activation or cancellation. Existing fan clips
+      and the software compositor remain intact. Hub hover is unchanged
+      pending the interpretation above. Combined validation recorded below.
+    - **Native controls and working mail faces, 2026-09-14 (working
+      tree):** `widgets::controls::{button, field}` retain one native
+      child and draw Kitsch stepped/ghost/amber and Neokitsch tab/echo/
+      veneer materials from era data. Optional callbacks disable the
+      native control and its material together. Native input focus,
+      selection, caret, operations and overlays remain delegated. The
+      control-states example shows static materials and live controls
+      for all eras; dimension/grain adaptations are documented in
+      `docs/control-materials.md`. The simple catalog remains available.
+      Working mail rows and DELETE now use custom surface feedback;
+      Entropism shares one list cursor and extinguishes it while held.
+      Passive action labels stay passive. Touch ownership, release/cancel,
+      changed row identities and stationary-pointer scrolling are covered;
+      redraw cannot resurrect keyboard/focus-cancelled hover. DELETE's
+      destructive material adaptation is explicit, preserving alert at rest.
+      All 199 Rust tests and five extractor tests pass. Headless control,
+      Kitsch row/blade and working-row previews reviewed; all 25 goldens
+      passed unchanged and all 19 `./check` checks passed. Live desktop/IME
+      verification and animated transitions remain
+      open. No golden or trace was edited.
     - Left by the readers, outside their scope: entropism's
       `mailbox-trace.svg` headers and era-rules box (:26, :146,
       :253, :287) still call the fill "selection" -- vision-model
@@ -2148,15 +2318,17 @@ when that screen assembles from library widgets. Priority order:
     two-line tape under it, and each cascade card its "ONLY CC35
     CERTIFIED" caption as micro text at the `CASCADE` origins. Trace
     gains the same; gate PASS, inks 0.64. Golden re-blessed.
-    - [ ] **G2i shape inventory on dashboard-neokitsch reads 34%
-      (was 94) and it is the extractor, not the screen.**
-      `extract_spec.py` segments a 2.7-pitch striped body one way
-      from rsvg and another from iced although the two renders agree
-      in mean and spread to half a level: 89% with the panel grain
-      hidden, and the equally grained store passes at 89. Recorded in
-      the era README; not gated on. Fix is in the script (a striped
-      region should segment as one body, e.g. a close before
-      labelling at the grain's pitch), not the trace or the crate.
+    - [x] **Neokitsch striped-body extraction, 2026-09-14 (working
+      tree).** The existing 5x5 close already recovered the primary
+      veneer body; sparse secondary grain still fragmented. The repair
+      requires repeated fine strands and an independently measured solid
+      body in a similar ink, preserving background gaps and unrelated
+      shapes. Dashboard inventory rises 34% to 97%, store 89% to 94%,
+      mailbox 84% to 98%, with no render, golden or threshold changes.
+      Five regression tests pass. Audits of all 25 goldens and 56 cached
+      fixtures change only Neokitsch veneer: 22 and 48 respectively have
+      identical segmentation. Do not compensate for extractor faults in
+      the UI or trace.
 
 ## Headless check: feasibility settled (2026-08-22)
 

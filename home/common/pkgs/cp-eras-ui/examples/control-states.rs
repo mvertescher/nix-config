@@ -1,10 +1,10 @@
 //! Developer preview of the catalog's actual styles, including states
 //! that cannot all be held by one pointer at once. The last row uses
 //! live controls. Run `cargo run --example control-states -- --era neomil`.
-//! Kitsch and neokitsch intentionally show their unchanged rest coats:
-//! their ghost/ring/veneer drawing is still pending.
+//! Native controls retain input state beneath custom material backdrops.
 
-use cp_eras_ui::{catalog, shell, Element, Era, Style};
+use cp_eras_ui::{shell, Element, Era, Style};
+use cp_eras_ui::widgets::controls::{self, Kind, State};
 use iced::widget::{button, column, container, row, text, text_input};
 use iced::{Border, Length};
 
@@ -52,42 +52,39 @@ impl Preview {
             .spacing(8);
         for era in Era::ALL {
             let style = era.style();
-            let caption = match era {
-                Era::Neomil | Era::Entropism => era.name().to_string(),
-                _ => format!("{} — custom drawing pending", era.name()),
-            };
+            let caption = era.name();
             let mut states = row![].spacing(24);
-            for (label, bs, fs) in [
-                ("REST", button::Status::Active, text_input::Status::Active),
-                ("HOVER", button::Status::Hovered, text_input::Status::Hovered),
-                ("PRESS / FOCUS", button::Status::Pressed, text_input::Status::Focused { is_hovered: false }),
-                ("DISABLED", button::Status::Disabled, text_input::Status::Disabled),
+            for (label, state) in [
+                ("REST", State::Active), ("HOVER", State::Hovered),
+                ("PRESS / FOCUS COAT", State::Pressed), ("DISABLED", State::Disabled),
             ] {
                 states = states.push(column![
                     text(label).size(14).color(style.palette.fg),
-                    button(text("PRIMARY").size(14)).padding(4).width(Length::Fill)
-                        .on_press(Message::Ignore).style(move |_, _| catalog::button::primary(&style, bs)),
-                    button(text("GHOST").size(14)).padding(4).width(Length::Fill)
-                        .on_press(Message::Ignore).style(move |_, _| catalog::button::ghost(&style, bs)),
-                    text_input("Placeholder", "").size(14).padding(4)
-                        .on_input(|_| Message::Ignore).style(move |_, _| catalog::field(&style, fs)),
-                ].spacing(4).width(Length::Fill));
+                    controls::button(style, Kind::Primary,
+                        button(text("PRIMARY").size(14)).padding(10).width(Length::Fill),
+                        (state != State::Disabled).then_some(Message::Ignore)).preview(state),
+                    controls::button(style, Kind::Ghost,
+                        button(text("GHOST").size(14)).padding(10).width(Length::Fill),
+                        (state != State::Disabled).then_some(Message::Ignore)).preview(state),
+                    controls::field(style, text_input("Placeholder", "").size(14).padding(10),
+                        (state != State::Disabled).then_some(|_| Message::Ignore)).preview(state),
+                ].spacing(24).width(Length::Fill));
             }
             examples = examples.push(container(column![
                 text(caption).size(16).color(style.palette.fg), states,
-            ].spacing(4)).padding(8).width(Length::Fill).style(move |_| container::Style {
+                text(format!("LIVE — {} clicks", self.clicks)).size(16),
+                row![
+                    controls::button(style, Kind::Primary, button("PRIMARY").padding(10), Some(Message::Click)),
+                    controls::button(style, Kind::Ghost, button("RESET").padding(10), Some(Message::Reset)),
+                    controls::field(style, text_input("Type here; Tab changes focus", &self.value).padding(10), Some(Message::Input)),
+                    controls::button(style, Kind::Primary, button("DISABLED").padding(10), None),
+                ].spacing(24),
+            ].spacing(26)).padding(24).width(Length::Fill).style(move |_| container::Style {
                 background: Some(style.palette.bg.into()),
                 border: Border { color: style.palette.border, width: 1.0, ..Border::default() },
                 ..container::Style::default()
             }));
         }
-        examples = examples.push(text(format!("LIVE — {} — {} clicks", self.style.era.name(), self.clicks)).size(20))
-            .push(row![
-                button("PRIMARY").padding(10).on_press(Message::Click).style(catalog::button::primary),
-                button("RESET").padding(10).on_press(Message::Reset),
-                text_input("Type here; Tab changes focus", &self.value).padding(10).on_input(Message::Input),
-                button("DISABLED").padding(10),
-            ].spacing(24));
         container(iced::widget::scrollable(examples)).padding(16).into()
     }
 }

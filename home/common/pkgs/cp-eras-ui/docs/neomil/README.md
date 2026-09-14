@@ -138,6 +138,29 @@ module labels, selection and the detail panel do not change on hover.
 The shared scene swaps only the hovered plate's drawing, with the same
 clip and transforms as its resting drawing.
 
+Implemented on the store category rows (2026-09-14): the outlined rows
+use `#nav-hover`'s `#551719` wash and bright stroke/spine, then
+`#nav-press`'s `#a52223` fill with `#4a0f10` text and no stroke while
+held. A selected row remains filled on hover, lifting to `#f63333`,
+and takes the same held red on press. These states are **inferred**
+from the component reading above. Unselected rows keep their 62px
+shape and 46px spine; selected rows keep their 67px shape and 51px
+spine even while held. Labels and their positions stay fixed. Category
+selection commits on release, and pointer feedback does not change
+the selected product card.
+
+Implemented on store product cards (2026-09-14): hover adds the same
+0.22 bright-red wash over each card's own rest fill and lifts dim detail
+ink to bright red. The selected card keeps its existing upper gradient,
+with the wash applied to each stop. Held cards use `#a52223` with dark
+`#4a0f10` text and linework, `#59171b` shaded gun details, and the bright
+spine. These are **inferred** applications of § 9, not photographed
+states. The small cards stay small; the selected card stays grown and
+retains its expanded specifications. Gun geometry, labels, ornaments,
+and translations stay fixed. The last idle card keeps its cut edge and
+untinted page-restoration strip. Selection and growth still happen only
+on release, never on hover or hold.
+
 The field is the exception in which direction is sourced: the run
 holds one field, the login's password field, and it is drawn
 *focused* (masked run, lit caret), so `#field-press` (= focus) is the
@@ -219,3 +242,13 @@ nix shell nixpkgs#librsvg --command \
 Render with Rajdhani + Orbitron available to fontconfig:
 
     FONTCONFIG_FILE=<conf with the fonts> rsvg-convert -w 1600 -h 900 login-trace.svg -o /tmp/sheet.png
+
+Mailbox rows wired 2026-09-14 (working tree): the inferred nav wash
+`#551719` and bright outline/spine/printing apply to an unselected row;
+held rows use `#a52223` and dark `#4a0f10` printing. A selected row's
+hover lifts its existing fill to `#f63333`. Compact and selected row
+geometry stay independent, including the separate cartridge column,
+subject/sender positions and unread NEW pills. Hover/hold never changes
+the selected cartridge or reader message; release retains the shared
+commit/cancellation semantics. Colors are inferred adaptations of §9;
+live desktop review and transition timing remain open.

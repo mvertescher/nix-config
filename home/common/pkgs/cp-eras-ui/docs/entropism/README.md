@@ -131,6 +131,36 @@ baseline (1545 / 1707 / 8987 px at 3% fuzz for hub / store / mailbox).
 
 ## Hover and press
 
+**Store categories wired 2026-09-14:** the category strip's existing
+fill moves to the hovered category and drops while held, using the
+shared scene cursor. Hover changes neither the chosen category nor
+the product card. Release over the original category commits the
+choice; keyboard input restores the keyboard selection's fill.
+Product-card growth remains selection, as in the reading below.
+Desktop interaction verification remains open.
+
+**Store products wired 2026-09-14:** a hovered compact product gains
+reverse video over its existing header; the expanded product loses
+that header fill while another card has the cursor. Holding drops the
+cursor fill. Expansion, details, socket rows, QR and compliance remain
+attached to selection, so no card grows on hover or collapses while
+held. The existing category cursor remains independent. Leaving the
+card group or cancelling restores the resting selected header.
+The grown header's fill is sourced; moving it between cards, adapting
+it to the compact header and blinking it off while held are the
+inferred cursor policy below. Compact values retain their own strip
+geometry with reversed inks; PETROCHEM retains its yellow brand band.
+No transition timing or third ink is introduced. Desktop interaction
+verification remains open.
+
+**Mailbox wired 2026-09-14:** hover moves the existing reverse-video
+list fill without opening a message; holding a row removes the fill.
+Release over the original row selects and opens it. Dragging away,
+leaving the window, losing focus or pressing a key cancels the gesture.
+Keyboard input restores the keyboard selection's fill. The message
+panel and read/unread envelope states do not follow hover. Resting
+drawings are unchanged. Desktop interaction verification remains open.
+
 Read 2026-09-07 from the whole run (`images/run-entropism/34..42`,
 every still opened, plus the four 3840x2160 sources cropped cell by
 cell) and drawn as band C of `components.svg` (`row-rest` /

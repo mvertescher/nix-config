@@ -6,6 +6,7 @@
 //! justify each geometry choice are recorded there too.
 
 pub mod entropism;
+pub(crate) mod control_materials;
 pub mod kitsch;
 pub mod neokitsch;
 pub mod neomil;

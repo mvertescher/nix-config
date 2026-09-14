@@ -26,7 +26,7 @@
 //! list is "List of messages / I'm worried man / Heist data sent to
 //! you / ..." with every row from Jackie, not the inbox the other three
 //! show, and its panel is headed "Urgent Information (!)", which is no
-//! row of that list. Entropism reads a message it has not selected and
+//! row of that list. Entropism reads a message away from its cursor and
 //! heads it "from: Mom" over a list that says "FROM: MOM". Kitsch and
 //! neokitsch split the lorem three ways with no "Nemo enim" paragraph;
 //! entropism and neomil keep it. And every trace sets each body line
@@ -68,7 +68,7 @@ use crate::style::{
 };
 use crate::widgets::surface::{outline, Corners, Cut};
 use crate::screens::nav::{Dir, Stroke};
-use crate::screens::scene::{blend_over, Backdrop};
+use crate::screens::scene::{blend_over, Backdrop, Pointer, PointerAction};
 use crate::widgets::ground;
 use crate::Element;
 use iced::widget::{canvas, stack, Action};
@@ -272,6 +272,17 @@ struct Paint<'a> {
 }
 
 impl Sheet<'_> {
+    /// Only the list's cursor moves; the reader's selection and message
+    /// remain owned by Mail. No row has the index used while held.
+    fn cursor_row(&self, pointer: &Pointer<usize>) -> usize {
+        if self.style.mailbox_cursor {
+            if let Some((row, held)) = pointer.interaction(self.style.mailbox.list.rows) {
+                return if held { self.style.mailbox.list.rows.len() } else { row };
+            }
+        }
+        self.selected
+    }
+
     /// The inks as the region being drawn wants them.
     fn paint(&self) -> Paint<'_> {
         Paint { style: self.style, alpha: self.alpha.get() }
@@ -392,6 +403,184 @@ impl Sheet<'_> {
                 || (i == self.selected && inside(list.sel.shifted(0.0, self.sel_offset())))
         })
     }
+}
+
+#[cfg(test)]
+mod interaction_tests {
+    use super::*;
+    use iced::widget::canvas::Program;
+
+    fn sheet(style: &Style) -> Sheet<'_> {
+        Sheet { style, selected: style.mailbox.list.selected,
+            showing: style.mailbox.panel.message, at: motion::REST, alpha: Cell::new(1.0) }
+    }
+
+    fn click(pressed: bool) -> Event {
+        Event::Mouse(if pressed { mouse::Event::ButtonPressed(mouse::Button::Left) }
+            else { mouse::Event::ButtonReleased(mouse::Button::Left) })
+    }
+
+    #[test]
+    fn every_mail_row_activates_only_on_release_at_stretched_sizes() {
+        for era in crate::style::Era::ALL {
+            let style = era.style();
+            let sheet = self::sheet(&style);
+            for (sx, sy) in [(0.5, 0.5), (1.0, 1.0), (2.0, 1.5)] {
+                let bounds = Rectangle { x: 19.0, y: 31.0, width: DW * sx, height: DH * sy };
+                for row in 0..style.mailbox.list.rows.len() {
+                    let band = sheet.row_at(row);
+                    let cursor = mouse::Cursor::Available(Point::new(
+                        bounds.x + (band.x + band.w / 2.0) * sx,
+                        bounds.y + (band.y + band.h / 2.0) * sy,
+                    ));
+                    let mut pointer = Pointer::default();
+                    assert!(sheet.update(&mut pointer, &click(false), bounds, cursor).is_none());
+                    let (message, _, status) = sheet.update(&mut pointer, &click(true), bounds, cursor).unwrap().into_inner();
+                    assert!(message.is_none());
+                    assert_eq!(status, iced::event::Status::Captured);
+                    let (message, _, _) = sheet.update(&mut pointer, &click(false), bounds, cursor).unwrap().into_inner();
+                    assert!(matches!(message, Some(Message::Select(i)) if i == row));
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn mail_drag_focus_and_era_changes_cancel_activation() {
+        let style = crate::style::Era::Entropism.style();
+        let sheet = self::sheet(&style);
+        let bounds = Rectangle::new(Point::ORIGIN, Size::new(DW, DH));
+        let cursor = |i| {
+            let row = sheet.row_at(i);
+            mouse::Cursor::Available(Point::new(row.x + row.w / 2.0, row.y + row.h / 2.0))
+        };
+        for end in [cursor(1), mouse::Cursor::Unavailable] {
+            let mut pointer = Pointer::default();
+            sheet.update(&mut pointer, &click(true), bounds, cursor(0));
+            let (message, _, _) = sheet.update(&mut pointer, &click(false), bounds, end).unwrap().into_inner();
+            assert!(message.is_none());
+        }
+        for cancel in [Event::Window(iced::window::Event::Unfocused), Event::Mouse(mouse::Event::CursorLeft)] {
+            let mut pointer = Pointer::default();
+            sheet.update(&mut pointer, &click(true), bounds, cursor(0));
+            sheet.update(&mut pointer, &cancel, bounds, cursor(0));
+            assert!(sheet.update(&mut pointer, &click(false), bounds, cursor(0)).is_none());
+        }
+        let mut pointer = Pointer::default();
+        sheet.update(&mut pointer, &click(true), bounds, cursor(0));
+        let other = crate::style::Era::Neomil.style();
+        pointer.sync(other.mailbox.list.rows);
+        assert!(sheet.update(&mut pointer, &click(false), bounds, cursor(0)).is_none());
+    }
+
+    #[test]
+    fn only_entropism_moves_the_list_cursor_without_opening_mail() {
+        for era in crate::style::Era::ALL {
+            let style = era.style();
+            let sheet = self::sheet(&style);
+            let selected = sheet.selected;
+            let showing = sheet.showing;
+            let row = (selected + 1) % style.mailbox.list.rows.len();
+            let mut pointer = Pointer::default();
+            pointer.sync(style.mailbox.list.rows);
+            pointer.event(&Event::Mouse(mouse::Event::CursorMoved { position: Point::ORIGIN }), Some(row));
+            assert_eq!(sheet.cursor_row(&pointer), if era == crate::style::Era::Entropism { row } else { selected });
+            pointer.event(&click(true), Some(row));
+            assert_eq!(sheet.cursor_row(&pointer), if era == crate::style::Era::Entropism { style.mailbox.list.rows.len() } else { selected });
+            pointer.event(&Event::Window(iced::window::Event::Unfocused), None);
+            assert_eq!(sheet.cursor_row(&pointer), selected);
+            assert_eq!((sheet.selected, sheet.showing), (selected, showing));
+        }
+    }
+
+    #[test]
+    fn row_feedback_tracks_gesture_without_changing_reader_or_unread_content() {
+        for era in [crate::style::Era::Neomil, crate::style::Era::Neokitsch, crate::style::Era::Kitsch] {
+            let style = era.style();
+            let sheet = self::sheet(&style);
+            let list = &style.mailbox.list;
+            let target = (sheet.selected + 1) % list.rows.len();
+            let initial = (sheet.selected, sheet.showing);
+            let mut pointer = Pointer::default();
+            pointer.sync(list.rows);
+            pointer.event(&Event::Mouse(mouse::Event::CursorMoved { position: Point::ORIGIN }), Some(target));
+            let hover = sheet.row_coat(target, pointer.interaction(list.rows)).unwrap();
+            assert_eq!(hover, list.feedback.unwrap().hover);
+            assert!(sheet.row_coat(sheet.selected, pointer.interaction(list.rows)).is_none());
+            pointer.event(&click(true), Some(target));
+            let held = sheet.row_coat(target, pointer.interaction(list.rows)).unwrap();
+            assert_eq!(held, list.feedback.unwrap().pressed);
+            let dressed = sheet.row_material(list, Some(held));
+            assert_eq!((dressed.row, dressed.sel, dressed.row_trim, dressed.sel_trim),
+                (list.row, list.sel, list.row_trim, list.sel_trim));
+            assert_eq!(dressed.rows, list.rows);
+            assert_eq!((dressed.glyph_x, dressed.glyph_dy, dressed.glyph_w, dressed.new_pill, dressed.icons),
+                (list.glyph_x, list.glyph_dy, list.glyph_w, list.new_pill, list.icons));
+            pointer.event(&Event::Window(iced::window::Event::Unfocused), None);
+            assert!(sheet.row_coat(target, pointer.interaction(list.rows)).is_none());
+            assert_eq!(sheet.row_material(list, None), *list);
+            assert_eq!((sheet.selected, sheet.showing), initial);
+            pointer.event(&click(false), Some(target));
+            assert!(sheet.row_coat(target, pointer.interaction(list.rows)).is_none());
+        }
+    }
+
+    #[test]
+    fn selected_row_feedback_preserves_material_and_geometry() {
+        let style = crate::style::Era::Neokitsch.style();
+        let sheet = self::sheet(&style);
+        let list = &style.mailbox.list;
+        assert!(sheet.row_coat(sheet.selected, Some((sheet.selected, false))).is_none());
+        let held = sheet.row_coat(sheet.selected, Some((sheet.selected, true))).unwrap();
+        assert!(held.selection);
+        assert_eq!(sheet.row_material(list, Some(held)).veneer, list.veneer);
+        let hover = sheet.row_coat(0, Some((0, false))).unwrap();
+        assert_eq!(hover.echo.unwrap().rings, 7);
+        assert!(!hover.selection);
+        let style = crate::style::Era::Neomil.style();
+        let sheet = self::sheet(&style);
+        let hover = sheet.row_coat(sheet.selected, Some((sheet.selected, false))).unwrap();
+        let held = sheet.row_coat(sheet.selected, Some((sheet.selected, true))).unwrap();
+        assert_ne!(hover.fill, held.fill);
+        assert!(held.printing.is_some());
+        assert_eq!(sheet.row_material(&style.mailbox.list, Some(held)).sel, style.mailbox.list.sel);
+    }
+
+    #[test]
+    fn kitsch_row_lift_keeps_two_piece_geometry_and_flat_press_keeps_sender_legible() {
+        let style = crate::style::Era::Kitsch.style();
+        let sheet = self::sheet(&style);
+        let list = &style.mailbox.list;
+        let target = sheet.selected + 1;
+        let hover = sheet.row_coat(target, Some((target, false))).unwrap();
+        let held = sheet.row_coat(target, Some((target, true))).unwrap();
+        let echo = hover.echo.unwrap();
+        assert_eq!(echo.rings, 1);
+        assert_eq!(echo.step, crate::style::Frame::new(20.0, -20.0, 0.0, 0.0));
+        assert!(echo.fill.is_some());
+        assert_eq!((echo.fill_alpha, echo.alpha), (0.58, 0.80));
+        assert!(held.echo.is_none());
+        for coat in [hover, held] {
+            assert!(coat.selection);
+            let dressed = sheet.row_material(list, Some(coat));
+            let [(body, body_trim), (icon, icon_trim)] = Sheet::row_faces(&dressed, list.pitch);
+            assert_eq!(body, Some(list.sel.shifted(0.0, list.pitch)));
+            assert_eq!(icon, list.sel_icon.map(|at| at.shifted(0.0, list.pitch)));
+            assert_eq!((body_trim, icon_trim), (list.sel_trim, list.sel_icon_trim));
+            let (body, icon) = (body.unwrap(), icon.unwrap());
+            assert_eq!(body.x - (icon.x + icon.w), 2.0);
+            assert_eq!(dressed.rows, list.rows);
+            assert_ne!(coat.sender, coat.printing, "sender sits below the colored face");
+        }
+        assert_ne!(hover.sender, held.sender);
+        assert_eq!(sheet.row_material(list, Some(held)).sel_fill, list.sel_fill);
+        let selected = sheet.row_coat(sheet.selected, Some((sheet.selected, false))).unwrap();
+        assert_eq!(selected.echo, hover.echo);
+        assert_eq!(sheet.row_material(list, Some(selected)).sel_fill, list.sel_fill);
+        assert!(selected.printing.is_none());
+        assert!(selected.sender.is_none());
+    }
+
 }
 
 /// Design coordinates to device coordinates.
@@ -679,7 +868,37 @@ fn cased(content: &str, upper: bool) -> String {
 
 impl Sheet<'_> {
     /// Region A: the list frame, its rows, their glyphs and their text.
-    fn list(&self, frame: &mut canvas::Frame, scale: Scale, list: &MailList) {
+    fn row_coat(&self, i: usize, interaction: Option<(usize, bool)>) -> Option<crate::style::MailRowCoat> {
+        let (target, held) = interaction?;
+        if target != i { return None; }
+        let states = self.style.mailbox.list.feedback?;
+        if held { Some(states.pressed) }
+        else if i == self.selected { states.selected_hover }
+        else { Some(states.hover) }
+    }
+
+    fn row_material(&self, list: &MailList, coat: Option<crate::style::MailRowCoat>) -> MailList {
+        let mut dressed = *list;
+        if let Some(c) = coat {
+            if let Some(fill) = c.fill {
+                dressed.row_fill = Some(fill);
+                dressed.sel_fill = fill;
+                dressed.veneer = None;
+            }
+            dressed.row_stroke = c.outline;
+            if let Some(spine) = c.spine { dressed.rule_ink = spine; }
+        }
+        dressed
+    }
+
+    fn row_faces(list: &MailList, shift: f32) -> [(Option<crate::style::Frame>, Trim); 2] {
+        [
+            (Some(list.sel.shifted(0.0, shift)), list.sel_trim),
+            (list.sel_icon.map(|at| at.shifted(0.0, shift)), list.sel_icon_trim),
+        ]
+    }
+
+    fn list(&self, frame: &mut canvas::Frame, scale: Scale, list: &MailList, interaction: Option<(usize, bool)>) {
         let s = self.paint();
 
         if let Some(at) = list.frame {
@@ -707,8 +926,35 @@ impl Sheet<'_> {
 
         for (i, mail) in list.rows.iter().enumerate() {
             let row = self.row_at(i);
-            let selected = i == self.selected;
-            let shift = self.sel_offset();
+            let coat = self.row_coat(i, interaction);
+            let selected = i == self.selected || coat.is_some_and(|c| c.selection);
+            let shift = (i as f32 - list.selected as f32) * list.pitch;
+            let dressed = self.row_material(list, coat);
+            if let Some(c) = coat {
+                if let Some(echo) = c.echo {
+                    for ring in (1..=echo.rings).rev() {
+                        let n = f32::from(ring);
+                        let mut color = ink(s, echo.ink);
+                        color.a *= (echo.alpha - (n - 1.0) * echo.fade).max(0.0);
+                        let fill = echo.fill.map(|fill| {
+                            let mut color = ink(s, fill);
+                            color.a *= (echo.fill_alpha - (n - 1.0) * echo.fade).max(0.0);
+                            color
+                        });
+                        for (at, trim) in Self::row_faces(list, shift) {
+                            if let Some(at) = at {
+                                let outline = crate::style::Frame::new(
+                                    at.x + n * echo.step.x, at.y + n * echo.step.y,
+                                    at.w + n * echo.step.w, at.h + n * echo.step.h,
+                                );
+                                box_at(frame, scale, outline, trim, fill, Some((color, echo.width)));
+                            }
+                        }
+                    }
+                }
+            }
+            let list = &dressed;
+            let printing = coat.and_then(|c| c.printing);
 
             if selected {
                 self.fill(frame, scale, |me, f| {
@@ -723,6 +969,14 @@ impl Sheet<'_> {
                         );
                     }
                     me.selection(f, scale, list, shift);
+                    if let Some(outline) = coat.and_then(|c| c.outline) {
+                        for (at, trim) in Self::row_faces(list, shift) {
+                            if let Some(at) = at {
+                                box_at(f, scale, at, trim, None,
+                                    Some((ink(me.paint(), outline), list.row_width.max(1.1))));
+                            }
+                        }
+                    }
                 });
                 // What the row prints -- [`MailPart::Printing`], for the
                 // era whose bar fades in with its ink rather than
@@ -746,9 +1000,14 @@ impl Sheet<'_> {
                             Some((ink(s, list.rule_ink), 1.0)),
                         );
                     }
-                    me.printing(f, scale, list, mail, row, true);
+                    me.printing(f, scale, list, mail, row, true, printing, coat.and_then(|c| c.sender));
                 });
             } else {
+                if coat.is_some_and(|c| c.echo.is_some()) {
+                    let at = list.sel.shifted(0.0, shift);
+                    box_at(frame, scale, at, list.sel_trim, None,
+                        coat.and_then(|c| c.outline).map(|ink_| (ink(s, ink_), 1.1)));
+                }
                 if list.decor == RowDecor::Boxed {
                     box_at(
                         frame,
@@ -799,7 +1058,7 @@ impl Sheet<'_> {
             }
 
             if !selected {
-                self.printing(frame, scale, list, mail, row, false);
+                self.printing(frame, scale, list, mail, row, false, printing, coat.and_then(|c| c.sender));
             }
         }
     }
@@ -807,20 +1066,20 @@ impl Sheet<'_> {
     /// One row's printing: the envelope, the subject, the sender and
     /// the NEW pill the era marks unread rows with. The selected row's
     /// is drawn under [`MailPart::Printing`], from [`Sheet::list`].
-    fn printing(&self, frame: &mut canvas::Frame, scale: Scale, list: &MailList, mail: &crate::style::Mail, row: crate::style::Frame, selected: bool) {
+    fn printing(&self, frame: &mut canvas::Frame, scale: Scale, list: &MailList, mail: &crate::style::Mail, row: crate::style::Frame, selected: bool, printing: Option<Ink>, sender: Option<Ink>) {
         let s = self.paint();
-        let shift = self.sel_offset();
-        let title_ink = if selected { Ink::OnSelect } else { Ink::Fg };
+        let shift = row.y - list.row.y - list.selected as f32 * list.pitch;
+        let title_ink = printing.unwrap_or(if selected { Ink::OnSelect } else { Ink::Fg });
         // A selected row's sender is dark *only where it sits on
         // the selection*. Kitsch's bar ends above its own from-line
         // and the trace sets that line in the bright yellow, so the
         // rule is geometric rather than another table field.
         let on_fill = selected && row.y + list.from_dy <= list.sel.y + shift + list.sel.h;
-        let from_ink = match (selected, on_fill) {
+        let from_ink = sender.or(printing).unwrap_or(match (selected, on_fill) {
             (true, true) => Ink::OnSelect,
             (true, false) => Ink::Select,
             _ => Ink::Mid,
-        };
+        });
 
         envelope(
             frame,
@@ -1249,9 +1508,9 @@ impl Sheet<'_> {
 }
 
 impl canvas::Program<Message, Style> for Sheet<'_> {
-    type State = ();
+    type State = Pointer<usize>;
 
-    /// Click a row to select it.
+    /// Select only on release over the row originally pressed.
     ///
     /// The plates are drawn from the era table in design coordinates,
     /// so the hit test is the same arithmetic run backwards -- no
@@ -1259,19 +1518,19 @@ impl canvas::Program<Message, Style> for Sheet<'_> {
     /// canvas that already knows where every row is.
     fn update(
         &self,
-        _state: &mut Self::State,
-        event: &canvas::Event,
+        state: &mut Self::State,
+        event: &Event,
         bounds: Rectangle,
         cursor: mouse::Cursor,
     ) -> Option<Action<Message>> {
-        if !matches!(
-            event,
-            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
-        ) {
-            return None;
+        state.sync(self.style.mailbox.list.rows);
+        let row = cursor.position_in(bounds).and_then(|p| self.hit(p, bounds));
+        match state.event(event, row) {
+            PointerAction::Ignore => None,
+            PointerAction::Redraw => Some(Action::request_redraw()),
+            PointerAction::Capture => Some(Action::request_redraw().and_capture()),
+            PointerAction::Activate(row) => Some(Action::publish(Message::Select(row)).and_capture()),
         }
-        let row = self.hit(cursor.position_in(bounds)?, bounds)?;
-        Some(Action::publish(Message::Select(row)))
     }
 
     fn mouse_interaction(
@@ -1288,7 +1547,7 @@ impl canvas::Program<Message, Style> for Sheet<'_> {
 
     fn draw(
         &self,
-        _state: &Self::State,
+        state: &Self::State,
         renderer: &Renderer,
         _theme: &Style,
         bounds: Rectangle,
@@ -1317,7 +1576,12 @@ impl canvas::Program<Message, Style> for Sheet<'_> {
                 }
             }
         }
-        self.under(&mut frame, scale, self.cover(MailPart::List), |me, f| me.list(f, scale, &m.list));
+        let list_sheet = Sheet {
+            selected: self.cursor_row(state),
+            alpha: Cell::new(1.0),
+            ..*self
+        };
+        list_sheet.under(&mut frame, scale, self.cover(MailPart::List), |me, f| me.list(f, scale, &m.list, state.interaction(m.list.rows)));
         self.under(&mut frame, scale, self.cover(MailPart::Panel), |me, f| me.panel(f, scale, &m.panel, &m.list));
         self.under(&mut frame, scale, self.cover(MailPart::Title), |me, f| me.title(f, scale, &m.panel, &m.list));
         self.under(&mut frame, scale, self.cover(MailPart::Buttons), |me, f| me.buttons(f, scale, &m.buttons));

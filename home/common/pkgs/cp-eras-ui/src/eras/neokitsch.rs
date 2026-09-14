@@ -409,13 +409,17 @@ pub fn style() -> Style {
         // --- end mailbox ---
         // --- store ---
         store: STORE,
+        store_states: STORE_STATES,
         store_selection: (1, 1),
+        store_cursor: None,
         // --- end store ---
         // --- dashboard ---
         dashboard: DASHBOARD,
         dashboard_selection: 0,
         dashboard_cursor: false,
-        dashboard_states: &[],
+        mailbox_cursor: false,
+        dashboard_states: HUB_STATES,
+        dashboard_held_backdrops: &[],
         // EMAIL is card 0; nothing on this hub says "store", and the
         // store is `s` from the hub instead (`screens::hub`).
         dashboard_destinations: [Some(Destination::Mail), None, None, None, None, None],
@@ -636,7 +640,7 @@ pub const ACCESS: Access = Access {
 // The wire band's eight strands are the trace's beziers stepped into
 // short segments; at 1.1px they read the same.
 use crate::style::{
-    Frame, Mail, MailBadges, MailButtons, MailList, MailMotion, MailPanel, MailPart, Mailbox,
+    Frame, Mail, MailBadges, MailButtons, MailList, MailRowCoat, MailRowStates, MailRowEcho, MailMotion, MailPanel, MailPart, Mailbox,
     Note, Piece, RowDecor, Run, Seg, Trim, Veneer, FromAt, BL, TR,
 };
 
@@ -1240,6 +1244,25 @@ pub fn mailbox() -> Mailbox {
         chrome: &CHROME,
         overlay: &[],
         list: MailList {
+            feedback: Some(MailRowStates {
+                hover: MailRowCoat {
+                    fill: None, outline: Some(Ink::Fixed(rgb(0xe8c186))),
+                    printing: None, spine: None, selection: false,
+                    sender: None,
+                    echo: Some(MailRowEcho {
+                        rings: 7, step: Frame::new(-0.6, -2.1, 2.2, 2.4),
+                        ink: Ink::Fixed(rgb(0xa97c48)), width: 0.7,
+                        alpha: 0.85, fade: 0.05,
+                        fill: None, fill_alpha: 0.0,
+                    }),
+                },
+                pressed: MailRowCoat {
+                    fill: None, outline: None, printing: None, spine: None,
+                    sender: None,
+                    selection: true, echo: None,
+                },
+                selected_hover: None,
+            }),
             frame: None,
             frame_ink: Ink::Fg,
             frame_width: 0.0,
@@ -1911,6 +1934,67 @@ const GROWN_BODY: &[Prim] = &[
     txt_mid(226.3, 639.8, 11.5, Ink::OnSelect, "SOCKET"),
 ];
 
+// Product hover borrows #nk-button-hover's T2 fan, adapted to the
+// sourced product silhouette at its CURRENT size. Expanded geometry
+// belongs to selection, never pointer feedback.
+macro_rules! product_echo {
+    ($top:expr, $bottom:expr, $n:expr, $alpha:expr) => {
+        shut_path(-0.6 * $n, $bottom - 22.4 + 0.3 * $n, &[
+            Seg::Line(-0.6 * $n, $top + 43.4 - 2.1 * $n),
+            Seg::Quad { cx: -0.6 * $n, cy: $top + 30.4 - 2.1 * $n, x: 13.0 - 0.6 * $n, y: $top + 30.4 - 2.1 * $n },
+            Seg::Line(136.2, $top + 30.4 - 2.1 * $n),
+            Seg::Line(176.2, $top - 2.1 * $n),
+            Seg::Line(244.1 + 1.6 * $n, $top - 2.1 * $n),
+            Seg::Quad { cx: 262.1 + 1.6 * $n, cy: $top - 2.1 * $n, x: 262.1 + 1.6 * $n, y: $top + 18.0 - 2.1 * $n },
+            Seg::Line(262.1 + 1.6 * $n, $bottom - 8.0 + 0.3 * $n),
+            Seg::Quad { cx: 262.1 + 1.6 * $n, cy: $bottom + 0.3 * $n, x: 254.1 + 1.6 * $n, y: $bottom + 0.3 * $n },
+            Seg::Line(19.2 - 0.6 * $n, $bottom + 0.3 * $n),
+        ], Ink::Fixed(iced::Color { a: $alpha, ..rgb(0xa97c48) }), 0.7)
+    };
+}
+macro_rules! product_hover {
+    ($top:expr, $bottom:expr, $face:expr) => {
+        &[
+            product_echo!($top, $bottom, 7.0, 0.55),
+            product_echo!($top, $bottom, 6.0, 0.60),
+            product_echo!($top, $bottom, 5.0, 0.65),
+            product_echo!($top, $bottom, 4.0, 0.70),
+            product_echo!($top, $bottom, 3.0, 0.75),
+            product_echo!($top, $bottom, 2.0, 0.80),
+            product_echo!($top, $bottom, 1.0, 0.85),
+            Prim::At { x: 0.0, y: 0.0, prims: $face },
+        ]
+    };
+}
+const PRODUCT_HOVER: &[Prim] = product_hover!(314.6, 640.4, CARD);
+const PRODUCT_SELECTED_HOVER: &[Prim] = product_hover!(232.9, 711.3, GROWN);
+
+// The selected card's veneer material applied to the compact card's
+// values/socket band. This compression is inferred: the source only
+// shows veneer on the expanded selection. Keep every existing glyph,
+// illustration, tab and frame in place; do not reveal expanded details.
+const fn compact_product_press() -> [Prim; 28] {
+    let mut prims = [CARD[0]; 28];
+    prims[0] = fill_rect(0.0, 492.9, 262.1, 88.45, Ink::Fixed(BODY_FILL));
+    prims[1] = Prim::Grain { x: 0.0, y: 492.9, w: 262.1, h: 88.45, pitch: 2.4, width: 0.7, ink: Ink::Fixed(GRAIN_LINE) };
+    let mut i = 0;
+    while i < CARD.len() {
+        let mut prim = CARD[i];
+        if i >= 8 && i <= 23 {
+            match &mut prim {
+                Prim::Text { ink, .. } => *ink = Ink::OnSelect,
+                Prim::Rect { fill, .. } => *fill = Some(Ink::OnSelect),
+                Prim::At { prims, .. } => *prims = QR_DARK,
+                _ => (),
+            }
+        }
+        prims[i + 2] = prim;
+        i += 1;
+    }
+    prims
+}
+const PRODUCT_PRESSED: &[Prim] = &compact_product_press();
+
 /// The BASKET plate: a gold slab with its bottom-left corner cut, split
 /// by a hairline into a title half and a strand-textured band.
 const PLATE_EDGE: &[Seg] = &[
@@ -1987,6 +2071,72 @@ const NAV_ON_3: &[Prim] = nav!(NAV4, TAB4, 540.0, 576.2, 566.5, "SHOTGUN").0;
 const NAV_OFF_3: &[Prim] = nav!(NAV4, TAB4, 540.0, 576.2, 566.5, "SHOTGUN").1;
 const NAV_ON_4: &[Prim] = nav!(NAV5, TAB5, 600.7, 636.9, 627.2, "PISTOL").0;
 const NAV_OFF_4: &[Prim] = nav!(NAV5, TAB5, 600.7, 636.9, 627.2, "PISTOL").1;
+
+// components.svg #nk-button-hover borrows T2's seven outward rings.
+// Apply its asymmetric expansion to the store's own r4/cut silhouette;
+// the plate, tab and label are the untouched resting drawing on top.
+macro_rules! nav_echo {
+    ($y:expr, $n:expr, $alpha:expr) => {
+        shut_path(97.0 - 0.6 * $n, $y - 2.1 * $n, &[
+            Seg::Line(289.5 + 1.6 * $n, $y - 2.1 * $n),
+            Seg::Quad { cx: 293.5 + 1.6 * $n, cy: $y - 2.1 * $n, x: 293.5 + 1.6 * $n, y: $y + 4.0 - 2.1 * $n },
+            Seg::Line(293.5 + 1.6 * $n, $y + 34.6 + 0.3 * $n),
+            Seg::Quad { cx: 293.5 + 1.6 * $n, cy: $y + 38.6 + 0.3 * $n, x: 289.5 + 1.6 * $n, y: $y + 38.6 + 0.3 * $n },
+            Seg::Line(108.0 - 0.6 * $n, $y + 38.6 + 0.3 * $n),
+            Seg::Line(92.9 - 0.6 * $n, $y + 27.0 + 0.3 * $n),
+            Seg::Line(92.9 - 0.6 * $n, $y + 4.0 - 2.1 * $n),
+            Seg::Quad { cx: 92.9 - 0.6 * $n, cy: $y - 2.1 * $n, x: 97.0 - 0.6 * $n, y: $y - 2.1 * $n },
+        ], Ink::Fixed(iced::Color { a: $alpha, ..rgb(0xa97c48) }), 0.7)
+    };
+}
+macro_rules! nav_states {
+    ($i:expr, $y:expr, $off:expr, $on:expr) => {
+        crate::style::PlateStates {
+            group: Group::Category,
+            index: $i,
+            hover: &[
+                nav_echo!($y, 7.0, 0.55),
+                nav_echo!($y, 6.0, 0.60),
+                nav_echo!($y, 5.0, 0.65),
+                nav_echo!($y, 4.0, 0.70),
+                nav_echo!($y, 3.0, 0.75),
+                nav_echo!($y, 2.0, 0.80),
+                nav_echo!($y, 1.0, 0.85),
+                Prim::At { x: 0.0, y: 0.0, prims: $off },
+            ],
+            pressed: $on,
+            selected_away: None,
+            preserve_selected_hover: true,
+            selected_hover: None,
+            selected_pressed: None,
+        }
+    };
+}
+macro_rules! product_states {
+    ($i:expr) => {
+        crate::style::PlateStates {
+            group: Group::Card,
+            index: $i,
+            hover: PRODUCT_HOVER,
+            pressed: PRODUCT_PRESSED,
+            selected_hover: Some(PRODUCT_SELECTED_HOVER),
+            selected_pressed: Some(GROWN),
+            selected_away: None,
+            preserve_selected_hover: false,
+        }
+    };
+}
+pub(crate) const STORE_STATES: &[crate::style::PlateStates] = &[
+    nav_states!(0, 357.9, NAV_OFF_0, NAV_ON_0),
+    nav_states!(1, 418.6, NAV_OFF_1, NAV_ON_1),
+    nav_states!(2, 479.3, NAV_OFF_2, NAV_ON_2),
+    nav_states!(3, 540.0, NAV_OFF_3, NAV_ON_3),
+    nav_states!(4, 600.7, NAV_OFF_4, NAV_ON_4),
+    product_states!(0),
+    product_states!(1),
+    product_states!(2),
+    product_states!(3),
+];
 
 macro_rules! shelf {
     ($i:expr) => {
@@ -2309,6 +2459,51 @@ const CARD_SELECTED: &[Prim] = &[
     Prim::Path { x: 0.0, y: 6.5, segs: NCARDSEL, close: true, fill: Some(Ink::Fixed(HUB_FILL)), stroke: Some(Ink::Fixed(HUB_FILL)), width: 1.2 },
     Prim::At { x: 0.0, y: 0.0, prims: &EMAIL_GRAIN },
     Prim::Round { x: -1.25, y: 58.3, w: 4.6, h: 32.1, r: 1.5, fill: Some(Ink::Fixed(HUB_PLATE)), stroke: None, width: 0.0 },
+];
+
+/// components.svg #nk-card-hover: lift the six existing rings from
+/// HUB_MID to HUB_EDGE and the front to HUB_FILL, with geometry and
+/// opacity unchanged. Like the resting rings, preblend over PAGE.
+const fn hover_ring(alpha: f32) -> Ink {
+    Ink::Fixed(iced::Color {
+        r: PAGE.r + (HUB_EDGE.r - PAGE.r) * alpha,
+        g: PAGE.g + (HUB_EDGE.g - PAGE.g) * alpha,
+        b: PAGE.b + (HUB_EDGE.b - PAGE.b) * alpha,
+        a: 1.0,
+    })
+}
+const CARD_HOVER: &[Prim] = &[
+    line_path(0.0, 28.7, NRING6, hover_ring(0.25), 1.0),
+    line_path(0.0, 25.0, NRING5, hover_ring(0.37), 1.0),
+    line_path(0.0, 21.3, NRING4, hover_ring(0.49), 1.0),
+    line_path(0.0, 17.6, NRING3, hover_ring(0.61), 1.0),
+    line_path(0.0, 13.9, NRING2, hover_ring(0.73), 1.0),
+    line_path(0.0, 10.2, NRING1, hover_ring(0.85), 1.0),
+    shut_path(0.0, 6.5, NCARD, Ink::Fixed(HUB_FILL), 1.2),
+    CARD_IDLE[7],
+];
+
+macro_rules! module_states {
+    ($i:expr, $x:expr, $y:expr) => {
+        crate::style::PlateStates {
+            group: Group::Module,
+            index: $i,
+            hover: &[Prim::At { x: $x, y: $y, prims: CARD_HOVER }],
+            pressed: &[Prim::At { x: $x, y: $y, prims: CARD_SELECTED }],
+            selected_away: None,
+            preserve_selected_hover: true,
+            selected_hover: None,
+            selected_pressed: None,
+        }
+    };
+}
+const HUB_STATES: &[crate::style::PlateStates] = &[
+    module_states!(0, 246.0, 384.0),
+    module_states!(1, 347.0, 284.0),
+    module_states!(2, 449.0, 182.0),
+    module_states!(3, 624.0, 384.0),
+    module_states!(4, 724.0, 284.0),
+    module_states!(5, 826.0, 182.0),
 ];
 
 /// The strand count of [`EMAIL_GRAIN`]: the trace's 42 strands at 2.1
@@ -2808,6 +3003,108 @@ pub const DASHBOARD: &[Prim] = &[
 #[cfg(test)]
 mod dashboard_tests {
     use super::{PANEL_COPY, PARAGRAPHS};
+
+    #[test]
+    fn store_categories_echo_outward_without_changing_faces_or_selection_material() {
+        use super::*;
+        let categories: Vec<_> = CONTENT.iter().filter_map(|prim| match prim {
+            Prim::Plate { group: Group::Category, index, y, on, off, .. } => Some((*index, *y, *on, *off)),
+            _ => None,
+        }).collect();
+        let states: Vec<_> = STORE_STATES.iter().filter(|s| s.group == Group::Category).collect();
+        assert_eq!(states.len(), categories.len());
+        for state in states {
+            let (_, top, on, off) = categories.iter().find(|(i, ..)| *i == state.index).unwrap();
+            assert_eq!(state.group, Group::Category);
+            assert_eq!(state.pressed, *on, "press preserves existing grain, tab and dark label");
+            assert!(state.preserve_selected_hover);
+            assert_eq!(state.hover.len(), 8);
+            assert_eq!(state.hover[7], Prim::At { x: 0.0, y: 0.0, prims: off });
+            for (i, ring) in state.hover[..7].iter().enumerate() {
+                let n = (7 - i) as f32;
+                let Prim::Path { x, y, segs, stroke: Some(Ink::Fixed(ink)), width, fill, .. } = ring else {
+                    panic!("hover ring must be an unfilled outline");
+                };
+                assert!(fill.is_none());
+                assert_eq!(*width, 0.7);
+                assert_eq!((ink.r, ink.g, ink.b), (rgb(0xa97c48).r, rgb(0xa97c48).g, rgb(0xa97c48).b));
+                assert!((ink.a - (0.55 + 0.05 * i as f32)).abs() < 0.00001);
+                assert_eq!((*x, *y), (97.0 - 0.6 * n, top - 2.1 * n));
+                assert_eq!(segs[0], Seg::Line(289.5 + 1.6 * n, top - 2.1 * n));
+                assert_eq!(segs[4], Seg::Line(108.0 - 0.6 * n, top + 38.6 + 0.3 * n));
+                assert_eq!(segs[5], Seg::Line(92.9 - 0.6 * n, top + 27.0 + 0.3 * n));
+            }
+        }
+    }
+
+    #[test]
+    fn product_feedback_keeps_compact_content_and_selected_growth_separate() {
+        use super::*;
+        let states: Vec<_> = STORE_STATES.iter().filter(|s| s.group == Group::Card).collect();
+        assert_eq!(states.len(), 4);
+        for (i, state) in states.iter().enumerate() {
+            assert_eq!(state.index, i);
+            assert_eq!(state.hover[7], Prim::At { x: 0.0, y: 0.0, prims: CARD });
+            assert_eq!(state.selected_hover.unwrap()[7], Prim::At { x: 0.0, y: 0.0, prims: GROWN });
+            assert_eq!(state.selected_pressed, Some(GROWN));
+            assert_eq!(state.pressed, PRODUCT_PRESSED);
+        }
+        assert_eq!(PRODUCT_PRESSED.len(), CARD.len() + 2);
+        // Same compact content/positions, with only ink and QR polarity
+        // changed inside the new veneer strip. No expanded-only text.
+        for (i, (rest, held)) in CARD.iter().zip(&PRODUCT_PRESSED[2..]).enumerate() {
+            let mut expected = *rest;
+            if (8..=23).contains(&i) {
+                match &mut expected {
+                    Prim::Text { ink, .. } => *ink = Ink::OnSelect,
+                    Prim::Rect { fill, .. } => *fill = Some(Ink::OnSelect),
+                    Prim::At { prims, .. } => *prims = QR_DARK,
+                    _ => panic!("unexpected compact veneer content"),
+                }
+            }
+            assert_eq!(*held, expected);
+        }
+        let Prim::Grain { y, h, pitch, ink, .. } = PRODUCT_PRESSED[1] else { panic!("veneer needs grain") };
+        assert_eq!((y, h, pitch, ink), (492.9, 88.45, 2.4, Ink::Fixed(GRAIN_LINE)));
+        for (hover, top, bottom) in [(PRODUCT_HOVER, 314.6, 640.4), (PRODUCT_SELECTED_HOVER, 232.9, 711.3)] {
+            for (i, prim) in hover[..7].iter().enumerate() {
+                let n = (7 - i) as f32;
+                let Prim::Path { x, segs, stroke: Some(Ink::Fixed(ink)), width, fill, .. } = prim else { panic!("echo needs outline") };
+                assert!(fill.is_none());
+                assert_eq!(*width, 0.7);
+                assert_eq!(*x, -0.6 * n);
+                assert_eq!(segs[3], Seg::Line(176.2, top - 2.1 * n));
+                assert_eq!(segs[6], Seg::Line(262.1 + 1.6 * n, bottom - 8.0 + 0.3 * n));
+                assert!((ink.a - (0.55 + 0.05 * i as f32)).abs() < 0.00001);
+            }
+        }
+    }
+
+    #[test]
+    fn hover_preserves_card_geometry_and_press_reuses_veneer_at_each_origin() {
+        use super::*;
+        for (idle, hover) in CARD_IDLE.iter().zip(CARD_HOVER) {
+            match (*idle, *hover) {
+                (Prim::Path { stroke: Some(_), .. }, Prim::Path { stroke: Some(ink), .. }) => {
+                    let mut expected = *idle;
+                    if let Prim::Path { stroke, .. } = &mut expected { *stroke = Some(ink); }
+                    assert_eq!(expected, *hover);
+                }
+                _ => assert_eq!(idle, hover),
+            }
+        }
+        let mut centres = Vec::new();
+        crate::screens::scene::plates(DASHBOARD, 0.0, 0.0, &mut centres);
+        assert_eq!(HUB_STATES.len(), centres.len());
+        for state in HUB_STATES {
+            let (_, _, centre) = centres.iter().find(|(g, i, _)| (*g, *i) == (state.group, state.index)).unwrap();
+            for (drawing, face) in [(state.hover, CARD_HOVER), (state.pressed, CARD_SELECTED)] {
+                let [Prim::At { x, y, prims }] = drawing else { panic!("card origin missing") };
+                assert_eq!((*x + 90.5 / 2.0, *y + 327.0 / 2.0), (centre.x, centre.y));
+                assert_eq!(*prims, face);
+            }
+        }
+    }
 
     /// The detail panel previews the inbox: its eight lines are the
     /// selected message's first two paragraphs, re-wrapped to the

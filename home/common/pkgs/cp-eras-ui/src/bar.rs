@@ -216,6 +216,100 @@ pub struct TrayMenu {
 /// nothing edits it while it is up.
 pub type MenuPath = Vec<usize>;
 
+/// Pointer intent for a row in an open tray menu.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MenuInteraction {
+    /// Entering a row opens its branch without toggling it closed.
+    Hover,
+    /// Leaving a row allows a deliberately closed branch to open again.
+    Exit,
+    /// Clicking a submenu retains the explicit open/close toggle.
+    Click,
+}
+
+/// Pointer state for one open menu. Create a fresh value when opening
+/// another menu, and retain it across layout refreshes of that same menu.
+#[derive(Debug, Default)]
+pub struct MenuPointer {
+    // Rebuilding the deepest-first panel row may recreate a mouse area's
+    // state. Its synthetic entry must not undo an explicit click-close.
+    closed: Option<MenuPath>,
+}
+
+impl MenuPointer {
+    /// Apply a row event and return a newly opened submenu's id for the
+    /// host's `AboutToShow` request. A click-closed row stays closed until
+    /// the pointer actually leaves it, even if layout recreates its widget.
+    pub fn update(
+        &mut self,
+        menu: &TrayMenu,
+        open: &mut MenuPath,
+        row: &[usize],
+        interaction: MenuInteraction,
+    ) -> Option<i32> {
+        match interaction {
+            MenuInteraction::Exit => {
+                if self.closed.as_deref() == Some(row) {
+                    self.closed = None;
+                }
+                return None;
+            }
+            MenuInteraction::Hover if self.closed.as_deref() == Some(row) => return None,
+            _ => {}
+        }
+        let was_open = open.as_slice() == row;
+        let expand = update_menu_path(menu, open, row, interaction);
+        if interaction == MenuInteraction::Click && was_open && open.as_slice() != row {
+            self.closed = Some(row.to_vec());
+        }
+        expand
+    }
+}
+
+/// Update the visible submenu chain, returning the id whose children
+/// the host should refresh with `AboutToShow`. Empty lazy submenus count
+/// as opened; re-entering an open branch does not request another refresh.
+/// Disabled rows, separators and paths outside the visible chain do nothing.
+/// Leaf activation remains the host's separate entry callback.
+fn update_menu_path(
+    menu: &TrayMenu,
+    open: &mut MenuPath,
+    row: &[usize],
+    interaction: MenuInteraction,
+) -> Option<i32> {
+    let (&index, parent) = row.split_last()?;
+    if !open.starts_with(parent) {
+        return None;
+    }
+    let mut entries = &menu.entries;
+    for &ancestor in parent {
+        let entry = entries.get(ancestor)?;
+        if !entry.enabled || entry.kind != MenuKind::Submenu {
+            return None;
+        }
+        entries = &entry.children;
+    }
+    let entry = entries.get(index)?;
+    if !entry.enabled || entry.kind == MenuKind::Separator {
+        return None;
+    }
+    if entry.kind != MenuKind::Submenu {
+        if interaction == MenuInteraction::Hover {
+            open.truncate(parent.len());
+        }
+        return None;
+    }
+    if interaction == MenuInteraction::Hover && open.starts_with(row) {
+        return None;
+    }
+    if interaction == MenuInteraction::Click && open.as_slice() == row {
+        open.pop();
+        return None;
+    }
+    *open = row.to_vec();
+    Some(entry.id)
+}
+
 /// Characters of a menu label drawn before it is clipped.
 ///
 /// An application chooses its own labels and some of them are
@@ -1535,6 +1629,7 @@ fn menu_row<'a, Message: Clone + 'static>(
     edge: f32,
     on_entry: fn(i32) -> Message,
     on_submenu: fn(MenuPath) -> Message,
+    on_hover: Option<fn(MenuPath, MenuInteraction) -> Message>,
 ) -> Element<'a, Message> {
     let m = &style.bar.menu;
 
@@ -1714,14 +1809,20 @@ fn menu_row<'a, Message: Clone + 'static>(
         // is drawn until the children turn up: `levels` walks into a
         // row only when it has some, so a row the application really
         // has nothing for stays marked and looks unmoved.
-        MenuKind::Submenu => on_submenu(path),
+        MenuKind::Submenu => on_submenu(path.clone()),
         _ => on_entry(entry.id),
     };
 
-    mouse_area(face)
+    let row = mouse_area(face)
         .on_press(message)
-        .interaction(mouse::Interaction::Pointer)
-        .into()
+        .interaction(mouse::Interaction::Pointer);
+    match on_hover {
+        Some(on_hover) => row
+            .on_enter(on_hover(path.clone(), MenuInteraction::Hover))
+            .on_exit(on_hover(path, MenuInteraction::Exit))
+            .into(),
+        None => row.into(),
+    }
 }
 
 /// A break between groups, in the era's own shape.
@@ -1778,6 +1879,7 @@ fn menu_panel<'a, Message: Clone + 'static>(
     root: bool,
     on_entry: fn(i32) -> Message,
     on_submenu: fn(MenuPath) -> Message,
+    on_hover: Option<fn(MenuPath, MenuInteraction) -> Message>,
 ) -> Element<'a, Message> {
     let m = &style.bar.menu;
     let gutter = has_icons(level.entries);
@@ -1802,6 +1904,7 @@ fn menu_panel<'a, Message: Clone + 'static>(
             edge,
             on_entry,
             on_submenu,
+            on_hover,
         ));
         if m.row_divider && index + 1 < level.entries.len() {
             rows = rows.push(row_divider(style));
@@ -1889,6 +1992,32 @@ pub fn tray_menu<'a, Message: Clone + 'static>(
     on_entry: fn(i32) -> Message,
     on_submenu: fn(MenuPath) -> Message,
 ) -> Element<'a, Message> {
+    tray_menu_inner(style, menu, open, on_entry, on_submenu, None)
+}
+
+/// A tray menu that also reports entry into enabled, non-separator rows.
+/// Handle `on_hover` with [`MenuPointer::update`]
+/// to open submenus and close deeper branches when entering sibling leaves.
+/// The separate click callback keeps hover from toggling an open branch.
+pub fn tray_menu_with_hover<'a, Message: Clone + 'static>(
+    style: &Style,
+    menu: &TrayMenu,
+    open: &[usize],
+    on_entry: fn(i32) -> Message,
+    on_submenu: fn(MenuPath) -> Message,
+    on_hover: fn(MenuPath, MenuInteraction) -> Message,
+) -> Element<'a, Message> {
+    tray_menu_inner(style, menu, open, on_entry, on_submenu, Some(on_hover))
+}
+
+fn tray_menu_inner<'a, Message: Clone + 'static>(
+    style: &Style,
+    menu: &TrayMenu,
+    open: &[usize],
+    on_entry: fn(i32) -> Message,
+    on_submenu: fn(MenuPath) -> Message,
+    on_hover: Option<fn(MenuPath, MenuInteraction) -> Message>,
+) -> Element<'a, Message> {
     let m = &style.bar.menu;
     let levels = levels(style, menu, open);
 
@@ -1905,7 +2034,9 @@ pub fn tray_menu<'a, Message: Clone + 'static>(
         }
         // `depth` never runs past the walk, so this slice is the
         // prefix that actually got followed.
-        let panel = menu_panel(style, level, &open[..depth], depth == 0, on_entry, on_submenu);
+        let panel = menu_panel(
+            style, level, &open[..depth], depth == 0, on_entry, on_submenu, on_hover,
+        );
         chain = chain.push(
             iced::widget::column![
                 Space::new()
@@ -2531,6 +2662,119 @@ mod tests {
                 command(6, "Quit"),
             ],
         }
+    }
+
+    fn nested_menu() -> TrayMenu {
+        let mut menu = menu();
+        menu.entries[2].children.push(submenu(
+            7, "Advanced", vec![command(8, "Properties")],
+        ));
+        menu.entries.push(submenu(9, "Lazy", Vec::new()));
+        menu.entries.push(MenuEntry {
+            enabled: false,
+            ..submenu(10, "Unavailable", vec![command(11, "Hidden")])
+        });
+        menu
+    }
+
+    #[test]
+    fn hover_opens_submenus_once_and_preserves_open_descendants() {
+        let menu = nested_menu();
+        let mut open = vec![];
+        assert_eq!(update_menu_path(&menu, &mut open, &[2], MenuInteraction::Hover), Some(3));
+        assert_eq!(open, [2]);
+        assert_eq!(update_menu_path(&menu, &mut open, &[2, 2], MenuInteraction::Hover), Some(7));
+        assert_eq!(open, [2, 2]);
+        for path in [&[2][..], &[2, 2][..]] {
+            assert_eq!(update_menu_path(&menu, &mut open, path, MenuInteraction::Hover), None);
+            assert_eq!(open, [2, 2]);
+        }
+    }
+
+    #[test]
+    fn hovering_a_leaf_closes_only_branches_below_its_panel() {
+        let menu = nested_menu();
+        let mut open = vec![2, 2];
+        assert_eq!(update_menu_path(&menu, &mut open, &[2, 0], MenuInteraction::Hover), None);
+        assert_eq!(open, [2]);
+        assert_eq!(update_menu_path(&menu, &mut open, &[3], MenuInteraction::Hover), None);
+        assert!(open.is_empty());
+    }
+
+    #[test]
+    fn hovering_a_lazy_sibling_requests_expansion_before_children_exist() {
+        let mut menu = nested_menu();
+        let mut open = vec![2, 2];
+        assert_eq!(update_menu_path(&menu, &mut open, &[4], MenuInteraction::Hover), Some(9));
+        assert_eq!(open, [4]);
+        assert_eq!(levels(&style(), &menu, &open).len(), 1);
+        assert_eq!(update_menu_path(&menu, &mut open, &[4], MenuInteraction::Hover), None);
+        // A later AboutToShow layout fills the same branch; no second
+        // pointer event is required for its panel to become visible.
+        menu.entries[4].children.push(command(12, "Loaded"));
+        assert_eq!(levels(&style(), &menu, &open).len(), 2);
+        assert_eq!(update_menu_path(&menu, &mut open, &[4], MenuInteraction::Hover), None);
+        assert_eq!(open, [4]);
+    }
+
+    #[test]
+    fn disabled_separator_and_stale_paths_do_not_change_or_expand_menus() {
+        let menu = nested_menu();
+        for interaction in [MenuInteraction::Hover, MenuInteraction::Click] {
+            for path in [vec![], vec![1], vec![5], vec![99], vec![2, 99], vec![4, 0], vec![5, 0]] {
+                let mut open = vec![2, 2];
+                assert_eq!(update_menu_path(&menu, &mut open, &path, interaction), None);
+                assert_eq!(open, [2, 2]);
+            }
+        }
+    }
+
+    #[test]
+    fn submenu_click_still_toggles_and_reopens_after_hover() {
+        let menu = nested_menu();
+        let mut open = vec![];
+        assert_eq!(update_menu_path(&menu, &mut open, &[2], MenuInteraction::Hover), Some(3));
+        assert_eq!(update_menu_path(&menu, &mut open, &[2], MenuInteraction::Click), None);
+        assert!(open.is_empty());
+        assert_eq!(update_menu_path(&menu, &mut open, &[2], MenuInteraction::Click), Some(3));
+        assert_eq!(update_menu_path(&menu, &mut open, &[2, 2], MenuInteraction::Click), Some(7));
+        // The original click behavior replaces a deeper chain when its
+        // ancestor is clicked; only equality toggles the clicked row off.
+        assert_eq!(update_menu_path(&menu, &mut open, &[2], MenuInteraction::Click), Some(3));
+        assert_eq!(open, [2]);
+    }
+
+    #[test]
+    fn synthetic_entry_after_click_close_waits_for_that_rows_exit() {
+        let menu = nested_menu();
+        let mut pointer = MenuPointer::default();
+        let mut open = vec![];
+        assert_eq!(pointer.update(&menu, &mut open, &[2], MenuInteraction::Hover), Some(3));
+        assert_eq!(pointer.update(&menu, &mut open, &[2], MenuInteraction::Click), None);
+        assert!(open.is_empty());
+        // Recreating a mouse_area while removing a panel emits a fresh
+        // on_enter at the stationary cursor. It must not undo the click.
+        assert_eq!(pointer.update(&menu, &mut open, &[2], MenuInteraction::Hover), None);
+        assert_eq!(pointer.update(&menu, &mut open, &[2, 2], MenuInteraction::Exit), None);
+        assert_eq!(pointer.update(&menu, &mut open, &[2], MenuInteraction::Hover), None);
+        assert!(open.is_empty());
+        assert_eq!(pointer.update(&menu, &mut open, &[2], MenuInteraction::Exit), None);
+        assert_eq!(pointer.update(&menu, &mut open, &[2], MenuInteraction::Hover), Some(3));
+        assert_eq!(open, [2]);
+    }
+
+    #[test]
+    fn a_closed_hover_guard_does_not_block_clicks_or_a_new_menu() {
+        let menu = nested_menu();
+        let mut pointer = MenuPointer::default();
+        let mut open = vec![2];
+        assert_eq!(pointer.update(&menu, &mut open, &[2], MenuInteraction::Click), None);
+        assert_eq!(pointer.update(&menu, &mut open, &[2], MenuInteraction::Click), Some(3));
+        assert_eq!(pointer.update(&menu, &mut open, &[2], MenuInteraction::Click), None);
+        // Dismiss destroys Open (and its pointer state); a new menu starts
+        // with a fresh pointer even if the cursor is over the same row.
+        pointer = MenuPointer::default();
+        assert_eq!(pointer.update(&menu, &mut open, &[2], MenuInteraction::Hover), Some(3));
     }
 
     #[test]

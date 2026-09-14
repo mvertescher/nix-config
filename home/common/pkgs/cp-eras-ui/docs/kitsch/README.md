@@ -139,13 +139,19 @@ pixels (no fuzz), so no clip nicks a ghost stack or a stroke at rest.
 `frame.sh --at 0.08 / 0.2 / 0.4 kitsch dashboard`, `--at 0.1 / 0.25`
 for the store and mailbox, are the moments to look at.
 
-Not yet transcribed into `src/eras/kitsch.rs`. One thing the coding
-side will meet: the hub's ghosts sit in `HUB_BACK`, one `Prim::Soft`
-group with the ground and bloom, and `screens/soft.rs` takes no
-`Prim::Motion` inside a `Soft` group (a composited group is rasterised
-once and cached), so the two fans' ghosts need their own group(s) —
-each clip rect above contains its fan's whole stack, as `PIPELINE.md`
-asks.
+Transcribed into `src/eras/kitsch.rs`: `HUB_BACK` contains the ground
+and bloom, and the two fans' ghosts live in separate `FAN_LEFT` and
+`FAN_RIGHT` software-composited groups under their extrusion clips.
+`screens/soft.rs` still takes no `Prim::Motion` inside a `Soft` group;
+the motion wrappers sit outside those cached groups.
+
+Dashboard interaction audit (2026-09-14): holding a blade can remove
+its own ghost trail and use its existing yellow face. That needs
+pointer feedback shared with the backdrop, while keeping the scene's
+hit-test identity stable. The hub's hover destination remains undefined:
+each blade already has five to seven ghosts at rest, whereas the
+component rule below adds one to an unextruded control. Neither reducing
+the trail to one nor adding another layer follows an annotated hub state.
 
 ## Hover and press
 
@@ -170,9 +176,9 @@ renders the same fan as physical slabs standing on a table with the
 thumbnail, NETWORK's yellow face runs y 336..370 and its body fades out
 over y 372..426 (54 px); down x 700, EVENTS' teal face runs y 320..358
 and its body over y 362..398 (36 px), so the chosen slab stands about
-1.5x taller than its neighbours. Selection, meanwhile, never moves or
-grows a cell: it keeps the silhouette and swaps outline for fill (era
-rule 5). Hence:
+1.5x taller than its neighbours. Selection on small controls keeps the
+silhouette and swaps outline for fill. Product cards are the exception:
+committed selection grows the card and adds a detail body. Hence:
 
 - **Hover = lift.** The cell keeps its silhouette exactly; where it was
   an outline its face becomes the fan blade's idle slab (fill `#2c9798`,
@@ -201,8 +207,46 @@ Groups on the sheet: `k-button-{rest,hover,press}`,
 the photo region and the sourced/inferred flag. The canvas grew from
 1080 to 1392 for the band; the top 1080 rows render pixel-identical to
 before. The tab chevron (161x46) and the fan blade take the same three
-states and are not drawn separately. Not yet plumbed: `catalog` still
-gives buttons and fields no hover/press treatment, and the transitions
+states and are not drawn separately. The store's five category chevrons
+now implement these inferred destinations: an unselected hover adds the
+single (+20,−20) ghost and solid teal face, holding collapses it to the
+existing yellow selection, and release leaves that same flat selection.
+Selected categories retain yellow while hovered. The rest silhouette,
+label positions and hit boxes are unchanged. The ghost uses the foreground canvas's alpha
+blend rather than the sRGB `Soft` compositor used by the hub ghosts, so
+its translucent pixels are an approximation of the SVG over the bloom.
+
+Product cards now extend the same inferred reading, without borrowing
+selection's growth: hover adds the single (+20,−20) ghost behind an idle
+teal slab (`#2c9798`, `#a9e6df` edge, `#123c38` text and gun), and press
+collapses the ghost to flat selected amber with dark text and gun.
+The compact QR cells also print dark on both filled states, using their
+original socket positions rather than the grown card's QR layout. The
+card stays 261×320; titles, gun, statistics, shelf band, sockets and
+footnotes keep their original positions. Only release commits the grown
+selection and its extra detail body. Hovering an already selected card
+adds the ghost behind its solid upper slab while preserving all grown
+art; pressing it removes that ghost. The outlined lower body is not
+filled or duplicated. This is an extension of the widget sheet's material
+rule, not a photographed product-card cursor state. It uses the same
+approximate foreground alpha as the categories. The existing shelf
+animation clip trims the ghost above y=210 and at the screen edge; its
+geometry and the card hit boxes stay unchanged.
+
+The trace mailbox rows now implement the inferred band-11 destinations:
+an unselected hover fills both traced pieces teal and adds a filled,
+outlined ghost at (+20,−20); holding replaces that with flat row yellow.
+The icon and title keep their own chamfered surfaces and 2px gap. Dark
+printing stays on those faces; the sender below stays mint on hover and
+yellow while held. Hovering a selected row retains its yellow face and
+adds the same two-piece ghost. Unread envelopes, text, row hit areas and
+reader selection remain independent of pointer feedback. Ghost alpha is
+the foreground canvas approximation already used by product cards, not
+the hub's sRGB soft composite. These are inferred destinations, with no
+new timing or source/golden edits; desktop interaction remains to check.
+
+Still pending: `catalog` gives buttons and fields no hover/press
+treatment, and the transitions
 (lift in, collapse on press) are not annotated as SMIL anywhere — this
 is the destination design only, per `PIPELINE.md` § "Motion".
 
@@ -316,3 +360,14 @@ Render with Rajdhani on fontconfig:
 nix shell nixpkgs#librsvg --command \
   rsvg-convert -w 1600 store-trace.svg -o /tmp/kitsch-store.png
 ```
+
+Dashboard held feedback (2026-09-14, working tree): holding any blade
+removes only that blade's existing ghost trail and uses its existing
+yellow selected face, including dark label ink. Other trails retain their
+order and original extrusion clips; the ground and bloom stay unchanged.
+Selection and routing still commit only on release over the original
+blade. Exit, focus loss, keyboard input and route changes restore the
+resting backdrop. Hover is unchanged pending a hub-specific design rule.
+The two fans have disjoint pixel coverage, so removing a left-fan trail
+cannot change the right fan's cached composite. This adds no animation
+or revised trace/golden artwork; live desktop interaction remains pending.

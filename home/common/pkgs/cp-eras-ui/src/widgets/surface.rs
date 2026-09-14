@@ -24,8 +24,13 @@ pub enum Cut {
     Square,
     /// A diagonal cut `x` wide along the horizontal edge and `y` tall
     /// along the vertical one.
-    Chamfer { x: f32, y: f32 },
-    Round { radius: f32 },
+    Chamfer {
+        x: f32,
+        y: f32,
+    },
+    Round {
+        radius: f32,
+    },
     /// Kitsch's nav chevron (`mailbox-trace.svg` `#chev`, `bar.svg`
     /// item 4): the vertical edge rises from `y` to a peak `x` along the
     /// top, then drops `brow.0` further along to `brow.1` *below* the
@@ -33,7 +38,11 @@ pub enum Cut {
     /// shoulder rather than a corner: the box's top is not where the
     /// shape's top is. Top-left only -- on any other corner it is the
     /// chamfer `{ x, y }`, brow and all ignored.
-    Peak { x: f32, y: f32, brow: (f32, f32) },
+    Peak {
+        x: f32,
+        y: f32,
+        brow: (f32, f32),
+    },
 }
 
 impl Cut {
@@ -598,6 +607,13 @@ impl<Message> canvas::Program<Message, Style> for Surface {
             return vec![frame.into_geometry()];
         }
 
+        self.paint(&mut frame, w, h);
+        vec![frame.into_geometry()]
+    }
+}
+
+impl Surface {
+    fn paint(&self, frame: &mut canvas::Frame, w: f32, h: f32) {
         // A stroke straddles its path, so a shape built flush to the
         // canvas bounds loses the outer half of its outline to
         // clipping -- visible as a box missing its right and bottom
@@ -609,7 +625,7 @@ impl<Message> canvas::Program<Message, Style> for Surface {
         };
         let (pw, ph) = (w - inset * 2.0, h - inset * 2.0);
         if pw <= 0.0 || ph <= 0.0 {
-            return vec![frame.into_geometry()];
+            return;
         }
         frame.translate(iced::Vector::new(inset, inset));
 
@@ -641,16 +657,8 @@ impl<Message> canvas::Program<Message, Style> for Surface {
                     let y0 = i as f32 / bands as f32 * ph;
                     let y1 = (i + 1) as f32 / bands as f32 * ph;
                     let tone = if i % 2 == 0 { light } else { dark };
-                    if let Some(band) =
-                        band_path(self.corners, self.ticket, pw, ph, y0, y1)
-                    {
-                        frame.fill(
-                            &band,
-                            Color {
-                                a: 0.16,
-                                ..tone
-                            },
-                        );
+                    if let Some(band) = band_path(self.corners, self.ticket, pw, ph, y0, y1) {
+                        frame.fill(&band, Color { a: 0.16, ..tone });
                     }
                 }
 
@@ -689,8 +697,6 @@ impl<Message> canvas::Program<Message, Style> for Surface {
                     .with_width(self.stroke_width),
             );
         }
-
-        vec![frame.into_geometry()]
     }
 }
 
@@ -703,7 +709,9 @@ pub fn surface<'a, Message: 'static>(
 ) -> Element<'a, Message> {
     stack![
         canvas(surface).width(Length::Fill).height(Length::Fill),
-        container(content.into()).padding(padding).width(Length::Fill)
+        container(content.into())
+            .padding(padding)
+            .width(Length::Fill)
     ]
     .into()
 }
@@ -728,7 +736,9 @@ pub fn backdrop<'a, Message: 'static>(
 ) -> Element<'a, Message> {
     layered(
         canvas(surface).width(Length::Fill).height(Length::Fill),
-        container(content.into()).padding(padding).width(Length::Fill),
+        container(content.into())
+            .padding(padding)
+            .width(Length::Fill),
     )
 }
 
@@ -745,6 +755,7 @@ pub fn layered<'a, Message: 'static>(
 ) -> Element<'a, Message> {
     Backdrop {
         children: vec![background.into(), content.into()],
+        outset: [0.0; 4],
     }
     .into()
 }
@@ -757,6 +768,7 @@ pub fn layered<'a, Message: 'static>(
 /// widget and sits at the bottom -- and this is the one place that needs
 /// them apart.
 struct Backdrop<'a, Message> {
+    outset: [f32; 4],
     /// `[background, content]`, in draw order. `content` is the sizer.
     children: Vec<Element<'a, Message>>,
 }
@@ -793,11 +805,16 @@ impl<Message> Widget<Message, Style, Renderer> for Backdrop<'_, Message> {
 
         // Min and max are the same, so the background's `Length::Fill`
         // resolves to the content's size rather than to the parent's.
-        let background = self.children[0].as_widget_mut().layout(
-            &mut tree.children[0],
-            renderer,
-            &layout::Limits::new(size, size),
-        );
+        let [left, top, right, bottom] = self.outset;
+        let background_size = Size::new(size.width + left + right, size.height + top + bottom);
+        let background = self.children[0]
+            .as_widget_mut()
+            .layout(
+                &mut tree.children[0],
+                renderer,
+                &layout::Limits::new(background_size, background_size),
+            )
+            .move_to(Point::new(-left, -top));
 
         layout::Node::with_children(size, vec![background, content])
     }
@@ -869,8 +886,7 @@ impl<Message> Widget<Message, Style, Renderer> for Backdrop<'_, Message> {
             .zip(layout.children().rev())
         {
             child.as_widget_mut().update(
-                state, event, layout, cursor, renderer, clipboard, shell,
-                viewport,
+                state, event, layout, cursor, renderer, clipboard, shell, viewport,
             );
 
             if shell.is_event_captured() {
@@ -1110,5 +1126,838 @@ mod tests {
 
         // A radius stays circular for the same reason.
         assert_eq!(Cut::Round { radius: 16.0 }.extent(60.0, 25.0), (12.5, 12.5));
+    }
+}
+
+/// A surface's transient material, borrowing the caller's geometry.
+#[derive(Debug, Clone, Copy)]
+pub struct SurfaceFace {
+    pub surface: Surface,
+    pub echo: Option<crate::style::MailRowEcho>,
+}
+
+impl SurfaceFace {
+    pub fn resting(surface: Surface) -> Self {
+        Self {
+            surface,
+            echo: None,
+        }
+    }
+
+    pub fn feedback(style: &Style, rest: Surface, coat: crate::style::MailRowCoat) -> Self {
+        let mut surface = rest;
+        if coat.selection {
+            surface.fill = Surface::selected(style).fill;
+            surface.stroke = None;
+        }
+        if let Some(fill) = coat.fill {
+            surface.fill = style.ink(fill).map_or(Fill::None, Fill::Solid);
+        }
+        surface.stroke = coat.outline.and_then(|edge| style.ink(edge));
+        Self {
+            surface,
+            echo: coat.echo,
+        }
+    }
+
+    pub(crate) fn outset(&self) -> [f32; 4] {
+        self.echo.map_or([0.0; 4], |e| {
+            let n = f32::from(e.rings);
+            let half = e.width / 2.0;
+            [
+                (-e.step.x * n + half).max(0.0),
+                (-e.step.y * n + half).max(0.0),
+                ((e.step.x + e.step.w) * n + half).max(0.0),
+                ((e.step.y + e.step.h) * n + half).max(0.0),
+            ]
+        })
+    }
+}
+
+impl<Message> canvas::Program<Message, Style> for SurfaceFace {
+    type State = ();
+    fn draw(
+        &self,
+        _: &(),
+        renderer: &Renderer,
+        style: &Style,
+        bounds: Rectangle,
+        _: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        let [left, top, right, bottom] = self.outset();
+        let w = visible(bounds.x + left, bounds.width - left - right);
+        let h = visible(bounds.y + top, bounds.height - top - bottom);
+        let mut frame = canvas::Frame::new(renderer, bounds.size());
+        frame.translate(iced::Vector::new(left, top));
+        if let Some(echo) = self.echo {
+            for i in (1..=echo.rings).rev() {
+                let n = f32::from(i);
+                let mut color = echo.ink.of(&style.palette);
+                color.a *= (echo.alpha - (n - 1.0) * echo.fade).max(0.0);
+                let fill = echo.fill.map_or(Fill::None, |ink| {
+                    let mut color = ink.of(&style.palette);
+                    color.a *= echo.fill_alpha;
+                    Fill::Solid(color)
+                });
+                let ring = Surface {
+                    fill,
+                    stroke: Some(color),
+                    stroke_width: echo.width,
+                    ..self.surface
+                };
+                frame.with_save(|frame| {
+                    frame.translate(iced::Vector::new(n * echo.step.x, n * echo.step.y));
+                    ring.paint(frame, w + n * echo.step.w, h + n * echo.step.h);
+                });
+            }
+        }
+        frame.with_save(|frame| self.surface.paint(frame, w, h));
+        vec![frame.into_geometry()]
+    }
+}
+
+/// Content-sized custom material; outward echoes leave the hit box but
+/// still respect parent scroll and viewport clipping.
+pub fn face<'a, Message: 'static>(
+    face: SurfaceFace,
+    padding: impl Into<iced::Padding>,
+    content: impl Into<Element<'a, Message>>,
+) -> Element<'a, Message> {
+    Backdrop {
+        outset: face.outset(),
+        children: vec![
+            canvas(face).width(Length::Fill).height(Length::Fill).into(),
+            container(content.into())
+                .padding(padding)
+                .width(Length::Fill)
+                .height(Length::Fill)
+                .into(),
+        ],
+    }
+    .into()
+}
+
+/// Three drawings with release-to-activate semantics. `identity` cancels
+/// a held gesture when a list slot changes item. Idle owns the layout;
+/// callers must retain identical content geometry in the other drawings.
+/// For static faces only: native inputs should retain their own subtree.
+pub fn interactive<'a, Message: Clone + 'static>(
+    faces: [Element<'a, Message>; 3],
+    identity: u64,
+    on_activate: Message,
+) -> Element<'a, Message> {
+    Element::new(Interactive {
+        faces,
+        identity,
+        on_activate,
+    })
+}
+
+struct Interactive<'a, Message> {
+    faces: [Element<'a, Message>; 3],
+    identity: u64,
+    on_activate: Message,
+}
+
+/// Adds widget-lifecycle input to the shared click gesture: scroll/layout
+/// redraws re-hit-test an active mouse, and one touch owns its gesture.
+/// The caller supplies a viewport-clipped target in content coordinates.
+struct SurfacePointer<T> {
+    gesture: crate::screens::scene::Pointer<T>,
+    mouse_tracking: bool,
+    finger: Option<iced::touch::Finger>,
+}
+impl<T> Default for SurfacePointer<T> {
+    fn default() -> Self {
+        Self {
+            gesture: Default::default(),
+            mouse_tracking: false,
+            finger: None,
+        }
+    }
+}
+impl<T: Copy + Eq> SurfacePointer<T> {
+    fn sync<S>(&mut self, key: &[S]) {
+        self.gesture.sync(key);
+    }
+    fn interaction<S>(&self, key: &[S]) -> Option<(T, bool)> {
+        self.gesture.interaction(key)
+    }
+    fn event(
+        &mut self,
+        event: &Event,
+        target: Option<T>,
+    ) -> crate::screens::scene::PointerAction<T> {
+        use crate::screens::scene::PointerAction;
+        use iced::touch;
+        let moved = Event::Mouse(mouse::Event::CursorMoved {
+            position: Point::ORIGIN,
+        });
+        match event {
+            Event::Touch(touch::Event::FingerPressed { id, .. }) => {
+                if self.finger.is_some() || target.is_none() {
+                    return PointerAction::Ignore;
+                }
+                self.finger = Some(*id);
+                self.mouse_tracking = false;
+                self.gesture.event(
+                    &Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)),
+                    target,
+                )
+            }
+            Event::Touch(touch::Event::FingerMoved { id, .. }) => {
+                if self.finger != Some(*id) {
+                    return PointerAction::Ignore;
+                }
+                self.gesture.event(&moved, target)
+            }
+            Event::Touch(touch::Event::FingerLifted { id, .. }) => {
+                if self.finger != Some(*id) {
+                    return PointerAction::Ignore;
+                }
+                self.finger = None;
+                let action = self.gesture.event(
+                    &Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)),
+                    target,
+                );
+                // A lifted touch has no lingering mouse hover.
+                self.gesture
+                    .event(&Event::Mouse(mouse::Event::CursorLeft), None);
+                action
+            }
+            Event::Touch(touch::Event::FingerLost { id, .. }) => {
+                if self.finger != Some(*id) {
+                    return PointerAction::Ignore;
+                }
+                self.finger = None;
+                self.gesture
+                    .event(&Event::Mouse(mouse::Event::CursorLeft), None);
+                PointerAction::Capture
+            }
+            Event::Window(iced::window::Event::Unfocused)
+            | Event::Keyboard(iced::keyboard::Event::KeyPressed { .. }) => {
+                self.mouse_tracking = false;
+                self.finger = None;
+                self.gesture.event(event, target)
+            }
+            Event::Window(iced::window::Event::RedrawRequested(_)) if self.mouse_tracking => {
+                self.gesture.event(&moved, target)
+            }
+            Event::Mouse(_) if self.finger.is_some() => PointerAction::Ignore,
+            Event::Mouse(mouse::Event::CursorLeft) => {
+                self.mouse_tracking = false;
+                self.gesture.event(event, target)
+            }
+            Event::Mouse(mouse::Event::CursorMoved { .. })
+            | Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
+                self.mouse_tracking = true;
+                self.gesture.event(event, target)
+            }
+            _ => self.gesture.event(event, target),
+        }
+    }
+}
+
+#[derive(Default)]
+struct FaceState {
+    identity: Option<u64>,
+    pointer: SurfacePointer<()>,
+}
+impl FaceState {
+    fn sync(&mut self, identity: u64) {
+        if self.identity != Some(identity) {
+            *self = Self {
+                identity: Some(identity),
+                ..Self::default()
+            };
+        }
+        self.pointer.sync(&FACE_KEY);
+    }
+    fn index(&self) -> usize {
+        match self.pointer.interaction(&FACE_KEY) {
+            Some(((), true)) => 2,
+            Some(((), false)) => 1,
+            None => 0,
+        }
+    }
+}
+static FACE_KEY: [u8; 1] = [0];
+
+impl<Message: Clone> Widget<Message, Style, Renderer> for Interactive<'_, Message> {
+    fn tag(&self) -> iced::advanced::widget::tree::Tag {
+        iced::advanced::widget::tree::Tag::of::<FaceState>()
+    }
+    fn state(&self) -> iced::advanced::widget::tree::State {
+        iced::advanced::widget::tree::State::new(FaceState::default())
+    }
+    fn children(&self) -> Vec<Tree> {
+        self.faces.iter().map(Tree::new).collect()
+    }
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(&self.faces);
+        tree.state.downcast_mut::<FaceState>().sync(self.identity);
+    }
+    fn size(&self) -> Size<Length> {
+        self.faces[0].as_widget().size()
+    }
+    fn layout(
+        &mut self,
+        tree: &mut Tree,
+        renderer: &Renderer,
+        limits: &layout::Limits,
+    ) -> layout::Node {
+        let idle = self.faces[0]
+            .as_widget_mut()
+            .layout(&mut tree.children[0], renderer, limits);
+        let size = idle.size();
+        let mut nodes = vec![idle];
+        for i in 1..3 {
+            nodes.push(self.faces[i].as_widget_mut().layout(
+                &mut tree.children[i],
+                renderer,
+                &layout::Limits::new(size, size),
+            ));
+        }
+        layout::Node::with_children(size, nodes)
+    }
+    fn draw(
+        &self,
+        tree: &Tree,
+        renderer: &mut Renderer,
+        theme: &Style,
+        style: &renderer::Style,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        viewport: &Rectangle,
+    ) {
+        let i = tree.state.downcast_ref::<FaceState>().index();
+        self.faces[i].as_widget().draw(
+            &tree.children[i],
+            renderer,
+            theme,
+            style,
+            layout.children().nth(i).unwrap(),
+            cursor,
+            viewport,
+        );
+    }
+    fn update(
+        &mut self,
+        tree: &mut Tree,
+        event: &Event,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        _: &Renderer,
+        _: &mut dyn Clipboard,
+        shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
+    ) {
+        use crate::screens::scene::PointerAction;
+        let state = tree.state.downcast_mut::<FaceState>();
+        state.sync(self.identity);
+        let target = cursor
+            .position()
+            .filter(|p| layout.bounds().contains(*p) && viewport.contains(*p))
+            .map(|_| ());
+        match state.pointer.event(event, target) {
+            PointerAction::Activate(()) => {
+                shell.publish(self.on_activate.clone());
+                shell.capture_event();
+                shell.request_redraw();
+            }
+            PointerAction::Capture => {
+                shell.capture_event();
+                shell.request_redraw();
+            }
+            PointerAction::Redraw => shell.request_redraw(),
+            PointerAction::Ignore => {}
+        }
+    }
+    fn mouse_interaction(
+        &self,
+        _: &Tree,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        viewport: &Rectangle,
+        _: &Renderer,
+    ) -> mouse::Interaction {
+        if cursor
+            .position()
+            .is_some_and(|p| layout.bounds().contains(p) && viewport.contains(p))
+        {
+            mouse::Interaction::Pointer
+        } else {
+            mouse::Interaction::None
+        }
+    }
+}
+
+#[cfg(test)]
+mod interaction_tests {
+    use super::*;
+    use crate::screens::scene::PointerAction;
+    fn press() -> Event {
+        Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+    }
+    fn release() -> Event {
+        Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
+    }
+
+    #[test]
+    fn replacing_a_row_cancels_a_held_action() {
+        let mut state = FaceState::default();
+        state.sync(7);
+        assert_eq!(
+            state.pointer.event(&press(), Some(())),
+            PointerAction::Capture
+        );
+        assert_eq!(state.index(), 2);
+        state.sync(8);
+        assert_eq!(state.index(), 0);
+        assert_eq!(
+            state.pointer.event(&release(), Some(())),
+            PointerAction::Ignore
+        );
+    }
+
+    #[test]
+    fn faces_activate_on_inside_release_and_cancel_outside_or_on_focus_loss() {
+        let mut state = FaceState::default();
+        state.sync(7);
+        state.pointer.event(&press(), Some(()));
+        assert_eq!(
+            state.pointer.event(&release(), None),
+            PointerAction::Capture
+        );
+        assert_eq!(state.index(), 0);
+        state.pointer.event(&press(), Some(()));
+        state
+            .pointer
+            .event(&Event::Window(iced::window::Event::Unfocused), None);
+        assert_eq!(
+            state.pointer.event(&release(), Some(())),
+            PointerAction::Ignore
+        );
+        state.pointer.event(&press(), Some(()));
+        assert_eq!(
+            state.pointer.event(&release(), Some(())),
+            PointerAction::Activate(())
+        );
+        assert_eq!(state.index(), 1);
+    }
+
+    #[test]
+    fn transient_material_preserves_shape_and_allocates_outward_echo_room() {
+        let style = crate::style::Era::Neokitsch.style();
+        let rest = Surface::outlined(&style);
+        let states = style.mailbox.list.feedback.unwrap();
+        let hover = SurfaceFace::feedback(&style, rest, states.hover);
+        let held = SurfaceFace::feedback(&style, rest, states.pressed);
+        assert_eq!(hover.surface.corners, rest.corners);
+        assert_eq!(held.surface.corners, rest.corners);
+        assert!(hover.outset().iter().all(|v| *v > 0.0));
+        assert_eq!(held.outset(), [0.0; 4]);
+        assert!(matches!(held.surface.fill, Fill::Veneer { .. }));
+    }
+}
+
+/// A list whose single selection material follows the pointer, while
+/// activation still occurs on release. Each pair is `[plain, selected]`.
+/// Keeping the gesture on the list avoids two filled rows on hover.
+pub fn cursor_list<'a, Message: Clone + 'static>(
+    rows: Vec<(u64, [Element<'a, Message>; 2], Message)>,
+    selected: Option<u64>,
+    spacing: f32,
+) -> Element<'a, Message> {
+    Element::new(CursorList {
+        rows,
+        selected,
+        spacing,
+    })
+}
+struct CursorList<'a, Message> {
+    rows: Vec<(u64, [Element<'a, Message>; 2], Message)>,
+    selected: Option<u64>,
+    spacing: f32,
+}
+#[derive(Default)]
+struct ListPointer {
+    ids: Vec<u64>,
+    pointer: SurfacePointer<u64>,
+}
+impl ListPointer {
+    fn selected(&self, persisted: Option<u64>) -> Option<u64> {
+        match self.pointer.interaction(&FACE_KEY) {
+            Some((_, true)) => None,
+            Some((id, false)) => Some(id),
+            None => persisted,
+        }
+    }
+    fn sync(&mut self, ids: impl Iterator<Item = u64>) {
+        let ids: Vec<_> = ids.collect();
+        if self.ids != ids {
+            self.ids = ids;
+            self.pointer = Default::default();
+        }
+        self.pointer.sync(&FACE_KEY);
+    }
+}
+impl<Message: Clone> Widget<Message, Style, Renderer> for CursorList<'_, Message> {
+    fn tag(&self) -> iced::advanced::widget::tree::Tag {
+        iced::advanced::widget::tree::Tag::of::<ListPointer>()
+    }
+    fn state(&self) -> iced::advanced::widget::tree::State {
+        iced::advanced::widget::tree::State::new(ListPointer::default())
+    }
+    fn children(&self) -> Vec<Tree> {
+        self.rows
+            .iter()
+            .flat_map(|(_, faces, _)| faces.iter().map(Tree::new))
+            .collect()
+    }
+    fn diff(&self, tree: &mut Tree) {
+        let children: Vec<_> = self
+            .rows
+            .iter()
+            .flat_map(|(_, faces, _)| faces.iter())
+            .collect();
+        tree.diff_children_custom(
+            &children,
+            |tree, child| tree.diff(*child),
+            |child| Tree::new(*child),
+        );
+        tree.state
+            .downcast_mut::<ListPointer>()
+            .sync(self.rows.iter().map(|v| v.0));
+    }
+    fn size(&self) -> Size<Length> {
+        Size::new(Length::Fill, Length::Shrink)
+    }
+    fn layout(
+        &mut self,
+        tree: &mut Tree,
+        renderer: &Renderer,
+        limits: &layout::Limits,
+    ) -> layout::Node {
+        let mut y = 0.0;
+        let mut width: f32 = 0.0;
+        let mut nodes = Vec::with_capacity(self.rows.len() * 2);
+        for (i, (_, faces, _)) in self.rows.iter_mut().enumerate() {
+            if i > 0 {
+                y += self.spacing;
+            }
+            let plain = faces[0].as_widget_mut().layout(
+                &mut tree.children[i * 2],
+                renderer,
+                &limits.loose(),
+            );
+            let size = plain.size();
+            let selected = faces[1].as_widget_mut().layout(
+                &mut tree.children[i * 2 + 1],
+                renderer,
+                &layout::Limits::new(size, size),
+            );
+            nodes.push(plain.move_to(Point::new(0.0, y)));
+            nodes.push(selected.move_to(Point::new(0.0, y)));
+            y += size.height;
+            width = width.max(size.width);
+        }
+        layout::Node::with_children(Size::new(width, y), nodes)
+    }
+    fn draw(
+        &self,
+        tree: &Tree,
+        renderer: &mut Renderer,
+        theme: &Style,
+        style: &renderer::Style,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        viewport: &Rectangle,
+    ) {
+        let selected = tree
+            .state
+            .downcast_ref::<ListPointer>()
+            .selected(self.selected);
+        for (i, (id, faces, _)) in self.rows.iter().enumerate() {
+            let face = usize::from(selected == Some(*id));
+            let index = i * 2 + face;
+            faces[face].as_widget().draw(
+                &tree.children[index],
+                renderer,
+                theme,
+                style,
+                layout.children().nth(index).unwrap(),
+                cursor,
+                viewport,
+            );
+        }
+    }
+    fn update(
+        &mut self,
+        tree: &mut Tree,
+        event: &Event,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        _: &Renderer,
+        _: &mut dyn Clipboard,
+        shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
+    ) {
+        use crate::screens::scene::PointerAction;
+        let target = cursor
+            .position()
+            .filter(|p| viewport.contains(*p))
+            .and_then(|p| {
+                self.rows
+                    .iter()
+                    .zip(layout.children().step_by(2))
+                    .find(|(_, node)| node.bounds().contains(p))
+                    .map(|(row, _)| row.0)
+            });
+        let state = tree.state.downcast_mut::<ListPointer>();
+        state.sync(self.rows.iter().map(|v| v.0));
+        match state.pointer.event(event, target) {
+            PointerAction::Activate(id) => {
+                if let Some(row) = self.rows.iter().find(|v| v.0 == id) {
+                    shell.publish(row.2.clone());
+                }
+                shell.capture_event();
+                shell.request_redraw();
+            }
+            PointerAction::Capture => {
+                shell.capture_event();
+                shell.request_redraw();
+            }
+            PointerAction::Redraw => shell.request_redraw(),
+            PointerAction::Ignore => {}
+        }
+    }
+    fn mouse_interaction(
+        &self,
+        _: &Tree,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        viewport: &Rectangle,
+        _: &Renderer,
+    ) -> mouse::Interaction {
+        if cursor.position().is_some_and(|p| {
+            viewport.contains(p)
+                && layout
+                    .children()
+                    .step_by(2)
+                    .any(|row| row.bounds().contains(p))
+        }) {
+            mouse::Interaction::Pointer
+        } else {
+            mouse::Interaction::None
+        }
+    }
+}
+
+#[cfg(test)]
+mod cursor_list_tests {
+    use super::*;
+    use crate::screens::scene::PointerAction;
+    #[test]
+    fn cursor_fill_moves_without_changing_selection_and_reordering_cancels_hold() {
+        let mut state = ListPointer::default();
+        state.sync([1, 2, 3].into_iter());
+        let persisted = Some(1);
+        assert_eq!(state.selected(persisted), Some(1));
+        state.pointer.event(
+            &Event::Mouse(mouse::Event::CursorMoved {
+                position: Point::ORIGIN,
+            }),
+            Some(2),
+        );
+        assert_eq!(state.selected(persisted), Some(2));
+        state.pointer.event(
+            &Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)),
+            Some(2),
+        );
+        assert_eq!(
+            state.selected(persisted),
+            None,
+            "held cursor extinguishes the highlight"
+        );
+        state.sync([1, 3, 2].into_iter());
+        assert_eq!(state.selected(persisted), Some(1));
+        assert_eq!(
+            state.pointer.event(
+                &Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)),
+                Some(2)
+            ),
+            PointerAction::Ignore
+        );
+        state.pointer.event(
+            &Event::Mouse(mouse::Event::CursorMoved {
+                position: Point::ORIGIN,
+            }),
+            Some(3),
+        );
+        state
+            .pointer
+            .event(&Event::Mouse(mouse::Event::CursorLeft), None);
+        assert_eq!(state.selected(persisted), Some(1));
+    }
+}
+
+#[cfg(test)]
+mod lifecycle_input_tests {
+    use super::*;
+    use crate::screens::scene::PointerAction;
+    fn redraw() -> Event {
+        Event::Window(iced::window::Event::RedrawRequested(
+            iced::time::Instant::now(),
+        ))
+    }
+    fn moved() -> Event {
+        Event::Mouse(mouse::Event::CursorMoved {
+            position: Point::ORIGIN,
+        })
+    }
+    fn press() -> Event {
+        Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+    }
+    fn release() -> Event {
+        Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
+    }
+
+    #[test]
+    fn scrolling_rehits_a_stationary_cursor_and_prevents_wrong_row_activation() {
+        let mut state = ListPointer::default();
+        state.sync([1, 2, 3].into_iter());
+        state.pointer.event(&moved(), Some(1));
+        state.pointer.event(&press(), Some(1));
+        state.pointer.event(
+            &Event::Mouse(mouse::Event::WheelScrolled {
+                delta: mouse::ScrollDelta::Lines { x: 0.0, y: -1.0 },
+            }),
+            Some(1),
+        );
+        // A scrollable passes a translated cursor on the next redraw;
+        // no physical CursorMoved event has occurred.
+        assert_eq!(
+            state.pointer.event(&redraw(), Some(2)),
+            PointerAction::Redraw
+        );
+        assert_eq!(state.selected(Some(1)), Some(2));
+        assert_eq!(
+            state.pointer.event(&release(), Some(2)),
+            PointerAction::Capture
+        );
+        state.pointer.event(&redraw(), None); // gap or clipped viewport
+        assert_eq!(state.selected(Some(1)), Some(1));
+        state.pointer.event(&redraw(), Some(3));
+        assert_eq!(state.selected(Some(1)), Some(3));
+    }
+
+    #[test]
+    fn redraw_does_not_resurrect_cancelled_hover() {
+        use iced::keyboard::{key, Key, Location, Modifiers};
+        let key = Event::Keyboard(iced::keyboard::Event::KeyPressed {
+            key: Key::Named(key::Named::ArrowDown),
+            modified_key: Key::Named(key::Named::ArrowDown),
+            physical_key: key::Physical::Code(key::Code::ArrowDown),
+            location: Location::Standard,
+            modifiers: Modifiers::empty(),
+            text: None,
+            repeat: false,
+        });
+        for cancel in [
+            Event::Window(iced::window::Event::Unfocused),
+            key,
+            Event::Mouse(mouse::Event::CursorLeft),
+        ] {
+            let mut state = FaceState::default();
+            state.sync(1);
+            state.pointer.event(&press(), Some(()));
+            state.pointer.event(&cancel, Some(()));
+            assert_eq!(state.index(), 0);
+            assert_eq!(
+                state.pointer.event(&redraw(), Some(())),
+                PointerAction::Ignore
+            );
+            assert_eq!(state.index(), 0);
+            assert_eq!(
+                state.pointer.event(&release(), Some(())),
+                PointerAction::Ignore
+            );
+            state.pointer.event(&moved(), Some(()));
+            assert_eq!(state.index(), 1);
+        }
+    }
+
+    fn touch(id: u64, phase: u8) -> Event {
+        use iced::touch::{Event as Touch, Finger};
+        let id = Finger(id);
+        let position = Point::ORIGIN;
+        Event::Touch(match phase {
+            0 => Touch::FingerPressed { id, position },
+            1 => Touch::FingerMoved { id, position },
+            2 => Touch::FingerLifted { id, position },
+            _ => Touch::FingerLost { id, position },
+        })
+    }
+    #[test]
+    fn touch_owns_one_finger_activates_on_release_and_leaves_no_hover() {
+        let mut state = FaceState::default();
+        state.sync(1);
+        assert_eq!(
+            state.pointer.event(&touch(10, 0), Some(())),
+            PointerAction::Capture
+        );
+        assert_eq!(state.index(), 2);
+        assert_eq!(
+            state.pointer.event(&touch(11, 0), Some(())),
+            PointerAction::Ignore
+        );
+        assert_eq!(
+            state.pointer.event(&touch(11, 2), Some(())),
+            PointerAction::Ignore
+        );
+        state.pointer.event(&redraw(), None);
+        assert_eq!(state.index(), 2, "mouse redraw cannot steal a touch");
+        assert_eq!(
+            state.pointer.event(&touch(10, 2), Some(())),
+            PointerAction::Activate(())
+        );
+        assert_eq!(state.index(), 0);
+        assert_eq!(
+            state.pointer.event(&redraw(), Some(())),
+            PointerAction::Ignore
+        );
+    }
+
+    #[test]
+    fn touch_outside_loss_focus_change_and_identity_replacement_cancel() {
+        let mut state = ListPointer::default();
+        state.sync([1, 2].into_iter());
+        state.pointer.event(&touch(10, 0), Some(1));
+        state.pointer.event(&touch(10, 1), Some(2));
+        assert_eq!(
+            state.pointer.event(&touch(10, 2), Some(2)),
+            PointerAction::Capture
+        );
+        state.pointer.event(&touch(10, 0), Some(1));
+        state.pointer.event(&touch(10, 3), Some(1));
+        assert_eq!(
+            state.pointer.event(&touch(10, 2), Some(1)),
+            PointerAction::Ignore
+        );
+        state.pointer.event(&touch(10, 0), Some(1));
+        state
+            .pointer
+            .event(&Event::Window(iced::window::Event::Unfocused), None);
+        assert_eq!(
+            state.pointer.event(&touch(10, 2), Some(1)),
+            PointerAction::Ignore
+        );
+        state.pointer.event(&touch(10, 0), Some(1));
+        state.sync([2, 1].into_iter());
+        assert_eq!(
+            state.pointer.event(&touch(10, 2), Some(1)),
+            PointerAction::Ignore
+        );
     }
 }
