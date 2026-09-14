@@ -62,7 +62,7 @@ Two things that bear on the meaning of class (a) for palette constants:
    mailbox took `widgets::ground` unless `mailbox.haze` was set and
    entropism's store painted no full rect; `30683d5` changed both.)
 
-Gate status is as recorded in `TODO.md:571-592` (bar 100/86/83/52, login
+Historical gate status is retained in the [pipeline record](todo/design-pipeline.md) (bar 100/86/83/52, login
 28/96/72/89, mailbox 100/95/67/86, store 100/84/88/82 for
 entropism/neomil/kitsch/neokitsch; dashboards 0% against the traces).
 No gate was re-run in this pass.
@@ -152,7 +152,7 @@ of the remaining fields either — its ground, strokes and corners are
 literal values in the `// --- dashboard ---` blocks — so every
 remaining reader of these is bar-side or the widget layer under
 `panels::mail`. Applying them is now purely the widget-vs-canvas
-question in `TODO.md`, and they may move `bar-<era>` goldens where the
+question in [the SVG→iced record](todo/svg-to-iced.md), and they may move `bar-<era>` goldens where the
 bar inherits the metric (surface stroke, corner) -- check
 `tests/golden/bar-*.png` after.
 
