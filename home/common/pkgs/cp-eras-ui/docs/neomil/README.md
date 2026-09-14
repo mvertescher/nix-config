@@ -129,6 +129,15 @@ press` (outlined), `#button-filled-rest/hover/press`,
 `#nav-rest/hover/press` (the same reading applies to a list row and a
 product card) and `#field-rest/hover/press`.
 
+Implemented on the dashboard (2026-09-14): every diamond is already a
+solid control, so its hover uses `#f63333` and its held state uses
+`#a52223` with `#420f10` detail ink. The hover detail ink is the filled
+button's `#59171b`. This application to diamonds is **inferred** from
+the rule above. Both orientations keep their existing paths and size;
+module labels, selection and the detail panel do not change on hover.
+The shared scene swaps only the hovered plate's drawing, with the same
+clip and transforms as its resting drawing.
+
 The field is the exception in which direction is sourced: the run
 holds one field, the login's password field, and it is drawn
 *focused* (masked run, lit caret), so `#field-press` (= focus) is the

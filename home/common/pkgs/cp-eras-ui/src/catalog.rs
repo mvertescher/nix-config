@@ -197,9 +197,10 @@ fn rail_in(style: &Style, alpha: f32) -> scrollable::Style {
 // a disabled one, and a field; the rest is derived from the same coats
 // and roles, and each function says which it is.
 //
-// No status treatment: the traces are stills and record no hover or
-// press, and "Motion" is its own TODO item. A disabled control takes
-// the `disabled` coat whatever its class.
+// State coats are era data, transcribed from the component sheets'
+// annotated interaction bands. A disabled control always takes the
+// disabled coat. Custom silhouettes and textures remain the face
+// widget's responsibility; a bare button must not paint over them.
 
 /// A coat as the pieces a built-in style is assembled from.
 struct Dressed {
@@ -240,10 +241,12 @@ pub mod button {
     use super::*;
     use iced::widget::button::{Status, Style as ButtonStyle};
 
-    fn coat(style: &Style, coat: Coat, status: Status) -> ButtonStyle {
+    fn coat(style: &Style, coat: Coat, states: crate::style::ControlStates, status: Status) -> ButtonStyle {
         let coat = match status {
             Status::Disabled => style.controls.disabled,
-            _ => coat,
+            Status::Hovered => states.hover.unwrap_or(coat),
+            Status::Pressed => states.pressed.unwrap_or(coat),
+            Status::Active => coat,
         };
         let d = style.dress(coat);
         ButtonStyle {
@@ -257,12 +260,12 @@ pub mod button {
 
     /// The affirmative control: `Controls::primary`.
     pub fn primary(style: &Style, status: Status) -> ButtonStyle {
-        coat(style, style.controls.primary, status)
+        coat(style, style.controls.primary, style.controls.primary_states, status)
     }
 
     /// The bare control: `Controls::ghost`.
     pub fn ghost(style: &Style, status: Status) -> ButtonStyle {
-        coat(style, style.controls.ghost, status)
+        coat(style, style.controls.ghost, style.controls.ghost_states, status)
     }
 
     /// No chrome at all: for a button whose face is drawn by what it
@@ -301,21 +304,28 @@ impl iced::widget::button::Catalog for Style {
     }
 }
 
-/// `text_input` in the era's field coat. Focus and hover leave it as
-/// it is: the traces show every field in one state (entropism's caret
-/// underline and kitsch's cursor are the value's, which iced draws in
-/// the value ink).
+/// `text_input` in the era's field coats. Focus wins over hover: the
+/// sheet's pressed field is the typing state, with iced drawing its
+/// caret in the value ink. Unannotated coats retain the rest reading.
 pub fn field(style: &Style, status: text_input::Status) -> text_input::Style {
     let coat = match status {
         text_input::Status::Disabled => style.controls.disabled,
-        _ => style.controls.field,
+        text_input::Status::Hovered => style.controls.field_states.hover.unwrap_or(style.controls.field),
+        text_input::Status::Focused { .. } => style.controls.field_states.pressed.unwrap_or(style.controls.field),
+        text_input::Status::Active => style.controls.field,
     };
     let d = style.dress(coat);
     text_input::Style {
         background: d.fill.unwrap_or(Color::TRANSPARENT).into(),
         border: d.edge,
         icon: d.ink,
-        placeholder: style.controls.placeholder.of(&style.palette),
+        // Reverse video also needs a dark placeholder on the light
+        // fill. Preserve the existing dim placeholder at rest/focus.
+        placeholder: if status == text_input::Status::Hovered && style.controls.field_states.hover.is_some() {
+            d.ink
+        } else {
+            style.controls.placeholder.of(&style.palette)
+        },
         value: d.ink,
         selection: style.selection(),
     }
@@ -702,5 +712,74 @@ mod tests {
         let style = Era::Neokitsch.style();
         let s = field(&style, text_input::Status::Active);
         assert_eq!(s.border.width, 0.0);
+    }
+
+    /// Holding an entropism control extinguishes the cursor fill;
+    /// hovering restores it. Roles must still follow a desktop override.
+    #[test]
+    fn entropism_cursor_blinks_off_while_held() {
+        use iced::widget::button::Status;
+        let mut style = Era::Entropism.style();
+        style.palette.cta = Color::from_rgb8(170, 220, 180);
+        style.palette.on_select = Color::from_rgb8(20, 30, 20);
+        for class in [button::primary, button::ghost] {
+            let hover = class(&style, Status::Hovered);
+            assert_eq!(hover.background, Some(style.palette.cta.into()));
+            assert_eq!(hover.text_color, style.palette.on_select);
+            let held = class(&style, Status::Pressed);
+            assert_eq!(held.background, None);
+            assert_eq!(held.border.width, 2.0);
+            assert_eq!(held.text_color, style.palette.fg);
+            let disabled = class(&style, Status::Disabled);
+            assert_eq!(disabled.text_color, style.palette.dim);
+            assert_eq!(disabled.background, None);
+        }
+    }
+
+    /// The sheet distinguishes held ink for the filled button from
+    /// that of the outlined button, despite their identical held fill.
+    #[test]
+    fn neomil_held_buttons_keep_their_class_inks() {
+        use iced::widget::button::Status;
+        use crate::palette::rgb;
+        let style = Era::Neomil.style();
+        let primary = button::primary(&style, Status::Pressed);
+        let ghost = button::ghost(&style, Status::Pressed);
+        assert_eq!(primary.background, Some(rgb(0xa52223).into()));
+        assert_eq!(ghost.background, primary.background);
+        assert_eq!(primary.text_color, rgb(0x420f10));
+        assert_eq!(ghost.text_color, rgb(0x59171b));
+        assert_ne!(primary.text_color, ghost.text_color);
+        assert_eq!(button::ghost(&style, Status::Hovered).background, Some(rgb(0x451010).into()));
+        assert_eq!(button::primary(&style, Status::Hovered).background, Some(rgb(0xf63333).into()));
+    }
+
+    #[test]
+    fn typing_keeps_focus_when_the_pointer_enters_or_leaves() {
+        for era in [Era::Neomil, Era::Entropism] {
+            let style = era.style();
+            let inside = field(&style, text_input::Status::Focused { is_hovered: true });
+            let outside = field(&style, text_input::Status::Focused { is_hovered: false });
+            assert_eq!(inside.background, outside.background);
+            assert_eq!(inside.border, outside.border);
+            assert_eq!(inside.value, outside.value);
+            let hover = field(&style, text_input::Status::Hovered);
+            assert_ne!(hover.background, inside.background);
+            // Empty reverse-video fields must not keep a low-contrast
+            // dim placeholder on their light fill.
+            assert_eq!(hover.placeholder, hover.value);
+        }
+    }
+
+    #[test]
+    fn bare_buttons_never_cover_their_custom_face() {
+        use iced::widget::button::Status;
+        for era in Era::ALL {
+            for status in [Status::Active, Status::Hovered, Status::Pressed, Status::Disabled] {
+                let s = button::bare(&era.style(), status);
+                assert_eq!(s.background, None);
+                assert_eq!(s.border.width, 0.0);
+            }
+        }
     }
 }

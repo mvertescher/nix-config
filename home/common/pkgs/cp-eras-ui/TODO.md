@@ -1705,9 +1705,10 @@ when that screen assembles from library widgets. Priority order:
     rounded rectangle, so neomil's br-chamfer, kitsch's stepped bar
     and neokitsch's tabbed bl-chamfer stay `widgets::surface` plates
     inside a `bare` button; the coat sets only fill/edge/ink/radius.
-    *Hover/press*: the traces are stills with no such state; the
-    reading is on the sheets since 2026-09-07 (see "Motion"), the
-    plumbing still open. *override-hatch*: no era sheet has a
+    *Hover/press*: the reading is on the sheets since 2026-09-07
+    (see "Motion"). Neomil and entropism built-in button/field coats
+    are wired as of 2026-09-13; custom faces and the hub remain open.
+    *override-hatch*: no era sheet has a
     hatched button; iced has no pattern fill either. *Icon buttons*:
     nothing to style beyond `bare`; blocked on "Icon set". *Slider
     ticks*: `slider::Style` has no ticks; would be a widget, not a
@@ -1885,10 +1886,54 @@ when that screen assembles from library widgets. Priority order:
     hover inferred, every rest and press sourced. The one sourced
     interactive state in every era is the field's focus (the caret;
     neokitsch photographs its field at rest only, so even that is
-    inferred there). **Still open: plumbing it.** `catalog` and the hub's
-    screens draw none of these yet; the sheets are the spec, and the
-    `Style` needs a hover/press ink pair (or a rung index) per
-    family before anything moves.
+    inferred there). **Partially wired 2026-09-13:** `ControlStates`
+    carries optional hover/pressed coats per button class and field.
+    `catalog` now applies neomil's wash/held-red pair and entropism's
+    reverse-video/outline pair. Field focus wins over hover and iced
+    owns the caret; disabled controls keep their disabled coat, and
+    `bare` never paints over its custom face. Entropism's field colours
+    are derived through the existing desktop roles, rather than the
+    login's fixed sampled shades. Rest coats are unchanged.
+    `cargo run --example control-states -- --era neomil` shows all
+    four eras' state coats and live controls; kitsch/neokitsch are
+    labelled as pending there. **Still open:** their ghost extrusion,
+    echo rings and veneer require custom drawing; neither is replaced
+    by a colour-only approximation. The other hub treatments and the
+    custom mail-panel faces still need their own hover/press wiring.
+    These are instantaneous states; animated transitions remain open.
+    Desktop interaction verification remains open.
+    - **Hub cursor, 2026-09-14:** the shared scene's
+      dashboard/store clicks now commit on release over the original
+      plate. Dragging to another plate or outside cancels activation;
+      leaving the window, losing focus, a key press or changing scenes
+      cancels the held gesture. Entropism's dashboard opts into
+      `dashboard_cursor`: the single fill moves on hover and switches
+      off while held, using the existing on/off tile drawings. Only
+      the render pick changes; hovering EMAILS does not open mail or
+      replace the detail panel. Keyboard input restores the keyboard
+      selection's fill. Other eras keep their existing drawings but
+      share the release/cancel behavior. Store hover and mailbox
+      hover/press feedback are still open, as are the other eras'
+      dashboard visuals.
+      No trace or golden was edited. Verification is headless; the desk
+      pass remains open.
+    - **Neomil dashboard states, 2026-09-14:** all six
+      diamonds now lift to `#f63333` on hover and use the held
+      `#a52223` / `#420f10` pair while pressed. This is the component
+      sheet's **inferred filled-control rule** applied to the hub,
+      not a newly sourced observation: every diamond is already filled,
+      so hover uses the brighter rung rather than an outlined control's
+      wash. `PlateStates` carries each module's transient drawings;
+      the shared scene paints them inside the plate's existing
+      translation/rotation/clip. Upper and lower diamonds reuse their
+      exact rest paths, inset outline and glyph geometry. The keyboard's
+      selection and surrounding labels/detail panel are unchanged;
+      release/cancellation uses the preceding pass's gesture state.
+      Tests cover every diamond's geometry/colours, targeting only the
+      hovered plate, clearing feedback and preserving selection.
+      Kitsch/neokitsch dashboard visuals, store hover, mailbox feedback
+      and animation between interaction states remain open. Headless
+      verification only; desktop interaction verification remains open.
     - Left by the readers, outside their scope: entropism's
       `mailbox-trace.svg` headers and era-rules box (:26, :146,
       :253, :287) still call the fill "selection" -- vision-model

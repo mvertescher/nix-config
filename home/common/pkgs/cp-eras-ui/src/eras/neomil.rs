@@ -16,7 +16,7 @@
 
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
-    Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Coat, Compliance, Controls,
+    Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Coat, Compliance, ControlStates, Controls,
     Corner, Destination, Dress,
     Era, Face, Footnotes, Ground, Ink, MenuMarker, MenuRule, Metrics, Nameplate,
     PanelEcho, Selection, Style, Ticket, WindowLabel,
@@ -299,6 +299,22 @@ pub fn style() -> Style {
         glyphs: false,
         // --- controls --- (components.svg BUTTON, USER CARD)
         controls: Controls {
+            // components.svg section 9: inferred hover/held coats.
+            // The two button classes have different held text inks.
+            primary_states: ControlStates {
+                hover: Some(Coat::filled(Ink::Fixed(rgb(0xf63333)), Ink::Fixed(rgb(0x59171b)))),
+                pressed: Some(Coat::filled(Ink::Fixed(rgb(0xa52223)), Ink::Fixed(rgb(0x420f10)))),
+            },
+            ghost_states: ControlStates {
+                hover: Some(Coat::filled(Ink::Fixed(rgb(0x451010)), Ink::Cta).edged(Ink::Cta, 1.0)),
+                pressed: Some(Coat::filled(Ink::Fixed(rgb(0xa52223)), Ink::Fixed(rgb(0x59171b)))),
+            },
+            field_states: ControlStates {
+                hover: Some(Coat::filled(Ink::Fixed(rgb(0x6a1617)), Ink::Fixed(rgb(0xf63333))).edged(Ink::Fixed(rgb(0xf63333)), 1.0)),
+                // Focus restores the photographed well; iced draws
+                // the caret. The hover wash must not persist in focus.
+                pressed: Some(Coat::filled(Ink::Fixed(WELL), Ink::Fixed(rgb(0xf63333))).edged(Ink::Fixed(rgb(0xae2729)), 1.0)),
+            },
             // Switch Weapon / Login: the fill red, dark ink.
             primary: Coat::filled(Ink::Cta, Ink::OnSelect),
             // Confirm / Jump: the near-ground fill `mailbox.buttons`
@@ -331,6 +347,8 @@ pub fn style() -> Style {
         // state"), so every plate wears one dress and the opening
         // selection is the first unit by convention.
         dashboard_selection: 0,
+        dashboard_cursor: false,
+        dashboard_states: HUB_STATES,
         // PRODUCTS is unit 4; no unit says "mail", and the mailbox is
         // `m` from the hub instead (`screens::hub`).
         dashboard_destinations: [None, None, None, None, Some(Destination::Store), None],
@@ -1902,6 +1920,82 @@ const UNIT_2: &[Prim] = unit!(2, -89.0, CELL_UP);
 const UNIT_3: &[Prim] = unit!(3, -104.0, CELL_DOWN);
 const UNIT_4: &[Prim] = unit!(4, -104.0, CELL_DOWN);
 const UNIT_5: &[Prim] = unit!(5, -104.0, CELL_DOWN);
+
+// Inferred interaction, docs/neomil/README.md "Hover and press": a
+// filled control lifts to #f63333 and is held at #a52223. Apply the
+// component sheet's filled-button pair to the already-filled diamonds;
+// no wash over another opaque fill, no growth or new silhouette. The
+// inner outline/glyph use that pair's dark ink. Rest still uses CELL_*.
+const fn interactive_cell(up: bool, fill: Ink, detail: Ink) -> [Prim; 3] {
+    [
+        if up {
+            fill_path(-15.0, -89.0, CELL_UP_OUTER, fill)
+        } else {
+            fill_path(0.0, -104.0, CELL_DOWN_OUTER, fill)
+        },
+        if up {
+            shut_path(-9.0, -59.0, CELL_UP_INNER, detail, 2.0)
+        } else {
+            shut_path(0.0, -68.0, CELL_DOWN_INNER, detail, 2.0)
+        },
+        fill_rect(-22.0, -21.0, 43.0, 36.0, detail),
+    ]
+}
+const CELL_UP_HOVER: &[Prim] = &interactive_cell(true, Ink::Fixed(rgb(0xf63333)), Ink::Fixed(rgb(0x59171b)));
+const CELL_DOWN_HOVER: &[Prim] = &interactive_cell(false, Ink::Fixed(rgb(0xf63333)), Ink::Fixed(rgb(0x59171b)));
+const CELL_UP_PRESSED: &[Prim] = &interactive_cell(true, Ink::Fixed(rgb(0xa52223)), Ink::Fixed(ON_CARD));
+const CELL_DOWN_PRESSED: &[Prim] = &interactive_cell(false, Ink::Fixed(rgb(0xa52223)), Ink::Fixed(ON_CARD));
+
+const fn hub_states(index: usize, up: bool) -> crate::style::PlateStates {
+    crate::style::PlateStates {
+        group: Group::Module,
+        index,
+        hover: if up { CELL_UP_HOVER } else { CELL_DOWN_HOVER },
+        pressed: if up { CELL_UP_PRESSED } else { CELL_DOWN_PRESSED },
+    }
+}
+const HUB_STATES: &[crate::style::PlateStates] = &[
+    hub_states(0, true), hub_states(1, true), hub_states(2, true),
+    hub_states(3, false), hub_states(4, false), hub_states(5, false),
+];
+
+#[cfg(test)]
+mod hub_interaction_tests {
+    use super::*;
+
+    fn geometry(mut prim: Prim) -> Prim {
+        match &mut prim {
+            Prim::Path { fill, stroke, .. } | Prim::Rect { fill, stroke, .. } => {
+                *fill = None;
+                *stroke = None;
+            }
+            _ => panic!("diamond states must contain only their existing paths and glyph plate"),
+        }
+        prim
+    }
+
+    #[test]
+    fn every_diamond_keeps_its_silhouette_and_gets_both_states() {
+        let mut plates = Vec::new();
+        crate::screens::scene::plates(DASHBOARD, 0.0, 0.0, &mut plates);
+        assert_eq!(HUB_STATES.len(), plates.len());
+        for (index, state) in HUB_STATES.iter().enumerate() {
+            assert_eq!((state.group, state.index), (Group::Module, index));
+            let rest = if index < 3 { CELL_UP } else { CELL_DOWN };
+            for (drawing, fill, detail) in [
+                (state.hover, rgb(0xf63333), rgb(0x59171b)),
+                (state.pressed, rgb(0xa52223), rgb(0x420f10)),
+            ] {
+                assert_eq!(drawing.len(), rest.len());
+                for (&drawn, &original) in drawing.iter().zip(rest) {
+                    assert_eq!(geometry(drawn), geometry(original));
+                }
+                assert!(matches!(drawing[0], Prim::Path { fill: Some(Ink::Fixed(c)), .. } if c == fill));
+                assert!(matches!(drawing[2], Prim::Rect { fill: Some(Ink::Fixed(c)), .. } if c == detail));
+            }
+        }
+    }
+}
 
 /// The code tape under the logotype (:168), chamfered 2 at both bottom
 /// corners.

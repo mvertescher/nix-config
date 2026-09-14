@@ -380,6 +380,11 @@ pub fn style() -> Style {
         // --- controls --- (components.svg LOGIN ENTRY GROUP, OUTLINED
         // BUTTON)
         controls: Controls {
+            // Echo rings and veneer need custom drawing. Keep the
+            // coats until the complete treatment is wired.
+            primary_states: Default::default(),
+            ghost_states: Default::default(),
+            field_states: Default::default(),
             // ENTER / LOGIN: the amber bar with the chocolate ink
             // `ACCESS` uses on it; `on_select` is veneer's ink.
             primary: Coat::filled(Ink::Cta, Ink::Fixed(ON_BAR)),
@@ -409,6 +414,8 @@ pub fn style() -> Style {
         // --- dashboard ---
         dashboard: DASHBOARD,
         dashboard_selection: 0,
+        dashboard_cursor: false,
+        dashboard_states: &[],
         // EMAIL is card 0; nothing on this hub says "store", and the
         // store is `s` from the hub instead (`screens::hub`).
         dashboard_destinations: [Some(Destination::Mail), None, None, None, None, None],

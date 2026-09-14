@@ -5,6 +5,10 @@ edition = "2021"
 autoexamples = false
 autobins = false
 
+[[example]]
+name = "control-states"
+path = "examples/control-states.rs"
+
 [dependencies]
 # `image-without-codecs` rather than `image`: the tray hands the bar
 # icons it has already decoded to RGBA, so the only thing wanted from

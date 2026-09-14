@@ -315,7 +315,25 @@ as the opening state -- and everything it draws is the era's
 into the `// --- dashboard ---` block of `src/eras/<era>.rs`. All four
 blocks are transcribed and gated (G2i, `docs/PIPELINE.md`).
 
-Not yet done:
-- Fields are display-only. The login screen draws its boxes and values
-  as `Prim`s and takes no input; the screens are design targets, and a
-  real `text_input` needs per-era styling before it earns a place.
+The login accepts password input and can authenticate through greetd;
+see `GREETER.md`. The dashboard's inbox and store remain demo content.
+
+Built-in buttons and text fields have neomil and entropism hover/press
+coats. Preview the real catalog styles and try live controls with:
+
+```sh
+nix-shell shell.nix --run 'cargo run --example control-states -- --era neomil'
+```
+
+Kitsch's extrusion, neokitsch's echo/veneer, and the hub's custom canvas
+interaction treatments remain open in `TODO.md`. The preview labels the
+two pending eras; their built-in coats still keep their rest appearance.
+
+Dashboard and store tiles activate on release over the tile pressed;
+dragging to another tile or losing the window cancels the click.
+Entropism's dashboard also moves its single cursor fill on hover and
+extinguishes it while held, without changing the selected destination.
+Keyboard navigation restores the selection's fill. Neomil's dashboard
+diamonds brighten on hover and take the darker held red while pressed,
+using the component sheet's inferred filled-control rule. Kitsch and
+neokitsch dashboard treatments remain pending.

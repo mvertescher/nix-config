@@ -151,6 +151,8 @@ impl Dashboard {
             Scene {
                 style: self.style,
                 prims: self.style.dashboard,
+                cursor_group: self.style.dashboard_cursor.then_some(Group::Module),
+                states: self.style.dashboard_states,
                 picked: Picked {
                     module: self.selected,
                     ..Picked::default()

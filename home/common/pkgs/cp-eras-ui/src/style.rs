@@ -823,6 +823,12 @@ pub struct Style {
     /// diamond, entropism BRAINDANCE, kitsch EVENTS, neokitsch EMAIL --
     /// so the opening state is era data, not a constant of the screen.
     pub dashboard_selection: usize,
+    /// The module fill follows the pointer without opening/selecting a
+    /// destination, and blinks off while held (entropism's cursor).
+    pub dashboard_cursor: bool,
+    /// Optional hover/held drawings in each module plate's own local
+    /// coordinates. These change its appearance, never its hit box.
+    pub dashboard_states: &'static [PlateStates],
     /// Where each of the six modules leads when it is opened -- Enter
     /// or a click on it in `screens::hub` -- indexed like the plates.
     /// `None` is a module with no screen behind it: it selects and
@@ -1033,6 +1039,16 @@ impl Coat {
     }
 }
 
+/// Additional coats for an interactive control. `None` keeps its rest
+/// coat: use it when the sheet calls for geometry or texture that a
+/// built-in style cannot draw, rather than inventing a substitute.
+/// For fields, `pressed` is the focused coat; iced owns the caret.
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct ControlStates {
+    pub hover: Option<Coat>,
+    pub pressed: Option<Coat>,
+}
+
 /// The era's form-control readings.
 ///
 /// Three of the four have material for two button dresses and a field
@@ -1043,6 +1059,9 @@ impl Coat {
 /// says so; an era that later gains a reference gets a field here.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Controls {
+    pub primary_states: ControlStates,
+    pub ghost_states: ControlStates,
+    pub field_states: ControlStates,
     /// The affirmative control -- ENTER, NEXT, LOGIN, REPORT SPAM.
     pub primary: Coat,
     /// The bare control beside it -- REPLY, RIFLES, Confirm / Jump.
@@ -2194,6 +2213,19 @@ pub enum Group {
     Card,
     /// A dashboard menu unit, indexed 0..6.
     Module,
+}
+
+/// A plate's transient drawings. Unlike `on`/`off`, these do not
+/// represent selected content. Keep geometry at the plate's rest size;
+/// store-card growth, for example, is selection and not a press.
+/// These are foreground drawings; backdrop composites stay in the
+/// scene's leading `Soft` groups, not inside a transient plate.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PlateStates {
+    pub group: Group,
+    pub index: usize,
+    pub hover: &'static [Prim],
+    pub pressed: &'static [Prim],
 }
 
 /// A screen a dashboard module opens onto. The hub (`screens::hub`)

@@ -31,7 +31,7 @@
 
 use crate::palette::{rgb, Ornaments, Palette};
 use crate::style::{
-    Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Coat, Compliance, Controls,
+    Banner, Bar, BarChrome, BarGround, BarMenu, BarOrnament, Chrome, Coat, Compliance, ControlStates, Controls,
     Corner, Destination, Dress,
     Era, Face, Footnotes, Ground, Ink, MenuMarker, MenuRule, Metrics, Nameplate,
     PanelEcho, Selection, Style, Ticket, WindowLabel,
@@ -251,6 +251,21 @@ pub fn style() -> Style {
         glyphs: false,
         // --- controls --- (components.svg BUTTON ROW, LOGIN FORM)
         controls: Controls {
+            // components.svg band C: reverse video on hover, outline
+            // while held. Resolve through the same desktop roles as
+            // the existing rest coats (the field colours are derived).
+            primary_states: ControlStates {
+                hover: Some(Coat::filled(Ink::Cta, Ink::OnSelect)),
+                pressed: Some(Coat::outlined(Ink::Border, 2.0, Ink::Fg)),
+            },
+            ghost_states: ControlStates {
+                hover: Some(Coat::filled(Ink::Cta, Ink::OnSelect)),
+                pressed: Some(Coat::outlined(Ink::Border, 2.0, Ink::Fg)),
+            },
+            field_states: ControlStates {
+                hover: Some(Coat::filled(Ink::Cta, Ink::OnSelect)),
+                pressed: Some(Coat::outlined(Ink::Border, 1.25, Ink::Fg)),
+            },
             // REPORT SPAM and NEXT: the solid sage, dark ink on it.
             primary: Coat::filled(Ink::Cta, Ink::OnSelect),
             // REPLY / FORWARD / DELETE: the bare strip, stroke 2, same
@@ -284,6 +299,8 @@ pub fn style() -> Style {
         // under "the selection: solid sage fill, dark caption box and
         // text").
         dashboard_selection: 2,
+        dashboard_cursor: true,
+        dashboard_states: &[],
         // EMAILS is tile 0; nothing on this hub says "store", and the
         // store is `s` from the hub instead (`screens::hub`).
         dashboard_destinations: [Some(Destination::Mail), None, None, None, None, None],

@@ -16,10 +16,13 @@
 //! paints a [`Prim::Plate`]'s `on` drawing when the plate's index is
 //! the pick for its [`Group`] and `off` otherwise, and reports clicks
 //! on plates back through the screen's own message constructor.
+//! Clicks commit on release over the original plate. `cursor_group`
+//! optionally makes one group's fill follow hover without changing
+//! its content selection; the fill blinks off while that plate is held.
 
 use crate::motion;
 use crate::screens::soft;
-use crate::style::{Anchor, Change, Face, Group, Ink, Prim, Seg, Style};
+use crate::style::{Anchor, Change, Face, Group, Ink, PlateStates, Prim, Seg, Style};
 use crate::Element;
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Duration;
@@ -83,6 +86,12 @@ pub struct Scene<M> {
     pub style: Style,
     pub prims: &'static [Prim],
     pub picked: Picked,
+    /// A group whose `on` drawing denotes the pointer/focus, rather
+    /// than the selected content. Other groups keep their selection.
+    pub cursor_group: Option<Group>,
+    /// Per-plate hover/held drawings, interpreted inside the same
+    /// translation, rotation and motion clip as the resting plate.
+    pub states: &'static [PlateStates],
     /// The moment to paint, counted from `motion::origin()`: what every
     /// [`Prim::Motion`] in the list is read at. A screen with nothing
     /// moving still says where its clock is; `motion::REST` is the
@@ -497,6 +506,24 @@ pub(crate) fn plates(prims: &[Prim], ox: f32, oy: f32, out: &mut Vec<(Group, usi
 }
 
 impl<M> Scene<M> {
+    fn plate_prims(
+        &self,
+        group: Group,
+        index: usize,
+        interaction: Option<(Target, bool)>,
+        on: &'static [Prim],
+        off: &'static [Prim],
+    ) -> &'static [Prim] {
+        if let Some((target, held)) = interaction {
+            if target == (group, index) {
+                if let Some(states) = self.states.iter().find(|s| (s.group, s.index) == target) {
+                    return if held { states.pressed } else { states.hover };
+                }
+            }
+        }
+        if self.picked.get(group) == index { on } else { off }
+    }
+
     /// Resolve one of the scene's inks against the live palette, so a
     /// published theme still re-dresses the screen.
     fn ink(&self, ink: Ink, alpha: f32) -> Color {
@@ -561,6 +588,7 @@ impl<M> Scene<M> {
         oy: f32,
         k: f32,
         alpha: f32,
+        interaction: Option<(Target, bool)>,
     ) {
         for prim in prims {
             match *prim {
@@ -768,10 +796,10 @@ impl<M> Scene<M> {
                     }
                 }
                 Prim::Plate { group, index, on, off, .. } => {
-                    let prims = if self.picked.get(group) == index { on } else { off };
-                    self.paint(frame, prims, ox, oy, k, alpha);
+                    let prims = self.plate_prims(group, index, interaction, on, off);
+                    self.paint(frame, prims, ox, oy, k, alpha, interaction);
                 }
-                Prim::At { x, y, prims } => self.paint(frame, prims, ox + x, oy + y, k, alpha),
+                Prim::At { x, y, prims } => self.paint(frame, prims, ox + x, oy + y, k, alpha, interaction),
                 Prim::Motion { motion, prims } => {
                     let t = motion::progress(&motion, self.at);
                     match motion.change {
@@ -801,7 +829,7 @@ impl<M> Scene<M> {
                                 height: Change::lerp(h, t) * k,
                             };
                             if region.width > 0.0 && region.height > 0.0 {
-                                frame.with_clip(region, |f| self.paint(f, prims, ox, oy, k, alpha));
+                                frame.with_clip(region, |f| self.paint(f, prims, ox, oy, k, alpha, interaction));
                             }
                         }
                         Change::Opacity { alpha: fade } => {
@@ -816,7 +844,7 @@ impl<M> Scene<M> {
                             // rest. Nothing is painted at 0.
                             let a = alpha * Change::lerp(fade, t);
                             if a > 0.0 {
-                                self.paint(frame, prims, ox, oy, k, a);
+                                self.paint(frame, prims, ox, oy, k, a, interaction);
                             }
                         }
                     }
@@ -832,7 +860,7 @@ impl<M> Scene<M> {
                     frame.with_save(|f| {
                         f.translate(iced::Vector::new((ox + x) * k, (oy + y) * k));
                         f.rotate(iced::Radians(angle.to_radians()));
-                        self.paint(f, prims, 0.0, 0.0, k, alpha);
+                        self.paint(f, prims, 0.0, 0.0, k, alpha, interaction);
                     });
                 }
                 // Painted by the `Backdrop` canvas underneath; see
@@ -1035,22 +1063,125 @@ fn ellipse(center: Point, rx: f32, ry: f32) -> canvas::Path {
     canvas::Path::new(|b| b.ellipse(elliptical(center, rx, ry)))
 }
 
+type Target = (Group, usize);
+
+/// Gesture state belongs to the canvas, not the selected content. A
+/// scene change invalidates a held click even if iced reuses the canvas
+/// widget's state for the next route.
+#[derive(Debug, Default)]
+pub struct Pointer {
+    scene: Option<(usize, usize)>,
+    hovered: Option<Target>,
+    pressed: Option<Target>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum PointerAction {
+    Ignore,
+    Redraw,
+    Capture,
+    Activate(Target),
+}
+
+impl Pointer {
+    fn key(prims: &[Prim]) -> (usize, usize) {
+        (prims.as_ptr() as usize, prims.len())
+    }
+
+    fn sync(&mut self, prims: &[Prim]) {
+        let key = Some(Self::key(prims));
+        if self.scene != key {
+            *self = Self { scene: key, ..Self::default() };
+        }
+    }
+
+    fn event(&mut self, event: &iced::Event, target: Option<Target>) -> PointerAction {
+        use iced::Event;
+        match event {
+            Event::Mouse(mouse::Event::CursorMoved { .. }) => {
+                if self.hovered == target {
+                    return PointerAction::Ignore;
+                }
+                self.hovered = target;
+                PointerAction::Redraw
+            }
+            Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) => {
+                self.hovered = target;
+                self.pressed = target;
+                if target.is_some() { PointerAction::Capture } else { PointerAction::Redraw }
+            }
+            Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left)) => {
+                let pressed = self.pressed.take();
+                if pressed.is_none() {
+                    return PointerAction::Ignore;
+                }
+                self.hovered = target;
+                match pressed {
+                    Some(origin) if Some(origin) == target => PointerAction::Activate(origin),
+                    Some(_) => PointerAction::Capture,
+                    None => PointerAction::Ignore,
+                }
+            }
+            Event::Mouse(mouse::Event::CursorLeft)
+            | Event::Window(iced::window::Event::Unfocused)
+            | Event::Keyboard(iced::keyboard::Event::KeyPressed { .. }) => {
+                let changed = self.hovered.take().is_some() | self.pressed.take().is_some();
+                if changed { PointerAction::Redraw } else { PointerAction::Ignore }
+            }
+            _ => PointerAction::Ignore,
+        }
+    }
+
+    fn picked(&self, prims: &[Prim], mut picked: Picked, cursor_group: Option<Group>) -> Picked {
+        if self.scene != Some(Self::key(prims)) {
+            return picked;
+        }
+        if let Some(group) = cursor_group {
+            if let Some((hover_group, index)) = self.hovered {
+                if hover_group == group {
+                    // No plate has this index: extinguish the cursor
+                    // while its own tile is held. A drag over another
+                    // tile may hover it, but cannot activate it.
+                    let index = if self.pressed == self.hovered { usize::MAX } else { index };
+                    match group {
+                        Group::Category => picked.category = index,
+                        Group::Card => picked.card = index,
+                        Group::Module => picked.module = index,
+                    }
+                }
+            }
+        }
+        picked
+    }
+
+    fn interaction(&self, prims: &[Prim]) -> Option<(Target, bool)> {
+        if self.scene != Some(Self::key(prims)) {
+            return None;
+        }
+        self.hovered.map(|target| (target, self.pressed == Some(target)))
+    }
+}
+
 impl<M> canvas::Program<M, Style> for Scene<M> {
-    type State = ();
+    type State = Pointer;
 
     fn update(
         &self,
-        _state: &mut Self::State,
+        state: &mut Self::State,
         event: &iced::Event,
         bounds: Rectangle,
         cursor: mouse::Cursor,
     ) -> Option<canvas::Action<M>> {
-        let iced::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)) = event else {
-            return None;
-        };
-        let at = cursor.position_in(bounds)?;
-        let (group, index) = hit(self.prims, scale(bounds), at)?;
-        Some(canvas::Action::publish((self.on_select)(group, index)).and_capture())
+        state.sync(self.prims);
+        let target = cursor.position_in(bounds).and_then(|at| hit(self.prims, scale(bounds), at));
+        match state.event(event, target) {
+            PointerAction::Ignore => None,
+            PointerAction::Redraw => Some(canvas::Action::request_redraw()),
+            PointerAction::Capture => Some(canvas::Action::request_redraw().and_capture()),
+            PointerAction::Activate((group, index)) => {
+                Some(canvas::Action::publish((self.on_select)(group, index)).and_capture())
+            }
+        }
     }
 
     fn mouse_interaction(
@@ -1067,7 +1198,7 @@ impl<M> canvas::Program<M, Style> for Scene<M> {
 
     fn draw(
         &self,
-        _state: &Self::State,
+        state: &Self::State,
         renderer: &Renderer,
         _theme: &Style,
         bounds: Rectangle,
@@ -1076,7 +1207,18 @@ impl<M> canvas::Program<M, Style> for Scene<M> {
         let mut frame = canvas::Frame::new(renderer, bounds.size());
         let k = scale(bounds);
         if k > 0.0 {
-            self.paint(&mut frame, self.prims, 0.0, 0.0, k, 1.0);
+            // Only rendering sees the cursor pick. Hover never mutates
+            // the screen's destination or the keyboard's selection.
+            let scene = Scene {
+                style: self.style,
+                prims: self.prims,
+                picked: state.picked(self.prims, self.picked, self.cursor_group),
+                cursor_group: self.cursor_group,
+                states: self.states,
+                at: self.at,
+                on_select: self.on_select,
+            };
+            scene.paint(&mut frame, self.prims, 0.0, 0.0, k, 1.0, state.interaction(self.prims));
         }
         vec![frame.into_geometry()]
     }
@@ -1085,6 +1227,161 @@ impl<M> canvas::Program<M, Style> for Scene<M> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn move_pointer() -> iced::Event {
+        iced::Event::Mouse(mouse::Event::CursorMoved { position: Point::ORIGIN })
+    }
+
+    #[test]
+    fn transient_drawings_follow_only_the_hovered_plate_and_clear_with_the_gesture() {
+        let style = crate::style::Era::Neomil.style();
+        let scene: Scene<()> = Scene {
+            style, prims: style.dashboard, picked: Picked::default(),
+            cursor_group: None, states: style.dashboard_states,
+            at: motion::REST, on_select: |_, _| (),
+        };
+        let mut pointer = Pointer::default();
+        pointer.sync(scene.prims);
+        let target = Some((Group::Module, 1));
+        let rest: &[Prim] = &[Prim::Rect {
+            x: 0.0, y: 0.0, w: 1.0, h: 1.0,
+            fill: Some(Ink::Fg), stroke: None, width: 0.0,
+        }];
+        let draw = |group, index, pointer: &Pointer| {
+            scene.plate_prims(group, index, pointer.interaction(scene.prims), rest, rest)
+        };
+        assert_eq!(draw(Group::Module, 1, &pointer), rest);
+        pointer.event(&move_pointer(), target);
+        assert_eq!(draw(Group::Module, 1, &pointer), style.dashboard_states[1].hover);
+        assert_eq!(draw(Group::Module, 0, &pointer), rest);
+        assert_eq!(draw(Group::Card, 1, &pointer), rest);
+        pointer.event(&press(), target);
+        assert_eq!(draw(Group::Module, 1, &pointer), style.dashboard_states[1].pressed);
+        pointer.event(&release(), target);
+        assert_eq!(draw(Group::Module, 1, &pointer), style.dashboard_states[1].hover);
+        pointer.event(&move_pointer(), None);
+        assert_eq!(draw(Group::Module, 1, &pointer), rest);
+        pointer.event(&press(), target);
+        pointer.sync(style.store);
+        assert_eq!(draw(Group::Module, 1, &pointer), rest);
+        assert_eq!(scene.picked, Picked::default());
+    }
+
+    fn press() -> iced::Event {
+        iced::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left))
+    }
+
+    fn release() -> iced::Event {
+        iced::Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
+    }
+
+    #[test]
+    fn plates_activate_on_release_in_every_era_at_multiple_scales() {
+        for era in crate::style::Era::ALL {
+            for prims in [era.style().dashboard, era.style().store] {
+                let mut centres = Vec::new();
+                plates(prims, 0.0, 0.0, &mut centres);
+                for k in [0.5, 1.0, 2.0] {
+                    for &(group, index, centre) in &centres {
+                        let target = hit(prims, k, Point::new(centre.x * k, centre.y * k));
+                        assert_eq!(target, Some((group, index)));
+                        let mut pointer = Pointer::default();
+                        pointer.sync(prims);
+                        assert_eq!(pointer.event(&press(), target), PointerAction::Capture);
+                        assert_eq!(pointer.event(&release(), target), PointerAction::Activate((group, index)));
+                        // A second release without a press cannot activate.
+                        assert_eq!(pointer.event(&release(), target), PointerAction::Ignore);
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn a_drag_may_return_to_its_origin_but_cannot_activate_another_tile() {
+        let a = Some((Group::Module, 0));
+        let b = Some((Group::Module, 1));
+        for elsewhere in [None, b] {
+            let mut pointer = Pointer::default();
+            pointer.event(&press(), a);
+            pointer.event(&move_pointer(), elsewhere);
+            assert_eq!(pointer.event(&release(), elsewhere), PointerAction::Capture);
+            pointer.event(&press(), a);
+            pointer.event(&move_pointer(), elsewhere);
+            pointer.event(&move_pointer(), a);
+            assert_eq!(pointer.event(&release(), a), PointerAction::Activate(a.unwrap()));
+        }
+    }
+
+    #[test]
+    fn losing_the_window_or_changing_scenes_cancels_a_gesture() {
+        let style = crate::style::Era::Entropism.style();
+        let a = Some((Group::Module, 0));
+        for cancel in [
+            iced::Event::Window(iced::window::Event::Unfocused),
+            iced::Event::Mouse(mouse::Event::CursorLeft),
+        ] {
+            let mut pointer = Pointer::default();
+            pointer.sync(style.dashboard);
+            pointer.event(&press(), a);
+            assert_eq!(pointer.event(&cancel, None), PointerAction::Redraw);
+            assert_eq!(pointer.event(&release(), a), PointerAction::Ignore);
+            assert_eq!(pointer.hovered, None);
+        }
+        let mut pointer = Pointer::default();
+        pointer.sync(style.dashboard);
+        pointer.event(&press(), a);
+        pointer.sync(style.store);
+        assert_eq!(pointer.event(&release(), a), PointerAction::Ignore);
+    }
+
+    #[test]
+    fn a_navigation_key_returns_the_cursor_to_keyboard_selection() {
+        use iced::keyboard::{key, Event, Key, Location, Modifiers};
+        let style = crate::style::Era::Entropism.style();
+        let mut pointer = Pointer::default();
+        pointer.sync(style.dashboard);
+        let target = Some((Group::Module, 0));
+        pointer.event(&press(), target);
+        let down = iced::Event::Keyboard(Event::KeyPressed {
+            key: Key::Named(key::Named::ArrowDown),
+            modified_key: Key::Named(key::Named::ArrowDown),
+            physical_key: key::Physical::Code(key::Code::ArrowDown),
+            location: Location::Standard,
+            modifiers: Modifiers::empty(),
+            text: None,
+            repeat: false,
+        });
+        assert_eq!(pointer.event(&down, target), PointerAction::Redraw);
+        let picked = Picked { module: 4, ..Picked::default() };
+        assert_eq!(pointer.picked(style.dashboard, picked, Some(Group::Module)), picked);
+        assert_eq!(pointer.event(&release(), target), PointerAction::Ignore);
+    }
+
+    #[test]
+    fn the_cursor_moves_without_changing_selected_content_and_blinks_while_held() {
+        let style = crate::style::Era::Entropism.style();
+        assert!(style.dashboard_cursor);
+        let picked = Picked { module: style.dashboard_selection, category: 3, card: 1 };
+        let mut pointer = Pointer::default();
+        pointer.sync(style.dashboard);
+        let group = Some(Group::Module);
+        let draw = |p: &Pointer| p.picked(style.dashboard, picked, group);
+        assert_eq!(draw(&pointer), picked);
+        let a = Some((Group::Module, 0));
+        assert_eq!(pointer.event(&move_pointer(), a), PointerAction::Redraw);
+        assert_eq!(draw(&pointer), Picked { module: 0, ..picked });
+        // An ordinary selection group must not follow hover.
+        assert_eq!(pointer.picked(style.dashboard, picked, None), picked);
+        pointer.event(&press(), a);
+        assert_eq!(draw(&pointer).module, usize::MAX);
+        pointer.event(&release(), a);
+        assert_eq!(draw(&pointer).module, 0);
+        pointer.event(&move_pointer(), None);
+        assert_eq!(draw(&pointer), picked);
+        // A reused canvas cannot paint the previous scene's cursor.
+        assert_eq!(pointer.picked(style.store, picked, group), picked);
+    }
 
     /// The sRGB encode, inverse of `to_linear`.
     fn to_srgb(l: f32) -> f32 {
@@ -1327,6 +1624,8 @@ mod tests {
         let scene: Scene<()> = Scene {
             style,
             prims: &[],
+            cursor_group: None,
+            states: &[],
             picked: Picked { category: 0, card: 0, module: 0 },
             at: crate::motion::REST,
             on_select: |_, _| (),

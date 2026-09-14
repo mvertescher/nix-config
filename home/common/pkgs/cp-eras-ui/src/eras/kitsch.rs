@@ -377,6 +377,11 @@ pub fn style() -> Style {
         // --- controls --- (components.svg INPUT FIELD, ENTER BAR,
         // PROTECTED BAR, TAB CHEVRON)
         controls: Controls {
+            // The sheet's ghost extrusion needs custom drawing.
+            // Keep the coats until the complete treatment is wired.
+            primary_states: Default::default(),
+            ghost_states: Default::default(),
+            field_states: Default::default(),
             // The role, not the login's mint: `ACCESS` pins ENTER to
             // `LIT` because the trace does, but the era's affirmative
             // fill everywhere else is the yellow, and the role is what
@@ -412,6 +417,8 @@ pub fn style() -> Style {
         // fill="#f5cb23" stroke="#fce89a">` under the comment "the
         // selection"); the other five fill `#2c9798`.
         dashboard_selection: 4,
+        dashboard_cursor: false,
+        dashboard_states: &[],
         // Both PRODUCTS blades (2 and 3) open the store; no blade says
         // "mail", and the mailbox is `m` from the hub instead
         // (`screens::hub`).
