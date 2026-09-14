@@ -57,16 +57,13 @@ pub fn style() -> Style {
 
 /// [`style`] with the era already decided (`None` = follow the desktop).
 pub fn style_for(era: Option<Era>) -> Style {
+    style_with_theme(era, &crate::theme::Theme::load())
+}
+
+fn style_with_theme(era: Option<Era>, theme: &crate::theme::Theme) -> Style {
     match era {
-        Some(era) => {
-            let mut style = era.style();
-            let theme = crate::theme::Theme::load();
-            if Era::parse(&theme.era) == Some(era) {
-                style.palette = style.palette.with_theme(&theme);
-            }
-            style
-        }
-        None => Style::from_desktop(),
+        Some(era) if Era::parse(&theme.era) != Some(era) => era.style(),
+        _ => Style::from_theme(theme),
     }
 }
 
@@ -195,6 +192,97 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // Current TOML emitted by the Nix reference role resolver. The visual
+    // matrix independently exercises the live resolver and no-config fallback.
+    const NEOMIL_REFERENCE: &str = r##"era = "neomil"
+variant = "reference"
+polarity = "dark"
+
+[font]
+ui = "Rajdhani"
+
+[colors]
+bg = "#050304"
+panel = "#001a33"
+border = "#5e1112"
+dim = "#a32226"
+fg = "#de2e2e"
+alert = "#ff3b45"
+tape = "#dedede"
+"##;
+
+    #[test]
+    fn default_and_forced_reference_loads_share_the_dashboard_correction() {
+        use crate::palette::rgb;
+        let theme = crate::theme::Theme::parse(NEOMIL_REFERENCE).unwrap();
+        let reference = Era::Neomil.style();
+        for era in [None, Some(Era::Neomil)] {
+            let loaded = style_with_theme(era, &theme);
+            assert_eq!(loaded, reference);
+            assert_eq!(loaded.dashboard_style().palette.fg, rgb(0xef3333));
+            assert_eq!(loaded.palette.fg, rgb(0xde2e2e));
+            assert_eq!(loaded.dashboard_style().palette.select, loaded.palette.select);
+        }
+        // Forcing another era takes its compiled defaults. Forcing Neomil
+        // on another desktop likewise takes the compiled reference.
+        for era in [Era::Entropism, Era::Kitsch, Era::Neokitsch] {
+            assert_eq!(style_with_theme(Some(era), &theme), era.style());
+            let mut other = theme.clone();
+            other.era = era.name().into();
+            assert_eq!(style_with_theme(Some(Era::Neomil), &other), reference);
+        }
+    }
+
+    #[test]
+    fn named_variants_and_unknown_eras_do_not_inherit_reference_ink() {
+        let reference = crate::theme::Theme::parse(NEOMIL_REFERENCE).unwrap();
+        // Deliberately keep every color identical: provenance, not a color
+        // coincidence, makes these non-reference variants ineligible.
+        for variant in ["ash", "bleach", "custom", "", "REFERENCE"] {
+            let mut theme = reference.clone();
+            theme.variant = variant.into();
+            for era in [None, Some(Era::Neomil)] {
+                let loaded = style_with_theme(era, &theme);
+                assert_eq!(loaded.dashboard_style(), loaded, "{variant}");
+            }
+        }
+        let mut unknown = reference;
+        unknown.era = "custom-neomil".into();
+        let loaded = style_with_theme(None, &unknown);
+        assert_eq!(loaded.era, Era::Neomil);
+        assert_eq!(loaded.dashboard_style(), loaded);
+    }
+
+    #[test]
+    fn custom_published_roles_retain_their_colors_even_with_reference_fg() {
+        // Changing any of the seven roles, or adding an ornamental role,
+        // keeps the complete customized drawing palette. Most cases retain
+        // #de2e2e foreground and catch a foreground-only eligibility check.
+        for original in ["#050304", "#001a33", "#5e1112", "#a32226",
+                         "#de2e2e", "#ff3b45", "#dedede"] {
+            let custom = NEOMIL_REFERENCE.replace(original, "#112233");
+            let theme = crate::theme::Theme::parse(&custom).unwrap();
+            for era in [None, Some(Era::Neomil)] {
+                let loaded = style_with_theme(era, &theme);
+                assert_eq!(loaded.dashboard_style(), loaded, "{original}");
+            }
+        }
+        let extra = format!("{NEOMIL_REFERENCE}\nbanner = \"#112233\"\n");
+        let theme = crate::theme::Theme::parse(&extra).unwrap();
+        let loaded = style_with_theme(None, &theme);
+        assert_eq!(loaded.dashboard_style(), loaded);
+    }
+
+    #[test]
+    fn direct_palette_edits_keep_custom_dashboard_ink() {
+        let mut style = Era::Neomil.style();
+        style.palette.border = crate::palette::rgb(0x112233);
+        assert_eq!(style.dashboard_style(), style);
+        style = Era::Neomil.style();
+        style.palette.select = crate::palette::rgb(0x112233);
+        assert_eq!(style.dashboard_style(), style);
+    }
 
     #[test]
     fn era_flag_in_both_spellings() {

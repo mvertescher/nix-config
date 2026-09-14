@@ -162,10 +162,13 @@ impl Dashboard {
     }
 
     pub fn view(&self) -> Element<'_, Message> {
+        // One scoped palette reaches the foreground, software backdrop
+        // and all hover/held drawings; the stored hub/shell style stays shared.
+        let drawing_style = self.style.dashboard_style();
         stack![
-            ground(&self.style),
+            ground(&drawing_style),
             Scene {
-                style: self.style,
+                style: drawing_style,
                 prims: self.style.dashboard,
                 cursor_group: self.style.dashboard_cursor.then_some(Group::Module),
                 states: self.style.dashboard_states,
@@ -248,6 +251,29 @@ mod tests {
             let dash = Dashboard::new(era.style());
             assert_eq!(dash.selected, era.style().dashboard_selection);
             assert!(dash.selected < 6, "{}", era.name());
+        }
+    }
+
+    #[test]
+    fn reference_dashboard_ink_does_not_restyle_the_hub_or_other_eras() {
+        use crate::palette::rgb;
+        use crate::shell::Wears;
+        for era in Era::ALL {
+            let original = era.style();
+            let hub = crate::screens::hub::Hub::new(original);
+            let drawing = hub.dashboard.style.dashboard_style();
+            let expected = if era == Era::Neomil {
+                let mut scoped = original;
+                scoped.palette.fg = rgb(0xef3333);
+                scoped
+            } else {
+                original
+            };
+            assert_eq!(drawing, expected);
+            assert_eq!(hub.wears(), original);
+            assert_eq!(hub.dashboard.style, original);
+            assert_eq!(hub.mail.style, original);
+            assert_eq!(hub.store.style, original);
         }
     }
 

@@ -2,8 +2,8 @@
 //!
 //! Three reds on near-black with a cold blue ambient glow, chamfered
 //! surfaces, stencil labelling. Sampled from Behance Part 1, gallery
-//! positions 53-62 per `docs/sources.md` (the run opens black with no
-//! title card; the "doc #44-52" this comment used to give came from an
+//! title card 53 and screens 54-62 per `docs/sources.md` (the
+//! "doc #44-52" this comment used to give came from an
 //! earlier, smaller scrape and is shifted by ten), and the shipped game
 //! HUD it became (the reference side panel notes
 //! the HUD "evolved from and is based on this style").
@@ -344,6 +344,7 @@ pub fn style() -> Style {
         // --- end store ---
         // --- dashboard ---
         dashboard: DASHBOARD,
+        dashboard_reference_fg: Some(rgb(0xef3333)),
         // The photo distinguishes no unit (trace header :107-121 and
         // components.svg :722-723: "the source shows NO selected
         // state"), so every plate wears one dress and the opening
@@ -496,10 +497,9 @@ pub const ACCESS: Access = Access {
                 Plate::filled(Plot::new(372.5, 602.5, 252.0, 32.0), Ink::Fixed(WELL))
                     .edged(Ink::Dim, 1.0),
             ),
-            // The trace's mock is ten stars and two open slots; typed,
-            // the field keeps the two slots after however many stars
-            // were typed. The caret is on the Login button, not in the
-            // field, so it stays put.
+            // The mock is ten stars with a blinking text tail. Typing
+            // changes the star count; the separate hollow button mark
+            // below stays fixed and does not blink.
             entry: Some(Entry {
                 rest: Legend::new("**********  __", 381.0, 626.0, 12.0, Ink::Fg).tracked(3.0),
                 mask: '*',
@@ -514,10 +514,14 @@ pub const ACCESS: Access = Access {
                     .bevelled(Bevel::br(9.0)),
             ),
             action_label: Some(Legend::new("Login", 383.0, 657.0, 17.0, Ink::Fixed(ON_CARD))),
-            caret: Some(Plate::filled(
-                Plot::new(496.0, 640.0, 2.0, 15.0),
-                Ink::Fixed(ON_CARD),
-            )),
+            // Static open-top slot measured at native source scale.
+            // Paint after the button; the former caret plate was hidden
+            // underneath it. Three bars preserve the hollow centre.
+            action_marks: &[
+                Plate::filled(Plot::new(497.3342, 635.0, 0.8031, 19.6317), Ink::Fixed(ON_CARD)),
+                Plate::filled(Plot::new(499.5833, 635.0, 0.7966, 19.6317), Ink::Fixed(ON_CARD)),
+                Plate::filled(Plot::new(498.1373, 653.7446, 1.4460, 0.8871), Ink::Fixed(ON_CARD)),
+            ],
             notes: &[
                 Legend::new(NOTICE_1, 378.0, 700.0, 7.5, Ink::Fixed(NOTICE)),
                 Legend::new(NOTICE_2, 378.0, 709.0, 7.5, Ink::Fixed(NOTICE)),
@@ -1147,7 +1151,7 @@ pub const MAILBOX_MOTIONS: &[MailMotion] = &[
 // carries a shape in either inventory.
 
 use crate::style::{
-    fill_path, fill_rect, line_rect, shut_path, txt, txt_bold, txt_bold_mid, txt_end, Anchor,
+    fill_path, fill_rect, line_path, line_rect, shut_path, txt, txt_bold, txt_bold_mid, txt_end, Anchor,
     Change, Group, Motion, Prim, Seg,
 };
 use iced::animation::Easing;
@@ -1179,8 +1183,8 @@ pub const C2UPPER: &[(f32, iced::Color)] = &[
 /// the scene draws it rather than leaving the page flat.
 pub const GROUND: iced::Color = rgb(0x0b0405);
 
-// The cold-blue glow every neomil screen opens with, as the four
-// traces (dashboard :75-101, mailbox and store :2-27, login :2-25)
+// The cold-blue glow shared by login, mailbox and store. The dashboard
+// used it too before its 2026-09-14 composite-ground correction. Their traces
 // define it, to the stop: `#glowh`, a ten-stop horizontal gradient
 // across the frame, drawn through `#glowmask`, a nine-stop luminance
 // ramp down it -- opaque to y 225, gone by 540. Until 2026-09-04 the
@@ -1993,201 +1997,191 @@ pub const STORE: &[Prim] = &[
 ];
 // --- end store -----------------------------------------------------------
 
+#[path = "neomil_dashboard_glyphs.rs"]
+mod dashboard_glyphs;
+
 // --- dashboard -----------------------------------------------------------
 //
-// `docs/neomil/dashboard-trace.svg`, transcribed. Coordinates are the
-// trace's own in the 1600x900 frame, measured off
-// `images/img-07-dashboard.png`; each group below names the trace
-// lines it came from, in the trace's paint order. The two `<use>`
-// defs -- `#badge` and the two menu cells -- are written once as
-// consts and placed with `Prim::At`, and each menu unit is a
-// `Prim::Plate` whose hit box is the cell's bounding box.
+// `docs/neomil/dashboard-trace.svg`, transcribed in its 1600x900 frame.
+// The 2026-09-14 source review restored six glyphs, per-tile inset contours
+// and tabs, dashboard-specific header/chrome, actual panel text and a
+// sampled composite ground. Measurements and remaining approximations:
+// `docs/neomil/dashboard-fidelity.md`.
 //
-// The three reds are the trace's `#ef3333` / `#ae272b` / `#671b21`,
-// which are the same three roles the store block maps to `Ink::Fg` /
-// `Ink::Dim` / `Ink::Border` (its `#df3131` / `#96282d` / `#60181a`),
-// so the palette still reaches the screen; the ground and the glow
-// stops are the trace's own hex, as the store's `GROUND` is.
-//
-// What the trace draws that is not transcribed as drawn, and why. (The
-// blue glow, a horizontal gradient under a vertical mask (:75-101),
-// used to head this list: until 2026-09-04 `glow()` rasterised it at
-// compile time into 640 strips, three linear pieces standing in for
-// the mask's nine stops. It is now `HUB_GLOW`, the construct itself.)
-// The `next` logotype (:165-166) is
-// *outlined* Orbitron; until 2026-09-07 the scene had neither a
-// stroked text nor an Orbitron face and it was set filled in bold
-// Rajdhani. It is `Prim::Outlined` in `Face::OrbitronBold` now, the
-// trace's `stroke-width="2"` as drawn. Letter-spacing on the header and
-// tab labels is dropped, as the store block drops it (`Prim::Tracked`
-// carries it since 2026-09-04; only the module labels below use it
-// so far). The body copy of
-// the GO HOME panel is drawn as the trace's measured run boxes
-// (:246-253) because the trace carries no copy for it.
+// Main control inks remain palette roles; the unmodified reference
+// dashboard projects its foreground to sampled #ef3333 at draw time.
+// Localized fields and artwork keep fixed colors. Each menu retains its original
+// bounding-box Plate, selection behavior and inferred interaction inks.
+// Glyph, header and ground modules are dashboard-only; other screens keep
+// their independently traced tables. GO HOME's material and foreground
+// retain the same opening clip.
 
-/// The ground: `#070304`, the k-means' largest cluster (38.8%), two
-/// levels off the era's `BG`.
+/// Near-black ink for the four same-row menu separators.
 pub const HUB_GROUND: iced::Color = rgb(0x070304);
-/// The panel's translucent fill: `#671b21` at `fill-opacity 0.55`
-/// (:232) -- the deep red *over* the ground, not a fourth red.
-const PANEL_FILL: iced::Color = iced::Color { a: 0.55, ..rgb(0x671b21) };
-/// The ground, the masked glow and the vignette (:152-154), composited
-/// as one: see `HUB_GLOW`.
-const HUB_BACK: &[Prim] = &[
-    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(HUB_GROUND)),
-    HUB_GLOW,
-    HUB_VIGNETTE,
-];
+// A dashboard-only sampled background; shared glow constants above remain
+// the other Neomil screens' source data.
+#[path = "neomil_dashboard_ground.rs"]
+mod dashboard_ground;
 
-/// `#badge` (:135): 59x57 with a 15px bottom-left chamfer, at its own
-/// origin. Filled deep red on four of the five uses, mid red on the
-/// selected T2.
-const BADGE_SEGS: &[Seg] = &[
-    Seg::Line(59.0, 0.0),
-    Seg::Line(59.0, 57.0),
-    Seg::Line(15.0, 57.0),
-    Seg::Line(0.0, 42.0),
-];
-const BADGE: &[Prim] = &[Prim::Path {
-    x: 0.0,
-    y: 0.0,
-    segs: BADGE_SEGS,
-    close: true,
-    fill: Some(Ink::Border),
-    stroke: Some(Ink::Fg),
-    width: 1.5,
-}];
-const BADGE_ON: &[Prim] = &[Prim::Path {
-    x: 0.0,
-    y: 0.0,
-    segs: BADGE_SEGS,
-    close: true,
-    fill: Some(Ink::Dim),
-    stroke: Some(Ink::Fg),
-    width: 1.5,
-}];
+#[path = "neomil_dashboard_chrome.rs"]
+mod dashboard_chrome;
+#[path = "neomil_dashboard_type.rs"]
+mod dashboard_type;
+#[path = "neomil_dashboard_material.rs"]
+mod dashboard_material;
+#[path = "neomil_dashboard_echoes.rs"]
+mod dashboard_echoes;
+#[path = "neomil_dashboard_ink.rs"]
+mod dashboard_ink;
+#[path = "neomil_dashboard_label_echoes.rs"]
+mod dashboard_label_echoes;
+#[path = "neomil_dashboard_header_echoes.rs"]
+mod dashboard_header_echoes;
+#[path = "neomil_dashboard_tape_chip_echoes.rs"]
+mod dashboard_tape_chip_echoes;
+#[path = "neomil_dashboard_panel_printing.rs"]
+mod dashboard_panel_printing;
 
-/// `#cell-up` (:122-127): row 1's menu cell at its own centre. A solid
-/// diamond of half-diagonal 104 whose top tip is cut flat at 89 (a
-/// 30px plateau), an inset outline at 68 cut the same way at 59, and
-/// the 43x36 glyph plate.
+/// Accepted outer silhouettes; source-fitted inset paths and solid edge tabs.
 const CELL_UP_OUTER: &[Seg] = &[
-    Seg::Line(15.0, -89.0),
-    Seg::Line(104.0, 0.0),
-    Seg::Line(0.0, 104.0),
-    Seg::Line(-104.0, 0.0),
+    Seg::Line(15.0, -89.0), Seg::Line(104.0, 0.0),
+    Seg::Line(0.0, 104.0), Seg::Line(-104.0, 0.0),
 ];
-const CELL_UP_INNER: &[Seg] = &[
-    Seg::Line(9.0, -59.0),
-    Seg::Line(68.0, 0.0),
-    Seg::Line(0.0, 68.0),
-    Seg::Line(-68.0, 0.0),
-];
-const CELL_UP: &[Prim] = &[
-    fill_path(-15.0, -89.0, CELL_UP_OUTER, Ink::Fg),
-    shut_path(-9.0, -59.0, CELL_UP_INNER, Ink::Border, 2.0),
-    fill_rect(-22.0, -21.0, 43.0, 36.0, Ink::Border),
-];
-/// `#cell-down` (:128-133): row 2's cell, `#cell-up` mirrored in y --
-/// the bottom tip is the cut one.
 const CELL_DOWN_OUTER: &[Seg] = &[
-    Seg::Line(104.0, 0.0),
-    Seg::Line(15.0, 89.0),
-    Seg::Line(-15.0, 89.0),
-    Seg::Line(-104.0, 0.0),
-];
-const CELL_DOWN_INNER: &[Seg] = &[
-    Seg::Line(68.0, 0.0),
-    Seg::Line(9.0, 59.0),
-    Seg::Line(-9.0, 59.0),
-    Seg::Line(-68.0, 0.0),
-];
-const CELL_DOWN: &[Prim] = &[
-    fill_path(0.0, -104.0, CELL_DOWN_OUTER, Ink::Fg),
-    shut_path(0.0, -68.0, CELL_DOWN_INNER, Ink::Border, 2.0),
-    fill_rect(-22.0, -21.0, 43.0, 36.0, Ink::Border),
+    Seg::Line(104.0, 0.0), Seg::Line(15.0, 89.0),
+    Seg::Line(-15.0, 89.0), Seg::Line(-104.0, 0.0),
 ];
 
-// One menu unit, at its own centre: the plate's box is the cell's
-// bounding box (208 wide; 89 above and 104 below the centre for row 1,
-// the reverse for row 2), and `on` and `off` are the same drawing
-// because the photo shows no selected state.
+const CELL_INNERS: &[&[Seg]] = &[
+    &[Seg::Line(10.44, -58.15), Seg::Line(59.33, -9.25), Seg::Line(59.33, 9.76), Seg::Line(1.41, 67.68), Seg::Line(-66.02, 0.24)],
+    &[Seg::Line(11.37, -58.15), Seg::Line(69.31, -0.21), Seg::Line(1.93, 67.18), Seg::Line(-56.45, 8.79), Seg::Line(-56.45, -9.21)],
+    &[Seg::Line(11.44, -58.15), Seg::Line(69.36, -0.22), Seg::Line(1.95, 67.2), Seg::Line(-56.44, 8.81), Seg::Line(-56.44, -9.22)],
+    &[Seg::Line(66.97, 1.0), Seg::Line(8.98, 58.99), Seg::Line(-9.85, 58.99), Seg::Line(-58.75, 10.09), Seg::Line(-58.75, -8.02)],
+    &[Seg::Line(67.77, 1.55), Seg::Line(9.33, 59.99), Seg::Line(-8.64, 59.99), Seg::Line(-57.59, 11.04), Seg::Line(-57.59, -7.97)],
+    &[Seg::Line(67.5, 1.56), Seg::Line(9.07, 59.99), Seg::Line(-8.95, 59.99), Seg::Line(-57.85, 11.09), Seg::Line(-57.85, -7.96)],
+];
+const CELL_INNERS_STARTS: &[(f32, f32)] = &[
+    (-7.63, -58.15),
+    (-7.51, -58.15),
+    (-7.52, -58.15),
+    (-0.4, -66.37),
+    (0.33, -65.89),
+    (0.06, -65.87),
+];
+
+const CELL_TABS: &[&[Seg]] = &[
+    &[Seg::Line(15.0, 104.0), Seg::Line(52.0, 67.0), Seg::Line(52.0, 52.0)],
+    &[Seg::Line(15.0, 104.0), Seg::Line(52.0, 67.0), Seg::Line(52.0, 52.0)],
+    &[Seg::Line(68.5, -50.0), Seg::Line(104.0, -14.5), Seg::Line(104.0, 0.0)],
+    &[Seg::Line(14.5, -104.0), Seg::Line(52.0, -66.5), Seg::Line(52.0, -52.0)],
+    &[Seg::Line(14.5, -104.0), Seg::Line(52.0, -66.5), Seg::Line(52.0, -52.0)],
+    &[Seg::Line(-14.5, -104.0), Seg::Line(-51.0, -67.5), Seg::Line(-51.0, -53.0)],
+];
+const CELL_TABS_STARTS: &[(f32, f32)] = &[
+    (0.0, 104.0),
+    (0.0, 104.0),
+    (54.0, -50.0),
+    (0.0, -104.0),
+    (0.0, -104.0),
+    (0.0, -104.0),
+];
+
+// Joining seams use the same detail ink as the inset, in every state.
+const CELL_SEAMS: &[&[Seg]] = &[
+    &[Seg::Line(52.0, 52.0)],
+    &[Seg::Line(52.0, 52.0)],
+    &[Seg::Line(104.0, 0.0)],
+    &[Seg::Line(52.0, -52.0)],
+    &[Seg::Line(52.0, -52.0)],
+    &[Seg::Line(-51.0, -53.0)],
+];
+
+// Rest, hover and held share the measured contours and source printing.
+const fn cells(fill: Ink, detail: Ink, glyphs: [Prim; 6]) -> [[Prim; 5]; 6] {
+    let mut out = [[fill_rect(0.0, 0.0, 0.0, 0.0, fill); 5]; 6];
+    let mut i = 0;
+    while i < out.len() {
+        let inner = CELL_INNERS_STARTS[i];
+        let tab = CELL_TABS_STARTS[i];
+        out[i] = [
+            if i < 3 { fill_path(-15.0, -89.0, CELL_UP_OUTER, fill) }
+                else { fill_path(0.0, -104.0, CELL_DOWN_OUTER, fill) },
+            shut_path(inner.0, inner.1, CELL_INNERS[i], detail, 1.0),
+            glyphs[i],
+            fill_path(tab.0, tab.1, CELL_TABS[i], fill),
+            line_path(tab.0, tab.1, CELL_SEAMS[i], detail, 1.0),
+        ];
+        i += 1;
+    }
+    out
+}
+const CELLS: [[Prim; 5]; 6] = cells(Ink::Fg, Ink::Border, dashboard_glyphs::REST);
+const CELLS_HOVER: [[Prim; 5]; 6] = cells(Ink::Fixed(rgb(0xf63333)), Ink::Fixed(rgb(0x59171b)), dashboard_glyphs::HOVER);
+const CELLS_PRESSED: [[Prim; 5]; 6] = cells(Ink::Fixed(rgb(0xa52223)), Ink::Fixed(ON_CARD), dashboard_glyphs::PRESSED);
+
+// The hit bounds and release/selection behavior are unchanged.
 macro_rules! unit {
-    ($i:expr, $top:expr, $cell:expr) => {
+    ($i:expr, $top:expr) => {
         &[Prim::Plate {
-            group: Group::Module,
-            index: $i,
-            x: -104.0,
-            y: $top,
-            w: 208.0,
-            h: 193.0,
-            on: $cell,
-            off: $cell,
+            group: Group::Module, index: $i,
+            x: -104.0, y: $top, w: 208.0, h: 193.0,
+            on: &CELLS[$i], off: &CELLS[$i],
         }]
     };
 }
-const UNIT_0: &[Prim] = unit!(0, -89.0, CELL_UP);
-const UNIT_1: &[Prim] = unit!(1, -89.0, CELL_UP);
-const UNIT_2: &[Prim] = unit!(2, -89.0, CELL_UP);
-const UNIT_3: &[Prim] = unit!(3, -104.0, CELL_DOWN);
-const UNIT_4: &[Prim] = unit!(4, -104.0, CELL_DOWN);
-const UNIT_5: &[Prim] = unit!(5, -104.0, CELL_DOWN);
+const UNIT_0: &[Prim] = unit!(0, -89.0);
+const UNIT_1: &[Prim] = unit!(1, -89.0);
+const UNIT_2: &[Prim] = unit!(2, -89.0);
+const UNIT_3: &[Prim] = unit!(3, -104.0);
+const UNIT_4: &[Prim] = unit!(4, -104.0);
+const UNIT_5: &[Prim] = unit!(5, -104.0);
 
-// Inferred interaction, docs/neomil/README.md "Hover and press": a
-// filled control lifts to #f63333 and is held at #a52223. Apply the
-// component sheet's filled-button pair to the already-filled diamonds;
-// no wash over another opaque fill, no growth or new silhouette. The
-// inner outline/glyph use that pair's dark ink. Rest still uses CELL_*.
-const fn interactive_cell(up: bool, fill: Ink, detail: Ink) -> [Prim; 3] {
-    [
-        if up {
-            fill_path(-15.0, -89.0, CELL_UP_OUTER, fill)
-        } else {
-            fill_path(0.0, -104.0, CELL_DOWN_OUTER, fill)
-        },
-        if up {
-            shut_path(-9.0, -59.0, CELL_UP_INNER, detail, 2.0)
-        } else {
-            shut_path(0.0, -68.0, CELL_DOWN_INNER, detail, 2.0)
-        },
-        fill_rect(-22.0, -21.0, 43.0, 36.0, detail),
-    ]
-}
-const CELL_UP_HOVER: &[Prim] = &interactive_cell(true, Ink::Fixed(rgb(0xf63333)), Ink::Fixed(rgb(0x59171b)));
-const CELL_DOWN_HOVER: &[Prim] = &interactive_cell(false, Ink::Fixed(rgb(0xf63333)), Ink::Fixed(rgb(0x59171b)));
-const CELL_UP_PRESSED: &[Prim] = &interactive_cell(true, Ink::Fixed(rgb(0xa52223)), Ink::Fixed(ON_CARD));
-const CELL_DOWN_PRESSED: &[Prim] = &interactive_cell(false, Ink::Fixed(rgb(0xa52223)), Ink::Fixed(ON_CARD));
-
-const fn hub_states(index: usize, up: bool) -> crate::style::PlateStates {
+// Inferred filled-control inks from the component sheet; the traced matrix,
+// numeric outlines and symbol survive rest, hover and held without swapping.
+const fn hub_states(index: usize) -> crate::style::PlateStates {
     crate::style::PlateStates {
-        group: Group::Module,
-        index,
-        hover: if up { CELL_UP_HOVER } else { CELL_DOWN_HOVER },
-        pressed: if up { CELL_UP_PRESSED } else { CELL_DOWN_PRESSED },
-        selected_hover: None,
-        selected_pressed: None,
-        selected_away: None,
+        group: Group::Module, index,
+        hover: &CELLS_HOVER[index], pressed: &CELLS_PRESSED[index],
+        selected_hover: None, selected_pressed: None, selected_away: None,
         preserve_selected_hover: false,
     }
 }
 const HUB_STATES: &[crate::style::PlateStates] = &[
-    hub_states(0, true), hub_states(1, true), hub_states(2, true),
-    hub_states(3, false), hub_states(4, false), hub_states(5, false),
+    hub_states(0), hub_states(1), hub_states(2),
+    hub_states(3), hub_states(4), hub_states(5),
 ];
 
 #[cfg(test)]
 mod hub_interaction_tests {
     use super::*;
 
-    fn geometry(mut prim: Prim) -> Prim {
-        match &mut prim {
-            Prim::Path { fill, stroke, .. } | Prim::Rect { fill, stroke, .. } => {
-                *fill = None;
-                *stroke = None;
+    fn same_geometry(mut actual: Prim, mut original: Prim, ink: iced::Color) {
+        match (&mut actual, &mut original) {
+            (Prim::Turn { x: ax, y: ay, angle: aa, prims: ap }, Prim::Turn { x: bx, y: by, angle: ba, prims: bp }) => {
+                assert_eq!((ax, ay, aa), (bx, by, ba));
+                assert_eq!(ap.len(), bp.len());
+                for (&a, &b) in ap.iter().zip(*bp) { same_geometry(a, b, ink); }
+                return;
             }
-            _ => panic!("diamond states must contain only their existing paths and glyph plate"),
+            (Prim::At { x: ax, y: ay, prims: ap }, Prim::At { x: bx, y: by, prims: bp }) => {
+                assert_eq!((ax, ay), (bx, by));
+                assert_eq!(ap.len(), bp.len());
+                for (&a, &b) in ap.iter().zip(*bp) { same_geometry(a, b, ink); }
+                return;
+            }
+            (Prim::Dots { ink: a, .. }, Prim::Dots { ink: b, .. }) => {
+                assert_eq!(*a, Ink::Fixed(ink)); *a = *b;
+            }
+            (Prim::Path { fill: af, stroke: ast, .. }, Prim::Path { fill: bf, stroke: bst, .. })
+            | (Prim::Rect { fill: af, stroke: ast, .. }, Prim::Rect { fill: bf, stroke: bst, .. })
+            | (Prim::Circle { fill: af, stroke: ast, .. }, Prim::Circle { fill: bf, stroke: bst, .. }) => {
+                if *bf == Some(Ink::Fixed(GLYPH_INK)) { assert_eq!(*af, Some(Ink::Fixed(ink))); }
+                if *bst == Some(Ink::Fixed(GLYPH_INK)) { assert_eq!(*ast, Some(Ink::Fixed(ink))); }
+                *af = *bf; *ast = *bst;
+            }
+            _ => panic!("unexpected dashboard printing primitive"),
         }
-        prim
+        assert_eq!(actual, original);
     }
 
     #[test]
@@ -2197,17 +2191,17 @@ mod hub_interaction_tests {
         assert_eq!(HUB_STATES.len(), plates.len());
         for (index, state) in HUB_STATES.iter().enumerate() {
             assert_eq!((state.group, state.index), (Group::Module, index));
-            let rest = if index < 3 { CELL_UP } else { CELL_DOWN };
+            let rest = &CELLS[index];
             for (drawing, fill, detail) in [
                 (state.hover, rgb(0xf63333), rgb(0x59171b)),
                 (state.pressed, rgb(0xa52223), rgb(0x420f10)),
             ] {
                 assert_eq!(drawing.len(), rest.len());
                 for (&drawn, &original) in drawing.iter().zip(rest) {
-                    assert_eq!(geometry(drawn), geometry(original));
+                    same_geometry(drawn, original, detail);
                 }
                 assert!(matches!(drawing[0], Prim::Path { fill: Some(Ink::Fixed(c)), .. } if c == fill));
-                assert!(matches!(drawing[2], Prim::Rect { fill: Some(Ink::Fixed(c)), .. } if c == detail));
+                assert!(matches!(drawing[2], Prim::Turn { angle: -45.0, .. }));
             }
         }
     }
@@ -2333,24 +2327,6 @@ mod store_interaction_tests {
     }
 }
 
-/// The code tape under the logotype (:168), chamfered 2 at both bottom
-/// corners.
-const CODE_TAPE: &[Seg] = &[
-    Seg::Line(379.0, 151.0),
-    Seg::Line(379.0, 158.0),
-    Seg::Line(377.0, 160.0),
-    Seg::Line(259.0, 160.0),
-    Seg::Line(257.0, 158.0),
-];
-/// The DESCRIPTION tab (:195): a box with its left end chamfered 7 at
-/// both corners.
-const DESCRIPTION_TAB: &[Seg] = &[
-    Seg::Line(1354.0, 237.0),
-    Seg::Line(1354.0, 258.0),
-    Seg::Line(1139.0, 258.0),
-    Seg::Line(1132.0, 251.0),
-    Seg::Line(1132.0, 244.0),
-];
 /// The GO HOME panel's outline (:231): square top-left and
 /// bottom-right, an 8px top-right chamfer, the right edge stepping 8
 /// inward at y 516 below the bright bar, a 42px bottom-left chamfer.
@@ -2394,67 +2370,61 @@ const MAKER_MARK: &[Seg] = &[
 ];
 
 /// The GO HOME panel (:231-258): the outline, the bright edge bar, the
-/// glitch echoes 3 and 5 out, the heading, the body run boxes and the
+/// heading, nine text lines, brands and the
 /// maker's mark. Its own table because `DASHBOARD` plays it in under
 /// `#panel-open`.
 const GO_HOME: &[Prim] = &[
-    Prim::Path { x: 1128.0, y: 314.0, segs: PANEL, close: true, fill: Some(Ink::Fixed(PANEL_FILL)), stroke: Some(Ink::Fg), width: 1.5 },
+    Prim::Path { x: 1128.0, y: 314.0, segs: PANEL, close: true, fill: None, stroke: Some(Ink::Fg), width: 1.5 },
     fill_path(1366.0, 405.0, PANEL_BAR, Ink::Fg),
-    fill_rect(1369.0, 322.0, 1.5, 193.0, Ink::Border),
-    fill_rect(1371.0, 322.0, 1.5, 193.0, Ink::Border),
-    fill_rect(1361.0, 516.0, 1.5, 240.0, Ink::Border),
-    fill_rect(1363.0, 516.0, 1.5, 240.0, Ink::Border),
     txt_bold(1140.0, 333.0, 20.0, Ink::Fg, "GO HOME"),
-    fill_rect(1140.0, 368.0, 202.0, 12.0, Ink::Dim),
-    fill_rect(1140.0, 389.0, 215.0, 12.0, Ink::Dim),
-    fill_rect(1140.0, 410.0, 197.0, 12.0, Ink::Dim),
-    fill_rect(1140.0, 431.0, 121.0, 12.0, Ink::Dim),
-    fill_rect(1140.0, 474.0, 205.0, 12.0, Ink::Dim),
-    fill_rect(1140.0, 495.0, 216.0, 12.0, Ink::Dim),
-    fill_rect(1140.0, 516.0, 186.0, 12.0, Ink::Dim),
-    fill_rect(1140.0, 537.0, 193.0, 12.0, Ink::Dim),
+    Prim::Text { x: 1138.75, y: 365.4167, size: 16.6667, ink: Ink::Fixed(rgb(0xf93333)), face: Face::Medium, anchor: Anchor::Start, content: "Lorem ipsum dolor sit amet," },
+    Prim::Text { x: 1138.75, y: 386.25, size: 16.6667, ink: Ink::Fixed(rgb(0xf93333)), face: Face::Medium, anchor: Anchor::Start, content: "consectetur adipiscing elit," },
+    Prim::Text { x: 1138.75, y: 407.0833, size: 16.6667, ink: Ink::Fixed(rgb(0xf93333)), face: Face::Medium, anchor: Anchor::Start, content: "sed do eiusmod tempor inci-" },
+    Prim::Text { x: 1138.75, y: 428.3333, size: 16.6667, ink: Ink::Fixed(rgb(0xf93333)), face: Face::Medium, anchor: Anchor::Start, content: "didunt ut labore et dolore" },
+    Prim::Text { x: 1138.75, y: 449.1667, size: 16.6667, ink: Ink::Fixed(rgb(0xf93333)), face: Face::Medium, anchor: Anchor::Start, content: "magna aliqua." },
+    Prim::Text { x: 1138.75, y: 491.25, size: 16.6667, ink: Ink::Fixed(rgb(0xf93333)), face: Face::Medium, anchor: Anchor::Start, content: "Quis ipsum suspendisse ul-" },
+    Prim::Text { x: 1138.75, y: 512.0833, size: 16.6667, ink: Ink::Fixed(rgb(0xf93333)), face: Face::Medium, anchor: Anchor::Start, content: "trices gravida. Risus commo-" },
+    Prim::Text { x: 1138.75, y: 533.3333, size: 16.6667, ink: Ink::Fixed(rgb(0xf93333)), face: Face::Medium, anchor: Anchor::Start, content: "do viverra maecenas ac-" },
+    Prim::Text { x: 1138.75, y: 554.1667, size: 16.6667, ink: Ink::Fixed(rgb(0xf93333)), face: Face::Medium, anchor: Anchor::Start, content: "cumsan lacus vel facilisis." },
+    Prim::Turn { x: 1357.0833, y: 340.0833, angle: 90.0, prims: &[
+        Prim::Wide { x: 0.0, y: 0.0, size: 6.25, stretch: 1.3, ink: Ink::Fixed(rgb(0xf93333)), face: Face::SemiBold, anchor: Anchor::Start, content: "BETTERLIFE TEC" },
+    ] },
+    Prim::Turn { x: 1349.1667, y: 341.25, angle: 90.0, prims: &[
+        Prim::Wide { x: 0.0, y: 0.0, size: 6.25, stretch: 1.3, ink: Ink::Fixed(rgb(0xf93333)), face: Face::SemiBold, anchor: Anchor::Start, content: "PETROCHEM" },
+    ] },
+    line_rect(1347.9167, 340.8333, 6.25, 40.8333, Ink::Fixed(rgb(0xf93333)), 0.4167),
     fill_path(1238.8, 682.1, MAKER_MARK, Ink::Fg),
     fill_rect(1273.0, 715.0, 10.75, 11.7, Ink::Fg),
     Prim::Text { x: 1252.0, y: 737.5, size: 8.0, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Middle, content: "PRECISION LIQUID" },
     Prim::Text { x: 1252.0, y: 746.0, size: 8.0, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Middle, content: "POLYMER MUSCLE" },
 ];
 
+// The renderer requires software surfaces to lead the display list.
+// Material and foreground share the exact same trace clip/clock, so the
+// surface cannot appear before its text or escape the boot wipe.
+const GO_HOME_OPEN: Motion = Motion {
+    id: "panel-open", begin: 0, dur: 360, ease: Easing::EaseOutCubic,
+    change: Change::Clip { x: 1120.0, y: 306.0, w: (260.0, 260.0), h: (0.0, 460.0) },
+};
+
 pub const DASHBOARD: &[Prim] = &[
-    // ground, glow, vignette (:152-154)
-    Prim::Soft { prims: HUB_BACK },
-    // header, left (:158-168)
-    txt(109.0, 90.0, 14.0, Ink::Fg, "CUSTOMER"),
-    Prim::At { x: 117.0, y: 104.0, prims: BADGE },
-    txt(125.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
-    txt_bold(132.0, 140.0, 20.0, Ink::Fg, "T1"),
-    txt(240.0, 90.0, 14.0, Ink::Fg, "#NC488402"),
-    // the `next` logotype (:165-166): Orbitron 700/42, `fill="none"`,
-    // stroked 2 in the header red
-    Prim::Outlined { x: 242.0, y: 132.0, size: 42.0, ink: Ink::Fg, face: Face::OrbitronBold, anchor: Anchor::Start, width: 2.0, content: "next" },
-    fill_path(257.0, 151.0, CODE_TAPE, Ink::Fg),
-    // header, right (:170-183): four badges, T2 filled
-    txt(1125.0, 90.0, 14.0, Ink::Fg, "SECURITY LEVEL"),
-    Prim::At { x: 1133.0, y: 104.0, prims: BADGE },
-    Prim::At { x: 1193.0, y: 104.0, prims: BADGE_ON },
-    Prim::At { x: 1253.0, y: 104.0, prims: BADGE },
-    Prim::At { x: 1313.0, y: 104.0, prims: BADGE },
-    txt(1141.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
-    txt(1201.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
-    txt(1261.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
-    txt(1321.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
-    txt_bold(1148.0, 140.0, 20.0, Ink::Fg, "T1"),
-    txt_bold(1208.0, 140.0, 20.0, Ink::Fg, "T2"),
-    txt_bold(1268.0, 140.0, 20.0, Ink::Fg, "T3"),
-    txt_bold(1328.0, 140.0, 20.0, Ink::Fg, "T4"),
-    // the hairline rule (:188)
+    // Sampled dashboard composite ground, independent of the other screens.
+    Prim::Soft { prims: &[
+        Prim::At { x: 0.0, y: 0.0, prims: dashboard_ground::BACKGROUND },
+        Prim::At { x: 0.0, y: 0.0, prims: dashboard_material::BADGES },
+        Prim::At { x: 0.0, y: 0.0, prims: dashboard_header_echoes::HEADER_ECHOES },
+        Prim::At { x: 0.0, y: 0.0, prims: dashboard_tape_chip_echoes::ECHOES },
+        Prim::At { x: 0.0, y: 0.0, prims: dashboard_ink::MATERIAL },
+        Prim::At { x: 0.0, y: 0.0, prims: dashboard_label_echoes::LABEL_ECHOES },
+    ] },
+    Prim::Motion { motion: GO_HOME_OPEN, prims: &[
+        Prim::Soft { prims: dashboard_material::PANEL_MATERIAL },
+        Prim::Soft { prims: dashboard_echoes::PANEL_ECHOES },
+        Prim::Soft { prims: dashboard_panel_printing::PRINTING_ECHOES },
+    ] },
+    Prim::At { x: 0.0, y: 0.0, prims: dashboard_chrome::HEADER },
     fill_rect(42.0, 187.0, 1516.0, 2.0, Ink::Dim),
-    // tab row (:192-198)
-    Prim::Rect { x: 27.0, y: 240.0, w: 55.0, h: 17.0, fill: Some(Ink::Border), stroke: Some(Ink::Fg), width: 1.0 },
-    Prim::Rect { x: 475.0, y: 237.0, w: 211.0, h: 21.0, fill: Some(Ink::Border), stroke: Some(Ink::Dim), width: 1.0 },
-    txt(515.0, 252.0, 12.0, Ink::Fg, "COMPUTER SYSTEMS"),
-    Prim::Path { x: 1139.0, y: 237.0, segs: DESCRIPTION_TAB, close: true, fill: Some(Ink::Border), stroke: Some(Ink::Dim), width: 1.0 },
-    txt(1145.0, 252.0, 12.0, Ink::Fg, "DESCRIPTION"),
-    Prim::Rect { x: 1516.0, y: 239.0, w: 54.0, h: 17.0, fill: Some(Ink::Border), stroke: Some(Ink::Fg), width: 1.0 },
+    Prim::At { x: 0.0, y: 0.0, prims: dashboard_chrome::TABS },
     // the six-diamond menu (:204-209), each cell at its centre
     Prim::At { x: 334.0, y: 460.0, prims: UNIT_0 },
     Prim::At { x: 530.0, y: 460.0, prims: UNIT_1 },
@@ -2468,32 +2438,22 @@ pub const DASHBOARD: &[Prim] = &[
     fill_rect(619.5, 445.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
     fill_rect(521.5, 577.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
     fill_rect(717.0, 577.0, 16.0, 30.0, Ink::Fixed(HUB_GROUND)),
-    // labels (:220-226): 600/19, centred on each cell's x, tracked 1.2
-    Prim::Tracked { x: 334.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "VEHICLES" },
-    Prim::Tracked { x: 530.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "LOCATIONS" },
-    Prim::Tracked { x: 725.0, y: 347.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "FACTIONS" },
-    Prim::Tracked { x: 431.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "WEAPONS" },
-    Prim::Tracked { x: 628.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "PRODUCTS" },
-    Prim::Tracked { x: 822.0, y: 721.0, size: 19.0, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, tracking: 1.2, content: "CORPORATIONS" },
+    // Source label cores: Medium 20.625, no added tracking; measured baselines.
+    Prim::Text { x: 333.6712, y: 347.4587, size: 20.625, ink: Ink::Fg, face: Face::Medium, anchor: Anchor::Middle, content: "VEHICLES" },
+    Prim::Text { x: 533.8568, y: 347.4505, size: 20.625, ink: Ink::Fg, face: Face::Medium, anchor: Anchor::Middle, content: "LOCATIONS" },
+    Prim::Text { x: 726.9810, y: 347.4172, size: 20.625, ink: Ink::Fg, face: Face::Medium, anchor: Anchor::Middle, content: "FACTIONS" },
+    Prim::Text { x: 434.3844, y: 720.4167, size: 20.625, ink: Ink::Fg, face: Face::Medium, anchor: Anchor::Middle, content: "WEAPONS" },
+    Prim::Text { x: 630.7829, y: 720.4271, size: 20.625, ink: Ink::Fg, face: Face::Medium, anchor: Anchor::Middle, content: "PRODUCTS" },
+    Prim::Text { x: 824.6770, y: 720.4541, size: 20.625, ink: Ink::Fg, face: Face::Medium, anchor: Anchor::Middle, content: "CORPORATIONS" },
     // GO HOME panel (:231-258), wiped in at boot: `#panel-open` (:143-150)
     // grows the panel's clip from nothing to 460 tall over 0.36 s from 0,
     // `keySplines="0.33 1 0.68 1"` = EaseOutCubic, and freezes; at rest
     // it is the trace's own group.
     Prim::Motion {
-        motion: Motion {
-            id: "panel-open",
-            begin: 0,
-            dur: 360,
-            ease: Easing::EaseOutCubic,
-            change: Change::Clip { x: 1120.0, y: 306.0, w: (260.0, 260.0), h: (0.0, 460.0) },
-        },
+        motion: GO_HOME_OPEN,
         prims: GO_HOME,
     },
-    // margins (:263-265): the rotated micro-text runs as the trace's
-    // own bars
-    fill_rect(33.0, 463.0, 8.0, 113.0, Ink::Border),
-    fill_rect(1533.0, 527.0, 8.0, 238.0, Ink::Border),
-    fill_rect(1348.0, 341.0, 4.0, 49.0, Ink::Border),
+    Prim::At { x: 0.0, y: 0.0, prims: dashboard_chrome::MARGINS },
     // footer tape (:276-285): the dim echo 3px right and down, the
     // bright frame, the divider and the two cells' text
     line_rect(1212.5, 867.5, 144.0, 24.0, Ink::Border, 1.0),

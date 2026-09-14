@@ -3,7 +3,7 @@
 Hand-drawn SVG references, in the strict reference palette (sampled
 from the Neo-Militarism Behance images — the consts live in
 `src/eras/neomil.rs` now, not the old `src/colors.rs`; see also
-TODO.md's palette-correction entry).
+the [toolkit palette-correction entry](../../todo/toolkit.md)).
 
 **Which file is authoritative: read `docs/PIPELINE.md` and
 `docs/sources.md` first.** The four `*-trace.svg` are measured
@@ -31,11 +31,14 @@ Each is held to its photo by
   staggered 3+3 menu** labelled above row 1 and below row 2 — each
   diamond's *outward* tip (row 1's top, row 2's bottom) is cut flat 15
   short of the point, a 30px plateau at 89 from the centre, and the
-  inset outline is cut the same way; the trace carries this as two
-  cell variants, `#cell-up` and `#cell-down` — and a chamfered GO HOME
+  inset outline also has an outward flat plus one clipped side tip.
+  Six measured `#dashboard-tile-*` variants carry the insets and solid
+  edge tabs over the shared outer silhouettes — and a chamfered GO HOME
   info panel at the right with a bar-and-step motif on its edge, the
   bar chamfered 8 at both ends. A two-cell outlined footer tape sits
-  under the panel. Gate: PASS, 94% area. It corrects a previous
+  under the panel. Gate: PASS, 82% area after the 2026-09-14 printing batch;
+  [the fidelity report](dashboard-fidelity.md) explains the inventory
+  limits and the previous 94% result. It corrects a previous
   revision that drew three red chart cards, a right rail and a corner
   block; none of those are in the photo.
 - `mailbox-trace.svg` — `images/img-08-main.png` (#61): the same
@@ -48,6 +51,49 @@ Each is held to its photo by
   CUSTOMER bar, LOYALTY DISCOUNT / LAST UPDATE lines, a five-row nav
   with bottom-left chamfers, and four MAGNUM 650 HAND GUN cards with
   the second selected and grown. Gate: PASS, 71% area.
+
+## Dashboard fidelity, 2026-09-14
+
+The source audit found that the old 94% matched-shape-area PASS hid missing
+content. The dashboard now has all six measured matrix/code/symbol glyphs,
+nine GO HOME lines and vertical brands, sampled panel material, six corrected
+insets and solid edge tabs, and a source-based header and margin chrome.
+The thin next logo, badge lettering, TECHNOLOGY capitals, monospace
+tape/margin codes, KIROSHI wordmark and numbered chips use compact source
+vectors. KIROSHI's O has a curved inner arc; the earlier slashed-O reading
+was too strong. The tiny unreadable tape mark remains vector art.
+DESCRIPTION has square corners.
+
+Menu labels use measured Rajdhani Medium 20.625 without added tracking.
+Dashboard-only sampled row ramps restore the cyan lower glow and subdued
+left field; other Neomil screens retain their own shared glow data. The
+main tile red remains flat #ef3333, supported by source patch measurements.
+Badge fields now include local gradients and measured scanlines; GO HOME
+retains those scanlines while gaining its horizontal color variation.
+Two connected, scan-modulated contour and side-bar echoes replace the
+four solid exterior rectangles, within the existing panel-open clip.
+All six menu labels and sixteen header printing/frame groups carry locally
+measured softened copies. Tape/chip faces use independently sampled
+#fb3535, tape-code and chip-1 ink have measured periodic variation, and all
+five bright silhouettes now have exterior copies. Nine GO HOME body lines
+and the maker shape have independently fitted echoes under the opening clip.
+The app's unmodified reference dashboard now draws its ordinary foreground
+at source/SVG #ef3333, preserving custom palettes, other screens and fixed
+interaction inks.
+
+[Dashboard fidelity measurements](dashboard-fidelity.md) record the source
+coordinates, local comparisons and interpretation limits. The
+[dashboard TODO](../../todo/neomil-dashboard.md) tracks validation and
+remaining work. This detail batch passes 209 Rust tests and both fidelity
+gates, with native/fractional state and opening captures reviewed; all 19
+repository checks pass, including all 25 golden cases. Matrix/margin printing, GO HOME heading,
+maker primary contour/ink/microtext, vertical-brand echoes, chip-2 dark ink
+and the tiny leading tape mark remain open. Two clear background patches,
+including their noise, are identical across all four source screens,
+supporting a shared fixed background. Its asset/authoring recipe and the
+echoes' original cause remain unresolved. Local fits do not establish a
+whole-screen effect or original shader/font. No new `photo` tags or
+gate-threshold changes hide those limits.
 
 ## Motion
 
@@ -96,11 +142,11 @@ field, badge and diamond cropped at native 3840 scale.
 No control is drawn differently from its siblings except the
 selections the traces already transcribe: the filled VIDEO nav row,
 list row 1 and its disc, SECURITY LEVEL T2, the grown and washed
-product card 2, the filled Switch Weapon button. The hub's six
-diamonds are identical in fill, outline and size (VEHICLES carries a
-different barcode and reads 161-9A against the others' 61-9A, which
-is content, not a state); their offset echoes are glitch residue on
-all six. So the reading on `components.svg` § 9 is **inferred, not
+product card 2, the filled Switch Weapon button. The hub's six diamonds
+share their main fill and outer scale; fitted inset contours, solid tabs
+and matrix/code printing differ. Those differences do not establish a
+hover state. Faint echo origin remains unclassified. So the reading on
+`components.svg` § 9 is **inferred, not
 sourced**, and every hover and press group there is captioned so. It
 is built only from the era's own rungs of emphasis, all sourced:
 
@@ -111,7 +157,8 @@ is built only from the era's own rungs of emphasis, all sourced:
   card reads +45 of 193 red levels over card 1, i.e. the bright ink
   at about 0.22 over the ground).
 - *inverted* — solid bright fill, dark ink, no stroke, bright spine
-  (VIDEO, row 1, Switch Weapon, T2). This is selection.
+  (VIDEO, row 1, Switch Weapon). This is selection. Dashboard T2 instead
+  keeps bright lettering and a dim frame over its stronger badge field.
 - *held* — the darker of the era's two filled-control reds: the Login
   bar is `#a52223` with `#420f10` ink where every other filled
   control is `#e63132` / `#df3131`.
@@ -169,16 +216,15 @@ the caret gone.
 
 One mark the run does show and the band does not transcribe as a
 state: the Login bar carries a **hollow slot hanging from its top
-edge at its centre**, 3x19 at trace scale (x 497.5..500.6, y 635..654;
-native x 1194..1202, y 1523..1570), outlined about 0.6 in the bar's
-dark ink, open at the top. It is in stills 55 and 57 too.
-`login-trace.svg` draws it as a solid 2x15 rect at (496,640) and
-calls it a text caret; on the photo it is hollow and 5px higher (a
-trace correction for another pass, not made here). None of the four
-mailbox buttons has one, so a single instance cannot be read as a
-state; focus on the default action is the obvious candidate and a
-candidate is all it is. It is drawn once at 1:1 in § 9
-(`#login-slot-observed`) so the shape is on record.
+edge at its centre**, also visible in stills 55 and 57. Corrected
+2026-09-14 in the trace, both sheet specimens and app: three dark bars
+form a 3.05×19.63 open-top slot at x 497.3342..500.3799, y 635..654.6317.
+The side bars are about 0.8 wide and the bottom 0.89 high. This static
+action detail is separate from the password text's blinking `__` caret.
+None of the four mailbox buttons has one, so its meaning remains
+undetermined; default-action focus is only a candidate interpretation.
+The native-source fit and held-out render comparisons are recorded in
+[the source follow-up audit](../source-followups.md#neomil-login-button-slot).
 ## The widget sheet — derived from the traces
 
 - `components.svg` — every reusable component of the four screens,
@@ -209,7 +255,7 @@ candidate is all it is. It is drawn once at 1:1 in § 9
   an original composition, redrawn 2026-09-02 from the four traces'
   chrome with every decision cited by file and coordinate in the SVG
   header. **It no longer matches `bar()`**: it is the design target and
-  `bar.rs` has not followed yet (crate TODO.md § "Bar restyle"), so
+  `bar.rs` has not followed yet (the [bar restyle record](../../todo/bar.md)), so
   read the SVG's IMPLEMENTATION DELTA block, not the current render.
 
 ## Deleted composites (2026-09-03)
@@ -229,7 +275,7 @@ keeps a row per file saying what each got wrong. In short:
   right rail, a corner block). The photo holds the six-diamond hub
   `dashboard-trace.svg` draws; the inventory gate scored the composite
   at 0% of the source's shape area. Until the `Layout` decision in the
-  crate TODO.md, the dashboard screen has no SVG that agrees with it —
+  [pipeline record](../../todo/design-pipeline.md), the dashboard screen has no SVG that agrees with it —
   G2i now compares it against the trace and reports that honestly.
 
 ```sh

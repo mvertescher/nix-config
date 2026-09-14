@@ -824,6 +824,11 @@ pub struct Style {
     /// [`Group::Module`]. Lives in the `// --- dashboard ---` block of
     /// `src/eras/<era>.rs`.
     pub dashboard: &'static [Prim],
+    /// Source-sampled foreground for the unmodified reference dashboard.
+    /// `dashboard_style()` applies it only while the complete palette is
+    /// still the era's reference. `from_theme()` clears it for other
+    /// variants; custom roles retain their published colors.
+    pub dashboard_reference_fg: Option<Color>,
     /// Which module (0..6) the dashboard opens on: the one the era's
     /// trace shows filled. The traces disagree -- neomil fills a
     /// diamond, entropism BRAINDANCE, kitsch EVENTS, neokitsch EMAIL --
@@ -993,11 +998,33 @@ impl Style {
     /// published roles overlaid. This is what an app should call: it
     /// follows `switch` without a rebuild.
     pub fn from_desktop() -> Style {
-        let theme = crate::theme::Theme::load();
-        let era = Era::parse(&theme.era).unwrap_or(Era::Neomil);
+        Self::from_theme(&crate::theme::Theme::load())
+    }
+
+    /// Resolve one published theme, retaining its explicit variant when
+    /// deciding whether the dashboard's reference correction applies.
+    pub fn from_theme(theme: &crate::theme::Theme) -> Style {
+        let named_era = Era::parse(&theme.era);
+        let era = named_era.unwrap_or(Era::Neomil);
         let mut style = era.style();
-        style.palette = style.palette.with_theme(&theme);
+        style.palette = style.palette.with_theme(theme);
+        if named_era != Some(era) || theme.variant != "reference" {
+            style.dashboard_reference_fg = None;
+        }
         style
+    }
+
+    /// A drawing copy for the dashboard, leaving the shell and sibling
+    /// screens on their shared palette. Matching the full palette also
+    /// protects direct palette edits and custom roles that keep the same
+    /// foreground. Fixed material and hover/held inks are unaffected.
+    pub fn dashboard_style(mut self) -> Style {
+        if let Some(fg) = self.dashboard_reference_fg {
+            if self.palette == self.era.style().palette {
+                self.palette.fg = fg;
+            }
+        }
+        self
     }
 }
 
@@ -1412,8 +1439,8 @@ pub struct Entry {
 /// What a slot's caret does while a run is typed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Caret {
-    /// Stays where the trace puts it. Neomil's caret is a text cursor
-    /// on the Login button, not in the field, and neokitsch has none.
+    /// No separate caret plate advances. Neomil's caret is the tail of
+    /// its text run; neokitsch has no visible caret.
     Fixed,
     /// Follows the run: drawn where the table puts it, moved right by
     /// the width of the masks typed so far. Entropism's underline and
@@ -1467,12 +1494,15 @@ pub struct Slot {
     /// `Some` on exactly the live slots.
     pub entry: Option<Entry>,
     /// The insertion mark: entropism's underline beneath the first pair
-    /// of masked characters, kitsch's block in the field, neomil's on
-    /// its Login button.
+    /// of masked characters or kitsch's block in the field. Neomil's
+    /// blinking tail is text; its static button mark is in `action_marks`.
     pub caret: Option<Plate>,
     /// The control that commits, or the bar that says you may not.
     pub action: Option<Plate>,
     pub action_label: Option<Legend>,
+    /// Static details painted over the action, independent of typing
+    /// and caret blink. Neomil's hollow button slot is three thin plates.
+    pub action_marks: &'static [Plate],
     /// The boxed footnote letter and its micro-text.
     pub badge: Option<Plate>,
     pub badge_letter: Option<Legend>,
@@ -1493,6 +1523,7 @@ impl Slot {
         caret: None,
         action: None,
         action_label: None,
+        action_marks: &[],
         badge: None,
         badge_letter: None,
         notes: &[],

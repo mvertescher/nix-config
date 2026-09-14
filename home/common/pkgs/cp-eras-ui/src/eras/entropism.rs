@@ -296,6 +296,7 @@ pub fn style() -> Style {
         // --- end store ---
         // --- dashboard ---
         dashboard: DASHBOARD,
+        dashboard_reference_fg: None,
         // BRAINDANCE, row 1 tile 3: the one tile dashboard-trace.svg
         // fills solid (`<rect x="716" y="227" ... fill="#a6d3a7"/>`
         // under "the selection: solid sage fill, dark caption box and

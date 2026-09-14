@@ -857,6 +857,9 @@ fn draw_slot(pen: &mut Pen, slot: &Slot, shown: Option<&Shown>) {
         (Some(label), _, _) => pen.legend(label),
         (None, _, _) => {}
     }
+    for mark in slot.action_marks {
+        pen.plate(mark);
+    }
     if let Some(badge) = &slot.badge {
         badge_plate(pen, badge);
     }
@@ -1354,6 +1357,9 @@ mod tests {
             }
             if let Some(notch) = slot.notch {
                 out.push(("notch", notch));
+            }
+            for mark in slot.action_marks {
+                out.push(("action mark", mark.at));
             }
         }
         if let Fixture::Bracket { barcode, .. } = &access.fixture {

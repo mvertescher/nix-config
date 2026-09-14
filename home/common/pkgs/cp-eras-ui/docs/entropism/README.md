@@ -34,7 +34,7 @@ Sampled off the reference and carried as the era consts in
 
 ```
 bg          #110c07   warm dark olive-brown (#1a140c upper, #0d0603 lower)
-sage solid  #a6d3a7   selection fills, footer band (was #9cb795 until 2026-09-05)
+sage solid  #a6d3a7   reverse-video fills, footer band (was #9cb795 until 2026-09-05)
 sage text   #94bb94   labels, titles
 mid         #728f76   top-bar text, secondary
 outline     #8fba97   frame strokes (was #5d7752 until 2026-09-05)
@@ -104,7 +104,7 @@ animations, with the same ids and timing, sit on `dashboard-trace.svg`,
   h 730; mailbox x 70 y 90 w 1490 h 670 (oversize against the ink and,
   on the mailbox, the photo-class halos).
 - `#select-lit` (0.45 → 0.6 s, EaseOut `0.61 1 0.88 1`, with a `<set>`
-  hold at 0 before it): the solid sage selection fills — the
+  hold at 0 before it): the solid sage fills — the
   reverse-video cells — fade 0 → 1 *after* the scan has drawn their
   frames and text. Only the fill rects are in the group; their dark
   ink stays in the sections and is dark-on-dark until the fill
@@ -152,6 +152,15 @@ inferred cursor policy below. Compact values retain their own strip
 geometry with reversed inks; PETROCHEM retains its yellow brand band.
 No transition timing or third ink is introduced. Desktop interaction
 verification remains open.
+
+**Mailbox wording rechecked 2026-09-14:** the native source's filled first
+row says YOU'LL REGRET THAT / FROM: JACKIE, while the open-envelope second
+row and message panel both say URGENT INFORMATION (!) / Mom. The trace's
+comments now call the first-row fill the cursor under the adopted reading,
+and call the mixed title/button/tier boot group reverse-video fills. The
+source contains no visible pointer or transition; it supports the content
+mismatch, while the moving-hover policy remains the established inference.
+No mailbox geometry, animation or app behavior changes in this correction.
 
 **Mailbox wired 2026-09-14:** hover moves the existing reverse-video
 list fill without opening a message; holding a row removes the fill.

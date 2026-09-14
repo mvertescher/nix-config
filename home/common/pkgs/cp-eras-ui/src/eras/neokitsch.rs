@@ -415,6 +415,7 @@ pub fn style() -> Style {
         // --- end store ---
         // --- dashboard ---
         dashboard: DASHBOARD,
+        dashboard_reference_fg: None,
         dashboard_selection: 0,
         dashboard_cursor: false,
         mailbox_cursor: false,

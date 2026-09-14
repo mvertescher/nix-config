@@ -414,6 +414,7 @@ pub fn style() -> Style {
         // --- end store ---
         // --- dashboard ---
         dashboard: DASHBOARD,
+        dashboard_reference_fg: None,
         // EVENTS, the fifth solid card in `dashboard-trace.svg` (group at
         // `translate(731 586) rotate(-30)`, the one `<use href="#card"
         // fill="#f5cb23" stroke="#fce89a">` under the comment "the

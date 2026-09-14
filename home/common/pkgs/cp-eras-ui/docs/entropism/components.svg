@@ -183,7 +183,7 @@
   <!-- MAIL LIST. mailbox-trace.svg A: frame x 84..451, y 205..686 with
        row dividers at y 349 / 411 / 473 / 535 / 596 / 658, seven rows on
        a 62px pitch starting 21px below the frame top, row 1 filled solid
-       #a6d2a8 as the selection, envelope glyph at x 102 and text at
+       #a6d2a8 as the cursor fill, envelope glyph at x 102 and text at
        x 138 (title baseline top+30 at 20/ls 1, FROM baseline top+48 at
        14). Four of the seven rows are shown, translated by (-44,-91);
        the frame's foot is cut, see the dashed rule. Only the designed
@@ -431,7 +431,7 @@
     <rect x="1164" y="127" width="28" height="12" fill="#1c1b11"/>
     <text x="1198" y="137">#1c1b11  ground lift (hub #1c1a10, store #1e1d12)</text>
     <rect x="1164" y="142" width="28" height="12" fill="#a6d3a7"/>
-    <text x="1198" y="152">#a6d3a7  solid fill / selection (mail #a6d2a8)</text>
+    <text x="1198" y="152">#a6d3a7  solid fill / reverse video (mail #a6d2a8)</text>
     <rect x="1164" y="157" width="28" height="12" fill="#a8d4a2"/>
     <text x="1198" y="167">#a8d4a2  store fill: card 1, SMG row, card ink</text>
     <rect x="1164" y="172" width="28" height="12" fill="#8aac8c"/>

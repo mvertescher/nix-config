@@ -42,7 +42,7 @@
                USER 01 in dark ink; then "password:", a dark password
                field x 372..625 y 602..634 with "**********  __", a
                filled Login button y 635..683 (bottom-right chamfer 9)
-               with a text caret, and two lines of caption micro-text
+               with a static hollow slot, and two lines of caption micro-text
              card 2 (x 692..947, y 315..655): dim translucent red,
                bottom-left chamfer 22, a bright avatar photo box
                x 772..868 (tab + square), USER 01 in bright ink, a
@@ -60,7 +60,10 @@
        the blue and grade darker downward: card 2 #74272c -> #5e1516,
        lower section #461012; card 3 #52242c -> #481012, lower #2f0b0c;
        avatar box on card 1 #c72a2b; password
-       field #430e0f; Login button #a52223. -->
+       field #430e0f; Login button #a52223.
+       Login slot remeasured 2026-09-14: open top at y 635, outside
+       x 497.3342..500.3799, bottom 654.6317. Two ~0.8px sides and
+       a ~0.89px bottom in #420f10; separate from the password tail. -->
   <defs>
     <linearGradient id="glowh" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0.000" stop-color="#282824"/>
@@ -227,7 +230,12 @@
     <!-- Login button y 635..683, bottom-right chamfer 9 -->
     <path d="M 372,635 H 625 V 674 L 616,683 H 372 Z" fill="#a52223"/>
     <text x="383" y="657" font-family="Rajdhani" font-size="17" fill="#420f10">Login</text>
-    <rect x="496" y="640" width="2" height="15" fill="#420f10"/>
+    <!-- Static Login-button slot; separate from the blinking password tail. -->
+    <g id="login-button-slot" fill="#420f10">
+      <rect x="497.3342" y="635.0000" width="0.8031" height="19.6317"/>
+      <rect x="499.5833" y="635.0000" width="0.7966" height="19.6317"/>
+      <rect x="498.1373" y="653.7446" width="1.4460" height="0.8871"/>
+    </g>
     <g font-family="Rajdhani" font-size="7.5" fill="#e63132">
       <text x="378" y="700">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
       <text x="378" y="709">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>

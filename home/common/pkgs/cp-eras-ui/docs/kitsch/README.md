@@ -31,7 +31,7 @@ and are ten low:
 |---|---|---|
 | Entropism | 33 | 34–42 |
 | **Kitsch** | 43 | 44–52 |
-| Neo Militarism | — (opens black) | 53–62 |
+| Neo Militarism | `5707b7...` (53) | 54–62 |
 | Neo Kitsch | 63 | 64–72 |
 
 The kitsch run: the **module hub** (#49, and #46 the same screen with
