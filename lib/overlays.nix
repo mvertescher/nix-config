@@ -15,6 +15,12 @@ let
         # releases; taken from llm-agents for the same reason
         # claude-code is, that these move faster than the pin does.
         codex = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}.codex;
+        # xAI's own agent. nixpkgs calls the same tool `grok-build` and
+        # is further behind here than it is on codex (1.0.13 against
+        # 1.0.30), so the same reasoning applies. Not to be confused
+        # with nixpkgs' `grok-cli`, which is a third party's client for
+        # the same model, or with the JPEG 2000 codec of that name.
+        grok = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}.grok;
     };
 
     # This repo's own packages; see the file for why it is one.
