@@ -39,6 +39,6 @@ final: prev: {
     cp-eras-ui = final.callPackage ../home/common/pkgs/cp-eras-ui {
         orbitron = final.orbitron-vf;
     };
-    repo-rs = final.callPackage ../home/common/pkgs/repo-rs.nix { };
+    # repo-rs removed: upstream https://github.com/sunbeamdotpt/repo-rs deleted
     mpris-status = final.callPackage ../home/common/pkgs/mpris-status { };
 }

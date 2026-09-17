@@ -44,14 +44,7 @@
       gdb
       gh # github cli
       gitRepo
-      # repo-rs is a Rust implementation of the Android repo tool.
-      # It is significantly faster (10x+) for everyday query operations like:
-      #   repo-rs status
-      #   repo-rs diff
-      #   repo-rs list
-      # However, it contains upstream bugs (such as 'repo-rs info' crashing on path resolution),
-      # so we co-install both standard Python 'gitRepo' (repo) and 'repo-rs'.
-      repo-rs
+      # Note: repo-rs was removed because upstream repository https://github.com/sunbeamdotpt/repo-rs was deleted.
       gnumake
       google-cloud-sdk
       graphviz
