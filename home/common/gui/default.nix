@@ -21,7 +21,7 @@
     # Chat
     # slack
     # zoom-us
-  ] ++ lib.optionals (stdenv.isLinux) [
+  ] ++ lib.optionals stdenv.isLinux [
     # google-chrome
     libreoffice
     # `entropism-ui` was the one-era predecessor and is gone: cp-eras-ui

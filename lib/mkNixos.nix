@@ -34,7 +34,7 @@ let
   make = name: host:
     let
       pkgs = hostPkgs host;
-      lib = pkgs.lib;
+      inherit (pkgs) lib;
       # `mkHome` defaults this to "mvertescher" instead. Not an
       # oversight and not to be unified: both are frozen by consumers
       # whose call sites cannot be updated from here.

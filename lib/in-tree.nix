@@ -32,7 +32,7 @@
 # `cp-eras-ui` itself needs `craneLib`, which the flake's inputs overlay
 # supplies; on bare `<nixpkgs>` plus this file it aborts at call time.
 # The dev shell wants only the fonts, so that is fine.
-final: prev: {
+final: _prev: {
     orbitron-vf = final.callPackage ../home/common/pkgs/orbitron { };
     rajdhani-fontshare = final.callPackage ../home/common/pkgs/rajdhani-fontshare { };
     noto-cjk-subset = final.callPackage ../home/common/pkgs/noto-cjk-subset { };

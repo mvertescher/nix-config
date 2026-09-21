@@ -5,15 +5,12 @@ let
 
   # Lucid Color Palette dynamically derived from Stylix!
   no0 = config.lib.stylix.colors.base00; # Black
-  no1 = config.lib.stylix.colors.base01;
-  re0 = config.lib.stylix.colors.base08; # Red
-  gr0 = config.lib.stylix.colors.base0B; # Green
+  re0 = config.lib.stylix.colors.base08; # Red # Green
   vi0 = config.lib.stylix.colors.base0E; # Violet
   cy0 = config.lib.stylix.colors.base0C; # Cyan
 
   # Secondary dark accent shades, derived so they follow the active scheme
   re1 = shades.mid "base08";
-  vi1 = shades.mid "base0E";
 
   # Transparency Levels (Alpha channel)
   tr0 = "00";
@@ -139,7 +136,7 @@ in {
         enabled = true;
         size = blurSize;
         passes = blurPass;
-        noise = noise;
+        inherit noise;
         ignore_opacity = true;
         new_optimizations = true;
         xray = false;

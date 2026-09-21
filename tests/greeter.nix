@@ -24,7 +24,7 @@
 # there it is the slow kind: about four minutes end to end, of which
 # the greeter is drawn on the seat within ten seconds of greetd
 # starting.
-{ pkgs, lib, ... }:
+{ ... }:
 
 let
   password = "hunter2";

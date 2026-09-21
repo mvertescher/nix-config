@@ -16,7 +16,7 @@
 # So: extensions and prefs here, chrome in the theme. A theme may still
 # override any preference below -- home-manager merges the attrsets, and
 # nothing here is `mkForce`.
-{ ... }:
+_:
 
 let
   # Gecko ids, from each extension's own manifest. An id names both the

@@ -25,10 +25,10 @@
 let
   hostPkgs = import ./host-pkgs.nix { inherit inputs overlays extraOverlays; };
 
-  make = name: host:
+  make = _name: host:
     let
       pkgs = hostPkgs host;
-      lib = pkgs.lib;
+      inherit (pkgs) lib;
       # `mkNixos` defaults this to "mverte" instead. Not an oversight and
       # not to be unified: both are frozen by consumers whose call sites
       # cannot be updated from here.

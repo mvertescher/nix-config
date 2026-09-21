@@ -10,8 +10,7 @@ let
   no2 = if useStylix then "#${c.base02}" else "colour238"; # Greyish black
   wh0 = if useStylix then "#${c.base06}" else "colour250"; # White
   re0 = if useStylix then "#${c.base08}" else "colour196"; # Red
-  gr0 = if useStylix then "#${c.base0B}" else "colour46";  # Green
-  cy0 = if useStylix then "#${c.base0C}" else "colour51";  # Cyan
+  gr0 = if useStylix then "#${c.base0B}" else "colour46";  # Green  # Cyan
 
   bg = no1;
   fg = re0;

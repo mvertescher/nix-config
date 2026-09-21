@@ -5,18 +5,11 @@
     enable = true;
     settings = let
       c = config.lib.stylix.colors;
-      no0 = "#${c.base00}";
       no1 = "#${c.base01}";
-      no2 = "#${c.base02}";
-      wh1 = "#${c.base03}";
-      me0 = "#${c.base04}";
       re0 = "#${c.base08}";
-      wh0 = "#${c.base06}";
-      pi0 = "#${c.base0F}";
 
       og0 = "#${c.base09}";
       ye0 = "#${c.base0A}";
-      gr0 = "#${c.base0B}";
       cy0 = "#${c.base0C}";
       bl0 = "#${c.base0D}";
       vi0 = "#${c.base0E}";
@@ -27,7 +20,6 @@
       pu2 = "#${c.base01}";
       ye2 = "#${c.base01}";
       or2 = "#${c.base01}";
-      me2 = "#${c.base01}";
 
       or0 = og0;
       pu0 = vi0;

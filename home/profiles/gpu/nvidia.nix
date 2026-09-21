@@ -16,7 +16,7 @@
 # `XDG_SESSION_TYPE,wayland` deliberately stayed behind in
 # ../../common/hyprland/default.nix: the session is wayland whoever draws
 # it.
-{ ... }:
+_:
 
 {
   wayland.windowManager.hyprland.settings.env = [

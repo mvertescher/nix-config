@@ -2,10 +2,8 @@
 
 let
   browser = "google-chrome";
-  fileManager = "nemo";
   mainMod = "SUPER";
   menu = "wofi --show drun";
-  nixConfigUpdate = "alacritty nu -c hms";
   terminal = "alacritty";
 in {
   wayland.windowManager.hyprland.settings = {

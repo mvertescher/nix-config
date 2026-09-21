@@ -75,7 +75,7 @@
       whois
       writedisk
     ]
-    ++ lib.optionals (stdenv.isLinux) [
+    ++ lib.optionals stdenv.isLinux [
       conda
       flameshot
       linux-router

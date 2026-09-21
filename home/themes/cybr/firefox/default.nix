@@ -1,4 +1,4 @@
-{ pkgs, config, ... }:
+{ config, ... }:
 
 let
   # Sidebery's gecko id (src/manifest.json upstream). It names both the

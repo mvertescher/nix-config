@@ -1,10 +1,7 @@
 # general nixos configuration
 
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
-let
-
-in
 {
   networking = {
     networkmanager = {

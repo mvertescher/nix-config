@@ -123,22 +123,7 @@ let
       platforms = platforms.linux;
     };
   };
-in
 
-# Visual regression: render the dashboard on a headless compositor and
-# compare it against a committed golden image.
-#
-# passthru.tests rather than a gating checkPhase on purpose: a GPU-less
-# compositor is exactly the kind of thing that fails for environmental
-# reasons, and it should not block every build of the toolkit until it
-# has proven stable.
-#
-# To run them: `./scripts/run_test_matrix.sh`. Nothing else reaches
-# these -- this repo exports no configurations, and a passthru is only
-# reachable through an overlaid `pkgs` -- so before that script existed
-# everyone wrote their own instantiation under /tmp, and one of those
-# filled a 1.8 TB disk. tests/matrix.nix is the door; it explains why.
-let
   # Each era's own scheme, so a case renders the palette the desktop
   # would actually publish rather than a copy of it. Editing a palette
   # in home/themes therefore moves these goldens, which is the point:

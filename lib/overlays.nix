@@ -4,11 +4,11 @@
 { inputs }:
 
 let
-    overlays = f: p: {
+    overlays = _f: p: {
         craneLib = inputs.crane.mkLib p;
     };
 
-    llmAgentsOverlay = final: prev: {
+    llmAgentsOverlay = _final: prev: {
         claude-code = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}.claude-code;
         antigravity-cli = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}.antigravity-cli;
         # nixpkgs has codex too, but the pin trails it by a handful of

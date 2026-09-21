@@ -21,9 +21,7 @@ let
   cfg = config.custom.wallpaper;
   resolution = "3840x2160";
 
-  selectedHash = if wellKnownWallpapers ? ${cfg.name}
-                 then wellKnownWallpapers.${cfg.name}
-                 else cfg.sha256;
+  selectedHash = wellKnownWallpapers.${cfg.name} or cfg.sha256;
 
   wallpaperUrl = "https://raw.githubusercontent.com/cybrcore/cybrpapers/main/wallpapers/${cfg.name}/${cfg.name}-${resolution}.jpg";
 

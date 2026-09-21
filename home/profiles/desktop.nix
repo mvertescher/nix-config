@@ -19,7 +19,7 @@
 # See PROFILE-DESIGN.md in the consuming wrapper for the full argument and
 # for the laptop half, which is deliberately not written until laptop
 # hardware exists.
-{ ... }:
+_:
 
 {
   services.hypridle = {

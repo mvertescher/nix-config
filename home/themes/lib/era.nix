@@ -123,9 +123,6 @@ let
 
   # Activation runs with an empty environment -- no ambient PATH -- so
   # every tool it calls is named by store path.
-  bin = p: n: "${p}/bin/${n}";
-  hyprctl = bin config.wayland.windowManager.hyprland.package "hyprctl";
-  coreutil = bin pkgs.coreutils;
 
   # Generated rather than shipped, so the wallpaper follows a colour
   # override instead of going stale as an asset with a baked-in tint.
@@ -146,11 +143,10 @@ let
   wallpaper =
     pkgs.runCommand "${lib.toLower name}-${variant}-${texture}.png"
       {
-        bg = c.bg;
+        inherit (c) bg;
         line = c.panel;
       }
-      (
-        {
+      {
           none = ''
             ${magick} -size 3840x2160 xc:"$bg" png32:$out
           '';
@@ -176,8 +172,7 @@ let
             ${lib.getExe' pkgs.librsvg "rsvg-convert"} -w 3840 -h 2160 ground.svg -o $out
           '';
         }
-        .${texture}
-      );
+        .${texture};
 
   # home/common/hyprland pins its colours and rounding with mkForce so
   # they beat stylix. A second mkForce here would collide at equal
@@ -392,7 +387,7 @@ let
       colors = c;
       font = font.name;
       inherit weight;
-      radius = k.radius;
+      inherit (k) radius;
       chrome = firefoxChrome;
       sidebery = sideberyCSS;
     }
@@ -695,8 +690,7 @@ lib.mkMerge [
     stylix.targets.waybar.enable = lib.mkForce false;
 
     xdg.configFile."waybar/style.css" = lib.mkIf (!useOwnBar) {
-      source = (
-      builtins.toFile "${lib.toLower name}-waybar.css" ''
+      source = builtins.toFile "${lib.toLower name}-waybar.css" ''
         /* ${header} */
         * {
           border: none;
@@ -761,8 +755,7 @@ lib.mkMerge [
         #memory.critical {
           color: ${c.alert};
         }
-      ''
-    );
+      '';
     };
 
     # --- launcher ------------------------------------------------------
@@ -1170,7 +1163,7 @@ lib.mkMerge [
           {
             monitor = "";
             text = "cmd[update:1000] date +%H:%M";
-            color = (rgba "fg");
+            color = rgba "fg";
             font_size = 64;
             font_family = font.name;
             position = "0, 40";
@@ -1181,7 +1174,7 @@ lib.mkMerge [
           {
             monitor = "";
             text = "cmd[update:60000] date +%Y-%m-%d";
-            color = (rgba "dim");
+            color = rgba "dim";
             font_size = 12;
             font_family = font.name;
             position = "0, -8";
@@ -1194,7 +1187,7 @@ lib.mkMerge [
           {
             monitor = "";
             text = "cmd[update:3600000] uname -n";
-            color = (rgba "tape");
+            color = rgba "tape";
             font_size = 12;
             font_family = font.name;
             position = "20, -20";

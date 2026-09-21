@@ -6,16 +6,14 @@
 }:
 
 let
-  # Lucid Color Palette dynamically derived from Stylix!
-  no0 = config.lib.stylix.colors.base00; # Black
+  # Lucid Color Palette dynamically derived from Stylix! # Black
   re0 = config.lib.stylix.colors.base08; # Red
   gr0 = config.lib.stylix.colors.base0B; # Green
   ye0 = config.lib.stylix.colors.base0A; # Yellow
 
   # Secondary dark accent shades
   re2 = "331215";
-  trF = "FF"; # Full opacity
-  tr2 = "20"; # Shadow opacity
+  trF = "FF"; # Full opacity # Shadow opacity
 
   # Metrics & Typography
   border = 1;
@@ -47,7 +45,7 @@ in
         color = lib.mkForce "rgba(${re0}${trF})";
         blur_size = blurSize;
         blur_passes = blurPass;
-        noise = noise;
+        inherit noise;
         contrast = 1.3;
         brightness = 0.8;
         vibrancy = 0.2;

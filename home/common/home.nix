@@ -1,6 +1,6 @@
 # common home manager configuration
 
-{ inputs, pkgs, lib, config, ... }:
+{ pkgs, lib, ... }:
 
 let
   imports = [
@@ -58,10 +58,10 @@ in
       # xournal
       zathura
       meld
-    ] ++ lib.optionals (stdenv.isLinux) [
+    ] ++ lib.optionals stdenv.isLinux [
       nixgl.nixGLIntel
       zenith
-    ] ++ lib.optionals (stdenv.isDarwin) [
+    ] ++ lib.optionals stdenv.isDarwin [
       m-cli
     ];
 
