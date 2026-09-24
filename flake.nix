@@ -38,10 +38,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    llm-agents = {
-      url = "github:numtide/llm-agents.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # Deliberately does NOT follow our nixpkgs. llm-agents packages
+    # Electron apps that track upstream closely, and its
+    # `packages.<system>` is not lazy per-attribute, so a single
+    # package that our pin cannot satisfy aborts the whole set and
+    # takes claude-code down with it. That happened on 2026-09-17,
+    # when t3code moved to electron_44 and our nixpkgs stopped at
+    # electron_43. Letting llm-agents use its own nixpkgs costs a
+    # second nixpkgs instance and buys the current agent releases;
+    # numtide's cache serves them prebuilt.
+    llm-agents.url = "github:numtide/llm-agents.nix";
 
     disko = {
       url = "github:nix-community/disko";
