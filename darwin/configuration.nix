@@ -55,6 +55,17 @@
   # replaces.
   programs.zsh.enable = true;
 
+  # A wrapper's bootstrap installs these two files before the first
+  # activation (see darwin/bootstrap/). nix-darwin refuses to replace
+  # /etc files whose contents it does not recognise, so declare them.
+  # Hashed from the files themselves, so the two cannot drift.
+  environment.etc."nix/nix.conf".knownSha256Hashes = [
+    (builtins.hashFile "sha256" ./bootstrap/nix.conf)
+  ];
+  environment.etc."zshenv".knownSha256Hashes = [
+    (builtins.hashFile "sha256" ./bootstrap/zshenv)
+  ];
+
   # nix-darwin's schema version, not macOS's. Fixed at install time like
   # NixOS's; a host overrides it only when adopting a new one on purpose.
   system.stateVersion = 6;

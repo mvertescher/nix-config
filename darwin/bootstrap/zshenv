@@ -1,0 +1,8 @@
+# Bootstrap /etc/zshenv for a Mac, replaced by nix-darwin's own at the
+# first activation (darwin/configuration.nix lists this file's hash as
+# known). The Nix installer only hooks interactive shells, and a deploy
+# reaches the remote store through a non-interactive one
+# (ssh-ng://, which runs `nix-daemon --stdio`).
+if [ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+  . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+fi
