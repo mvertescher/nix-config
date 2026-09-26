@@ -50,6 +50,11 @@ let
           networking.hostName = lib.mkDefault name;
           networking.computerName = lib.mkDefault name;
           networking.localHostName = lib.mkDefault name;
+          # SMB keeps a fourth name of its own. Left unset it stays the
+          # one Setup Assistant chose, and that is what Finder's sidebar
+          # and the router's client list keep showing.
+          system.defaults.smb.NetBIOSName = lib.mkDefault name;
+          system.defaults.smb.ServerDescription = lib.mkDefault name;
 
           # nix-darwin applies user-scoped settings (system.defaults,
           # homebrew, ...) to this account.
