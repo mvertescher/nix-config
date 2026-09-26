@@ -156,7 +156,7 @@ impl<M> canvas::Program<M, Style> for FeedbackScene<M> {
     type State = Pointer;
 
     fn update(&self, state: &mut Pointer, event: &iced::Event, bounds: Rectangle, cursor: mouse::Cursor) -> Option<canvas::Action<M>> {
-        let target = cursor.position_in(bounds).and_then(|at| hit(self.scene.prims, scale(bounds), at));
+        let target = cursor.position_in(bounds).and_then(|at| hit_selected(self.scene.prims, self.scene.picked, scale(bounds), at));
         let (action, feedback) = state.feedback_event(self.scene.prims, event, target);
         let result = if let Some(feedback) = feedback {
             canvas::Action::publish((self.on_feedback)(feedback))
@@ -328,6 +328,23 @@ fn push_soft(prim: &'static Prim, under: &mut Vec<&'static [Prim]>) {
     }
 }
 
+/// Flatten the leading software layers without changing their draw order
+/// or image boundaries. Every layer inside a motion is a coverage cut.
+fn soft_layers(prims: &'static [Prim]) -> Vec<(&'static [Prim], bool)> {
+    fn collect(prims: &'static [Prim], cut: bool, out: &mut Vec<(&'static [Prim], bool)>) {
+        for prim in prims {
+            match *prim {
+                Prim::Soft { prims } => out.push((prims, cut)),
+                Prim::Motion { prims, .. } => collect(prims, true, out),
+                _ => {}
+            }
+        }
+    }
+    let mut out = Vec::new();
+    collect(leading_soft(prims), false, &mut out);
+    out
+}
+
 impl<M> canvas::Program<M, Style> for Backdrop {
     type State = ();
 
@@ -347,6 +364,10 @@ impl<M> canvas::Program<M, Style> for Backdrop {
             // matrix's 1600x900 the composite lands byte-for-byte;
             // scaled, it is filtered like any other image.
             let size = ((FRAME.0 * k).round().max(1.0) as u32, (FRAME.1 * k).round().max(1.0) as u32);
+            // Prefetch even layers behind an empty opening clip. Sharing
+            // their prefix work pays the cold cost once, while retaining
+            // each original image for identical clipping and filtering.
+            soft.prepare(&soft_layers(self.prims), &self.style.palette, size, k);
             let mut under = Vec::new();
             for prim in leading_soft(self.prims) {
                 self.paint(&mut frame, soft, prim, &mut under, size, k, None);
@@ -356,25 +377,25 @@ impl<M> canvas::Program<M, Style> for Backdrop {
     }
 }
 
-/// The rasterised [`Prim::Soft`] groups of every [`Backdrop`], one
-/// cache for the process. A group is rebuilt only when the canvas
-/// size or the palette changes (a published theme re-dresses the screen
-/// through the palette), so the software composite is paid once, not
-/// per frame -- clicks and hovers redraw the scene without it.
+/// The rasterised [`Prim::Soft`] groups of every [`Backdrop`], shared
+/// across widget trees so navigation can reuse a screen's artwork.
+/// Different route palettes and recent canvas sizes coexist, subject
+/// to a least-recently-used limit of 384 MiB of retained RGBA payload
+/// and 128 entries. Neither GPU copies, live canvas handles nor the
+/// compositor's temporary buffers are part of that payload budget.
 ///
-/// The process's and not the widget's (`Program::State`), because a
-/// widget's state lives as long as its place in the tree: the hub
-/// rebuilds the tree when its route changes, and the mailbox's stack
-/// is not shaped like the dashboard's, so every Enter into the mail
-/// and every Esc out of it discarded the cache and paid the composite
-/// again -- 600 ms a trip at 3840x2160, measured 2026-09-07. Held
-/// here, the dashboard's ground survives the trip, and a screen's
-/// first open is the only composite it costs. What is held: every
-/// group at the current size and palette -- neokitsch's two grounds
-/// (the store and the mailbox share one) are 66 MB of RGBA at 4K --
-/// and nothing at any other.
-#[derive(Debug, Default)]
-pub struct SoftCache(Mutex<Vec<SoftEntry>>);
+/// A single image exceeding the budget is drawn but not retained: it
+/// must be rebuilt on another draw, without flushing useful smaller
+/// entries. This keeps the cache bounded even at extreme canvas sizes.
+#[derive(Debug)]
+pub struct SoftCache {
+    state: Mutex<SoftEntries>,
+    budget: usize,
+}
+
+// Eight 4K dashboard layers and two sibling grounds need 316.4 MiB.
+const SOFT_CACHE_BYTES: usize = 384 * 1024 * 1024;
+const SOFT_CACHE_ENTRIES: usize = 128;
 
 /// A composite as the canvas draws it: `(y, rows, image)` bands in
 /// frame order (`soft::Band`).
@@ -382,23 +403,138 @@ pub(crate) type Bands = Arc<[(u32, u32, iced::widget::image::Handle)]>;
 
 #[derive(Debug)]
 struct SoftEntry {
-    prims: usize,
-    len: usize,
-    size: (u32, u32),
-    palette: crate::palette::Palette,
+    key: SoftKey,
+    bytes: usize,
     bands: Bands,
 }
 
+#[derive(Debug, Default)]
+struct SoftEntries {
+    /// Oldest use first; a hit moves the entry to the end.
+    entries: Vec<SoftEntry>,
+    bytes: usize,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct PrimKey {
+    ptr: usize,
+    len: usize,
+}
+
+impl PrimKey {
+    fn new(prims: &'static [Prim]) -> Self {
+        Self { ptr: prims.as_ptr() as usize, len: prims.len() }
+    }
+}
+
+#[derive(Debug, PartialEq)]
+struct SoftKey {
+    prims: PrimKey,
+    size: (u32, u32),
+    /// Rounded dimensions alone do not identify fractional transforms.
+    scale: u32,
+    palette: crate::palette::Palette,
+    /// `None` is a standalone image; `Some` is a coverage cut over
+    /// these groups, in order. A reused table can have another prefix.
+    under: Option<Vec<PrimKey>>,
+}
+
+impl SoftKey {
+    fn new(
+        prims: &'static [Prim],
+        palette: &crate::palette::Palette,
+        size: (u32, u32),
+        k: f32,
+        under: Option<&[&'static [Prim]]>,
+    ) -> Self {
+        Self {
+            prims: PrimKey::new(prims), size, scale: k.to_bits(), palette: *palette,
+            under: under.map(|groups| groups.iter().map(|prims| PrimKey::new(prims)).collect()),
+        }
+    }
+}
+
+impl SoftEntries {
+    fn find(&mut self, key: &SoftKey) -> Option<Bands> {
+        let index = self.entries.iter().position(|entry| entry.key == *key)?;
+        let entry = self.entries.remove(index);
+        let bands = entry.bands.clone();
+        self.entries.push(entry);
+        Some(bands)
+    }
+}
+
+impl Default for SoftCache {
+    fn default() -> Self {
+        Self::with_budget(SOFT_CACHE_BYTES)
+    }
+}
+
 impl SoftCache {
+    fn with_budget(budget: usize) -> Self {
+        Self { state: Mutex::new(SoftEntries::default()), budget }
+    }
+
     /// The one cache.
     pub(crate) fn shared() -> &'static SoftCache {
         static SHARED: OnceLock<SoftCache> = OnceLock::new();
         SHARED.get_or_init(SoftCache::default)
     }
 
+    /// Prepare missing layers in one prefix walk, preserving the exact
+    /// per-layer images that [`image`](Self::image) and [`cut`](Self::cut)
+    /// return. The bool marks a coverage cut over every earlier group.
+    /// Warm layers are inputs to that prefix but need no new image.
+    ///
+    /// Skip the batch if its complete working set cannot be retained:
+    /// otherwise normal painting would immediately rebuild evicted or
+    /// oversized results. The individual draw path still handles those
+    /// exceptional sizes within the same cache budget.
+    pub(crate) fn prepare(
+        &self,
+        layers: &[(&'static [Prim], bool)],
+        palette: &crate::palette::Palette,
+        size: (u32, u32),
+        k: f32,
+    ) {
+        if layers.is_empty() || !self.can_prepare(layers.len(), size) {
+            return;
+        }
+        let mut under = Vec::with_capacity(layers.len());
+        let keys: Vec<_> = layers.iter().map(|&(prims, cut)| {
+            let key = SoftKey::new(prims, palette, size, k, cut.then_some(under.as_slice()));
+            under.push(prims);
+            key
+        }).collect();
+        let missing: Vec<_> = {
+            let mut cache = self.state.lock().unwrap_or_else(|e| e.into_inner());
+            keys.iter().map(|key| cache.find(key).is_none()).collect()
+        };
+        if !missing.iter().any(|&render| render) {
+            return;
+        }
+        let batch: Vec<_> = layers.iter().zip(&missing).map(|(&(prims, cut), &render)| {
+            soft::SoftLayer { prims, cut, render }
+        }).collect();
+        let images = soft::composite_layers_bands(&batch, palette, size.0, size.1, k);
+        debug_assert_eq!(images.len(), keys.len());
+        for ((key, bands), render) in keys.into_iter().zip(images).zip(missing) {
+            if render {
+                self.keep(key, bands);
+            }
+        }
+    }
+
+    fn can_prepare(&self, count: usize, size: (u32, u32)) -> bool {
+        count <= SOFT_CACHE_ENTRIES && (size.0 as usize)
+            .checked_mul(size.1 as usize)
+            .and_then(|pixels| pixels.checked_mul(4))
+            .and_then(|bytes| bytes.checked_mul(count))
+            .is_some_and(|bytes| bytes <= self.budget)
+    }
+
     /// The image for `prims` at `size` under `palette`, composited on a
-    /// miss. Entries for another size or palette are dropped on the
-    /// way: a resize or a theme change invalidates every group at once.
+    /// miss. Other palettes and sizes remain available until evicted.
     pub(crate) fn image(
         &self,
         prims: &'static [Prim],
@@ -406,17 +542,18 @@ impl SoftCache {
         size: (u32, u32),
         k: f32,
     ) -> Bands {
-        if let Some(bands) = self.find(prims, palette, size) {
+        let key = SoftKey::new(prims, palette, size, k, None);
+        if let Some(bands) = self.find(&key) {
             return bands;
         }
         let bands = soft::composite_bands(prims, palette, size.0, size.1, k);
-        self.keep(prims, palette, size, bands)
+        self.keep(key, bands)
     }
 
     /// The image for a *moving* `prims`: the composite of `under` and
     /// `prims` cut to what `prims` touches (`soft::composite_over_bands`).
-    /// Keyed like [`image`](Self::image) on `prims` alone -- what is
-    /// under a group is fixed by its table.
+    /// The prefix is part of the key, because a shared group can occur
+    /// over different grounds or in a different position in a scene.
     pub(crate) fn cut(
         &self,
         under: &[&'static [Prim]],
@@ -425,45 +562,38 @@ impl SoftCache {
         size: (u32, u32),
         k: f32,
     ) -> Bands {
-        if let Some(bands) = self.find(prims, palette, size) {
+        let key = SoftKey::new(prims, palette, size, k, Some(under));
+        if let Some(bands) = self.find(&key) {
             return bands;
         }
         let bands = soft::composite_over_bands(under, prims, palette, size.0, size.1, k);
-        self.keep(prims, palette, size, bands)
+        self.keep(key, bands)
     }
 
-    fn find(
-        &self,
-        prims: &'static [Prim],
-        palette: &crate::palette::Palette,
-        size: (u32, u32),
-    ) -> Option<Bands> {
-        let mut cache = self.0.lock().unwrap_or_else(|e| e.into_inner());
-        cache.retain(|e| e.size == size && e.palette == *palette);
-        cache
-            .iter()
-            .find(|e| e.prims == prims.as_ptr() as usize && e.len == prims.len())
-            .map(|e| e.bands.clone())
+    fn find(&self, key: &SoftKey) -> Option<Bands> {
+        self.state.lock().unwrap_or_else(|e| e.into_inner()).find(key)
     }
 
-    fn keep(
-        &self,
-        prims: &'static [Prim],
-        palette: &crate::palette::Palette,
-        size: (u32, u32),
-        bands: Vec<soft::Band>,
-    ) -> Bands {
+    fn keep(&self, key: SoftKey, bands: Vec<soft::Band>) -> Bands {
+        let bytes = bands.iter().map(|band| band.rgba.len()).sum();
         let bands: Bands = bands
             .into_iter()
-            .map(|b| (b.y, b.h, iced::widget::image::Handle::from_rgba(size.0, b.h, b.rgba)))
+            .map(|b| (b.y, b.h, iced::widget::image::Handle::from_rgba(key.size.0, b.h, b.rgba)))
             .collect();
-        self.0.lock().unwrap_or_else(|e| e.into_inner()).push(SoftEntry {
-            prims: prims.as_ptr() as usize,
-            len: prims.len(),
-            size,
-            palette: *palette,
-            bands: bands.clone(),
-        });
+        if bytes > self.budget {
+            return bands;
+        }
+        let mut cache = self.state.lock().unwrap_or_else(|e| e.into_inner());
+        // Another caller may have filled the miss while we rasterised.
+        if let Some(existing) = cache.find(&key) {
+            return existing;
+        }
+        while cache.bytes > self.budget - bytes || cache.entries.len() >= SOFT_CACHE_ENTRIES {
+            let old = cache.entries.remove(0);
+            cache.bytes -= old.bytes;
+        }
+        cache.bytes += bytes;
+        cache.entries.push(SoftEntry { key, bytes, bands: bands.clone() });
         bands
     }
 }
@@ -478,90 +608,113 @@ pub fn scale(bounds: Rectangle) -> f32 {
 ///
 /// Walks the scene the way `paint` does so the hit boxes cannot drift
 /// from the drawing: both come from the same table, through the same
-/// `Prim::At` translations, at the same scale.
+/// `Prim::At` translations, at the same scale. This convenience uses
+/// the default (zero) selection; screen owners use [`hit_selected`].
 pub fn hit(prims: &[Prim], k: f32, at: Point) -> Option<(Group, usize)> {
-    hit_at(prims, 0.0, 0.0, k, at)
+    hit_selected(prims, Picked::default(), k, at)
 }
 
-fn hit_at(prims: &[Prim], ox: f32, oy: f32, k: f32, at: Point) -> Option<(Group, usize)> {
+/// Hit-test the geometry belonging to the current selection. Temporary
+/// animation wipes do not affect interaction; persistent viewports do.
+pub fn hit_selected(prims: &[Prim], picked: Picked, k: f32, at: Point) -> Option<(Group, usize)> {
+    if k <= 0.0 { return None; }
+    hit_at(prims, picked, 0.0, 0.0, k, at)
+}
+
+fn hit_at(prims: &[Prim], picked: Picked, ox: f32, oy: f32, k: f32, at: Point) -> Option<(Group, usize)> {
     for prim in prims {
-        match *prim {
+        let found = match *prim {
             Prim::Plate { group, index, x, y, w, h, .. } => {
-                let box_ = Rectangle {
-                    x: (ox + x) * k,
-                    y: (oy + y) * k,
-                    width: w * k,
-                    height: h * k,
-                };
-                if box_.contains(at) {
-                    return Some((group, index));
-                }
+                let region = Rectangle { x: (ox + x) * k, y: (oy + y) * k, width: w * k, height: h * k };
+                region.contains(at).then_some((group, index))
             }
-            Prim::At { x, y, prims } => {
-                if let Some(f) = hit_at(prims, ox + x, oy + y, k, at) {
-                    return Some(f);
-                }
+            Prim::Pick { group, index, on, off } => {
+                hit_at(if picked.get(group) == index { on } else { off }, picked, ox, oy, k, at)
             }
-            // A plate under a wipe is hit whether or not the wipe has
-            // uncovered it: the scene has no plates that move yet, and
-            // a hit box that fades in with its drawing is a decision for
-            // the first one that does.
-            Prim::Motion { prims, .. } => {
-                if let Some(f) = hit_at(prims, ox, oy, k, at) {
-                    return Some(f);
-                }
+            Prim::Viewport { x, y, w, h, prims } => {
+                let region = Rectangle { x: (ox + x) * k, y: (oy + y) * k, width: w * k, height: h * k };
+                if region.contains(at) { hit_at(prims, picked, ox, oy, k, at) } else { None }
             }
+            Prim::At { x, y, prims } => hit_at(prims, picked, ox + x, oy + y, k, at),
+            // A wipe controls the reveal, not the permanent navigation area.
+            Prim::Motion { prims, .. } => hit_at(prims, picked, ox, oy, k, at),
             Prim::Turn { x, y, angle, prims } => {
-                // Carry the point into the turned frame: subtract the
-                // pivot, undo the rotation, and the sub-scene's own
-                // coordinates apply with the pivot at the origin.
                 let (px, py) = ((ox + x) * k, (oy + y) * k);
                 let (lx, ly) = turned(at.x - px, at.y - py, -angle);
-                if let Some(f) = hit_at(prims, 0.0, 0.0, k, Point::new(lx, ly)) {
-                    return Some(f);
-                }
+                hit_at(prims, picked, 0.0, 0.0, k, Point::new(lx, ly))
             }
-            _ => {}
-        }
+            _ => None,
+        };
+        if found.is_some() { return found; }
     }
     None
 }
 
-/// `(x, y)` rotated `angle` degrees about the origin, SVG's sense:
-/// positive is clockwise on a y-down screen (`x' = x cos - y sin`,
-/// `y' = x sin + y cos`).
+/// `(x, y)` rotated clockwise in the SVG y-down coordinate frame.
 fn turned(x: f32, y: f32, angle: f32) -> (f32, f32) {
     let (sin, cos) = angle.to_radians().sin_cos();
     (x * cos - y * sin, x * sin + y * cos)
 }
 
-/// Every plate in a scene as `(group, index, centre)`, the centre in
-/// frame coordinates. The keyboard walks these centres
-/// (`screens::nav`), and the screens' tests use them to prove a table
-/// wrapped its choosers in plates and that a click at each centre lands.
+/// Every plate's centre using the default selection. Owners that can
+/// grow their selection use [`plates_selected`] with their own pick.
 pub(crate) fn plates(prims: &[Prim], ox: f32, oy: f32, out: &mut Vec<(Group, usize, Point)>) {
+    plates_selected(prims, Picked::default(), ox, oy, out);
+}
+
+/// Keyboard centres come from the selected geometry intersected with
+/// permanent viewports, so a cropped plate's centre remains visible.
+pub(crate) fn plates_selected(prims: &[Prim], picked: Picked, ox: f32, oy: f32, out: &mut Vec<(Group, usize, Point)>) {
+    let mut boxes = Vec::new();
+    plate_boxes(prims, picked, ox, oy, &mut boxes);
+    out.extend(boxes.into_iter().map(|(g, i, b)| (g, i, b.center())));
+}
+
+fn plate_boxes(prims: &[Prim], picked: Picked, ox: f32, oy: f32, out: &mut Vec<(Group, usize, Rectangle)>) {
     for prim in prims {
         match *prim {
             Prim::Plate { group, index, x, y, w, h, .. } => out.push((
-                group,
-                index,
-                Point::new(ox + x + w / 2.0, oy + y + h / 2.0),
+                group, index, Rectangle { x: ox + x, y: oy + y, width: w, height: h },
             )),
-            Prim::At { x, y, prims } => plates(prims, ox + x, oy + y, out),
-            Prim::Motion { prims, .. } => plates(prims, ox, oy, out),
-            Prim::Turn { x, y, angle, prims } => {
-                // Collect the sub-scene's centres about its own origin,
-                // then turn them out about the pivot.
+            Prim::Pick { group, index, on, off } => {
+                plate_boxes(if picked.get(group) == index { on } else { off }, picked, ox, oy, out);
+            }
+            Prim::Viewport { x, y, w, h, prims } => {
+                let viewport = Rectangle { x: ox + x, y: oy + y, width: w, height: h };
                 let mut inner = Vec::new();
-                plates(prims, 0.0, 0.0, &mut inner);
-                out.extend(inner.into_iter().map(|(g, i, c)| {
-                    let (tx, ty) = turned(c.x, c.y, angle);
-                    (g, i, Point::new(ox + x + tx, oy + y + ty))
+                plate_boxes(prims, picked, ox, oy, &mut inner);
+                out.extend(inner.into_iter().filter_map(|(g, i, region)| {
+                    region.intersection(&viewport).map(|clipped| (g, i, clipped))
+                }));
+            }
+            Prim::At { x, y, prims } => plate_boxes(prims, picked, ox + x, oy + y, out),
+            Prim::Motion { prims, .. } => plate_boxes(prims, picked, ox, oy, out),
+            Prim::Turn { x, y, angle, prims } => {
+                let mut inner = Vec::new();
+                plate_boxes(prims, picked, 0.0, 0.0, &mut inner);
+                out.extend(inner.into_iter().map(|(g, i, b)| {
+                    let corners = [(b.x, b.y), (b.x + b.width, b.y),
+                        (b.x, b.y + b.height), (b.x + b.width, b.y + b.height)];
+                    let mut lo = Point::new(f32::INFINITY, f32::INFINITY);
+                    let mut hi = Point::new(f32::NEG_INFINITY, f32::NEG_INFINITY);
+                    for (cx, cy) in corners {
+                        let (tx, ty) = turned(cx, cy, angle);
+                        lo.x = lo.x.min(tx); lo.y = lo.y.min(ty);
+                        hi.x = hi.x.max(tx); hi.y = hi.y.max(ty);
+                    }
+                    (g, i, Rectangle { x: ox + x + lo.x, y: oy + y + lo.y,
+                        width: hi.x - lo.x, height: hi.y - lo.y })
                 }));
             }
             _ => {}
         }
     }
+}
+
+/// Draft frames keep their own scissors; explicitly intersect nesting.
+fn clip_region(parent: Option<Rectangle>, region: Rectangle) -> Option<Rectangle> {
+    if region.width <= 0.0 || region.height <= 0.0 { return None; }
+    match parent { Some(parent) => parent.intersection(&region), None => Some(region) }
 }
 
 impl<M> Scene<M> {
@@ -667,6 +820,7 @@ impl<M> Scene<M> {
         k: f32,
         alpha: f32,
         interaction: Option<(Target, bool)>,
+        clip: Option<Rectangle>,
     ) {
         for prim in prims {
             match *prim {
@@ -875,9 +1029,19 @@ impl<M> Scene<M> {
                 }
                 Prim::Plate { group, index, on, off, .. } => {
                     let prims = self.plate_prims(group, index, interaction, on, off);
-                    self.paint(frame, prims, ox, oy, k, alpha, interaction);
+                    self.paint(frame, prims, ox, oy, k, alpha, interaction, clip);
                 }
-                Prim::At { x, y, prims } => self.paint(frame, prims, ox + x, oy + y, k, alpha, interaction),
+                Prim::Pick { group, index, on, off } => {
+                    let prims = if self.picked.get(group) == index { on } else { off };
+                    self.paint(frame, prims, ox, oy, k, alpha, interaction, clip);
+                }
+                Prim::Viewport { x, y, w, h, prims } => {
+                    let region = Rectangle { x: (ox + x) * k, y: (oy + y) * k, width: w * k, height: h * k };
+                    if let Some(region) = clip_region(clip, region) {
+                        frame.with_clip(region, |f| self.paint(f, prims, ox, oy, k, alpha, interaction, Some(region)));
+                    }
+                }
+                Prim::At { x, y, prims } => self.paint(frame, prims, ox + x, oy + y, k, alpha, interaction, clip),
                 Prim::Motion { motion, prims } => {
                     let t = motion::progress(&motion, self.at);
                     match motion.change {
@@ -906,8 +1070,8 @@ impl<M> Scene<M> {
                                 width: Change::lerp(w, t) * k,
                                 height: Change::lerp(h, t) * k,
                             };
-                            if region.width > 0.0 && region.height > 0.0 {
-                                frame.with_clip(region, |f| self.paint(f, prims, ox, oy, k, alpha, interaction));
+                            if let Some(region) = clip_region(clip, region) {
+                                frame.with_clip(region, |f| self.paint(f, prims, ox, oy, k, alpha, interaction, Some(region)));
                             }
                         }
                         Change::Opacity { alpha: fade } => {
@@ -922,7 +1086,7 @@ impl<M> Scene<M> {
                             // rest. Nothing is painted at 0.
                             let a = alpha * Change::lerp(fade, t);
                             if a > 0.0 {
-                                self.paint(frame, prims, ox, oy, k, a, interaction);
+                                self.paint(frame, prims, ox, oy, k, a, interaction, clip);
                             }
                         }
                     }
@@ -938,7 +1102,7 @@ impl<M> Scene<M> {
                     frame.with_save(|f| {
                         f.translate(iced::Vector::new((ox + x) * k, (oy + y) * k));
                         f.rotate(iced::Radians(angle.to_radians()));
-                        self.paint(f, prims, 0.0, 0.0, k, alpha, interaction);
+                        self.paint(f, prims, 0.0, 0.0, k, alpha, interaction, clip);
                     });
                 }
                 // Painted by the `Backdrop` canvas underneath; see
@@ -1275,7 +1439,7 @@ impl<M> canvas::Program<M, Style> for Scene<M> {
         cursor: mouse::Cursor,
     ) -> Option<canvas::Action<M>> {
         state.sync(self.prims);
-        let target = cursor.position_in(bounds).and_then(|at| hit(self.prims, scale(bounds), at));
+        let target = cursor.position_in(bounds).and_then(|at| hit_selected(self.prims, self.picked, scale(bounds), at));
         match state.event(event, target) {
             PointerAction::Ignore => None,
             PointerAction::Redraw => Some(canvas::Action::request_redraw()),
@@ -1294,7 +1458,7 @@ impl<M> canvas::Program<M, Style> for Scene<M> {
     ) -> Interaction {
         cursor
             .position_in(bounds)
-            .and_then(|at| hit(self.prims, scale(bounds), at))
+            .and_then(|at| hit_selected(self.prims, self.picked, scale(bounds), at))
             .map_or(Interaction::default(), |_| Interaction::Pointer)
     }
 
@@ -1320,7 +1484,7 @@ impl<M> canvas::Program<M, Style> for Scene<M> {
                 at: self.at,
                 on_select: self.on_select,
             };
-            scene.paint(&mut frame, self.prims, 0.0, 0.0, k, 1.0, state.interaction(self.prims));
+            scene.paint(&mut frame, self.prims, 0.0, 0.0, k, 1.0, state.interaction(self.prims), None);
         }
         vec![frame.into_geometry()]
     }
@@ -1328,6 +1492,246 @@ impl<M> canvas::Program<M, Style> for Scene<M> {
 
 #[cfg(test)]
 mod tests {
+    static CACHE_FG: &[Prim] = &[crate::style::fill_rect(0.0, 0.0, 4.0, 4.0, Ink::Fg)];
+    static CACHE_BG: &[Prim] = &[crate::style::fill_rect(0.0, 0.0, 4.0, 4.0, Ink::Bg)];
+    static CACHE_GLASS: &[Prim] = &[crate::style::fill_rect(
+        0.0, 0.0, 2.0, 4.0,
+        Ink::Fixed(Color { r: 0.25, g: 0.5, b: 1.0, a: 0.5 }),
+    )];
+    static CACHE_STACK: &[Prim] = &[
+        crate::style::fill_rect(0.0, 0.0, 4.0, 4.0, Ink::Bg),
+        crate::style::fill_rect(0.0, 0.0, 2.0, 4.0, Ink::Fg),
+    ];
+    static CACHE_BATCH: &[(&[Prim], bool)] = &[
+        (CACHE_BG, false),
+        (CACHE_GLASS, true),
+        (CACHE_STACK, false),
+        (CACHE_GLASS, true),
+    ];
+
+    fn cached_pixels(bands: &Bands) -> Vec<u8> {
+        let mut rgba = Vec::new();
+        for (_, _, handle) in bands.iter() {
+            let iced::widget::image::Handle::Rgba { pixels, .. } = handle else {
+                panic!("software composites must contain decoded RGBA");
+            };
+            rgba.extend_from_slice(pixels.as_ref());
+        }
+        rgba
+    }
+
+    fn cached_test_layers(cache: &SoftCache, k: f32) -> Vec<Bands> {
+        let palette = crate::style::Era::Neomil.style().palette;
+        let mut under = Vec::new();
+        CACHE_BATCH.iter().map(|&(prims, cut)| {
+            let image = if cut {
+                cache.cut(&under, prims, &palette, (6, 6), k)
+            } else {
+                cache.image(prims, &palette, (6, 6), k)
+            };
+            under.push(prims);
+            image
+        }).collect()
+    }
+
+    #[test]
+    fn soft_cache_batch_preserves_individual_images_and_cuts() {
+        let palette = crate::style::Era::Neomil.style().palette;
+        for k in [0.75, 1.0, 1.25] {
+            let batch = SoftCache::default();
+            batch.prepare(CACHE_BATCH, &palette, (6, 6), k);
+            let prepared = cached_test_layers(&batch, k);
+            let individual = cached_test_layers(&SoftCache::default(), k);
+            for (got, expected) in prepared.iter().zip(individual) {
+                assert_eq!(cached_pixels(got), cached_pixels(&expected), "scale {k}");
+                assert_eq!(got.len(), expected.len(), "retain the renderer's image band boundaries");
+            }
+            batch.prepare(CACHE_BATCH, &palette, (6, 6), k);
+            for (before, after) in prepared.iter().zip(cached_test_layers(&batch, k)) {
+                assert!(Arc::ptr_eq(before, &after), "warm preparation preserves image handles");
+            }
+        }
+    }
+
+    #[test]
+    fn soft_cache_batch_fills_subset_misses_without_replacing_warm_outputs() {
+        let cache = SoftCache::default();
+        let palette = crate::style::Era::Neomil.style().palette;
+        let first = cache.image(CACHE_BG, &palette, (6, 6), 1.0);
+        let last = cache.cut(&[CACHE_BG, CACHE_GLASS, CACHE_STACK], CACHE_GLASS, &palette, (6, 6), 1.0);
+        assert_eq!(cache.state.lock().unwrap().entries.len(), 2);
+        cache.prepare(CACHE_BATCH, &palette, (6, 6), 1.0);
+        assert_eq!(cache.state.lock().unwrap().entries.len(), 4);
+        let prepared = cached_test_layers(&cache, 1.0);
+        assert!(Arc::ptr_eq(&first, &prepared[0]));
+        assert!(Arc::ptr_eq(&last, &prepared[3]));
+        for (got, expected) in prepared.iter().zip(cached_test_layers(&SoftCache::default(), 1.0)) {
+            assert_eq!(cached_pixels(got), cached_pixels(&expected));
+        }
+    }
+
+    #[test]
+    fn soft_cache_batch_skips_unretainable_working_sets() {
+        let cache = SoftCache::with_budget(64);
+        let palette = crate::style::Era::Neomil.style().palette;
+        let useful = cache.image(CACHE_BG, &palette, (2, 2), 1.0);
+        // Each layer fits individually, but prefetching this complete
+        // stack would evict results before normal painting could use them.
+        cache.prepare(&[(CACHE_FG, false), (CACHE_GLASS, true)], &palette, (4, 4), 1.0);
+        // Neither a single oversize image nor overflow-sized dimensions
+        // may trigger a speculative allocation or discard useful entries.
+        cache.prepare(&[(CACHE_FG, false)], &palette, (5, 4), 1.0);
+        cache.prepare(CACHE_BATCH, &palette, (u32::MAX, u32::MAX), 1.0);
+        assert!(Arc::ptr_eq(&useful, &cache.image(CACHE_BG, &palette, (2, 2), 1.0)));
+        let state = cache.state.lock().unwrap();
+        assert_eq!(state.entries.len(), 1);
+        assert_eq!(state.bytes, 16);
+    }
+
+    #[test]
+    fn soft_cache_budget_retains_4k_dashboard_and_sibling_routes() {
+        let cache = SoftCache::default();
+        let style = crate::style::Era::Neomil.style();
+        let dashboard = soft_layers(style.dashboard);
+        assert_eq!(dashboard.len(), 8, "retain the original separately filtered images");
+        assert!(!dashboard[0].1);
+        assert!(dashboard[1..].iter().all(|layer| layer.1));
+        let route_count = dashboard.len() + soft_layers(style.store).len()
+            + soft_layers(style.mailbox.backdrop).len();
+        // Mail now retains its separately clipped, source-measured panel
+        // alongside the ground; the dashboard's eight images stay intact.
+        assert_eq!(route_count, 11);
+        assert!(cache.can_prepare(route_count, (3840, 2160)), "route payloads fit without allocating 4K pixels in this test");
+        assert_eq!(3840usize * 2160 * 4 * route_count, 364_953_600);
+        assert!(!cache.can_prepare(16, (3840, 2160)));
+        assert!(!cache.can_prepare(SOFT_CACHE_ENTRIES + 1, (1, 1)));
+    }
+
+    #[test]
+    fn soft_cache_retains_dashboard_and_sibling_route_palettes() {
+        let cache = SoftCache::default();
+        let style = crate::style::Era::Neomil.style();
+        let dashboard = style.dashboard_style().palette;
+        let sibling = style.palette;
+        assert_ne!(dashboard.fg, sibling.fg, "exercise the actual route palette split");
+        let dashboard_image = cache.image(CACHE_FG, &dashboard, (4, 4), 1.0);
+        let store_image = cache.image(CACHE_FG, &sibling, (4, 4), 1.0);
+        let mail_image = cache.image(CACHE_BG, &sibling, (4, 4), 1.0);
+        assert_ne!(cached_pixels(&dashboard_image), cached_pixels(&store_image));
+        for _ in 0..3 {
+            assert!(Arc::ptr_eq(&dashboard_image, &cache.image(CACHE_FG, &dashboard, (4, 4), 1.0)));
+            assert!(Arc::ptr_eq(&store_image, &cache.image(CACHE_FG, &sibling, (4, 4), 1.0)));
+            assert!(Arc::ptr_eq(&mail_image, &cache.image(CACHE_BG, &sibling, (4, 4), 1.0)));
+        }
+    }
+
+    #[test]
+    fn soft_cache_retains_sizes_and_distinguishes_exact_raster_scales() {
+        let cache = SoftCache::default();
+        let palette = crate::style::Era::Neomil.style().palette;
+        let original = cache.image(CACHE_FG, &palette, (4, 4), 1.0);
+        let resized = cache.image(CACHE_FG, &palette, (5, 4), 1.0);
+        let scaled = cache.image(CACHE_FG, &palette, (4, 4), 0.75);
+        assert_eq!(cached_pixels(&resized).len(), 5 * 4 * 4);
+        assert_ne!(cached_pixels(&original), cached_pixels(&scaled));
+        // Near-equal transforms can round to the same raster dimensions;
+        // those still represent distinct inputs even if RGBA rounds alike.
+        let fractional = cache.image(CACHE_FG, &palette, (4, 4), 1.000001);
+        assert!(!Arc::ptr_eq(&original, &fractional));
+        assert!(Arc::ptr_eq(&original, &cache.image(CACHE_FG, &palette, (4, 4), 1.0)));
+        assert!(Arc::ptr_eq(&resized, &cache.image(CACHE_FG, &palette, (5, 4), 1.0)));
+        assert!(Arc::ptr_eq(&scaled, &cache.image(CACHE_FG, &palette, (4, 4), 0.75)));
+    }
+
+    #[test]
+    fn soft_cache_separates_images_cuts_and_ordered_prefixes() {
+        let cache = SoftCache::default();
+        let palette = crate::style::Era::Neomil.style().palette;
+        let image = cache.image(CACHE_GLASS, &palette, (4, 4), 1.0);
+        let bare_cut = cache.cut(&[], CACHE_GLASS, &palette, (4, 4), 1.0);
+        assert!(!Arc::ptr_eq(&image, &bare_cut));
+        assert_eq!(cached_pixels(&image), cached_pixels(&bare_cut));
+        let over_bg = cache.cut(&[CACHE_BG], CACHE_GLASS, &palette, (4, 4), 1.0);
+        let over_fg = cache.cut(&[CACHE_FG], CACHE_GLASS, &palette, (4, 4), 1.0);
+        let bg_fg = cache.cut(&[CACHE_BG, CACHE_FG], CACHE_GLASS, &palette, (4, 4), 1.0);
+        let fg_bg = cache.cut(&[CACHE_FG, CACHE_BG], CACHE_GLASS, &palette, (4, 4), 1.0);
+        assert_ne!(cached_pixels(&image), cached_pixels(&over_bg));
+        assert_ne!(cached_pixels(&over_bg), cached_pixels(&over_fg));
+        assert_ne!(cached_pixels(&bg_fg), cached_pixels(&fg_bg));
+        assert_eq!(cached_pixels(&bg_fg), soft::composite_over(&[CACHE_BG, CACHE_FG], CACHE_GLASS, &palette, 4, 4, 1.0));
+        assert_eq!(cached_pixels(&fg_bg), soft::composite_over(&[CACHE_FG, CACHE_BG], CACHE_GLASS, &palette, 4, 4, 1.0));
+        assert!(Arc::ptr_eq(&over_bg, &cache.cut(&[CACHE_BG], CACHE_GLASS, &palette, (4, 4), 1.0)));
+        assert!(Arc::ptr_eq(&bg_fg, &cache.cut(&[CACHE_BG, CACHE_FG], CACHE_GLASS, &palette, (4, 4), 1.0)));
+        assert!(Arc::ptr_eq(&image, &cache.image(CACHE_GLASS, &palette, (4, 4), 1.0)));
+    }
+
+    #[test]
+    fn soft_cache_distinguishes_slice_lengths_in_source_and_prefix() {
+        let cache = SoftCache::default();
+        let palette = crate::style::Era::Neomil.style().palette;
+        let short = &CACHE_STACK[..1];
+        assert_eq!(short.as_ptr(), CACHE_STACK.as_ptr());
+        let first = cache.image(short, &palette, (4, 4), 1.0);
+        let both = cache.image(CACHE_STACK, &palette, (4, 4), 1.0);
+        assert_ne!(cached_pixels(&first), cached_pixels(&both));
+        let over_first = cache.cut(&[short], CACHE_GLASS, &palette, (4, 4), 1.0);
+        let over_both = cache.cut(&[CACHE_STACK], CACHE_GLASS, &palette, (4, 4), 1.0);
+        assert_ne!(cached_pixels(&over_first), cached_pixels(&over_both));
+        assert!(Arc::ptr_eq(&first, &cache.image(short, &palette, (4, 4), 1.0)));
+        assert!(Arc::ptr_eq(&over_first, &cache.cut(&[short], CACHE_GLASS, &palette, (4, 4), 1.0)));
+    }
+
+    #[test]
+    fn soft_cache_evicts_least_recent_use_by_payload_bytes() {
+        let cache = SoftCache::with_budget(80);
+        let palette = crate::style::Era::Neomil.style().palette;
+        let large = cache.image(CACHE_FG, &palette, (4, 4), 1.0); // 64 bytes
+        let old = cache.image(CACHE_BG, &palette, (2, 2), 1.0); // 16 bytes
+        assert!(Arc::ptr_eq(&large, &cache.image(CACHE_FG, &palette, (4, 4), 1.0)));
+        let recent = cache.image(CACHE_GLASS, &palette, (2, 2), 1.0);
+        assert!(Arc::ptr_eq(&large, &cache.image(CACHE_FG, &palette, (4, 4), 1.0)));
+        assert!(Arc::ptr_eq(&recent, &cache.image(CACHE_GLASS, &palette, (2, 2), 1.0)));
+        assert_eq!(cache.state.lock().unwrap().bytes, 80);
+        let rebuilt = cache.image(CACHE_BG, &palette, (2, 2), 1.0);
+        assert!(!Arc::ptr_eq(&old, &rebuilt));
+        assert_eq!(cached_pixels(&old), cached_pixels(&rebuilt));
+        let state = cache.state.lock().unwrap();
+        assert!(state.bytes <= 80);
+        assert_eq!(state.bytes, state.entries.iter().map(|entry| entry.bytes).sum::<usize>());
+    }
+
+    #[test]
+    fn soft_cache_oversized_images_preserve_useful_entries() {
+        let cache = SoftCache::with_budget(64);
+        let palette = crate::style::Era::Neomil.style().palette;
+        let useful = cache.image(CACHE_BG, &palette, (2, 2), 1.0);
+        let oversized = cache.image(CACHE_FG, &palette, (5, 4), 1.0);
+        let again = cache.image(CACHE_FG, &palette, (5, 4), 1.0);
+        assert!(!Arc::ptr_eq(&oversized, &again), "over-budget surfaces bypass retention");
+        assert_eq!(cached_pixels(&oversized), cached_pixels(&again));
+        assert!(Arc::ptr_eq(&useful, &cache.image(CACHE_BG, &palette, (2, 2), 1.0)));
+        let state = cache.state.lock().unwrap();
+        assert_eq!(state.bytes, 16);
+        assert_eq!(state.entries.len(), 1);
+    }
+
+    #[test]
+    fn soft_cache_bounds_entry_count_for_tiny_rasters() {
+        let cache = SoftCache::default();
+        let mut palette = crate::style::Era::Neomil.style().palette;
+        palette.fg.r = 0.0;
+        let oldest = cache.image(CACHE_FG, &palette, (1, 1), 1.0);
+        for i in 1..=SOFT_CACHE_ENTRIES {
+            palette.fg.r = i as f32 / 256.0;
+            cache.image(CACHE_FG, &palette, (1, 1), 1.0);
+        }
+        palette.fg.r = 0.0;
+        assert!(!Arc::ptr_eq(&oldest, &cache.image(CACHE_FG, &palette, (1, 1), 1.0)));
+        let state = cache.state.lock().unwrap();
+        assert_eq!(state.entries.len(), SOFT_CACHE_ENTRIES);
+        assert_eq!(state.bytes, SOFT_CACHE_ENTRIES * 4);
+    }
+
     #[test]
     fn coordinated_backdrop_keeps_pointer_identity_and_cancels_held_feedback() {
         use super::*;
@@ -1520,7 +1924,8 @@ mod tests {
         fn dresses(prims: &'static [Prim], target: Target) -> Option<(&'static [Prim], &'static [Prim])> {
             prims.iter().find_map(|prim| match prim {
                 Prim::Plate { group, index, on, off, .. } if (*group, *index) == target => Some((*on, *off)),
-                Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Motion { prims, .. } => dresses(prims, target),
+                Prim::Pick { on, off, .. } => dresses(on, target).or_else(|| dresses(off, target)),
+                Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Motion { prims, .. } | Prim::Viewport { prims, .. } => dresses(prims, target),
                 _ => None,
             })
         }
@@ -1700,8 +2105,8 @@ mod tests {
                             "{where_}: a Soft group holds a prim soft.rs does not rasterise"
                         );
                     }
-                    Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Motion { prims, .. } => check(prims, where_),
-                    Prim::Plate { on, off, .. } => {
+                    Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Motion { prims, .. } | Prim::Viewport { prims, .. } => check(prims, where_),
+                    Prim::Plate { on, off, .. } | Prim::Pick { on, off, .. } => {
                         check(on, where_);
                         check(off, where_);
                     }
@@ -1737,8 +2142,8 @@ mod tests {
                             "{where_}: a diagonal Ramp outside a Soft group"
                         );
                     }
-                    Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Motion { prims, .. } => check(prims, where_),
-                    Prim::Plate { on, off, .. } => {
+                    Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Motion { prims, .. } | Prim::Viewport { prims, .. } => check(prims, where_),
+                    Prim::Plate { on, off, .. } | Prim::Pick { on, off, .. } => {
                         check(on, where_);
                         check(off, where_);
                     }
@@ -1769,8 +2174,8 @@ mod tests {
             for prim in prims {
                 match *prim {
                     Prim::Soft { .. } => panic!("{where_}: a Soft group is not at the top level"),
-                    Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Motion { prims, .. } => none_nested(prims, where_),
-                    Prim::Plate { on, off, .. } => {
+                    Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Motion { prims, .. } | Prim::Viewport { prims, .. } => none_nested(prims, where_),
+                    Prim::Plate { on, off, .. } | Prim::Pick { on, off, .. } => {
                         none_nested(on, where_);
                         none_nested(off, where_);
                     }
@@ -1791,8 +2196,8 @@ mod tests {
                 for prim in &prims[lead..] {
                     assert!(!matches!(prim, Prim::Soft { .. }), "{where_}: a Soft group follows a non-Soft prim");
                     match *prim {
-                        Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Motion { prims, .. } => none_nested(prims, &where_),
-                        Prim::Plate { on, off, .. } => {
+                        Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Motion { prims, .. } | Prim::Viewport { prims, .. } => none_nested(prims, &where_),
+                        Prim::Plate { on, off, .. } | Prim::Pick { on, off, .. } => {
                             none_nested(on, &where_);
                             none_nested(off, &where_);
                         }
@@ -1860,7 +2265,7 @@ mod tests {
         assert!(left.iter().any(|&t| t) && right.iter().any(|&t| t), "both fans paint");
     }
 
-    /// A `Prim::Motion`'s clip is a rectangle in the scene's frame:
+    /// Motion clips and permanent viewports are rectangles in the scene's frame:
     /// `with_clip` drafts a fresh frame, so a transform set by an
     /// enclosing `Turn` would not reach it and the clip would land
     /// unrotated over a rotated drawing. Nothing needs one yet; the
@@ -1874,9 +2279,13 @@ mod tests {
                         assert!(!turned, "{where_}: #{} is inside a Turn", motion.id);
                         check(prims, turned, where_);
                     }
+                    Prim::Viewport { prims, .. } => {
+                        assert!(!turned, "{where_}: a Viewport is inside a Turn");
+                        check(prims, turned, where_);
+                    }
                     Prim::Turn { prims, .. } => check(prims, true, where_),
                     Prim::At { prims, .. } | Prim::Soft { prims } => check(prims, turned, where_),
-                    Prim::Plate { on, off, .. } => {
+                    Prim::Plate { on, off, .. } | Prim::Pick { on, off, .. } => {
                         check(on, turned, where_);
                         check(off, turned, where_);
                     }
@@ -1932,8 +2341,8 @@ mod tests {
                         rests(&motion, where_);
                         check(prims, where_);
                     }
-                    Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Soft { prims } => check(prims, where_),
-                    Prim::Plate { on, off, .. } => {
+                    Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Soft { prims } | Prim::Viewport { prims, .. } => check(prims, where_),
+                    Prim::Plate { on, off, .. } | Prim::Pick { on, off, .. } => {
                         check(on, where_);
                         check(off, where_);
                     }
@@ -2069,4 +2478,59 @@ mod tests {
             Some((Group::Module, 3))
         );
     }
+
+    #[test]
+    fn selected_detail_gestures_cancel_when_released_in_the_hidden_margin() {
+        let style = crate::style::Era::Neomil.style();
+        let picked = Picked { card: 1, ..Picked::default() };
+        let detail = hit_selected(style.store, picked, 1.0, Point::new(900.0, 700.0));
+        let hidden = hit_selected(style.store, picked, 1.0, Point::new(1580.0, 350.0));
+        assert_eq!(detail, Some((Group::Card, 1)));
+        assert_eq!(hidden, None);
+        let mut pointer = Pointer::default();
+        pointer.sync(style.store);
+        assert_eq!(pointer.event(&press(), detail), PointerAction::Capture);
+        assert_eq!(pointer.event(&release(), hidden), PointerAction::Capture);
+        assert_eq!(pointer.event(&release(), detail), PointerAction::Ignore);
+        pointer.event(&press(), detail);
+        assert_eq!(pointer.event(&release(), detail), PointerAction::Activate((Group::Card, 1)));
+    }
+
+    #[test]
+    fn persistent_viewports_intersect_opening_wipes_without_curtailing_navigation() {
+        use crate::style::Motion;
+        use iced::animation::Easing;
+        const SCENE: &[Prim] = &[Prim::Motion {
+            motion: Motion { id: "opening-test", begin: 0, dur: 500, ease: Easing::Linear,
+                change: Change::Clip { x: 0.0, y: 0.0, w: (100.0, 100.0), h: (0.0, 100.0) } },
+            prims: &[Prim::At { x: 20.0, y: 10.0, prims: &[Prim::Viewport {
+                x: 0.0, y: 0.0, w: 30.0, h: 80.0,
+                prims: &[Prim::Plate { group: Group::Card, index: 2,
+                    x: 0.0, y: 0.0, w: 100.0, h: 100.0, on: &[], off: &[] }],
+            }] }],
+        }];
+        let mut centres = Vec::new();
+        plates(SCENE, 0.0, 0.0, &mut centres);
+        assert_eq!(centres, vec![(Group::Card, 2, Point::new(35.0, 50.0))]);
+        assert_eq!(hit(SCENE, 1.0, Point::new(35.0, 85.0)), Some((Group::Card, 2)));
+        assert_eq!(hit(SCENE, 1.0, Point::new(55.0, 50.0)), None);
+        let viewport = Rectangle { x: 20.0, y: 10.0, width: 30.0, height: 80.0 };
+        let opening = Rectangle { x: 0.0, y: 0.0, width: 100.0, height: 45.0 };
+        assert_eq!(clip_region(Some(opening), viewport), Some(Rectangle {
+            x: 20.0, y: 10.0, width: 30.0, height: 35.0,
+        }));
+        assert_eq!(clip_region(Some(Rectangle { height: 0.0, ..opening }), viewport), None);
+        assert_eq!(clip_region(None, Rectangle { width: 0.0, ..viewport }), None);
+        for k in [0.75, 1.25, 2.4] {
+            let scale_box = |r: Rectangle| Rectangle { x: r.x * k, y: r.y * k,
+                width: r.width * k, height: r.height * k };
+            let actual = clip_region(Some(scale_box(opening)), scale_box(viewport)).unwrap();
+            let expected = scale_box(Rectangle { x: 20.0, y: 10.0, width: 30.0, height: 35.0 });
+            for (actual, expected) in [(actual.x, expected.x), (actual.y, expected.y),
+                (actual.width, expected.width), (actual.height, expected.height)] {
+                assert!((actual - expected).abs() < 0.0001, "scale{k}: {actual} != {expected}");
+            }
+        }
+    }
+
 }

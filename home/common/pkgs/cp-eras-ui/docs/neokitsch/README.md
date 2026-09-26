@@ -160,9 +160,9 @@ is **inferred**, every rest and press **sourced**.
 on one ladder, every rung sourced: plain type on the ground (T1, a
 plain row); an outline with a bright tab (RIFLES, nav cell, product
 card); the outline *echoed* as fading hairlines (cascade card, six
-inside; product card, four; T2, seven *outside*, fanning up and right
-— the only cell in the run marked against plain siblings by an echo
-alone); the *veneer* — bright base, grain, book-match seam, outline
+inside; product card, four; T2, a tightly swept fan descending to the
+right and curving back into shared lower corners — the only cell in the
+run marked against plain siblings by an echo alone); the *veneer* — bright base, grain, book-match seam, outline
 and rings dropped, tab kept, dark ink (SMG, row 2, EMAIL, card 2); and
 above it all the flat amber CTA, which is an action, not a selection.
 Hence:
@@ -172,10 +172,12 @@ Hence:
   field is photographed at rest rather than focused), the plain mail
   row #71 drawn with row 2's content (`nk-row-rest`), MATRIX #69
   (`nk-card-rest`).
-- *Hover* — inferred. The cell's edge echoes **outward on T2's
-  recipe**: seven rings `#a97c48` 0.7, opacity 0.85 innermost to 0.55
+- *Hover* — inferred. The cell's edge retains the **outward echo
+  convention**: seven rings `#a97c48` 0.7, opacity 0.85 innermost to 0.55
   outermost, each ring 2.1 up / 1.6 right / 0.6 left / 0.3 down; face,
-  tab, label unchanged. The button and the field take it as is; the
+  tab, label unchanged. This is the established interaction convention,
+  not a literal measurement of the corrected T2 fan below. The button
+  and the field take it as is; the
   plain row first gains the selection's own silhouette as an outline
   (`#e8c186` 1.1, the step T2 takes against T1) and echoes that. The
   cascade card already echoes and its neighbours sit 100 apart, so an
@@ -258,8 +260,8 @@ desktop interaction verification remains pending.
   **stepped top edge** (a shoulder at the left climbing through an
   S-curve to the top line — not the cascade card mirrored, which the
   first pass drew), four onion outlines nested *inside* it, a veneer
-  body carrying two paragraphs of text (the inbox's selected message,
-  re-wrapped to the panel's measured line ends), a two-line micro-text
+  body carrying the source's literal six-line and two-line paragraphs
+  (restored 2026-09-21; an earlier trace substituted mailbox copy), a two-line micro-text
   tape and the EMAIL label, and boxed C and D in the foot. Both solid
   fills, EMAIL's card and the panel body, carry wood-veneer grain since
   2026-09-07 (vertical strands at the photo's 2.1 / 2.7 pitches, EMAIL's
@@ -280,7 +282,8 @@ desktop interaction verification remains pending.
   thresholds; store/mailbox improve to 94%/98%. The existing 5x5 close
   remains; no global widening or UI change was needed.
 - `mailbox-trace.svg` — `images/neokitsch-mail.png` (#71): the hub's
-  header block verbatim; a seven-row message list with a rule and small
+  header layout, with eleven resolved wire strands versus the hub's nine;
+  a seven-row message list with a rule and small
   tab under each row and row 2 the selection as a wood-veneer bar with
   a top-right chamfer and a notched bottom edge; the message as **plain
   text with no panel outline**; four outlined RIFLES buttons with a
@@ -364,3 +367,83 @@ pointer gate. This is the inferred §11 destination, not a photographed
 pointer state. Boot clips remain in force. Echo opacity uses the canvas renderer and
 remains an approximation of SVG compositing, as with store echoes; live
 desktop review and transition timing remain open.
+
+## Reference corrections, 2026-09-21
+
+The NK-01/NK-02/NK-06 batch reopens the 3840×2160 originals, including
+native crops of both outer wire ends and the hub reader. It changes the
+trace and Rust table together; the component sheet inherits only the
+affected wire and body-copy excerpts. The NK-03/NK-10 follow-up below
+also updates its badge and envelope excerpts. Remaining work is tracked in [reference-svg.md](../../todo/reference-svg.md).
+
+- Login's 22 strands now descend from above into rounded outer feet.
+  Fitting the lowest left curl to native centerline samples gives
+  radius17.16 and leftmostx33.99 in the 1600×900 design frame; the trace
+  uses radius17, x34/x1565 and a separate endpoint17px above each plateau.
+  The former common endpointy812 inverted every curl. The center bends,
+  plateau pitches and interior glow remain, with the glow hull following
+  the corrected feet. Fine strand brightness and source residue remain
+  part of the material follow-up.
+- The hub and mailbox headers were measured independently. Detrended
+  native red-minus-blue profiles at both x80..140 and x1200..1500 resolve
+  nine strands on the hub (y123.33..148.75) and eleven on mail
+  (y123.75..155.42), both at approximately3.18px pitch. Their left rise
+  starts nearx160 and reaches the bridge nearx226, leaving T1 uncrossed;
+  the old rise fromx52 to130 crossed it. Rounded16px terminal feet replace
+  the angular right tail, and the mailbox retains its longer lowest
+  left terminal. The low runs have the same pitch on both sides; the
+  earlier right run was incorrectly compressed to1.8px. Per-strand fade
+  follows the source's downward attenuation. The runtime composites each
+  header with its existing ground in sRGB, preserving that fade over the
+  varying haze. Ground and fine color fit remain independent open work.
+- The hub body now transcribes its own photographed six plus two lines:
+  `aliqua. Quis ipsum suspendisse` / `ultrices gravida.`, then
+  `Risus commodo viverra maece-` / `nas accumsan lacus vel facilisis.`
+  The second line reads `consectetur adipiscing elit, sed`, and the
+  visible `maece-` hyphen is retained. The mailbox's separate message is
+  unchanged. The component body now carries the same words instead of
+  rectangle placeholders; its older flat material/tape examples remain
+  in NK-12. Body line-slot tops come from native rows823/870/916/963/
+  1010/1057 and1152/1197. Typeface refinement remains NK-05.
+
+These corrections preserve the existing opening wipes/fades and
+inferred interaction states. Current source/implementation gates and
+repository validation are recorded with the correction TODO; historical
+numbers elsewhere in this README remain dated observations.
+
+The same integration pass also transcribed the hub panel's current 85 SVG
+grain paths into `src/eras/neokitsch/panel_grain.rs`, including their small
+wave and lower-left sweep. The earlier runtime used straight strips. The
+paths retain the original clipping rectangle and opacity animation. This
+is implementation parity with the current reference; NK-07 still owns
+matching the photographed veneer pattern itself.
+
+
+The NK-03/NK-10 follow-up remeasures the native dashboard and mail badges
+and closed glyphs. Login and store have no T2 badge and are unchanged.
+
+- The badge shoulder rises 8.4px rather than the old 18px. The hub front
+  uses left x1281.9, shoulder y41.7, top y33.3 and bottom y105.1; mail uses
+  x1281.1/y42.95/y34.55/y106.7. Its 12 hub / 14 mail fading echoes step
+  1.23px down and 1.18px right before curved legs converge at the bottom.
+  The filled upward tab now follows the source's broader top and rounded
+  joins. Native red-minus-blue profile peaks give a five-landmark RMS
+  coordinate error of 6.66→0.15px for the hub and 6.30→0.14px for mail,
+  at a native sampling interval of 0.42 design pixels. These are contour
+  measurements, not whole-image fidelity scores. The source's uneven
+  strand brightness and photographic interference remain material work.
+- Closed envelopes now have a 7.2px-deep upper V plus both lower folds,
+  meeting at (5.3,4.8)/(10.7,4.8) in their 16×10.5 box. Native row4,
+  translation-aligned for the shape comparison, improves gold-mask IoU
+  from 0.385 to 0.566. No actual row coordinates were shifted for that
+  comparison. Source rows drift progressively below the old 60.2px list
+  pitch, reaching about 4.4px at row7; broader list layout remains open.
+  Row2 stays closed and selected; rows1/3/7 remain open. Explicit Rust
+  artwork also removes the generic open glyph's unsourced horizontal
+  mouth chord and aligns closed glyphs with the existing SVG offset.
+
+The badge curves render inside each existing cached header ground, so
+SVG opacity and runtime opacity share sRGB compositing. Text, interaction
+feedback, panel grain, source copy, and opening transitions retain their
+existing behavior. The earlier seven-ring hover convention is still an
+inference; it no longer claims to duplicate the photographed T2 geometry.

@@ -14,6 +14,13 @@ is built and judged against. The app-shaped `target-*.svg` and
 
 ## The traces — the material
 
+The 2026-09-21 login/store review records runtime and source-detail work
+in [the login plan](../../todo/neomil-login.md) and
+[the store plan](../../todo/neomil-store.md). Both now use the measured
+shared ground: [native holdout measurements](login-store-material.md).
+Their card materials, primary artwork and printing have separate open
+items; a passing shape inventory does not establish detailed fidelity.
+
 Each carries a header comment narrating its source region by region
 with measurements; read that header, not this file, for geometry.
 Each is held to its photo by
@@ -24,7 +31,8 @@ Each is held to its photo by
   T1–T4 with T2 filled) over a hairline rule, and three USER 01 cards
   with a top-right chamfer and a notched left tab — card 1 solid red
   with an avatar box, a password field and a filled Login button;
-  cards 2 and 3 dim translucent. Gate: PASS, 79% area.
+  cards 2 and 3 dim translucent. The historical 79% shape-area PASS
+  predates the ground and detail corrections; see the current correction record.
 - `dashboard-trace.svg` — `images/img-07-dashboard.png` (#60), the
   module hub: a broad blue glow over near-black (not a band with an
   edge), the header and hairline rule, a tab row, **a six-diamond
@@ -45,12 +53,18 @@ Each is held to its photo by
   header, a tab row, a column of eight disc icons beside an eight-row
   message list (row 1 filled, three rows flagged NEW), a scroll rail,
   the "Urgent Information (!)" outlined panel, and four buttons with
-  Switch Weapon filled. Gate: PASS, 86% area.
+  Switch Weapon filled. The September 21 correction restores the source
+  typography, cartridge detail, blue/cyan material and margin/maker printing;
+  see [the fidelity record](mailbox-fidelity.md) and
+  [material measurements](mailbox-material.md). The earlier 86% shape-area
+  PASS did not establish detail correctness.
 - `store-trace.svg` — `images/img-09-store.png` (#62): **no header
   row** — a KIROSHI chip strip, the MASURAO logotype, a filled
   CUSTOMER bar, LOYALTY DISCOUNT / LAST UPDATE lines, a five-row nav
   with bottom-left chamfers, and four MAGNUM 650 HAND GUN cards with
-  the second selected and grown. Gate: PASS, 71% area.
+  the second selected and grown to y 797.1. The source scatter has 25 cells
+  on a measured 3.6667px lattice; see [socket measurements](socket-spacing.md).
+  Current source gate results are in the [correction record](../reference-svg-fixes.md).
 
 ## Dashboard fidelity, 2026-09-14
 
@@ -65,8 +79,10 @@ was too strong. The tiny unreadable tape mark remains vector art.
 DESCRIPTION has square corners.
 
 Menu labels use measured Rajdhani Medium 20.625 without added tracking.
-Dashboard-only sampled row ramps restore the cyan lower glow and subdued
-left field; other Neomil screens retain their own shared glow data. The
+The sampled row ramps restore the cyan lower glow and subdued left field.
+Since September 21, all four screens use this same measured ground, with
+independent clear-patch validation; screen-specific card/panel fields remain
+separate. The
 main tile red remains flat #ef3333, supported by source patch measurements.
 Badge fields now include local gradients and measured scanlines; GO HOME
 retains those scanlines while gaining its horizontal color variation.
@@ -84,16 +100,48 @@ interaction inks.
 [Dashboard fidelity measurements](dashboard-fidelity.md) record the source
 coordinates, local comparisons and interpretation limits. The
 [dashboard TODO](../../todo/neomil-dashboard.md) tracks validation and
-remaining work. This detail batch passes 209 Rust tests and both fidelity
-gates, with native/fractional state and opening captures reviewed; all 19
-repository checks pass, including all 25 golden cases. Matrix/margin printing, GO HOME heading,
-maker primary contour/ink/microtext, vertical-brand echoes, chip-2 dark ink
-and the tiny leading tape mark remain open. Two clear background patches,
+remaining work. The [printing follow-up](dashboard-printing.md) adds
+bounded ink to all six matrix/code groups, margin and vertical-brand copies,
+a fitted GO HOME heading, rounded maker contours with independent M/dot
+ink, and geometric microtext. Source comparisons preserve glyph geometry,
+flat tile colors and interaction bounds. Maker microtext trails/edge
+softness, chip-2 dark ink and the tiny leading tape mark remain open.
+Two clear background patches,
 including their noise, are identical across all four source screens,
 supporting a shared fixed background. Its asset/authoring recipe and the
 echoes' original cause remain unresolved. Local fits do not establish a
 whole-screen effect or original shader/font. No new `photo` tags or
 gate-threshold changes hide those limits.
+
+At the end of the September 14 resumed printing batch, all 209 Rust tests,
+both fidelity gates and all 19 repository checks passed, including all
+25 golden cases. Reviewed
+native/fractional state and opening captures accompany the three refreshed
+goldens: Neomil/fallback dashboard and the previously committed Login slot.
+Those counts describe that batch; current validation is in the
+[reference correction record](../reference-svg-fixes.md). Live desktop verification stays open.
+
+## Mailbox correctness, 2026-09-21
+
+The mailbox source, trace and Iced screen now share corrected header and
+cartridge paths, rotated maker/margin printing and sampled fields. All ten
+body lines match the source widths within one design pixel. Normal rows
+retain their progressively darker fills and measured bright printing.
+The [mailbox fidelity record](mailbox-fidelity.md) documents geometry and
+remaining fine printing/texture differences; the [material record](mailbox-material.md)
+records independent source comparisons and panel holdouts.
+
+The standalone launcher now advances the same opening clock as the hub.
+The initial source fixture remains “Urgent Information (!)”; once a row is
+selected, its own subject is shown, including on returning to the second
+row. `scripts/render.sh --live` checks startup without freezing that clock,
+and the golden matrix includes an unfrozen Neomil mailbox case. Headless
+startup verification does not replace live desktop/input verification.
+At the end of the mailbox correction batch, all 238 Rust tests, both
+fidelity gates and all 19 repository checks passed,
+including all 26 screenshot cases. The live-clock case reaches a 100% match
+using mailbox presentation to avoid headless FIFO stalls. The
+[mailbox TODO](../../todo/neomil-mailbox.md) records acceptance results.
 
 ## Motion
 
@@ -112,10 +160,10 @@ login. The ids, all frozen well before `motion::REST` (2.4 s):
   Transcribed (`src/eras/neomil.rs`).
 - `store-trace.svg` `#shelf-open` — all four product cards as one
   curtain, clip x 430..1570, y 144..808, 0.5 s from 0 s; cards 1, 3, 4
-  are whole at y 613 and the selected card keeps coming to y 800, so
+  are whole at y 613 and the selected card keeps coming to y 797.1, so
   the wipe ends on the selection. The nav column and logotype stay.
 - `mailbox-trace.svg` `#list-open` — the eight disc icons and the
-  eight message rows, clip x 125..525, y 305..883, 0.44 s from 0 s;
+  eight message rows, clip x 115..525, y 305..883, 0.44 s from 0 s;
   and `#message-open` — the Urgent Information panel and its four
   buttons, clip x 720..1465, y 304..768, 0.36 s from 0.15 s (a `<set>`
   holds the rect at 0 until then). Heading, scroll rail and R widget
@@ -167,7 +215,7 @@ The reading: **hover is one rung up** from where the control is. An
 outlined control takes the lit wash (bright ink at 0.22 over its rest
 fill: button `#451010`, nav row `#551719`, field `#6a1617`) and its
 stroke, spine and ink go to the bright ink; a filled control lifts to
-`#f63333`, the lightest ink the traces sample. **Press is the held
+`#f63333`, the existing inferred hover rung (current source printing can be brighter). **Press is the held
 red `#a52223` with the dark ink on every class**, so a press still
 reads on a control that is already selected. Neither changes
 geometry: the selected nav row's extra 5px and the product card's
@@ -239,13 +287,12 @@ The native-source fit and held-out render comparisons are recorded in
   buttons, the NEW pill, the user card active and idle, the product
   card plain and selected, the GO HOME panel, the message-panel
   corner, then 36 measured palette values, typography, ground stops,
-  observed era rules and an implementation-delta box listing where
-  `src/eras/neomil.rs` still disagrees with the traces (a global
-  Chamfer 15, the RED consts, white tape, `Ground::Flat`, OpsCharts,
-  `Menu::Table`), and since 2026-09-07 a § 9 hover/press band at the
-  foot (canvas 1920x1310; see "Hover and press" above). Not gated —
-  the traces are. It replaces the deleted
-  `target-components.svg` below, which sampled nothing.
+  observed era rules and a current source/implementation status box.
+  The inferred §9 hover/press band and later dashboard/printing excerpts
+  extend the sheet to 1920×2000. The sheet is derived documentation;
+  the four parent traces have source gates. Historical app deltas have
+  been superseded by the trace-driven scene tables. It replaces the
+  deleted `target-components.svg` below.
 
 ## The bar — the one original
 
@@ -254,9 +301,11 @@ The native-source fit and held-out render comparisons are recorded in
   the bar golden tests render. The bar has no photo source, so this is
   an original composition, redrawn 2026-09-02 from the four traces'
   chrome with every decision cited by file and coordinate in the SVG
-  header. **It no longer matches `bar()`**: it is the design target and
-  `bar.rs` has not followed yet (the [bar restyle record](../../todo/bar.md)), so
-  read the SVG's IMPLEMENTATION DELTA block, not the current render.
+  header. `bar.rs` followed the target on September 3; the
+  [bar restyle record](../../todo/bar.md) dates later refinements. Its
+  IMPLEMENTATION DELTA comment describes that completed migration.
+  The original bar retains its chosen palette and compressed glow; it is
+  not a newly measured excerpt of the four full-screen backgrounds.
 
 ## Deleted composites (2026-09-03)
 
@@ -270,13 +319,12 @@ keeps a row per file saying what each got wrong. In short:
 - `target-components.svg` — a widget sheet that claimed to be "sampled
   across the run" and sampled nothing from it. Replaced the same day by
   `components.svg` above, built from the traces.
-- `dashboard.svg` — the ops-charts composite `screens::dashboard`
-  assembled under `Layout::OpsCharts` until the fold of 2026-09-03 late (the screen is now a `Prim` table transcribed from the trace, G2i 96%): three red chart diamonds, a
-  right rail, a corner block). The photo holds the six-diamond hub
-  `dashboard-trace.svg` draws; the inventory gate scored the composite
-  at 0% of the source's shape area. Until the `Layout` decision in the
-  [pipeline record](../../todo/design-pipeline.md), the dashboard screen has no SVG that agrees with it —
-  G2i now compares it against the trace and reports that honestly.
+- `dashboard.svg` — the ops-charts composite retired on September 3:
+  three red chart diamonds, a right rail and a corner block. Its source
+  inventory score was 0%. `Layout::OpsCharts` was removed; the current
+  dashboard is a `Prim` table transcribed from the six-diamond source
+  trace. Old 0%/94%/96% gate results describe earlier drawings and are
+  retained only in their dated historical records.
 
 ```sh
 nix shell nixpkgs#librsvg --command \
@@ -298,3 +346,12 @@ subject/sender positions and unread NEW pills. Hover/hold never changes
 the selected cartridge or reader message; release retains the shared
 commit/cancellation semantics. Colors are inferred adaptations of §9;
 live desktop review and transition timing remain open.
+
+## Reference recheck corrections, 2026-09-21
+
+The reader now has its source-supported inward side step and square lower
+corner, with measured thin primary ink and a distinct thicker upper stem.
+The store socket scatter now has all 25 source cells and the selected
+symbol's measured origin and 3.6667px pitch. Trace, component and Iced
+copies agree; directional printing echoes remain open. See the
+[correction measurements](../reference-svg-fixes.md#neomil).

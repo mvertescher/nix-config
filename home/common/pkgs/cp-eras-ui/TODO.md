@@ -1,12 +1,53 @@
-## Current remaining work (2026-09-14)
+## Current remaining work (2026-09-21)
 
 The linked workstream records preserve the implementation history. Earlier
 "still open" lists are superseded by later completion entries, including
 the five-task feedback/native-control/extractor batch committed in `de56b25`.
 
-- **Neomil dashboard source fidelity:** actionable corrections were found
-  by the 2026-09-14 visual audit. Follow the
-  [measured plan](todo/neomil-dashboard.md); the earlier 94% shape-area PASS did not establish detail completeness.
+- **All-era reference SVG fidelity:** reviewed all 24 SVGs: 16 against
+  source images, four against parent traces, and four as original bars.
+  All 16 source gates pass, but
+  visual review finds missing content, simplified artwork, wrong geometry,
+  typography and material differences. The [reference correction plan](todo/reference-svg.md)
+  lists concrete work; the [audit](docs/reference-svg-audit.md) records
+  coverage, source evidence and gate limits. The first correction batch
+  completes nine tasks and parts of E2/K2 across ten screens. The
+  [second batch](docs/reference-svg-round2.md) adds Kitsch login contours,
+  Neo-kitsch badges/envelopes, Neomil socket spacing/current documentation,
+  and further Entropism/Kitsch text fitting. Materials, artwork, exact
+  font shapes, Entropism baseline calibration and Neo-kitsch row placement
+  remain open. Bars are original designs.
+- **Neomil dashboard performance:** staged compositor/cache fixes reduce
+  the measured 4K preparation median from 36.61 s to 0.404 s while
+  preserving the original image layers. Route returns stay cached.
+  See the [performance record](todo/performance.md) for measurements,
+  fidelity checks and remaining resize/live-desktop work.
+- **Neomil mailbox fidelity:** the six audited correctness defects are
+  fixed and staged: startup clock, selection heading, source typography,
+  materials, cartridges and omitted printing/row shading. Fine printing
+  echoes and cartridge edge detail remain. The reference recheck’s lower
+  reader corner/side step is corrected; upper-contour refinement remains.
+  Exact background texture needs
+  original source material. See the [mailbox record](todo/neomil-mailbox.md)
+  for validation and the separate live-desktop follow-up.
+- **Neomil login correctness:** password containment, mouse submission
+  and shared ground are fixed and staged. Source artwork, printing,
+  card materials and reference colors remain. See the
+  [login plan](todo/neomil-login.md) for the measured defects and preserved
+  source details.
+- **Neomil store correctness:** startup, selected/cropped bounds, wash
+  contour, open edge, lower chamfer and shared ground are fixed and staged.
+  Card materials, typography, omitted printing and artwork remain,
+  Socket occupancy, measured spacing and per-card origins are corrected;
+  directional printing echoes remain open. See the
+  [store plan](todo/neomil-store.md). Frozen goldens and broad shape gates
+  passed despite the audited defects; retain live/state-specific checks.
+- **Neomil dashboard source fidelity:** local tasks remain for maker
+  microtext trails/edge softness, chip-2/tiny tape-mark ink, and newly
+  identified footer typography/printing. The fine background still needs
+  its original asset or authoring recipe. Follow
+  the [measured plan](todo/neomil-dashboard.md); broad shape-area gates do
+  not establish detail completeness.
 - **Kitsch dashboard hover:** needs a hub-specific design. Press is done;
   the existing blade trails do not establish an additional hover state.
 - **Animated interaction transitions:** need reviewed timing/easing and
@@ -35,6 +76,16 @@ desktop verification remain open.
 
 ## Workstream records
 
+- [All-era reference SVG correctness](todo/reference-svg.md): complete
+  source audit, concrete corrections and derived-sheet consistency.
+- [Neomil login correctness](todo/neomil-login.md): input containment,
+  action behavior, source artwork, printing and materials.
+- [Neomil store correctness](todo/neomil-store.md): startup, hit regions,
+  clipped selection, shape corrections and source fidelity.
+- [Neomil mailbox correctness](todo/neomil-mailbox.md): source-to-trace
+  corrections, missing renderer details and runtime regression coverage.
+- [Dashboard performance](todo/performance.md): measured cold-draw costs,
+  cache invalidation, optimization work and fidelity requirements.
 - [Neomil dashboard fidelity](todo/neomil-dashboard.md): the current source
   correction plan, accepted measurements, validation and remaining detail work.
 - [Design pipeline and component sheets](todo/design-pipeline.md): source
@@ -47,9 +98,29 @@ desktop verification remain open.
 - [Verification infrastructure](todo/verification.md): headless rendering,
   desktop renderer troubleshooting and golden-history notes.
 
-The latest Neomil batch integrates dashboard-local primary-ink mapping,
-tape/chip exterior echoes, and GO HOME body/maker-shape echoes. All 209 Rust
-tests and both fidelity gates pass; reviewed state/opening captures and two
-dashboard goldens are updated. The full repository check passes all 19 checks, including all 25 golden cases.
-The [dashboard record](todo/neomil-dashboard.md) names the remaining local
-source fits and the work that needs original material or live verification.
+The resumed batch adds six matrix/code ink fits, margin and vertical-brand
+copies, and GO HOME heading/maker corrections. The earlier dashboard/reader
+work was committed in `6da816e`, with the TODO split in `bc19ef8`; this batch
+remains staged. The [printing audit](docs/neomil/dashboard-printing.md)
+records source evidence and limitations. All 209 Rust tests and both
+fidelity gates pass; native/fractional state and opening captures are
+reviewed. The full repository check passes all 19 checks, including all
+25 golden cases. Two dashboard goldens and Login's previously missing
+hollow-slot golden are refreshed. Live verification remains separate.
+
+The mailbox correction batch also remains staged. Its six audited fixes
+and source-detail limits are recorded in [the mailbox TODO](todo/neomil-mailbox.md).
+Final validation passes 238 Rust tests, both fidelity gates and all 19
+repository checks, including all 26 goldens. The added unfrozen mailbox
+case matches 100.000%; headless presentation scheduling is fixed without
+changing the clock or comparison thresholds. Only the mailbox golden
+changes in this follow-up; the prior staged work is preserved.
+
+The first login/store correction batch is also staged. It fixes login
+password containment and pointer submission, store startup and selected/
+cropped geometry, and the shared ground on both screens. All 249 Rust
+tests, all four screen fidelity gates and all 19 repository checks pass,
+including all 27 visual cases. Only the Neomil login/store goldens were
+refreshed in this batch. Remaining artwork, typography and card-material
+corrections stay open in the linked plans; live verification remains
+separate.

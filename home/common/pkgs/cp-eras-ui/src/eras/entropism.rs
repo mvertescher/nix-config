@@ -387,7 +387,8 @@ const LOGIN_BACKDROP: &[Prim] = &[Prim::Soft { prims: LOGIN_GROUND }];
 /// x 62..305 / 519..672 / 1383..1494, which 15px missed by a fifth),
 /// middle cell x 521 -> 518 and baseline 61 -> 60; outlines 1.5 ->
 /// 1.25px; USERNAME: medium ls 0.75 at x 576 baseline 402; the masked
-/// run bold 22 at natural tracking; NEXT medium ls 2 at x 940 baseline
+/// run was bold 22 until the ten thin masks were remeasured 2026-09-21;
+/// NEXT medium ls 2 at x 940 baseline
 /// 433; the footer strings to baseline 863 and x 61/519/1383.
 pub const ACCESS: Access = Access {
     backdrop: LOGIN_BACKDROP,
@@ -414,13 +415,13 @@ pub const ACCESS: Access = Access {
             Ink::Border,
             1.25,
         )),
-        // Eleven asterisks, and the photo's are 7px glyphs at a ~9.7
-        // pitch, not the 4-5px at pitch 10 an earlier reading drew: a
-        // bold 22 at natural tracking, run 94 wide.
-        // Typed, one bold star per character and nothing after; the
-        // underline caret trails the run.
+        // Ten thin stars at ~9.54px pitch, native bright-core extent
+        // x577.9..670.4 / y425..431.7 (2026-09-21 source correction).
+        // The resting count is only a mock. Typed masks still follow
+        // the full secret, and the underline trails the visible run.
         entry: Some(Entry {
-            rest: Legend::new("***********", 578.0, 439.0, 22.0, Ink::Fg).bold(),
+            rest: Legend::new("**********", 576.4, 441.25, 25.0, Ink::Fg)
+                .stretched(0.94045),
             mask: '*',
             tail: "",
             caret: Caret::Trails,
@@ -429,7 +430,7 @@ pub const ACCESS: Access = Access {
             failed: "ACCESS DENIED:",
         }),
         // The short caret underline under the first pair of characters.
-        caret: Some(Plate::filled(Plot::new(577.0, 439.5, 17.0, 1.25), Ink::Border)),
+        caret: Some(Plate::filled(Plot::new(576.5, 439.125, 19.0, 0.5), Ink::Border)),
         action: Some(Plate::filled(Plot::new(932.0, 413.0, 105.0, 33.0), Ink::Cta)),
         action_label: Some(
             Legend::new("NEXT", 940.0, 433.0, 22.0, Ink::OnSelect)
@@ -473,11 +474,11 @@ pub const ACCESS: Access = Access {
 // `MID` #728f76 and a stop above the `OUTLINE` of the time (#5d7752);
 // the #709174 is the 1600 rescale's dilution of a bright 2px line,
 // which is what `border` now is (#8fba97), so the frames read the role
-// like the hub's and the store's. The two 8.5px captions under A MAIL
+// like the hub's and the store's. The two 9px captions under A MAIL
 // BOX stay `Ink::Mid`: they are the screen's faintest text, not frames.
 
 use crate::style::{
-    Change, Frame, Mail, MailBadges, MailButtons, MailList, MailMotion, MailPanel, MailPart,
+    Change, Frame, Mail, MailBadges, MailButtons, MailList, MailMotion, MailPanel, MailPart, MailRowType,
     Mailbox, Motion, Note, Piece, RowDecor, Run, Trim, FromAt,
 };
 use iced::animation::Easing;
@@ -543,19 +544,19 @@ static BODY_HEADINGS: [Piece; 12] = [
         trim: Trim::NONE,
     },
     Piece::Label(Note {
-        at: Run::new(106.0, 118.0, 19.0, Ink::Fg),
+        at: Run::new(104.3, 119.25, 22.0, Ink::Fg).medium().stretched(1.65),
         text: "A",
     }),
     Piece::Label(Note {
-        at: Run::new(139.0, 119.0, 22.0, Ink::Fg),
+        at: Run::new(137.03, 117.92, 22.5, Ink::Fg).medium().stretched(1.008),
         text: "MAIL BOX",
     }),
     Piece::Label(Note {
-        at: Run::new(102.0, 145.0, 8.5, Ink::Mid),
+        at: Run::new(103.1, 145.0, 9.0, Ink::Mid).medium().stretched(0.955),
         text: "SPARE TIME MANAGER WAS DEVELOPED BY",
     }),
     Piece::Label(Note {
-        at: Run::new(102.0, 155.0, 8.5, Ink::Mid),
+        at: Run::new(103.1, 154.17, 9.0, Ink::Mid).medium().stretched(0.948),
         text: "SEOCHO. SERVING CUSTOMERS SINCE 2006.",
     }),
     // B MESSAGE
@@ -567,11 +568,11 @@ static BODY_HEADINGS: [Piece; 12] = [
         trim: Trim::NONE,
     },
     Piece::Label(Note {
-        at: Run::new(562.0, 118.0, 19.0, Ink::Fg),
+        at: Run::new(560.2, 119.25, 22.0, Ink::Fg).medium().stretched(1.65),
         text: "B",
     }),
     Piece::Label(Note {
-        at: Run::new(592.0, 119.0, 22.0, Ink::Fg),
+        at: Run::new(590.79, 117.92, 22.5, Ink::Fg).medium().stretched(1.003),
         text: "MESSAGE",
     }),
     // C ENCRIPTION LEVEL -- the source really does spell it that way,
@@ -584,15 +585,15 @@ static BODY_HEADINGS: [Piece; 12] = [
         trim: Trim::NONE,
     },
     Piece::Label(Note {
-        at: Run::new(1353.0, 118.0, 19.0, Ink::Fg),
+        at: Run::new(1351.6, 119.25, 22.0, Ink::Fg).medium().stretched(1.6),
         text: "C",
     }),
     Piece::Label(Note {
-        at: Run::new(1383.0, 119.0, 22.0, Ink::Fg),
+        at: Run::new(1381.89, 117.92, 24.0, Ink::Fg).medium().stretched(1.024),
         text: "ENCRIPTION",
     }),
     Piece::Label(Note {
-        at: Run::new(1383.0, 144.0, 22.0, Ink::Fg),
+        at: Run::new(1381.9, 142.92, 22.5, Ink::Fg).medium().stretched(1.084),
         text: "LEVEL",
     }),
 ];
@@ -713,8 +714,44 @@ static ROWS: [Mail; 7] = [
     Mail { subject: "Special offer to you!", from: "Larix & Betula", unread: false },
 ];
 
-/// The body, trace lines 233-242: 4 + 4 + 2 lines, each set with its
-/// own `textLength`, broken where the trace breaks them.
+// Native source fit, measured in the 1600px design frame. Only the
+// typography drifts within the existing 61.95px row pitch; hit frames
+// and selection geometry are unchanged. Runtime supplies the row text
+// and feedback ink, so these templates carry no duplicate content.
+static ROW_TYPE: [MailRowType; 7] = [
+    MailRowType {
+        title: Run::new(137.08, 29.83, 22.25, Ink::Fg).stretched(0.991),
+        from: Run::new(137.15, 48.58, 16.25, Ink::Mid).stretched(0.963),
+    },
+    MailRowType {
+        title: Run::new(136.64, 29.55, 22.25, Ink::Fg).medium().stretched(1.006),
+        from: Run::new(136.61, 48.72, 16.25, Ink::Mid).medium().stretched(1.058),
+    },
+    MailRowType {
+        title: Run::new(137.12, 28.85, 22.25, Ink::Fg).medium().stretched(0.966),
+        from: Run::new(136.67, 48.02, 16.25, Ink::Mid).medium().stretched(1.015),
+    },
+    MailRowType {
+        title: Run::new(137.08, 28.57, 22.25, Ink::Fg).medium().stretched(0.991),
+        from: Run::new(136.69, 47.32, 16.25, Ink::Mid).medium().stretched(0.994),
+    },
+    MailRowType {
+        title: Run::new(136.29, 27.87, 22.25, Ink::Fg).medium().stretched(0.966),
+        from: Run::new(136.73, 46.62, 16.25, Ink::Mid).medium().stretched(0.965),
+    },
+    MailRowType {
+        title: Run::new(137.08, 27.58, 22.25, Ink::Fg).medium().stretched(0.991),
+        from: Run::new(136.67, 46.33, 16.25, Ink::Mid).medium().stretched(1.014),
+    },
+    MailRowType {
+        title: Run::new(136.29, 26.88, 22.25, Ink::Fg).medium().stretched(0.966),
+        from: Run::new(136.66, 46.05, 16.25, Ink::Mid).medium().stretched(1.023),
+    },
+];
+
+/// The source body: 4 + 4 + 2 lines with the original words and
+/// breaks. A supported horizontal transform replaces the trace's
+/// formerly ineffective `textLength` declarations.
 static PARAGRAPHS: [&[&str]; 3] = [
     &[
         "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incidi-",
@@ -736,11 +773,13 @@ static PARAGRAPHS: [&[&str]; 3] = [
 
 pub fn mailbox() -> Mailbox {
     Mailbox {
+        text_baseline: 0.95,
         // this era's mailbox is content with its `Ground`
         backdrop: &[],
         chrome: &CHROME,
         overlay: &[],
         list: MailList {
+            footer: &[],
             feedback: None,
             // frame x 84..451, y 205..686
             frame: Some(Frame::new(84.0, 205.0, 367.0, 481.0)),
@@ -752,9 +791,11 @@ pub fn mailbox() -> Mailbox {
             row: Frame::new(85.0, 226.0, 366.0, 62.0),
             pitch: 61.95,
             rows: &ROWS,
+            row_type: &ROW_TYPE,
             selected: 0,
             decor: RowDecor::Framed,
             row_fill: None,
+            row_fills: &[],
             row_stroke: None,
             row_width: 0.0,
             row_trim: Trim::NONE,
@@ -777,14 +818,20 @@ pub fn mailbox() -> Mailbox {
             title_dy: 30.0,
             title_size: 20.0,
             title_bold: false,
+            title_ink: Ink::Fg,
+            selected_ink: Ink::OnSelect,
             from_dy: 48.0,
             from_size: 14.0,
+            from_ink: Ink::Mid,
             from_at: FromAt::Beneath,
             from_prefix: "FROM: ",
             title_upper: true,
             from_upper: true,
             new_pill: None,
+            new_pill_selected: None,
+            new_pill_art: &[],
             icons: None,
+            envelope: None,
         },
         panel: MailPanel {
             frame: Some(Frame::new(529.0, 205.0, 750.0, 481.0)),
@@ -798,14 +845,14 @@ pub fn mailbox() -> Mailbox {
             // the panel reads row 2 (URGENT INFORMATION (!)) while row
             // 1 is selected, trace lines 185-188 / 228
             message: 1,
-            title: Run::new(557.0, 253.0, 22.0, Ink::OnSelect),
+            title: Run::new(554.79, 252.5, 23.3, Ink::OnSelect).stretched(1.063),
             title_upper: true,
-            from: Some(Run::new(557.0, 279.0, 17.0, Ink::OnSelect)),
+            from: Some(Run::new(554.65, 278.75, 18.5, Ink::OnSelect).stretched(1.098)),
             heading: None,
             // trace line 229: the list shouts "FROM: MOM", the panel
             // does not
             sender: Some("from: Mom"),
-            body: Run::new(557.0, 325.0, 17.0, Ink::Fg),
+            body: Run::new(556.0, 325.0, 17.0, Ink::Fg).stretched(1.14),
             line: 21.7,
             para: 39.0,
             paragraphs: &PARAGRAPHS,
@@ -825,7 +872,7 @@ pub fn mailbox() -> Mailbox {
             trim: Trim::NONE,
             width: 2.0,
             stroke: Ink::Border,
-            label: Run::new(20.0, 25.0, 22.0, Ink::Fg),
+            label: Run::new(21.0, 24.5, 23.5, Ink::Fg).medium().stretched(1.03),
             tab: None,
             labels: &BUTTONS,
         },
@@ -1072,6 +1119,27 @@ const STORE_STATES: &[crate::style::PlateStates] = &[
 mod store_interaction_tests {
     use super::*;
 
+    #[test]
+    fn fourth_card_crop_limits_pointer_and_keyboard_targets_at_every_scale() {
+        use crate::screens::scene::{hit_selected, plates_selected, Picked};
+        use iced::Point;
+
+        for card in [0, 3] {
+            let picked = Picked { card, ..Picked::default() };
+            for k in [0.75, 1.0, 1.25, 2.4] {
+                let point = |x, y| Point::new(x * k, y * k);
+                assert_eq!(hit_selected(STORE, picked, k, point(1564.0, 350.0)), Some((Group::Card, 3)));
+                assert_eq!(hit_selected(STORE, picked, k, point(1565.0, 350.0)), None);
+                assert_eq!(hit_selected(STORE, picked, k, point(1580.0, 600.0)), None);
+            }
+            let mut targets = Vec::new();
+            plates_selected(STORE, picked, 0.0, 0.0, &mut targets);
+            let (_, _, center) = targets.iter().find(|(g, i, _)| (*g, *i) == (Group::Card, 3)).unwrap();
+            assert!((center.x - 1496.8).abs() < 0.001);
+            assert_eq!(hit_selected(STORE, picked, 1.0, *center), Some((Group::Card, 3)));
+        }
+    }
+
     fn without_ink(mut prim: Prim) -> Prim {
         match &mut prim {
             Prim::Rect { fill, stroke, .. } | Prim::Path { fill, stroke, .. } => {
@@ -1204,7 +1272,12 @@ macro_rules! shelf {
 const SHELF_0: &[Prim] = shelf!(0);
 const SHELF_1: &[Prim] = shelf!(1);
 const SHELF_2: &[Prim] = shelf!(2);
-const SHELF_3: &[Prim] = shelf!(3);
+// Clip the complete fourth card, including its feedback and captions.
+// Hit collection intersects this same viewport; no invisible target
+// survives to the right of the source's open cut at x1564.6.
+const SHELF_3: &[Prim] = &[Prim::Viewport {
+    x: -2.0, y: -2.0, w: 137.6, h: 492.0, prims: shelf!(3),
+}];
 
 /// The store's `#lift` (:2-6), `cx 0.45 cy 0.4 r 0.8` of the page:
 /// centre (720,360), radii (1280,720), padded past the rim with its
@@ -1274,8 +1347,8 @@ const STORE_BODY: &[Prim] = &[
     fill_rect(112.0, 481.25, 218.0, 1.5, Ink::Border),
     fill_rect(112.0, 543.25, 218.0, 1.5, Ink::Border),
     fill_rect(112.0, 605.25, 218.0, 1.5, Ink::Border),
-    // B: the shelf. 265 wide on a 322 pitch; the fourth runs off the
-    // right edge of the frame, as the source has it.
+    // B: 265-wide cards on a 322 pitch; the fourth's primary ink
+    // has a persistent open cut at x1564.6, before the screen edge.
     Prim::At { x: 461.0, y: 260.0, prims: SHELF_0 },
     Prim::At { x: 783.0, y: 260.0, prims: SHELF_1 },
     Prim::At { x: 1105.0, y: 260.0, prims: SHELF_2 },

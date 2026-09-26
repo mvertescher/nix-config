@@ -414,18 +414,9 @@ pub const NOTICE: iced::Color = rgb(0xe63132);
 const NOTICE_1: &str = "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO";
 const NOTICE_2: &str = "MANIPULATE, ACCESS OR DISABLE THIS DEVICE.";
 
-/// The ground as the trace paints it (:120-122): the page `#080405`
-/// (a step under the hub's `GROUND`), then the same `#glowh` under
-/// `#glowmask` and the same `#vignette` every other neomil screen
-/// opens with -- the trace records the login and hub backdrops as
-/// pixel-identical at every sampled row. Until 2026-09-05 `login.rs`
-/// sampled this through closures of its own and squared the
-/// vignette's alpha on the way, where the def is two linear stops.
-const LOGIN_GROUND: &[Prim] = &[
-    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(rgb(0x080405))),
-    HUB_GLOW,
-    HUB_VIGNETTE,
-];
+/// Clear source patches match the dashboard's measured ground. Keep
+/// cards and printing independent of that shared underlying material.
+const LOGIN_GROUND: &[Prim] = dashboard_ground::BACKGROUND;
 const LOGIN_BACKDROP: &[Prim] = &[Prim::Soft { prims: LOGIN_GROUND }];
 
 pub const ACCESS: Access = Access {
@@ -609,78 +600,47 @@ pub const ACCESS: Access = Access {
 // --- end login ---
 // --- mailbox ---
 //
-// `docs/neomil/mailbox-trace.svg`, read at its 1600x900 frame. The
-// ground is the trace's (:145-148): the cold-blue hub glow, a warm
-// near-black wash under the list and panel drawn through its own
-// vertical mask, and the left-margin vignette, as `MAIL_BACKDROP`.
-// Until 2026-09-04 this header called those "the photograph's residue
-// ... not geometry" and kept `Ground::Flat`; but the trace draws them,
-// G2i scores the trace, and `triptych.sh --diff` lit the whole frame
-// (`5 3 4` everywhere the design reads `31 31 34` at (50,150)). The
-// per-row fill gradient (#280c0d at the top of the list fading to
-// #1d0708 at its foot) is still left out: every row takes one fill.
-//
-// Two things the trace draws that are not here, both noted in the
-// conversion report: the rotated BETTERLIFE TEC / PETROCHEM maker's
-// marks inside the panel's top-right corner (canvas text cannot be
-// rotated through `fill_text`), and the two rotated `00032 05 54 08 CP`
-// margin strings, for the same reason. The 0.8 box around PETROCHEM is
-// drawn, in `OVERLAY` (it sits on the panel, so CHROME is too early).
+// Source-corrected mailbox (#61); measurements and limits live in
+// docs/neomil/mailbox-fidelity.md and mailbox-material.md. Static vector
+// printing and sampled fields are composited behind the interactive sheet.
+// The panel material and its maker marks share the sheet's opening clip.
 use crate::style::{
     Frame, Icons, Mail, MailBadges, MailButtons, MailList, MailRowCoat, MailRowStates, MailMotion, MailPanel, MailPart,
-    Mailbox, Note, Piece, RowDecor, Run, Trim, FromAt, BL, BR, TR,
+    Mailbox, Note, Piece, RowDecor, Run, Trim, FromAt, BL, BR,
 };
 
-/// `#wash` (:32-39): "the warm near-black wash under the list and
-/// panel, sampled at y 500..850: #120205 left margin, #0d0406..#040202
-/// mid (fading downward), #020202 right of x~1460" -- a horizontal
-/// gradient across the frame ...
-const MAIL_WASH: &[(f32, iced::Color)] = &[
-    (0.00, rgb(0x110305)),
-    (0.40, rgb(0x0b0304)),
-    (0.90, rgb(0x020202)),
-];
-/// ... drawn through `#washmask` (:40-44), clear at the top and solid
-/// from y 405 down.
-const MAIL_WASH_V: &[(f32, iced::Color)] = &[(0.00, rgb(0x000000)), (0.45, rgb(0xffffff))];
-const MAIL_WASH_PRIMS: &[Prim] = &[Prim::Ramp {
-    x: 0.0,
-    y: 0.0,
-    w: 1600.0,
-    h: 900.0,
-    from: (0.0, 0.0),
-    to: (1.0, 0.0),
-    stops: MAIL_WASH,
-}];
-const MAIL_WASH_MASK: &[Prim] = &[Prim::Ramp {
-    x: 0.0,
-    y: 0.0,
-    w: 1600.0,
-    h: 900.0,
-    from: (0.0, 0.0),
-    to: (0.0, 1.0),
-    stops: MAIL_WASH_V,
-}];
-/// The ground as the trace stacks it (:145-148): page `#070304` (the
-/// dashboard's `HUB_GROUND`), the masked glow, the masked wash, the
-/// vignette.
-const MAIL_GROUND: &[Prim] = &[
-    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(HUB_GROUND)),
-    HUB_GLOW,
-    Prim::Masked { prims: MAIL_WASH_PRIMS, mask: MAIL_WASH_MASK },
-    HUB_VIGNETTE,
-];
-const MAIL_BACKDROP: &[Prim] = &[Prim::Soft { prims: MAIL_GROUND }];
+#[path = "neomil_mailbox_art.rs"]
+mod mailbox_art;
+#[path = "neomil_mailbox_material.rs"]
+mod mailbox_material;
 
-const fn tape(x: f32, y: f32, w: f32) -> Piece {
-    Piece::Box {
-        at: Frame::new(x, y, w, 2.5),
-        fill: Some(Ink::Dim),
-        stroke: None,
-        width: 0.0,
-        trim: Trim::NONE,
-    }
-}
+const MAIL_GROUND: &[Prim] = &[
+    Prim::At { x: 0.0, y: 0.0, prims: mailbox_material::GROUND },
+    Prim::At { x: 0.0, y: 0.0, prims: mailbox_material::BADGES },
+    Prim::At { x: 0.0, y: 0.0, prims: mailbox_art::HEADER },
+    Prim::At { x: 0.0, y: 0.0, prims: mailbox_art::MARGINS },
+    Prim::At { x: 0.0, y: 0.0, prims: mailbox_art::FOOTER },
+];
+const MAIL_PANEL: &[Prim] = &[
+    Prim::At { x: 0.0, y: 0.0, prims: mailbox_material::PANEL },
+    Prim::At { x: 0.0, y: 0.0, prims: mailbox_art::PANEL_PRINTING },
+];
+// The lower-list rule belongs to the list reveal, without a full-size
+// software image for a single hairline.
+const MAIL_LIST_FOOTER: &[Piece] = &[Piece::Box {
+    at: Frame::new(241.25, 875.4167, 269.5833, 0.8333),
+    fill: Some(Ink::Fixed(rgb(0x660e0f))),
+    stroke: None,
+    width: 0.0,
+    trim: Trim::NONE,
+}];
+const MAIL_BACKDROP: &[Prim] = &[
+    Prim::Soft { prims: MAIL_GROUND },
+    Prim::Motion {
+        motion: MAILBOX_MOTIONS[1].motion,
+        prims: &[Prim::Soft { prims: MAIL_PANEL }],
+    },
+];
 
 const fn text(x: f32, y: f32, size: f32, ink: Ink, s: &'static str) -> Piece {
     Piece::Label(Note {
@@ -696,25 +656,12 @@ const fn strong(x: f32, y: f32, size: f32, ink: Ink, s: &'static str) -> Piece {
     })
 }
 
-/// The host tape at the head of the sidebar, and the arrow flag at the
-/// foot: both filled shapes with one cut corner.
-static HOST_TAPE: [(f32, f32); 6] = [
-    (259.0, 151.0),
-    (376.0, 151.0),
-    (376.0, 160.0),
-    (259.0, 160.0),
-    (257.0, 158.0),
-    (257.0, 153.0),
-];
-static FOOT_ARROW: [(f32, f32); 3] = [(886.0, 871.0), (894.0, 866.0), (894.0, 876.0)];
-/// The bright bar riding the panel's right edge, y 415..552.
-static EDGE_BAR: [(f32, f32); 6] = [
-    (1447.0, 415.0),
-    (1455.0, 415.0),
-    (1455.0, 545.0),
-    (1448.0, 552.0),
-    (1440.0, 552.0),
-    (1440.0, 422.0),
+/// Source side bar: the lower contour steps inward and continues square.
+static EDGE_BAR: [(f32, f32); 4] = [
+    (1450.0, 412.0833),
+    (1450.0, 544.5833),
+    (1440.5548, 554.0285),
+    (1440.5548, 421.5285),
 ];
 // The scroll widget's two thin arrows (mailbox-trace :304-312): heads
 // 4.7 wide, both spanning y 692.7..714.6.
@@ -728,67 +675,7 @@ const SCROLL_RING: &[Seg] = &[
     Seg::Cubic { c1x: 572.8, c1y: 741.5, c2x: 577.5, c2y: 736.8, x: 577.5, y: 731.0 },
 ];
 
-static CHROME: [Piece; 41] = [
-    // customer block
-    text(124.0, 90.0, 14.0, Ink::Fg, "CUSTOMER"),
-    Piece::Box {
-        at: Frame::new(117.0, 104.0, 59.0, 57.0),
-        fill: Some(Ink::Border),
-        stroke: Some(Ink::Fg),
-        width: 1.5,
-        trim: Trim::chamfer(BL, 15.0),
-    },
-    text(125.0, 121.0, 12.0, Ink::Fg, "LEVEL"),
-    strong(132.0, 140.0, 20.0, Ink::Fg, "T1"),
-    text(256.0, 90.0, 14.0, Ink::Fg, "#NC488402"),
-    // the barcode tape under #NC488402: eight bars on a 4px pitch
-    tape(257.0, 107.0, 18.0),
-    tape(279.0, 107.0, 21.0),
-    tape(257.0, 111.0, 26.0),
-    tape(287.0, 111.0, 13.0),
-    tape(257.0, 115.0, 12.0),
-    tape(273.0, 115.0, 27.0),
-    tape(257.0, 119.0, 22.0),
-    tape(283.0, 119.0, 17.0),
-    strong(257.0, 131.0, 9.0, Ink::Fg, "PROTOCOL"),
-    strong(257.0, 141.0, 9.0, Ink::Fg, "6520-A44"),
-    text(305.0, 108.0, 6.5, Ink::Dim, "ONLY CC35 CERTIFIED"),
-    text(305.0, 116.5, 6.5, Ink::Dim, "AND DHSF 5TH CLASS OFFICERS"),
-    text(305.0, 125.0, 6.5, Ink::Dim, "ARE ALLOWED TO MANIPULATE,"),
-    text(305.0, 133.5, 6.5, Ink::Dim, "ACCESS OR DISABLE THIS DEVICE."),
-    Piece::Poly {
-        points: &HOST_TAPE,
-        fill: Some(Ink::Fg),
-        stroke: None,
-        width: 0.0,
-        close: true,
-    },
-    text(283.0, 158.0, 7.0, Ink::OnSelect, "JHN 102 CKC 151 CC10 AS5"),
-    text(1141.0, 90.0, 14.0, Ink::Fg, "SECURITY LEVEL"),
-    // the hairline the header sits on, and the two tab boxes under it
-    Piece::Box {
-        at: Frame::new(42.0, 187.0, 1516.0, 1.5),
-        fill: Some(Ink::Dim),
-        stroke: None,
-        width: 0.0,
-        trim: Trim::NONE,
-    },
-    Piece::Box {
-        at: Frame::new(241.5, 194.5, 210.0, 22.0),
-        fill: Some(Ink::Border),
-        stroke: Some(Ink::Dim),
-        width: 1.0,
-        trim: Trim::NONE,
-    },
-    text(249.0, 210.0, 12.0, Ink::Fg, "COMPUTER SYSTEMS"),
-    Piece::Box {
-        at: Frame::new(727.5, 194.5, 210.0, 22.0),
-        fill: Some(Ink::Border),
-        stroke: Some(Ink::Dim),
-        width: 1.0,
-        trim: Trim::NONE,
-    },
-    text(742.0, 210.0, 12.0, Ink::Fg, "CONTENT"),
+static CHROME: &[Piece] = &[
     // the scroll rail beside the list, its thumb, and the R widget
     Piece::Box {
         at: Frame::new(542.0, 313.0, 6.0, 565.0),
@@ -842,48 +729,34 @@ static CHROME: [Piece; 41] = [
     },
     // the trace centres the R on x 567; Run is start-anchored
     strong(563.3, 736.0, 13.0, Ink::Fg, "R"),
-    Piece::Poly {
-        points: &FOOT_ARROW,
-        fill: Some(Ink::Fg),
-        stroke: None,
-        width: 0.0,
-        close: true,
-    },
     text(558.0, 750.0, 6.0, Ink::Dim, "SCRLL"),
     text(558.0, 758.0, 6.0, Ink::Dim, "85402"),
-    text(771.0, 875.0, 9.0, Ink::Dim, "JHN 102 CKC 151 CC10 AS5"),
-    Piece::Box {
-        at: Frame::new(1311.0, 861.0, 14.0, 14.0),
-        fill: Some(Ink::Fg),
-        stroke: None,
-        width: 0.0,
-        trim: Trim::NONE,
-    },
-    strong(1314.0, 872.0, 10.0, Ink::OnSelect, "B"),
 ];
 
-/// Drawn after the panel, whose `#1c0608` fill (2026-09-04) had buried
-/// the inner half of the bar riding its right edge and would bury the
-/// maker's-mark box in its top-right corner.
-static OVERLAY: [Piece; 2] = [
+/// The bright edge rides above the body panel and follows its opening clip.
+static OVERLAY: &[Piece] = &[
+    Piece::Curve {
+        start: (729.0, 312.0),
+        steps: mailbox_material::PANEL_CONTOUR,
+        fill: None,
+        stroke: Some(Ink::Fixed(rgb(0xfb3535))),
+        width: 0.76,
+        close: true,
+    },
+    // The upper-right source stem is thicker than the thin lower contour.
+    Piece::Poly {
+        points: &[(1450.0, 320.0), (1450.0, 544.5833)],
+        fill: None,
+        stroke: Some(Ink::Fixed(rgb(0xfb3535))),
+        width: 1.8,
+        close: false,
+    },
     Piece::Poly {
         points: &EDGE_BAR,
-        fill: Some(Ink::Fg),
+        fill: Some(Ink::Fixed(rgb(0xfb3535))),
         stroke: None,
         width: 0.0,
         close: true,
-    },
-    // The 0.8 box the trace draws *around* the rotated PETROCHEM in the
-    // panel's corner (mailbox-trace :330-335); the text itself cannot be
-    // drawn -- `fill_text` does not rotate. Measured on img-08-main.png
-    // at photo x 3431..3447, y 812..922 (outer), i.e. design 1429.6..
-    // 1436.25 x 338.3..384.2; the frame here is the stroke centreline.
-    Piece::Box {
-        at: Frame::new(1430.0, 338.7, 6.25, 45.1),
-        fill: None,
-        stroke: Some(Ink::Dim),
-        width: 0.8,
-        trim: Trim::NONE,
     },
 ];
 
@@ -893,7 +766,6 @@ static BUTTONS: [&str; 4] = [
     "Confirm / Jump",
     "Confirm / Jump",
 ];
-static LEVELS: [&str; 4] = ["T1", "T2", "T3", "T4"];
 
 /// The eight rows, trace lines 256-257 and 282-288. Not the inbox the
 /// other three eras list: the first row is "List of messages", every
@@ -933,12 +805,22 @@ static PARAGRAPHS: [&[&str]; 3] = [
     ],
 ];
 
+const MAIL_ROW_FILLS: &[Ink] = &[
+    Ink::Fixed(rgb(0x280c0d)), Ink::Fixed(rgb(0x280c0d)),
+    Ink::Fixed(rgb(0x280c0d)), Ink::Fixed(rgb(0x26090a)),
+    Ink::Fixed(rgb(0x24090b)), Ink::Fixed(rgb(0x210809)),
+    Ink::Fixed(rgb(0x1e0708)), Ink::Fixed(rgb(0x1d0708)),
+];
+
 pub fn mailbox() -> Mailbox {
     Mailbox {
+        text_baseline: 0.84,
         backdrop: MAIL_BACKDROP,
-        chrome: &CHROME,
-        overlay: &OVERLAY,
+        chrome: CHROME,
+        overlay: OVERLAY,
         list: MailList {
+            row_type: &[],
+            footer: MAIL_LIST_FOOTER,
             feedback: Some(MailRowStates {
                 hover: MailRowCoat {
                     fill: Some(Ink::Fixed(rgb(0x551719))),
@@ -965,32 +847,29 @@ pub fn mailbox() -> Mailbox {
             frame: None,
             frame_ink: Ink::Dim,
             frame_width: 0.0,
-            // eight rows x 241..511, tops at 313 / 385 / 455 / 525 /
-            // 595 / 665 / 735 / 805, each with a 12px bottom-left
-            // chamfer and a spine at x 237..240
-            row: Frame::new(241.0, 315.0, 270.0, 68.0),
+            // Native source primary faces; the dim left offset is residue,
+            // not a solid spine. See mailbox-fidelity.md.
+            row: Frame::new(241.25, 315.4167, 269.5833, 67.5),
             pitch: 70.0,
             rows: &ROWS,
             selected: 0,
             decor: RowDecor::Boxed,
-            // `#280c0d` (:262), the flat fill of rows 2-4; rows 5-8 fade
-            // to `#1d0708` and take this one too. Was `Ink::Border`
-            // (`#60181a`) until 2026-09-04 -- `94 17 18` where the
-            // trace has `33 8 9`, and the whole list lit in `--diff`.
+            // Source row fields darken toward the foot of the list.
             row_fill: Some(Ink::Fixed(rgb(0x280c0d))),
-            row_stroke: Some(Ink::Dim),
-            row_width: 1.5,
-            row_trim: Trim::chamfer(BL, 12.0),
-            spine: Some(Frame::new(-4.0, 0.0, 3.0, 56.0)),
+            row_fills: MAIL_ROW_FILLS,
+            row_stroke: Some(Ink::Fixed(rgb(0x660e0f))),
+            row_width: 0.8333,
+            row_trim: Trim::chamfer(BL, 15.0),
+            spine: None,
             rule: None,
-            rule_ink: Ink::Dim,
+            rule_ink: Ink::Fixed(rgb(0x660e0f)),
             tab: None,
             tab_ink: Ink::Fg,
-            sel: Frame::new(237.0, 313.0, 274.0, 70.0),
-            sel_trim: Trim::chamfer(BL, 12.0),
+            sel: Frame::new(241.25, 315.4167, 269.5833, 67.5),
+            sel_trim: Trim::chamfer(BL, 15.0),
             sel_icon: None,
             sel_icon_trim: Trim::NONE,
-            sel_fill: Ink::Select,
+            sel_fill: Ink::Fixed(rgb(0xe33131)),
             sel_notch: None,
             veneer: None,
             // no envelope: this era spends the glyph budget on the
@@ -998,32 +877,42 @@ pub fn mailbox() -> Mailbox {
             glyph_x: 0.0,
             glyph_dy: 0.0,
             glyph_w: 0.0,
-            text_x: 249.0,
-            title_dy: 23.0,
-            title_size: 15.0,
+            envelope: None,
+            text_x: 248.3333,
+            title_dy: 24.0,
+            title_size: 17.5,
+            title_ink: Ink::Fixed(rgb(0xfb3535)),
             title_bold: false,
-            from_dy: 23.0,
-            from_size: 15.0,
+            from_dy: 24.0,
+            from_size: 17.5,
+            from_ink: Ink::Fixed(rgb(0xfb3535)),
+            selected_ink: Ink::Fixed(rgb(0x531719)),
             from_at: FromAt::Trailing,
             from_prefix: "",
             title_upper: false,
             from_upper: false,
             // the unread rows carry an outlined NEW pill in the lower
             // right
-            new_pill: Some(Frame::new(162.0, 48.0, 76.0, 14.0)),
+            new_pill: Some(Frame::new(162.5, 44.375, 75.4167, 10.8333)),
+            new_pill_selected: Some(Frame::new(162.5, 46.875, 75.4167, 10.8333)),
+            new_pill_art: mailbox_art::NEW_PILL,
             icons: Some(Icons {
                 x: 185.0,
                 y: 323.0,
                 pitch: 70.0,
+                positions: mailbox_art::ICON_POSITIONS,
+                normal: mailbox_art::ICON_NORMAL,
+                selected: mailbox_art::ICON_SELECTED,
             }),
         },
         panel: MailPanel {
-            frame: Some(Frame::new(729.0, 312.0, 721.0, 387.0)),
-            // `#1c0608` (:324); unfilled until 2026-09-04
-            frame_fill: Some(Ink::Fixed(rgb(0x1c0608))),
+            frame: None,
+            // The stepped contour is in OVERLAY; material uses the same
+            // path in MAIL_PANEL and both follow the message opening clip.
+            frame_fill: None,
             frame_stroke: Some(Ink::Dim),
             frame_width: 1.2,
-            frame_trim: Trim::chamfer(TR | BR, 8.0),
+            frame_trim: Trim::NONE,
             head: None,
             head_ink: Ink::Select,
             head_trim: Trim::NONE,
@@ -1032,12 +921,12 @@ pub fn mailbox() -> Mailbox {
             // pinned and `message` only says which row a click returns
             // to. Row 2 is a guess the trace cannot confirm or refute.
             message: 1,
-            title: Run::new(742.0, 287.0, 20.0, Ink::Fg).bold(),
+            title: Run::new(742.0, 287.0, 20.0, Ink::Fixed(rgb(0xfb3535))).bold(),
             title_upper: false,
             from: None,
             heading: Some("Urgent Information (!)"),
             sender: None,
-            body: Run::new(739.0, 347.0, 15.0, Ink::Fg),
+            body: Run::new(750.0, 347.5, 17.5, Ink::Fixed(rgb(0xfb3535))),
             line: 21.0,
             para: 42.0,
             paragraphs: &PARAGRAPHS,
@@ -1059,25 +948,15 @@ pub fn mailbox() -> Mailbox {
             trim: Trim::chamfer(BR, 9.0),
             width: 1.0,
             stroke: Ink::Dim,
-            label: Run::new(13.0, 44.0, 15.0, Ink::Dim),
+            label: Run::new(12.5, 44.6667, 16.6667, Ink::Fixed(rgb(0xfb3535))),
             tab: None,
             labels: &BUTTONS,
         },
         badges: MailBadges {
-            first: Frame::new(1133.0, 104.0, 59.0, 57.0),
-            dx: 60.0,
-            dy: 0.0,
-            cols: 4,
-            count: 4,
-            selected: Some(1),
-            trim: Trim::chamfer(BL, 15.0),
-            width: 1.5,
-            fill: Some(Ink::Border),
-            stroke: Ink::Fg,
-            label: Run::new(15.0, 36.0, 20.0, Ink::Fg).bold(),
-            caption: Some(Run::new(8.0, 17.0, 12.0, Ink::Fg)),
-            caption_text: "LEVEL",
-            labels: &LEVELS,
+            first: Frame::ZERO, dx: 0.0, dy: 0.0, cols: 1, count: 0,
+            selected: None, trim: Trim::NONE, width: 0.0, fill: None,
+            stroke: Ink::Fg, label: Run::new(0.0, 0.0, 0.0, Ink::Fg),
+            caption: None, caption_text: "", labels: &[],
         },
         motions: MAILBOX_MOTIONS,
     }
@@ -1092,7 +971,7 @@ pub fn mailbox() -> Mailbox {
 /// `#shelf-open` wraps its prims:
 ///
 ///   * `#list-open` (:159-164): the eight disc icons and the eight rows
-///     together, rect x 125 y 305 w 400, h 0 -> 578 over 0.44 s from 0,
+///     together, rect x 115 y 305 w 410, h 0 -> 578 over 0.44 s from 0,
 ///     `keySplines="0.33 1 0.68 1"` = EaseOutCubic -- `MailPart::List`,
 ///     which is where `Sheet::list` draws the cartridges and the rows.
 ///     The scroll rail and its R widget, the header and the tabs are
@@ -1100,7 +979,7 @@ pub fn mailbox() -> Mailbox {
 ///   * `#message-open` (:179-185): the panel and the four buttons under
 ///     it as one block, rect x 720 y 304 w 745, h 0 -> 464 over 0.36 s
 ///     from 0.15 s, EaseOutCubic -- `MailPart::Panel` and
-///     `MailPart::Buttons`. The `<set>` holding the height at 0 until
+///     `MailPart::Buttons` and `MailPart::Overlay`. The `<set>` holding the height at 0 until
 ///     0.15 s needs nothing here: `Motion::begin` holds at `from`.
 ///
 /// The heading "Urgent Information (!)" (`panel.title`, baseline y 287)
@@ -1116,7 +995,7 @@ pub const MAILBOX_MOTIONS: &[MailMotion] = &[
             begin: 0,
             dur: 440,
             ease: Easing::EaseOutCubic,
-            change: Change::Clip { x: 125.0, y: 305.0, w: (400.0, 400.0), h: (0.0, 578.0) },
+            change: Change::Clip { x: 115.0, y: 305.0, w: (410.0, 410.0), h: (0.0, 578.0) },
         },
         parts: &[MailPart::List],
     },
@@ -1128,7 +1007,7 @@ pub const MAILBOX_MOTIONS: &[MailMotion] = &[
             ease: Easing::EaseOutCubic,
             change: Change::Clip { x: 720.0, y: 304.0, w: (745.0, 745.0), h: (0.0, 464.0) },
         },
-        parts: &[MailPart::Panel, MailPart::Buttons],
+        parts: &[MailPart::Panel, MailPart::Buttons, MailPart::Overlay],
     },
 ];
 // --- end mailbox ---
@@ -1250,45 +1129,17 @@ const VIGNETTE: &[(f32, iced::Color)] = &[
 ];
 pub const HUB_VIGNETTE: Prim = Prim::Lobe { x: 32.0, y: 540.0, rx: 544.0, ry: 306.0, stops: VIGNETTE };
 
-/// `#wash` on the store (:34-38): the warm wash under the left half,
-/// `cx 0.18 cy 0.5 r 0.45` of the page -- centre (288,450), radii
-/// (720,405) -- `#1a0c0e` fading to a clear `#120608`.
-const STORE_WASH: &[(f32, iced::Color)] = &[
-    (0.0, rgb(0x1a0c0e)),
-    (0.7, rgb(0x120608)),
-    (1.0, iced::Color { a: 0.0, ..rgb(0x120608) }),
-];
-/// `#blackv` (:40-43): the pure-black field right of the cards below
-/// the glow, clear at the top of its 540x520 rect at (1060,380) and
-/// solid a quarter of the way down.
-const STORE_BLACK: &[(f32, iced::Color)] = &[
-    (0.00, iced::Color { a: 0.0, ..rgb(0x020203) }),
-    (0.25, rgb(0x020203)),
-];
-/// The store's ground as its trace stacks it (:225-229).
-const STORE_GROUND: &[Prim] = &[
-    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(GROUND)),
-    HUB_GLOW,
-    Prim::Lobe { x: 288.0, y: 450.0, rx: 720.0, ry: 405.0, stops: STORE_WASH },
-    Prim::Ramp {
-        x: 1060.0,
-        y: 380.0,
-        w: 540.0,
-        h: 520.0,
-        from: (0.0, 0.0),
-        to: (0.0, 1.0),
-        stops: STORE_BLACK,
-    },
-    HUB_VIGNETTE,
-];
+/// The source shares its clear background with the login and dashboard.
+const STORE_GROUND: &[Prim] = dashboard_ground::BACKGROUND;
 /// The two tones the gun drawing takes on the selected card, and the
 /// two dark faces it takes on the others.
 pub const GUN_LIT: iced::Color = rgb(0xb02c30);
 pub const GUN_CRADLE: iced::Color = rgb(0x902d34);
 pub const GUN_SHADE: iced::Color = rgb(0x5a1e22);
 
-/// The scatter-code glyph: 24 loose 3px squares on a 9x9 lattice at a
-/// 3.75px pitch, with no finder patterns -- not a QR.
+/// The scatter-code glyph: 25 loose 3px squares on a 9x9 lattice at a
+/// measured 3.6667px pitch, with no finder patterns -- not a QR.
+/// Primary cell centers only; source echoes remain a separate layer.
 const QR: &[&str] = &[
     "#..#.#..#",
     ".#....#..",
@@ -1296,7 +1147,7 @@ const QR: &[&str] = &[
     "#..#.#.#.",
     ".........",
     ".#.#..#.#",
-    "#....#...",
+    "#.#..#...",
     ".#.....#.",
     "#..#.#..#",
 ];
@@ -1446,7 +1297,6 @@ const STATS: &[Prim] = &[
     txt_bold_mid(238.0, 467.0, 20.0, Ink::Fg, "5"),
     txt(11.0, 492.0, 8.0, Ink::Dim, "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED"),
     txt(11.0, 500.0, 8.0, Ink::Dim, "TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
-    Prim::Dots { x: 14.0, y: 520.0, cell: 3.0, pitch: 3.75, ink: Ink::Fg, rows: QR },
     txt_bold_mid(90.0, 534.0, 12.0, Ink::Fg, "EMPTY"),
     txt_bold_mid(90.0, 547.5, 12.0, Ink::Fg, "SOCKET"),
     txt_bold_mid(165.0, 534.0, 12.0, Ink::Fg, "EMPTY"),
@@ -1473,7 +1323,7 @@ const EDGE_BAR_PATH: &[Seg] = &[
 ];
 
 macro_rules! card {
-    ($fill:expr) => {
+    ($fill:expr, $scatter_x:expr) => {
         &[
             Prim::Path { x: 0.0, y: 151.0, segs: FRAME_STD, close: true, fill: Some(Ink::Fixed($fill)), stroke: Some(Ink::Fg), width: 1.2 },
             fill_path(284.0, 266.0, EDGE_BAR_PATH, Ink::Fg),
@@ -1484,14 +1334,15 @@ macro_rules! card {
             line_rect(261.4, 182.9, 7.2, 48.4, Ink::Dim, 0.8),
             Prim::At { x: 0.0, y: 0.0, prims: GUN_OUTLINED },
             Prim::At { x: 0.0, y: 0.0, prims: STATS },
+            Prim::Dots { x: $scatter_x, y: 520.5833, cell: 3.0, pitch: 3.6667, ink: Ink::Fg, rows: QR },
         ]
     };
 }
 
-const CARD1: &[Prim] = card!(CARD1_FILL);
-const CARD3: &[Prim] = card!(CARD3_FILL);
+const CARD1: &[Prim] = card!(CARD1_FILL, 14.375);
+const CARD3: &[Prim] = card!(CARD3_FILL, 12.4583);
 
-/// The selected card: the same drawing grown to y 800, its upper two
+/// The selected card: the same drawing grown to y797.1, its upper two
 /// thirds washed, its gun solid and 14px further left, and the detail
 /// block in the room the growth buys.
 const FRAME_SEL: &[Seg] = &[
@@ -1499,8 +1350,9 @@ const FRAME_SEL: &[Seg] = &[
     Seg::Line(282.0, 164.0),
     Seg::Line(282.0, 270.0),
     Seg::Line(270.0, 282.0),
-    Seg::Line(270.0, 800.0),
-    Seg::Line(0.0, 800.0),
+    Seg::Line(270.0, 779.5),
+    Seg::Line(252.0, 797.1),
+    Seg::Line(0.0, 797.1),
 ];
 const EDGE_BAR_SEL: &[Seg] = &[
     Seg::Line(282.0, 404.0),
@@ -1508,9 +1360,50 @@ const EDGE_BAR_SEL: &[Seg] = &[
     Seg::Line(270.0, 278.0),
 ];
 
+/// Horizontal one-pixel bands follow the SVG upper wash contour.
+/// Sharing their endpoints retains the same sRGB interpolation as
+/// `Prim::Ramp`, while cutting the chamfer, side step and lower corner.
+const fn upper_wash_right(y: f32) -> f32 {
+    if y < 164.0 { 269.0 + y - 151.0 }
+    else if y <= 270.0 { 282.0 }
+    else if y < 282.0 { 282.0 - (y - 270.0) }
+    else if y <= 492.0 { 270.0 }
+    else { 270.0 - (y - 492.0) }
+}
+const UPPER_WASH_SEGMENTS: [[Seg; 3]; 365] = {
+    let mut bands = [[Seg::Line(0.0, 0.0); 3]; 365];
+    let mut i = 0;
+    while i < bands.len() {
+        let y = 151.0 + i as f32;
+        bands[i] = [Seg::Line(upper_wash_right(y), y),
+            Seg::Line(upper_wash_right(y + 1.0), y + 1.0), Seg::Line(0.0, y + 1.0)];
+        i += 1;
+    }
+    bands
+};
+const fn upper_wash(stops: &[(f32, iced::Color)]) -> [Prim; 365] {
+    let mut bands = [fill_rect(0.0, 0.0, 0.0, 0.0, Ink::Fg); 365];
+    let mut i = 0;
+    while i < bands.len() {
+        let t = (i as f32 + 0.5) / 365.0;
+        let mut j = 1;
+        while j + 1 < stops.len() && stops[j].0 < t { j += 1; }
+        let (lo, a) = stops[j - 1];
+        let (hi, b) = stops[j];
+        let f = (t - lo) / (hi - lo);
+        let color = iced::Color { r: a.r + (b.r - a.r) * f, g: a.g + (b.g - a.g) * f,
+            b: a.b + (b.b - a.b) * f, a: a.a + (b.a - a.a) * f };
+        bands[i] = Prim::Path { x: 0.0, y: 151.0 + i as f32,
+            segs: &UPPER_WASH_SEGMENTS[i], close: true, fill: Some(Ink::Fixed(color)), stroke: None, width: 0.0 };
+        i += 1;
+    }
+    bands
+}
+const UPPER_WASH: &[Prim] = &upper_wash(C2UPPER);
+
 const GROWN: &[Prim] = &[
-    Prim::Path { x: 0.0, y: 151.0, segs: FRAME_SEL, close: true, fill: Some(Ink::Fixed(CARD2_FILL)), stroke: Some(Ink::Fg), width: 1.2 },
-    Prim::Ramp { x: 0.0, y: 151.0, w: 282.0, h: 365.0, from: (0.0, 0.0), to: (0.0, 1.0), stops: C2UPPER },
+    Prim::Path { x: 0.0, y: 151.0, segs: FRAME_SEL, close: true, fill: Some(Ink::Fixed(CARD2_FILL)), stroke: None, width: 0.0 },
+    Prim::At { x: 0.0, y: 0.0, prims: UPPER_WASH },
     fill_path(282.0, 266.0, EDGE_BAR_SEL, Ink::Fg),
     Prim::At { x: 0.0, y: 0.0, prims: ICONS_HEAD },
     Prim::At { x: 0.0, y: 0.0, prims: ICONS_FOOT_SEL },
@@ -1542,13 +1435,15 @@ const GROWN: &[Prim] = &[
     txt(53.0, 656.0, 17.0, Ink::Fg, "REFLEXES"),
     txt(27.0, 680.0, 17.0, Ink::Fg, "+2"),
     txt(53.0, 680.0, 17.0, Ink::Fg, "MODULES SLOTS"),
-    Prim::Dots { x: 16.0, y: 713.0, cell: 3.0, pitch: 3.75, ink: Ink::Fg, rows: QR },
+    Prim::Dots { x: 12.4167, y: 711.2917, cell: 3.0, pitch: 3.6667, ink: Ink::Fg, rows: QR },
     txt_bold_mid(88.0, 723.0, 12.0, Ink::Fg, "EMPTY"),
     txt_bold_mid(88.0, 737.5, 12.0, Ink::Fg, "SOCKET"),
     txt_bold_mid(163.0, 723.0, 12.0, Ink::Fg, "EMPTY"),
     txt_bold_mid(163.0, 737.5, 12.0, Ink::Fg, "SOCKET"),
     txt_bold_mid(238.0, 723.0, 12.0, Ink::Fg, "EMPTY"),
     txt_bold_mid(238.0, 737.5, 12.0, Ink::Fg, "SOCKET"),
+    // The contour stays visible over the wash, including its chamfer.
+    shut_path(0.0, 151.0, FRAME_SEL, Ink::Fg, 1.2),
 ];
 
 /// Card 4 is the same drawing cut off by the frame edge at x=1557: no
@@ -1571,7 +1466,7 @@ const CARD_CUT: &[Prim] = &[
     // far as the design shows them.
     txt(11.0, 492.0, 8.0, Ink::Dim, "ONLY CC35 CERTIFIED AND DHSF 5TH"),
     txt(11.0, 500.0, 8.0, Ink::Dim, "TO MANIPULATE, ACCESS OR DISABLE"),
-    Prim::Dots { x: 14.0, y: 520.0, cell: 3.0, pitch: 3.75, ink: Ink::Fg, rows: QR },
+    Prim::Dots { x: 11.7917, y: 520.5833, cell: 3.0, pitch: 3.6667, ink: Ink::Fg, rows: QR },
     txt_bold_mid(90.0, 534.0, 12.0, Ink::Fg, "EMPTY"),
     txt_bold_mid(90.0, 547.5, 12.0, Ink::Fg, "SOCKET"),
 ];
@@ -1582,64 +1477,18 @@ const CARD4_EDGE: &[Seg] = &[
     Seg::Line(0.0, 613.0),
     Seg::Line(132.0, 613.0),
 ];
-/// The page as it stands right of card 4's cut: `STORE_GROUND` as the
-/// design renders it, sampled down two columns (x 1567 and 1589) of the
-/// 43px strip, offsets as fractions of the card's 462 height. The glow
-/// sits opaque to y 225 and is gone by 540; the `#blackv` ramp takes
-/// over from y 380. Two columns because the glow's last stop runs
-/// #082447 -> #080b0e across x 1500..1600, 22 levels over the strip;
-/// one column would be 11 off at its edges. A flat `GROUND` rect under
-/// a two-stop wash sat here until 2026-09-04, up to 25 levels off.
-const CUT_GROUND_L: &[(f32, iced::Color)] = &[
-    (0.000, rgb(0x081320)),
-    (0.214, rgb(0x08121e)),
-    (0.322, rgb(0x08101a)),
-    (0.431, rgb(0x0a0d15)),
-    (0.496, rgb(0x0a0b11)),
-    (0.539, rgb(0x08080c)),
-    (0.604, rgb(0x070608)),
-    (0.669, rgb(0x050305)),
-    (0.734, rgb(0x040304)),
-    (0.777, rgb(0x020203)),
-    (1.000, rgb(0x020203)),
-];
-const CUT_GROUND_R: &[(f32, iced::Color)] = &[
-    (0.000, rgb(0x080d14)),
-    (0.214, rgb(0x080c13)),
-    (0.322, rgb(0x080b11)),
-    (0.431, rgb(0x0a0a0e)),
-    (0.496, rgb(0x0a080c)),
-    (0.539, rgb(0x080708)),
-    (0.604, rgb(0x070507)),
-    (0.669, rgb(0x050305)),
-    (0.734, rgb(0x040304)),
-    (0.777, rgb(0x020203)),
-    (1.000, rgb(0x020203)),
-];
-
-/// Card 4's unselected drawing: its own dark fill, the full card
-/// content, the page restored right of the cut, and the open frame.
-///
-/// The cut is done by *covering* rather than clipping, and that is not
-/// a shortcut. `Frame::with_clip` is unusable here: `iced_wgpu` drafts
-/// a frame, pastes its meshes back with `Transformation::IDENTITY` and
-/// keeps the region only as a scissor -- and measured on this screen,
-/// the drafted frame's *mesh* geometry never arrives at all (its text
-/// does). A clipped card came out as an empty outline with its title
-/// and stats but no icons, no gun and no socket glyph. The design has
-/// zero ink right of x=1557, so restoring the page there says the same
-/// thing and actually renders.
+/// The permanent viewport enclosing the plate clips every state,
+/// including selected text. No painted-over approximation of the ground
+/// is necessary with iced0.14's mesh scissors.
 const CARD4: &[Prim] = &[
     fill_rect(0.0, 151.0, 132.0, 462.0, Ink::Fixed(CARD4_FILL)),
     Prim::At { x: 0.0, y: 0.0, prims: CARD_CUT },
-    Prim::Ramp { x: 132.0, y: 151.0, w: 21.0, h: 462.0, from: (0.0, 0.0), to: (0.0, 1.0), stops: CUT_GROUND_L },
-    Prim::Ramp { x: 153.0, y: 151.0, w: 22.0, h: 462.0, from: (0.0, 0.0), to: (0.0, 1.0), stops: CUT_GROUND_R },
-    shut_path(132.0, 151.0, CARD4_EDGE, Ink::Fg, 1.2),
+    line_path(132.0, 151.0, CARD4_EDGE, Ink::Fg, 1.2),
 ];
 
 // § 9 explicitly extends the inferred nav coats to product cards.
 // Derive drawings from each resting geometry; especially, never borrow
-// GROWN for an unselected hover and never tint CARD4's page-restoring ramps.
+// GROWN for an unselected hover; the fourth viewport clips every coat.
 const fn card_wash(c: iced::Color) -> iced::Color {
     let bright = rgb(0xdf3131);
     iced::Color { r: c.r * 0.78 + bright.r * 0.22,
@@ -1711,11 +1560,14 @@ const CARD_GROWN_HELD_RAMP: &[(f32, iced::Color)] = &[
     (0.75, rgb(0xa52223)), (1.00, rgb(0xa52223)),
 ];
 
+const CARD_GROWN_HOVER_WASH: &[Prim] = &upper_wash(CARD_GROWN_HOVER_RAMP);
+const CARD_GROWN_HELD_WASH: &[Prim] = &upper_wash(CARD_GROWN_HELD_RAMP);
+
 const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bool, cut: bool, rest: iced::Color) -> [Prim; N] {
     let mut out = card_leaf_inks::<N>(source, held);
     let coat = Ink::Fixed(if held { rgb(0xa52223) } else { card_wash(rest) });
     match &mut out[0] {
-        Prim::Path { fill, stroke, .. } => { *fill = Some(coat); *stroke = if held { None } else { Some(Ink::Fg) }; }
+        Prim::Path { fill, stroke, .. } => { *fill = Some(coat); *stroke = if held || selected { None } else { Some(Ink::Fg) }; }
         Prim::Rect { fill, .. } => *fill = Some(coat),
         _ => panic!("card must begin with its frame"),
     }
@@ -1729,7 +1581,7 @@ const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bo
     if cut {
         out[1] = Prim::At { x: 0.0, y: 0.0, prims: cut_content };
         // The cut has no right-hand spine; keep its open edge bright.
-        out[4] = source[4];
+        out[2] = source[2];
     } else {
         let offset = if selected { 1 } else { 0 };
         out[1 + offset] = source[1 + offset]; // the bright spine
@@ -1737,8 +1589,10 @@ const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bo
         out[3 + offset] = Prim::At { x: 0.0, y: 0.0, prims: foot };
         out[7 + offset] = Prim::At { x: if selected { -14.0 } else { 0.0 }, y: 0.0, prims: gun };
         if selected {
-            if let Prim::Ramp { stops, .. } = &mut out[1] {
-                *stops = if held { CARD_GROWN_HELD_RAMP } else { CARD_GROWN_HOVER_RAMP };
+            out[1] = Prim::At { x: 0.0, y: 0.0,
+                prims: if held { CARD_GROWN_HELD_WASH } else { CARD_GROWN_HOVER_WASH } };
+            if let Prim::Path { stroke, .. } = &mut out[N - 1] {
+                *stroke = if held { None } else { Some(Ink::Fg) };
             }
         } else {
             out[8] = Prim::At { x: 0.0, y: 0.0, prims: specs };
@@ -1795,22 +1649,22 @@ const NAV_OFF_4: &[Prim] = nav!(519.0, 566.0, "CONTROLLER").1;
 
 macro_rules! shelf {
     ($i:expr, $off:expr) => {
-        &[Prim::Plate {
-            group: Group::Card,
-            index: $i,
-            x: 0.0,
-            y: 151.0,
-            w: 284.0,
-            h: 462.0,
-            on: GROWN,
-            off: $off,
+        &[Prim::Pick {
+            group: Group::Card, index: $i,
+            on: &[Prim::Plate { group: Group::Card, index: $i,
+                x: 0.0, y: 151.0, w: 282.0, h: 646.1, on: GROWN, off: $off }],
+            off: &[Prim::Plate { group: Group::Card, index: $i,
+                x: 0.0, y: 151.0, w: 284.0, h: 462.0, on: GROWN, off: $off }],
         }]
     };
 }
 const SHELF_0: &[Prim] = shelf!(0, CARD1);
 const SHELF_1: &[Prim] = shelf!(1, CARD1);
 const SHELF_2: &[Prim] = shelf!(2, CARD3);
-const SHELF_3: &[Prim] = shelf!(3, CARD4);
+const SHELF_3: &[Prim] = &[Prim::Viewport {
+    // Include the left frame stroke; end exactly at x1425+132=1557.
+    x: -1.0, y: 150.0, w: 133.0, h: 648.0, prims: shelf!(3, CARD4),
+}];
 
 /// A nav row, at its own origin: 208 wide with a 16px bottom-left
 /// chamfer. The selected row is 5 taller.
@@ -1926,9 +1780,7 @@ const SHELF: &[Prim] = &[
 ];
 
 pub const STORE: &[Prim] = &[
-    // the hub backdrop: near-black, the masked cold blue over the top,
-    // the warm wash under the left half, the black field at the
-    // bottom right, the vignette -- composited, from the trace's defs
+    // Source-measured ground shared with the login and dashboard.
     Prim::Soft { prims: STORE_GROUND },
     // top strip
     fill_rect(752.0, 35.0, 5.0, 5.0, Ink::Fg),
@@ -1971,18 +1823,15 @@ pub const STORE: &[Prim] = &[
     // selected card, the taller one, is what the wipe ends on. The nav,
     // the logotype, the customer block and the footer are chrome and
     // stay, as the dashboard's diamonds do under `#panel-open`. The
-    // trace's rect stops at x 1570 because its card 4 is cut by its own
-    // `#c4clip` at 1557; here the cut is `CARD4`'s covering strip out
-    // to the frame edge, part of the card's drawing and under the same
-    // curtain, so the rect runs to 1600 -- ink-free in the trace, so
-    // the frames agree, and the rest frame stays the golden.
+    // trace's outer wipe stops at x1570; the permanent fourth-card
+    // viewport keeps all drawings and interaction inside x1557.
     Prim::Motion {
         motion: Motion {
             id: "shelf-open",
             begin: 0,
             dur: 500,
             ease: Easing::EaseOutCubic,
-            change: Change::Clip { x: 430.0, y: 144.0, w: (1170.0, 1170.0), h: (0.0, 664.0) },
+            change: Change::Clip { x: 430.0, y: 144.0, w: (1140.0, 1140.0), h: (0.0, 664.0) },
         },
         prims: SHELF,
     },
@@ -1999,6 +1848,8 @@ pub const STORE: &[Prim] = &[
 
 #[path = "neomil_dashboard_glyphs.rs"]
 mod dashboard_glyphs;
+#[path = "neomil_dashboard_matrix_ink.rs"]
+mod dashboard_matrix_ink;
 
 // --- dashboard -----------------------------------------------------------
 //
@@ -2041,6 +1892,12 @@ mod dashboard_header_echoes;
 mod dashboard_tape_chip_echoes;
 #[path = "neomil_dashboard_panel_printing.rs"]
 mod dashboard_panel_printing;
+#[path = "neomil_dashboard_panel_primary.rs"]
+mod dashboard_panel_primary;
+#[path = "neomil_dashboard_margin_echoes.rs"]
+mod dashboard_margin_echoes;
+#[path = "neomil_dashboard_brand_echoes.rs"]
+mod dashboard_brand_echoes;
 
 /// Accepted outer silhouettes; source-fitted inset paths and solid edge tabs.
 const CELL_UP_OUTER: &[Seg] = &[
@@ -2119,13 +1976,34 @@ const CELLS: [[Prim; 5]; 6] = cells(Ink::Fg, Ink::Border, dashboard_glyphs::REST
 const CELLS_HOVER: [[Prim; 5]; 6] = cells(Ink::Fixed(rgb(0xf63333)), Ink::Fixed(rgb(0x59171b)), dashboard_glyphs::HOVER);
 const CELLS_PRESSED: [[Prim; 5]; 6] = cells(Ink::Fixed(rgb(0xa52223)), Ink::Fixed(ON_CARD), dashboard_glyphs::PRESSED);
 
+// Keep CELLS as the geometry reference for unchanged inferred hover/held inks.
+// Rest paints its palette-role face and local printing in the leading Soft
+// group, then these crisp foreground details. Plate hit bounds are unchanged.
+const CELL_DETAILS: [[Prim; 3]; 6] = [
+    [CELLS[0][1], CELLS[0][3], CELLS[0][4]],
+    [CELLS[1][1], CELLS[1][3], CELLS[1][4]],
+    [CELLS[2][1], CELLS[2][3], CELLS[2][4]],
+    [CELLS[3][1], CELLS[3][3], CELLS[3][4]],
+    [CELLS[4][1], CELLS[4][3], CELLS[4][4]],
+    [CELLS[5][1], CELLS[5][3], CELLS[5][4]],
+];
+const CELL_MATERIAL: &[Prim] = &[
+    Prim::At { x: 334.0, y: 460.0, prims: &[CELLS[0][0], dashboard_matrix_ink::REST[0]] },
+    Prim::At { x: 530.0, y: 460.0, prims: &[CELLS[1][0], dashboard_matrix_ink::REST[1]] },
+    Prim::At { x: 725.0, y: 460.0, prims: &[CELLS[2][0], dashboard_matrix_ink::REST[2]] },
+    Prim::At { x: 431.0, y: 593.0, prims: &[CELLS[3][0], dashboard_matrix_ink::REST[3]] },
+    Prim::At { x: 628.0, y: 592.0, prims: &[CELLS[4][0], dashboard_matrix_ink::REST[4]] },
+    Prim::At { x: 822.0, y: 592.0, prims: &[CELLS[5][0], dashboard_matrix_ink::REST[5]] },
+];
+
+
 // The hit bounds and release/selection behavior are unchanged.
 macro_rules! unit {
     ($i:expr, $top:expr) => {
         &[Prim::Plate {
             group: Group::Module, index: $i,
             x: -104.0, y: $top, w: 208.0, h: 193.0,
-            on: &CELLS[$i], off: &CELLS[$i],
+            on: &CELL_DETAILS[$i], off: &CELL_DETAILS[$i],
         }]
     };
 }
@@ -2293,7 +2171,11 @@ mod store_interaction_tests {
             (SHELF_0, CARD1), (SHELF_1, CARD1), (SHELF_2, CARD3), (SHELF_3, CARD4),
         ].into_iter().enumerate() {
             let state = STORE_STATES.iter().find(|s| s.group == Group::Card && s.index == index).unwrap();
-            let Prim::Plate { on, off, .. } = shelf[0] else { panic!("missing card plate") };
+            let shelf = match shelf[0] { Prim::Viewport { prims, .. } => prims, _ => shelf };
+            let Prim::Pick { on: picked, off: idle_pick, .. } = shelf[0] else { panic!("missing selection branch") };
+            let Prim::Plate { on, off, h, .. } = picked[0] else { panic!("missing selected card plate") };
+            assert_eq!(h, 646.1);
+            assert!(matches!(idle_pick[0], Prim::Plate { h: 462.0, .. }));
             assert_eq!(off, idle);
             assert_eq!(on, GROWN);
             for drawing in [state.hover, state.pressed] {
@@ -2318,13 +2200,48 @@ mod store_interaction_tests {
             let held = state.selected_pressed.unwrap();
             assert!(matches!(held[5], Prim::Text { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
             assert_eq!(held[2], GROWN[2], "selected spine stays bright");
-            assert!(matches!(held[1], Prim::Ramp { stops, .. } if stops.iter().all(|s| s.1 == rgb(0xa52223))));
+            let Prim::At { prims: wash, .. } = held[1] else { panic!("missing contoured wash") };
+            assert!(wash.iter().all(|p| matches!(p, Prim::Path { fill: Some(Ink::Fixed(c)), .. } if *c == rgb(0xa52223))));
         }
         for drawing in [states[3].hover, states[3].pressed] {
-            assert_eq!(&drawing[2..], &CARD4[2..], "page restoration and cut edge remain untouched");
+            assert_eq!(&drawing[2..], &CARD4[2..], "open cut edge remains untouched");
         }
         assert!(matches!(card_held::SPECS[8], Prim::Text { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
     }
+
+    #[test]
+    fn selected_wash_follows_the_chamfer_step_and_lower_diagonal() {
+        assert_eq!(upper_wash_right(151.0), 269.0);
+        assert_eq!(upper_wash_right(157.0), 275.0);
+        assert_eq!(upper_wash_right(164.0), 282.0);
+        assert_eq!(upper_wash_right(276.0), 276.0);
+        assert_eq!(upper_wash_right(282.0), 270.0);
+        assert_eq!(upper_wash_right(492.0), 270.0);
+        assert_eq!(upper_wash_right(516.0), 246.0);
+        for (i, prim) in UPPER_WASH.iter().enumerate() {
+            let Prim::Path { x, y, segs, close: true, fill: Some(Ink::Fixed(color)), stroke: None, .. } = prim else {
+                panic!("wash must consist of joined filled contour bands")
+            };
+            assert_eq!((*x, *y), (0.0, 151.0 + i as f32));
+            assert_eq!(*segs, &UPPER_WASH_SEGMENTS[i]);
+            let expected = crate::screens::soft::stop(C2UPPER, (i as f32 + 0.5) / 365.0);
+            assert_eq!(*color, expected);
+        }
+        assert!(matches!(GROWN.last(), Some(Prim::Path { segs, stroke: Some(Ink::Fg), .. }) if *segs == FRAME_SEL));
+        assert!(FRAME_SEL.ends_with(&[Seg::Line(270.0, 779.5), Seg::Line(252.0, 797.1), Seg::Line(0.0, 797.1)]));
+    }
+
+    #[test]
+    fn fourth_card_cut_is_permanent_and_its_border_stays_open() {
+        let Prim::Viewport { x, w, prims, .. } = SHELF_3[0] else { panic!("missing persistent viewport") };
+        assert_eq!(1425.0 + x + w, 1557.0);
+        assert!(matches!(prims[0], Prim::Pick { group: Group::Card, index: 3, .. }));
+        for drawing in [CARD4, STORE_STATES.iter().find(|s| s.group == Group::Card && s.index == 3).unwrap().hover,
+            STORE_STATES.iter().find(|s| s.group == Group::Card && s.index == 3).unwrap().pressed] {
+            assert!(matches!(drawing.last(), Some(Prim::Path { close: false, segs, .. }) if *segs == CARD4_EDGE));
+        }
+    }
+
 }
 
 /// The GO HOME panel's outline (:231): square top-left and
@@ -2346,29 +2263,6 @@ const PANEL_BAR: &[Seg] = &[
     Seg::Line(1358.0, 516.0),
     Seg::Line(1358.0, 414.0),
 ];
-/// The maker's mark (:255-266): a stencil "M" with both stems leaning
-/// in from the top, a shoulder on the left stem and a diagonal notch
-/// on the right one around a detached square dot. Absolute points of
-/// the trace's path, which starts at (1238.8,682.1).
-const MAKER_MARK: &[Seg] = &[
-    Seg::Line(1255.4, 682.1),
-    Seg::Line(1255.8, 698.3),
-    Seg::Line(1267.1, 682.1),
-    Seg::Line(1283.3, 682.1),
-    Seg::Line(1283.3, 707.1),
-    Seg::Line(1274.6, 714.6),
-    Seg::Line(1271.7, 719.6),
-    Seg::Line(1267.9, 725.0),
-    Seg::Line(1248.3, 725.0),
-    Seg::Line(1248.3, 714.6),
-    Seg::Line(1247.1, 714.6),
-    Seg::Line(1240.0, 725.0),
-    Seg::Line(1220.4, 725.0),
-    Seg::Line(1220.4, 699.6),
-    Seg::Line(1227.5, 698.8),
-    Seg::Line(1229.2, 697.1),
-];
-
 /// The GO HOME panel (:231-258): the outline, the bright edge bar, the
 /// heading, nine text lines, brands and the
 /// maker's mark. Its own table because `DASHBOARD` plays it in under
@@ -2376,7 +2270,7 @@ const MAKER_MARK: &[Seg] = &[
 const GO_HOME: &[Prim] = &[
     Prim::Path { x: 1128.0, y: 314.0, segs: PANEL, close: true, fill: None, stroke: Some(Ink::Fg), width: 1.5 },
     fill_path(1366.0, 405.0, PANEL_BAR, Ink::Fg),
-    txt_bold(1140.0, 333.0, 20.0, Ink::Fg, "GO HOME"),
+    dashboard_panel_primary::HEADING,
     Prim::Text { x: 1138.75, y: 365.4167, size: 16.6667, ink: Ink::Fixed(rgb(0xf93333)), face: Face::Medium, anchor: Anchor::Start, content: "Lorem ipsum dolor sit amet," },
     Prim::Text { x: 1138.75, y: 386.25, size: 16.6667, ink: Ink::Fixed(rgb(0xf93333)), face: Face::Medium, anchor: Anchor::Start, content: "consectetur adipiscing elit," },
     Prim::Text { x: 1138.75, y: 407.0833, size: 16.6667, ink: Ink::Fixed(rgb(0xf93333)), face: Face::Medium, anchor: Anchor::Start, content: "sed do eiusmod tempor inci-" },
@@ -2393,10 +2287,6 @@ const GO_HOME: &[Prim] = &[
         Prim::Wide { x: 0.0, y: 0.0, size: 6.25, stretch: 1.3, ink: Ink::Fixed(rgb(0xf93333)), face: Face::SemiBold, anchor: Anchor::Start, content: "PETROCHEM" },
     ] },
     line_rect(1347.9167, 340.8333, 6.25, 40.8333, Ink::Fixed(rgb(0xf93333)), 0.4167),
-    fill_path(1238.8, 682.1, MAKER_MARK, Ink::Fg),
-    fill_rect(1273.0, 715.0, 10.75, 11.7, Ink::Fg),
-    Prim::Text { x: 1252.0, y: 737.5, size: 8.0, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Middle, content: "PRECISION LIQUID" },
-    Prim::Text { x: 1252.0, y: 746.0, size: 8.0, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Middle, content: "POLYMER MUSCLE" },
 ];
 
 // The renderer requires software surfaces to lead the display list.
@@ -2411,6 +2301,8 @@ pub const DASHBOARD: &[Prim] = &[
     // Sampled dashboard composite ground, independent of the other screens.
     Prim::Soft { prims: &[
         Prim::At { x: 0.0, y: 0.0, prims: dashboard_ground::BACKGROUND },
+        Prim::At { x: 0.0, y: 0.0, prims: CELL_MATERIAL },
+        Prim::At { x: 0.0, y: 0.0, prims: dashboard_margin_echoes::ECHOES },
         Prim::At { x: 0.0, y: 0.0, prims: dashboard_material::BADGES },
         Prim::At { x: 0.0, y: 0.0, prims: dashboard_header_echoes::HEADER_ECHOES },
         Prim::At { x: 0.0, y: 0.0, prims: dashboard_tape_chip_echoes::ECHOES },
@@ -2421,6 +2313,12 @@ pub const DASHBOARD: &[Prim] = &[
         Prim::Soft { prims: dashboard_material::PANEL_MATERIAL },
         Prim::Soft { prims: dashboard_echoes::PANEL_ECHOES },
         Prim::Soft { prims: dashboard_panel_printing::PRINTING_ECHOES },
+        Prim::Soft { prims: dashboard_panel_primary::HEADING_ECHOES },
+        Prim::Soft { prims: dashboard_panel_primary::PRIMARY_MATERIAL },
+        // Subpixel source strokes need coverage in the same software surface
+        // as the maker material, rather than canvas hairline tessellation.
+        Prim::Soft { prims: dashboard_panel_primary::MICROTEXT },
+        Prim::Soft { prims: dashboard_brand_echoes::ECHOES },
     ] },
     Prim::At { x: 0.0, y: 0.0, prims: dashboard_chrome::HEADER },
     fill_rect(42.0, 187.0, 1516.0, 2.0, Ink::Dim),

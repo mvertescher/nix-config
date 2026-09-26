@@ -320,3 +320,48 @@ nix shell nixpkgs#librsvg --command \
 nix shell nixpkgs#librsvg --command \
   rsvg-convert -w 1600 store-trace.svg -o /tmp/en-store.png
 ```
+
+### Native reference corrections, 2026-09-21
+
+The login source has **ten** thin masks. Native green-channel probes,
+expressed in the 1600px design frame, run from x577.9 to670.4 at
+y425..431.7 on a roughly 9.54px pitch; the last
+star starts near 663.75. The earlier eleven-bold-star reading was wrong.
+The trace and resting application mock now use Rajdhani Regular 25 at
+horizontal scale 0.94045, with the source's thin 19px underline. Typed
+passwords still keep their full secret; the resting ten is illustrative.
+
+The mailbox's 10 body lines retain their original words and 4+4+2 breaks,
+but now use an explicit 1.14 horizontal transform. The pinned SVG
+renderer ignores the old `textLength` declarations. Boxed A/B/C letters
+are medium 22 stretched 1.60..1.65 against the native primary ink. The
+component excerpts carry the same corrections.
+
+The second native mailbox pass fits the remaining 26 text runs: section
+labels, two micro-print lines, seven subject/sender pairs, the filled
+message header and four action labels. Subjects use 22.25px, senders
+16.25px, with explicit per-row baseline and horizontal scale; the cursor
+row and filled message header use Regular, while bright rows use Medium.
+The section labels are Medium 22.5 (ENCRIPTION 24), micro-print Medium 9,
+and action labels share Medium 23.5 stretched 1.03. These are supported
+SVG transforms and matching `Run`/`MailRowType` data, with no tracking
+that the runtime cannot render. Existing text, the ENCRIPTION spelling,
+and the distinction between cursor row and open message are preserved.
+
+At native 3840px resolution, using the same primary-ink threshold for
+source and trace, the 26 runs' mean four-edge error falls from 2.76 to
+0.20 design pixels; mean width error falls from 7.60 to 0.40. The largest
+sender width error falls from 25px to below half a design pixel. The body
+and boxed A/B/C render regions remain pixel-identical. These are local
+text measurements, not a claim of complete photographic fidelity: the
+source's rounded O and urgency parentheses differ from Rajdhani, its
+internal letter spacing differs, and the common action-label fit retains
+up to 2.92px of width error. Micro-print glow and doubled source strokes
+remain photographic material, not additional letters or designed glow.
+
+The fourth store card's primary ink ends near native x3755 (x1564.6 in
+the 1600px design), before the screen edge. A persistent viewport now
+cuts its full content, pointer feedback and hit region. It leaves the
+right edge open. Weak displaced printing beyond the cut is not a second
+frame and remains part of the material work; this correction does not
+invent that residue. The boot scan remains a separate animation.

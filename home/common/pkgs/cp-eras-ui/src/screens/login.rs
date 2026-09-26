@@ -38,16 +38,17 @@
 //! [`Greeter`], Enter hands the secret to greetd on a thread of its
 //! own (`crate::greetd`) and the screen exits when the session
 //! starts; without one it is the demo it always was and Enter
-//! clears the field.
+//! clears the field. The live slot's action also submits on a complete
+//! pointer click; dragging away or losing focus cancels that gesture.
 
 use crate::greetd::{self, Refusal, Secret};
 use crate::motion;
 use crate::style::{
-    Access, Blink, Caret, Colophon, Emblem, Entry, Fixture, Ink, Legend, Masthead, Plate, Plot,
-    Slot,
+    Access, Blink, Caret, Coat, Colophon, Emblem, Entry, Fixture, Ink, Legend, Masthead, Plate, Plot,
+    Seg, Slot,
     Style,
 };
-use crate::screens::scene::Backdrop;
+use crate::screens::scene::{Backdrop, Pointer, PointerAction};
 use crate::widgets::ground;
 use crate::Element;
 use iced::keyboard::{self, key::Named, Key};
@@ -90,6 +91,10 @@ pub struct Login {
     /// (`motion::CARET_BLINK`) is read at. Advanced by [`Message::Tick`]
     /// while the clock runs; pinned when it is frozen.
     now: Instant,
+    /// Invalidates an in-flight pointer gesture when keyboard or
+    /// authentication state changes, including a disabled interval
+    /// during which the canvas receives no pointer events.
+    input_epoch: u64,
 }
 
 #[derive(Clone)]
@@ -139,6 +144,7 @@ impl Login {
             phase: Phase::Idle,
             greeter,
             now: motion::now(),
+            input_epoch: 0,
         }
     }
 
@@ -156,6 +162,9 @@ impl Login {
     }
 
     pub fn update(&mut self, message: Message) -> Task<Message> {
+        if !matches!(message, Message::Tick(_)) {
+            self.input_epoch = self.input_epoch.wrapping_add(1);
+        }
         match message {
             Message::Tick(at) => {
                 self.now = at;
@@ -266,6 +275,7 @@ impl Login {
             .height(Length::Fill),
             canvas(Art {
                 style: self.style,
+                input_epoch: self.input_epoch,
                 shown: Shown {
                     awake: self.awake,
                     typed: self.secret.len(),
@@ -395,7 +405,7 @@ const LINE: f32 = 1.276;
 /// [`crate::widgets::surface::outline`] does it for the widget set: down
 /// the four edges, cutting each corner by its own bevel, with a
 /// shoulder in the top edge where the era's bar has one.
-fn plate_path(g: Grid, plate: &Plate) -> canvas::Path {
+fn plate_vertices(plate: &Plate) -> Vec<Point> {
     let Plot { x, y, w, h } = plate.at;
     let b = plate.bevel;
     let (top, step) = match plate.step {
@@ -403,30 +413,68 @@ fn plate_path(g: Grid, plate: &Plate) -> canvas::Path {
         None => (y, None),
     };
 
+    let mut points = vec![Point::new(x + b.tl, top)];
+    if let Some(s) = step {
+        points.push(Point::new(s.x, top));
+        points.push(Point::new(s.x + s.run, y));
+    }
+    points.push(Point::new(x + w - b.tr, y));
+    if b.tr > 0.0 { points.push(Point::new(x + w, y + b.tr)); }
+    points.push(Point::new(x + w, y + h - b.br));
+    if b.br > 0.0 { points.push(Point::new(x + w - b.br, y + h)); }
+    points.push(Point::new(x + b.bl, y + h));
+    if b.bl > 0.0 { points.push(Point::new(x, y + h - b.bl)); }
+    points.push(Point::new(x, top + b.tl));
+    if b.tl > 0.0 { points.push(Point::new(x + b.tl, top)); }
+    points
+}
+
+fn plate_path(g: Grid, plate: &Plate) -> canvas::Path {
     canvas::Path::new(|p| {
-        p.move_to(g.at(x + b.tl, top));
-        if let Some(s) = step {
-            p.line_to(g.at(s.x, top));
-            p.line_to(g.at(s.x + s.run, y));
+        if let Some(path) = plate.path {
+            p.move_to(g.at(path.start.0, path.start.1));
+            for step in path.steps {
+                match *step {
+                    Seg::Move(x, y) => { p.close(); p.move_to(g.at(x, y)); }
+                    Seg::Line(x, y) => p.line_to(g.at(x, y)),
+                    Seg::Quad { cx, cy, x, y } => p.quadratic_curve_to(g.at(cx, cy), g.at(x, y)),
+                    Seg::Cubic { c1x, c1y, c2x, c2y, x, y } =>
+                        p.bezier_curve_to(g.at(c1x, c1y), g.at(c2x, c2y), g.at(x, y)),
+                }
+            }
+            p.close();
+            return;
         }
-        p.line_to(g.at(x + w - b.tr, y));
-        if b.tr > 0.0 {
-            p.line_to(g.at(x + w, y + b.tr));
-        }
-        p.line_to(g.at(x + w, y + h - b.br));
-        if b.br > 0.0 {
-            p.line_to(g.at(x + w - b.br, y + h));
-        }
-        p.line_to(g.at(x + b.bl, y + h));
-        if b.bl > 0.0 {
-            p.line_to(g.at(x, y + h - b.bl));
-        }
-        p.line_to(g.at(x, top + b.tl));
-        if b.tl > 0.0 {
-            p.line_to(g.at(x + b.tl, top));
+        for (i, point) in plate_vertices(plate).iter().enumerate() {
+            if i == 0 { p.move_to(g.at(point.x, point.y)); }
+            else { p.line_to(g.at(point.x, point.y)); }
         }
         p.close();
     })
+}
+
+/// The same outline used for drawing, including the cut corners and
+/// stepped top. A clipped corner must not submit an invisible button.
+fn plate_contains(plate: &Plate, at: Point) -> bool {
+    use canvas::path::lyon_path::{iterator::PathIterator, Event};
+    // Flatten the drawing path to a bounded design-space tolerance,
+    // including its closing edges. No invisible rounded corner or
+    // shoulder can activate the control's enclosing rectangle.
+    let path = plate_path(Grid { sx: 1.0, sy: 1.0 }, plate);
+    let mut inside = false;
+    for event in path.raw().iter().flattened(0.025) {
+        let (a, b) = match event {
+            Event::Line { from, to } => (from, to),
+            Event::End { last, first, close: true } => (last, first),
+            _ => continue,
+        };
+        if (a.y > at.y) != (b.y > at.y)
+            && at.x < (b.x - a.x) * (at.y - a.y) / (b.y - a.y) + a.x
+        {
+            inside = !inside;
+        }
+    }
+    inside
 }
 
 /// The natural width of a run, measured through the same shaper that
@@ -466,6 +514,39 @@ fn run_extent(g: Grid, legend: &Legend, content: &str) -> f32 {
     let window = advances.iter().sum::<f32>()
         + g.span(legend.tracking) * (advances.len().max(1) - 1) as f32;
     window * legend.stretch / g.sx
+}
+
+fn field_interior(field: &Plate) -> Plot {
+    let inset = if field.stroke.is_some() { field.weight / 2.0 } else { 0.0 } + 0.5;
+    Plot::new(field.at.x + inset, field.at.y + inset,
+        (field.at.w - 2.0 * inset).max(0.0), (field.at.h - 2.0 * inset).max(0.0))
+}
+
+/// The displayed suffix has the same masks as the complete secret, but
+/// only the count that fits is shaped. Reserve the lit tail/caret even
+/// in the dark blink half, so blinking never shifts the displayed run.
+/// `Shown` carries only a count; the secret is neither copied nor cut.
+fn field_shown(g: Grid, slot: &Slot, shown: Shown) -> Shown {
+    let (Some(field), Some(entry)) = (slot.field, slot.entry) else { return shown };
+    let interior = field_interior(&field);
+    let right = interior.x + interior.w;
+    let mut visible = Shown { typed: 0, ..shown };
+    let mut previous_width = 0.0;
+    for count in 1..=shown.typed {
+        let trial = Shown { typed: count, lit: true, ..shown };
+        let masks = trial.masks(&entry);
+        let width = run_extent(g, &entry.rest, &masks);
+        // A missing/zero-advance face must not turn a very long secret
+        // into an unbounded shaping job.
+        if width <= previous_width { break; }
+        previous_width = width;
+        let text_right = entry.rest.x + run_extent(g, &entry.rest, &trial.run(&entry));
+        let caret_right = slot.caret.filter(|_| entry.caret == Caret::Trails)
+            .map_or(text_right, |caret| caret.at.x + width + caret.at.w);
+        if text_right.max(caret_right) > right { break; }
+        visible.typed = count;
+    }
+    visible
 }
 
 struct Pen<'a> {
@@ -622,14 +703,80 @@ impl Pen<'_> {
 struct Art {
     style: Style,
     shown: Shown,
+    input_epoch: u64,
 }
 
-impl<Message> canvas::Program<Message, Style> for Art {
-    type State = ();
+#[derive(Default)]
+struct ActionState {
+    pointer: Pointer<()>,
+    input_epoch: u64,
+}
+
+impl Art {
+    fn enabled(&self) -> bool {
+        !matches!(self.shown.phase, Phase::Submitting | Phase::Success)
+    }
+
+    fn live_slot(&self) -> Option<&Slot> {
+        self.style.access.slots.iter().find(|slot| slot.entry.is_some())
+    }
+
+    fn target(&self, bounds: Rectangle, cursor: mouse::Cursor) -> Option<()> {
+        if !self.enabled() || bounds.width <= 0.0 || bounds.height <= 0.0 { return None; }
+        let at = cursor.position_in(bounds)?;
+        let grid = Grid::new(bounds.size());
+        let action = self.live_slot()?.action?;
+        plate_contains(&action, Point::new(at.x / grid.sx, at.y / grid.sy)).then_some(())
+    }
+
+    fn pointer_event(&self, state: &mut ActionState, event: &iced::Event,
+        bounds: Rectangle, cursor: mouse::Cursor) -> PointerAction<()> {
+        if state.input_epoch != self.input_epoch || !self.enabled() {
+            state.pointer = Pointer::default();
+            state.input_epoch = self.input_epoch;
+        }
+        state.pointer.sync(self.style.access.slots);
+        if !self.enabled() { return PointerAction::Ignore; }
+        let target = self.target(bounds, cursor);
+        // Leaving the action cancels the press. Returning over it can
+        // hover again, but cannot revive a cancelled submission.
+        if target.is_none() && matches!(event, iced::Event::Mouse(mouse::Event::CursorMoved { .. })) {
+            return state.pointer.event(&iced::Event::Mouse(mouse::Event::CursorLeft), None);
+        }
+        state.pointer.event(event, target)
+    }
+
+    fn action_coat(&self, state: &ActionState) -> Option<Coat> {
+        if !self.enabled() { return Some(self.style.controls.disabled); }
+        if state.input_epoch != self.input_epoch { return None; }
+        let (_, held) = state.pointer.interaction(self.style.access.slots)?;
+        let coats = self.style.controls.primary_states;
+        if held { coats.pressed } else { coats.hover }
+    }
+}
+
+impl canvas::Program<Message, Style> for Art {
+    type State = ActionState;
+
+    fn update(&self, state: &mut Self::State, event: &iced::Event,
+        bounds: Rectangle, cursor: mouse::Cursor) -> Option<canvas::Action<Message>> {
+        match self.pointer_event(state, event, bounds, cursor) {
+            PointerAction::Ignore => None,
+            PointerAction::Redraw => Some(canvas::Action::request_redraw()),
+            PointerAction::Capture => Some(canvas::Action::request_redraw().and_capture()),
+            PointerAction::Activate(()) => Some(canvas::Action::publish(Message::Submit).and_capture()),
+        }
+    }
+
+    fn mouse_interaction(&self, _state: &Self::State, bounds: Rectangle,
+        cursor: mouse::Cursor) -> mouse::Interaction {
+        if self.target(bounds, cursor).is_some() { mouse::Interaction::Pointer }
+        else { mouse::Interaction::default() }
+    }
 
     fn draw(
         &self,
-        _state: &Self::State,
+        state: &Self::State,
         renderer: &Renderer,
         _theme: &Style,
         bounds: Rectangle,
@@ -659,11 +806,33 @@ impl<Message> canvas::Program<Message, Style> for Art {
             } else {
                 None
             };
-            draw_slot(&mut pen, slot, shown);
+            draw_slot(&mut pen, slot, shown, shown.and(self.action_coat(state)));
         }
         colophon(&mut pen, &access.colophon);
 
-        vec![frame.into_geometry()]
+        let mut geometry = vec![frame.into_geometry()];
+        if self.shown.awake {
+            if let Some(slot) = self.live_slot() {
+                if let Some(field) = slot.field {
+                    let grid = Grid::new(bounds.size());
+                    let inner = field_interior(&field);
+                    let region = Rectangle::new(grid.at(inner.x, inner.y), grid.size(inner.w, inner.h));
+                    if region.width > 0.0 && region.height > 0.0 {
+                        // A separate geometry puts the clipped content
+                        // above the well: with_clip drafts are pasted
+                        // under the direct shapes of their own frame.
+                        let shown = field_shown(grid, slot, self.shown);
+                        let mut input = canvas::Frame::new(renderer, bounds.size());
+                        input.with_clip(region, |frame| {
+                            let mut pen = Pen { frame, grid, style: &self.style };
+                            draw_entry(&mut pen, slot, Some(&shown));
+                        });
+                        geometry.push(input.into_geometry());
+                    }
+                }
+            }
+        }
+        geometry
     }
 }
 
@@ -772,7 +941,7 @@ const TAB: (f32, f32, f32) = (46.0, 7.0, 6.0);
 
 /// One slot. `shown` is `Some` on the live slot the keyboard is
 /// writing into, and says what its field carries.
-fn draw_slot(pen: &mut Pen, slot: &Slot, shown: Option<&Shown>) {
+fn draw_slot(pen: &mut Pen, slot: &Slot, shown: Option<&Shown>, coat: Option<Coat>) {
     if let Some(body) = &slot.body {
         pen.plate(body);
     }
@@ -828,6 +997,46 @@ fn draw_slot(pen: &mut Pen, slot: &Slot, shown: Option<&Shown>) {
     if let Some(field) = &slot.field {
         pen.plate(field);
     }
+    // Live input is a clipped geometry above the painted well. The
+    // untouched mock keeps the exact trace's original draw order.
+    if !shown.is_some_and(|shown| shown.awake) {
+        draw_entry(pen, slot, shown);
+    }
+    if let Some(action) = &slot.action {
+        pen.plate(&coated_action(*action, coat));
+    }
+    let label = slot.action_label.map(|mut label| {
+        if let Some(coat) = coat { label.ink = coat.ink; }
+        label
+    });
+    match (&label, word, slot.prompt.is_some()) {
+        (Some(label), Some(word), false) => pen.legend_text(label, word),
+        (Some(label), _, _) => pen.legend(label),
+        (None, _, _) => {}
+    }
+    for mark in slot.action_marks {
+        pen.plate(mark);
+    }
+    if let Some(badge) = &slot.badge {
+        badge_plate(pen, badge);
+    }
+    if let Some(letter) = &slot.badge_letter {
+        pen.legend(letter);
+    }
+    pen.legends(slot.notes);
+}
+
+fn coated_action(mut action: Plate, coat: Option<Coat>) -> Plate {
+    if let Some(coat) = coat {
+        action.fill = (coat.fill != Ink::None).then_some(coat.fill);
+        action.foot = None;
+        action.stroke = (coat.edge != Ink::None).then_some(coat.edge);
+        action.weight = coat.weight;
+    }
+    action
+}
+
+fn draw_entry(pen: &mut Pen, slot: &Slot, shown: Option<&Shown>) {
     // The run in the field, and how far a trailing caret has moved.
     let mut carried = 0.0;
     if let Some(entry) = &slot.entry {
@@ -849,24 +1058,6 @@ fn draw_slot(pen: &mut Pen, slot: &Slot, shown: Option<&Shown>) {
         caret.at.x += carried;
         pen.plate(&caret);
     }
-    if let Some(action) = &slot.action {
-        pen.plate(action);
-    }
-    match (&slot.action_label, word, slot.prompt.is_some()) {
-        (Some(label), Some(word), false) => pen.legend_text(label, word),
-        (Some(label), _, _) => pen.legend(label),
-        (None, _, _) => {}
-    }
-    for mark in slot.action_marks {
-        pen.plate(mark);
-    }
-    if let Some(badge) = &slot.badge {
-        badge_plate(pen, badge);
-    }
-    if let Some(letter) = &slot.badge_letter {
-        pen.legend(letter);
-    }
-    pen.legends(slot.notes);
 }
 
 /// The boxed footnote letter.
@@ -1173,7 +1364,7 @@ fn fixture(pen: &mut Pen, fixture: &Fixture) {
 
 /// The wire band: `strands` hairlines running the two outer plateaus,
 /// S-bending down onto the low centre one and back up, both ends
-/// curling into a vertical.
+/// descending from above into independent rounded feet.
 ///
 /// Every figure is `docs/neokitsch/login-trace.svg`'s: the outer
 /// plateau spaced 3.9, the centre one tightened to 3.03 so the bends
@@ -1181,10 +1372,12 @@ fn fixture(pen: &mut Pen, fixture: &Fixture) {
 /// mirrored about x=808, and the brightness stepping from 0.30 at the
 /// top strand to 1.0 at the bottom.
 fn wire_band(pen: &mut Pen, outer: f32, inner: f32, end: f32, strands: usize) {
-    const X0: f32 = 35.0;
-    const X1: f32 = 1564.0;
+    const X0: f32 = 34.0;
+    const X1: f32 = 1565.0;
     const MIRROR: f32 = 1616.0;
-    const CURL: f32 = 8.0;
+    // Source feet descend from above; `end` is strand zero's terminal.
+    let curl = outer - end;
+    let control = curl * 0.55228475;
     let n = strands.max(2) as f32 - 1.0;
 
     let geometry = |i: usize| -> (f32, f32, f32, f32) {
@@ -1197,19 +1390,15 @@ fn wire_band(pen: &mut Pen, outer: f32, inner: f32, end: f32, strands: usize) {
         )
     };
 
-    let strand = |p: &mut canvas::path::Builder, i: usize, g: Grid, closed: bool| {
+    let strand = |p: &mut canvas::path::Builder, i: usize, g: Grid| {
         let (oy, iy, lx, rx) = geometry(i);
         let bow = 0.55 * (rx - lx);
-        // The curl ends at `end`; a strand within CURL of it takes a
-        // tighter radius rather than overshooting (the trace's last two).
-        let curl = CURL.min(end - oy).max(0.0);
-        if !closed {
-            p.move_to(g.at(X0, end));
-            p.line_to(g.at(X0, oy + curl));
-            p.quadratic_curve_to(g.at(X0, oy), g.at(X0 + curl, oy));
-        } else {
-            p.move_to(g.at(X0, oy));
-        }
+        p.move_to(g.at(X0, oy - curl));
+        p.bezier_curve_to(
+            g.at(X0, oy - curl + control),
+            g.at(X0 + curl - control, oy),
+            g.at(X0 + curl, oy),
+        );
         p.line_to(g.at(lx, oy));
         p.bezier_curve_to(g.at(lx + bow, oy), g.at(rx - bow, iy), g.at(rx, iy));
         p.line_to(g.at(MIRROR - rx, iy));
@@ -1218,13 +1407,12 @@ fn wire_band(pen: &mut Pen, outer: f32, inner: f32, end: f32, strands: usize) {
             g.at(MIRROR - lx - bow, oy),
             g.at(MIRROR - lx, oy),
         );
-        if !closed {
-            p.line_to(g.at(X1 - curl, oy));
-            p.quadratic_curve_to(g.at(X1, oy), g.at(X1, oy + curl));
-            p.line_to(g.at(X1, end));
-        } else {
-            p.line_to(g.at(X1, oy));
-        }
+        p.line_to(g.at(X1 - curl, oy));
+        p.bezier_curve_to(
+            g.at(X1 - curl + control, oy),
+            g.at(X1, oy - curl + control),
+            g.at(X1, oy - curl),
+        );
     };
 
     // The floor between the strands glows, black at the top strand and
@@ -1233,10 +1421,15 @@ fn wire_band(pen: &mut Pen, outer: f32, inner: f32, end: f32, strands: usize) {
     let g = pen.grid;
     let last = strands.saturating_sub(1);
     let glow = canvas::Path::new(|p| {
-        strand(p, 0, g, true);
+        strand(p, 0, g);
         let (oy_last, iy_last, lx_last, rx_last) = geometry(last);
         let bow = 0.55 * (rx_last - lx_last);
-        p.line_to(g.at(X1, oy_last));
+        p.line_to(g.at(X1, oy_last - curl));
+        p.bezier_curve_to(
+            g.at(X1, oy_last - curl + control),
+            g.at(X1 - curl + control, oy_last),
+            g.at(X1 - curl, oy_last),
+        );
         p.line_to(g.at(MIRROR - lx_last, oy_last));
         p.bezier_curve_to(
             g.at(MIRROR - lx_last - bow, oy_last),
@@ -1249,7 +1442,12 @@ fn wire_band(pen: &mut Pen, outer: f32, inner: f32, end: f32, strands: usize) {
             g.at(lx_last + bow, oy_last),
             g.at(lx_last, oy_last),
         );
-        p.line_to(g.at(X0, oy_last));
+        p.line_to(g.at(X0 + curl, oy_last));
+        p.bezier_curve_to(
+            g.at(X0 + curl - control, oy_last),
+            g.at(X0, oy_last - curl + control),
+            g.at(X0, oy_last - curl),
+        );
         p.close();
     });
     let tone = pen.ink(Ink::Fixed(crate::eras::neokitsch::WIRE_GLOW));
@@ -1282,7 +1480,7 @@ fn wire_band(pen: &mut Pen, outer: f32, inner: f32, end: f32, strands: usize) {
     };
     for (width, weight) in [(9.0f32, 0.05f32), (4.5, 0.09)] {
         for i in 0..strands {
-            let path = canvas::Path::new(|p| strand(p, i, g, false));
+            let path = canvas::Path::new(|p| strand(p, i, g));
             let alpha = (0.30 + (1.0 - 0.30) * i as f32 / n) * weight;
             pen.frame.stroke(
                 &path,
@@ -1293,7 +1491,7 @@ fn wire_band(pen: &mut Pen, outer: f32, inner: f32, end: f32, strands: usize) {
         }
     }
     for i in 0..strands {
-        let path = canvas::Path::new(|p| strand(p, i, g, false));
+        let path = canvas::Path::new(|p| strand(p, i, g));
         let alpha = 0.30 + (1.0 - 0.30) * i as f32 / n;
         pen.frame.stroke(
             &path,
@@ -1645,5 +1843,207 @@ mod tests {
         assert_eq!(login.typed(), 1);
         let _ = login.update(Message::Outcome(Ok(())));
         assert_eq!(login.phase(), Phase::Success);
+    }
+
+    fn art(login: &Login) -> Art {
+        Art {
+            style: login.style,
+            input_epoch: login.input_epoch,
+            shown: Shown { awake: login.awake, typed: login.typed(), phase: login.phase, lit: true },
+        }
+    }
+
+    fn action_cursor(art: &Art, bounds: Rectangle) -> mouse::Cursor {
+        let action = art.live_slot().unwrap().action.unwrap().at;
+        let grid = Grid::new(bounds.size());
+        let local = grid.at(action.x + action.w / 2.0, action.y + action.h / 2.0);
+        mouse::Cursor::Available(Point::new(bounds.x + local.x, bounds.y + local.y))
+    }
+
+    #[test]
+    fn long_unicode_input_only_limits_the_display_and_recovers_when_deleted() {
+        let secret = "é中🦀".repeat(80);
+        for era in Era::ALL {
+            let mut login = Login::new(era.style());
+            let _ = login.update(Message::Typed(secret.clone()));
+            let slot = login.style.access.slots.iter().find(|slot| slot.entry.is_some()).unwrap();
+            let entry = slot.entry.unwrap();
+            for size in [Size::new(1600.0, 900.0), Size::new(1237.0, 697.0), Size::new(3840.0, 2160.0)] {
+                let grid = Grid::new(size);
+                let shown = art(&login).shown;
+                let visible = field_shown(grid, slot, shown);
+                assert!(visible.typed > 0 && visible.typed < login.typed(), "{}", era.name());
+                let inside = field_interior(&slot.field.unwrap());
+                let right = inside.x + inside.w;
+                assert!(entry.rest.x + run_extent(grid, &entry.rest, &visible.run(&entry)) <= right);
+                if let Some(caret) = slot.caret.filter(|_| entry.caret == Caret::Trails) {
+                    assert!(caret.at.x + run_extent(grid, &entry.rest, &visible.masks(&entry)) + caret.at.w <= right);
+                }
+                let dark = field_shown(grid, slot, Shown { lit: false, ..shown });
+                assert_eq!(visible.typed, dark.typed, "blink must not change display capacity");
+            }
+            assert_eq!(login.secret.expose(), secret, "layout must retain the complete Unicode secret");
+            for _ in 0..secret.chars().count() - 2 { let _ = login.update(Message::Backspace); }
+            assert_eq!(login.secret.expose(), "é中");
+            let slot = art(&login).live_slot().copied().unwrap();
+            assert_eq!(field_shown(Grid::new(Size::new(1600.0, 900.0)), &slot, art(&login).shown).typed, 2);
+            let _ = login.update(Message::Clear);
+            assert_eq!(login.typed(), 0);
+            assert_eq!(field_shown(Grid::new(Size::new(1600.0, 900.0)), &slot, art(&login).shown).typed, 0);
+        }
+    }
+
+    #[test]
+    fn pointer_submission_uses_the_same_message_and_demo_semantics_as_enter() {
+        use canvas::Program;
+        let mut login = Login::new(Era::Neomil.style());
+        let _ = login.update(Message::Typed("é中🦀".repeat(40)));
+        let art = art(&login);
+        let bounds = Rectangle::new(Point::new(13.0, 27.0), Size::new(1237.0, 697.0));
+        let cursor = action_cursor(&art, bounds);
+        let mut state = ActionState::default();
+        assert_eq!(art.mouse_interaction(&state, bounds, cursor), mouse::Interaction::Pointer);
+        let down = iced::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left));
+        let up = iced::Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left));
+        let (message, _, status) = art.update(&mut state, &down, bounds, cursor).unwrap().into_inner();
+        assert!(message.is_none());
+        assert_eq!(status, iced::event::Status::Captured);
+        assert_eq!(login.typed(), 120, "press must not submit");
+        let (message, _, status) = art.update(&mut state, &up, bounds, cursor).unwrap().into_inner();
+        assert!(matches!(message, Some(Message::Submit)));
+        assert_eq!(status, iced::event::Status::Captured);
+        let _ = login.update(message.unwrap());
+        assert_eq!(login.typed(), 0);
+        assert_eq!(login.phase, Phase::Idle);
+        assert!(art.update(&mut state, &up, bounds, cursor).is_none(), "release submits once");
+    }
+
+    #[test]
+    fn pointer_release_outside_drag_and_focus_loss_cancel_submission() {
+        let login = Login::new(Era::Neomil.style());
+        let art = art(&login);
+        let bounds = Rectangle::with_size(Size::new(1600.0, 900.0));
+        let cursor = action_cursor(&art, bounds);
+        let outside = mouse::Cursor::Available(Point::new(900.0, 700.0));
+        let down = iced::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left));
+        let up = iced::Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left));
+        let mut state = ActionState::default();
+        assert_eq!(art.pointer_event(&mut state, &down, bounds, cursor), PointerAction::Capture);
+        assert_eq!(art.pointer_event(&mut state, &up, bounds, outside), PointerAction::Capture);
+        assert_eq!(art.pointer_event(&mut state, &up, bounds, cursor), PointerAction::Ignore);
+        for cancel in [
+            iced::Event::Mouse(mouse::Event::CursorLeft),
+            iced::Event::Window(iced::window::Event::Unfocused),
+            iced::Event::Mouse(mouse::Event::CursorMoved { position: Point::new(900.0, 700.0) }),
+        ] {
+            art.pointer_event(&mut state, &down, bounds, cursor);
+            art.pointer_event(&mut state, &cancel, bounds, outside);
+            art.pointer_event(&mut state, &iced::Event::Mouse(mouse::Event::CursorMoved {
+                position: cursor.position().unwrap(),
+            }), bounds, cursor);
+            assert_eq!(art.pointer_event(&mut state, &up, bounds, cursor), PointerAction::Ignore);
+        }
+    }
+
+    #[test]
+    fn disabled_and_keyboard_transitions_discard_held_gestures() {
+        use canvas::Program;
+        let mut login = Login::new(Era::Neomil.style());
+        let bounds = Rectangle::with_size(Size::new(1600.0, 900.0));
+        let cursor = action_cursor(&art(&login), bounds);
+        let down = iced::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left));
+        let up = iced::Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left));
+        let mut state = ActionState::default();
+        art(&login).pointer_event(&mut state, &down, bounds, cursor);
+        let _ = login.update(Message::Typed("x".into()));
+        assert!(art(&login).action_coat(&state).is_none());
+        assert_eq!(art(&login).pointer_event(&mut state, &up, bounds, cursor), PointerAction::Ignore);
+        art(&login).pointer_event(&mut state, &down, bounds, cursor);
+        // Simulate the phase while a greetd worker owns the request;
+        // no real socket or credential is needed for this event test.
+        login.phase = Phase::Submitting;
+        login.input_epoch += 1;
+        assert_ne!(art(&login).mouse_interaction(&state, bounds, cursor), mouse::Interaction::Pointer);
+        assert_eq!(art(&login).action_coat(&state), Some(login.style.controls.disabled));
+        assert_eq!(art(&login).pointer_event(&mut state, &down, bounds, cursor), PointerAction::Ignore);
+        assert_eq!(art(&login).pointer_event(&mut state, &up, bounds, cursor), PointerAction::Ignore);
+        let _ = login.update(Message::Typed("ignored".into()));
+        assert_eq!(login.typed(), 1);
+        let _ = login.update(Message::Outcome(Err(Refusal::Denied("synthetic".into()))));
+        assert_eq!(art(&login).pointer_event(&mut state, &up, bounds, cursor), PointerAction::Ignore);
+        // An entire disabled interval can pass without canvas events.
+        art(&login).pointer_event(&mut state, &down, bounds, cursor);
+        login.phase = Phase::Submitting;
+        login.input_epoch += 1;
+        let _ = login.update(Message::Outcome(Err(Refusal::Denied("synthetic".into()))));
+        assert_eq!(art(&login).pointer_event(&mut state, &up, bounds, cursor), PointerAction::Ignore);
+        art(&login).pointer_event(&mut state, &down, bounds, cursor);
+        assert_eq!(art(&login).pointer_event(&mut state, &up, bounds, cursor), PointerAction::Activate(()));
+    }
+
+    #[test]
+    fn rounded_login_shoulder_rejects_gap_and_cancels_drag_out_at_any_scale() {
+        let login = Login::new(Era::Kitsch.style());
+        let art = art(&login);
+        let action = art.live_slot().unwrap().action.unwrap();
+        for size in [Size::new(1600.0, 900.0), Size::new(1537.0, 947.0), Size::new(3840.0, 2160.0)] {
+            let bounds = Rectangle { x: 17.0, y: 23.0, ..Rectangle::with_size(size) };
+            let grid = Grid::new(size);
+            let cursor = |x, y| {
+                let at = grid.at(x, y);
+                mouse::Cursor::Available(Point::new(bounds.x + at.x, bounds.y + at.y))
+            };
+            // The gap occupies part of the action's enclosing rectangle;
+            // its rounded upper-left corner is also visibly empty.
+            for (x, y) in [(300.0, 466.0), (500.0, 459.0), (257.1, 470.5)] {
+                assert_eq!(art.target(bounds, cursor(x, y)), None);
+            }
+            let inside = cursor(500.0, 480.0);
+            assert_eq!(art.target(bounds, inside), Some(()));
+            let down = iced::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left));
+            let up = iced::Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left));
+            let mut state = ActionState::default();
+            art.pointer_event(&mut state, &down, bounds, inside);
+            let gap = cursor(300.0, 466.0);
+            art.pointer_event(&mut state, &iced::Event::Mouse(mouse::Event::CursorMoved {
+                position: gap.position().unwrap(),
+            }), bounds, gap);
+            assert_ne!(art.pointer_event(&mut state, &up, bounds, inside), PointerAction::Activate(()));
+            art.pointer_event(&mut state, &down, bounds, inside);
+            assert_eq!(art.pointer_event(&mut state, &up, bounds, inside), PointerAction::Activate(()));
+        }
+        for coat in [login.style.controls.primary_states.hover, login.style.controls.primary_states.pressed,
+            Some(login.style.controls.disabled)] {
+            assert_eq!(coated_action(action, coat).path, action.path);
+        }
+    }
+
+    #[test]
+    fn only_the_live_action_is_hit_and_feedback_preserves_its_outline() {
+        let login = Login::new(Era::Neomil.style());
+        let art = art(&login);
+        let bounds = Rectangle::with_size(Size::new(1600.0, 900.0));
+        let action = art.live_slot().unwrap().action.unwrap();
+        let cut = Point::new(action.at.x + action.at.w - 1.0, action.at.y + action.at.h - 1.0);
+        assert_eq!(art.target(bounds, mouse::Cursor::Available(cut)), None);
+        for slot in login.style.access.slots.iter().skip(1) {
+            if let Some(action) = slot.action {
+                let at = action.at;
+                assert_eq!(art.target(bounds, mouse::Cursor::Available(Point::new(at.x + at.w / 2.0, at.y + at.h / 2.0))), None);
+            }
+        }
+        let mut state = ActionState::default();
+        assert!(art.action_coat(&state).is_none());
+        let cursor = action_cursor(&art, bounds);
+        art.pointer_event(&mut state, &iced::Event::Mouse(mouse::Event::CursorMoved {
+            position: cursor.position().unwrap(),
+        }), bounds, cursor);
+        assert_eq!(art.action_coat(&state), login.style.controls.primary_states.hover);
+        art.pointer_event(&mut state, &iced::Event::Mouse(mouse::Event::ButtonPressed(mouse::Button::Left)), bounds, cursor);
+        assert_eq!(art.action_coat(&state), login.style.controls.primary_states.pressed);
+        for coat in [login.style.controls.primary_states.hover, login.style.controls.primary_states.pressed,
+            Some(login.style.controls.disabled)] {
+            assert_eq!(plate_vertices(&action), plate_vertices(&coated_action(action, coat)));
+        }
     }
 }

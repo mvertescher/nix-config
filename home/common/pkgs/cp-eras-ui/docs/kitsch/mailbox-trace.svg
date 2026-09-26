@@ -44,7 +44,7 @@
            at y 748 that runs right, fading by x~451. The region between
            the two branches is SOLID TEAL (#1db5a4) — the wave.
          - five message rows at a 60px pitch inside the bracket, each an
-           outlined envelope glyph at x 166..185 and a teal title at
+           outlined envelope glyph (row1 open, rows2–5 closed) and a teal title at
            x 220 (cap ~15px) over a smaller "from:" line 20px below:
              YOU'LL REGRET THAT / from: Jackie   (selected, y 313..351)
              URGENT INFORMATION (!) / from: Mom
@@ -137,8 +137,13 @@
     </linearGradient>
     <!-- one chevron tab, 161x46, origin at its bbox top-left -->
     <path id="chev" d="M 0,46 V 24 L 22,0 L 28,9 H 155 Q 161,9 161,14 V 24 L 139,46 Z"/>
-    <!-- outlined envelope glyph, 20x13, origin top-left -->
-    <path id="env" d="M 0,0 H 20 V 13 H 0 Z M 0,0 L 10,8 L 20,0"/>
+    <!-- Closed glyphs, source #51 rows2..5: both lower fold diagonals
+         are primary ink. Native core x166.67..183.33, height~10.8;
+         centreline16.05x9.95, stroke0.9, not the former20x13. -->
+    <!-- Source #51 first row: measured open pentagon at166.95,322.5,
+         16.05x14.5; no horizontal line closes the raised flap. -->
+    <path id="env-open" d="M 0,4.7 L 8.05,0 L 16.05,4.7 V 14.5 H 0 Z M 0,4.7 L 8.05,10.2 L 16.05,4.7"/>
+    <path id="env" d="M 0,0 H 16.05 V 9.95 H 0 Z M 0,0 L 8.05,6.75 L 16.05,0 M 0,9.95 L 5.25,4.4 M 16.05,9.95 L 10.8,4.43"/>
     <rect id="badge" width="56" height="34" rx="2"/>
     <!-- #message-extrude: kitsch comes up as DEPTH extruding out of a
          solid face (the hub's ghost stacks under #fan-left-extrude and
@@ -253,16 +258,16 @@
     <path d="M 154,313 H 195 V 345 L 176,351 H 154 Z"/>
     <path d="M 197,313 H 491 V 325 L 471,346 H 197 Z"/>
   </g>
-  <use href="#env" x="165.5" y="325.5" fill="none" stroke="#4a3a05" stroke-width="1.25"/>
+  <use href="#env-open" x="166.95" y="322.5" fill="none" stroke="#4a3a05" stroke-width="0.7"/>
   <text x="220" y="340" font-family="Rajdhani" font-size="17" letter-spacing="0.5" fill="#4a3a05">YOU'LL REGRET THAT</text>
   <text x="220" y="362" font-family="Rajdhani" font-size="11" fill="#f2c825">from: Jackie</text>
 
   <!-- the four unselected rows -->
-  <g fill="none" stroke="#5fd6c2" stroke-width="1.25">
-    <use href="#env" x="166.5" y="385.5"/>
-    <use href="#env" x="166.5" y="445.5"/>
-    <use href="#env" x="166.5" y="505.5"/>
-    <use href="#env" x="166.5" y="564.5"/>
+  <g fill="none" stroke="#5fd6c2" stroke-width="0.9">
+    <use href="#env" x="166.95" y="386.5"/>
+    <use href="#env" x="166.95" y="446.1"/>
+    <use href="#env" x="166.95" y="505.8"/>
+    <use href="#env" x="166.95" y="565.5"/>
   </g>
   <g font-family="Rajdhani" fill="#7fe0c8">
     <g font-size="18" letter-spacing="0.5">

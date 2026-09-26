@@ -396,7 +396,7 @@ pub fn style() -> Style {
             // The login well: solid dark teal, no outline.
             field: Coat::filled(Ink::Fixed(WELL), Ink::Fg),
             placeholder: Ink::Dim,
-            // `rx 2` on the field; the bars are square.
+            // Login controls have source-fitted rounded path corners.
             radius: 2.0,
         },
         // --- end controls ---
@@ -447,10 +447,10 @@ pub fn style() -> Style {
 //
 // The bar shape is the thing to notice. All three bars -- the mint
 // ENTER and the two dark PROTECTED ones -- carry the same shoulder,
-// their right two fifths standing some 8px taller than their left, and
-// that is why [`crate::style::Step`] exists. An earlier reading that
-// made them plain rounded rectangles cannot be squared with
-// `M257,470 H418 L430,463 H591.5 V497.5 H257 Z`.
+// their right two fifths standing 8px taller than their left. The
+// input's lower edge follows the same rounded shoulder, keeping a
+// 6.7px gap above ENTER. These native-source contours include the
+// rounded joins that the earlier straight Step model omitted.
 
 /// The teal a printed chip is filled with. Brighter and greener than
 /// the era's `TEAL_SOLID` ornament colour, sampled off a 4x zoom of the
@@ -525,10 +525,74 @@ const LOGIN_GROUND: &[Prim] = &[
 ];
 const LOGIN_BACKDROP: &[Prim] = &[Prim::Soft { prims: LOGIN_GROUND }];
 
+// Native source #50, 3840x2160 pixels divided by 2.4. The field has
+// an 8px bottom step; each bar has the same rise at its top. Layout
+// boxes remain available for input fitting while these curves govern
+// painting and pointer hits. See login-trace.svg for source metrics.
+const LOGIN_FIELD: &[Seg] = &[
+    Seg::Line(589.5, 413.3),
+    Seg::Quad { cx: 591.8, cy: 413.3, x: 591.8, y: 415.6 },
+    Seg::Line(591.8, 453.4),
+    Seg::Quad { cx: 591.8, cy: 455.7, x: 589.5, y: 455.7 },
+    Seg::Line(432.0, 455.7),
+    Seg::Quad { cx: 430.0, cy: 455.7, x: 428.4, y: 456.8 },
+    Seg::Line(418.4, 462.6),
+    Seg::Quad { cx: 416.8, cy: 463.7, x: 415.0, y: 463.7 },
+    Seg::Line(259.5, 463.7),
+    Seg::Quad { cx: 257.2, cy: 463.7, x: 257.2, y: 461.4 },
+    Seg::Line(257.2, 415.6),
+    Seg::Quad { cx: 257.2, cy: 413.3, x: 259.5, y: 413.3 },
+];
+
+const LOGIN_ENTER: &[Seg] = &[
+    Seg::Line(416.4, 470.4),
+    Seg::Quad { cx: 418.2, cy: 470.4, x: 419.8, y: 469.3 },
+    Seg::Line(429.8, 463.5),
+    Seg::Quad { cx: 431.4, cy: 462.4, x: 433.2, y: 462.4 },
+    Seg::Line(589.8, 462.4),
+    Seg::Quad { cx: 592.0, cy: 462.4, x: 592.0, y: 464.6 },
+    Seg::Line(592.0, 495.5),
+    Seg::Quad { cx: 592.0, cy: 497.7, x: 589.8, y: 497.7 },
+    Seg::Line(259.2, 497.7),
+    Seg::Quad { cx: 257.0, cy: 497.7, x: 257.0, y: 495.5 },
+    Seg::Line(257.0, 472.6),
+    Seg::Quad { cx: 257.0, cy: 470.4, x: 259.2, y: 470.4 },
+];
+
+const LOGIN_PROTECTED_2: &[Seg] = &[
+    Seg::Line(809.4, 470.4),
+    Seg::Quad { cx: 811.2, cy: 470.4, x: 812.8, y: 469.3 },
+    Seg::Line(822.8, 463.5),
+    Seg::Quad { cx: 824.4, cy: 462.4, x: 826.2, y: 462.4 },
+    Seg::Line(982.3, 462.4),
+    Seg::Quad { cx: 984.5, cy: 462.4, x: 984.5, y: 464.6 },
+    Seg::Line(984.5, 495.5),
+    Seg::Quad { cx: 984.5, cy: 497.7, x: 982.3, y: 497.7 },
+    Seg::Line(651.8, 497.7),
+    Seg::Quad { cx: 649.6, cy: 497.7, x: 649.6, y: 495.5 },
+    Seg::Line(649.6, 472.6),
+    Seg::Quad { cx: 649.6, cy: 470.4, x: 651.8, y: 470.4 },
+];
+
+const LOGIN_PROTECTED_3: &[Seg] = &[
+    Seg::Line(1202.0, 470.4),
+    Seg::Quad { cx: 1203.8, cy: 470.4, x: 1205.4, y: 469.3 },
+    Seg::Line(1215.4, 463.5),
+    Seg::Quad { cx: 1217.0, cy: 462.4, x: 1218.8, y: 462.4 },
+    Seg::Line(1374.9, 462.4),
+    Seg::Quad { cx: 1377.1, cy: 462.4, x: 1377.1, y: 464.6 },
+    Seg::Line(1377.1, 495.5),
+    Seg::Quad { cx: 1377.1, cy: 497.7, x: 1374.9, y: 497.7 },
+    Seg::Line(1044.4, 497.7),
+    Seg::Quad { cx: 1042.2, cy: 497.7, x: 1042.2, y: 495.5 },
+    Seg::Line(1042.2, 472.6),
+    Seg::Quad { cx: 1042.2, cy: 470.4, x: 1044.4, y: 470.4 },
+];
+
 pub const ACCESS: Access = Access {
     backdrop: LOGIN_BACKDROP,
     masthead: Masthead::Clock {
-        labels: &[Legend::new("10:20 PM", 781.0, 74.0, 18.0, Ink::Fixed(rgb(0xb4ece3)))],
+        labels: &[Legend::new("10:20 PM", 779.17, 74.9, 21.75, Ink::Fixed(rgb(0xb4ece3)))],
     },
     slots: &[
         // Row 1, inside the bracket: the live one.
@@ -563,10 +627,10 @@ pub const ACCESS: Access = Access {
                     .bold()
                     .stretched(1.32),
             ],
-            field: Some(Plate::filled(
-                Plot::new(257.0, 413.0, 335.0, 51.0),
-                Ink::Fixed(WELL),
-            )),
+            field: Some(
+                Plate::filled(Plot::new(257.2, 413.3, 334.6, 50.4), Ink::Fixed(WELL))
+                    .outlined_path((259.5, 413.3), LOGIN_FIELD),
+            ),
             caret: Some(Plate::filled(
                 Plot::new(266.0, 421.0, 2.0, 22.0),
                 Ink::Fixed(BARCODE),
@@ -585,13 +649,16 @@ pub const ACCESS: Access = Access {
                 failed: "DENIED",
             }),
             action: Some(
-                Plate::filled(Plot::new(257.0, 463.0, 334.5, 34.5), Ink::Fixed(LIT))
-                    .stepped(418.0, 7.0, 12.0),
+                Plate::filled(Plot::new(257.0, 462.4, 335.0, 35.3), Ink::Fixed(LIT))
+                    .outlined_path((259.2, 470.4), LOGIN_ENTER),
             ),
             action_label: Some(
-                Legend::new("ENTER", 510.0, 486.0, 14.0, Ink::Fixed(ON_LIT))
-                    .centred()
-                    .medium(),
+                Legend {
+                    weight: iced::font::Weight::Semibold,
+                    ..Legend::new("ENTER", 510.625, 484.0, 12.7, Ink::Fixed(ON_LIT))
+                        .centred()
+                        .stretched(1.77)
+                },
             ),
             ..Slot::EMPTY
         },
@@ -629,14 +696,18 @@ pub const ACCESS: Access = Access {
                     .stretched(1.32),
             ],
             action: Some(
-                Plate::filled(Plot::new(649.0, 462.0, 335.5, 35.5), Ink::Fixed(LOCKED))
-                    .stepped(812.0, 9.0, 12.0)
+                Plate::filled(Plot::new(649.6, 462.4, 334.9, 35.3), Ink::Fixed(LOCKED))
+                    .outlined_path((651.8, 470.4), LOGIN_PROTECTED_2)
                     .edged(Ink::Fixed(LOCKED_EDGE), 1.0),
             ),
             action_label: Some(
-                Legend::new("PROTECTED", 904.0, 486.0, 13.0, Ink::Fixed(ANNOTATION))
-                    .centred()
-                    .medium(),
+                Legend {
+                    weight: iced::font::Weight::Semibold,
+                    ..Legend::new("PROTECTED", 903.54, 484.35, 13.2, Ink::Fixed(ANNOTATION))
+                        .centred()
+                        .stretched(1.7)
+                        .tracked(0.15)
+                },
             ),
             ..Slot::EMPTY
         },
@@ -672,14 +743,18 @@ pub const ACCESS: Access = Access {
                     .stretched(1.32),
             ],
             action: Some(
-                Plate::filled(Plot::new(1042.0, 462.0, 335.0, 35.5), Ink::Fixed(LOCKED))
-                    .stepped(1205.0, 9.0, 12.0)
+                Plate::filled(Plot::new(1042.2, 462.4, 334.9, 35.3), Ink::Fixed(LOCKED))
+                    .outlined_path((1044.4, 470.4), LOGIN_PROTECTED_3)
                     .edged(Ink::Fixed(LOCKED_EDGE), 1.0),
             ),
             action_label: Some(
-                Legend::new("PROTECTED", 1297.0, 486.0, 13.0, Ink::Fixed(ANNOTATION))
-                    .centred()
-                    .medium(),
+                Legend {
+                    weight: iced::font::Weight::Semibold,
+                    ..Legend::new("PROTECTED", 1296.14, 484.35, 13.2, Ink::Fixed(ANNOTATION))
+                        .centred()
+                        .stretched(1.7)
+                        .tracked(0.15)
+                },
             ),
             ..Slot::EMPTY
         },
@@ -736,7 +811,7 @@ pub const ACCESS: Access = Access {
 // row's body cuts a *diagonal* trailing corner on an era that rounds
 // everything else.
 use crate::style::{
-    Change, Frame, Mail, MailBadges, MailButtons, MailList, MailRowCoat, MailRowEcho, MailRowStates, MailMotion, MailPanel, MailPart,
+    Change, Frame, Mail, MailBadges, MailButtons, MailEnvelope, MailList, MailRowCoat, MailRowEcho, MailRowStates, MailMotion, MailPanel, MailPart,
     Mailbox, Motion, Note, Piece, RowDecor, Run, Trim, FromAt, BL, BR, TL, TR,
 };
 use iced::animation::Easing;
@@ -998,12 +1073,41 @@ pub const MAILBOX_MOTIONS: &[MailMotion] = &[MailMotion {
 static TABS: [&str; 4] = ["DETAILS", "MODS", "PRICE", "DAMAGE"];
 static LEVELS: [&str; 4] = ["01", "02", "03", "04"];
 
-/// The five rows, trace lines 229-230 and 241-250. Every envelope is
-/// the closed `#env` (lines 228 / 234-237; the trace defines no open
-/// one), so nothing here is unread. The subjects are set in capitals
-/// there; `title_upper` does that here.
+/// Source #51 has an open flap on the first row, closed on the other four.
+/// The open art is measured separately from the common envelope fallback;
+/// `title_upper` preserves the photographed capital subjects.
+// Four closed source symbols share a thin outline and both lower folds.
+// The small local y offset preserves the message row/text pitch.
+const MAIL_CLOSED_ENVELOPE: &[Piece] = &[
+    Piece::Poly {
+        points: &[(1.95, 1.5), (18.0, 1.5), (18.0, 11.45), (1.95, 11.45)],
+        fill: None, stroke: Some(Ink::Fg), width: 0.9, close: true,
+    },
+    Piece::Poly {
+        points: &[(1.95, 1.5), (10.0, 8.25), (18.0, 1.5)],
+        fill: None, stroke: Some(Ink::Fg), width: 0.9, close: false,
+    },
+    Piece::Poly {
+        points: &[(1.95, 11.45), (7.2, 5.9)],
+        fill: None, stroke: Some(Ink::Fg), width: 0.9, close: false,
+    },
+    Piece::Poly {
+        points: &[(18.0, 11.45), (12.75, 5.93)],
+        fill: None, stroke: Some(Ink::Fg), width: 0.9, close: false,
+    },
+];
+const MAIL_OPEN_ENVELOPE: &[Piece] = &[
+    Piece::Poly {
+        points: &[(1.95, 2.2), (10.0, -2.5), (18.0, 2.2), (18.0, 12.0), (1.95, 12.0)],
+        fill: None, stroke: Some(Ink::Fg), width: 0.7, close: true,
+    },
+    Piece::Poly {
+        points: &[(1.95, 2.2), (10.0, 7.7), (18.0, 2.2)],
+        fill: None, stroke: Some(Ink::Fg), width: 0.7, close: false,
+    },
+];
 static ROWS: [Mail; 5] = [
-    Mail { subject: "You'll regret that", from: "Jackie", unread: false },
+    Mail { subject: "You'll regret that", from: "Jackie", unread: true },
     Mail { subject: "Urgent information (!)", from: "Mom", unread: false },
     Mail { subject: "Heist data sent to you", from: "805000451", unread: false },
     Mail { subject: "I'm worried man", from: "Rachel Ross", unread: false },
@@ -1041,10 +1145,12 @@ const MAIL_GHOST: MailRowEcho = MailRowEcho {
 
 pub fn mailbox() -> Mailbox {
     Mailbox {
+        text_baseline: 0.95,
         backdrop: MAIL_BACKDROP,
         chrome: &CHROME,
         overlay: &[],
         list: MailList {
+            footer: &[],
             frame: None,
             frame_ink: Ink::Fg,
             frame_width: 0.0,
@@ -1075,6 +1181,7 @@ pub fn mailbox() -> Mailbox {
                 }),
             }),
             row_fill: None,
+            row_fills: &[],
             row_stroke: None,
             row_width: 1.8,
             row_trim: Trim::NONE,
@@ -1095,20 +1202,27 @@ pub fn mailbox() -> Mailbox {
             sel_fill: Ink::Fixed(rgb(0xe8c21f)),
             sel_notch: None,
             veneer: None,
+            envelope: Some(MailEnvelope { normal: MAIL_CLOSED_ENVELOPE, open: MAIL_OPEN_ENVELOPE }),
             glyph_x: 165.0,
             glyph_dy: 12.0,
             glyph_w: 20.0,
             text_x: 220.0,
             title_dy: 27.0,
             title_size: 18.0,
+            row_type: &[],
             title_bold: false,
+            title_ink: Ink::Fg,
+            selected_ink: Ink::OnSelect,
             from_dy: 49.0,
             from_size: 11.0,
+            from_ink: Ink::Mid,
             from_at: FromAt::Beneath,
             from_prefix: "from: ",
             title_upper: true,
             from_upper: false,
             new_pill: None,
+            new_pill_selected: None,
+            new_pill_art: &[],
             icons: None,
         },
         panel: MailPanel {
@@ -1998,8 +2112,10 @@ pub const ON_HUB_YELLOW: iced::Color = rgb(0x4a3a05);
 pub const ON_BADGE: iced::Color = rgb(0x6b4d08);
 /// The selected blade's lit edge.
 pub const SELECT_EDGE: iced::Color = rgb(0xfce89a);
-/// An idle blade's fill; its edge is `NAME_INK` and its label
-/// `ON_MINT_BAR`, both already sampled on other screens.
+/// An idle blade's fill; its edge is `NAME_INK`. The source idle label
+/// is mint, distinct from the dark printing on the selected yellow face.
+/// The core median on #49's vertical PRODUCTS is #7cffe5.
+pub const BLADE_LABEL: iced::Color = rgb(0x7cffe5);
 pub const BLADE: iced::Color = rgb(0x2c9798);
 /// A ghost's fill and edge: a greener teal than the solid blade,
 /// sampled mid-strip over the black ground (trace lines 189-193).
@@ -2138,7 +2254,7 @@ macro_rules! blade {
             ],
             off: &[
                 Prim::At { x: $cx, y: $cy, prims: $off },
-                Prim::Turn { x: $cx, y: $cy, angle: $a, prims: &[tracked_mid(0.0, 6.5, 19.0, 2.0, Ink::Fixed(ON_MINT_BAR), $label)] },
+                Prim::Turn { x: $cx, y: $cy, angle: $a, prims: &[tracked_mid(0.0, 6.5, 19.0, 2.0, Ink::Fixed(BLADE_LABEL), $label)] },
             ],
         }
     };
@@ -2151,7 +2267,7 @@ const PRODUCTS_ON: &[Prim] = &[
 ];
 const PRODUCTS_OFF: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: BLADE_V_OFF },
-    Prim::Turn { x: 0.0, y: 0.0, angle: 90.0, prims: &[tracked_mid(0.0, 6.5, 19.0, 2.0, Ink::Fixed(ON_MINT_BAR), "PRODUCTS")] },
+    Prim::Turn { x: 0.0, y: 0.0, angle: 90.0, prims: &[tracked_mid(0.0, 6.5, 19.0, 2.0, Ink::Fixed(BLADE_LABEL), "PRODUCTS")] },
 ];
 macro_rules! blade_v {
     ($i:expr, $cx:expr, $cy:expr) => {
@@ -2168,16 +2284,38 @@ macro_rules! blade_v {
     };
 }
 
-/// The BRAINDANCE header tab, chamfered top-left, top-right and
-/// bottom-left: `M 1213,261 H 1419 L 1432,274 V 299 H 1213 L 1200,286
-/// V 274 Z` (trace line 273).
+/// Source #49: rounded tab, connected diagonal ribbon, r10.5 body feet.
 const TAB: &[Seg] = &[
-    Seg::Line(1419.0, 261.0),
-    Seg::Line(1432.0, 274.0),
-    Seg::Line(1432.0, 299.0),
-    Seg::Line(1213.0, 299.0),
-    Seg::Line(1200.0, 286.0),
-    Seg::Line(1200.0, 274.0),
+    Seg::Line(1404.0, 260.5),
+    Seg::Quad { cx: 1408.5, cy: 260.5, x: 1412.0, y: 264.0 },
+    Seg::Line(1429.0, 281.0),
+    Seg::Quad { cx: 1432.0, cy: 284.0, x: 1432.0, y: 288.0 },
+    Seg::Line(1432.0, 300.0),
+    Seg::Quad { cx: 1432.0, cy: 296.5, x: 1428.5, y: 296.5 },
+    Seg::Line(1207.5, 296.5),
+    Seg::Line(1207.5, 271.0),
+    Seg::Quad { cx: 1207.5, cy: 260.5, x: 1218.0, y: 260.5 },
+];
+const HUB_RIBBON: &[Seg] = &[
+    Seg::Quad { cx: 1172.5, cy: 313.0, x: 1174.0, y: 311.5 },
+    Seg::Line(1200.5, 284.5),
+    Seg::Quad { cx: 1205.0, cy: 281.0, x: 1205.0, y: 286.0 },
+    Seg::Line(1205.0, 296.5),
+    Seg::Line(1428.5, 296.5),
+    Seg::Quad { cx: 1432.0, cy: 296.5, x: 1432.0, y: 300.0 },
+    Seg::Line(1432.0, 305.0),
+    Seg::Quad { cx: 1432.0, cy: 308.0, x: 1429.5, y: 310.5 },
+    Seg::Line(1411.5, 328.5),
+    Seg::Quad { cx: 1408.5, cy: 331.5, x: 1403.5, y: 331.5 },
+    Seg::Line(1176.5, 331.5),
+    Seg::Quad { cx: 1172.5, cy: 331.5, x: 1172.5, y: 327.5 },
+];
+const HUB_BODY: &[Seg] = &[
+    Seg::Line(1432.0, 657.0),
+    Seg::Quad { cx: 1432.0, cy: 667.5, x: 1421.5, y: 667.5 },
+    Seg::Line(1218.0, 667.5),
+    Seg::Quad { cx: 1207.5, cy: 667.5, x: 1207.5, y: 657.0 },
+    Seg::Line(1207.5, 331.5),
 ];
 /// The USER box: `M 155.5,189.5 H 349.5 V 232.5 H 220 L 208,240.5
 /// H 155.5 Z` (trace line 148), the mailbox's stepped box.
@@ -2380,7 +2518,7 @@ pub const DASHBOARD: &[Prim] = &[
     blade!(4, 731.0, 586.0, -30.0, BLADE_CCW_ON, BLADE_CCW_OFF, "EVENTS"),
     blade!(5, 919.0, 586.0, 30.0, BLADE_CW_ON, BLADE_CW_OFF, "LOCATIONS"),
     // BRAINDANCE panel: tab, warning tape, outlined body, two
-    // paragraphs of yellow bars (lines 273-295), wiped on from the
+    // four-line paragraphs from source #49, wiped on from the
     // left once the fans have all but finished (`#panel-extrude`,
     // lines 151-158: 0.35 s from 0.25 s, EaseOutCubic)
     Prim::Motion {
@@ -2407,21 +2545,20 @@ pub const DASHBOARD: &[Prim] = &[
 
 /// The BRAINDANCE panel, the D DESCRIPTION of the selection.
 const HUB_PANEL: &[Prim] = &[
-    fill_path(1213.0, 261.0, TAB, Ink::Fixed(HUB_YELLOW)),
-    Prim::Text { x: 1222.0, y: 288.0, size: 20.0, ink: Ink::Fixed(ON_HUB_YELLOW), face: Face::SemiBold, anchor: Anchor::Start, content: "BRAINDANCE" },
-    line_rect(1172.0, 306.0, 180.0, 24.0, Ink::Fixed(HUB_YELLOW), 1.0),
-    txt(1178.0, 316.0, 7.0, Ink::Fixed(TAPE_INK), "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE"),
-    txt(1178.0, 325.0, 7.0, Ink::Fixed(TAPE_INK), "ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
-    line_rect(1207.5, 299.5, 224.5, 367.0, Ink::Fixed(HUB_YELLOW), 1.25),
-    fill_rect(1224.0, 345.0, 196.0, 11.0, Ink::Fixed(GROWN_MICRO)),
-    fill_rect(1224.0, 365.0, 188.0, 11.0, Ink::Fixed(GROWN_MICRO)),
-    fill_rect(1224.0, 385.0, 192.0, 11.0, Ink::Fixed(GROWN_MICRO)),
-    fill_rect(1224.0, 405.0, 176.0, 11.0, Ink::Fixed(GROWN_MICRO)),
-    fill_rect(1224.0, 425.0, 120.0, 11.0, Ink::Fixed(GROWN_MICRO)),
-    fill_rect(1224.0, 448.0, 194.0, 11.0, Ink::Fixed(GROWN_MICRO)),
-    fill_rect(1224.0, 468.0, 184.0, 11.0, Ink::Fixed(GROWN_MICRO)),
-    fill_rect(1224.0, 488.0, 188.0, 11.0, Ink::Fixed(GROWN_MICRO)),
-    fill_rect(1224.0, 508.0, 98.0, 11.0, Ink::Fixed(GROWN_MICRO)),
+    fill_path(1218.0, 260.5, TAB, Ink::Fixed(HUB_YELLOW)),
+    Prim::Tracked { x: 1222.0, y: 288.0, size: 20.0, tracking: 1.0, ink: Ink::Fixed(ON_HUB_YELLOW), face: Face::SemiBold, anchor: Anchor::Start, content: "BRAINDANCE" },
+    shut_path(1172.5, 315.0, HUB_RIBBON, Ink::Fixed(HUB_YELLOW), 1.25),
+    Prim::Wide { x: 1179.5, y: 317.5, size: 8.0, stretch: 1.08, ink: Ink::Fixed(TAPE_INK), face: Face::SemiBold, anchor: Anchor::Start, content: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE" },
+    Prim::Wide { x: 1179.5, y: 325.0, size: 8.0, stretch: 1.08, ink: Ink::Fixed(TAPE_INK), face: Face::SemiBold, anchor: Anchor::Start, content: "ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE." },
+    line_path(1432.0, 300.0, HUB_BODY, Ink::Fixed(HUB_YELLOW), 1.25),
+    Prim::Wide { x: 1221.2, y: 356.25, size: 16.8, stretch: 0.999, ink: Ink::Fixed(rgb(0xffcf2f)), face: Face::Medium, anchor: Anchor::Start, content: "Ut enim ad minim veniam," },
+    Prim::Wide { x: 1221.2, y: 375.25, size: 16.8, stretch: 0.99, ink: Ink::Fixed(rgb(0xffcf2f)), face: Face::Medium, anchor: Anchor::Start, content: "quis nostrud exercitation" },
+    Prim::Wide { x: 1221.2, y: 394.25, size: 16.8, stretch: 0.994, ink: Ink::Fixed(rgb(0xffcf2f)), face: Face::Medium, anchor: Anchor::Start, content: "ullamco laboris nisi ut aliquip" },
+    Prim::Wide { x: 1221.2, y: 413.25, size: 16.8, stretch: 1.009, ink: Ink::Fixed(rgb(0xffcf2f)), face: Face::Medium, anchor: Anchor::Start, content: "ex ea commodo consequat." },
+    Prim::Wide { x: 1221.2, y: 451.25, size: 16.8, stretch: 0.997, ink: Ink::Fixed(rgb(0xffcf2f)), face: Face::Medium, anchor: Anchor::Start, content: "Duis aute irure dolor in repre-" },
+    Prim::Wide { x: 1221.2, y: 470.25, size: 16.8, stretch: 0.99, ink: Ink::Fixed(rgb(0xffcf2f)), face: Face::Medium, anchor: Anchor::Start, content: "henderit in voluptate velit" },
+    Prim::Wide { x: 1221.2, y: 489.25, size: 16.8, stretch: 0.99, ink: Ink::Fixed(rgb(0xffcf2f)), face: Face::Medium, anchor: Anchor::Start, content: "esse cillum dolore eu fugiat" },
+    Prim::Wide { x: 1221.2, y: 508.25, size: 16.8, stretch: 0.972, ink: Ink::Fixed(rgb(0xffcf2f)), face: Face::Medium, anchor: Anchor::Start, content: "nulla pariatur." },
 ];
 // --- end dashboard -------------------------------------------------------
 

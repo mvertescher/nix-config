@@ -34,6 +34,9 @@
 #                   trace at rest, every boot-in done, which is the static
 #                   design the goldens hold. Fractions are fine; frame.sh
 #                   takes the same number.
+#   --live          use the real application clock instead of freezing it.
+#                   Use this to check startup and subscriptions; mutually
+#                   exclusive with --at. Capture after --settle seconds.
 #   --keep-log      accepted and ignored: the log is always kept.
 #
 # Examples:
@@ -80,8 +83,9 @@ home_root=$(cd -- "$crate/../../.." && pwd)   # home/, where themes/ lives
 # its kanji glyphs, which the sandbox has no CJK font for and this host
 # does (crate TODO.md); no cell moved between 2s and 8s under either
 # mode. 4 keeps the 2x headroom 3 used to have over the measured value;
-# the sandbox keeps 15 and FIFO because three wasted minutes across the
-# whole matrix is cheaper than one flaky build.
+# frozen sandbox cases keep 15 and FIFO for established capture stability.
+# Live-clock sandbox cases use mailbox as well: FIFO can retain the
+# initial clipped frame throughout an animation in headless pixman.
 DEFAULT_SETTLE=4
 
 usage() { sed -n '2,/^set -u/p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//;$d'; }
@@ -94,6 +98,8 @@ settle=$DEFAULT_SETTLE
 name=""
 # motion::REST in seconds; keep the two together.
 at=2.4
+at_set=0
+live=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -102,13 +108,19 @@ while [ $# -gt 0 ]; do
     --out)    out=$2; shift 2 ;;
     --bin)    bin=$2; shift 2 ;;
     --settle) settle=$2; shift 2 ;;
-    --at)     at=$2; shift 2 ;;
+    --at)     at=$2; at_set=1; shift 2 ;;
+    --live)   live=1; shift ;;
     --keep-log) shift ;;
     -h|--help) usage; exit 0 ;;
     -*) echo "render.sh: unknown option $1" >&2; usage >&2; exit 2 ;;
     *)  name=$1; shift ;;
   esac
 done
+
+if [ "$live" = 1 ] && [ "$at_set" = 1 ]; then
+  echo "render.sh: --live and --at are mutually exclusive" >&2
+  exit 2
+fi
 
 width=${size%x*}
 height=${size#*x}
@@ -285,10 +297,14 @@ export WGPU_BACKEND=vulkan
 # headless compositor is slow to send; the DEFAULT_SETTLE note has the
 # measurement. Pixel content is unaffected -- it is when the frame lands.
 export ICED_PRESENT_MODE=mailbox
-# The frame of the motion to capture, in ms (`--at`, seconds). Always set:
-# an app left on its own clock blinks its caret against the settle time.
-CP_ERAS_UI_AT_MS=$(perl -e "printf q{%d}, $at * 1000")
-export CP_ERAS_UI_AT_MS
+# Static comparisons pin the clock; --live checks that the app actually
+# advances to that state, including when the caller has a pinned clock.
+if [ "$live" = 1 ]; then
+  unset CP_ERAS_UI_AT_MS
+else
+  CP_ERAS_UI_AT_MS=$(perl -e "printf q{%d}, $at * 1000")
+  export CP_ERAS_UI_AT_MS
+fi
 [ -n "$app_ld_path" ] && export LD_LIBRARY_PATH="$app_ld_path${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 log="$run/app.log"

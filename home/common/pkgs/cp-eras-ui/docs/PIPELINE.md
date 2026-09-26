@@ -155,7 +155,18 @@ instead of at a nix build of the crate:
 scripts/render.sh --era neomil --size 1600x220 --out /tmp/bar.png cp-eras-ui-bar-window
 scripts/render.sh --era kitsch --out /tmp/login.png cp-eras-ui-login   # 1600x900 default
 scripts/render.sh --era none  --bin /path/to/cp-eras-ui-login ...      # compiled fallback
+scripts/render.sh --live --era neomil --bin /path/to/cp-eras-ui-mailbox --out /tmp/mailbox-live.png
 ```
+
+The default capture freezes time at the completed opening frame. `--live`
+instead uses the application's real clock and captures after `--settle`
+seconds; it cannot be combined with `--at`. This catches missing animation
+subscriptions, which a frozen capture bypasses. The matrix includes
+Neomil mailbox and store live-startup cases against their settled goldens.
+These cases use mailbox presentation, as this script does: headless pixman can
+retain the opening frame under default FIFO even though the application
+clock advances. This changes presentation scheduling, not the clock or
+comparison threshold; established frozen matrix cases keep their mode.
 
 It is what G2i captures the implementation with, and it takes about
 eight seconds against a warm nix store: a 4s settle, with
@@ -181,8 +192,13 @@ it is being read against the photo above it. `--diff` adds a fourth row
 that points at what rows 2 and 3 disagree on — |trace − iced| per pixel
 on a black → yellow → red ramp over a dimmed copy of the trace, the
 trace this time *without* its `photo` elements so the expected halo
-stays dark — with the share of pixels off by more than 8 levels in the
-caption. Text always lights a little (two rasterisers, two AAs); a
+stays dark — with the share of pixels whose largest RGB-channel difference
+exceeds 8 levels in the caption. This is a direct channel threshold;
+before 2026-09-21 the caption used ImageMagick's fuzzed AE instead, which
+underreported broad single-channel differences. Output metadata is stripped
+so inherited source PNG text chunks cannot prevent ordinary image readers
+from opening the comparison. Text always lights a little (two rasterisers,
+two AAs); a
 filled shape lit solid is a colour miss, an outline lit is a placement
 miss, and a whole frame lit dimly is a ground drawn from memory.
 

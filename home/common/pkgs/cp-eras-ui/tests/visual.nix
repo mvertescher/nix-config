@@ -53,6 +53,9 @@
   threshold ? "99.9",
   # Seconds to let the app draw before capturing.
   settle ? 15,
+  # A live-clock case catches missing animation subscriptions hidden by
+  # the frozen rest-frame matrix. It uses the same settled golden.
+  freezeClock ? true,
   # Publish a theme into the sandbox HOME. `era` is the name the toolkit
   # matches on, `roles` the resolved role attrset -- the base seven plus
   # whatever ornamentals the era declares -- normally taken straight
@@ -99,7 +102,8 @@ let
   # indistinguishable in exactly the same way.
   suffix =
     "-${lib.removePrefix "cp-eras-ui-" example}"
-    + (if era == null then "-fallback" else "-${era}");
+    + (if era == null then "-fallback" else "-${era}")
+    + lib.optionalString (!freezeClock) "-live";
 in
 runCommand "cp-eras-ui-visual-test${suffix}"
   {
@@ -151,7 +155,12 @@ runCommand "cp-eras-ui-visual-test${suffix}"
     # The trace at rest, `motion::REST` (src/motion.rs): the goldens are
     # the static design -- every boot-in frozen where it ends, the caret
     # lit -- not whichever moment the settle happened to land in.
-    export CP_ERAS_UI_AT_MS=2400
+    ${if freezeClock then "export CP_ERAS_UI_AT_MS=2400" else "unset CP_ERAS_UI_AT_MS"}
+
+    # Headless pixman has no vblank; FIFO can hold the initial clipped
+    # frame indefinitely during animation. Match render.sh for live-clock
+    # cases while preserving the established frozen-case presentation.
+    ${lib.optionalString (!freezeClock) "export ICED_PRESENT_MODE=mailbox"}
 
     cd "$TMPDIR"
 

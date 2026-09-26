@@ -43,7 +43,7 @@
 //! `iced::animation::Animation` per moving thing. lilt's `Easing`
 //! is the curve, as the vocabulary table says.
 
-use crate::style::Motion;
+use crate::style::{Motion, Prim};
 use std::sync::OnceLock;
 use std::time::{Duration, Instant};
 
@@ -150,9 +150,64 @@ pub fn progress(motion: &Motion, elapsed: Duration) -> f32 {
     motion.ease.value(into.as_secs_f32() / dur.as_secs_f32())
 }
 
+/// Last change in a scene's one-shot motion tree. Nested motions share
+/// the scene's clock: their end times are compared, not added. Include
+/// both plate drawings so a selection made during boot stays animated.
+/// `Prim::Motion` has no repeating variant; caret cycles use a separate
+/// subscription and are not represented by these display lists.
+pub(crate) fn scene_end(prims: &[Prim]) -> Duration {
+    prims.iter().map(|prim| match prim {
+        Prim::Motion { motion, prims } => {
+            Duration::from_millis(u64::from(motion.begin) + u64::from(motion.dur))
+                .max(scene_end(prims))
+        }
+        Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Soft { prims }
+        | Prim::Viewport { prims, .. } => scene_end(prims),
+        Prim::Masked { prims, mask } => scene_end(prims).max(scene_end(mask)),
+        Prim::Plate { on, off, .. } | Prim::Pick { on, off, .. } => scene_end(on).max(scene_end(off)),
+        _ => Duration::ZERO,
+    }).max().unwrap_or(Duration::ZERO)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn scene_end_uses_absolute_nested_times_and_delayed_zero_duration_changes() {
+        use crate::style::{Change, Group};
+        use iced::animation::Easing;
+        const fn fade(begin: u32, dur: u32, prims: &'static [Prim]) -> Prim {
+            Prim::Motion {
+                motion: Motion {
+                    id: "end-test", begin, dur, ease: Easing::Linear,
+                    change: Change::Opacity { alpha: (0.0, 1.0) },
+                },
+                prims,
+            }
+        }
+        const SCENE: &[Prim] = &[Prim::At { x: 0.0, y: 0.0, prims: &[
+            fade(100, 200, &[fade(250, 150, &[])]),
+            Prim::Plate {
+                group: Group::Module, index: 0, x: 0.0, y: 0.0, w: 1.0, h: 1.0,
+                on: &[fade(450, 0, &[])], off: &[fade(0, 420, &[])],
+            },
+        ] }];
+        assert_eq!(scene_end(SCENE), Duration::from_millis(450));
+        // A permanently clipped selection may change during boot; both
+        // branches must keep their final scheduled frame reachable.
+        const SELECTED: &[Prim] = &[Prim::Viewport {
+            x: 0.0, y: 0.0, w: 1.0, h: 1.0,
+            prims: &[Prim::Pick {
+                group: Group::Card, index: 1,
+                on: &[fade(500, 100, &[])], off: SCENE,
+            }],
+        }];
+        assert_eq!(scene_end(SELECTED), Duration::from_millis(600));
+        assert_eq!(scene_end(&[]), Duration::ZERO);
+        assert_eq!(scene_end(&[fade(u32::MAX, u32::MAX, &[])]),
+            Duration::from_millis(u64::from(u32::MAX) * 2));
+    }
 
     #[test]
     fn lit_for_the_first_half_of_each_period() {

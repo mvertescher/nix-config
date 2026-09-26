@@ -601,11 +601,11 @@ pub const ACCESS: Access = Access {
     ],
     // 22 strands: the outer plateaus at y 727.1 with a 3.9 spacing, the
     // centre plateau at 782.1 with the spacing tightened to 3.03, and
-    // both ends curling down into a vertical that runs to y 812.
+    // both feet descend from independent endpoints 17px above each run.
     fixture: Fixture::WireBand {
         outer: 727.1,
         inner: 782.1,
-        end: 812.0,
+        end: 710.1,
         strands: 22,
     },
     colophon: Colophon::Notice {
@@ -638,10 +638,10 @@ pub const ACCESS: Access = Access {
 //     rather than shipping a raster, which is the era table's standing
 //     answer to a material fill.
 //
-// The wire band's eight strands are the trace's beziers stepped into
-// short segments; at 1.1px they read the same.
+// The wire band's eleven strands use the trace's measured cubic curves;
+// source #71 has two more resolved strands than the hub.
 use crate::style::{
-    Frame, Mail, MailBadges, MailButtons, MailList, MailRowCoat, MailRowStates, MailRowEcho, MailMotion, MailPanel, MailPart, Mailbox,
+    Frame, Mail, MailBadges, MailButtons, MailEnvelope, MailList, MailRowCoat, MailRowStates, MailRowEcho, MailMotion, MailPanel, MailPart, Mailbox,
     Note, Piece, RowDecor, Run, Seg, Trim, Veneer, FromAt, BL, TR,
 };
 
@@ -779,218 +779,68 @@ const fn letter(x: f32, y: f32, s: &'static str) -> Piece {
     })
 }
 
-// The wire band, transcribed segment for segment from the trace rather
-// than sampled: each strand leaves the left margin flat, eases up into
-// the tight line at y~87 with a cubic, runs to x 1040, eases back down
-// with another, and curls off the right edge through a quadratic. A
-// polyline through those endpoints draws a hard corner where the
-// material shows an S-curve.
-static WIRE0: [Seg; 7] = [
-    Seg::Line(52.0, 122.0),
-    Seg::Cubic { c1x: 84.0, c1y: 122.0, c2x: 100.0, c2y: 86.40, x: 130.0, y: 86.40 },
-    Seg::Line(1040.0, 86.40),
-    Seg::Cubic { c1x: 1075.0, c1y: 86.40, c2x: 1090.0, c2y: 123.0, x: 1125.0, y: 123.0 },
-    Seg::Line(1535.0, 123.0),
-    Seg::Quad { cx: 1562.0, cy: 123.0, x: 1568.0, y: 145.0 },
-    Seg::Line(1570.0, 153.0),
+// Header wire geometry measured separately from source #69 and #71 (NK-02).
+// The former common eight-strand table put the left rise through T1 and
+// compressed only the right pitch. Source #69 resolves nine strands;
+// source #71 eleven. Both have a 3.18 pitch and rounded downward feet.
+const fn header_wire_steps(index: usize, mail: bool) -> [Seg; 9] {
+    let i = index as f32;
+    let y = if mail { 123.7 } else { 123.45 } + 3.18 * i;
+    let bridge = if mail { 87.05 } else { 86.8 };
+    let left = if mail { 34.7 } else { 35.5 };
+    let right = if mail { 1564.2 } else { 1565.0 };
+    let depart = if mail { 160.8 } else { 160.4 } - 1.6 * i;
+    let control = if mail { 187.6 } else { 192.2 } - 0.7 * i;
+    [
+        Seg::Line(left, y + 16.0),
+        Seg::Cubic { c1x: left, c1y: y + 7.16, c2x: left + 7.16, c2y: y, x: left + 16.0, y },
+        Seg::Line(depart, y),
+        Seg::Cubic { c1x: control, c1y: y, c2x: if mail { 195.3 } else { 195.05 }, c2y: bridge, x: 226.0, y: bridge },
+        Seg::Line(1056.0, bridge),
+        Seg::Cubic { c1x: 1078.5, c1y: bridge, c2x: 1092.3 + 0.7 * i, c2y: y, x: 1114.3 + 1.6 * i, y },
+        Seg::Line(right - 16.0, y),
+        Seg::Cubic { c1x: right - 7.16, c1y: y, c2x: right, c2y: y + 7.16, x: right, y: y + 16.0 },
+        Seg::Line(right, y + 16.0),
+    ]
+}
+
+const fn header_wire_ink(index: usize, mail: bool) -> Ink {
+    Ink::Fixed(iced::Color {
+        a: 1.0 - 0.8 * index as f32 / if mail { 10.0 } else { 8.0 },
+        ..if mail { rgb(0xdfb47c) } else { rgb(0xedb778) }
+    })
+}
+
+static WIRE0: [Seg; 9] = header_wire_steps(0, true);
+static WIRE1: [Seg; 9] = header_wire_steps(1, true);
+static WIRE2: [Seg; 9] = header_wire_steps(2, true);
+static WIRE3: [Seg; 9] = header_wire_steps(3, true);
+static WIRE4: [Seg; 9] = header_wire_steps(4, true);
+static WIRE5: [Seg; 9] = header_wire_steps(5, true);
+static WIRE6: [Seg; 9] = header_wire_steps(6, true);
+static WIRE7: [Seg; 9] = header_wire_steps(7, true);
+static WIRE8: [Seg; 9] = header_wire_steps(8, true);
+static WIRE9: [Seg; 9] = header_wire_steps(9, true);
+static WIRE10: [Seg; 9] = header_wire_steps(10, true);
+
+// NK-03 source-specific badge curves share the header's sRGB backdrop.
+mod badge;
+
+// NK-10: closed folds measured in #71. The list's common glyph origin is
+// the open flap apex; the closed box sits 3.5px below it. Read state and
+// resolved printing ink are still supplied by the mail renderer.
+const CLOSED_ENVELOPE: &[Piece] = &[
+    Piece::Poly { points: &[(0.0,3.5),(16.0,3.5),(16.0,14.0),(0.0,14.0)], fill: None, stroke: Some(Ink::Fg), width: 1.0, close: true },
+    Piece::Poly { points: &[(0.0,3.5),(8.0,10.7),(16.0,3.5)], fill: None, stroke: Some(Ink::Fg), width: 1.0, close: false },
+    Piece::Poly { points: &[(0.0,14.0),(5.3,8.3)], fill: None, stroke: Some(Ink::Fg), width: 1.0, close: false },
+    Piece::Poly { points: &[(16.0,14.0),(10.7,8.3)], fill: None, stroke: Some(Ink::Fg), width: 1.0, close: false },
 ];
-static WIRE1: [Seg; 7] = [
-    Seg::Line(52.0, 124.9),
-    Seg::Cubic { c1x: 84.0, c1y: 124.9, c2x: 100.0, c2y: 86.56, x: 130.0, y: 86.56 },
-    Seg::Line(1040.0, 86.56),
-    Seg::Cubic { c1x: 1075.0, c1y: 86.56, c2x: 1090.0, c2y: 124.8, x: 1125.0, y: 124.8 },
-    Seg::Line(1535.0, 124.8),
-    Seg::Quad { cx: 1562.0, cy: 124.8, x: 1568.0, y: 146.8 },
-    Seg::Line(1570.0, 154.8),
-];
-static WIRE2: [Seg; 7] = [
-    Seg::Line(52.0, 127.8),
-    Seg::Cubic { c1x: 84.0, c1y: 127.8, c2x: 100.0, c2y: 86.72, x: 130.0, y: 86.72 },
-    Seg::Line(1040.0, 86.72),
-    Seg::Cubic { c1x: 1075.0, c1y: 86.72, c2x: 1090.0, c2y: 126.6, x: 1125.0, y: 126.6 },
-    Seg::Line(1535.0, 126.6),
-    Seg::Quad { cx: 1562.0, cy: 126.6, x: 1568.0, y: 148.6 },
-    Seg::Line(1570.0, 156.6),
-];
-static WIRE3: [Seg; 7] = [
-    Seg::Line(52.0, 130.7),
-    Seg::Cubic { c1x: 84.0, c1y: 130.7, c2x: 100.0, c2y: 86.88, x: 130.0, y: 86.88 },
-    Seg::Line(1040.0, 86.88),
-    Seg::Cubic { c1x: 1075.0, c1y: 86.88, c2x: 1090.0, c2y: 128.4, x: 1125.0, y: 128.4 },
-    Seg::Line(1535.0, 128.4),
-    Seg::Quad { cx: 1562.0, cy: 128.4, x: 1568.0, y: 150.4 },
-    Seg::Line(1570.0, 158.4),
-];
-static WIRE4: [Seg; 7] = [
-    Seg::Line(52.0, 133.6),
-    Seg::Cubic { c1x: 84.0, c1y: 133.6, c2x: 100.0, c2y: 87.04, x: 130.0, y: 87.04 },
-    Seg::Line(1040.0, 87.04),
-    Seg::Cubic { c1x: 1075.0, c1y: 87.04, c2x: 1090.0, c2y: 130.2, x: 1125.0, y: 130.2 },
-    Seg::Line(1535.0, 130.2),
-    Seg::Quad { cx: 1562.0, cy: 130.2, x: 1568.0, y: 152.2 },
-    Seg::Line(1570.0, 160.2),
-];
-static WIRE5: [Seg; 7] = [
-    Seg::Line(52.0, 136.5),
-    Seg::Cubic { c1x: 84.0, c1y: 136.5, c2x: 100.0, c2y: 87.20, x: 130.0, y: 87.20 },
-    Seg::Line(1040.0, 87.20),
-    Seg::Cubic { c1x: 1075.0, c1y: 87.20, c2x: 1090.0, c2y: 132.0, x: 1125.0, y: 132.0 },
-    Seg::Line(1535.0, 132.0),
-    Seg::Quad { cx: 1562.0, cy: 132.0, x: 1568.0, y: 154.0 },
-    Seg::Line(1570.0, 162.0),
-];
-static WIRE6: [Seg; 7] = [
-    Seg::Line(52.0, 139.4),
-    Seg::Cubic { c1x: 84.0, c1y: 139.4, c2x: 100.0, c2y: 87.36, x: 130.0, y: 87.36 },
-    Seg::Line(1040.0, 87.36),
-    Seg::Cubic { c1x: 1075.0, c1y: 87.36, c2x: 1090.0, c2y: 133.8, x: 1125.0, y: 133.8 },
-    Seg::Line(1535.0, 133.8),
-    Seg::Quad { cx: 1562.0, cy: 133.8, x: 1568.0, y: 155.8 },
-    Seg::Line(1570.0, 163.8),
-];
-static WIRE7: [Seg; 7] = [
-    Seg::Line(52.0, 142.3),
-    Seg::Cubic { c1x: 84.0, c1y: 142.3, c2x: 100.0, c2y: 87.52, x: 130.0, y: 87.52 },
-    Seg::Line(1040.0, 87.52),
-    Seg::Cubic { c1x: 1075.0, c1y: 87.52, c2x: 1090.0, c2y: 135.6, x: 1125.0, y: 135.6 },
-    Seg::Line(1535.0, 135.6),
-    Seg::Quad { cx: 1562.0, cy: 135.6, x: 1568.0, y: 157.6 },
-    Seg::Line(1570.0, 165.6),
+const OPEN_ENVELOPE: &[Piece] = &[
+    Piece::Poly { points: &[(0.0,4.0),(8.0,0.0),(16.0,4.0),(16.0,14.5),(0.0,14.5)], fill: None, stroke: Some(Ink::Fg), width: 1.0, close: true },
+    Piece::Poly { points: &[(0.0,4.0),(8.0,9.5),(16.0,4.0)], fill: None, stroke: Some(Ink::Fg), width: 1.0, close: false },
 ];
 
-/// The T2 badge: a folder seen face on, its raised tab on the right.
-/// Front outline measured at (1287,55)-(1338,104), tab top y~37.
-static FOLDER: [(f32, f32); 14] = [
-    (1291.0, 55.0),
-    (1302.0, 55.0),
-    (1309.0, 54.0),
-    (1312.0, 50.0),
-    (1315.0, 46.0),
-    (1318.0, 38.0),
-    (1324.0, 37.0),
-    (1333.0, 37.0),
-    (1338.0, 42.0),
-    (1338.0, 100.0),
-    (1334.0, 104.0),
-    (1291.0, 104.0),
-    (1287.0, 100.0),
-    (1287.0, 59.0),
-];
-/// The folder's six receding hairline rings: the shelf tops fan widely,
-/// the tab tops just enough to resolve as separate lines, the right
-/// edges spill out and everything converges at the bottom. Measured
-/// spread, stepped off the crisp outline above.
-static RING1: [(f32, f32); 14] = [
-    (1289.4, 52.9),
-    (1301.2, 52.9),
-    (1308.7, 51.9),
-    (1312.0, 47.9),
-    (1315.2, 43.9),
-    (1318.4, 35.9),
-    (1324.9, 34.9),
-    (1334.5, 34.9),
-    (1339.9, 39.9),
-    (1339.9, 100.3),
-    (1335.6, 104.3),
-    (1289.4, 104.3),
-    (1285.1, 100.3),
-    (1285.1, 56.9),
-];
-
-static RING2: [(f32, f32); 14] = [
-    (1287.8, 50.8),
-    (1300.4, 50.8),
-    (1308.5, 49.8),
-    (1311.9, 45.8),
-    (1315.4, 41.8),
-    (1318.8, 33.8),
-    (1325.7, 32.8),
-    (1336.1, 32.8),
-    (1341.8, 37.8),
-    (1341.8, 100.6),
-    (1337.2, 104.6),
-    (1287.8, 104.6),
-    (1283.2, 100.6),
-    (1283.2, 54.8),
-];
-
-static RING3: [(f32, f32); 14] = [
-    (1286.2, 48.7),
-    (1299.7, 48.7),
-    (1308.2, 47.7),
-    (1311.9, 43.7),
-    (1315.6, 39.7),
-    (1319.2, 31.7),
-    (1326.6, 30.7),
-    (1337.6, 30.7),
-    (1343.7, 35.7),
-    (1343.7, 100.9),
-    (1338.8, 104.9),
-    (1286.2, 104.9),
-    (1281.3, 100.9),
-    (1281.3, 52.7),
-];
-
-static RING4: [(f32, f32); 14] = [
-    (1284.6, 46.6),
-    (1298.9, 46.6),
-    (1308.0, 45.6),
-    (1311.9, 41.6),
-    (1315.7, 37.6),
-    (1319.6, 29.6),
-    (1327.4, 28.6),
-    (1339.1, 28.6),
-    (1345.6, 33.6),
-    (1345.6, 101.2),
-    (1340.4, 105.2),
-    (1284.6, 105.2),
-    (1279.4, 101.2),
-    (1279.4, 50.6),
-];
-
-static RING5: [(f32, f32); 14] = [
-    (1283.0, 44.5),
-    (1298.1, 44.5),
-    (1307.7, 43.5),
-    (1311.8, 39.5),
-    (1315.9, 35.5),
-    (1320.0, 27.5),
-    (1328.3, 26.5),
-    (1340.6, 26.5),
-    (1347.5, 31.5),
-    (1347.5, 101.5),
-    (1342.0, 105.5),
-    (1283.0, 105.5),
-    (1277.5, 101.5),
-    (1277.5, 48.5),
-];
-
-static RING6: [(f32, f32); 14] = [
-    (1281.4, 42.4),
-    (1297.3, 42.4),
-    (1307.4, 41.4),
-    (1311.8, 37.4),
-    (1316.1, 33.4),
-    (1320.5, 25.4),
-    (1329.1, 24.4),
-    (1342.2, 24.4),
-    (1349.4, 29.4),
-    (1349.4, 101.8),
-    (1343.6, 105.8),
-    (1281.4, 105.8),
-    (1275.6, 101.8),
-    (1275.6, 46.4),
-];
-
-/// The solid gold tab pointing up from the folder's inside bottom edge.
-static FOLDER_TAB: [(f32, f32); 4] = [
-    (1293.0, 104.5),
-    (1297.0, 100.0),
-    (1322.0, 100.0),
-    (1326.0, 104.5),
-];
-
-static CHROME: [Piece; 49] = [
+static CHROME: [Piece; 33] = [
     Piece::Label(Note {
         at: Run::new(118.3, 42.2, 13.0, Ink::Fg).medium(),
         text: "CUSTOMER #NC488402",
@@ -1005,128 +855,9 @@ static CHROME: [Piece; 49] = [
     strong(1236.0, 86.0, 20.0, "T1"),
     strong(1361.0, 86.0, 20.0, "T3"),
     strong(1424.0, 86.0, 20.0, "T4"),
-    Piece::Poly {
-        points: &RING1,
-        fill: None,
-        stroke: Some(Ink::Dim),
-        width: 0.7,
-        close: true,
-    },
-    Piece::Poly {
-        points: &RING2,
-        fill: None,
-        stroke: Some(Ink::Dim),
-        width: 0.7,
-        close: true,
-    },
-    Piece::Poly {
-        points: &RING3,
-        fill: None,
-        stroke: Some(Ink::Dim),
-        width: 0.7,
-        close: true,
-    },
-    Piece::Poly {
-        points: &RING4,
-        fill: None,
-        stroke: Some(Ink::Dim),
-        width: 0.7,
-        close: true,
-    },
-    Piece::Poly {
-        points: &RING5,
-        fill: None,
-        stroke: Some(Ink::Dim),
-        width: 0.7,
-        close: true,
-    },
-    Piece::Poly {
-        points: &RING6,
-        fill: None,
-        stroke: Some(Ink::Dim),
-        width: 0.7,
-        close: true,
-    },
-    Piece::Poly {
-        points: &FOLDER,
-        fill: None,
-        stroke: Some(Ink::Fg),
-        width: 1.1,
-        close: true,
-    },
-    Piece::Poly {
-        points: &FOLDER_TAB,
-        fill: Some(Ink::Alert),
-        stroke: None,
-        width: 0.0,
-        close: true,
-    },
     text(1295.0, 71.0, 12.0, Ink::Fg, "LEVEL"),
     strong(1296.0, 95.0, 21.0, "T2"),
-    Piece::Curve {
-        start: (30.0, 122.0),
-        steps: &WIRE0,
-        fill: None,
-        stroke: Some(Ink::Tape),
-        width: 1.1,
-        close: false,
-    },
-    Piece::Curve {
-        start: (30.0, 124.9),
-        steps: &WIRE1,
-        fill: None,
-        stroke: Some(Ink::Tape),
-        width: 1.1,
-        close: false,
-    },
-    Piece::Curve {
-        start: (30.0, 127.8),
-        steps: &WIRE2,
-        fill: None,
-        stroke: Some(Ink::Tape),
-        width: 1.1,
-        close: false,
-    },
-    Piece::Curve {
-        start: (30.0, 130.7),
-        steps: &WIRE3,
-        fill: None,
-        stroke: Some(Ink::Tape),
-        width: 1.1,
-        close: false,
-    },
-    Piece::Curve {
-        start: (30.0, 133.6),
-        steps: &WIRE4,
-        fill: None,
-        stroke: Some(Ink::Tape),
-        width: 1.1,
-        close: false,
-    },
-    Piece::Curve {
-        start: (30.0, 136.5),
-        steps: &WIRE5,
-        fill: None,
-        stroke: Some(Ink::Tape),
-        width: 1.1,
-        close: false,
-    },
-    Piece::Curve {
-        start: (30.0, 139.4),
-        steps: &WIRE6,
-        fill: None,
-        stroke: Some(Ink::Tape),
-        width: 1.1,
-        close: false,
-    },
-    Piece::Curve {
-        start: (30.0, 142.3),
-        steps: &WIRE7,
-        fill: None,
-        stroke: Some(Ink::Tape),
-        width: 1.1,
-        close: false,
-    },    Piece::Poly {
+    Piece::Poly {
         points: &PLATE_A,
         fill: None,
         stroke: Some(Ink::Dim),
@@ -1239,12 +970,16 @@ static PARAGRAPHS: [&[&str]; 3] = [
 
 pub fn mailbox() -> Mailbox {
     Mailbox {
+        text_baseline: 0.95,
         // The mailbox trace (`:211-213`) opens with the store's haze, lobe
         // and masked blue line for line, so it takes the store's ground.
-        backdrop: PAGE_BACKDROP,
+        backdrop: MAIL_HEADER_BACKDROP,
         chrome: &CHROME,
         overlay: &[],
         list: MailList {
+            envelope: Some(MailEnvelope { normal: CLOSED_ENVELOPE, open: OPEN_ENVELOPE }),
+            row_type: &[],
+            footer: &[],
             feedback: Some(MailRowStates {
                 hover: MailRowCoat {
                     fill: None, outline: Some(Ink::Fixed(rgb(0xe8c186))),
@@ -1275,6 +1010,7 @@ pub fn mailbox() -> Mailbox {
             selected: 1,
             decor: RowDecor::Ruled,
             row_fill: None,
+            row_fills: &[],
             row_stroke: None,
             row_width: 0.0,
             row_trim: Trim::NONE,
@@ -1311,13 +1047,18 @@ pub fn mailbox() -> Mailbox {
             title_dy: 27.2,
             title_size: 18.0,
             title_bold: true,
+            title_ink: Ink::Fg,
+            selected_ink: Ink::OnSelect,
             from_dy: 48.2,
             from_size: 11.5,
+            from_ink: Ink::Mid,
             from_at: FromAt::Beneath,
             from_prefix: "FROM: ",
             title_upper: false,
             from_upper: true,
             new_pill: None,
+            new_pill_selected: None,
+            new_pill_art: &[],
             icons: None,
         },
         panel: MailPanel {
@@ -2073,7 +1814,8 @@ const NAV_OFF_3: &[Prim] = nav!(NAV4, TAB4, 540.0, 576.2, 566.5, "SHOTGUN").1;
 const NAV_ON_4: &[Prim] = nav!(NAV5, TAB5, 600.7, 636.9, 627.2, "PISTOL").0;
 const NAV_OFF_4: &[Prim] = nav!(NAV5, TAB5, 600.7, 636.9, 627.2, "PISTOL").1;
 
-// components.svg #nk-button-hover borrows T2's seven outward rings.
+// components.svg #nk-button-hover retains the inferred seven-ring outward echo;
+// it is not a literal copy of the source-corrected T2 badge fan.
 // Apply its asymmetric expansion to the store's own r4/cut silhouette;
 // the plate, tab and label are the untouched resting drawing on top.
 macro_rules! nav_echo {
@@ -2330,16 +2072,6 @@ pub const RING_55: iced::Color = rgb(0x6e5032);
 pub const RING_49: iced::Color = rgb(0x64482e);
 pub const RING_37: iced::Color = rgb(0x4f3926);
 pub const RING_25: iced::Color = rgb(0x3a2a1e);
-/// `MICRO` at the T2 badge's seven ring opacities 0.55..0.85 (:296-302)
-/// over `HAZE_MID`, the haze stop nearest the badge's ground.
-pub const BADGE_55: iced::Color = rgb(0x775d4d);
-pub const BADGE_60: iced::Color = rgb(0x7d614c);
-pub const BADGE_65: iced::Color = rgb(0x82644c);
-pub const BADGE_70: iced::Color = rgb(0x88684b);
-pub const BADGE_75: iced::Color = rgb(0x8d6b4b);
-pub const BADGE_80: iced::Color = rgb(0x936e4a);
-pub const BADGE_85: iced::Color = rgb(0x98724a);
-
 /// The haze (`#haze`, :131-139): the same four colours the bar and store
 /// use, at this trace's own stop offsets, centred (825,-120), r 1030,
 /// y-scaled 0.515, turned 1.3 degrees (:133). The blue annulus
@@ -2656,159 +2388,56 @@ const PANEL_FRAME: &[Prim] = &[
     shut_path(0.0, 37.8, NPANEL, Ink::Fixed(HUB_EDGE), 1.2),
 ];
 
-/// The T2 badge (:287-307): seven hairline rings of the folder outline
-/// fading inward, the front, and the solid trapezoid tab pointing up
-/// off the inside bottom edge. Each ring is closed (`Z`) and opens at
-/// its own top-left, (1286.8,40.3) for the outermost.
-const T2_1: &[Seg] = &[
-    Seg::Line(1302.0, 40.3),
-    Seg::Quad { cx: 1314.6, cy: 42.4, x: 1317.6, y: 37.4 },
-    Seg::Line(1320.6, 41.1),
-    Seg::Quad { cx: 1322.6, cy: 32.1, x: 1329.6, y: 32.1 },
-    Seg::Line(1344.2, 32.1),
-    Seg::Quad { cx: 1349.2, cy: 32.1, x: 1349.2, y: 37.1 },
-    Seg::Line(1349.2, 101.8),
-    Seg::Quad { cx: 1349.2, cy: 105.8, x: 1345.2, y: 105.8 },
-    Seg::Line(1286.8, 105.8),
-    Seg::Quad { cx: 1282.8, cy: 105.8, x: 1282.8, y: 101.8 },
-    Seg::Line(1282.8, 46.4),
-    Seg::Quad { cx: 1282.8, cy: 42.4, x: 1286.8, y: 42.4 },
-];
-const T2_2: &[Seg] = &[
-    Seg::Line(1302.0, 42.4),
-    Seg::Quad { cx: 1313.8, cy: 44.2, x: 1316.8, y: 39.2 },
-    Seg::Line(1319.8, 41.8),
-    Seg::Quad { cx: 1321.8, cy: 32.8, x: 1328.8, y: 32.8 },
-    Seg::Line(1342.6, 32.8),
-    Seg::Quad { cx: 1347.6, cy: 32.8, x: 1347.6, y: 37.8 },
-    Seg::Line(1347.6, 101.5),
-    Seg::Quad { cx: 1347.6, cy: 105.5, x: 1343.6, y: 105.5 },
-    Seg::Line(1287.4, 105.5),
-    Seg::Quad { cx: 1283.4, cy: 105.5, x: 1283.4, y: 101.5 },
-    Seg::Line(1283.4, 48.2),
-    Seg::Quad { cx: 1283.4, cy: 44.2, x: 1287.4, y: 44.2 },
-];
-const T2_3: &[Seg] = &[
-    Seg::Line(1302.0, 44.5),
-    Seg::Quad { cx: 1313.0, cy: 46.0, x: 1316.0, y: 41.0 },
-    Seg::Line(1319.0, 42.5),
-    Seg::Quad { cx: 1321.0, cy: 33.5, x: 1328.0, y: 33.5 },
-    Seg::Line(1341.0, 33.5),
-    Seg::Quad { cx: 1346.0, cy: 33.5, x: 1346.0, y: 38.5 },
-    Seg::Line(1346.0, 101.2),
-    Seg::Quad { cx: 1346.0, cy: 105.2, x: 1342.0, y: 105.2 },
-    Seg::Line(1288.0, 105.2),
-    Seg::Quad { cx: 1284.0, cy: 105.2, x: 1284.0, y: 101.2 },
-    Seg::Line(1284.0, 50.0),
-    Seg::Quad { cx: 1284.0, cy: 46.0, x: 1288.0, y: 46.0 },
-];
-const T2_4: &[Seg] = &[
-    Seg::Line(1302.0, 46.6),
-    Seg::Quad { cx: 1312.2, cy: 47.8, x: 1315.2, y: 42.8 },
-    Seg::Line(1318.2, 43.2),
-    Seg::Quad { cx: 1320.2, cy: 34.2, x: 1327.2, y: 34.2 },
-    Seg::Line(1339.4, 34.2),
-    Seg::Quad { cx: 1344.4, cy: 34.2, x: 1344.4, y: 39.2 },
-    Seg::Line(1344.4, 101.0),
-    Seg::Quad { cx: 1344.4, cy: 105.0, x: 1340.4, y: 105.0 },
-    Seg::Line(1288.6, 105.0),
-    Seg::Quad { cx: 1284.6, cy: 105.0, x: 1284.6, y: 101.0 },
-    Seg::Line(1284.6, 51.8),
-    Seg::Quad { cx: 1284.6, cy: 47.8, x: 1288.6, y: 47.8 },
-];
-const T2_5: &[Seg] = &[
-    Seg::Line(1302.0, 48.7),
-    Seg::Quad { cx: 1311.4, cy: 49.6, x: 1314.4, y: 44.6 },
-    Seg::Line(1317.4, 43.9),
-    Seg::Quad { cx: 1319.4, cy: 34.9, x: 1326.4, y: 34.9 },
-    Seg::Line(1337.8, 34.9),
-    Seg::Quad { cx: 1342.8, cy: 34.9, x: 1342.8, y: 39.9 },
-    Seg::Line(1342.8, 100.8),
-    Seg::Quad { cx: 1342.8, cy: 104.8, x: 1338.8, y: 104.8 },
-    Seg::Line(1289.2, 104.8),
-    Seg::Quad { cx: 1285.2, cy: 104.8, x: 1285.2, y: 100.8 },
-    Seg::Line(1285.2, 53.6),
-    Seg::Quad { cx: 1285.2, cy: 49.6, x: 1289.2, y: 49.6 },
-];
-const T2_6: &[Seg] = &[
-    Seg::Line(1302.0, 50.8),
-    Seg::Quad { cx: 1310.6, cy: 51.4, x: 1313.6, y: 46.4 },
-    Seg::Line(1316.6, 44.6),
-    Seg::Quad { cx: 1318.6, cy: 35.6, x: 1325.6, y: 35.6 },
-    Seg::Line(1336.2, 35.6),
-    Seg::Quad { cx: 1341.2, cy: 35.6, x: 1341.2, y: 40.6 },
-    Seg::Line(1341.2, 100.5),
-    Seg::Quad { cx: 1341.2, cy: 104.5, x: 1337.2, y: 104.5 },
-    Seg::Line(1289.8, 104.5),
-    Seg::Quad { cx: 1285.8, cy: 104.5, x: 1285.8, y: 100.5 },
-    Seg::Line(1285.8, 55.4),
-    Seg::Quad { cx: 1285.8, cy: 51.4, x: 1289.8, y: 51.4 },
-];
-const T2_7: &[Seg] = &[
-    Seg::Line(1302.0, 52.9),
-    Seg::Quad { cx: 1309.8, cy: 53.2, x: 1312.8, y: 48.2 },
-    Seg::Line(1315.8, 45.3),
-    Seg::Quad { cx: 1317.8, cy: 36.3, x: 1324.8, y: 36.3 },
-    Seg::Line(1334.6, 36.3),
-    Seg::Quad { cx: 1339.6, cy: 36.3, x: 1339.6, y: 41.3 },
-    Seg::Line(1339.6, 100.2),
-    Seg::Quad { cx: 1339.6, cy: 104.2, x: 1335.6, y: 104.2 },
-    Seg::Line(1290.4, 104.2),
-    Seg::Quad { cx: 1286.4, cy: 104.2, x: 1286.4, y: 100.2 },
-    Seg::Line(1286.4, 57.2),
-    Seg::Quad { cx: 1286.4, cy: 53.2, x: 1290.4, y: 53.2 },
-];
-/// The front (:304), opening at (1291,55).
-const T2_FRONT: &[Seg] = &[
-    Seg::Line(1302.0, 55.0),
-    Seg::Quad { cx: 1309.0, cy: 55.0, x: 1312.0, y: 50.0 },
-    Seg::Line(1315.0, 46.0),
-    Seg::Quad { cx: 1317.0, cy: 37.0, x: 1324.0, y: 37.0 },
-    Seg::Line(1333.0, 37.0),
-    Seg::Quad { cx: 1338.0, cy: 37.0, x: 1338.0, y: 42.0 },
-    Seg::Line(1338.0, 100.0),
-    Seg::Quad { cx: 1338.0, cy: 104.0, x: 1334.0, y: 104.0 },
-    Seg::Line(1291.0, 104.0),
-    Seg::Quad { cx: 1287.0, cy: 104.0, x: 1287.0, y: 100.0 },
-    Seg::Line(1287.0, 59.0),
-    Seg::Quad { cx: 1287.0, cy: 55.0, x: 1291.0, y: 55.0 },
-];
-/// The tab (:305), opening at (1293,104.5).
-const T2_TAB: &[Seg] = &[
-    Seg::Line(1297.0, 100.0),
-    Seg::Line(1322.0, 100.0),
-    Seg::Line(1326.0, 104.5),
-];
+// The badge's ink-only silhouette is in the existing header Soft group;
+// text remains native alongside the other security-level labels.
 const T2_BADGE: &[Prim] = &[
-    shut_path(1286.8, 40.3, T2_1, Ink::Fixed(BADGE_55), 0.7),
-    shut_path(1287.4, 42.4, T2_2, Ink::Fixed(BADGE_60), 0.7),
-    shut_path(1288.0, 44.5, T2_3, Ink::Fixed(BADGE_65), 0.7),
-    shut_path(1288.6, 46.6, T2_4, Ink::Fixed(BADGE_70), 0.7),
-    shut_path(1289.2, 48.7, T2_5, Ink::Fixed(BADGE_75), 0.7),
-    shut_path(1289.8, 50.8, T2_6, Ink::Fixed(BADGE_80), 0.7),
-    shut_path(1290.4, 52.9, T2_7, Ink::Fixed(BADGE_85), 0.7),
-    shut_path(1291.0, 55.0, T2_FRONT, Ink::Fixed(BADGE_LIT), 1.1),
-    fill_path(1293.0, 104.5, T2_TAB, Ink::Fixed(HUB_FILL)),
     txt(1295.0, 71.0, 12.0, Ink::Fixed(CAPTION), "LEVEL"),
     Prim::Text { x: 1296.0, y: 95.0, size: 21.0, ink: Ink::Fixed(BADGE_LIT), face: Face::SemiBold, anchor: Anchor::Start, content: "T2" },
 ];
 
-/// One strand of the wire band (:316-323): in low at the left at `yl`,
-/// a cubic up onto the tight line at `yb`, the long run to x 1040, a
-/// cubic back down to `yr` under the badges, and the curl at x 1568.
+/// Dashboard source #69 header strand; mailbox #71 uses the separately
+/// measured variant of the same local geometry helper above.
 macro_rules! wire {
-    ($yl:expr, $yb:expr, $yr:expr) => {
-        line_path(30.0, $yl, &[
-            Seg::Line(52.0, $yl),
-            Seg::Cubic { c1x: 84.0, c1y: $yl, c2x: 100.0, c2y: $yb, x: 130.0, y: $yb },
-            Seg::Line(1040.0, $yb),
-            Seg::Cubic { c1x: 1075.0, c1y: $yb, c2x: 1090.0, c2y: $yr, x: 1125.0, y: $yr },
-            Seg::Line(1535.0, $yr),
-            Seg::Quad { cx: 1562.0, cy: $yr, x: 1568.0, y: $yr + 22.0 },
-            Seg::Line(1570.0, $yr + 30.0),
-        ], Ink::Fixed(MICRO), 1.1)
+    ($i:expr) => {
+        line_path(35.5, 139.45 + 3.18 * $i as f32,
+            &header_wire_steps($i, false), header_wire_ink($i, false), 1.1)
     };
 }
+
+// The measured fading strands overlap a varying haze. Composite them
+// together with that ground in sRGB, as the SVG does. Drawing alpha over
+// the already-uploaded backdrop instead blends in linear light, noticeably
+// lifting the lower strands and changing their material. These wrappers
+// leave the shared bar/store/login ground tables unchanged.
+const HUB_HEADER_BACKDROP: &[Prim] = &[
+    Prim::At { x: 0.0, y: 0.0, prims: HUB_GROUND },
+    wire!(0),
+    wire!(1),
+    wire!(2),
+    wire!(3),
+    wire!(4),
+    wire!(5),
+    wire!(6),
+    wire!(7),
+    wire!(8),
+    Prim::At { x: 0.0, y: 0.0, prims: badge::DASHBOARD },
+];
+const MAIL_HEADER_GROUND: &[Prim] = &[
+    Prim::At { x: 0.0, y: 0.0, prims: BACKDROP },
+    line_path(34.7, 139.70, &WIRE0, header_wire_ink(0, true), 1.1),
+    line_path(34.7, 142.88, &WIRE1, header_wire_ink(1, true), 1.1),
+    line_path(34.7, 146.06, &WIRE2, header_wire_ink(2, true), 1.1),
+    line_path(34.7, 149.24, &WIRE3, header_wire_ink(3, true), 1.1),
+    line_path(34.7, 152.42, &WIRE4, header_wire_ink(4, true), 1.1),
+    line_path(34.7, 155.60, &WIRE5, header_wire_ink(5, true), 1.1),
+    line_path(34.7, 158.78, &WIRE6, header_wire_ink(6, true), 1.1),
+    line_path(34.7, 161.96, &WIRE7, header_wire_ink(7, true), 1.1),
+    line_path(34.7, 165.14, &WIRE8, header_wire_ink(8, true), 1.1),
+    line_path(34.7, 168.32, &WIRE9, header_wire_ink(9, true), 1.1),
+    line_path(34.7, 185.50, &WIRE10, header_wire_ink(10, true), 1.1),
+    Prim::At { x: 0.0, y: 0.0, prims: badge::MAILBOX },
+];
+const MAIL_HEADER_BACKDROP: &[Prim] = &[Prim::Soft { prims: MAIL_HEADER_GROUND }];
 
 /// A boxed section letter on this screen (:325-352): the store's
 /// `LETTERBOX` silhouette in `HUB_MID`, the 15px letter in `CAPTION`
@@ -2858,22 +2487,20 @@ const CASCADE: &[Prim] = &[
     Prim::At { x: 830.75, y: 529.2, prims: NCAPTION },
 ];
 
-/// The panel body's veneer grain (:619-705): 85 vertical strands on the
-/// trace's 2.7 pitch, 0.7 in `GRAIN_LINE`, clipped to the body. Turned
-/// -90 about the body's bottom-left corner (1170.8,635), a `Grain` of
-/// the body's height by its width lays its strands at screen x =
-/// 1170.8 + 2.7 k running from the bottom edge up to the top (:620
-/// starts them at x 1173.5); the -0.35 centres each 0.7 strand on the
-/// trace's stroke.
-const PANEL_GRAIN: &[Prim] = &[Prim::Grain {
-    x: 0.0,
-    y: -0.35,
-    w: 309.0,
-    h: 230.4,
-    pitch: 2.7,
-    width: 0.7,
-    ink: Ink::Fixed(GRAIN_LINE),
-}];
+// Exact SVG grain paths retain the existing panel-fade animation. The
+// scene cannot fade a Soft composite; ordinary paths remain foreground
+// artwork and the persistent viewport applies the SVG's #panelclip.
+#[path = "neokitsch/panel_grain.rs"]
+mod panel_grain;
+
+// Iced pastes clipped meshes underneath the frame's pending geometry.
+// Keep the base and grain in the same clipped layer, or the un-clipped
+// base would cover every strand when the parent frame is finished.
+const PANEL_BODY: &[Prim] = &[
+    fill_rect(1170.8, 326.0, 230.4, 309.0, Ink::Fixed(HUB_PLATE)),
+    Prim::At { x: 0.0, y: 0.0, prims: panel_grain::PATHS },
+];
+
 /// The panel's paragraph text: Rajdhani 16.3 regular, `Start`-anchored
 /// at the trace's x 1180.4 so the L's stem lands on the measured ink
 /// left, in `HUB_DARK`.
@@ -2882,21 +2509,18 @@ macro_rules! para {
         txt(1180.4, $y, 16.3, Ink::Fixed(HUB_DARK), $s)
     };
 }
-/// The panel's copy (:725-732): the inbox's selected message, the first
-/// three lines of `PARAGRAPHS` (URGENT INFORMATION (!) from MOM, the
-/// same words the mailbox sets), re-wrapped to the body's measured line
-/// ends. Paragraph one runs out in five lines, "aliqua." alone on the
-/// fifth; the sixth slot is blank; paragraph two takes the last three.
-/// `panel_copy_is_the_inbox_message` pins this to `PARAGRAPHS`.
+/// Literal source #69 detail-panel text (NK-06), six lines and two.
+/// The photographed hub and mailbox deliberately carry different copy;
+/// do not silently substitute `PARAGRAPHS` into this source reference.
 const PANEL_COPY: [&str; 8] = [
     "Lorem ipsum dolor sit amet,",
-    "consectetur adipisicing elit, sed",
+    "consectetur adipiscing elit, sed",
     "do eiusmod tempor incididunt",
     "ut labore et dolore magna",
-    "aliqua.",
-    "Ut enim ad minim veniam, quis",
-    "nostrud exercitation ullamco",
-    "laboris nisi ut aliquip ex ea",
+    "aliqua. Quis ipsum suspendisse",
+    "ultrices gravida.",
+    "Risus commodo viverra maece-",
+    "nas accumsan lacus vel facilisis.",
 ];
 
 /// The detail panel (:460-748): the rings and front outline, the gold
@@ -2908,8 +2532,7 @@ const PANEL: &[Prim] = &[
     // the body (:612): `HUB_PLATE`, not `HUB_FILL`, because `#f2b463`
     // is the body's sampled AVERAGE and the grain takes 26% of it in
     // `GRAIN_LINE`; `#fcbe6d` under that averages back to it
-    fill_rect(1170.8, 326.0, 230.4, 309.0, Ink::Fixed(HUB_PLATE)),
-    Prim::Turn { x: 1170.8, y: 635.0, angle: -90.0, prims: PANEL_GRAIN },
+    Prim::Viewport { x: 1170.8, y: 326.0, w: 230.4, h: 309.0, prims: PANEL_BODY },
     // two paragraphs on the 19.5 pitch from the first baseline 354.2,
     // one slot blank between them (:725-732)
     para!(354.2, PANEL_COPY[0]),
@@ -2917,9 +2540,9 @@ const PANEL: &[Prim] = &[
     para!(393.2, PANEL_COPY[2]),
     para!(412.7, PANEL_COPY[3]),
     para!(432.2, PANEL_COPY[4]),
-    para!(471.2, PANEL_COPY[5]),
-    para!(490.7, PANEL_COPY[6]),
-    para!(510.2, PANEL_COPY[7]),
+    para!(451.7, PANEL_COPY[5]),
+    para!(491.2, PANEL_COPY[6]),
+    para!(510.7, PANEL_COPY[7]),
     // the micro-text tape (:743-744), the caption sentence on two
     // lines, and the module name (:747)
     micro!(1193.7, 645.8, HUB_TAPE, "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE"),
@@ -2930,7 +2553,7 @@ const PANEL: &[Prim] = &[
 pub const DASHBOARD: &[Prim] = &[
     // Composited in software, as the store's backdrop is: the two
     // lobes carry opacities and stack.
-    Prim::Soft { prims: HUB_GROUND },
+    Prim::Soft { prims: HUB_HEADER_BACKDROP },
     // ==== header (:271-308) ====
     txt(120.0, 42.0, 15.0, Ink::Fixed(HUB_MID), "CUSTOMER #NC488402"),
     txt(120.0, 70.0, 12.0, Ink::Fixed(HUB_MID), "LEVEL"),
@@ -2944,16 +2567,6 @@ pub const DASHBOARD: &[Prim] = &[
     Prim::Text { x: 1361.0, y: 86.0, size: 20.0, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T3" },
     Prim::Text { x: 1424.0, y: 86.0, size: 20.0, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T4" },
     Prim::At { x: 0.0, y: 0.0, prims: T2_BADGE },
-    // the wire band (:316-323): eight strands, low runs 2.9 apart on the
-    // left, 0.16 apart on the tight line, 1.8 apart on the right ribbon
-    wire!(122.0, 86.40, 123.0),
-    wire!(124.9, 86.56, 124.8),
-    wire!(127.8, 86.72, 126.6),
-    wire!(130.7, 86.88, 128.4),
-    wire!(133.6, 87.04, 130.2),
-    wire!(136.5, 87.20, 132.0),
-    wire!(139.4, 87.36, 133.8),
-    wire!(142.3, 87.52, 135.6),
     // boxed letters (:325-352): A/B mask the strands with an r3 interior
     Prim::Round { x: 238.0, y: 98.0, w: 26.0, h: 26.0, r: 3.0, fill: Some(Ink::Fixed(BOX_FILL)), stroke: None, width: 0.0 },
     Prim::Round { x: 1011.0, y: 98.0, w: 26.0, h: 26.0, r: 3.0, fill: Some(Ink::Fixed(BOX_FILL)), stroke: None, width: 0.0 },
@@ -3003,7 +2616,7 @@ pub const DASHBOARD: &[Prim] = &[
 
 #[cfg(test)]
 mod dashboard_tests {
-    use super::{PANEL_COPY, PARAGRAPHS};
+    use super::PANEL_COPY;
 
     #[test]
     fn store_categories_echo_outward_without_changing_faces_or_selection_material() {
@@ -3107,23 +2720,15 @@ mod dashboard_tests {
         }
     }
 
-    /// The detail panel previews the inbox: its eight lines are the
-    /// selected message's first two paragraphs, re-wrapped to the
-    /// panel's measured line ends, and nothing else. Word for word a
-    /// prefix of `PARAGRAPHS`, paragraph by paragraph.
+    /// Source #69 has6+2 lines and a visibly hyphenated last paragraph;
+    /// the mailbox's different copy must not become the hub reference.
     #[test]
-    fn panel_copy_is_the_inbox_message() {
-        let panel: Vec<Vec<&str>> = [&PANEL_COPY[..5], &PANEL_COPY[5..]]
-            .iter()
-            .map(|lines| lines.iter().flat_map(|l| l.split_whitespace()).collect())
-            .collect();
-        for (i, lines) in panel.iter().enumerate() {
-            let source: Vec<&str> = PARAGRAPHS[i].iter().flat_map(|l| l.split_whitespace()).collect();
-            assert!(
-                source.starts_with(lines),
-                "panel paragraph {i} is not a prefix of the inbox's: {lines:?}"
-            );
-        }
-        assert_eq!(panel[0].len(), PARAGRAPHS[0].iter().flat_map(|l| l.split_whitespace()).count(), "paragraph one runs out on the panel");
+    fn panel_copy_preserves_source_words_and_line_breaks() {
+        assert_eq!(PANEL_COPY[1], "consectetur adipiscing elit, sed");
+        assert_eq!(&PANEL_COPY[4..], &[
+            "aliqua. Quis ipsum suspendisse", "ultrices gravida.",
+            "Risus commodo viverra maece-", "nas accumsan lacus vel facilisis.",
+        ]);
+        assert!(!PANEL_COPY.iter().any(|line| line.contains("Ut enim")));
     }
 }

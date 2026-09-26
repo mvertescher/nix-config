@@ -11,10 +11,10 @@
 
        What the source actually shows, top to bottom (read from the photo
        and from 2x crops of every region, 2026-09-02):
-         - the same backdrop as the hub screen: a broad blue glow over
-           near-black, gone by y~420, warm near-black vignette down the
-           left margin. The y=90 samples are identical to img-07's, so the
-           gradient stops are the ones measured there.
+         - the same fixed backdrop as the hub: a broad blue/cyan field
+           over warm near-black. Clear native patches match the hub exactly.
+           The unchanged measured dashboard composite replaces the earlier
+           short blue-glow approximation; see login-store-material.md.
          - header row, identical in layout to the hub: CUSTOMER + one
            chamfered LEVEL T1 badge at the left; #NC488402 over a
            PROTOCOL 6520-A44 barcode block with four lines of micro-text
@@ -65,36 +65,42 @@
        x 497.3342..500.3799, bottom 654.6317. Two ~0.8px sides and
        a ~0.89px bottom in #420f10; separate from the password tail. -->
   <defs>
-    <linearGradient id="glowh" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0.000" stop-color="#282824"/>
-      <stop offset="0.063" stop-color="#273743"/>
-      <stop offset="0.188" stop-color="#263953"/>
-      <stop offset="0.313" stop-color="#202b56"/>
-      <stop offset="0.438" stop-color="#1b2253"/>
-      <stop offset="0.563" stop-color="#171f51"/>
-      <stop offset="0.688" stop-color="#121f51"/>
-      <stop offset="0.813" stop-color="#0d1f4e"/>
-      <stop offset="0.938" stop-color="#082447"/>
-      <stop offset="1.000" stop-color="#080b0e"/>
-    </linearGradient>
-    <linearGradient id="glowv" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0.00" stop-color="#ffffff"/>
-      <stop offset="0.25" stop-color="#ffffff"/>
-      <stop offset="0.30" stop-color="#e3e3e3"/>
-      <stop offset="0.35" stop-color="#bababa"/>
-      <stop offset="0.40" stop-color="#8c8c8c"/>
-      <stop offset="0.45" stop-color="#545454"/>
-      <stop offset="0.50" stop-color="#2b2b2b"/>
-      <stop offset="0.55" stop-color="#121212"/>
-      <stop offset="0.60" stop-color="#000000"/>
-    </linearGradient>
-    <mask id="glowmask">
-      <rect width="1600" height="900" fill="url(#glowv)"/>
-    </mask>
-    <radialGradient id="vignette" cx="0.02" cy="0.60" r="0.34">
-      <stop offset="0" stop-color="#241012"/>
-      <stop offset="1" stop-color="#241012" stop-opacity="0"/>
-    </radialGradient>
+    <!-- Unchanged dashboard composite, independently validated here.
+         See login-store-material.md; coarse fields are not source grain. -->
+<linearGradient id="login-ground-r0" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#2b363e" /><stop offset="0.03125" stop-color="#2c3b4c" /><stop offset="0.0625" stop-color="#2c3c56" /><stop offset="0.125" stop-color="#2c3b59" /><stop offset="0.1875" stop-color="#2c3759" /><stop offset="0.25" stop-color="#293058" /><stop offset="0.375" stop-color="#232757" /><stop offset="0.5" stop-color="#1e2254" /><stop offset="0.625" stop-color="#191e51" /><stop offset="0.75" stop-color="#141d4f" /><stop offset="0.875" stop-color="#0f1f4d" /><stop offset="0.9375" stop-color="#0d244c" /><stop offset="0.96875" stop-color="#0d2644" /><stop offset="1.0" stop-color="#0c1d27" /></linearGradient>
+<linearGradient id="login-ground-r1" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#28272a" /><stop offset="0.03125" stop-color="#272e34" /><stop offset="0.0625" stop-color="#283946" /><stop offset="0.125" stop-color="#283950" /><stop offset="0.1875" stop-color="#253855" /><stop offset="0.25" stop-color="#243257" /><stop offset="0.375" stop-color="#1e2755" /><stop offset="0.5" stop-color="#1a2153" /><stop offset="0.625" stop-color="#151e51" /><stop offset="0.75" stop-color="#101d4f" /><stop offset="0.875" stop-color="#0b214d" /><stop offset="0.9375" stop-color="#092448" /><stop offset="0.96875" stop-color="#08223a" /><stop offset="1.0" stop-color="#080e13" /></linearGradient>
+<linearGradient id="login-ground-r2" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#251b1d" /><stop offset="0.03125" stop-color="#251c1e" /><stop offset="0.0625" stop-color="#242327" /><stop offset="0.125" stop-color="#202d35" /><stop offset="0.1875" stop-color="#1f2f3d" /><stop offset="0.25" stop-color="#1e324c" /><stop offset="0.375" stop-color="#182a53" /><stop offset="0.5" stop-color="#152352" /><stop offset="0.625" stop-color="#112050" /><stop offset="0.75" stop-color="#0b214e" /><stop offset="0.875" stop-color="#072345" /><stop offset="0.9375" stop-color="#05223a" /><stop offset="0.96875" stop-color="#041520" /><stop offset="1.0" stop-color="#060305" /></linearGradient>
+<linearGradient id="login-ground-r3" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#201617" /><stop offset="0.03125" stop-color="#201617" /><stop offset="0.0625" stop-color="#201618" /><stop offset="0.125" stop-color="#1f191c" /><stop offset="0.1875" stop-color="#1a1c20" /><stop offset="0.25" stop-color="#18272f" /><stop offset="0.375" stop-color="#142c47" /><stop offset="0.5" stop-color="#11284e" /><stop offset="0.625" stop-color="#0e254d" /><stop offset="0.75" stop-color="#092345" /><stop offset="0.875" stop-color="#042032" /><stop offset="0.9375" stop-color="#03171e" /><stop offset="0.96875" stop-color="#030709" /><stop offset="1.0" stop-color="#030203" /></linearGradient>
+<linearGradient id="login-ground-r4" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#1e1214" /><stop offset="0.03125" stop-color="#1e1314" /><stop offset="0.0625" stop-color="#1d1214" /><stop offset="0.125" stop-color="#1b1113" /><stop offset="0.1875" stop-color="#191114" /><stop offset="0.25" stop-color="#15161a" /><stop offset="0.375" stop-color="#112532" /><stop offset="0.5" stop-color="#0e2841" /><stop offset="0.625" stop-color="#0b2641" /><stop offset="0.75" stop-color="#062136" /><stop offset="0.875" stop-color="#03171f" /><stop offset="0.9375" stop-color="#020507" /><stop offset="0.96875" stop-color="#020203" /><stop offset="1.0" stop-color="#020203" /></linearGradient>
+<linearGradient id="login-ground-r5" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#1b0f11" /><stop offset="0.03125" stop-color="#1b0f11" /><stop offset="0.0625" stop-color="#1a0f11" /><stop offset="0.125" stop-color="#190e10" /><stop offset="0.1875" stop-color="#170d0e" /><stop offset="0.25" stop-color="#150c0e" /><stop offset="0.375" stop-color="#0f161b" /><stop offset="0.5" stop-color="#0c1f2a" /><stop offset="0.625" stop-color="#091f2c" /><stop offset="0.75" stop-color="#041922" /><stop offset="0.875" stop-color="#02080a" /><stop offset="0.9375" stop-color="#030203" /><stop offset="0.96875" stop-color="#020303" /><stop offset="1.0" stop-color="#030202" /></linearGradient>
+<linearGradient id="login-ground-r6" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#190c0e" /><stop offset="0.03125" stop-color="#190c0e" /><stop offset="0.0625" stop-color="#180c0e" /><stop offset="0.125" stop-color="#170b0e" /><stop offset="0.1875" stop-color="#15090c" /><stop offset="0.25" stop-color="#12080a" /><stop offset="0.375" stop-color="#110b0d" /><stop offset="0.5" stop-color="#0c1014" /><stop offset="0.625" stop-color="#071116" /><stop offset="0.75" stop-color="#020c12" /><stop offset="0.875" stop-color="#020303" /><stop offset="0.9375" stop-color="#030302" /><stop offset="0.96875" stop-color="#030203" /><stop offset="1.0" stop-color="#020202" /></linearGradient>
+<linearGradient id="login-ground-r7" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#170a0c" /><stop offset="0.03125" stop-color="#170a0b" /><stop offset="0.0625" stop-color="#170a0c" /><stop offset="0.125" stop-color="#15090b" /><stop offset="0.1875" stop-color="#14070a" /><stop offset="0.25" stop-color="#110609" /><stop offset="0.375" stop-color="#110204" /><stop offset="0.5" stop-color="#0d0609" /><stop offset="0.625" stop-color="#080509" /><stop offset="0.75" stop-color="#030306" /><stop offset="0.875" stop-color="#020302" /><stop offset="0.9375" stop-color="#030203" /><stop offset="0.96875" stop-color="#030302" /><stop offset="1.0" stop-color="#020202" /></linearGradient>
+<linearGradient id="login-ground-r8" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#160608" /><stop offset="0.03125" stop-color="#150709" /><stop offset="0.0625" stop-color="#150709" /><stop offset="0.125" stop-color="#130608" /><stop offset="0.1875" stop-color="#110508" /><stop offset="0.25" stop-color="#0f0507" /><stop offset="0.375" stop-color="#0d0407" /><stop offset="0.5" stop-color="#0a0305" /><stop offset="0.625" stop-color="#060304" /><stop offset="0.75" stop-color="#020102" /><stop offset="0.875" stop-color="#020302" /><stop offset="0.9375" stop-color="#030302" /><stop offset="0.96875" stop-color="#030202" /><stop offset="1.0" stop-color="#020203" /></linearGradient>
+<linearGradient id="login-ground-r9" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#130305" /><stop offset="0.03125" stop-color="#120305" /><stop offset="0.0625" stop-color="#120305" /><stop offset="0.125" stop-color="#110305" /><stop offset="0.1875" stop-color="#0e0304" /><stop offset="0.25" stop-color="#0d0305" /><stop offset="0.375" stop-color="#0a0304" /><stop offset="0.5" stop-color="#070304" /><stop offset="0.625" stop-color="#030203" /><stop offset="0.75" stop-color="#030403" /><stop offset="0.875" stop-color="#030202" /><stop offset="0.9375" stop-color="#030202" /><stop offset="0.96875" stop-color="#030303" /><stop offset="1.0" stop-color="#020202" /></linearGradient>
+<linearGradient id="login-ground-r10" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#0f0304" /><stop offset="0.03125" stop-color="#0f0304" /><stop offset="0.0625" stop-color="#0e0304" /><stop offset="0.125" stop-color="#0c0304" /><stop offset="0.1875" stop-color="#0a0304" /><stop offset="0.25" stop-color="#080304" /><stop offset="0.375" stop-color="#060304" /><stop offset="0.5" stop-color="#030203" /><stop offset="0.625" stop-color="#020202" /><stop offset="0.75" stop-color="#020302" /><stop offset="0.875" stop-color="#030303" /><stop offset="0.9375" stop-color="#020202" /><stop offset="0.96875" stop-color="#020302" /><stop offset="1.0" stop-color="#020203" /></linearGradient>
+<linearGradient id="login-ground-r11" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#0a0303" /><stop offset="0.03125" stop-color="#090304" /><stop offset="0.0625" stop-color="#090304" /><stop offset="0.125" stop-color="#080304" /><stop offset="0.1875" stop-color="#060304" /><stop offset="0.25" stop-color="#050204" /><stop offset="0.375" stop-color="#030203" /><stop offset="0.5" stop-color="#020202" /><stop offset="0.625" stop-color="#020203" /><stop offset="0.75" stop-color="#030303" /><stop offset="0.875" stop-color="#020302" /><stop offset="0.9375" stop-color="#020303" /><stop offset="0.96875" stop-color="#020302" /><stop offset="1.0" stop-color="#030302" /></linearGradient>
+<linearGradient id="login-ground-y0" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="80"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="login-ground-m0" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#login-ground-y0)" /></mask>
+<linearGradient id="login-ground-y1" gradientUnits="userSpaceOnUse" x1="0" y1="80" x2="0" y2="160"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="login-ground-m1" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#login-ground-y1)" /></mask>
+<linearGradient id="login-ground-y2" gradientUnits="userSpaceOnUse" x1="0" y1="160" x2="0" y2="240"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="login-ground-m2" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#login-ground-y2)" /></mask>
+<linearGradient id="login-ground-y3" gradientUnits="userSpaceOnUse" x1="0" y1="240" x2="0" y2="300"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="login-ground-m3" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#login-ground-y3)" /></mask>
+<linearGradient id="login-ground-y4" gradientUnits="userSpaceOnUse" x1="0" y1="300" x2="0" y2="360"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="login-ground-m4" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#login-ground-y4)" /></mask>
+<linearGradient id="login-ground-y5" gradientUnits="userSpaceOnUse" x1="0" y1="360" x2="0" y2="420"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="login-ground-m5" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#login-ground-y5)" /></mask>
+<linearGradient id="login-ground-y6" gradientUnits="userSpaceOnUse" x1="0" y1="420" x2="0" y2="480"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="login-ground-m6" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#login-ground-y6)" /></mask>
+<linearGradient id="login-ground-y7" gradientUnits="userSpaceOnUse" x1="0" y1="480" x2="0" y2="560"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="login-ground-m7" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#login-ground-y7)" /></mask>
+<linearGradient id="login-ground-y8" gradientUnits="userSpaceOnUse" x1="0" y1="560" x2="0" y2="680"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="login-ground-m8" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#login-ground-y8)" /></mask>
+<linearGradient id="login-ground-y9" gradientUnits="userSpaceOnUse" x1="0" y1="680" x2="0" y2="800"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="login-ground-m9" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#login-ground-y9)" /></mask>
+<linearGradient id="login-ground-y10" gradientUnits="userSpaceOnUse" x1="0" y1="800" x2="0" y2="900"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="login-ground-m10" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#login-ground-y10)" /></mask>
     <!-- card fills, sampled down the card centre: translucent over the
          backdrop, so lighter and bluer at the top than at the foot -->
     <linearGradient id="card2" x1="0" y1="0" x2="0" y2="1">
@@ -120,9 +126,21 @@
     </g>
   </defs>
 
-  <rect width="1600" height="900" fill="#080405"/>
-  <rect width="1600" height="900" fill="url(#glowh)" mask="url(#glowmask)"/>
-  <rect width="1600" height="900" fill="url(#vignette)"/>
+  <!-- Shared source ground; immutable dashboard color controls. -->
+<g id="login-ground">
+<rect width="1600" height="900" fill="url(#login-ground-r0)" />
+<rect width="1600" height="900" fill="url(#login-ground-r1)" mask="url(#login-ground-m0)" />
+<rect width="1600" height="900" fill="url(#login-ground-r2)" mask="url(#login-ground-m1)" />
+<rect width="1600" height="900" fill="url(#login-ground-r3)" mask="url(#login-ground-m2)" />
+<rect width="1600" height="900" fill="url(#login-ground-r4)" mask="url(#login-ground-m3)" />
+<rect width="1600" height="900" fill="url(#login-ground-r5)" mask="url(#login-ground-m4)" />
+<rect width="1600" height="900" fill="url(#login-ground-r6)" mask="url(#login-ground-m5)" />
+<rect width="1600" height="900" fill="url(#login-ground-r7)" mask="url(#login-ground-m6)" />
+<rect width="1600" height="900" fill="url(#login-ground-r8)" mask="url(#login-ground-m7)" />
+<rect width="1600" height="900" fill="url(#login-ground-r9)" mask="url(#login-ground-m8)" />
+<rect width="1600" height="900" fill="url(#login-ground-r10)" mask="url(#login-ground-m9)" />
+<rect width="1600" height="900" fill="url(#login-ground-r11)" mask="url(#login-ground-m10)" />
+  </g>
 
   <!-- ==== header ==== -->
   <g font-family="Rajdhani" fill="#f63333">

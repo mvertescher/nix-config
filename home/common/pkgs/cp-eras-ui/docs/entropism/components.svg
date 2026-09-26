@@ -184,8 +184,8 @@
        row dividers at y 349 / 411 / 473 / 535 / 596 / 658, seven rows on
        a 62px pitch starting 21px below the frame top, row 1 filled solid
        #a6d2a8 as the cursor fill, envelope glyph at x 102 and text at
-       x 138 (title baseline top+30 at 20/ls 1, FROM baseline top+48 at
-       14). Four of the seven rows are shown, translated by (-44,-91);
+       x about 137 (subjects 22.25, FROM 16.25; per-row measured
+       baseline and horizontal fit, no tracking). Four of the seven rows are shown, translated by (-44,-91);
        the frame's foot is cut, see the dashed rule. Only the designed
        2px #709174 stroke is drawn: the trace's 7px #25281d and 4px
        #0a0a02 passes carry class="photo" and are photographic halo, not
@@ -195,29 +195,29 @@
           fill="none" stroke="#709174" stroke-width="2"/>
     <rect x="41" y="135" width="366" height="62" fill="#a6d2a8"/>
     <use href="#env" x="58" y="153" stroke="#25281d"/>
-    <text x="94" y="165" font-size="20" fill="#25281d" letter-spacing="1">YOU&#39;LL REGRET THAT</text>
-    <text x="94" y="183" font-size="14" fill="#25281d">FROM: JACKIE</text>
+    <text transform="translate(93.08,164.83) scale(0.991,1)" font-size="22.25" font-weight="400" letter-spacing="0" fill="#25281d">YOU'LL REGRET THAT</text>
+    <text transform="translate(93.15,183.58) scale(0.963,1)" font-size="16.25" font-weight="400" letter-spacing="0" fill="#25281d">FROM: JACKIE</text>
     <g stroke="#8aaf8d">
       <use href="#env-open" x="58" y="214"/>
       <use href="#env" x="58" y="279"/>
       <use href="#env" x="58" y="340"/>
     </g>
-    <g font-size="20" fill="#a6d2a8" letter-spacing="1">
-      <text x="94" y="227">URGENT INFORMATION (!)</text>
-      <text x="94" y="288">HEIST DATA SENT TO YOU</text>
-      <text x="94" y="350">I&#39;M WORRIED MAN</text>
+    <g fill="#a6d2a8">
+      <text transform="translate(92.64,226.5) scale(1.006,1)" font-size="22.25" font-weight="500" letter-spacing="0">URGENT INFORMATION (!)</text>
+      <text transform="translate(93.12,287.75) scale(0.966,1)" font-size="22.25" font-weight="500" letter-spacing="0">HEIST DATA SENT TO YOU</text>
+      <text transform="translate(93.08,349.42) scale(0.991,1)" font-size="22.25" font-weight="500" letter-spacing="0">I'M WORRIED MAN</text>
     </g>
-    <g font-size="14" fill="#8aaf8d">
-      <text x="94" y="245">FROM: MOM</text>
-      <text x="94" y="306">FROM: 805000451</text>
-      <text x="94" y="368">FROM: RACHEL ROSS</text>
+    <g fill="#8aaf8d">
+      <text transform="translate(92.61,245.67) scale(1.058,1)" font-size="16.25" font-weight="500" letter-spacing="0">FROM: MOM</text>
+      <text transform="translate(92.67,306.92) scale(1.015,1)" font-size="16.25" font-weight="500" letter-spacing="0">FROM: 805000451</text>
+      <text transform="translate(92.69,368.17) scale(0.994,1)" font-size="16.25" font-weight="500" letter-spacing="0">FROM: RACHEL ROSS</text>
     </g>
     <path d="M 40,382 H 407" stroke="#3d4d38" stroke-width="1" stroke-dasharray="4 4" fill="none"/>
   </g>
   <g font-family="Rajdhani" font-size="9" font-weight="500" fill="#88a789">
     <text x="40" y="396">frame 367x481, stroke 2 #709174 &#183; 7 rows on a 62 pitch, first 21 below the top edge</text>
     <text x="40" y="407">row 366x62, inset 1px inside the frame &#183; cursor fill (row 1, see band C) solid #a6d2a8, ink #25281d</text>
-    <text x="40" y="418">glyph x+18; title x+54 baseline +30 (20 ls 1); FROM baseline +48 (14)</text>
+    <text x="40" y="418">glyph x+18; fitted title 22.25 / FROM 16.25; per-row x, baseline and horizontal scale from the source</text>
     <text x="40" y="429">28px of empty frame below row 7 &#183; no NEW pill anywhere in the material</text>
   </g>
 
@@ -239,9 +239,10 @@
   </g>
 
   <!-- SECTION LETTER + LABEL, three variants. mailbox-trace.svg: box
-       x 100..126, y 98..124, stroke 1.5 #8aaf8d, letter 19 at x 106
-       baseline 118, label 22 ls 1 at x 139, and the two lines of
-       micro-print at x 102 baselines 145 / 155 in 8.5 #709174, drawn
+       x 100..126, y 98..124, stroke 1.5 #8aaf8d, letter medium 22 stretched 1.65 at x104.3
+       baseline 119.25, label medium 22.5 stretched 1.008 at x137.03,
+       baseline 117.92, and two 9px medium micro lines at x103.1,
+       baselines 145 /154.17, stretched 0.955 /0.948 in #709174, drawn
        here at their true 21px offset below the box. dashboard-trace:
        the same 26x26 box at 133,145 stroke 1.5 #9ac3a0, but the letter
        is bold 22 stretched 1.6 and the label is 600 at 23. store-trace:
@@ -251,10 +252,10 @@
         letter-spacing="1" fill="#8fba97">SECTION LETTER BOX &#183; MAILBOX / HUB / STORE</text>
   <g font-family="Rajdhani" fill="#8aaf8d">
     <rect x="40" y="551" width="26" height="26" fill="none" stroke="#8aaf8d" stroke-width="1.5"/>
-    <text x="46" y="571" font-size="19">A</text>
-    <text x="79" y="572" font-size="22" letter-spacing="1">MAIL BOX</text>
-    <text x="42" y="598" font-size="8.5" fill="#709174">SPARE TIME MANAGER WAS DEVELOPED BY</text>
-    <text x="42" y="608" font-size="8.5" fill="#709174">SEOCHO. SERVING CUSTOMERS SINCE 2006.</text>
+    <text transform="translate(44.3,572.25) scale(1.65,1)" font-size="22" font-weight="500">A</text>
+    <text transform="translate(77.03,570.92) scale(1.008,1)" font-size="22.5" font-weight="500" letter-spacing="0">MAIL BOX</text>
+    <text transform="translate(43.1,598) scale(0.955,1)" font-size="9" font-weight="500" letter-spacing="0" fill="#709174">SPARE TIME MANAGER WAS DEVELOPED BY</text>
+    <text transform="translate(43.1,607.17) scale(0.948,1)" font-size="9" font-weight="500" letter-spacing="0" fill="#709174">SEOCHO. SERVING CUSTOMERS SINCE 2006.</text>
   </g>
   <g font-family="Rajdhani" fill="#a0d2a9">
     <rect x="210" y="551" width="26" height="26" fill="none" stroke="#9ac3a0" stroke-width="1.5"/>
@@ -269,7 +270,7 @@
   <g font-family="Rajdhani" font-size="9" font-weight="500" fill="#88a789">
     <text x="40" y="624">box 26x26 stroke 1.5 &#183; mailbox #8aaf8d, hub #9ac3a0, store #88b088</text>
     <text x="40" y="635">label starts 36 to 39px right of the box; the hub letter is bold 22 sx 1.5..1.6,</text>
-    <text x="40" y="646">mailbox and store set it plain at 19 &#183; micro-print 8.5 #709174, 10 pitch, x+2</text>
+    <text x="40" y="646">mailbox letters: medium 22 sx1.60..1.65; store: regular 19; mail micro-print: medium 9, pitch 9.17, x+3.1</text>
   </g>
 
   <!-- ============================================================
@@ -376,8 +377,9 @@
         letter-spacing="1" fill="#8fba97">PRODUCT CARD &#183; PLAIN</text>
 
   <!-- PRODUCT CARD, PLAIN. store-trace.svg def #card, used at x 783 /
-       1105 / 1429, y 260 (265 wide on a 322 pitch; the fourth card runs
-       off the frame). Placed here at 879,114 with no other change. -->
+       1105 / 1429, y 260 (265 wide on a 322 pitch). Card 4 has a
+       persistent open crop at local x135.6 / screen x1564.6; this
+       specimen is the complete card 2, placed at 879,114 unchanged. -->
   <use href="#card" x="879" y="114"/>
   <g font-family="Rajdhani" font-size="9" font-weight="500" fill="#88a789">
     <text x="879" y="442">card 265x237 stroke 1.25 #93bd95; socket row 265x49 on its foot</text>
@@ -388,6 +390,7 @@
     <text x="879" y="497">stats: DPS PNT ACC ROF 20 ls 1 centred x 41/102/164/225, base 200</text>
     <text x="879" y="508">over a filled 255x25 #a8d4a2 bar at +5,209: 86 30 5 5 at 22</text>
     <text x="879" y="519">micro-print 7.5 #88b088, two lines at +5, baselines 304 / 314</text>
+    <text x="879" y="530">card 4 cuts all content at local x135.6, with no closing right edge</text>
   </g>
 
   <!-- SOCKET ROW, isolated. store-trace.svg def #card local y 237..286:
@@ -666,20 +669,20 @@
 
   <!-- MESSAGE PANEL. mailbox-trace.svg B: frame x 529..1279, y 205..686
        (750x481) with a filled title bar inset 2px at x 531..1277,
-       y 227..288 (746x61) carrying the title at 22 ls 1 baseline 253 and
-       "from: Mom" at 17 baseline 279, both #25281d on #a6d2a8; body 17
-       #8aaf8d from x 557, first baseline 325, line pitch 21.7, paragraph
+       y 227..288 (746x61) carrying the title at 23.3 stretched 1.063 baseline 252.5 and
+       "from: Mom" at 18.5 stretched 1.098 baseline 278.75, both #25281d on #a6d2a8; body 17
+       #8aaf8d from x 556, stretched 1.14, baseline 325, line pitch 21.7, paragraph
        gap 39, wrap 690, laid out 4 + 4 + 2 lines. Shown to the second
-       body line and cut (dashed); translated by (-489,467). The trace
-       pins each line with textLength, which rsvg-convert 2.62 ignores. -->
+       body line and cut (dashed); translated by (-489,467). The
+       supported horizontal transform replaces ineffective textLength. -->
   <g font-family="Rajdhani">
     <path d="M 40,672 H 790 M 40,672 V 818 M 790,672 V 818" fill="none" stroke="#709174" stroke-width="2"/>
     <rect x="42" y="694" width="746" height="61" fill="#a6d2a8"/>
-    <text x="68" y="720" font-size="22" fill="#25281d" letter-spacing="1">URGENT INFORMATION (!)</text>
-    <text x="68" y="746" font-size="17" fill="#25281d">from: Mom</text>
-    <g font-size="17" fill="#8aaf8d" lengthAdjust="spacingAndGlyphs">
-      <text x="68" y="792" textLength="679">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incidi-</text>
-      <text x="68" y="814" textLength="691">dunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitati-</text>
+    <text transform="translate(65.79,719.5) scale(1.063,1)" font-size="23.3" font-weight="400" letter-spacing="0" fill="#25281d">URGENT INFORMATION (!)</text>
+    <text transform="translate(65.65,745.75) scale(1.098,1)" font-size="18.5" font-weight="400" letter-spacing="0" fill="#25281d">from: Mom</text>
+    <g font-size="17" fill="#8aaf8d" transform="translate(67,0) scale(1.14,1) translate(-68,0)">
+      <text x="68" y="792">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incidi-</text>
+      <text x="68" y="814">dunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitati-</text>
     </g>
     <path d="M 40,818 H 790" fill="none" stroke="#3d4d38" stroke-width="1" stroke-dasharray="4 4"/>
   </g>
@@ -688,20 +691,20 @@
        y 694..746 (750x52) split by dividers at x 716 / 903 / 1091 into
        four 187.33 cells; REPLY / FORWARD / DELETE are the bare strip and
        REPORT SPAM, the LAST cell, is filled solid #a6d2a8 (188x52, flush
-       with the strip, not inset) with #25281d ink. Labels 22 ls 1 at
-       cell + 20, baseline 719. The strip sits 8px below the panel.
+       with the strip, not inset) with #25281d ink. Labels medium 23.5 stretched 1.03 at
+       cell +21, baseline 718.5. The strip sits 8px below the panel.
        Translated by (-489,130). -->
-  <g font-family="Rajdhani" font-size="22" letter-spacing="1">
+  <g font-family="Rajdhani">
     <rect x="602" y="824" width="188" height="52" fill="#a6d2a8"/>
     <path d="M 40,824 H 790 V 876 H 40 Z M 227,824 V 876 M 414,824 V 876 M 602,824 V 876"
           fill="none" stroke="#709174" stroke-width="2"/>
-    <text x="60" y="849" fill="#a6d2a8">REPLY</text>
-    <text x="247" y="849" fill="#a6d2a8">FORWARD</text>
-    <text x="434" y="849" fill="#a6d2a8">DELETE</text>
-    <text x="622" y="849" fill="#25281d">REPORT SPAM</text>
+    <text transform="translate(61,848.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">REPLY</text>
+    <text transform="translate(248.33,848.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">FORWARD</text>
+    <text transform="translate(435.66,848.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">DELETE</text>
+    <text transform="translate(622.99,848.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#25281d">REPORT SPAM</text>
   </g>
   <g font-family="Rajdhani" font-size="9" font-weight="500" fill="#88a789">
-    <text x="40" y="888">panel 750x481, stroke 2 #709174; title bar 746x61 inset 2px at +2,+22 with the title at 22 ls 1 baseline +26 and the from line at 17 baseline +52</text>
+    <text x="40" y="888">panel 750x481, stroke 2 #709174; title bar 746x61 inset 2px at +2,+22 with the title 23.3 x1.063 baseline +25.5 and from 18.5 x1.098 baseline +51.75</text>
     <text x="40" y="899">body x+28, first baseline +120, pitch 21.7, para gap 39, wrap 690, 4+4+2 lines &#183; button strip 750x52 eight px below the panel, four 187.33 cells, filled cell flush</text>
   </g>
 
@@ -736,9 +739,9 @@
 
   <!-- LOGIN FORM. login-trace.svg: USERNAME: 500 at 23 ls 0.75 in
        #8aac8c, x 576 baseline 402; an outlined field x 563..922,
-       y 414..447 (359x33) at 1.25px #75967b holding eleven masked
-       characters in bold 22 at natural tracking from x 578, baseline
-       439, and a 17px caret underline at x 577..594, y 440; then a
+       y 414..447 (359x33) at 1.25px #75967b holding ten thin
+       masks, regular 25 stretched 0.94045 from x576.4, baseline441.25,
+       with a 19x0.5 underline at x576.5..595.5, y439.375; then a
        SOLID button x 932..1037, y 413..446 (105x33) filled #8aac8c with
        NEXT at 500 22 ls 2 in #20281c, x 940 baseline 433. The label
        reads USERNAME, not password; there is no user card, no avatar
@@ -748,14 +751,14 @@
   <g font-family="Rajdhani">
     <text x="1109" y="694" font-size="23" font-weight="500" fill="#8aac8c" letter-spacing="0.75">USERNAME:</text>
     <rect x="1096" y="706" width="359" height="33" fill="none" stroke="#75967b" stroke-width="1.25"/>
-    <text x="1111" y="731" font-size="22" font-weight="bold" fill="#8aac8c">***********</text>
-    <path d="M 1110,732 H 1127" fill="none" stroke="#75967b" stroke-width="1.25"/>
+    <text transform="translate(1109.4,733.25) scale(0.94045,1)" font-size="25" font-weight="400" fill="#8aac8c">**********</text>
+    <path d="M 1109.5,731.375 H 1128.5" fill="none" stroke="#75967b" stroke-width="0.5"/>
     <rect x="1465" y="705" width="105" height="33" fill="#8aac8c"/>
     <text x="1473" y="725" font-size="22" font-weight="500" fill="#20281c" letter-spacing="2">NEXT</text>
   </g>
   <g font-family="Rajdhani" font-size="9" font-weight="500" fill="#88a789">
     <text x="1096" y="756">field 359x33, stroke 1.25 #75967b; the label sits 13px right of its left edge and 12px above it</text>
-    <text x="1096" y="768">mask: eleven bold 22 asterisks at x+15, baseline +25; caret 17x1.25 under the first pair</text>
+    <text x="1096" y="768">mask: ten regular 25 stars, sx 0.94045, x+13.4 baseline +27.25; caret 19x0.5 under the first pair</text>
     <text x="1096" y="780">button 105x33 solid #8aac8c, 10px right of the field and 1px higher; label at x+8, ls 2</text>
   </g>
 
@@ -766,7 +769,7 @@
   <g font-family="Rajdhani" fill="#9fc09c">
     <text x="1096" y="812" font-size="11" font-weight="500">Rajdhani 500 17, natural tracking &#183; header and footer strings; hub body copy, stretched 1.16</text>
     <text x="1096" y="825" font-size="11" font-weight="600">Rajdhani 600 22 to 24 &#183; tile labels 22 ls 0.3, section labels 23, nav rows 24 ls 1, card titles 24 ls 1</text>
-    <text x="1096" y="837" font-size="11">Rajdhani regular 20 ls 1 over 14 natural &#183; a mail row title over its FROM line</text>
+    <text x="1096" y="837" font-size="11">Mail subjects 22.25 / FROM 16.25, fitted scale: cursor regular, bright rows medium; buttons medium 23.5 x1.03</text>
     <text x="1096" y="850" font-size="11" font-weight="bold">Rajdhani bold 27 stretched 1.37 to 1.5 &#183; the T1..T4 badge glyphs, cap 18</text>
     <text x="1096" y="862" font-size="11" font-weight="bold">Rajdhani bold 22 stretched 1.5 to 1.6 &#183; the boxed section letters A B C, on the hub</text>
     <text x="1096" y="875" font-size="11" font-weight="600">Rajdhani 600 12 and 10.5 stretched 0.685 to 0.82 &#183; the two cells of a tile caption box</text>
@@ -899,8 +902,8 @@
 
   <!-- MAIL LIST ROW, REST. mailbox-trace.svg A rows 3..7: a 366x62 cell
        inside the 2px #709174 frame, closed envelope at x+18 y+18 in
-       #8aaf8d, title 20 ls 1 #a6d2a8 at x+54 baseline +30, FROM 14
-       #8aaf8d baseline +48. SOURCED: images/entropism-mail.png rows
+       #8aaf8d, title 22.25 medium #a6d2a8 and FROM 16.25 medium
+       #8aaf8d, using row 3's measured x, baseline and scale. SOURCED: images/entropism-mail.png rows
        3..7, x 202..1082, y 840..1584; every row that is not the cursor
        row and not the open row is drawn like this. Row 3's strings.
        Drawn here as a lone cell with its own 2px outline, which is the
@@ -909,8 +912,8 @@
   <g id="row-rest" transform="translate(40,1122)" font-family="Rajdhani">
     <rect x="0" y="0" width="366" height="62" fill="none" stroke="#709174" stroke-width="2"/>
     <use href="#env" x="18" y="18" stroke="#8aaf8d"/>
-    <text x="54" y="30" font-size="20" fill="#a6d2a8" letter-spacing="1">HEIST DATA SENT TO YOU</text>
-    <text x="54" y="48" font-size="14" fill="#8aaf8d">FROM: 805000451</text>
+    <text transform="translate(52.12,28.85) scale(0.966,1)" font-size="22.25" font-weight="500" letter-spacing="0" fill="#a6d2a8">HEIST DATA SENT TO YOU</text>
+    <text transform="translate(51.67,48.02) scale(1.015,1)" font-size="16.25" font-weight="500" letter-spacing="0" fill="#8aaf8d">FROM: 805000451</text>
   </g>
 
   <!-- MAIL LIST ROW, HOVER. mailbox-trace.svg A row 1: the 366x62 cell
@@ -927,8 +930,8 @@
   <g id="row-hover" transform="translate(430,1122)" font-family="Rajdhani">
     <rect x="0" y="0" width="366" height="62" fill="#a6d2a8"/>
     <use href="#env" x="18" y="18" stroke="#25281d"/>
-    <text x="54" y="30" font-size="20" fill="#25281d" letter-spacing="1">YOU&#39;LL REGRET THAT</text>
-    <text x="54" y="48" font-size="14" fill="#25281d">FROM: JACKIE</text>
+    <text transform="translate(52.08,29.83) scale(0.991,1)" font-size="22.25" font-weight="400" letter-spacing="0" fill="#25281d">YOU'LL REGRET THAT</text>
+    <text transform="translate(52.15,48.58) scale(0.963,1)" font-size="16.25" font-weight="400" letter-spacing="0" fill="#25281d">FROM: JACKIE</text>
   </g>
 
   <!-- MAIL LIST ROW, PRESS. INFERRED, no still shows a held row. The
@@ -944,8 +947,8 @@
   <g id="row-press" transform="translate(820,1122)" font-family="Rajdhani">
     <rect x="0" y="0" width="366" height="62" fill="none" stroke="#709174" stroke-width="2"/>
     <use href="#env" x="18" y="18" stroke="#8aaf8d"/>
-    <text x="54" y="30" font-size="20" fill="#a6d2a8" letter-spacing="1">YOU&#39;LL REGRET THAT</text>
-    <text x="54" y="48" font-size="14" fill="#8aaf8d">FROM: JACKIE</text>
+    <text transform="translate(52.08,29.83) scale(0.991,1)" font-size="22.25" font-weight="400" letter-spacing="0" fill="#a6d2a8">YOU'LL REGRET THAT</text>
+    <text transform="translate(52.15,48.58) scale(0.963,1)" font-size="16.25" font-weight="400" letter-spacing="0" fill="#8aaf8d">FROM: JACKIE</text>
   </g>
 
   <!-- MAIL LIST ROW, OPEN. mailbox-trace.svg A row 2: outlined like
@@ -959,11 +962,11 @@
   <g id="row-open" transform="translate(1210,1122)" font-family="Rajdhani">
     <rect x="0" y="0" width="366" height="62" fill="none" stroke="#709174" stroke-width="2"/>
     <use href="#env-open" x="18" y="17" stroke="#8aaf8d"/>
-    <text x="54" y="30" font-size="20" fill="#a6d2a8" letter-spacing="1">URGENT INFORMATION (!)</text>
-    <text x="54" y="48" font-size="14" fill="#8aaf8d">FROM: MOM</text>
+    <text transform="translate(51.64,29.55) scale(1.006,1)" font-size="22.25" font-weight="500" letter-spacing="0" fill="#a6d2a8">URGENT INFORMATION (!)</text>
+    <text transform="translate(51.61,48.72) scale(1.058,1)" font-size="16.25" font-weight="500" letter-spacing="0" fill="#8aaf8d">FROM: MOM</text>
   </g>
   <g font-family="Rajdhani" font-size="9" font-weight="500" fill="#88a789">
-    <text x="40" y="1198">rest: outline 2 #709174, closed glyph, title #a6d2a8 20 ls 1, FROM #8aaf8d 14. Sourced, mail rows 3..7.</text>
+    <text x="40" y="1198">rest: outline 2, closed glyph; title 22.25 / FROM 16.25, both medium. Sourced.</text>
     <text x="430" y="1198">hover: solid #a6d2a8 flush, ink #25281d. Sourced as the cursor fill (mail row 1,</text>
     <text x="430" y="1209">which is not the open row). One fill per group; it moves with the pointer.</text>
     <text x="820" y="1198">press: the fill drops while held, the cell reads as rest; fill returns on release. Inferred.</text>
@@ -972,15 +975,15 @@
 
   <!-- BUTTON, REST. mailbox-trace.svg button row: one 187.33x52 cell
        of the outlined strip x 529..1279, y 694..746, stroke 2 #709174,
-       label 22 ls 1 #a6d2a8 at cell +20, baseline +25. SOURCED:
+       label medium 23.5 x1.03 #a6d2a8 at cell +21, baseline +24.5. SOURCED:
        images/entropism-mail.png x 1270..2618, y 1666..1790, the three
        bare cells REPLY / FORWARD / DELETE. Drawn as a lone 188x52 cell.
        The label is REPORT SPAM in all three states so the state is the
        only thing that changes across them. -->
   <text x="40" y="1230" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">BUTTON &#183; REST</text>
-  <g id="button-rest" transform="translate(40,1236)" font-family="Rajdhani" font-size="22" letter-spacing="1">
+  <g id="button-rest" transform="translate(40,1236)" font-family="Rajdhani">
     <rect x="0" y="0" width="188" height="52" fill="none" stroke="#709174" stroke-width="2"/>
-    <text x="20" y="25" fill="#a6d2a8">REPORT SPAM</text>
+    <text transform="translate(21,24.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">REPORT SPAM</text>
   </g>
 
   <!-- BUTTON, HOVER. mailbox-trace.svg button row, the REPORT SPAM
@@ -993,9 +996,9 @@
        105x33 solid #8aac8c, ink #20281c) is the same state on the only
        button of that screen. -->
   <text x="252" y="1230" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">BUTTON &#183; HOVER (SOURCED)</text>
-  <g id="button-hover" transform="translate(252,1236)" font-family="Rajdhani" font-size="22" letter-spacing="1">
+  <g id="button-hover" transform="translate(252,1236)" font-family="Rajdhani">
     <rect x="0" y="0" width="188" height="52" fill="#a6d2a8"/>
-    <text x="20" y="25" fill="#25281d">REPORT SPAM</text>
+    <text transform="translate(21,24.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#25281d">REPORT SPAM</text>
   </g>
 
   <!-- BUTTON, PRESS. INFERRED, no still shows a held button. The
@@ -1003,12 +1006,12 @@
        and the label back in #a6d2a8 while held; the fill returns on
        release. See the band comment for why this and not a third ink. -->
   <text x="464" y="1230" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">BUTTON &#183; PRESS (INFERRED)</text>
-  <g id="button-press" transform="translate(464,1236)" font-family="Rajdhani" font-size="22" letter-spacing="1">
+  <g id="button-press" transform="translate(464,1236)" font-family="Rajdhani">
     <rect x="0" y="0" width="188" height="52" fill="none" stroke="#709174" stroke-width="2"/>
-    <text x="20" y="25" fill="#a6d2a8">REPORT SPAM</text>
+    <text transform="translate(21,24.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">REPORT SPAM</text>
   </g>
   <g font-family="Rajdhani" font-size="9" font-weight="500" fill="#88a789">
-    <text x="40" y="1304">rest: 188x52, stroke 2 #709174, label 22 ls 1 #a6d2a8 at +20, baseline +25. Sourced, REPLY / FORWARD / DELETE.</text>
+    <text x="40" y="1304">rest: 188x52, stroke 2 #709174, label medium 23.5 x1.03 #a6d2a8 at +21, baseline +24.5. Sourced, REPLY / FORWARD / DELETE.</text>
     <text x="40" y="1315">hover: solid #a6d2a8 flush, no outline, ink #25281d. Sourced as the cursor fill: REPORT SPAM, and NEXT on the login (105x33 #8aac8c / #20281c).</text>
     <text x="40" y="1326">press: highlight off while held, reads as rest; fill returns on release. Inferred. Same rule for the nav cell, the hub tile and the T badge:</text>
     <text x="40" y="1337">one cursor fill per group (SMG, BRAINDANCE, T2 are where the photos left it), moving with the pointer, blinking off for a press.</text>
@@ -1019,13 +1022,13 @@
   <!-- LOGIN FIELD, REST. INFERRED: the photo shows the field only in
        its typed-in state. Rest is that field with the caret off: the
        359x33 outline at 1.25 #75967b (login-trace.svg x 563..922,
-       y 414..447) holding the masked run, bold 22 #8aac8c at x+15,
-       baseline +25, and no underline. The caret is the focus mark
+       y 414..447) holding ten thin masks, regular 25 #8aac8c at x+13.4,
+       baseline +27.25, horizontal scale 0.94045, and no underline. The caret is the focus mark
        (#caret-blink turns it off half the time anyway). -->
   <text x="820" y="1230" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">FIELD &#183; REST (NO CARET, INFERRED)</text>
   <g id="field-rest" transform="translate(820,1236)" font-family="Rajdhani">
     <rect x="0" y="0" width="359" height="33" fill="none" stroke="#75967b" stroke-width="1.25"/>
-    <text x="15" y="25" font-size="22" font-weight="bold" fill="#8aac8c">***********</text>
+    <text transform="translate(13.4,27.25) scale(0.94045,1)" font-size="25" font-weight="400" fill="#8aac8c">**********</text>
   </g>
 
   <!-- LOGIN FIELD, HOVER. INFERRED, no still shows the pointer on the
@@ -1038,29 +1041,29 @@
   <text x="820" y="1283" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">FIELD &#183; HOVER (THE CURSOR FILL, INFERRED)</text>
   <g id="field-hover" transform="translate(820,1289)" font-family="Rajdhani">
     <rect x="0" y="0" width="359" height="33" fill="#8aac8c"/>
-    <text x="15" y="25" font-size="22" font-weight="bold" fill="#20281c">***********</text>
+    <text transform="translate(13.4,27.25) scale(0.94045,1)" font-size="25" font-weight="400" fill="#20281c">**********</text>
   </g>
 
   <!-- LOGIN FIELD, PRESS. SOURCED: login-trace.svg, the field as
        photographed in images/entropism-login.png x 1351..2213, y
        994..1073 (39-9c990311.png x 423..691, y 311..334; 36-a42bf711.png
        x 351..577, y 256..276): a field after a press, being typed in.
-       Outline 1.25 #75967b, the masked run bold 22 #8aac8c, and the
-       17x1.25 caret underline at x+14..+31, y+26 under the first pair.
+       Outline 1.25 #75967b, the regular 25 masked run #8aac8c, and the
+       19x0.5 caret underline at x+13.5..+32.5, y+25.375 under the first pair.
        The highlight is off (the press rule) and the caret is on; this
        is the state a press lands in and holds while focused. -->
   <text x="820" y="1336" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">FIELD &#183; PRESS = FOCUS (CARET ON, SOURCED)</text>
   <g id="field-press" transform="translate(820,1342)" font-family="Rajdhani">
     <rect x="0" y="0" width="359" height="33" fill="none" stroke="#75967b" stroke-width="1.25"/>
-    <text x="15" y="25" font-size="22" font-weight="bold" fill="#8aac8c">***********</text>
-    <path d="M 14,26 H 31" fill="none" stroke="#75967b" stroke-width="1.25"/>
+    <text transform="translate(13.4,27.25) scale(0.94045,1)" font-size="25" font-weight="400" fill="#8aac8c">**********</text>
+    <path d="M 13.5,25.375 H 32.5" fill="none" stroke="#75967b" stroke-width="0.5"/>
   </g>
   <g font-family="Rajdhani" font-size="9" font-weight="500" fill="#88a789">
-    <text x="1210" y="1246">rest: 359x33, stroke 1.25 #75967b, mask bold 22 #8aac8c at +15 baseline +25, no caret. Inferred:</text>
+    <text x="1210" y="1246">rest: 359x33, stroke 1.25 #75967b, mask regular 25 sx0.94045 at +13.4 baseline +27.25, no caret. Inferred:</text>
     <text x="1210" y="1257">the photo shows the field only focused; rest is that frame with the caret off.</text>
     <text x="1210" y="1299">hover: solid #8aac8c (the login's fill), no outline, mask in #20281c. Inferred by the</text>
     <text x="1210" y="1310">cursor rule; precedent for reverse-video text is the mail title bar.</text>
-    <text x="1210" y="1352">press: outline back, caret underline 17x1.25 at +14, +26, held while focused. SOURCED,</text>
+    <text x="1210" y="1352">press: outline back, caret underline 19x0.5 at +13.5, +25.375, held while focused. SOURCED,</text>
     <text x="1210" y="1363">login #39: the field as photographed is a pressed field being typed in.</text>
     <text x="1210" y="1379">Release lands the destination, never a third look: open glyph, filled title bar, grown card, caret.</text>
   </g>

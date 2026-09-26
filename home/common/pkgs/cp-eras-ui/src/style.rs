@@ -1211,11 +1211,21 @@ pub struct Step {
     pub run: f32,
 }
 
-/// A filled and/or stroked plate: the one shape every part of an access
-/// screen is drawn as.
+/// An access-screen contour in absolute design coordinates.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PlatePath {
+    pub start: (f32, f32),
+    pub steps: &'static [Seg],
+}
+
+/// A filled and/or stroked access-screen control. A custom contour is
+/// closed automatically and uses absolute design coordinates.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Plate {
     pub at: Plot,
+    /// Overrides bevels/steps for both drawing and pointer hit testing;
+    /// `at` remains the layout and text-fitting rectangle.
+    pub path: Option<PlatePath>,
     pub bevel: Bevel,
     /// A shoulder in the top edge; `None` is a level one.
     pub step: Option<Step>,
@@ -1233,6 +1243,7 @@ impl Plate {
     pub const fn filled(at: Plot, fill: Ink) -> Plate {
         Plate {
             at,
+            path: None,
             bevel: Bevel::NONE,
             step: None,
             fill: Some(fill),
@@ -1245,6 +1256,7 @@ impl Plate {
     pub const fn outlined(at: Plot, stroke: Ink, weight: f32) -> Plate {
         Plate {
             at,
+            path: None,
             bevel: Bevel::NONE,
             step: None,
             fill: None,
@@ -1256,6 +1268,11 @@ impl Plate {
 
     pub const fn bevelled(mut self, bevel: Bevel) -> Plate {
         self.bevel = bevel;
+        self
+    }
+
+    pub const fn outlined_path(mut self, start: (f32, f32), steps: &'static [Seg]) -> Plate {
+        self.path = Some(PlatePath { start, steps });
         self
     }
 
@@ -1398,7 +1415,7 @@ pub enum Emblem {
 /// How a live slot's field takes typed input.
 ///
 /// The traces draw every field at rest with a mock in it -- neomil's
-/// `**********  __`, entropism's eleven bold asterisks -- or with
+/// `**********  __`, entropism's ten thin asterisks -- or with
 /// nothing but a cursor (kitsch's mint block, neokitsch's bare
 /// chocolate well). That rest run is `rest`, exactly as transcribed,
 /// and it is what the screen draws until somebody touches the
@@ -1597,9 +1614,11 @@ pub enum Fixture {
     },
     /// Neokitsch: the stacked-hairline wire band across the foot.
     WireBand {
-        /// Outer plateau, centre plateau, and the ends' vertical.
+        /// Outer and centre plateaus of the first strand.
         outer: f32,
         inner: f32,
+        /// First strand's endpoint; later endpoints follow the outer
+        /// plateau's pitch.
         end: f32,
         strands: usize,
     },
@@ -1759,6 +1778,9 @@ pub struct Run {
     /// The text's baseline, as the SVG writes it.
     pub y: f32,
     pub size: f32,
+    /// Horizontal glyph scale about the run's x anchor. Baseline and
+    /// cap height stay unchanged; 1.0 uses the ordinary text pipeline.
+    pub stretch: f32,
     pub ink: Ink,
     pub bold: bool,
     /// Rajdhani 500. The re-cut traces set most chrome at weight 500 or
@@ -1778,6 +1800,7 @@ impl Run {
             x,
             y,
             size,
+            stretch: 1.0,
             ink,
             bold: false,
             medium: false,
@@ -1809,6 +1832,11 @@ impl Run {
 
     pub const fn right(mut self) -> Run {
         self.right = true;
+        self
+    }
+
+    pub const fn stretched(mut self, stretch: f32) -> Run {
+        self.stretch = stretch;
         self
     }
 }
@@ -1917,6 +1945,18 @@ pub struct Icons {
     pub x: f32,
     pub y: f32,
     pub pitch: f32,
+    /// Absolute origins for individually placed icons. Missing entries
+    /// use `(x, y + row * pitch)`.
+    pub positions: &'static [(f32, f32)],
+    /// Era-owned vectors in coordinates local to each icon's origin.
+    pub normal: &'static [Piece],
+    pub selected: &'static [Piece],
+}
+
+impl Icons {
+    pub fn origin(self, row: usize) -> (f32, f32) {
+        self.positions.get(row).copied().unwrap_or((self.x, self.y + row as f32 * self.pitch))
+    }
 }
 
 /// One row of an era's mailbox, transcribed from its trace.
@@ -1978,10 +2018,32 @@ pub struct MailRowStates {
     pub selected_hover: Option<MailRowCoat>,
 }
 
+/// Source-specific envelope outlines, local to the list's glyph origin.
+/// Both fill and stroke follow the row's resolved printing ink, including
+/// selection and transient feedback. An empty variant uses the default
+/// envelope geometry.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct MailEnvelope {
+    pub normal: &'static [Piece],
+    pub open: &'static [Piece],
+}
+
+/// A measured subject/sender pair for one message row.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct MailRowType {
+    /// Absolute design x, baseline relative to the row's top. The
+    /// renderer supplies content and selection/feedback inks.
+    pub title: Run,
+    pub from: Run,
+}
+
 /// Region A of every trace: the message list.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MailList {
     pub feedback: Option<MailRowStates>,
+    /// Fixed ornaments beneath the rows, in absolute design coordinates.
+    /// They share the list's opening clip and opacity.
+    pub footer: &'static [Piece],
     /// An outlined frame around the whole list (entropism only).
     pub frame: Option<Frame>,
     pub frame_ink: Ink,
@@ -1991,9 +2053,15 @@ pub struct MailList {
     pub pitch: f32,
     /// The rows, top to bottom, exactly as many as the trace shows.
     pub rows: &'static [Mail],
+    /// Optional measured typography per row; missing entries use the
+    /// common title/from settings below.
+    pub row_type: &'static [MailRowType],
     pub selected: usize,
     pub decor: RowDecor,
     pub row_fill: Option<Ink>,
+    /// Individual resting fills, indexed by row. Missing entries use
+    /// `row_fill`; transient feedback and selection take precedence.
+    pub row_fills: &'static [Ink],
     pub row_stroke: Option<Ink>,
     pub row_width: f32,
     pub row_trim: Trim,
@@ -2031,12 +2099,22 @@ pub struct MailList {
     pub glyph_x: f32,
     pub glyph_dy: f32,
     pub glyph_w: f32,
+    pub envelope: Option<MailEnvelope>,
     pub text_x: f32,
     pub title_dy: f32,
     pub title_size: f32,
     pub title_bold: bool,
+    /// Resting unselected subject/glyph ink. Selection and transient
+    /// printing overrides take precedence.
+    pub title_ink: Ink,
+    /// Printing on the selected fill. Transient printing overrides
+    /// still win; a sender outside the fill keeps `Ink::Select`.
+    pub selected_ink: Ink,
     pub from_dy: f32,
     pub from_size: f32,
+    /// Resting unselected sender ink, below transient sender/printing
+    /// overrides and the selected row's geometric fill contrast.
+    pub from_ink: Ink,
     pub from_at: FromAt,
     /// What leads the sender line: "FROM: ", "from: ", or nothing at
     /// all where neomil sets the name on the subject's own line.
@@ -2049,7 +2127,24 @@ pub struct MailList {
     /// The outlined NEW pill neomil sets in a row's lower right, on
     /// every row whose [`Mail::unread`] is set. `None` everywhere else.
     pub new_pill: Option<Frame>,
+    /// Selected-row placement when the source moves its unread stamp.
+    /// Relative to the logical row, like `new_pill`; None uses that frame.
+    pub new_pill_selected: Option<Frame>,
+    /// Optional monochrome unread decoration, local to `new_pill`'s
+    /// origin. Replaces its default outline and NEW text; every fill
+    /// and stroke follows the resolved row-title ink, including feedback.
+    pub new_pill_art: &'static [Piece],
     pub icons: Option<Icons>,
+}
+
+impl MailList {
+    pub fn row_fill_at(&self, row: usize) -> Option<Ink> {
+        self.row_fills.get(row).copied().or(self.row_fill)
+    }
+
+    pub fn unread_frame(&self, selected: bool) -> Option<Frame> {
+        if selected { self.new_pill_selected.or(self.new_pill) } else { self.new_pill }
+    }
 }
 
 /// Region B of every trace: the message itself.
@@ -2081,8 +2176,8 @@ pub struct MailPanel {
     /// Two traces need it: entropism heads its message "from: Mom"
     /// above a list that says "FROM: MOM", and neomil's panel reads
     /// "Urgent Information (!)", which is no row of its list at all.
-    /// Only the resting state is pinned; once a click moves the panel
-    /// off `message`, both are derived.
+    /// Only the initial fixture is pinned; once any row is selected,
+    /// both are derived, even for the original `message` index.
     pub heading: Option<&'static str>,
     pub sender: Option<&'static str>,
     /// Where the first body line's baseline sits, and how it is set.
@@ -2156,6 +2251,10 @@ pub struct MailBadges {
 /// The whole of an era's mailbox, as data.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Mailbox {
+    /// SVG baseline to canvas line-top conversion, as a fraction of
+    /// font size. Measured traces retain their established alignment;
+    /// source-corrected text uses the face's actual canvas baseline.
+    pub text_baseline: f32,
     /// The ground this screen's own trace draws, as the leading
     /// [`Prim::Soft`] group(s) a store or dashboard table would open
     /// with, composited under the sheet by `scene::Backdrop`. Empty for
@@ -2220,6 +2319,9 @@ pub enum MailPart {
     Title,
     Buttons,
     Badges,
+    /// Edge ornaments drawn over the regions. A panel's overlay can
+    /// share its reveal clip without appearing before the panel opens.
+    Overlay,
     /// The reverse-video fills, wherever they sit: the list's selection
     /// plate (and its icon box), the panel's head, the filled button and
     /// the selected badge. Entropism lights them after the scan has
@@ -2615,6 +2717,26 @@ pub enum Prim {
         h: f32,
         on: &'static [Prim],
         off: &'static [Prim],
+    },
+    /// Select a sub-scene by business selection. This can change a
+    /// plate's hit geometry together with its drawing without making
+    /// transient hover or press feedback resize the interaction region.
+    Pick {
+        group: Group,
+        index: usize,
+        on: &'static [Prim],
+        off: &'static [Prim],
+    },
+    /// A permanent viewport in the current translated coordinate frame.
+    /// It clips drawing, pointer hits and keyboard navigation bounds.
+    /// Unlike a motion wipe, hidden content never becomes interactive.
+    /// Like motion clips, this wrapper must not sit inside a rotation.
+    Viewport {
+        x: f32,
+        y: f32,
+        w: f32,
+        h: f32,
+        prims: &'static [Prim],
     },
     /// A sub-scene translated by `(x, y)`: how a card template written
     /// once gets placed four times along the shelf.

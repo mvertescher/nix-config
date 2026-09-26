@@ -129,7 +129,7 @@ let
   # in home/themes therefore moves these goldens, which is the point:
   # the two sides of that contract cannot drift silently.
   eraCase =
-    { screen, era, variant }:
+    { screen, era, variant, freezeClock ? true }:
     import ./tests/visual.nix {
       inherit
         lib
@@ -139,6 +139,7 @@ let
         python3
         era
         variant
+        freezeClock
         ;
       cp-eras-ui = package;
       example = "cp-eras-ui-${screen}";
@@ -202,8 +203,21 @@ package.overrideAttrs (old: {
       };
 
       store = matrix "store";
+      storeLive.neomil = eraCase {
+        screen = "store";
+        era = "neomil";
+        variant = "reference";
+        freezeClock = false;
+      };
       login = matrix "login";
       mailbox = matrix "mailbox";
+      # A frozen clock hid the standalone launcher's missing subscription.
+      mailboxLive.neomil = eraCase {
+        screen = "mailbox";
+        era = "neomil";
+        variant = "reference";
+        freezeClock = false;
+      };
       dashboard = matrix "dashboard";
       # The working mail client: the one screen assembled from iced
       # built-ins and `widgets` rather than a `Prim` table, so it is the

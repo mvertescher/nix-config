@@ -11,9 +11,9 @@
 
        What the source actually shows, top to bottom (read from the photo
        and from 2x crops of every region, 2026-09-02):
-         - the hub backdrop: blue glow over near-black, gone by y~430; a
-           warm near-black (#170c0d..#0b0304) under the left half, pure
-           black right of the cards. NO header row, NO hairline rule
+         - the same fixed blue/cyan backdrop as the hub, independently
+           validated in clear native patches; see login-store-material.md.
+           NO header row, NO hairline rule
          - a top strip at y 31..47: a "2" chip + KIROSHI at x 752..830,
            "JHN 102 CKC 151 CC10 AS5" with a left arrow at x 862..1000
          - top-left, the MASURAO logotype: kanji 益荒男 at x 171..307,
@@ -27,7 +27,7 @@
            452..514, CONTROLLER 519..581 - dark boxes with a 16px
            bottom-left chamfer and a spine at x 148..151
          - FOUR product cards, tops at y 151, 13px top-right chamfer:
-           x 437..721, 769..1051 (SELECTED: taller, bottom 800, lighter
+           x 437..721, 769..1051 (SELECTED: taller, bottom 797.1, lighter
            translucent fill down to y 516), 1096..1378, 1425..1557 (a
            narrow frame cut off at x 1557: no chamfer, no bar there).
            Cards 1, 3, 4 end at y 613. The right edge of cards 1-3
@@ -61,48 +61,42 @@
        #0e1115..#0d0504; card 4 #0c0505; nav row fill #2e1012; CUSTOMER
        bar #96282d; footer box #60181a. -->
   <defs>
-    <linearGradient id="glowh" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0.000" stop-color="#282824"/>
-      <stop offset="0.063" stop-color="#273743"/>
-      <stop offset="0.188" stop-color="#263953"/>
-      <stop offset="0.313" stop-color="#202b56"/>
-      <stop offset="0.438" stop-color="#1b2253"/>
-      <stop offset="0.563" stop-color="#171f51"/>
-      <stop offset="0.688" stop-color="#121f51"/>
-      <stop offset="0.813" stop-color="#0d1f4e"/>
-      <stop offset="0.938" stop-color="#082447"/>
-      <stop offset="1.000" stop-color="#080b0e"/>
-    </linearGradient>
-    <linearGradient id="glowv" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0.00" stop-color="#ffffff"/>
-      <stop offset="0.25" stop-color="#ffffff"/>
-      <stop offset="0.30" stop-color="#e3e3e3"/>
-      <stop offset="0.35" stop-color="#bababa"/>
-      <stop offset="0.40" stop-color="#8c8c8c"/>
-      <stop offset="0.45" stop-color="#545454"/>
-      <stop offset="0.50" stop-color="#2b2b2b"/>
-      <stop offset="0.55" stop-color="#121212"/>
-      <stop offset="0.60" stop-color="#000000"/>
-    </linearGradient>
-    <mask id="glowmask">
-      <rect width="1600" height="900" fill="url(#glowv)"/>
-    </mask>
-    <radialGradient id="vignette" cx="0.02" cy="0.60" r="0.34">
-      <stop offset="0" stop-color="#241012"/>
-      <stop offset="1" stop-color="#241012" stop-opacity="0"/>
-    </radialGradient>
-    <!-- warm wash under the left half: #170c0d at (100,450) fading to
-         #0b0304 at y 780 and to nothing right of x~740 -->
-    <radialGradient id="wash" cx="0.18" cy="0.50" r="0.45">
-      <stop offset="0.0" stop-color="#1a0c0e"/>
-      <stop offset="0.7" stop-color="#120608"/>
-      <stop offset="1.0" stop-color="#120608" stop-opacity="0"/>
-    </radialGradient>
-    <!-- the pure-black field right of the cards below the glow -->
-    <linearGradient id="blackv" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0.00" stop-color="#020203" stop-opacity="0"/>
-      <stop offset="0.25" stop-color="#020203"/>
-    </linearGradient>
+    <!-- Unchanged dashboard composite, independently validated here.
+         See login-store-material.md; coarse fields are not source grain. -->
+<linearGradient id="store-ground-r0" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#2b363e" /><stop offset="0.03125" stop-color="#2c3b4c" /><stop offset="0.0625" stop-color="#2c3c56" /><stop offset="0.125" stop-color="#2c3b59" /><stop offset="0.1875" stop-color="#2c3759" /><stop offset="0.25" stop-color="#293058" /><stop offset="0.375" stop-color="#232757" /><stop offset="0.5" stop-color="#1e2254" /><stop offset="0.625" stop-color="#191e51" /><stop offset="0.75" stop-color="#141d4f" /><stop offset="0.875" stop-color="#0f1f4d" /><stop offset="0.9375" stop-color="#0d244c" /><stop offset="0.96875" stop-color="#0d2644" /><stop offset="1.0" stop-color="#0c1d27" /></linearGradient>
+<linearGradient id="store-ground-r1" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#28272a" /><stop offset="0.03125" stop-color="#272e34" /><stop offset="0.0625" stop-color="#283946" /><stop offset="0.125" stop-color="#283950" /><stop offset="0.1875" stop-color="#253855" /><stop offset="0.25" stop-color="#243257" /><stop offset="0.375" stop-color="#1e2755" /><stop offset="0.5" stop-color="#1a2153" /><stop offset="0.625" stop-color="#151e51" /><stop offset="0.75" stop-color="#101d4f" /><stop offset="0.875" stop-color="#0b214d" /><stop offset="0.9375" stop-color="#092448" /><stop offset="0.96875" stop-color="#08223a" /><stop offset="1.0" stop-color="#080e13" /></linearGradient>
+<linearGradient id="store-ground-r2" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#251b1d" /><stop offset="0.03125" stop-color="#251c1e" /><stop offset="0.0625" stop-color="#242327" /><stop offset="0.125" stop-color="#202d35" /><stop offset="0.1875" stop-color="#1f2f3d" /><stop offset="0.25" stop-color="#1e324c" /><stop offset="0.375" stop-color="#182a53" /><stop offset="0.5" stop-color="#152352" /><stop offset="0.625" stop-color="#112050" /><stop offset="0.75" stop-color="#0b214e" /><stop offset="0.875" stop-color="#072345" /><stop offset="0.9375" stop-color="#05223a" /><stop offset="0.96875" stop-color="#041520" /><stop offset="1.0" stop-color="#060305" /></linearGradient>
+<linearGradient id="store-ground-r3" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#201617" /><stop offset="0.03125" stop-color="#201617" /><stop offset="0.0625" stop-color="#201618" /><stop offset="0.125" stop-color="#1f191c" /><stop offset="0.1875" stop-color="#1a1c20" /><stop offset="0.25" stop-color="#18272f" /><stop offset="0.375" stop-color="#142c47" /><stop offset="0.5" stop-color="#11284e" /><stop offset="0.625" stop-color="#0e254d" /><stop offset="0.75" stop-color="#092345" /><stop offset="0.875" stop-color="#042032" /><stop offset="0.9375" stop-color="#03171e" /><stop offset="0.96875" stop-color="#030709" /><stop offset="1.0" stop-color="#030203" /></linearGradient>
+<linearGradient id="store-ground-r4" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#1e1214" /><stop offset="0.03125" stop-color="#1e1314" /><stop offset="0.0625" stop-color="#1d1214" /><stop offset="0.125" stop-color="#1b1113" /><stop offset="0.1875" stop-color="#191114" /><stop offset="0.25" stop-color="#15161a" /><stop offset="0.375" stop-color="#112532" /><stop offset="0.5" stop-color="#0e2841" /><stop offset="0.625" stop-color="#0b2641" /><stop offset="0.75" stop-color="#062136" /><stop offset="0.875" stop-color="#03171f" /><stop offset="0.9375" stop-color="#020507" /><stop offset="0.96875" stop-color="#020203" /><stop offset="1.0" stop-color="#020203" /></linearGradient>
+<linearGradient id="store-ground-r5" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#1b0f11" /><stop offset="0.03125" stop-color="#1b0f11" /><stop offset="0.0625" stop-color="#1a0f11" /><stop offset="0.125" stop-color="#190e10" /><stop offset="0.1875" stop-color="#170d0e" /><stop offset="0.25" stop-color="#150c0e" /><stop offset="0.375" stop-color="#0f161b" /><stop offset="0.5" stop-color="#0c1f2a" /><stop offset="0.625" stop-color="#091f2c" /><stop offset="0.75" stop-color="#041922" /><stop offset="0.875" stop-color="#02080a" /><stop offset="0.9375" stop-color="#030203" /><stop offset="0.96875" stop-color="#020303" /><stop offset="1.0" stop-color="#030202" /></linearGradient>
+<linearGradient id="store-ground-r6" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#190c0e" /><stop offset="0.03125" stop-color="#190c0e" /><stop offset="0.0625" stop-color="#180c0e" /><stop offset="0.125" stop-color="#170b0e" /><stop offset="0.1875" stop-color="#15090c" /><stop offset="0.25" stop-color="#12080a" /><stop offset="0.375" stop-color="#110b0d" /><stop offset="0.5" stop-color="#0c1014" /><stop offset="0.625" stop-color="#071116" /><stop offset="0.75" stop-color="#020c12" /><stop offset="0.875" stop-color="#020303" /><stop offset="0.9375" stop-color="#030302" /><stop offset="0.96875" stop-color="#030203" /><stop offset="1.0" stop-color="#020202" /></linearGradient>
+<linearGradient id="store-ground-r7" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#170a0c" /><stop offset="0.03125" stop-color="#170a0b" /><stop offset="0.0625" stop-color="#170a0c" /><stop offset="0.125" stop-color="#15090b" /><stop offset="0.1875" stop-color="#14070a" /><stop offset="0.25" stop-color="#110609" /><stop offset="0.375" stop-color="#110204" /><stop offset="0.5" stop-color="#0d0609" /><stop offset="0.625" stop-color="#080509" /><stop offset="0.75" stop-color="#030306" /><stop offset="0.875" stop-color="#020302" /><stop offset="0.9375" stop-color="#030203" /><stop offset="0.96875" stop-color="#030302" /><stop offset="1.0" stop-color="#020202" /></linearGradient>
+<linearGradient id="store-ground-r8" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#160608" /><stop offset="0.03125" stop-color="#150709" /><stop offset="0.0625" stop-color="#150709" /><stop offset="0.125" stop-color="#130608" /><stop offset="0.1875" stop-color="#110508" /><stop offset="0.25" stop-color="#0f0507" /><stop offset="0.375" stop-color="#0d0407" /><stop offset="0.5" stop-color="#0a0305" /><stop offset="0.625" stop-color="#060304" /><stop offset="0.75" stop-color="#020102" /><stop offset="0.875" stop-color="#020302" /><stop offset="0.9375" stop-color="#030302" /><stop offset="0.96875" stop-color="#030202" /><stop offset="1.0" stop-color="#020203" /></linearGradient>
+<linearGradient id="store-ground-r9" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#130305" /><stop offset="0.03125" stop-color="#120305" /><stop offset="0.0625" stop-color="#120305" /><stop offset="0.125" stop-color="#110305" /><stop offset="0.1875" stop-color="#0e0304" /><stop offset="0.25" stop-color="#0d0305" /><stop offset="0.375" stop-color="#0a0304" /><stop offset="0.5" stop-color="#070304" /><stop offset="0.625" stop-color="#030203" /><stop offset="0.75" stop-color="#030403" /><stop offset="0.875" stop-color="#030202" /><stop offset="0.9375" stop-color="#030202" /><stop offset="0.96875" stop-color="#030303" /><stop offset="1.0" stop-color="#020202" /></linearGradient>
+<linearGradient id="store-ground-r10" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#0f0304" /><stop offset="0.03125" stop-color="#0f0304" /><stop offset="0.0625" stop-color="#0e0304" /><stop offset="0.125" stop-color="#0c0304" /><stop offset="0.1875" stop-color="#0a0304" /><stop offset="0.25" stop-color="#080304" /><stop offset="0.375" stop-color="#060304" /><stop offset="0.5" stop-color="#030203" /><stop offset="0.625" stop-color="#020202" /><stop offset="0.75" stop-color="#020302" /><stop offset="0.875" stop-color="#030303" /><stop offset="0.9375" stop-color="#020202" /><stop offset="0.96875" stop-color="#020302" /><stop offset="1.0" stop-color="#020203" /></linearGradient>
+<linearGradient id="store-ground-r11" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1600" y2="0"><stop offset="0.0" stop-color="#0a0303" /><stop offset="0.03125" stop-color="#090304" /><stop offset="0.0625" stop-color="#090304" /><stop offset="0.125" stop-color="#080304" /><stop offset="0.1875" stop-color="#060304" /><stop offset="0.25" stop-color="#050204" /><stop offset="0.375" stop-color="#030203" /><stop offset="0.5" stop-color="#020202" /><stop offset="0.625" stop-color="#020203" /><stop offset="0.75" stop-color="#030303" /><stop offset="0.875" stop-color="#020302" /><stop offset="0.9375" stop-color="#020303" /><stop offset="0.96875" stop-color="#020302" /><stop offset="1.0" stop-color="#030302" /></linearGradient>
+<linearGradient id="store-ground-y0" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="80"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="store-ground-m0" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#store-ground-y0)" /></mask>
+<linearGradient id="store-ground-y1" gradientUnits="userSpaceOnUse" x1="0" y1="80" x2="0" y2="160"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="store-ground-m1" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#store-ground-y1)" /></mask>
+<linearGradient id="store-ground-y2" gradientUnits="userSpaceOnUse" x1="0" y1="160" x2="0" y2="240"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="store-ground-m2" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#store-ground-y2)" /></mask>
+<linearGradient id="store-ground-y3" gradientUnits="userSpaceOnUse" x1="0" y1="240" x2="0" y2="300"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="store-ground-m3" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#store-ground-y3)" /></mask>
+<linearGradient id="store-ground-y4" gradientUnits="userSpaceOnUse" x1="0" y1="300" x2="0" y2="360"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="store-ground-m4" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#store-ground-y4)" /></mask>
+<linearGradient id="store-ground-y5" gradientUnits="userSpaceOnUse" x1="0" y1="360" x2="0" y2="420"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="store-ground-m5" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#store-ground-y5)" /></mask>
+<linearGradient id="store-ground-y6" gradientUnits="userSpaceOnUse" x1="0" y1="420" x2="0" y2="480"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="store-ground-m6" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#store-ground-y6)" /></mask>
+<linearGradient id="store-ground-y7" gradientUnits="userSpaceOnUse" x1="0" y1="480" x2="0" y2="560"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="store-ground-m7" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#store-ground-y7)" /></mask>
+<linearGradient id="store-ground-y8" gradientUnits="userSpaceOnUse" x1="0" y1="560" x2="0" y2="680"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="store-ground-m8" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#store-ground-y8)" /></mask>
+<linearGradient id="store-ground-y9" gradientUnits="userSpaceOnUse" x1="0" y1="680" x2="0" y2="800"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="store-ground-m9" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#store-ground-y9)" /></mask>
+<linearGradient id="store-ground-y10" gradientUnits="userSpaceOnUse" x1="0" y1="800" x2="0" y2="900"><stop stop-color="black" /><stop offset="1" stop-color="white" /></linearGradient>
+<mask id="store-ground-m10" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#store-ground-y10)" /></mask>
     <!-- card 2's upper translucent fill, sampled down x=900 -->
     <linearGradient id="c2upper" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0.00" stop-color="#4e2545"/>
@@ -200,22 +194,22 @@
       <path d="M 254.5,325 V 352"/>
     </g>
     <!-- the "QR" glyph is not a QR: a 12x crop (neomil-store-qr-grid) shows
-         24 loose 3px squares on a 9x9 lattice of 3.75px pitch, x 451..484,
-         y 520..554, with no finder patterns. Cell (c,r) sits at
-         (3+3.75c, 2+3.75r) so <use x="11" y="518"> lands col 0 on x 451. -->
-    <g id="qr">
-      <rect x="3" y="2" width="3" height="3"/><rect x="14.25" y="2" width="3" height="3"/>
-      <rect x="21.75" y="2" width="3" height="3"/><rect x="33" y="2" width="3" height="3"/>
-      <rect x="6.75" y="5.75" width="3" height="3"/><rect x="25.5" y="5.75" width="3" height="3"/>
-      <rect x="10.5" y="9.5" width="3" height="3"/><rect x="33" y="9.5" width="3" height="3"/>
-      <rect x="3" y="13.25" width="3" height="3"/><rect x="14.25" y="13.25" width="3" height="3"/>
-      <rect x="21.75" y="13.25" width="3" height="3"/><rect x="29.25" y="13.25" width="3" height="3"/>
-      <rect x="6.75" y="20.75" width="3" height="3"/><rect x="14.25" y="20.75" width="3" height="3"/>
-      <rect x="25.5" y="20.75" width="3" height="3"/><rect x="33" y="20.75" width="3" height="3"/>
-      <rect x="3" y="24.5" width="3" height="3"/><rect x="21.75" y="24.5" width="3" height="3"/>
-      <rect x="6.75" y="28.25" width="3" height="3"/><rect x="29.25" y="28.25" width="3" height="3"/>
-      <rect x="3" y="32" width="3" height="3"/><rect x="14.25" y="32" width="3" height="3"/>
-      <rect x="21.75" y="32" width="3" height="3"/><rect x="33" y="32" width="3" height="3"/>
+         25 loose 3px squares on a 9x9 lattice of 3.6667px pitch.
+         Native bright-cell centers independently fit all four origins;
+         see socket-spacing.md. Printing echoes are a separate layer. -->
+    <g id="qr" stroke="none">
+      <rect x="3.0000" y="2.0000" width="3" height="3"/><rect x="14.0001" y="2.0000" width="3" height="3"/>
+      <rect x="21.3335" y="2.0000" width="3" height="3"/><rect x="32.3336" y="2.0000" width="3" height="3"/>
+      <rect x="6.6667" y="5.6667" width="3" height="3"/><rect x="25.0002" y="5.6667" width="3" height="3"/>
+      <rect x="10.3334" y="9.3334" width="3" height="3"/><rect x="32.3336" y="9.3334" width="3" height="3"/>
+      <rect x="3.0000" y="13.0001" width="3" height="3"/><rect x="14.0001" y="13.0001" width="3" height="3"/>
+      <rect x="21.3335" y="13.0001" width="3" height="3"/><rect x="28.6669" y="13.0001" width="3" height="3"/>
+      <rect x="6.6667" y="20.3335" width="3" height="3"/><rect x="14.0001" y="20.3335" width="3" height="3"/>
+      <rect x="25.0002" y="20.3335" width="3" height="3"/><rect x="32.3336" y="20.3335" width="3" height="3"/>
+      <rect x="3.0000" y="24.0002" width="3" height="3"/><rect x="10.3334" y="24.0002" width="3" height="3"/><rect x="21.3335" y="24.0002" width="3" height="3"/>
+      <rect x="6.6667" y="27.6669" width="3" height="3"/><rect x="28.6669" y="27.6669" width="3" height="3"/>
+      <rect x="3.0000" y="31.3336" width="3" height="3"/><rect x="14.0001" y="31.3336" width="3" height="3"/>
+      <rect x="21.3335" y="31.3336" width="3" height="3"/><rect x="32.3336" y="31.3336" width="3" height="3"/>
     </g>
     <!-- applied inside card 4's translate(1425,0) group, so in card-local x;
          the cut is at canvas x 1557 = local 132 -->
@@ -246,11 +240,21 @@
     </clipPath>
   </defs>
 
-  <rect width="1600" height="900" fill="#0b0405"/>
-  <rect width="1600" height="900" fill="url(#glowh)" mask="url(#glowmask)"/>
-  <rect width="1600" height="900" fill="url(#wash)"/>
-  <rect x="1060" y="380" width="540" height="520" fill="url(#blackv)"/>
-  <rect width="1600" height="900" fill="url(#vignette)"/>
+  <!-- Shared source ground; immutable dashboard color controls. -->
+<g id="store-ground">
+<rect width="1600" height="900" fill="url(#store-ground-r0)" />
+<rect width="1600" height="900" fill="url(#store-ground-r1)" mask="url(#store-ground-m0)" />
+<rect width="1600" height="900" fill="url(#store-ground-r2)" mask="url(#store-ground-m1)" />
+<rect width="1600" height="900" fill="url(#store-ground-r3)" mask="url(#store-ground-m2)" />
+<rect width="1600" height="900" fill="url(#store-ground-r4)" mask="url(#store-ground-m3)" />
+<rect width="1600" height="900" fill="url(#store-ground-r5)" mask="url(#store-ground-m4)" />
+<rect width="1600" height="900" fill="url(#store-ground-r6)" mask="url(#store-ground-m5)" />
+<rect width="1600" height="900" fill="url(#store-ground-r7)" mask="url(#store-ground-m6)" />
+<rect width="1600" height="900" fill="url(#store-ground-r8)" mask="url(#store-ground-m7)" />
+<rect width="1600" height="900" fill="url(#store-ground-r9)" mask="url(#store-ground-m8)" />
+<rect width="1600" height="900" fill="url(#store-ground-r10)" mask="url(#store-ground-m9)" />
+<rect width="1600" height="900" fill="url(#store-ground-r11)" mask="url(#store-ground-m10)" />
+  </g>
 
   <!-- ==== top strip ==== -->
   <g font-family="Rajdhani" fill="#96282d">
@@ -375,7 +379,7 @@
         <text x="11" y="492">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED</text>
         <text x="11" y="500">TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
       </g>
-      <use href="#qr" x="11" y="518" fill="#df3131" stroke="#df3131"/>
+      <use href="#qr" x="11.375" y="518.5833" fill="#df3131" stroke="#df3131"/>
       <g font-size="12" letter-spacing="1" text-anchor="middle">
         <text x="90" y="534">EMPTY</text><text x="90" y="547.5">SOCKET</text>
         <text x="165" y="534">EMPTY</text><text x="165" y="547.5">SOCKET</text>
@@ -385,9 +389,10 @@
   </g>
 
   <!-- card 2, x 769..1051, selected: taller, lighter upper fill down to
-       y 516 (its lower-right corner chamfered (1051,492)->(1027,516)) -->
+       y 516 (upper wash chamfer (1039,492)->(1015,516)). The source
+       outer lower corner runs (1039,779.5)->(1021,797.1), not square. -->
   <g font-family="Rajdhani" fill="#df3131">
-    <path d="M 769,151 H 1038 L 1051,164 V 270 L 1039,282 V 800 H 769 Z"
+    <path d="M 769,151 H 1038 L 1051,164 V 270 L 1039,282 V 779.5 L 1021,797.1 H 769 Z"
           fill="#170507" stroke="#df3131" stroke-width="1.2"/>
     <path d="M 769,151 H 1038 L 1051,164 V 270 L 1039,282 V 492 L 1015,516 H 769 Z" fill="url(#c2upper)"/>
     <path d="M 1051,266 V 404 L 1039,416 V 278 Z"/>
@@ -430,7 +435,7 @@
         <text x="27" y="656">+9</text><text x="53" y="656">REFLEXES</text>
         <text x="27" y="680">+2</text><text x="53" y="680">MODULES SLOTS</text>
       </g>
-      <use href="#qr" x="13" y="711" fill="#df3131" stroke="#df3131"/>
+      <use href="#qr" x="9.4167" y="709.2917" fill="#df3131" stroke="#df3131"/>
       <g font-size="12" letter-spacing="1" text-anchor="middle">
         <text x="88" y="723">EMPTY</text><text x="88" y="737.5">SOCKET</text>
         <text x="163" y="723">EMPTY</text><text x="163" y="737.5">SOCKET</text>
@@ -470,7 +475,7 @@
         <text x="11" y="492">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED</text>
         <text x="11" y="500">TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
       </g>
-      <use href="#qr" x="11" y="518" fill="#df3131" stroke="#df3131"/>
+      <use href="#qr" x="9.4583" y="518.5833" fill="#df3131" stroke="#df3131"/>
       <g font-size="12" letter-spacing="1" text-anchor="middle">
         <text x="90" y="534">EMPTY</text><text x="90" y="547.5">SOCKET</text>
         <text x="165" y="534">EMPTY</text><text x="165" y="547.5">SOCKET</text>
@@ -506,7 +511,7 @@
         <text x="11" y="492">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED</text>
         <text x="11" y="500">TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
       </g>
-      <use href="#qr" x="11" y="518" fill="#df3131" stroke="#df3131"/>
+      <use href="#qr" x="8.7917" y="518.5833" fill="#df3131" stroke="#df3131"/>
       <g font-size="12" letter-spacing="1" text-anchor="middle">
         <text x="90" y="534">EMPTY</text><text x="90" y="547.5">SOCKET</text>
       </g>

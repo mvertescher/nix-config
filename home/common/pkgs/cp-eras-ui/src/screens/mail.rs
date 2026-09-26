@@ -80,14 +80,6 @@ use std::time::{Duration, Instant};
 const DW: f32 = 1600.0;
 const DH: f32 = 900.0;
 
-/// Where a Rajdhani baseline sits below the top of its line box, as a
-/// fraction of the font size. The traces position text by baseline and
-/// canvas text by the top of its line box, so every run converts
-/// through this. It carries iced's own default line height as well as
-/// the face's ascent, which is why it is a measured constant rather
-/// than a font metric.
-const BASELINE: f32 = 0.95;
-
 pub struct MailBox {
     pub style: Style,
     /// Which row is picked out. Starts on the row the era's trace
@@ -98,6 +90,9 @@ pub struct MailBox {
     /// it -- which is not always the selected row: entropism selects
     /// row 0 and reads row 1 -- and follows the selection thereafter.
     showing: usize,
+    /// The initial design target may use a heading absent from the
+    /// inbox. Once a row is opened, its content replaces that fixture.
+    initial_fixture: bool,
     /// The screen's t = 0: the process origin, or the moment the hub
     /// opened it (`motion::onset`, [`MailBox::enter`]).
     origin: Instant,
@@ -132,6 +127,7 @@ impl MailBox {
             style,
             selected,
             showing,
+            initial_fixture: true,
             origin: motion::origin(),
             now: motion::now(),
         }
@@ -170,6 +166,7 @@ impl MailBox {
             Message::Select(row) => {
                 self.selected = row.min(self.style.mailbox.list.rows.len().saturating_sub(1));
                 self.showing = self.selected;
+                self.initial_fixture = false;
             }
             Message::Move(Dir::Down) => self.update(Message::Select(self.selected + 1)),
             Message::Move(Dir::Up) => self.update(Message::Select(self.selected.saturating_sub(1))),
@@ -191,6 +188,7 @@ impl MailBox {
             style: &self.style,
             selected: self.selected,
             showing: self.showing,
+            initial_fixture: self.initial_fixture,
             at: self.at(),
             alpha: Cell::new(1.0),
         })
@@ -217,6 +215,7 @@ struct Sheet<'a> {
     style: &'a Style,
     selected: usize,
     showing: usize,
+    initial_fixture: bool,
     /// The moment to draw at, counted from the screen's origin: what
     /// the era's `MailMotion`s are read at.
     at: Duration,
@@ -269,6 +268,8 @@ impl Cover {
 struct Paint<'a> {
     style: &'a Style,
     alpha: f32,
+    /// Monochrome artwork adopts its owning row's resolved printing.
+    ink_override: Option<Ink>,
 }
 
 impl Sheet<'_> {
@@ -285,7 +286,7 @@ impl Sheet<'_> {
 
     /// The inks as the region being drawn wants them.
     fn paint(&self) -> Paint<'_> {
-        Paint { style: self.style, alpha: self.alpha.get() }
+        Paint { style: self.style, alpha: self.alpha.get(), ink_override: None }
     }
 
     /// The cover the era's motions put over `part` at this moment.
@@ -412,12 +413,205 @@ mod interaction_tests {
 
     fn sheet(style: &Style) -> Sheet<'_> {
         Sheet { style, selected: style.mailbox.list.selected,
-            showing: style.mailbox.panel.message, at: motion::REST, alpha: Cell::new(1.0) }
+            showing: style.mailbox.panel.message, initial_fixture: true,
+            at: motion::REST, alpha: Cell::new(1.0) }
     }
 
     fn click(pressed: bool) -> Event {
         Event::Mouse(if pressed { mouse::Event::ButtonPressed(mouse::Button::Left) }
             else { mouse::Event::ButtonReleased(mouse::Button::Left) })
+    }
+
+    fn reader(mail: &MailBox) -> Sheet<'_> {
+        Sheet {
+            style: &mail.style,
+            selected: mail.selected,
+            showing: mail.showing,
+            initial_fixture: mail.initial_fixture,
+            at: mail.at(),
+            alpha: Cell::new(1.0),
+        }
+    }
+
+    #[test]
+    fn opening_any_row_replaces_the_fixture_even_after_returning_to_its_index() {
+        for era in crate::style::Era::ALL {
+            let mut mail = MailBox::new(era.style());
+            let panel = mail.style.mailbox.panel;
+            let list = mail.style.mailbox.list;
+            let initial = reader(&mail).panel_text(&panel, &list).unwrap();
+            assert_eq!(initial.0, panel.heading.map(str::to_string)
+                .unwrap_or_else(|| cased(list.rows[panel.message].subject, panel.title_upper)));
+            if panel.from.is_some() {
+                assert_eq!(initial.1, Some(panel.sender.map(str::to_string).unwrap_or_else(||
+                    format!("{}{}", list.from_prefix, cased(list.rows[panel.message].from, list.from_upper)))));
+            }
+
+            // Open the fixture's own index first, then every row and
+            // return to that index. Neither path restores fixture text.
+            for row in std::iter::once(panel.message).chain(0..list.rows.len()).chain(std::iter::once(panel.message)) {
+                mail.update(Message::Select(row));
+                let (heading, sender) = reader(&mail).panel_text(&panel, &list).unwrap();
+                assert_eq!(heading, cased(list.rows[row].subject, panel.title_upper));
+                assert_eq!(sender, panel.from.map(|_|
+                    format!("{}{}", list.from_prefix, cased(list.rows[row].from, list.from_upper))));
+                assert!(!mail.initial_fixture);
+            }
+            mail.enter();
+            assert!(!mail.initial_fixture, "reopening the screen must preserve the reader");
+        }
+    }
+
+    #[test]
+    fn keyboard_selection_leaves_fixture_and_keeps_index_bounds() {
+        let mut mail = MailBox::new(crate::style::Era::Neomil.style());
+        mail.update(Message::Move(Dir::Left));
+        assert!(mail.initial_fixture);
+        mail.update(Message::Move(Dir::Down));
+        assert!(!mail.initial_fixture);
+        let panel = mail.style.mailbox.panel;
+        let list = mail.style.mailbox.list;
+        assert_eq!(reader(&mail).panel_text(&panel, &list).unwrap().0, "I'm worried man");
+        mail.update(Message::Select(usize::MAX));
+        assert_eq!(mail.selected, list.rows.len() - 1);
+        mail.update(Message::Move(Dir::Down));
+        assert_eq!(mail.showing, list.rows.len() - 1);
+        mail.update(Message::Select(0));
+        mail.update(Message::Move(Dir::Up));
+        assert_eq!(mail.showing, 0);
+    }
+
+    #[test]
+    fn opening_clock_reveals_panel_overlay_and_stops_after_rest() {
+        let mut mail = MailBox::new(crate::style::Era::Neomil.style());
+        mail.now = mail.origin;
+        let opening = reader(&mail);
+        assert!(!opening.cover(MailPart::List).shown());
+        assert!(!opening.cover(MailPart::Panel).shown());
+        assert!(!opening.cover(MailPart::Overlay).shown());
+        assert_eq!(mail.subscription().units(), usize::from(!motion::frozen()));
+
+        mail.update(Message::Tick(mail.origin + Duration::from_millis(350)));
+        let during = reader(&mail);
+        assert!(during.cover(MailPart::Panel).shown());
+        assert_eq!(during.cover(MailPart::Panel), during.cover(MailPart::Overlay));
+
+        mail.update(Message::Tick(mail.origin + motion::REST));
+        let rest = reader(&mail);
+        assert!(rest.cover(MailPart::List).shown());
+        assert!(rest.cover(MailPart::Panel).shown());
+        assert!(rest.cover(MailPart::Overlay).shown());
+        assert_eq!(mail.subscription().units(), 0);
+    }
+
+    #[test]
+    fn individual_row_fills_yield_to_feedback_and_keep_fallbacks() {
+        let style = crate::style::Era::Neomil.style();
+        let sheet = self::sheet(&style);
+        let mut list = style.mailbox.list;
+        list.row_fills = &[Ink::Dim, Ink::Border];
+        list.row_fill = Some(Ink::Bg);
+        assert_eq!(list.row_fill_at(0), Some(Ink::Dim));
+        assert_eq!(list.row_fill_at(1), Some(Ink::Border));
+        assert_eq!(list.row_fill_at(2), Some(Ink::Bg));
+        for coat in [list.feedback.unwrap().hover, list.feedback.unwrap().pressed] {
+            let dressed = sheet.row_material(&list, Some(coat));
+            assert_eq!(dressed.row_fill_at(1), coat.fill);
+            assert_eq!(dressed.sel_fill, coat.fill.unwrap());
+            assert_eq!(dressed.row, list.row);
+            assert_eq!(dressed.sel, list.sel);
+        }
+        list.row_fills = &[];
+        assert_eq!(list.row_fill_at(0), Some(Ink::Bg));
+        list.row_fill = None;
+        assert_eq!(list.row_fill_at(0), None);
+    }
+
+    #[test]
+    fn icon_origins_support_individual_placement_and_regular_fallbacks() {
+        let icons = crate::style::Icons {
+            x: 5.0, y: 12.0, pitch: 70.0,
+            positions: &[(21.0, 13.0), (19.0, 86.0)], normal: &[], selected: &[],
+        };
+        assert_eq!(icons.origin(0), (21.0, 13.0));
+        assert_eq!(icons.origin(1), (19.0, 86.0));
+        assert_eq!(icons.origin(2), (5.0, 152.0));
+    }
+
+    #[test]
+    fn row_printing_keeps_feedback_and_selected_sender_contrast_above_resting_inks() {
+        for (era, selected_sender) in [
+            (crate::style::Era::Neomil, Ink::Mid),
+            (crate::style::Era::Kitsch, Ink::Select),
+        ] {
+            let mut list = era.style().mailbox.list;
+            list.title_ink = Ink::Dim;
+            list.from_ink = Ink::Border;
+            list.selected_ink = Ink::Mid;
+            let row = list.row.shifted(0.0, list.selected as f32 * list.pitch);
+            assert_eq!(Sheet::printing_inks(&list, list.selected, row, false, None, None), (Ink::Dim, Ink::Border));
+            assert_eq!(Sheet::printing_inks(&list, list.selected, row, true, None, None), (Ink::Mid, selected_sender));
+            for selected in [false, true] {
+                assert_eq!(Sheet::printing_inks(&list, list.selected, row, selected, Some(Ink::Fg), None), (Ink::Fg, Ink::Fg));
+                assert_eq!(Sheet::printing_inks(&list, list.selected, row, selected, Some(Ink::Fg), Some(Ink::Bg)), (Ink::Fg, Ink::Bg));
+            }
+        }
+    }
+
+    #[test]
+    fn unread_vectors_share_row_contrast_and_motion_alpha() {
+        let style = crate::style::Era::Neomil.style();
+        let list = &style.mailbox.list;
+        for alpha in [0.0, 0.5, 1.0] {
+            let paint = Paint { style: &style, alpha, ink_override: None };
+            for selected in [false, true] {
+                for feedback in [None, Some(Ink::Bg)] {
+                    let (title, _) = Sheet::printing_inks(list, 0, list.row, selected, feedback, None);
+                    let monochrome = Paint { ink_override: Some(title), ..paint };
+                    for source_role in [Ink::Fg, Ink::Border, Ink::OnSelect] {
+                        assert_eq!(ink(monochrome, source_role), ink(paint, title));
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn measured_sender_position_controls_fill_contrast_without_overriding_feedback() {
+        use crate::style::MailRowType;
+        let mut list = crate::style::Era::Kitsch.style().mailbox.list;
+        list.selected_ink = Ink::Mid;
+        const ROW_TYPE: &[MailRowType] = &[
+            MailRowType { title: Run::new(0.0, 10.0, 20.0, Ink::Bg),
+                from: Run::new(0.0, 10.0, 16.0, Ink::Bg).medium().stretched(1.2) },
+            MailRowType { title: Run::new(0.0, 10.0, 20.0, Ink::Bg),
+                from: Run::new(0.0, 100.0, 16.0, Ink::Bg) },
+        ];
+        list.row_type = ROW_TYPE;
+        let row = list.row;
+        assert_eq!(Sheet::printing_inks(&list, 0, row, true, None, None), (Ink::Mid, Ink::Mid));
+        assert_eq!(Sheet::printing_inks(&list, 1, row, true, None, None), (Ink::Mid, Ink::Select));
+        assert_eq!(Sheet::printing_inks(&list, 0, row, false, None, None), (list.title_ink, list.from_ink));
+        for index in [0, 1] {
+            assert_eq!(Sheet::printing_inks(&list, index, row, true, Some(Ink::Fg), Some(Ink::Dim)),
+                (Ink::Fg, Ink::Dim));
+        }
+    }
+
+    #[test]
+    fn selected_unread_placement_preserves_normal_and_fallback_frames() {
+        let mut list = crate::style::Era::Neomil.style().mailbox.list;
+        let normal = crate::style::Frame::new(162.0, 44.5, 74.0, 10.8);
+        let selected = normal.shifted(0.0, 2.5);
+        list.new_pill = Some(normal);
+        list.new_pill_selected = Some(selected);
+        assert_eq!(list.unread_frame(false), Some(normal));
+        assert_eq!(list.unread_frame(true), Some(selected));
+        list.new_pill_selected = None;
+        assert_eq!(list.unread_frame(true), Some(normal));
+        list.new_pill = None;
+        assert_eq!(list.unread_frame(false), None);
+        assert_eq!(list.unread_frame(true), None);
     }
 
     #[test]
@@ -611,7 +805,7 @@ impl Scale {
 /// `scene::Scene::ink` rebases one (`blend_over`), so the fade lands
 /// the trace's pixel over the era's ground. Untouched at 1.
 fn ink(s: Paint, role: Ink) -> Color {
-    let c = role.of(&s.style.palette);
+    let c = s.ink_override.unwrap_or(role).of(&s.style.palette);
     if s.alpha >= 1.0 {
         c
     } else {
@@ -773,14 +967,14 @@ fn curve_at(
 }
 
 /// One run of text, positioned by the baseline the trace gives.
-fn label(frame: &mut canvas::Frame, scale: Scale, at: Run, color: Color, content: &str) {
+fn label(frame: &mut canvas::Frame, scale: Scale, s: Paint, at: Run, color: Color, content: &str) {
     if content.is_empty() || at.size <= 0.0 {
         return;
     }
     let size = scale.len(at.size);
-    frame.fill_text(canvas::Text {
+    let text = canvas::Text {
         content: content.to_string(),
-        position: Point::new(at.x * scale.sx, at.y * scale.sy - size * BASELINE),
+        position: Point::new(at.x * scale.sx, at.y * scale.sy - size * s.style.mailbox.text_baseline),
         color,
         size: size.into(),
         font: if at.bold {
@@ -800,7 +994,19 @@ fn label(frame: &mut canvas::Frame, scale: Scale, at: Run, color: Color, content
             iced::advanced::text::Alignment::Left
         },
         ..Default::default()
-    });
+    };
+    if (at.stretch - 1.0).abs() <= 1e-4 {
+        frame.fill_text(text);
+    } else {
+        // Scale glyphs about the positioned anchor, not the canvas
+        // origin. Canvas text alignment then retains its left/center/
+        // right meaning while the baseline remains at the same y.
+        frame.with_save(|frame| {
+            frame.translate(iced::Vector::new(text.position.x, text.position.y));
+            frame.scale_nonuniform(iced::Vector::new(at.stretch, 1.0));
+            frame.fill_text(canvas::Text { position: Point::ORIGIN, ..text });
+        });
+    }
 }
 
 /// The envelope beside a row, drawn rather than set -- Rajdhani has no
@@ -882,6 +1088,7 @@ impl Sheet<'_> {
         if let Some(c) = coat {
             if let Some(fill) = c.fill {
                 dressed.row_fill = Some(fill);
+                dressed.row_fills = &[];
                 dressed.sel_fill = fill;
                 dressed.veneer = None;
             }
@@ -914,13 +1121,12 @@ impl Sheet<'_> {
 
         if let Some(icons) = list.icons {
             for i in 0..list.rows.len() {
-                self.cartridge(
-                    frame,
-                    scale,
-                    icons.x,
-                    icons.y + i as f32 * icons.pitch,
-                    i == self.selected,
-                );
+                let (x, y) = icons.origin(i);
+                let art = if i == self.selected { icons.selected } else { icons.normal };
+                frame.with_save(|f| {
+                    f.translate(Vector::new(x * scale.sx, y * scale.sy));
+                    pieces(f, scale, self.paint(), art);
+                });
             }
         }
 
@@ -1000,7 +1206,7 @@ impl Sheet<'_> {
                             Some((ink(s, list.rule_ink), 1.0)),
                         );
                     }
-                    me.printing(f, scale, list, mail, row, true, printing, coat.and_then(|c| c.sender));
+                    me.printing(f, scale, list, i, mail, row, true, printing, coat.and_then(|c| c.sender));
                 });
             } else {
                 if coat.is_some_and(|c| c.echo.is_some()) {
@@ -1014,7 +1220,7 @@ impl Sheet<'_> {
                         scale,
                         row,
                         list.row_trim,
-                        list.row_fill.map(|r| ink(s, r)),
+                        list.row_fill_at(i).map(|r| ink(s, r)),
                         list.row_stroke.map(|r| (ink(s, r), list.row_width)),
                     );
                 }
@@ -1058,41 +1264,58 @@ impl Sheet<'_> {
             }
 
             if !selected {
-                self.printing(frame, scale, list, mail, row, false, printing, coat.and_then(|c| c.sender));
+                self.printing(frame, scale, list, i, mail, row, false, printing, coat.and_then(|c| c.sender));
             }
         }
+        pieces(frame, scale, self.paint(), list.footer);
+    }
+
+    /// Feedback wins over selection contrast, which wins over resting
+    /// printing. A sender outside the selected fill keeps bright ink.
+    fn printing_inks(list: &MailList, index: usize, row: crate::style::Frame, selected: bool, printing: Option<Ink>, sender: Option<Ink>) -> (Ink, Ink) {
+        let shift = row.y - list.row.y - list.selected as f32 * list.pitch;
+        let title = printing.unwrap_or(if selected { list.selected_ink } else { list.title_ink });
+        // Kitsch's bar ends above its sender line, so contrast follows
+        // the actual fill geometry rather than the selected index alone.
+        let from_dy = list.row_type.get(index).map_or(list.from_dy, |t| t.from.y);
+        let on_fill = selected && row.y + from_dy <= list.sel.y + shift + list.sel.h;
+        let from = sender.or(printing).unwrap_or(match (selected, on_fill) {
+            (true, true) => list.selected_ink,
+            (true, false) => Ink::Select,
+            _ => list.from_ink,
+        });
+        (title, from)
     }
 
     /// One row's printing: the envelope, the subject, the sender and
     /// the NEW pill the era marks unread rows with. The selected row's
     /// is drawn under [`MailPart::Printing`], from [`Sheet::list`].
-    fn printing(&self, frame: &mut canvas::Frame, scale: Scale, list: &MailList, mail: &crate::style::Mail, row: crate::style::Frame, selected: bool, printing: Option<Ink>, sender: Option<Ink>) {
+    fn printing(&self, frame: &mut canvas::Frame, scale: Scale, list: &MailList, index: usize, mail: &crate::style::Mail, row: crate::style::Frame, selected: bool, printing: Option<Ink>, sender: Option<Ink>) {
         let s = self.paint();
-        let shift = row.y - list.row.y - list.selected as f32 * list.pitch;
-        let title_ink = printing.unwrap_or(if selected { Ink::OnSelect } else { Ink::Fg });
-        // A selected row's sender is dark *only where it sits on
-        // the selection*. Kitsch's bar ends above its own from-line
-        // and the trace sets that line in the bright yellow, so the
-        // rule is geometric rather than another table field.
-        let on_fill = selected && row.y + list.from_dy <= list.sel.y + shift + list.sel.h;
-        let from_ink = sender.or(printing).unwrap_or(match (selected, on_fill) {
-            (true, true) => Ink::OnSelect,
-            (true, false) => Ink::Select,
-            _ => Ink::Mid,
-        });
+        let (title_ink, from_ink) = Self::printing_inks(list, index, row, selected, printing, sender);
 
-        envelope(
-            frame,
-            scale,
-            list.glyph_x,
-            row.y + list.glyph_dy,
-            list.glyph_w,
-            mail.unread,
-            ink(s, title_ink),
-            1.2,
-        );
+        let art = list.envelope.map(|art| if mail.unread { art.open } else { art.normal })
+            .filter(|art| !art.is_empty());
+        if let Some(art) = art {
+            frame.with_save(|frame| {
+                let origin = scale.point(list.glyph_x, row.y + list.glyph_dy);
+                frame.translate(iced::Vector::new(origin.x, origin.y));
+                pieces(frame, scale, Paint { ink_override: Some(title_ink), ..s }, art);
+            });
+        } else {
+            envelope(
+                frame,
+                scale,
+                list.glyph_x,
+                row.y + list.glyph_dy,
+                list.glyph_w,
+                mail.unread,
+                ink(s, title_ink),
+                1.2,
+            );
+        }
 
-        let title = Run {
+        let mut title = Run {
             bold: list.title_bold,
             ..Run::new(
                 list.text_x,
@@ -1101,16 +1324,20 @@ impl Sheet<'_> {
                 title_ink,
             )
         };
+        if let Some(t) = list.row_type.get(index) {
+            title = Run { y: row.y + t.title.y, ink: title_ink, ..t.title };
+        }
         label(
             frame,
             scale,
+            s,
             title,
             ink(s, title_ink),
             &cased(mail.subject, list.title_upper),
         );
 
         let sender = format!("{}{}", list.from_prefix, cased(mail.from, list.from_upper));
-        let at = match list.from_at {
+        let mut at = match list.from_at {
             FromAt::Beneath => Run::new(
                 list.text_x,
                 row.y + list.from_dy,
@@ -1129,13 +1356,23 @@ impl Sheet<'_> {
             )
             .right(),
         };
-        label(frame, scale, at, ink(s, from_ink), &sender);
+        if let Some(t) = list.row_type.get(index) {
+            at = Run { y: row.y + t.from.y, ink: from_ink, ..t.from };
+        }
+        label(frame, scale, s, at, ink(s, from_ink), &sender);
 
         // The NEW pill, on the rows the trace puts one on -- its
         // unread ones, in the era that marks them this way.
-        if let Some(pill) = list.new_pill {
+        if let Some(pill) = list.unread_frame(selected) {
             if mail.unread {
                 let at = pill.shifted(row.x, row.y);
+                if !list.new_pill_art.is_empty() {
+                    frame.with_save(|f| {
+                        f.translate(Vector::new(at.x * scale.sx, at.y * scale.sy));
+                        pieces(f, scale, Paint { ink_override: Some(title_ink), ..s }, list.new_pill_art);
+                    });
+                    return;
+                }
                 box_at(
                     frame,
                     scale,
@@ -1147,6 +1384,7 @@ impl Sheet<'_> {
                 label(
                     frame,
                     scale,
+                    s,
                     Run::new(at.x + at.w / 2.0, at.y + at.h - 3.0, 10.0, title_ink)
                         .bold()
                         .centered(),
@@ -1212,59 +1450,6 @@ impl Sheet<'_> {
         }
     }
 
-    /// Neomil's isometric disc cartridge, one per row. Geometry off
-    /// `docs/neomil/mailbox-trace.svg`'s `#cart` / `#tile` / `#disc`,
-    /// relative to the icon's top vertex.
-    fn cartridge(&self, frame: &mut canvas::Frame, scale: Scale, x: f32, y: f32, selected: bool) {
-        let s = self.paint();
-        let shift = |p: &[(f32, f32)]| -> Vec<(f32, f32)> {
-            p.iter().map(|(a, b)| (x + a, y + b)).collect()
-        };
-        let (shell, face) = if selected {
-            (Some(ink(s, Ink::Select)), ink(s, Ink::Border))
-        } else {
-            (None, ink(s, Ink::Select))
-        };
-        poly_at(
-            frame,
-            scale,
-            &shift(&[(0.0, 0.0), (37.0, 14.0), (-15.0, 54.0), (-52.0, 41.0)]),
-            true,
-            shell,
-            Some((ink(s, Ink::Dim), 2.0)),
-        );
-        poly_at(
-            frame,
-            scale,
-            &shift(&[(-26.0, 28.0), (20.0, 37.0), (-7.0, 52.0), (-41.0, 41.0)]),
-            true,
-            Some(face),
-            None,
-        );
-        let ellipse = |rx: f32, ry: f32| {
-            canvas::Path::new(|b| {
-                b.ellipse(canvas::path::arc::Elliptical {
-                    center: scale.point(x + 6.0, y + 23.0),
-                    radii: Vector::new(rx * scale.sx, ry * scale.sy),
-                    rotation: iced::Radians(-0.35),
-                    start_angle: iced::Radians(0.0),
-                    end_angle: iced::Radians(std::f32::consts::TAU),
-                });
-            })
-        };
-        frame.fill(&ellipse(18.0, 12.0), face);
-        frame.stroke(
-            &ellipse(9.0, 6.0),
-            canvas::Stroke::default()
-                .with_color(if selected {
-                    ink(s, Ink::Select)
-                } else {
-                    ink(s, Ink::Border)
-                })
-                .with_width(scale.len(1.5)),
-        );
-    }
-
     /// Region B: the message.
     fn panel(&self, frame: &mut canvas::Frame, scale: Scale, panel: &MailPanel, list: &MailList) {
         let s = self.paint();
@@ -1295,6 +1480,7 @@ impl Sheet<'_> {
                 label(
                     frame,
                     scale,
+                    s,
                     Run { y, ..panel.body },
                     ink(s, panel.body.ink),
                     line,
@@ -1311,25 +1497,26 @@ impl Sheet<'_> {
     /// of that motion.
     fn title(&self, frame: &mut canvas::Frame, scale: Scale, panel: &MailPanel, list: &MailList) {
         let s = self.paint();
-        // At rest the panel says what the trace says, which two eras
-        // pin explicitly; once a click has moved it off `message` the
-        // heading and sender are the shown row's own.
-        let Some(mail) = list.rows.get(self.showing).or(list.rows.last()) else {
-            return;
-        };
-        let at_rest = self.showing == panel.message;
-        let heading = match panel.heading.filter(|_| at_rest) {
+        let Some((heading, sender)) = self.panel_text(panel, list) else { return; };
+        label(frame, scale, s, panel.title, ink(s, panel.title.ink), &heading);
+        if let (Some(at), Some(sender)) = (panel.from, sender) {
+            label(frame, scale, s, at, ink(s, at.ink), &sender);
+        }
+    }
+
+    /// Initial source wording is independent of the selected row index.
+    /// Returning to the fixture's original row still reads that row's mail.
+    fn panel_text(&self, panel: &MailPanel, list: &MailList) -> Option<(String, Option<String>)> {
+        let mail = list.rows.get(self.showing).or(list.rows.last())?;
+        let heading = match panel.heading.filter(|_| self.initial_fixture) {
             Some(text) => text.to_string(),
             None => cased(mail.subject, panel.title_upper),
         };
-        label(frame, scale, panel.title, ink(s, panel.title.ink), &heading);
-        if let Some(at) = panel.from {
-            let sender = match panel.sender.filter(|_| at_rest) {
-                Some(text) => text.to_string(),
-                None => format!("{}{}", list.from_prefix, cased(mail.from, list.from_upper)),
-            };
-            label(frame, scale, at, ink(s, at.ink), &sender);
-        }
+        let sender = panel.from.map(|_| match panel.sender.filter(|_| self.initial_fixture) {
+            Some(text) => text.to_string(),
+            None => format!("{}{}", list.from_prefix, cased(mail.from, list.from_upper)),
+        });
+        Some((heading, sender))
     }
 
     /// Region C: the action buttons, or the chevron tabs an era stacks
@@ -1408,6 +1595,7 @@ impl Sheet<'_> {
             label(
                 frame,
                 scale,
+                s,
                 Run {
                     x: at.x + b.label.x,
                     y: at.y + b.label.y,
@@ -1480,6 +1668,7 @@ impl Sheet<'_> {
                 label(
                     frame,
                     scale,
+                    s,
                     Run {
                         x: at.x + cap.x,
                         y: at.y + cap.y,
@@ -1494,6 +1683,7 @@ impl Sheet<'_> {
             label(
                 frame,
                 scale,
+                s,
                 Run {
                     x: at.x + b.label.x,
                     y: at.y + b.label.y,
@@ -1586,7 +1776,7 @@ impl canvas::Program<Message, Style> for Sheet<'_> {
         self.under(&mut frame, scale, self.cover(MailPart::Title), |me, f| me.title(f, scale, &m.panel, &m.list));
         self.under(&mut frame, scale, self.cover(MailPart::Buttons), |me, f| me.buttons(f, scale, &m.buttons));
         self.under(&mut frame, scale, self.cover(MailPart::Badges), |me, f| me.badges(f, scale, &m.badges));
-        self.under(&mut frame, scale, Cover::OPEN, |me, f| pieces(f, scale, me.paint(), m.overlay));
+        self.under(&mut frame, scale, self.cover(MailPart::Overlay), |me, f| pieces(f, scale, me.paint(), m.overlay));
 
         vec![frame.into_geometry()]
     }
@@ -1641,7 +1831,7 @@ fn pieces(frame: &mut canvas::Frame, scale: Scale, s: Paint, pieces: &[Piece]) {
                 fill.map(|r| ink(s, r)),
                 stroke.map(|r| (ink(s, r), *width)),
             ),
-            Piece::Label(note) => label(frame, scale, note.at, ink(s, note.at.ink), note.text),
+            Piece::Label(note) => label(frame, scale, s, note.at, ink(s, note.at.ink), note.text),
         }
     }
 }

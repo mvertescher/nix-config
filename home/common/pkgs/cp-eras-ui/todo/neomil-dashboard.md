@@ -53,7 +53,7 @@ Use source crops and measured contours, not gate score alone, for review.
   Update only intentionally changed dashboard goldens after visual review;
   run relevant Rust tests and `./check`. No gate-threshold changes to
   compensate for an unfinished trace. Live desktop verification remains
-  separate; Neokitsch is the active desktop theme.
+  separate from the headless checks.
 
 Pass 1 implemented and visually reviewed at rest, in upper/lower-row hover
 and held previews, and at 0.15 s of the panel-open clip. All six source
@@ -121,31 +121,61 @@ The next pass-4 batch is integrated (2026-09-14):
 - [x] **GO HOME body and maker-shape echoes:** nine body-line copies pass
   both whole-line holdout folds; independently translated M/dot copies pass
   both spatial holdouts. Both use the existing panel opening clip.
-- [ ] **Matrix artwork ink and overlapping copies:** native crops of all
+- [x] **Matrix artwork ink and overlapping copies:** native crops of all
   six matrix/code groups show localized variation, strongest in VEHICLES,
   LOCATIONS, WEAPONS and PRODUCTS. A uniform 1.984934px row cycle explains
   little of the red-channel residual in eroded glyph cores. Separate local
   coverage/overlapping copies from periodic ink before selecting a model;
   preserve the measured module occupancy, code paths and flat tile fills.
-- [ ] **Margin printing echoes:** fit the source trails around both JHN
+  Completed 2026-09-21 with silhouette-clipped overlapping coverage and
+  a smaller periodic ink term. Both spatial/cycle holdouts and separate
+  code/circle comparisons improve for all six; exterior SVG pixels remain
+  unchanged. The source does not identify a unique authoring recipe.
+- [x] **Margin printing echoes:** fit the source trails around both JHN
   code groups and the KIROSHI wordmark, retaining the accepted primary
   contours. Source crops: (41,456)..(54,588), (1540,551)..(1558,671),
   and (1540,722)..(1559,770), respectively, in 1600×900 coordinates.
-- [ ] **GO HOME heading primary fit, then echoes:** the current bright
+  Completed 2026-09-21: two independently fitted outward copies per
+  family, retaining primary paths; all actual SVG holdouts improve.
+- [x] **GO HOME heading primary fit, then echoes:** the current bright
   envelope begins about 4.17px too far right and is 2.08px narrower / 0.83px
   shorter than the source. Fit origin, size and weight locally; the body
   echo model worsens the heading comparison and must not be reused blindly.
-- [ ] **Maker primary contour, ink and microtext:** preserve broad placement
+  Completed 2026-09-21: fitted Rajdhani Bold origin/size/stretch and
+  separate copies pass both GO↔HOME held-out comparisons.
+- [x] **Maker primary contour, ink and microtext:** preserve broad placement
   while fitting the source's rounded shoulders/notches/corners and interior
   scan modulation. Both microtext lines need lighter strokes; PRECISION
   LIQUID also needs more width, whereas POLYMER MUSCLE is already close in
   width. Fit each run before its echoes. Regenerate the new M/dot echo
-  union after correcting the primary shape. Measurements are in the report.
-- [ ] **Vertical-brand echoes:** review both small rotated runs against
-  their own crops. The body fit does not establish their transform.
+  union after correcting the primary shape. Completed 2026-09-21 with
+  rounded M/dot contours, independent interior ink and regenerated echoes.
+  The microtext premise needed correction: measured geometric monospace
+  strokes, including barred I, replace Rajdhani. Remaining detail is below.
+- [x] **Vertical-brand echoes:** both small rotated runs have independent
+  source fits, completed 2026-09-21. Their finite softened copies remain
+  before the primary frame under the existing panel opening clip.
+- [ ] **Maker microtext trailing copies and edge softness:** the corrected
+  geometric PRECISION LIQUID / POLYMER MUSCLE strokes improve primary
+  shape, weight and spacing; faint copies and local edge/ink detail remain.
+  Fit each run against its own crop, without reusing the body/heading fit.
 - [ ] **Remaining small printing ink:** chip 2's modulation failed one
   held-out red-channel check. Its dark digit and the tiny leading tape
   mark retain their current ink pending a supported local model.
+- [ ] **Correct the footer's primary lettering and printing copies.**
+  The all-reference recheck on 2026-09-21 found an additional local task:
+  in crop (1195,862)..(1372,899), source/SVG cap heights are 6.25/5.00px
+  for the code and 5.83/4.58px for both captions. The first caption's
+  width already matches at 69.17px, so a global font-size increase is
+  insufficient. Fit weight, height and baseline independently, then
+  replace the single sharp offset frame with source-supported frame/text
+  copies. Preserve the two-cell layout and code spelling. See the
+  [reference audit](../docs/reference-svg-audit.md#neomil).
+
+The [printing follow-up audit](../docs/neomil/dashboard-printing.md) records
+the 2026-09-21 proposals, masks, actual-render measurements and limitations.
+Pass 4 stays open for the two local tasks above and the background material
+below; end-to-end and live checks are recorded separately.
 - [x] **App primary-ink mapping:** the unmodified reference dashboard
   projects its foreground from shared #de2e2e to source/SVG #ef3333.
   The full palette and explicit variant determine eligibility; custom
@@ -201,6 +231,23 @@ only their two dashboard goldens change. The full repository check passes all 19
 cases. Matrix/margin printing and heading/maker primary measurements
 above make the next local tasks concrete; no global effect or fine noise
 recipe is claimed. Pass 4 and live verification remain open.
+
+The recovered printing batch is integrated and staged (2026-09-21): six
+bounded matrix/code ink fits, three margin and two vertical-brand echo
+families, corrected heading, rounded M/dot geometry with independent ink,
+regenerated maker copies and geometric microtext. All 209 Rust tests pass.
+Dashboard G1i passes at 18/30 shapes / 83% area / ink IoU 0.87; G2i at
+19/30 / 95% / 0.71. Native/fractional state captures preserve target-only
+feedback and the 0.15s opening clip. Close-up review moved the microtext
+strokes to the panel software surface, reducing SVG→app crop RMS from
+17.79 to 6.46. Reference/fallback captures agree; all six caps remain
+#ef3333. Two dashboard goldens are refreshed, plus the missing golden for
+the previously committed Login-slot fix (a 4×20-pixel bounding box).
+Login G2i passes at 26/31 / 96%. The full repository check passes all 19
+checks and all 25 golden cases. The two next local tasks are maker
+microtext trails/edge softness and chip-2/tiny tape-mark ink; original
+background material and live verification remain open. Measurements and
+limits are in [the printing audit](../docs/neomil/dashboard-printing.md).
 
 - [x] create scripts/download_images.py to download all the neomil related images from:
   - https://www.behance.net/gallery/118663901/Cyberpunk-2077User-Interface-(Part-1)

@@ -24,6 +24,9 @@ fn main() -> iced::Result {
     let style = shell::style();
     shell::application(move || Store::new(style), Store::update, Store::view)
         .title(Store::title)
-        .subscription(|_| nav::strokes().filter_map(Store::stroke))
+        .subscription(|store| iced::Subscription::batch([
+            nav::strokes().filter_map(Store::stroke),
+            store.subscription(),
+        ]))
         .run()
 }

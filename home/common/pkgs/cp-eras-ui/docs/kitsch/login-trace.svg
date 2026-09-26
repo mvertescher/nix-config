@@ -13,7 +13,7 @@
            top centre (#a34e60 at y 10), gone by y~420; the far left of
            the frame is a grey-green #20231f rather than black down to
            y~550; the far right is black from y~250
-         - 10:20 PM in light mint, x 781..852, cap-height y 61..74
+         - 10:20 PM in light mint, x780..853.33, cap y60.83..75
          - THE BRACKET: a 1.2px mint outline (peak #80e4d0, measured
            across the line at y 200/300/450 in the photo; an earlier
            version drew it 2px) running the FULL HEIGHT of the
@@ -38,14 +38,23 @@
            LOPED BY SEOCHO. SERVING / CUSTOMERS SINCE 2006. at
            x 372..497.5, cap rows 371.3..376.3 / 380.5..385.5 /
            389.7..394.7 (ink p90 the same #82f0d3 as the foot line)
-         - card 1 (inside the bracket): a dark-teal input field
-           [257,413,335,51] with a mint cursor at x 267, then a SOLID
-           MINT ENTER bar y 470..497 (x 257..591) whose right two-fifths
-           step up to y 463 via a short diagonal at x 418..430; ENTER
-           in dark, letter-spaced, x 471..550
-         - cards 2 and 3: the same stepped bar in dark teal (#122724),
-           x 649..985 and 1042..1377, step at x 812..824, labelled
-           PROTECTED in mint (x 841..966 / 1234..1359)
+         - card 1 (inside the bracket): a dark-teal input field with
+           rounded corners, x257.2..591.8, top413.3. Its lower edge
+           steps UP from y463.7 to 455.7 through x415..432. The mint
+           cursor remains at(266,421), 2x22. ENTER's matching rounded
+           top step runs from y470.4 to 462.4 through x416.4..433.2,
+           leaving a 6.7px gap on both flat runs; its bottom is 497.7
+           and outer x257..592. Core ENTER bounds x483.75..537.5,
+           y475.83..483.75; the source glyphs are wide with small gaps.
+         - cards 2 and 3: the same rounded step in dark teal (#122724),
+           x649.6..984.5 and 1042.2..1377.1, y462.4..497.7, labelled
+           PROTECTED in mint. Card 2 core bounds x853.33..953.75,
+           y475.83..484.17; card 3 repeats the treatment on a 392.6px pitch.
+           These 2026-09-21 native 3840x2160 fits supersede the former
+           rectangular field, square joins and oversized label boxes.
+           Rajdhani is still a schematic font approximation: local
+           horizontal stretch and tracking fit the source's bounds,
+           while exact glyph contours and photographic glow stay open.
          - a barcode inside the bracket foot: a filled label strip at
            x 370..377, y 632..695 with dark vertical micro-text, bars x
            377..590 y 632..683 (the bar runs below are the measured
@@ -150,7 +159,7 @@
   <rect x="0" y="60" width="600" height="780" fill="url(#leftwash)"/>
 
   <!-- ==== time ==== -->
-  <text x="781" y="74" font-family="Rajdhani" font-size="18" fill="#b4ece3">10:20 PM</text>
+  <text x="779.17" y="74.9" font-family="Rajdhani" font-size="21.75" fill="#b4ece3">10:20 PM</text>
 
   <!-- ==== the bracket ==== -->
   <!-- lobe outside the diagonal, x 229..338, y ~548..731 -->
@@ -165,21 +174,21 @@
   <use href="#guest" x="1043" y="338"/>
 
   <!-- card 1: input field + ENTER -->
-  <rect x="257" y="413" width="335" height="51" rx="2" fill="#162826"/>
+  <path d="M259.5,413.3 H589.5 Q591.8,413.3 591.8,415.6 V453.4 Q591.8,455.7 589.5,455.7 H432 Q430,455.7 428.4,456.8 L418.4,462.6 Q416.8,463.7 415,463.7 H259.5 Q257.2,463.7 257.2,461.4 V415.6 Q257.2,413.3 259.5,413.3 Z" fill="#162826"/>
   <!-- the cursor blinks: 1.2s period, lit for the first half (docs/PIPELINE.md, Motion) -->
   <rect id="caret" x="266" y="421" width="2" height="22" fill="#8af0d8"><animate id="caret-blink" attributeName="opacity" values="1;0" keyTimes="0;0.5" calcMode="discrete" dur="1.2s" repeatCount="indefinite"/></rect>
-  <path d="M 257,470 H 418 L 430,463 H 591.5 V 497.5 H 257 Z" fill="#8afada"/>
-  <text x="510" y="486" font-family="Rajdhani" font-size="14" font-weight="600" letter-spacing="2.5"
+  <path d="M259.2,470.4 H416.4 Q418.2,470.4 419.8,469.3 L429.8,463.5 Q431.4,462.4 433.2,462.4 H589.8 Q592,462.4 592,464.6 V495.5 Q592,497.7 589.8,497.7 H259.2 Q257,497.7 257,495.5 V472.6 Q257,470.4 259.2,470.4 Z" fill="#8afada"/>
+  <text transform="translate(510.625,0) scale(1.77,1)" x="0" y="484" font-family="Rajdhani" font-size="12.7" font-weight="600" letter-spacing="0"
         text-anchor="middle" fill="#0f3a33">ENTER</text>
 
   <!-- cards 2 and 3: PROTECTED bars -->
   <g fill="#122724" stroke="#1d3f3a" stroke-width="1">
-    <path d="M 649,471 H 812 L 824,462 H 984.5 V 497.5 H 649 Z"/>
-    <path d="M 1042,471 H 1205 L 1217,462 H 1377 V 497.5 H 1042 Z"/>
+    <path d="M651.8,470.4 H809.4 Q811.2,470.4 812.8,469.3 L822.8,463.5 Q824.4,462.4 826.2,462.4 H982.3 Q984.5,462.4 984.5,464.6 V495.5 Q984.5,497.7 982.3,497.7 H651.8 Q649.6,497.7 649.6,495.5 V472.6 Q649.6,470.4 651.8,470.4 Z"/>
+    <path d="M1044.4,470.4 H1202 Q1203.8,470.4 1205.4,469.3 L1215.4,463.5 Q1217,462.4 1218.8,462.4 H1374.9 Q1377.1,462.4 1377.1,464.6 V495.5 Q1377.1,497.7 1374.9,497.7 H1044.4 Q1042.2,497.7 1042.2,495.5 V472.6 Q1042.2,470.4 1044.4,470.4 Z"/>
   </g>
-  <g font-family="Rajdhani" font-size="13" font-weight="600" letter-spacing="2.5" text-anchor="middle" fill="#7fe0c8">
-    <text x="904" y="486">PROTECTED</text>
-    <text x="1297" y="486">PROTECTED</text>
+  <g font-family="Rajdhani" font-size="13.2" font-weight="600" letter-spacing="0.15" text-anchor="middle" fill="#7fe0c8">
+    <text transform="translate(903.54,0) scale(1.7,1)" x="0" y="484.35">PROTECTED</text>
+    <text transform="translate(1296.14,0) scale(1.7,1)" x="0" y="484.35">PROTECTED</text>
   </g>
 
   <!-- ==== barcode ==== -->

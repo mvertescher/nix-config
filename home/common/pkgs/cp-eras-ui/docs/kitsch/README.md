@@ -182,8 +182,9 @@ committed selection grows the card and adds a detail body. Hence:
 
 - **Hover = lift.** The cell keeps its silhouette exactly; where it was
   an outline its face becomes the fan blade's idle slab (fill `#2c9798`,
-  stroke `#a9e6df` 1.8, ink `#123c38` — the one measured solid-teal
-  face), and *one* ghost appears behind it at (+20,−20), the first step
+  stroke `#a9e6df` 1.8). Dark `#123c38` printing on these small inferred
+  controls is a contrast choice; the photographed fan's idle labels are
+  mint `#7cffe5`, and *one* ghost appears behind it at (+20,−20), the first step
   of the measured ramp (fill `#0f9f80` at .58, stroke `#6cc4bd` 1.2 at
   .80). A face that is already solid (the mint ENTER bar, the dark field
   plate) keeps its fill and only gains the ghost, as EVENTS keeps its
@@ -280,13 +281,14 @@ the thing the toolkit abstraction should be tested against.
   amber, **two three-blade fans** of rounded cards about two hubs
   (VEHICLES, WEAPONS, PRODUCTS / PRODUCTS, EVENTS, LOCATIONS) with
   EVENTS solid yellow as the selection and a ghost stack behind each
-  blade, and the BRAINDANCE detail panel under a yellow header tab.
+  blade, and the BRAINDANCE detail panel under a rounded yellow header tab,
+  with a connected warning ribbon, eight source lines and rounded feet.
   Gate: PASS, inks 0.69 (third pass 2026-09-03; was 0.59).
 - `mailbox-trace.svg` — `images/kitsch-mail.png` (#51): the header's
   three boxed letters with stepped USER / DESCRIPTION boxes and the
   four security badges, the list bracket forking into its solid teal
   wave, five message rows with the first selected as a two-piece solid
-  yellow row, the yellow message panel (solid tab, flag band, outlined
+  yellow row with an open envelope (closed on rows2–5), the yellow message panel (solid tab, flag band, outlined
   body, three lorem paragraphs) and four chevron tabs at the right with
   DETAILS solid. Gate: PASS, inks 0.67 (third pass 2026-09-03; was 0.62).
 - `store-trace.svg` — `images/kitsch-store.png` (#52): the logotype
@@ -371,3 +373,41 @@ resting backdrop. Hover is unchanged pending a hub-specific design rule.
 The two fans have disjoint pixel coverage, so removing a left-fan trail
 cannot change the right fan's cached composite. This adds no animation
 or revised trace/golden artwork; live desktop interaction remains pending.
+
+
+## Reference correction batch — 2026-09-21
+
+Native source #49 crops now supply the dashboard's eight BRAINDANCE body
+lines (4+4 on a 19px pitch), connected warning ribbon across x1172.5..1432,
+rounded tab joins and r10.5 lower panel corners. The component excerpt
+contains those same paths and text; only its blank lower body is elided.
+Idle fan labels are mint (core sample around `#7cffe5`), while selected
+EVENTS remains dark on yellow. Both PRODUCTS labels and the photographed
+EVENTS/BRAINDANCE pairing remain intentional. Face fields, stroke material,
+exact typeface contours and photographic echoes still need their own fit.
+
+Source #51's first-row envelope is separately traced as an open pentagon,
+with a peak at(175,322.5), shoulders near(166.95,327.2)/(183,327.2), and
+bottom y337. The four closed icons also regain the source lower folds
+and their measured16.05×9.95 outlines, replacing the oversized20×13
+approximation. Rust uses these vectors through the row’s resolved ink;
+opening motion and row selection behavior are unchanged. The earlier claim
+that this source had no open-envelope variant was incorrect.
+
+
+Native source #50 now supplies the login control contours: the input's
+lower edge rises 8px on the right, matching ENTER's rounded top step
+with a 6.7px gap on both flat runs. All three action bars carry rounded
+corners and shoulder joins. The SVG, component sheet (including its
+inferred hover/press examples) and Rust access model use the same paths.
+The full-height bracket, three cards, caret timing and runtime input
+and submission behavior remain in place.
+
+ENTER and PROTECTED now fit the source's wider lettering with smaller
+inter-letter gaps, and the clock regains its measured size. Native core
+bounds at 1600×900 scale are ENTER x483.75..537.5, y475.83..483.75;
+PROTECTED x853.33..953.75, y475.83..484.17; and clock x780..853.33,
+y60.83..75. The chosen Rajdhani sizes/stretch/tracking reproduce these
+bounds within about one design pixel. Exact source glyph contours,
+photographic glow and the store/mail typography portions of K5 remain
+open; this local metric fit does not close those broader tasks.

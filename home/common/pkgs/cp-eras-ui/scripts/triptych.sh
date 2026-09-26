@@ -183,11 +183,13 @@ heat() {
     "$3" || return 1
   "${magick[@]}" "$1" -colorspace gray -evaluate multiply 0.22 -colorspace sRGB \
     "$3" -compose lighten -composite "$3" || return 1
-  # `compare -metric AE` counts the differing pixels; fuzz 3.2% of the
-  # quantum range is 8 levels. It reports "count (fraction)" on stderr.
-  "${magick[@]}" compare -metric AE -fuzz 3.2% "$1" "$2" null: 2>&1 \
-    | sed -n 's/.*(\([0-9.e-]*\)).*/\1/p' \
-    | awk '{ printf "%.1f", $1 * 100 }' | grep . || return 1
+  # Count the maximum RGB-channel difference, just as the heatmap does.
+  # ImageMagick's fuzzed AE is a different metric and can undercount a
+  # broad field that differs by >8 in only one channel (mailbox audit).
+  "${magick[@]}" "$1" "$2" -alpha off -compose difference -composite \
+    -separate -evaluate-sequence max -threshold 3.1372549019607843% \
+    -format '%[fx:100*mean]' info: \
+    | awk '{ printf "%.1f", $1 }' | grep . || return 1
 }
 
 mkdir -p "$out_dir"
@@ -240,7 +242,9 @@ for era in "${eras[@]}"; do
     caption "$impl"  "3 iced: $app --era $era${at:+ at ${at}s (render.sh --at)}"
     [ "$diff" = 1 ] && caption "$heat" \
       "4 diff: |trace − iced|, trace without class=photo — ${off}% of pixels off by >8 levels"
-    "${magick[@]}" "${rows[@]}" -append "$out" \
+    # Source PNGs can carry megabytes of inherited text metadata, which
+    # Pillow rejects even though the rendered pixels are valid.
+    "${magick[@]}" "${rows[@]}" -append -strip "$out" \
       || { echo "FAIL $era/$screen: append"; fail=1; continue; }
     echo "$out"
   done

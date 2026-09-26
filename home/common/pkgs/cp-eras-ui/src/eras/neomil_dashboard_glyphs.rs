@@ -452,3 +452,14 @@ pub(super) const PRESSED: [Prim; 6] = [
     Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_4!(Ink::Fixed(super::ON_CARD)) },
     Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_5!(Ink::Fixed(super::ON_CARD)) },
 ];
+
+/// Opaque silhouettes reused by the dashboard-only resting ink masks.
+/// Geometry comes from the same macros as REST / HOVER / PRESSED.
+pub(super) const WHITE: [Prim; 6] = [
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_0!(Ink::Fixed(rgb(0xffffff))) },
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_1!(Ink::Fixed(rgb(0xffffff))) },
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_2!(Ink::Fixed(rgb(0xffffff))) },
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_3!(Ink::Fixed(rgb(0xffffff))) },
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_4!(Ink::Fixed(rgb(0xffffff))) },
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_5!(Ink::Fixed(rgb(0xffffff))) },
+];

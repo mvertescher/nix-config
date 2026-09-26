@@ -86,9 +86,8 @@
            adipiscing elit, sed do eiusmod tempor incididunt ut labore
            et dolore magna aliqua. Quis ipsum suspendisse ultrices
            gravida." then "Risus commodo viverra maece-nas accumsan
-           lacus vel facilisis."; the trace sets THE INBOX'S SELECTED
-           MESSAGE instead (see the panel comment), wrapped to these
-           line ends. Under the body a two-line micro-text tape (source
+           lacus vel facilisis."; restored literally on 2026-09-21,
+           replacing a prior mailbox-copy substitution. Under the body a two-line micro-text tape (source
            caps y 1539..1549 / 1554..1564, x 2866..3283 / 2866..3300;
            the same CC35 sentence as the captions, on two lines, cores
            ~#dea45c) and an EMAIL label beneath (source caps y
@@ -342,43 +341,44 @@
       <text x="1236" y="86">T1</text><text x="1361" y="86">T3</text>
       <text x="1424" y="86">T4</text>
     </g>
-    <!-- T2: a FOLDER icon — low shelf on the left, a rounded diagonal
-         riser to the raised tab on the RIGHT. Front outline measured at
-         (1287,55)-(1338,104), tab top y~37, riser x~1310-1318. Seven
-         hairline rings: shelf tops fan widely (~13), tab tops just enough
-         to resolve as separate lines at render scale (drawn ~5 against a
-         measured ~3 — tighter overpaints into a fat border), right edges
-         spill out, all converging at the bottom. A solid gold trapezoid
-         tab points UP from the inside bottom edge. -->
-    <g fill="none" stroke="#a97c48" stroke-width="0.7">
-      <path d="M 1286.8,40.3 H 1302 Q 1314.6,42.4 1317.6,37.4 L 1320.6,41.1 Q 1322.6,32.1 1329.6,32.1 H 1344.2 Q 1349.2,32.1 1349.2,37.1 V 101.8 Q 1349.2,105.8 1345.2,105.8 H 1286.8 Q 1282.8,105.8 1282.8,101.8 V 46.4 Q 1282.8,42.4 1286.8,42.4 Z" stroke-opacity="0.55"/>
-      <path d="M 1287.4,42.4 H 1302 Q 1313.8,44.2 1316.8,39.2 L 1319.8,41.8 Q 1321.8,32.8 1328.8,32.8 H 1342.6 Q 1347.6,32.8 1347.6,37.8 V 101.5 Q 1347.6,105.5 1343.6,105.5 H 1287.4 Q 1283.4,105.5 1283.4,101.5 V 48.2 Q 1283.4,44.2 1287.4,44.2 Z" stroke-opacity="0.60"/>
-      <path d="M 1288.0,44.5 H 1302 Q 1313.0,46.0 1316.0,41.0 L 1319.0,42.5 Q 1321.0,33.5 1328.0,33.5 H 1341.0 Q 1346.0,33.5 1346.0,38.5 V 101.2 Q 1346.0,105.2 1342.0,105.2 H 1288.0 Q 1284.0,105.2 1284.0,101.2 V 50.0 Q 1284.0,46.0 1288.0,46.0 Z" stroke-opacity="0.65"/>
-      <path d="M 1288.6,46.6 H 1302 Q 1312.2,47.8 1315.2,42.8 L 1318.2,43.2 Q 1320.2,34.2 1327.2,34.2 H 1339.4 Q 1344.4,34.2 1344.4,39.2 V 101.0 Q 1344.4,105.0 1340.4,105.0 H 1288.6 Q 1284.6,105.0 1284.6,101.0 V 51.8 Q 1284.6,47.8 1288.6,47.8 Z" stroke-opacity="0.70"/>
-      <path d="M 1289.2,48.7 H 1302 Q 1311.4,49.6 1314.4,44.6 L 1317.4,43.9 Q 1319.4,34.9 1326.4,34.9 H 1337.8 Q 1342.8,34.9 1342.8,39.9 V 100.8 Q 1342.8,104.8 1338.8,104.8 H 1289.2 Q 1285.2,104.8 1285.2,100.8 V 53.6 Q 1285.2,49.6 1289.2,49.6 Z" stroke-opacity="0.75"/>
-      <path d="M 1289.8,50.8 H 1302 Q 1310.6,51.4 1313.6,46.4 L 1316.6,44.6 Q 1318.6,35.6 1325.6,35.6 H 1336.2 Q 1341.2,35.6 1341.2,40.6 V 100.5 Q 1341.2,104.5 1337.2,104.5 H 1289.8 Q 1285.8,104.5 1285.8,100.5 V 55.4 Q 1285.8,51.4 1289.8,51.4 Z" stroke-opacity="0.80"/>
-      <path d="M 1290.4,52.9 H 1302 Q 1309.8,53.2 1312.8,48.2 L 1315.8,45.3 Q 1317.8,36.3 1324.8,36.3 H 1334.6 Q 1339.6,36.3 1339.6,41.3 V 100.2 Q 1339.6,104.2 1335.6,104.2 H 1290.4 Q 1286.4,104.2 1286.4,100.2 V 57.2 Q 1286.4,53.2 1290.4,53.2 Z" stroke-opacity="0.85"/>
+    <!-- NK-03: native #69 shoulder, 1.23px descending fan; curved legs converge at the fixed bottom. -->
+    <g id="t2-badge" fill="none" stroke="#e8c186">
+      <path d="M 1299.06,56.46 L 1312.96,56.46 Q 1315.76,56.46,1318.16,54.86 L 1325.86,49.46 Q 1327.86,48.06,1330.46,48.06 L 1348.66,48.06 Q 1351.46,48.06,1351.46,50.86 C 1351.46,68.6,1337.3,96,1337.3,102.3 Q 1337.3,105.1,1334.5,105.1 L 1284.7,105.1 Q 1281.9,105.1,1281.9,102.3 C 1281.9,93,1296.06,75.6,1296.06,59.46 Q 1296.06,56.46,1299.06,56.46 Z" stroke-width="0.7" stroke-opacity="0.06"/>
+      <path d="M 1297.88,55.23 L 1311.78,55.23 Q 1314.58,55.23,1316.98,53.63 L 1324.68,48.23 Q 1326.68,46.83,1329.28,46.83 L 1347.48,46.83 Q 1350.28,46.83,1350.28,49.63 C 1350.28,68.3,1337.3,96,1337.3,102.3 Q 1337.3,105.1,1334.5,105.1 L 1284.7,105.1 Q 1281.9,105.1,1281.9,102.3 C 1281.9,93,1294.88,75.3,1294.88,58.23 Q 1294.88,55.23,1297.88,55.23 Z" stroke-width="0.7" stroke-opacity="0.13"/>
+      <path d="M 1296.7,54 L 1310.6,54 Q 1313.4,54,1315.8,52.4 L 1323.5,47 Q 1325.5,45.6,1328.1,45.6 L 1346.3,45.6 Q 1349.1,45.6,1349.1,48.4 C 1349.1,68,1337.3,96,1337.3,102.3 Q 1337.3,105.1,1334.5,105.1 L 1284.7,105.1 Q 1281.9,105.1,1281.9,102.3 C 1281.9,93,1293.7,75,1293.7,57 Q 1293.7,54,1296.7,54 Z" stroke-width="0.7" stroke-opacity="0.21"/>
+      <path d="M 1295.52,52.77 L 1309.42,52.77 Q 1312.22,52.77,1314.62,51.17 L 1322.32,45.77 Q 1324.32,44.37,1326.92,44.37 L 1345.12,44.37 Q 1347.92,44.37,1347.92,47.17 C 1347.92,67.7,1337.3,96,1337.3,102.3 Q 1337.3,105.1,1334.5,105.1 L 1284.7,105.1 Q 1281.9,105.1,1281.9,102.3 C 1281.9,93,1292.52,74.7,1292.52,55.77 Q 1292.52,52.77,1295.52,52.77 Z" stroke-width="0.7" stroke-opacity="0.3"/>
+      <path d="M 1294.34,51.54 L 1308.24,51.54 Q 1311.04,51.54,1313.44,49.94 L 1321.14,44.54 Q 1323.14,43.14,1325.74,43.14 L 1343.94,43.14 Q 1346.74,43.14,1346.74,45.94 C 1346.74,67.4,1337.3,96,1337.3,102.3 Q 1337.3,105.1,1334.5,105.1 L 1284.7,105.1 Q 1281.9,105.1,1281.9,102.3 C 1281.9,93,1291.34,74.4,1291.34,54.54 Q 1291.34,51.54,1294.34,51.54 Z" stroke-width="0.7" stroke-opacity="0.4"/>
+      <path d="M 1293.16,50.31 L 1307.06,50.31 Q 1309.86,50.31,1312.26,48.71 L 1319.96,43.31 Q 1321.96,41.91,1324.56,41.91 L 1342.76,41.91 Q 1345.56,41.91,1345.56,44.71 C 1345.56,67.1,1337.3,96,1337.3,102.3 Q 1337.3,105.1,1334.5,105.1 L 1284.7,105.1 Q 1281.9,105.1,1281.9,102.3 C 1281.9,93,1290.16,74.1,1290.16,53.31 Q 1290.16,50.31,1293.16,50.31 Z" stroke-width="0.7" stroke-opacity="0.49"/>
+      <path d="M 1291.98,49.08 L 1305.88,49.08 Q 1308.68,49.08,1311.08,47.48 L 1318.78,42.08 Q 1320.78,40.68,1323.38,40.68 L 1341.58,40.68 Q 1344.38,40.68,1344.38,43.48 C 1344.38,66.8,1337.3,96,1337.3,102.3 Q 1337.3,105.1,1334.5,105.1 L 1284.7,105.1 Q 1281.9,105.1,1281.9,102.3 C 1281.9,93,1288.98,73.8,1288.98,52.08 Q 1288.98,49.08,1291.98,49.08 Z" stroke-width="0.7" stroke-opacity="0.55"/>
+      <path d="M 1290.8,47.85 L 1304.7,47.85 Q 1307.5,47.85,1309.9,46.25 L 1317.6,40.85 Q 1319.6,39.45,1322.2,39.45 L 1340.4,39.45 Q 1343.2,39.45,1343.2,42.25 C 1343.2,66.5,1337.3,96,1337.3,102.3 Q 1337.3,105.1,1334.5,105.1 L 1284.7,105.1 Q 1281.9,105.1,1281.9,102.3 C 1281.9,93,1287.8,73.5,1287.8,50.85 Q 1287.8,47.85,1290.8,47.85 Z" stroke-width="0.7" stroke-opacity="0.6"/>
+      <path d="M 1289.62,46.62 L 1303.52,46.62 Q 1306.32,46.62,1308.72,45.02 L 1316.42,39.62 Q 1318.42,38.22,1321.02,38.22 L 1339.22,38.22 Q 1342.02,38.22,1342.02,41.02 C 1342.02,66.2,1337.3,96,1337.3,102.3 Q 1337.3,105.1,1334.5,105.1 L 1284.7,105.1 Q 1281.9,105.1,1281.9,102.3 C 1281.9,93,1286.62,73.2,1286.62,49.62 Q 1286.62,46.62,1289.62,46.62 Z" stroke-width="0.7" stroke-opacity="0.65"/>
+      <path d="M 1288.44,45.39 L 1302.34,45.39 Q 1305.14,45.39,1307.54,43.79 L 1315.24,38.39 Q 1317.24,36.99,1319.84,36.99 L 1338.04,36.99 Q 1340.84,36.99,1340.84,39.79 C 1340.84,65.9,1337.3,96,1337.3,102.3 Q 1337.3,105.1,1334.5,105.1 L 1284.7,105.1 Q 1281.9,105.1,1281.9,102.3 C 1281.9,93,1285.44,72.9,1285.44,48.39 Q 1285.44,45.39,1288.44,45.39 Z" stroke-width="0.7" stroke-opacity="0.72"/>
+      <path d="M 1287.26,44.16 L 1301.16,44.16 Q 1303.96,44.16,1306.36,42.56 L 1314.06,37.16 Q 1316.06,35.76,1318.66,35.76 L 1336.86,35.76 Q 1339.66,35.76,1339.66,38.56 C 1339.66,65.6,1337.3,96,1337.3,102.3 Q 1337.3,105.1,1334.5,105.1 L 1284.7,105.1 Q 1281.9,105.1,1281.9,102.3 C 1281.9,93,1284.26,72.6,1284.26,47.16 Q 1284.26,44.16,1287.26,44.16 Z" stroke-width="0.7" stroke-opacity="0.78"/>
+      <path d="M 1286.08,42.93 L 1299.98,42.93 Q 1302.78,42.93,1305.18,41.33 L 1312.88,35.93 Q 1314.88,34.53,1317.48,34.53 L 1335.68,34.53 Q 1338.48,34.53,1338.48,37.33 C 1338.48,65.3,1337.3,96,1337.3,102.3 Q 1337.3,105.1,1334.5,105.1 L 1284.7,105.1 Q 1281.9,105.1,1281.9,102.3 C 1281.9,93,1283.08,72.3,1283.08,45.93 Q 1283.08,42.93,1286.08,42.93 Z" stroke-width="0.7" stroke-opacity="0.85"/>
+      <path d="M 1284.9,41.7 L 1298.8,41.7 Q 1301.6,41.7,1304,40.1 L 1311.7,34.7 Q 1313.7,33.3,1316.3,33.3 L 1334.5,33.3 Q 1337.3,33.3,1337.3,36.1 C 1337.3,65,1337.3,96,1337.3,102.3 Q 1337.3,105.1,1334.5,105.1 L 1284.7,105.1 Q 1281.9,105.1,1281.9,102.3 C 1281.9,93,1281.9,72,1281.9,44.7 Q 1281.9,41.7,1284.9,41.7 Z" stroke-width="1.1" stroke-opacity="1"/>
+      <path d="M 1293,105.1 Q 1294.2,105.1,1294.6,103.5 L 1295.1,101.3 Q 1295.2,100.6,1296,100.6 H 1324.7 Q 1325.5,100.6,1325.7,101.4 L 1326.2,103.5 Q 1326.7,105.1,1327.8,105.1 Z" fill="#f2b463" stroke="none"/>
     </g>
-    <path d="M 1291.0,55.0 H 1302 Q 1309.0,55.0 1312.0,50.0 L 1315.0,46.0 Q 1317.0,37.0 1324.0,37.0 H 1333.0 Q 1338.0,37.0 1338.0,42.0 V 100.0 Q 1338.0,104.0 1334.0,104.0 H 1291.0 Q 1287.0,104.0 1287.0,100.0 V 59.0 Q 1287.0,55.0 1291.0,55.0 Z" fill="none" stroke="#e8c186" stroke-width="1.1"/>
-    <path d="M 1293,104.5 L 1297,100 H 1322 L 1326,104.5 Z" fill="#f2b463"/>
     <text x="1295" y="71" font-size="12" letter-spacing="1.2" fill="#d9a877">LEVEL</text>
     <text x="1296" y="95" font-size="21" font-weight="600" fill="#e8c186">T2</text>
   </g>
 
-  <!-- the wire band, measured: an eight-strand bundle enters low at the
-       left (y 122..145), sweeps up and CONVERGES into a tight line at
-       y~87 (the A box and annotations hang below it, uncrossed), runs to
-       x~950, fans back out into the ribbon at y 123..136 that passes
-       under the security badges, and ends ~x1560 curling down. -->
-  <g fill="none" stroke="#a97c48" stroke-width="1.1">
-    <path d="M 30,122.0 H 52 C 84,122.0 100,86.40 130,86.40 H 1040 C 1075,86.40 1090,123.0 1125,123.0 H 1535 Q 1562,123.0 1568,145.0 L 1570,153.0"/>
-    <path d="M 30,124.9 H 52 C 84,124.9 100,86.56 130,86.56 H 1040 C 1075,86.56 1090,124.8 1125,124.8 H 1535 Q 1562,124.8 1568,146.8 L 1570,154.8"/>
-    <path d="M 30,127.8 H 52 C 84,127.8 100,86.72 130,86.72 H 1040 C 1075,86.72 1090,126.6 1125,126.6 H 1535 Q 1562,126.6 1568,148.6 L 1570,156.6"/>
-    <path d="M 30,130.7 H 52 C 84,130.7 100,86.88 130,86.88 H 1040 C 1075,86.88 1090,128.4 1125,128.4 H 1535 Q 1562,128.4 1568,150.4 L 1570,158.4"/>
-    <path d="M 30,133.6 H 52 C 84,133.6 100,87.04 130,87.04 H 1040 C 1075,87.04 1090,130.2 1125,130.2 H 1535 Q 1562,130.2 1568,152.2 L 1570,160.2"/>
-    <path d="M 30,136.5 H 52 C 84,136.5 100,87.20 130,87.20 H 1040 C 1075,87.20 1090,132.0 1125,132.0 H 1535 Q 1562,132.0 1568,154.0 L 1570,162.0"/>
-    <path d="M 30,139.4 H 52 C 84,139.4 100,87.36 130,87.36 H 1040 C 1075,87.36 1090,133.8 1125,133.8 H 1535 Q 1562,133.8 1568,155.8 L 1570,163.8"/>
-    <path d="M 30,142.3 H 52 C 84,142.3 100,87.52 130,87.52 H 1040 C 1075,87.52 1090,135.6 1125,135.6 H 1535 Q 1562,135.6 1568,157.6 L 1570,165.6"/>
+  <!-- Header wire, remeasured at native resolution 2026-09-21 (NK-02).
+       9 resolved strands, equal 3.18 pitch on both outer plateaus from
+       y 123.45; the left rise spans x~160..226, clear of T1.
+       The strands converge to y 86.8; lower strands leave the
+       low run earlier and land later on the right. The 16px round feet
+       turn into separate downward terminals; no angular diagonal tail.
+       Stroke alpha fades 1..0.2 toward the last resolved strand. -->
+  <g id="header-wire" fill="none" stroke="#edb778" stroke-width="1.1">
+    <path d="M 35.5,139.45 V 139.45 C 35.5,130.61 42.66,123.45 51.5,123.45 H 160.4 C 192.2,123.45 195.05,86.8 226,86.8 H 1056 C 1078.5,86.8 1092.3,123.45 1114.3,123.45 H 1549 C 1557.84,123.45 1565,130.61 1565,139.45 V 139.45" stroke-opacity="1.00"/>
+    <path d="M 35.5,142.63 V 142.63 C 35.5,133.79 42.66,126.63 51.5,126.63 H 158.8 C 191.5,126.63 195.05,86.8 226,86.8 H 1056 C 1078.5,86.8 1093,126.63 1115.9,126.63 H 1549 C 1557.84,126.63 1565,133.79 1565,142.63 V 142.63" stroke-opacity="0.90"/>
+    <path d="M 35.5,145.81 V 145.81 C 35.5,136.97 42.66,129.81 51.5,129.81 H 157.2 C 190.8,129.81 195.05,86.8 226,86.8 H 1056 C 1078.5,86.8 1093.7,129.81 1117.5,129.81 H 1549 C 1557.84,129.81 1565,136.97 1565,145.81 V 145.81" stroke-opacity="0.80"/>
+    <path d="M 35.5,148.99 V 148.99 C 35.5,140.15 42.66,132.99 51.5,132.99 H 155.6 C 190.1,132.99 195.05,86.8 226,86.8 H 1056 C 1078.5,86.8 1094.4,132.99 1119.1,132.99 H 1549 C 1557.84,132.99 1565,140.15 1565,148.99 V 148.99" stroke-opacity="0.70"/>
+    <path d="M 35.5,152.17 V 152.17 C 35.5,143.33 42.66,136.17 51.5,136.17 H 154 C 189.4,136.17 195.05,86.8 226,86.8 H 1056 C 1078.5,86.8 1095.1,136.17 1120.7,136.17 H 1549 C 1557.84,136.17 1565,143.33 1565,152.17 V 152.17" stroke-opacity="0.60"/>
+    <path d="M 35.5,155.35 V 155.35 C 35.5,146.51 42.66,139.35 51.5,139.35 H 152.4 C 188.7,139.35 195.05,86.8 226,86.8 H 1056 C 1078.5,86.8 1095.8,139.35 1122.3,139.35 H 1549 C 1557.84,139.35 1565,146.51 1565,155.35 V 155.35" stroke-opacity="0.50"/>
+    <path d="M 35.5,158.53 V 158.53 C 35.5,149.69 42.66,142.53 51.5,142.53 H 150.8 C 188,142.53 195.05,86.8 226,86.8 H 1056 C 1078.5,86.8 1096.5,142.53 1123.9,142.53 H 1549 C 1557.84,142.53 1565,149.69 1565,158.53 V 158.53" stroke-opacity="0.40"/>
+    <path d="M 35.5,161.71 V 161.71 C 35.5,152.87 42.66,145.71 51.5,145.71 H 149.2 C 187.3,145.71 195.05,86.8 226,86.8 H 1056 C 1078.5,86.8 1097.2,145.71 1125.5,145.71 H 1549 C 1557.84,145.71 1565,152.87 1565,161.71 V 161.71" stroke-opacity="0.30"/>
+    <path d="M 35.5,164.89 V 164.89 C 35.5,156.05 42.66,148.89 51.5,148.89 H 147.6 C 186.6,148.89 195.05,86.8 226,86.8 H 1056 C 1078.5,86.8 1097.9,148.89 1127.1,148.89 H 1549 C 1557.84,148.89 1565,156.05 1565,164.89 V 164.89" stroke-opacity="0.20"/>
   </g>
   <!-- boxed letters: A/B hang under the tight line (boxes 26x26 at y98,
        interiors masking the strands); C/D sit in the foot at the measured
@@ -703,33 +703,20 @@
       <path d="M 1397.6,326 l -0.1,6 0.1,6 0.1,6 0.1,6 0.1,6 0.1,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 -0.1,6 -0.1,6 -0.1,6 -0.1,6 -0.1,6 0,6 0,6 0,6 0,6 0,6 -0.1,6 -0.1,6 -0.1,6 -0.2,6 -0.2,6 -0.2,6 -0.2,6 -0.3,6 -0.3,6 -0.3,6 -0.4,6 -0.4,6 -0.4,6 -0.4,6 -0.5,6 -0.5,6 -0.5,6 -0.3,3"/>
       <path d="M 1400.3,326 l 0,6 -0.1,6 -0.1,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0.1,6 0.1,6 0.1,6 0.1,6 0.1,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 0,6 -0.1,6 -0.1,6 -0.1,6 -0.2,6 -0.2,6 -0.3,6 -0.3,6 -0.3,6 -0.4,6 -0.4,6 -0.5,6 -0.5,6 -0.5,6 -0.6,6 -0.6,6 -0.6,6 -0.3,3"/>
     </g>
-    <!-- two dark paragraphs on the fill, as text (2026-09-07; they were
-         eight bars 11 tall, one per line): Rajdhani 16.3 on the 19.5
-         pitch, first baseline 354.2 (source cap bottom y 850), text x
-         1180.4 so the L's stem lands on the measured ink left 1181.7
-         (source x 2836); the photo's nine line slots run 343 + 19.5 k
-         in ascender tops, k = 0..5 and 7..8 inked. The copy is THE
-         INBOX'S SELECTED MESSAGE: this panel previews the mailbox, so
-         it shows the paragraphs mailbox-trace.svg sets for URGENT
-         INFORMATION (!) from MOM, re-wrapped to this body's measured
-         line ends (widest 207): paragraph one runs out in five lines
-         and "aliqua." alone, the blank slot follows, and paragraph two
-         takes the last three slots, so the 6 + 2 of the photo's own
-         copy ("Lorem ... aliqua. Quis ipsum suspendisse ultrices
-         gravida." / "Risus commodo viverra maece-nas accumsan lacus vel
-         facilisis.") is 5 + 3 here. Line widths at 16.3: 182 203 194.5
-         170 41 / 200 184.5 172.8. Glyph cores sample ~#4b341f (darkest
-         5% of the paragraph block at 3840); #3b2416 is the halo family
-         the bars were painted in. -->
-    <g font-family="Rajdhani" font-size="16.3" fill="#4b341f">
+    <!-- Source #69 copy, restored 2026-09-21 (NK-06): six lines, blank
+         line slot, two lines. The hyphen in maece- is visible in the source.
+         This reference reproduces the photographed text independently of
+         the mailbox's separate message. Rajdhani16.3, x1180.4, native
+         ascender rows823/870/916/963/1010/1057 then1152/1197. -->
+    <g id="panel-copy" font-family="Rajdhani" font-size="16.3" fill="#4b341f">
       <text x="1180.4" y="354.2">Lorem ipsum dolor sit amet,</text>
-      <text x="1180.4" y="373.7">consectetur adipisicing elit, sed</text>
+      <text x="1180.4" y="373.7">consectetur adipiscing elit, sed</text>
       <text x="1180.4" y="393.2">do eiusmod tempor incididunt</text>
       <text x="1180.4" y="412.7">ut labore et dolore magna</text>
-      <text x="1180.4" y="432.2">aliqua.</text>
-      <text x="1180.4" y="471.2">Ut enim ad minim veniam, quis</text>
-      <text x="1180.4" y="490.7">nostrud exercitation ullamco</text>
-      <text x="1180.4" y="510.2">laboris nisi ut aliquip ex ea</text>
+      <text x="1180.4" y="432.2">aliqua. Quis ipsum suspendisse</text>
+      <text x="1180.4" y="451.7">ultrices gravida.</text>
+      <text x="1180.4" y="491.2">Risus commodo viverra maece-</text>
+      <text x="1180.4" y="510.7">nas accumsan lacus vel facilisis.</text>
     </g>
     <!-- micro-text tape (two caps lines, source y 1539..1549 and
          1554..1564, x 2866..3283 / 2866..3300; as text since 2026-09-07,

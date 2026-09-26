@@ -32,8 +32,8 @@
            (421..482), SHOTGUN (482..544), PISTOL (544..606), then one
            tall EMPTY cell 606..740 closing the frame
          - B: four MAGNUM 650 HAND GUN product cards, 265 wide on a 322
-           pitch at x 461 / 783 / 1105 / 1429 (the fourth runs off the
-           right edge of the frame), all with their top at y 260. Each
+           pitch at x 461 / 783 / 1105 / 1429 (the fourth has an open crop at
+           x1564.6, before the screen edge), all with their top at y 260. Each
            card: title block MAGNUM 650 / HAND GUN; a YELLOW band y 315..335
            (#eebf09, extractor [786,315,259,20]) with PETROCHEM in a dark
            tag at the left and BETTERLIFE TEC at the right; a rifle
@@ -185,11 +185,16 @@
          vocabulary allows (0.45 0 0.55 1 is easings.net's EaseInOutQuad,
          the flattest of the listed curves): a raster, not a settling
          panel. The rect is oversize (x 100..1600, y 90..820) against
-         the body's ink (x 111..1600+, y 101..806; the fourth card runs
-         off the frame's right edge, and the clip ends at the frame with
-         it), and this trace has no photo halos, so nothing is nicked at
+         the body's ink (x 111..1564.6, y 101..806); a separate
+         persistent viewport cuts card 4 independently of this boot
+         reveal. This trace has no photo halos, so nothing is nicked at
          rest. Transcribed as a Prim::Motion (Change::Clip) around the
          body's prims in src/eras/entropism.rs. -->
+    <!-- Primary fourth-card ink stops at native x3755 (1564.6 here).
+         The weak displaced residue through ~1578 is not another card
+         edge and is left for the measured material pass. No closing
+         vertical line is introduced at the cut. -->
+    <clipPath id="fourth-card-viewport"><rect x="1427" y="258" width="137.6" height="492"/></clipPath>
     <clipPath id="body-scan-clip">
       <rect x="100" y="90" width="1500" height="730">
         <animate id="body-scan" attributeName="height" from="0" to="730"
@@ -347,10 +352,10 @@
     </g>
   </g>
 
-  <!-- cards 2..4, outlined; the fourth is clipped by the frame edge -->
+  <!-- cards 2..4, outlined; the fourth has a persistent open cut -->
   <use href="#card" x="783"  y="260"/>
   <use href="#card" x="1105" y="260"/>
-  <use href="#card" x="1429" y="260"/>
+  <g clip-path="url(#fourth-card-viewport)"><use href="#card" x="1429" y="260"/></g>
 
   <!-- ==== bottom-left caption and the A / B letter boxes, y 779..805 ==== -->
   <g font-family="Rajdhani">

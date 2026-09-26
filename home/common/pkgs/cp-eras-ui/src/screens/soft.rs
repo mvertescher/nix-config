@@ -117,20 +117,93 @@ impl Xf {
     }
 }
 
-/// A premultiplied RGBA float buffer: rows `y0..y0 + h` of a frame
-/// `w` wide. A whole frame has `y0 = 0`; a [`Band`] of one is drawn
-/// with the frame's own geometry and keeps only its rows, so the
-/// bands of a composite are the composite, row for row.
+/// A pixel rectangle in absolute frame coordinates. Bounds are rounded
+/// before intersection: two disjoint shapes can still cover parts of
+/// the same pixel, and a luminance mask multiplies those coverages.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct Area {
+    x0: usize,
+    y0: usize,
+    x1: usize,
+    y1: usize,
+}
+
+impl Area {
+    const EMPTY: Self = Self { x0: 0, y0: 0, x1: 0, y1: 0 };
+
+    fn empty(self) -> bool {
+        self.x0 >= self.x1 || self.y0 >= self.y1
+    }
+
+    fn intersect(self, other: Self) -> Self {
+        Self {
+            x0: self.x0.max(other.x0),
+            y0: self.y0.max(other.y0),
+            x1: self.x1.min(other.x1),
+            y1: self.y1.min(other.y1),
+        }
+    }
+
+    fn union(self, other: Self) -> Self {
+        if self.empty() {
+            return other;
+        }
+        if other.empty() {
+            return self;
+        }
+        Self {
+            x0: self.x0.min(other.x0),
+            y0: self.y0.min(other.y0),
+            x1: self.x1.max(other.x1),
+            y1: self.y1.max(other.y1),
+        }
+    }
+
+    fn around(self, bounds: (f32, f32, f32, f32), pad: f32) -> Self {
+        let (x0, x1, y0, y1) = bounds;
+        // Invalid geometry is not a reason to reject a draw here. Keep
+        // the existing walker responsible for its handling instead.
+        if ![x0, x1, y0, y1, pad].iter().all(|v| v.is_finite()) {
+            return self;
+        }
+        Self {
+            x0: clamp_lo(x0 - pad, self.x1).max(self.x0),
+            y0: clamp_lo(y0 - pad, self.y1).max(self.y0),
+            x1: clamp_hi(x1 + pad, self.x1).max(self.x0),
+            y1: clamp_hi(y1 + pad, self.y1).max(self.y0),
+        }
+    }
+}
+
+/// A premultiplied RGBA float buffer over an absolute pixel rectangle.
+/// Frame bands have `x0 = 0`; mask scratch buffers keep only the pixels
+/// their two sides can touch. Geometry and samples remain in frame
+/// coordinates, so cropping changes neither coverage nor gradients.
 struct Buf {
     w: usize,
     h: usize,
+    x0: usize,
     y0: usize,
     px: Vec<[f32; 4]>,
 }
 
 impl Buf {
     fn band(w: usize, y0: usize, h: usize) -> Self {
-        Buf { w, h, y0, px: vec![[0.0; 4]; w * h] }
+        Self::region(Area { x0: 0, y0, x1: w, y1: y0 + h })
+    }
+
+    fn region(area: Area) -> Self {
+        let (w, h) = (area.x1 - area.x0, area.y1 - area.y0);
+        Buf { w, h, x0: area.x0, y0: area.y0, px: vec![[0.0; 4]; w * h] }
+    }
+
+    fn area(&self) -> Area {
+        Area { x0: self.x0, y0: self.y0, x1: self.x0 + self.w, y1: self.y0 + self.h }
+    }
+
+    fn cols(&self, x0: f32, x1: f32) -> (usize, usize) {
+        let right = self.x0 + self.w;
+        (clamp_lo(x0, right).max(self.x0), clamp_hi(x1, right).max(self.x0))
     }
 
     /// The rows this buffer holds, clipped to `y0..y1` of the frame.
@@ -147,7 +220,7 @@ impl Buf {
         if a <= 0.0 {
             return;
         }
-        let p = &mut self.px[(y - self.y0) * self.w + x];
+        let p = &mut self.px[(y - self.y0) * self.w + x - self.x0];
         let keep = 1.0 - a;
         p[0] = p[0] * keep + c.r * a;
         p[1] = p[1] * keep + c.g * a;
@@ -161,6 +234,7 @@ impl Buf {
     /// the luminance of the stored channels as they are. rsvg does not
     /// linearise first (see `Prim::Masked`).
     fn mask(&mut self, mask: &Buf) {
+        debug_assert_eq!(self.area(), mask.area());
         for (p, m) in self.px.iter_mut().zip(&mask.px) {
             let lum = (0.2125 * m[0] + 0.7154 * m[1] + 0.0721 * m[2]).clamp(0.0, 1.0);
             p.iter_mut().for_each(|v| *v *= lum);
@@ -169,10 +243,16 @@ impl Buf {
 
     /// Composite `layer` over this buffer, premultiplied "over".
     fn over(&mut self, layer: &Buf) {
-        for (p, l) in self.px.iter_mut().zip(&layer.px) {
-            let keep = 1.0 - l[3];
-            for i in 0..4 {
-                p[i] = p[i] * keep + l[i];
+        debug_assert_eq!(self.area().intersect(layer.area()), layer.area());
+        for row in 0..layer.h {
+            let start = (row + layer.y0 - self.y0) * self.w + layer.x0 - self.x0;
+            let dest = &mut self.px[start..start + layer.w];
+            let src = &layer.px[row * layer.w..(row + 1) * layer.w];
+            for (p, l) in dest.iter_mut().zip(src) {
+                let keep = 1.0 - l[3];
+                for i in 0..4 {
+                    p[i] = p[i] * keep + l[i];
+                }
             }
         }
     }
@@ -191,6 +271,14 @@ impl Buf {
     /// Fill the even-odd interior of `rings` (pixel-space polygons),
     /// colouring each pixel by `paint` at its centre.
     fn fill(&mut self, rings: &[Vec<(f32, f32)>], paint: &dyn Fn(f32, f32) -> Color) {
+        let Some((x0, x1, y0, y1)) = bbox(rings.iter().flatten().copied()) else {
+            return;
+        };
+        let (col0, col1) = self.cols(x0, x1);
+        let (row0, row1) = self.rows(y0, y1);
+        if col0 >= col1 || row0 >= row1 {
+            return;
+        }
         let mut edges: Vec<((f32, f32), (f32, f32))> = Vec::new();
         for ring in rings {
             for i in 0..ring.len() {
@@ -200,14 +288,6 @@ impl Buf {
                     edges.push((a, b));
                 }
             }
-        }
-        let Some((x0, x1, y0, y1)) = bbox(rings.iter().flatten().copied()) else {
-            return;
-        };
-        let (col0, col1) = (clamp_lo(x0, self.w), clamp_hi(x1, self.w));
-        let (row0, row1) = self.rows(y0, y1);
-        if col0 >= col1 || row0 >= row1 {
-            return;
         }
         let mut cov = vec![0.0f32; col1 - col0];
         let mut xs: Vec<f32> = Vec::new();
@@ -253,7 +333,7 @@ impl Buf {
             return;
         };
         let pad = hw + 1.0;
-        let (col0, col1) = (clamp_lo(x0 - pad, self.w), clamp_hi(x1 + pad, self.w));
+        let (col0, col1) = self.cols(x0 - pad, x1 + pad);
         let (row0, row1) = self.rows(y0 - pad, y1 + pad);
         // Only the segments within reach of a row are measured against
         // it; a rounded card is a few dozen chords and most of them are
@@ -446,7 +526,7 @@ pub fn supported(prim: &Prim) -> bool {
         // no clock to move against. The way round is the other
         // nesting -- a `Soft` group under a `Motion`, which `Backdrop`
         // rasterises with `composite_over` and clips as an image.
-        Prim::Motion { .. } => false,
+        Prim::Motion { .. } | Prim::Pick { .. } | Prim::Viewport { .. } => false,
         Prim::Text { .. }
         | Prim::Wide { .. }
         | Prim::Outlined { .. }
@@ -537,6 +617,77 @@ pub fn composite_bands(prims: &[Prim], palette: &Palette, w: u32, h: u32, k: f32
     in_bands(w, h, |buf| walk(buf, prims, palette, Xf::scaled(k)))
 }
 
+/// One group in a software-layer stack. All preceding groups contribute
+/// to a cut, including groups whose cached image does not need rendering.
+/// Standalone images contain only their own group over transparency.
+pub struct SoftLayer<'a> {
+    pub prims: &'a [Prim],
+    pub cut: bool,
+    pub render: bool,
+}
+
+/// Render the requested images without replaying their prefixes. Retain
+/// the original group/image boundaries: merging them changes the GPU's
+/// filtering around fractional edges even when the CPU pixels agree.
+/// Each band's prefix remains in float sRGB throughout; quantization and
+/// coverage cuts affect only the returned image, never the next layer.
+/// Output indices match `layers`, with empty vectors for cache hits.
+pub fn composite_layers_bands(
+    layers: &[SoftLayer<'_>], palette: &Palette, w: u32, h: u32, k: f32,
+) -> Vec<Vec<Band>> {
+    let mut images: Vec<Vec<Band>> = (0..layers.len()).map(|_| Vec::new()).collect();
+    if !layers.iter().any(|layer| layer.render) {
+        return images;
+    }
+    let plan = bands(w, h);
+    std::thread::scope(|scope| {
+        let workers: Vec<_> = plan.iter().map(|&(y, rows)| {
+            scope.spawn(move || {
+                let area = Area { x0: 0, y0: y as usize, x1: w as usize, y1: (y + rows) as usize };
+                layers_rgba(layers, palette, area, k)
+            })
+        }).collect();
+        for ((y, rows), worker) in plan.into_iter().zip(workers) {
+            for (image, rgba) in images.iter_mut().zip(worker.join().expect("a layer-band walker panicked")) {
+                if let Some(rgba) = rgba {
+                    image.push(Band { y, h: rows, rgba });
+                }
+            }
+        }
+    });
+    images
+}
+
+/// The per-band walk is separate so absolute-coordinate regression ROIs
+/// can exercise exactly the production accumulation and encoding path.
+fn layers_rgba(layers: &[SoftLayer<'_>], palette: &Palette, area: Area, k: f32) -> Vec<Option<Vec<u8>>> {
+    let mut images: Vec<Option<Vec<u8>>> = (0..layers.len()).map(|_| None).collect();
+    let Some(last) = layers.iter().rposition(|layer| layer.render) else {
+        return images;
+    };
+    let mut prefix = Buf::region(area);
+    for (index, layer) in layers[..=last].iter().enumerate() {
+        walk(&mut prefix, layer.prims, palette, Xf::scaled(k));
+        if !layer.render {
+            continue;
+        }
+        if index == 0 && !layer.cut {
+            images[index] = Some(prefix.bytes());
+            continue;
+        }
+        let mut own = Buf::region(area);
+        walk(&mut own, layer.prims, palette, Xf::scaled(k));
+        images[index] = Some(if layer.cut {
+            prefix.px.iter().zip(&own.px).flat_map(|(pixel, coverage)| {
+                if coverage[3] <= 0.0 { [0; 4] } else { Buf::encode(*pixel) }
+            }).collect()
+        } else {
+            own.bytes()
+        });
+    }
+    images
+}
+
 /// [`composite_bands`] as one image, for the tests that read pixels.
 #[cfg(test)]
 pub(crate) fn composite(prims: &[Prim], palette: &Palette, w: u32, h: u32, k: f32) -> Vec<u8> {
@@ -601,12 +752,85 @@ pub(crate) fn touched(prims: &[Prim], palette: &Palette, w: u32, h: u32, k: f32)
     own.px.iter().map(|o| o[3] > 0.0).collect()
 }
 
+/// Conservative pixel coverage, without flattening paths. A Bézier is
+/// inside its control-point hull; rectangles enclosing ellipses and
+/// rounded rectangles also enclose their chord approximations. One
+/// extra pixel protects floating-point edge rounding. Stroke padding
+/// matches the distance-field walk (rectangles have mitred corners).
+fn prim_area(prim: &Prim, xf: Xf, clip: Area) -> Area {
+    let rect = |x: f32, y: f32, w: f32, h: f32, pad: f32| {
+        let pts = [xf.at(x, y), xf.at(x + w, y), xf.at(x + w, y + h), xf.at(x, y + h)];
+        clip.around(bbox(pts.into_iter()).unwrap(), pad)
+    };
+    let stroke_pad = |stroke: Option<crate::style::Ink>, width: f32| {
+        1.0 + if stroke.is_some() { width.abs() * xf.k.abs() / 2.0 } else { 0.0 }
+    };
+    match *prim {
+        Prim::Rect { x, y, w, h, stroke, width, .. } => {
+            let hw = if stroke.is_some() { width.abs() / 2.0 } else { 0.0 };
+            rect(x.min(x + w) - hw, y.min(y + h) - hw, w.abs() + 2.0 * hw, h.abs() + 2.0 * hw, 1.0)
+        }
+        Prim::Round { x, y, w, h, stroke, width, .. } => {
+            rect(x, y, w, h, stroke_pad(stroke, width))
+        }
+        Prim::Path { x, y, segs, stroke, width, .. } => {
+            let points = std::iter::once(xf.at(x, y)).chain(segs.iter().flat_map(|seg| {
+                // Repeated endpoints keep this iterator allocation-free.
+                match *seg {
+                    Seg::Move(x, y) | Seg::Line(x, y) => [xf.at(x, y); 3],
+                    Seg::Quad { cx, cy, x, y } => [xf.at(cx, cy), xf.at(x, y), xf.at(x, y)],
+                    Seg::Cubic { c1x, c1y, c2x, c2y, x, y } => {
+                        [xf.at(c1x, c1y), xf.at(c2x, c2y), xf.at(x, y)]
+                    }
+                }
+            }));
+            clip.around(bbox(points).unwrap(), stroke_pad(stroke, width))
+        }
+        Prim::Ellipse { x, y, rx, ry, stroke, width, .. } => {
+            rect(x - rx.abs(), y - ry.abs(), 2.0 * rx.abs(), 2.0 * ry.abs(), stroke_pad(stroke, width))
+        }
+        Prim::Circle { x, y, r, stroke, width, .. } => {
+            rect(x - r.abs(), y - r.abs(), 2.0 * r.abs(), 2.0 * r.abs(), stroke_pad(stroke, width))
+        }
+        Prim::Lobe { x, y, rx, ry, .. } => {
+            rect(x - rx.abs(), y - ry.abs(), 2.0 * rx.abs(), 2.0 * ry.abs(), 1.0)
+        }
+        Prim::Ramp { x, y, w, h, .. } => rect(x, y, w, h, 1.0),
+        Prim::Masked { prims, mask } => {
+            let content = group_area(prims, xf, clip);
+            if content.empty() { content } else { group_area(mask, xf, content) }
+        }
+        Prim::At { x, y, prims } => group_area(prims, xf.moved(x, y), clip),
+        Prim::Turn { x, y, angle, prims } => group_area(prims, xf.turned(x, y, angle), clip),
+        Prim::Soft { prims } => group_area(prims, xf, clip),
+        // Unsupported primitives must still reach the walk's assertion.
+        _ => clip,
+    }
+}
+
+fn group_area(prims: &[Prim], xf: Xf, clip: Area) -> Area {
+    prims.iter().fold(Area::EMPTY, |area, prim| area.union(prim_area(prim, xf, clip)))
+}
+
 fn walk(buf: &mut Buf, prims: &[Prim], palette: &Palette, xf: Xf) {
+    walk_inner::<true>(buf, prims, palette, xf);
+}
+
+/// The uncropped specialization is used only by equivalence tests: it
+/// follows the original full-band mask path with the same rasterizer.
+fn walk_inner<const BOUNDED: bool>(buf: &mut Buf, prims: &[Prim], palette: &Palette, xf: Xf) {
     let map = |pts: Vec<(f32, f32)>| -> Vec<(f32, f32)> {
         pts.into_iter().map(|(x, y)| xf.at(x, y)).collect()
     };
     let flat = |c: Color| move |_: f32, _: f32| c;
     for prim in prims {
+        // Wrappers recurse naturally. Reject leaves before allocating
+        // flattened geometry, and masks before allocating either side.
+        let wrapper = matches!(prim, Prim::At { .. } | Prim::Turn { .. } | Prim::Soft { .. });
+        let area = if BOUNDED && !wrapper { prim_area(prim, xf, buf.area()) } else { buf.area() };
+        if area.empty() {
+            continue;
+        }
         match *prim {
             Prim::Rect { x, y, w, h, fill, stroke, width } => {
                 let ring = map(round_rect(x, y, w, h, 0.0));
@@ -685,21 +909,21 @@ fn walk(buf: &mut Buf, prims: &[Prim], palette: &Palette, xf: Xf) {
                 });
             }
             Prim::Masked { prims, mask } => {
-                // Both sides rasterised over transparency at the frame's
-                // size, the layer thinned by the mask's luminance, then
-                // laid as one: what rsvg does with `mask="url(#m)"`.
-                let mut layer = Buf::band(buf.w, buf.y0, buf.h);
-                walk(&mut layer, prims, palette, xf);
-                let mut lum = Buf::band(buf.w, buf.y0, buf.h);
-                walk(&mut lum, mask, palette, xf);
+                // Outside this intersection at least one side is zero.
+                // Keep the absolute origin, sample locations and draw
+                // order: only temporary allocation and loops shrink.
+                let mut layer = Buf::region(area);
+                walk_inner::<BOUNDED>(&mut layer, prims, palette, xf);
+                let mut lum = Buf::region(area);
+                walk_inner::<BOUNDED>(&mut lum, mask, palette, xf);
                 layer.mask(&lum);
                 buf.over(&layer);
             }
-            Prim::At { x, y, prims } => walk(buf, prims, palette, xf.moved(x, y)),
+            Prim::At { x, y, prims } => walk_inner::<BOUNDED>(buf, prims, palette, xf.moved(x, y)),
             Prim::Turn { x, y, angle, prims } => {
-                walk(buf, prims, palette, xf.turned(x, y, angle))
+                walk_inner::<BOUNDED>(buf, prims, palette, xf.turned(x, y, angle))
             }
-            Prim::Soft { prims } => walk(buf, prims, palette, xf),
+            Prim::Soft { prims } => walk_inner::<BOUNDED>(buf, prims, palette, xf),
             Prim::Text { .. }
             | Prim::Wide { .. }
             | Prim::Outlined { .. }
@@ -708,6 +932,8 @@ fn walk(buf: &mut Buf, prims: &[Prim], palette: &Palette, xf: Xf) {
             | Prim::Grain { .. }
             | Prim::Dots { .. }
             | Prim::Motion { .. }
+            | Prim::Pick { .. }
+            | Prim::Viewport { .. }
             | Prim::Plate { .. } => {
                 debug_assert!(false, "Prim::Soft holds fills only; see soft.rs");
             }
@@ -894,6 +1120,326 @@ mod tests {
         assert!((px(&out, 5, 2, 0)[0] as i32 - 183).abs() <= 1);
         assert!((px(&out, 5, 3, 0)[0] as i32 - 128).abs() <= 1);
         assert_eq!(px(&out, 5, 4, 0), [0, 0, 0, 255], "nothing where the mask draws nothing");
+    }
+
+    #[test]
+    fn cropped_masks_preserve_float_pixels_under_nested_transforms() {
+        const STOPS: &[(f32, Color)] = &[
+            (0.0, Color { r: 0.3, g: 0.8, b: 0.6, a: 0.35 }),
+            (0.43, Color { r: 0.9, g: 0.2, b: 0.4, a: 0.85 }),
+            (1.0, Color { r: 0.6, g: 0.7, b: 0.3, a: 0.6 }),
+        ];
+        const CURVES: &[Seg] = &[
+            Seg::Quad { cx: -9.0, cy: 27.0, x: 19.0, y: 28.0 },
+            Seg::Cubic { c1x: 44.0, c1y: 52.0, c2x: 40.0, c2y: -15.0, x: 30.0, y: 3.0 },
+            Seg::Line(7.0, 3.0),
+            Seg::Move(16.0, 11.0),
+            Seg::Line(23.0, 10.0),
+            Seg::Line(19.0, 18.0),
+        ];
+        const CONTENT: &[Prim] = &[
+            Prim::Round {
+                x: 3.125, y: 5.75, w: 34.0, h: 22.0, r: 5.5,
+                fill: Some(Ink::Fixed(HALF_GREEN)), stroke: Some(Ink::Fixed(RED)), width: 2.75,
+            },
+            Prim::Path {
+                x: 7.0, y: 3.0, segs: CURVES, close: false,
+                fill: Some(Ink::Fixed(HALF_GREEN)), stroke: Some(Ink::Fixed(RED)), width: 3.25,
+            },
+            Prim::Lobe { x: 21.0, y: 18.0, rx: 14.5, ry: 12.75, stops: STOPS },
+            Prim::Ellipse {
+                x: 21.5, y: 15.25, rx: 8.75, ry: 5.5,
+                fill: Some(Ink::Fixed(HALF_GREEN)), stroke: Some(Ink::Fixed(RED)), width: 2.5,
+            },
+            Prim::Circle {
+                x: 15.25, y: 18.5, r: 4.75,
+                fill: Some(Ink::Fixed(HALF_GREEN)), stroke: Some(Ink::Fixed(RED)), width: 1.75,
+            },
+            Prim::Rect {
+                x: 2.5, y: 8.5, w: 15.5, h: 8.0,
+                fill: None, stroke: Some(Ink::Fixed(RED)), width: 6.5,
+            },
+        ];
+        const MASK: &[Prim] = &[
+            Prim::Ramp {
+                x: 5.25, y: 2.75, w: 28.5, h: 32.25,
+                from: (0.1, 0.2), to: (0.9, 0.8), stops: STOPS,
+            },
+            Prim::Turn { x: 8.125, y: 4.5, angle: -19.5, prims: &[
+                Prim::Masked { prims: CONTENT, mask: &[
+                    Prim::Circle {
+                        x: 18.5, y: 15.25, r: 11.5,
+                        fill: Some(Ink::Fixed(Color::WHITE)), stroke: None, width: 0.0,
+                    },
+                ] },
+            ] },
+        ];
+        const MASKED: &[Prim] = &[
+            Prim::Masked { prims: CONTENT, mask: MASK },
+            // A nested wrapper exercises cropped buffers with a second
+            // absolute origin and both an inner and outer mask.
+            Prim::At { x: 12.375, y: -1.75, prims: &[
+                Prim::Masked { prims: CONTENT, mask: MASK },
+            ] },
+        ];
+        for k in [0.37, 1.0, 1.375, 2.4] {
+            for angle in [-31.5, 0.0, 63.75] {
+                let scene = [
+                    fill_rect(0.0, 0.0, 160.0, 160.0, Ink::Fixed(HALF_GREEN)),
+                    Prim::Turn { x: 15.25, y: 5.75, angle, prims: MASKED },
+                ];
+                let mut reference = Buf::band(96, 0, 80);
+                walk_inner::<false>(&mut reference, &scene, &palette(), Xf::scaled(k));
+                for (y, h) in [(0, 80), (0, 7), (7, 19), (26, 1), (27, 53)] {
+                    let mut cropped = Buf::band(96, y, h);
+                    walk(&mut cropped, &scene, &palette(), Xf::scaled(k));
+                    assert_eq!(
+                        cropped.px, reference.px[y * 96..(y + h) * 96],
+                        "k={k}, angle={angle}, band={y}..{}", y + h,
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn disjoint_mask_shapes_can_still_share_fractional_pixel_coverage() {
+        // The two rectangles do not overlap geometrically, but each
+        // covers one quarter of pixel (4, 2). Pixel coverage is masked
+        // after rasterization, so the product remains 1/16 there.
+        const CONTENT: &[Prim] = &[fill_rect(4.125, 2.0, 0.25, 1.0, Ink::Fixed(RED))];
+        const MASK: &[Prim] = &[fill_rect(4.625, 2.0, 0.25, 1.0, Ink::Fixed(Color::WHITE))];
+        let scene = [Prim::Masked { prims: CONTENT, mask: MASK }];
+        let mut reference = Buf::band(12, 0, 8);
+        walk_inner::<false>(&mut reference, &scene, &palette(), Xf::scaled(1.0));
+        let mut cropped = Buf::band(12, 0, 8);
+        walk(&mut cropped, &scene, &palette(), Xf::scaled(1.0));
+        assert_eq!(cropped.px, reference.px);
+        assert_eq!(px(&cropped.bytes(), 12, 4, 2), [16, 0, 0, 16]);
+    }
+
+    #[test]
+    fn cropped_masks_preserve_rect_strokes_with_negative_extents() {
+        const MASK: &[Prim] = &[fill_rect(-100.0, -100.0, 300.0, 300.0, Ink::Fixed(Color::WHITE))];
+        const RECTANGLES: &[Prim] = &[
+            Prim::Rect {
+                x: 20.0, y: 20.0, w: -10.0, h: -8.0,
+                fill: Some(Ink::Fixed(HALF_GREEN)), stroke: Some(Ink::Fixed(RED)), width: 4.0,
+            },
+            Prim::Rect {
+                x: 25.25, y: 23.5, w: -12.75, h: 5.25,
+                fill: None, stroke: Some(Ink::Fixed(HALF_GREEN)), width: 6.5,
+            },
+        ];
+        const MASKED: &[Prim] = &[Prim::Masked { prims: RECTANGLES, mask: MASK }];
+        for k in [1.0, 2.4] {
+            for angle in [0.0, 33.5] {
+                let scene = [Prim::Turn { x: 16.0, y: 4.0, angle, prims: MASKED }];
+                let mut reference = Buf::band(128, 0, 128);
+                let mut cropped = Buf::band(128, 0, 128);
+                walk_inner::<false>(&mut reference, &scene, &palette(), Xf::scaled(k));
+                walk(&mut cropped, &scene, &palette(), Xf::scaled(k));
+                assert_eq!(cropped.px, reference.px, "k={k}, angle={angle}");
+            }
+        }
+    }
+
+    #[test]
+    fn mask_scratch_is_local_and_disjoint_bands_are_empty() {
+        const CONTENT: &[Prim] = &[fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(RED))];
+        const MASK: &[Prim] = &[fill_rect(402.25, 203.5, 8.5, 6.25, Ink::Fixed(Color::WHITE))];
+        let masked = Prim::Masked { prims: CONTENT, mask: MASK };
+        let frame = Area { x0: 0, y0: 0, x1: 3840, y1: 2160 };
+        let local = prim_area(&masked, Xf::scaled(2.4), frame);
+        assert!(!local.empty());
+        assert!((local.x1 - local.x0) * (local.y1 - local.y0) < 500);
+        let far_band = Area { y0: 1700, y1: 1768, ..frame };
+        assert!(prim_area(&masked, Xf::scaled(2.4), far_band).empty());
+        let empty = Prim::Masked { prims: CONTENT, mask: &[] };
+        assert!(prim_area(&empty, Xf::scaled(2.4), frame).empty());
+    }
+
+    #[test]
+    fn dashboard_masks_match_the_uncropped_compositor() {
+        // Cover real material trees from every era, including the deep
+        // Neomil scan/glyph masks. Compare float pixels before encoding,
+        // not a tolerance that could conceal a compositing-order change.
+        fn check(prims: &[Prim], palette: &Palette) {
+            for prim in prims {
+                match prim {
+                    Prim::Soft { prims } => {
+                        let mut reference = Buf::band(160, 0, 90);
+                        let mut cropped = Buf::band(160, 0, 90);
+                        walk_inner::<false>(&mut reference, prims, palette, Xf::scaled(0.1));
+                        walk(&mut cropped, prims, palette, Xf::scaled(0.1));
+                        assert_eq!(cropped.px, reference.px);
+                    }
+                    Prim::At { prims, .. } | Prim::Turn { prims, .. } | Prim::Motion { prims, .. } => {
+                        check(prims, palette);
+                    }
+                    _ => {}
+                }
+            }
+        }
+        for era in [crate::style::Era::Entropism, crate::style::Era::Kitsch,
+                    crate::style::Era::Neomil, crate::style::Era::Neokitsch] {
+            let style = era.style().dashboard_style();
+            check(style.dashboard, &style.palette);
+        }
+    }
+
+    #[test]
+    fn neomil_4k_maker_pixels_preserve_separate_quantized_panel_cuts() {
+        // A headless 4K comparison found one-channel, one-step differences
+        // here after merging the panel images. Keep the true coordinates:
+        // translating this ROI changes the gradient and coverage samples.
+        // The split at 1768 also crosses the actual 4K image-band boundary.
+        let style = crate::style::Era::Neomil.style().dashboard_style();
+        let Prim::Soft { prims: ground } = style.dashboard[0] else {
+            panic!("the dashboard starts with its composited ground")
+        };
+        let Prim::Motion { prims: motion, .. } = style.dashboard[1] else {
+            panic!("the panel is under its opening motion")
+        };
+        let groups: Vec<_> = motion.iter().map(|prim| {
+            let Prim::Soft { prims } = prim else {
+                panic!("the panel preserves its original software-image boundaries")
+            };
+            *prims
+        }).collect();
+        assert_eq!(groups.len(), 7);
+        let mut layers = vec![SoftLayer { prims: ground, cut: false, render: true }];
+        layers.extend(groups.iter().map(|prims| SoftLayer { prims, cut: true, render: true }));
+
+        fn cut<const BOUNDED: bool>(
+            area: Area, under: &[&[Prim]], prims: &[Prim], palette: &Palette,
+        ) -> Vec<u8> {
+            let mut all = Buf::region(area);
+            for group in under {
+                walk_inner::<BOUNDED>(&mut all, group, palette, Xf::scaled(2.4));
+            }
+            walk_inner::<BOUNDED>(&mut all, prims, palette, Xf::scaled(2.4));
+            let mut own = Buf::region(area);
+            walk_inner::<BOUNDED>(&mut own, prims, palette, Xf::scaled(2.4));
+            for (pixel, coverage) in all.px.iter_mut().zip(&own.px) {
+                if coverage[3] <= 0.0 {
+                    *pixel = [0.0; 4];
+                }
+            }
+            all.bytes()
+        }
+
+        fn overlay_opaque_cut(dest: &mut [u8], cut: &[u8]) {
+            for (pixel, layer) in dest.chunks_exact_mut(4).zip(cut.chunks_exact(4)) {
+                // Over this opaque ground each quantized cut pixel is
+                // either transparent or a complete sRGB composite.
+                assert!(layer[3] == 0 || layer[3] == 255);
+                if layer[3] == 255 {
+                    pixel.copy_from_slice(layer);
+                }
+            }
+        }
+
+        let roi = Area { x0: 2910, y0: 1720, x1: 3030, y1: 1790 };
+        let mut parts = Vec::new();
+        let mut whole = Vec::new();
+        for area in [roi, Area { y1: 1768, ..roi }, Area { y0: 1768, ..roi }] {
+            let mut background = Buf::region(area);
+            walk_inner::<false>(&mut background, ground, &style.palette, Xf::scaled(2.4));
+            let mut legacy = background.bytes();
+            let batched = layers_rgba(&layers, &style.palette, area, 2.4);
+            assert_eq!(batched[0].as_ref().unwrap(), &legacy);
+            let mut current = legacy.clone();
+            let mut under = vec![ground];
+            for (index, group) in groups.iter().enumerate() {
+                let old_cut = cut::<false>(area, &under, group, &style.palette);
+                let bounded_cut = cut::<true>(area, &under, group, &style.palette);
+                assert_eq!(bounded_cut, old_cut, "cropping changes original cut in {area:?}");
+                let batched_cut = batched[index + 1].as_ref().unwrap();
+                assert_eq!(batched_cut, &old_cut, "batching changes original cut {index} in {area:?}");
+                overlay_opaque_cut(&mut legacy, &old_cut);
+                overlay_opaque_cut(&mut current, batched_cut);
+                under.push(*group);
+            }
+            assert_ne!(current, background.bytes(), "the ROI must exercise panel material");
+            assert_eq!(current, legacy, "batching changes separately quantized cuts in {area:?}");
+            if area == roi {
+                whole = current;
+            } else {
+                parts.extend(current);
+            }
+        }
+        assert_eq!(whole, parts, "the upload-band boundary must preserve the same pixels");
+    }
+
+    #[test]
+    fn batched_layers_match_independent_images_and_cuts_with_partial_cache_hits() {
+        const STOPS: &[(f32, Color)] = &[
+            (0.0, Color { r: 0.2, g: 0.5, b: 0.9, a: 0.7 }),
+            (1.0, Color { r: 0.8, g: 0.3, b: 0.1, a: 0.2 }),
+        ];
+        const GROUPS: &[&[Prim]] = &[
+            &[fill_rect(0.0, 0.0, 40.0, 32.0, Ink::Fixed(HALF_GREEN))],
+            &[Prim::Masked { prims: &[
+                Prim::Ramp {
+                    x: 3.125, y: 2.75, w: 20.5, h: 18.25,
+                    from: (0.0, 0.1), to: (1.0, 0.9), stops: STOPS,
+                },
+            ], mask: &[
+                fill_rect(5.5, 3.75, 16.25, 13.5, Ink::Fixed(Color::WHITE)),
+            ] }],
+            // A standalone image after a cut must exclude the prefix,
+            // while the next cut must still include this group's paint.
+            &[fill_rect(8.375, 7.5, 16.75, 15.25, Ink::Fixed(HALF_GREEN))],
+            &[Prim::Circle {
+                x: 23.25, y: 19.5, r: 8.75,
+                fill: Some(Ink::Fixed(HALF_GREEN)), stroke: Some(Ink::Fixed(RED)), width: 2.75,
+            }],
+            // Covers pixels outside the earlier cuts. Destructively
+            // cutting the retained prefix would lose the ground here.
+            &[fill_rect(0.25, 0.75, 38.5, 29.5, Ink::Fixed(HALF_GREEN))],
+        ];
+        for k in [0.37, 1.375, 2.4] {
+            for requested in [
+                [true, true, true, true, true],
+                [false, true, false, false, true],
+                [false, false, true, false, false],
+                [false, false, false, false, false],
+            ] {
+                let cuts = [false, true, false, true, true];
+                let layers: Vec<_> = GROUPS.iter().enumerate().map(|(i, prims)| {
+                    SoftLayer { prims, cut: cuts[i], render: requested[i] }
+                }).collect();
+                let actual = composite_layers_bands(&layers, &palette(), 96, 72, k);
+                assert_eq!(actual.len(), layers.len());
+                let mut under = Vec::new();
+                for (i, group) in GROUPS.iter().enumerate() {
+                    if !requested[i] {
+                        assert!(actual[i].is_empty());
+                    } else {
+                        let expected = if cuts[i] {
+                            composite_over_bands(&under, group, &palette(), 96, 72, k)
+                        } else {
+                            composite_bands(group, &palette(), 96, 72, k)
+                        };
+                        assert_eq!(actual[i].len(), expected.len());
+                        for (a, e) in actual[i].iter().zip(&expected) {
+                            assert_eq!((a.y, a.h), (e.y, e.h));
+                            assert!(a.rgba.len() <= BAND_BYTES);
+                            assert_eq!(a.rgba, e.rgba, "layer={i}, k={k}, requested={requested:?}");
+                        }
+                    }
+                    under.push(*group);
+                }
+            }
+            // A cut at index zero still applies its own coverage test.
+            let first = [SoftLayer { prims: GROUPS[1], cut: true, render: true }];
+            assert_eq!(
+                join(composite_layers_bands(&first, &palette(), 96, 72, k).remove(0)),
+                join(composite_over_bands(&[], GROUPS[1], &palette(), 96, 72, k)),
+            );
+        }
+        assert!(composite_layers_bands(&[], &palette(), 96, 72, 1.0).is_empty());
     }
 
     #[test]

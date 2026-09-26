@@ -21,9 +21,9 @@
            with a faint radial lift, no panels, no letters, no badges
          - a lone USERNAME: label at x 578, cap top 386, baseline 403
          - a text field, thin outline, x 563..922, y 414..447, holding
-           eleven masked characters (asterisks, x 579..668, centred y 430)
-           with a short caret underline under the first pair at y 440,
-           x 577..594
+           ten thin masked characters (asterisks, primary x 577.9..670.4, y 425..431.7)
+           with a thin caret underline under the first pair at y439.375,
+           x576.5..595.5
          - a filled NEXT button, x 932..1037, y 413..446 (extractor:
            [933,414,104,32]), dark NEXT label starting x 939
          - a tall SOLID sage footer band, x 36..1565, y 765..880 (extractor:
@@ -61,15 +61,20 @@
          2026-09-03  outlines 1.5px #739479 -> 1.25px #75967b (above).
          2026-09-03  USERNAME: 23/ls 1 regular -> 23/500 ls 0.75 at
                      x 576 (rendered 580 vs photo 578), baseline 402;
-                     masked field: eleven asterisks were 20/ls 2 (4-5px
-                     glyphs at pitch 10, run 110 wide) — photo is 7px
-                     glyphs at pitch ~9.7, run x 578..669 y 425..430:
-                     bold 22, natural tracking (run 94); NEXT 22 regular
+                     masked field was read as eleven bold 22 stars;
+                     that historical reading was corrected 2026-09-21
+                     to ten thin stars (see below). NEXT 22 regular
                      ls 1 -> 500 ls 2 at x 940 baseline 433 (photo dark
                      run x 942..989, cap 419..432; was 941..984, 421..434);
                      footer baseline 862 -> 863, x 517/1382 -> 519/1383
                      (photo runs 62..190 / 520..768 / 1384..1523, cap
-                     853..862). -->
+                     853..862).
+         2026-09-21  ten masks, native bright-core x 577.9..670.4,
+                     y 425..431.7, pitch ~9.54; regular 25 stretched
+                     0.94045. Underline primary x 576.7..595.4 at
+                     y 439.2..439.6: 19x0.5 at 576.5,439.375.
+                     The glyph substitute preserves the thin arms;
+                     the source font and faint printing remain unfitted. -->
   <defs>
     <radialGradient id="lift" cx="0.45" cy="0.4" r="0.8">
       <stop offset="0"   stop-color="#1a1810"/>
@@ -97,9 +102,9 @@
 
     <!-- field, x 563..922, y 414..447 -->
     <rect x="563" y="414" width="359" height="33" fill="none" stroke="#75967b" stroke-width="1.25"/>
-    <text x="578" y="439" font-size="22" font-weight="bold" fill="#8aac8c">***********</text>
+    <text transform="translate(576.4,441.25) scale(0.94045,1)" font-size="25" font-weight="400" fill="#8aac8c">**********</text>
     <!-- caret underline under the first pair of characters; it blinks: 1.2s period, lit for the first half (docs/PIPELINE.md, Motion) -->
-    <path id="caret" d="M 577,440 H 594" fill="none" stroke="#75967b" stroke-width="1.25"><animate id="caret-blink" attributeName="opacity" values="1;0" keyTimes="0;0.5" calcMode="discrete" dur="1.2s" repeatCount="indefinite"/></path>
+    <path id="caret" d="M 576.5,439.375 H 595.5" fill="none" stroke="#75967b" stroke-width="0.5"><animate id="caret-blink" attributeName="opacity" values="1;0" keyTimes="0;0.5" calcMode="discrete" dur="1.2s" repeatCount="indefinite"/></path>
 
     <!-- NEXT, filled, x 932..1037, y 413..446 -->
     <rect x="932" y="413" width="105" height="33" fill="#8aac8c"/>

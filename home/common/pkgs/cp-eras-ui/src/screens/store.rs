@@ -24,7 +24,7 @@
 
 use crate::motion;
 use crate::screens::nav::{self, Dir, Stroke};
-use crate::screens::scene::{plates, Picked, Scene};
+use crate::screens::scene::{plates_selected, Picked, Scene};
 use crate::style::{Group, Style};
 use crate::widgets::ground;
 use crate::Element;
@@ -145,7 +145,7 @@ impl Store {
     /// plates' centres (`nav::step`); `None` at the shelf's edge.
     fn neighbour(&self, dir: Dir) -> Option<(Group, usize)> {
         let mut found = Vec::new();
-        plates(self.style.store, 0.0, 0.0, &mut found);
+        plates_selected(self.style.store, self.picked(), 0.0, 0.0, &mut found);
         let from = found.iter().find(|&&(g, i, _)| (g, i) == self.focus)?.2;
         nav::step(found.iter().map(|&(g, i, c)| ((g, i), c)), from, dir)
     }
@@ -159,6 +159,10 @@ impl Store {
         }
     }
 
+    fn picked(&self) -> Picked {
+        Picked { category: self.category, card: self.card, module: 0 }
+    }
+
     pub fn view(&self) -> Element<'_, Message> {
         stack![
             ground(&self.style),
@@ -167,11 +171,7 @@ impl Store {
                 prims: self.style.store,
                 cursor_group: self.style.store_cursor,
                 states: self.style.store_states,
-                picked: Picked {
-                    category: self.category,
-                    card: self.card,
-                    module: 0,
-                },
+                picked: self.picked(),
                 on_select: |group, index| Message::Select { group, index },
                 at: self.at(),
             }
@@ -295,4 +295,47 @@ mod tests {
             assert_eq!(store.focus.0, Group::Card, "{}: l never reaches the shelf", era.name());
         }
     }
+
+    #[test]
+    fn selected_lower_details_and_cropped_margin_have_correct_hits_at_all_scales() {
+        use crate::screens::scene::hit_selected;
+        use iced::Point;
+        let mut store = Store::new(Era::Neomil.style());
+        let point = |x, y, k| Point::new(x * k, y * k);
+        for k in [0.5, 1.0, 1.25, 1.6, 2.4] {
+            assert_eq!(hit_selected(store.style.store, store.picked(), k, point(900.0, 700.0, k)), Some((Group::Card, 1)));
+            assert_eq!(hit_selected(store.style.store, store.picked(), k, point(1580.0, 350.0, k)), None);
+            for card in 0..4 {
+                store.update(Message::Select { group: Group::Card, index: card });
+                let x = [437.0, 769.0, 1096.0, 1425.0][card] + 66.0;
+                assert_eq!(hit_selected(store.style.store, store.picked(), k, point(x, 700.0, k)), Some((Group::Card, card)));
+                assert_eq!(hit_selected(store.style.store, store.picked(), k, point(1557.25, 350.0, k)), None);
+                assert_eq!(hit_selected(store.style.store, store.picked(), k, point(1580.0, 700.0, k)), None);
+                let idle_x = [437.0, 769.0, 1096.0, 1425.0][(card + 1) % 4] + 66.0;
+                assert_eq!(hit_selected(store.style.store, store.picked(), k, point(idle_x, 700.0, k)), None);
+            }
+            store.update(Message::Select { group: Group::Card, index: 1 });
+        }
+    }
+
+    #[test]
+    fn every_selected_navigation_centre_remains_visible_and_interactive() {
+        use crate::screens::scene::hit_selected;
+        for era in Era::ALL {
+            let mut store = Store::new(era.style());
+            for card in 0..4 {
+                store.update(Message::Select { group: Group::Card, index: card });
+                let mut found = Vec::new();
+                plates_selected(store.style.store, store.picked(), 0.0, 0.0, &mut found);
+                assert_eq!(found.len(), 9, "{era:?}, card{card}");
+                for (group, index, centre) in found {
+                    assert_eq!(hit_selected(store.style.store, store.picked(), 1.0, centre), Some((group, index)), "{era:?}, card{card}, {centre:?}");
+                    if era == Era::Neomil && group == Group::Card && index == 3 {
+                        assert_eq!(centre.x, 1491.0, "fourth-card centre uses its visible132px width");
+                    }
+                }
+            }
+        }
+    }
+
 }

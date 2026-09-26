@@ -42,7 +42,7 @@ use crate::widgets::ground;
 use crate::Element;
 use iced::widget::stack;
 use iced::Subscription;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 pub struct Dashboard {
     pub style: Style,
@@ -57,6 +57,9 @@ pub struct Dashboard {
     /// Advanced by [`Message::Tick`] while anything is still moving,
     /// then left where it is.
     now: Instant,
+    /// Derived once from the immutable scene tables, including feedback
+    /// variants; subscribing must not walk the artwork on every tick.
+    motion_end: Duration,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -79,11 +82,19 @@ impl crate::shell::Wears for Dashboard {
 
 impl Dashboard {
     pub fn new(style: Style) -> Self {
+        let scenes = std::iter::once(style.dashboard)
+            .chain(style.dashboard_held_backdrops.iter().copied())
+            .chain(style.dashboard_states.iter().flat_map(|state| [
+                Some(state.hover), Some(state.pressed), state.selected_hover,
+                state.selected_pressed, state.selected_away,
+            ].into_iter().flatten()));
+        let motion_end = scenes.map(motion::scene_end).max().unwrap_or(Duration::ZERO);
         Dashboard {
             style,
             selected: style.dashboard_selection,
             held: None,
             now: motion::now(),
+            motion_end,
         }
     }
 
@@ -146,9 +157,10 @@ impl Dashboard {
     /// has frozen and nothing else moves -- and none at all when the
     /// clock is pinned, where a redraw is only work the capture waits
     /// on. Read again after every update, so the ticks stop by
-    /// themselves the first time `at` passes `motion::REST`.
+    /// themselves when the last motion finishes. REST is the shared
+    /// capture timestamp, not every dashboard's animation duration.
     pub fn subscription(&self) -> Subscription<Message> {
-        if motion::frozen() || self.at() >= motion::REST {
+        if motion::frozen() || self.at() >= self.motion_end {
             return Subscription::none();
         }
         iced::time::every(std::time::Duration::from_millis(16)).map(Message::Tick)
@@ -192,6 +204,20 @@ mod tests {
     use super::*;
     use crate::screens::scene::{hit, plates};
     use crate::style::{Era, Group};
+
+    #[test]
+    fn dashboard_clock_stops_at_its_own_last_motion() {
+        let mut dash = Dashboard::new(Era::Neomil.style());
+        assert_eq!(dash.motion_end, Duration::from_millis(360));
+        dash.now = motion::origin() + Duration::from_millis(359);
+        assert!(dash.at() < dash.motion_end);
+        assert_eq!(dash.subscription().units(), usize::from(!motion::frozen()));
+        dash.update(Message::Tick(motion::origin() + Duration::from_millis(360)));
+        assert_eq!(dash.at(), dash.motion_end);
+        assert_eq!(dash.subscription().units(), 0);
+        // A delayed fade in another era must not inherit Neomil's cutoff.
+        assert_eq!(Dashboard::new(Era::Neokitsch.style()).motion_end, Duration::from_millis(700));
+    }
 
     /// Every era offers the same six modules, however differently it
     /// draws them. An era table that forgot to wrap its menu in plates

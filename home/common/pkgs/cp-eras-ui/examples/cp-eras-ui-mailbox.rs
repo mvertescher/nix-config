@@ -14,7 +14,12 @@ fn main() -> iced::Result {
     let style = shell::style();
     shell::application(move || MailBox::new(style), MailBox::update, MailBox::view)
         .title(MailBox::title)
-        .subscription(|_| nav::strokes().filter_map(MailBox::stroke))
+        .subscription(|mail| {
+            iced::Subscription::batch([
+                nav::strokes().filter_map(MailBox::stroke),
+                mail.subscription(),
+            ])
+        })
         .run()
 }
 

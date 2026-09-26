@@ -13,11 +13,13 @@
        right-aligned to x=1480. Module set and order unchanged.
 
        WHAT IS BORROWED, FROM WHERE
-       - The band. Every neomil screen puts its header chrome on the cold
+       - The band. Historical September 2 palette citation: the three
+         header-bearing traces then put their chrome on the cold
          blue glow (login/dashboard/mailbox traces: #glowh, sampled at y=90 of
          img-07, left #2a3a51 running to #101f3d at the right; the consts
          BAND_TOP/BAND_BOTTOM in src/eras/neomil.rs restate those two stops).
-         The bar is that header band compressed to 31px: y 0..31 filled with
+         Full-screen grounds were re-fit on September 21; this original
+         bar keeps the chosen two-stop treatment. The band is compressed to 31px: y 0..31 filled with
          the same left-to-right gradient. Red chrome on that blue is the
          era's most recognisable frame (CUSTOMER / SECURITY LEVEL at y 90).
        - The hairline rule. Login/mailbox/dashboard all close the header with
@@ -249,9 +251,11 @@
     <text x="1322" y="141.1" fill="#de2e2e">Quit</text>
   </g>
 
-  <!-- IMPLEMENTATION DELTA (for bar.rs / Style)
-       The SVG is the target; bar.rs follows it. Every item is a change from
-       what tests/golden/bar-neomil-1600x220.png shows today. Coordinates
+  <!-- HISTORICAL IMPLEMENTATION DELTA (2026-09-02; completed 2026-09-03)
+       This is the original migration plan for bar.rs / Style. References
+       below to "today" mean the September 2 pre-restyle implementation,
+       not current code or goldens. See todo/bar.md for later refinements.
+       Coordinates
        are in the 1600x220 golden frame; "cell" means every bar module
        (workspaces, readings, tray icons) unless named.
 
