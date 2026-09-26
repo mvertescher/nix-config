@@ -8,6 +8,9 @@
 { pkgs, ... }:
 
 {
+  # Declares custom.xcode; inert unless a host enables it.
+  imports = [ ./xcode.nix ];
+
   environment.systemPackages = with pkgs; [
     curl
     git
