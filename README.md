@@ -52,6 +52,21 @@ git submodule add https://github.com/mvertescher/nix-config.git public
         };
         extraSystemConfig = ./system;            # optional, all hosts
       };
+
+      # macOS via nix-darwin. Same shape; the shared stack is
+      # darwin/configuration.nix. Machine kinds such as
+      # darwin/mac-mini.nix are opt-in from the host's modules. `user`
+      # must be the account macOS Setup Assistant already created.
+      darwinConfigurations = nix-config.lib.mkDarwin {
+        hosts = {
+          mymac = {
+            # system = "x86_64-darwin";          # optional; default aarch64-darwin
+            user = "me";
+            modules = [ ./hosts/mymac ];         # e.g. imports public/darwin/mac-mini.nix
+            homeModules = [ ./hosts/mymac/home.nix ];
+          };
+        };
+      };
     };
 }
 ```

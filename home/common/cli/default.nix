@@ -73,7 +73,6 @@
       unzip
       vultr-cli
       whois
-      writedisk
     ]
     ++ lib.optionals stdenv.isLinux [
       conda
@@ -81,6 +80,7 @@
       linux-router
       lxi-tools
       woeusb
+      writedisk
     ];
 
   # top replacement

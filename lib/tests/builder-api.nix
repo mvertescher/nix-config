@@ -22,6 +22,7 @@
   runCommand,
   mkNixos,
   mkHome,
+  mkDarwin,
 }:
 
 let
@@ -49,6 +50,12 @@ let
       # passes some and would never hit it.
       homeModules = [ { home.stateVersion = "24.05"; } ];
     };
+  };
+
+  # Evaluated, never built: this check runs on Linux, and reading a
+  # few options from an aarch64-darwin config needs no Mac.
+  darwin = mkDarwin {
+    hosts.fixture.homeModules = [ { home.stateVersion = "24.05"; } ];
   };
 
   home = mkHome {
@@ -79,6 +86,8 @@ let
     nixosUser = nixos.fixture.config.users.users.mverte.name;
     homeUser = home.fixture.config.home.username;
     homeDir = home.fixture.config.home.homeDirectory;
+    darwinHostName = darwin.fixture.config.networking.hostName;
+    darwinUser = darwin.fixture.config.system.primaryUser;
   };
 
   expected = {
@@ -86,6 +95,8 @@ let
     nixosUser = "mverte";
     homeUser = "mvertescher";
     homeDir = "/home/mvertescher";
+    darwinHostName = "fixture";
+    darwinUser = "mverte";
   };
 
   wrong = lib.filterAttrs (n: v: v != facts.${n}) expected;

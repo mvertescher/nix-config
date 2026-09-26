@@ -53,6 +53,14 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # macOS hosts (lib/mkDarwin.nix). master is the branch that tracks
+    # nixpkgs-unstable; a release branch refuses to evaluate against our
+    # nixos-unstable pin.
+    nix-darwin = {
+      url = "github:nix-darwin/nix-darwin/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
 
@@ -75,6 +83,7 @@
       lib = {
         mkNixos = import ./lib/mkNixos.nix { inherit inputs overlays; };
         mkHome = import ./lib/mkHome.nix { inherit inputs overlays; };
+        mkDarwin = import ./lib/mkDarwin.nix { inherit inputs overlays; };
       };
 
       # The builders' only consumer inside this repo. Every real consumer
@@ -83,7 +92,7 @@
       # API break until someone else's pin bump. See the file's header.
       checks.${system} = {
         builder-api = pkgs.callPackage ./lib/tests/builder-api.nix {
-          inherit (self.lib) mkNixos mkHome;
+          inherit (self.lib) mkNixos mkHome mkDarwin;
         };
 
         # The cp-eras-ui greeter signing in on a virtual seat. A VM test:
