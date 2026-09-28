@@ -99,7 +99,18 @@ let
     security import ${lib.escapeShellArg cfg.identityP12Path} -k "$keychain" \
       -P "$(cat ${lib.escapeShellArg cfg.identityPasswordFile})" -f pkcs12 \
       -T /usr/bin/codesign -T /usr/bin/productbuild -T /usr/bin/security >/dev/null
-    security import ${wwdrG3} -k "$keychain" -t cert -f x509 >/dev/null
+    # "Already exists" is success: once any keychain on the search list
+    # holds G3 (malum's login keychain gained one on 2026-09-28, from a
+    # release run or Xcode), importing it again fails with that error,
+    # and under `set -e` it aborted every signing run although the
+    # chain still resolves through the existing copy. Anything else is
+    # a real failure.
+    if ! wwdr_out=$(security import ${wwdrG3} -k "$keychain" -t cert -f x509 2>&1); then
+      case "$wwdr_out" in
+        *"already exists"*) ;;
+        *) echo "with-signing-keychain: importing WWDR G3 failed: $wwdr_out" >&2; exit 1 ;;
+      esac
+    fi
     # Without this partition list, codesign raises a GUI authorization
     # dialog the first time it touches the key -- fatal with no screen.
     security set-key-partition-list -S apple-tool:,apple:,codesign: \
