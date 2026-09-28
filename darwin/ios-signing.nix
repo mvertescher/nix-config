@@ -1,0 +1,107 @@
+# Code signing for iOS (and macOS) builds on a headless Mac, for any
+# project on one Apple team.
+#
+# What is per team, and so configured here once: the distribution
+# identity (a base64 .p12 and its password) and an App Store Connect API
+# key. What is per app -- provisioning profiles -- is fetched with that
+# key at build time (`xcodebuild -allowProvisioningUpdates` with the
+# auth flags below, or a project's own script), so nothing here names an
+# app. The options take *file paths*, so the secrets can come from
+# sops-nix, agenix or anything that renders files; this module never
+# sees their contents.
+#
+# The keychain is the macOS-specific part. The login keychain stays
+# locked on a Mac nobody has logged into at the screen, so builds do not
+# use it. Instead:
+#
+#   with-signing-keychain <command> [args...]
+#
+# creates a throwaway keychain with a random password, imports the
+# identity with codesign/productbuild allowed to use it without a
+# prompt, puts it first in the user's search list, exports the API key
+# as ASC_KEY_ID / ASC_ISSUER_ID / ASC_KEY_PATH plus XCODEBUILD_AUTH
+# (the three -authenticationKey* flags and -allowProvisioningUpdates),
+# runs the command, and deletes the keychain however the command exits.
+# The same shape as a CI job, so a local build and a GitHub Actions
+# build sign the same way, and no key sits in a keychain between builds.
+#
+#   with-signing-keychain sh -c 'xcodebuild ... archive $XCODEBUILD_AUTH'
+
+{ config, lib, pkgs, ... }:
+
+let
+  cfg = config.custom.iosSigning;
+
+  helper = pkgs.writeShellScriptBin "with-signing-keychain" ''
+    set -euo pipefail
+    export PATH=/usr/bin:/bin:/usr/sbin:/sbin:$PATH
+
+    if [ $# -eq 0 ]; then
+      echo "usage: with-signing-keychain <command> [args...]" >&2
+      exit 2
+    fi
+    for f in ${lib.escapeShellArgs [ cfg.identityP12Base64File cfg.identityPasswordFile cfg.ascKeyIdFile cfg.ascIssuerIdFile cfg.ascKeyP8File ]}; do
+      [ -r "$f" ] || { echo "with-signing-keychain: cannot read $f (secret not deployed?)" >&2; exit 1; }
+    done
+
+    work=$(mktemp -d "''${TMPDIR:-/tmp}/signing.XXXXXX")
+    keychain="$work/signing.keychain-db"
+    kc_pass=$(openssl rand -hex 24)
+    original=$(security list-keychains -d user | tr -d '"' | xargs)
+
+    cleanup() {
+      # shellcheck disable=SC2086
+      security list-keychains -d user -s $original >/dev/null 2>&1 || true
+      security delete-keychain "$keychain" >/dev/null 2>&1 || true
+      rm -rf "$work"
+    }
+    trap cleanup EXIT INT TERM
+
+    security create-keychain -p "$kc_pass" "$keychain"
+    # No flags: no lock on sleep and no lock after a timeout, so a long
+    # archive cannot lose the key halfway. It is deleted on exit anyway.
+    security set-keychain-settings "$keychain"
+    security unlock-keychain -p "$kc_pass" "$keychain"
+
+    base64 -d < ${lib.escapeShellArg cfg.identityP12Base64File} > "$work/identity.p12"
+    security import "$work/identity.p12" -k "$keychain" \
+      -P "$(cat ${lib.escapeShellArg cfg.identityPasswordFile})" -f pkcs12 \
+      -T /usr/bin/codesign -T /usr/bin/productbuild -T /usr/bin/security >/dev/null
+    rm -f "$work/identity.p12"
+    # Without this partition list, codesign raises a GUI authorization
+    # dialog the first time it touches the key -- fatal with no screen.
+    security set-key-partition-list -S apple-tool:,apple:,codesign: \
+      -s -k "$kc_pass" "$keychain" >/dev/null
+    # shellcheck disable=SC2086
+    security list-keychains -d user -s "$keychain" $original
+
+    export ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_PATH XCODEBUILD_AUTH SIGNING_KEYCHAIN
+    ASC_KEY_ID=$(cat ${lib.escapeShellArg cfg.ascKeyIdFile})
+    ASC_ISSUER_ID=$(cat ${lib.escapeShellArg cfg.ascIssuerIdFile})
+    ASC_KEY_PATH=${lib.escapeShellArg cfg.ascKeyP8File}
+    SIGNING_KEYCHAIN="$keychain"
+    XCODEBUILD_AUTH="-allowProvisioningUpdates -authenticationKeyPath $ASC_KEY_PATH -authenticationKeyID $ASC_KEY_ID -authenticationKeyIssuerID $ASC_ISSUER_ID"
+
+    "$@"
+  '';
+
+  pathOption = description: lib.mkOption {
+    type = lib.types.str;
+    inherit description;
+  };
+in
+{
+  options.custom.iosSigning = {
+    enable = lib.mkEnableOption "the with-signing-keychain helper for iOS/macOS code signing";
+
+    identityP12Base64File = pathOption "File holding the distribution identity as a base64-encoded .p12.";
+    identityPasswordFile = pathOption "File holding the .p12's password, with no trailing newline.";
+    ascKeyIdFile = pathOption "File holding the App Store Connect API key ID.";
+    ascIssuerIdFile = pathOption "File holding the App Store Connect issuer ID (the team's).";
+    ascKeyP8File = pathOption "File holding the App Store Connect API key (.p8, PEM).";
+  };
+
+  config = lib.mkIf cfg.enable {
+    environment.systemPackages = [ helper ];
+  };
+}

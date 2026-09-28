@@ -8,8 +8,12 @@
 { pkgs, ... }:
 
 {
-  # Declares custom.xcode; inert unless a host enables it.
-  imports = [ ./xcode.nix ];
+  # Declares custom.xcode and custom.iosSigning; inert unless a host
+  # enables them.
+  imports = [
+    ./xcode.nix
+    ./ios-signing.nix
+  ];
 
   environment.systemPackages = with pkgs; [
     curl
