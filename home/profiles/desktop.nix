@@ -15,10 +15,8 @@
 # the same mechanism the themes' daemons rely on (see
 # ../themes/lib/era.nix).
 #
-# Selected by import, not by an option: an enum with one arm is an import.
-# See PROFILE-DESIGN.md in the consuming wrapper for the full argument and
-# for the laptop half, which is deliberately not written until laptop
-# hardware exists.
+# Selected by import, not by an option; ./laptop.nix is the laptop half.
+# See PROFILE-DESIGN.md in the consuming wrapper for the full argument.
 _:
 
 {
