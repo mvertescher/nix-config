@@ -32,6 +32,17 @@
 let
   cfg = config.custom.iosSigning;
 
+  # Apple's WWDR G3 intermediate, which issues today's Apple Development
+  # and Apple Distribution certificates. macOS ships Apple Root CA but
+  # not necessarily this intermediate -- malum had only the expired G1 --
+  # and without it the identity imports yet `find-identity -v` reports
+  # 0 valid identities and codesign cannot build a chain. Pinned by hash;
+  # valid until 2030-02-20.
+  wwdrG3 = pkgs.fetchurl {
+    url = "https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer";
+    hash = "sha256-3PIYeMd/QZjktGFPA9aW2JxmxmAI1CROG5kWGqyRYB8=";
+  };
+
   helper = pkgs.writeShellScriptBin "with-signing-keychain" ''
     set -euo pipefail
     export PATH=/usr/bin:/bin:/usr/sbin:/sbin:$PATH
@@ -68,6 +79,7 @@ let
       -P "$(cat ${lib.escapeShellArg cfg.identityPasswordFile})" -f pkcs12 \
       -T /usr/bin/codesign -T /usr/bin/productbuild -T /usr/bin/security >/dev/null
     rm -f "$work/identity.p12"
+    security import ${wwdrG3} -k "$keychain" -t cert -f x509 >/dev/null
     # Without this partition list, codesign raises a GUI authorization
     # dialog the first time it touches the key -- fatal with no screen.
     security set-key-partition-list -S apple-tool:,apple:,codesign: \
