@@ -24,43 +24,48 @@ account cards are source artwork, not an account-management backend.
 
 ## Source fidelity
 
-- [ ] **Restore primary avatar artwork and portraits.** Source active
-  avatar contains two large filled dark hexagonal halves, a shallow
-  diagonal gap, a left wedge and small marks. The trace substitutes a
-  small hollow hexagon and omits the wedge; central dark area is about
-  2,024 source vs 511 trace square design pixels. The other cards replace
-  the same source face/clothing portrait with generic silhouettes.
-  Reconstruct supported source contours; do not invent a replacement
-  person or hide missing primary art with `photo` annotations.
-- [ ] **Correct password and card printing.** Source ten stars are about
-  6.25px wide on 11.25px pitch, ending at x491.67; the tail spans
-  x499.17..512.50 at y622.92..623.75. Trace stars are only 2–3px wide,
-  with the tail ending x475 (Iced about484). Remeasure glyphs, pitch,
-  prompt origin and baseline together. USER01 needs source weight,
-  placement and contrast; source first-label bounds are
-  x469.6..528.3/y515.8..528.3. Captions are about11% too short.
-- [ ] **Restore header, badge and margin printing.** LEVEL is about36%
-  too narrow; tier lettering, protocol, tape and margin codes are older
-  approximations. Reuse accepted dashboard/mailbox vector vocabulary
-  only where source crops support it: whole headers are not identical.
+- [x] **Restore primary avatar artwork and portraits.** Reconstructed the
+  filled halves, slit, wedge and small marks, then replaced both generic
+  silhouettes with the source face/clothing contours. Native active-avatar
+  dark-mask overlap improves .169→.872. Six vector tone masks preserve 105
+  portrait regions without embedding a raster. Native source/SVG/Iced review
+  accepts the primary art; posterization, scan texture and softer edges
+  remain in the separate fine-printing/material work below.
+- [x] **Correct password and card printing.** Ten source-sized stars now
+  use the measured pitch, origin and baseline, followed by a separate moving
+  tail. Native bounds agree within about .42px; the tail matches the source
+  rectangle. USER 01, prompt and captions are fitted independently. The
+  fractional 80-mask case changes no pixels outside the field, and dark
+  blink removes only the caret. Full-secret semantics are unchanged.
+- [x] **Restore header, badge and margin printing.** Open, non-retraced
+  LEVEL paths, tier contours, twelve measured protocol bars, rounded tape
+  and code contours replace the older approximations. Top captions, margin
+  marks and rotated labels are fitted to this screen's source. Reference
+  bright foreground and explicit plate fills preserve custom palette roles.
+  Native Iced review accepts primary printing; badge/card materials and
+  secondary echoes remain separate below. See
+  [primary measurements](../docs/neomil/login-primary.md).
 - [x] **Correct the shared ground.** Multiple unobstructed source patches
   match the dashboard exactly. Reusing the existing source-fit model
   improves native clear-ground RGB RMS9.049→1.685 across4,264,020 pixels,
   with both spatial holdouts improving. SVG and Iced share the same data;
   see [measurements](../docs/neomil/login-store-material.md).
-- [ ] **Fit screen-specific materials.** Independently fit inactive
-  card/badge fields and scan modulation against their source regions.
-  The active card's SVG flat #f63333 is already source-supported; do not
-  invent a strong gradient there. Exact shared texture remains dependent
-  on source material or an independently validated reconstruction.
-- [ ] **Remove extra SVG→Iced color and geometry drift.** Reference-mode
-  active card is #de2e2e instead of #f63333. Preserve custom palettes
-  while correcting reference roles. Inactive top-right chamfers are47px
-  instead of51px; notch vertices are392/402/486/497 instead of
-  390/405/483/496. First avatar tab is6px too long. USER01 drops1.5px
-  tracking; card3 notch rail should retain its darker ink. Correct these
-  in source-aware data rather than hardcoding screen names in the renderer.
-- [ ] **Fit remaining printing echoes and edge softness.** Do primary
+- [x] **Fit inactive card and badge broad materials.** Source-fitted
+  biaxial fields preserve the active card's supported flat #f63333 fill.
+  Native inactive-card source RGB RMSE is 1.60/1.84, SVG/native .44/.56;
+  measured badge frame inks/weights are restored. Changes stay inside the
+  two inactive cards and five badge fields at native and fractional sizes.
+  K1 passes both gates, 267 tests and all 22 repository checks. Fine scan
+  modulation and exact shared texture remain separate below.
+- [x] **Remove extra SVG→Iced color and geometry drift.** Active-card
+  reference fill is now #f63333; custom palettes retain their foreground
+  role. Inactive chamfers are51px, notch vertices390/405/483/496, the
+  first avatar tab ends atx498, USER01 retains1.5px tracking, and card3's
+  rail uses its darker edge ink. Explicit era-owned notch/tab plates
+  replace hardcoded renderer dimensions. The existing trace and component
+  excerpt already held these targets. See the
+  [drift record](../docs/neomil/login-rendering-drift.md).
+- [ ] **Fit remaining scan modulation, printing echoes and edge softness.** Do primary
   shape/type/material corrections first; validate any secondary copies
   on held-out source crops. Do not add global glow/noise or weaken gates.
 
@@ -105,3 +110,13 @@ are broad shape checks, not completion of the remaining source work.
 Only the login/store goldens changed in this batch. All changes remain
 staged, with no live authentication; repeat the acceptance checks for
 subsequent visual corrections.
+
+## Primary-art checkpoint, 2026-09-27
+
+The H snapshot passes 263 Rust tests and all 22 repository checks. All 27
+visual cases match 100.000% on their first attempt. Source/SVG and SVG/Iced
+login gates pass; native and fractional primary art plus synthetic input,
+blink and button states are reviewed. Only intentional reviewed goldens
+are refreshed. The subsequent card/badge material work is under separate
+native verification and is not covered by this checkpoint. See
+[seventh-batch record](../docs/reference-svg-round7.md).

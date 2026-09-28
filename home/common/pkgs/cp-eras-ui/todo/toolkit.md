@@ -2,6 +2,19 @@
 records are relative to the crate root. Dated notes retain their original
 reasoning; later completion entries supersede earlier open-item lists.
 
+## Current runtime follow-ups
+
+- [x] **Kitsch store selected-card hit regions** (2026-09-27): selected
+  cards now use 261×500 bounds, covering the lower body and compliance
+  printing; idle cards retain 261×320. The original fixed-height defect
+  predated the fourth-card fade. All four selections pass lower-body,
+  footer, idle-miss, clipping, navigation-center and release-cancellation
+  checks at 0.75/1/1.25/2.4 scale. Card4 retains its persistent x1550
+  cutoff; native resting and opening captures are pixel-identical.
+  Source photos specify selected card2; other selected states remain
+  inferred application behavior. See [bounds and coverage](../docs/kitsch/store-hit-regions.md)
+  and the [fourth-batch validation](../docs/reference-svg-round4.md).
+
 ## Toolkit infrastructure
 
 - [x] **Visual regression, landed 2026-08-22** as `tests.visual`

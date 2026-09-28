@@ -117,17 +117,19 @@
            rounded corners; not a trace fault, corners left rounded
          - G1i inks 0.62 -> 0.67 (teal 0.81 -> 0.93, yellow 0.46 -> 0.46) -->
   <defs>
-    <radialGradient id="bloom" cx="0.5" cy="-0.25" r="0.9">
-      <stop offset="0"    stop-color="#b05064"/>
-      <stop offset="0.35" stop-color="#933b53"/>
-      <stop offset="0.6"  stop-color="#5c2236"/>
-      <stop offset="0.85" stop-color="#1e0f14"/>
-      <stop offset="1"    stop-color="#0e0d0c"/>
+    <radialGradient id="bloom" cx="0.46875" cy="-0.356297" r="1">
+      <stop offset="0" stop-color="#ad465f"/>
+      <stop offset="0.2" stop-color="#ad465f"/>
+      <stop offset="0.4" stop-color="#ae4c60"/>
+      <stop offset="0.6" stop-color="#8c334d"/>
+      <stop offset="0.8" stop-color="#16100f"/>
+      <stop offset="1" stop-color="#0c0c0b"/>
     </radialGradient>
     <radialGradient id="leftwash" cx="0" cy="0.5" r="0.5">
-      <stop offset="0"   stop-color="#2a2e2a" stop-opacity="1"/>
-      <stop offset="0.6" stop-color="#2a2e2a" stop-opacity="0.5"/>
-      <stop offset="1"   stop-color="#2a2e2a" stop-opacity="0"/>
+      <stop offset="0" stop-color="#1f211c"/>
+      <stop offset="0.4" stop-color="#202620" stop-opacity="0.85"/>
+      <stop offset="0.7" stop-color="#15281e" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#26884f" stop-opacity="0"/>
     </radialGradient>
     <!-- the bracket's top and bottom lines fade out to the right -->
     <linearGradient id="fadeR" x1="0" x2="1" y1="0" y2="0">
@@ -175,9 +177,9 @@
     </clipPath>
   </defs>
 
-  <rect width="1600" height="900" fill="#0e0d0c"/>
-  <rect width="1600" height="620" fill="url(#bloom)"/>
-  <rect x="0" y="60" width="600" height="780" fill="url(#leftwash)"/>
+  <rect width="1600" height="900" fill="#0c0c0b"/>
+  <rect width="1600" height="929" fill="url(#bloom)"/>
+  <rect x="0" y="-7" width="1070" height="800" fill="url(#leftwash)"/>
 
   <!-- ==== header: boxed letters, annotations, labels ==== -->
   <g font-family="Rajdhani" fill="#7fd4cc">
@@ -260,7 +262,7 @@
   </g>
   <use href="#env-open" x="166.95" y="322.5" fill="none" stroke="#4a3a05" stroke-width="0.7"/>
   <text x="220" y="340" font-family="Rajdhani" font-size="17" letter-spacing="0.5" fill="#4a3a05">YOU'LL REGRET THAT</text>
-  <text x="220" y="362" font-family="Rajdhani" font-size="11" fill="#f2c825">from: Jackie</text>
+  <text x="220" y="361" font-family="Rajdhani" font-size="13.5" font-weight="600" fill="#f2c825">from: Jackie</text>
 
   <!-- the four unselected rows -->
   <g fill="none" stroke="#5fd6c2" stroke-width="0.9">
@@ -276,11 +278,11 @@
       <text x="220" y="518">I'M WORRIED MAN</text>
       <text x="220" y="578">SPECIAL OFFER TO YOU!</text>
     </g>
-    <g font-size="11">
-      <text x="220" y="421">from: Mom</text>
-      <text x="220" y="481">from: 805000451</text>
-      <text x="220" y="541">from: Rachel Ross</text>
-      <text x="220" y="601">from: JINX JINX STORE</text>
+    <g font-size="13.5" font-weight="700" fill="#87f9d8">
+      <text x="220" y="420">from: Mom</text>
+      <text x="220" y="480">from: 805000451</text>
+      <text x="220" y="540">from: Rachel Ross</text>
+      <text x="220" y="600">from: JINX JINX STORE</text>
     </g>
   </g>
 
@@ -292,9 +294,9 @@
   <!-- flag band + body outline: 1.25px on half-pixel coordinates so the line renders as one bright pixel, as in the photo -->
   <path d="M 575,327 L 540,363 V 384.2 H 1104 L 1127.5,360.7 M 1127.5,337 V 739.5 Q 1127.5,747.5 1119.5,747.5 H 584.5 Q 576.5,747.5 576.5,739.5 V 384.2"
         fill="none" stroke="#f2c825" stroke-width="1.25"/>
-  <g font-family="Rajdhani" font-size="6" letter-spacing="0.3" fill="#e3bd20">
-    <text x="578" y="365">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE</text>
-    <text x="578" y="373">ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+  <g font-family="Rajdhani" font-size="8" font-weight="700" letter-spacing="0.34" fill="#e6b522">
+    <text x="578.4" y="365.5">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE</text>
+    <text x="578.4" y="373.3">ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
   </g>
   <!-- body: three lorem paragraphs, x 592, pitch 19; size/weight/colour measured, see header -->
   <g font-family="Rajdhani" font-size="16.8" font-weight="500" fill="#f5cd2a">

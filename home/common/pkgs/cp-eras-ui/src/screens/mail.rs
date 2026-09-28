@@ -433,6 +433,47 @@ mod interaction_tests {
         }
     }
 
+    fn baselines(panel: &MailPanel) -> Vec<f32> {
+        let mut result = Vec::new();
+        body_lines(panel, |_, y| result.push(y));
+        result
+    }
+
+    #[test]
+    fn paragraph_origins_preserve_prior_lines_and_fallback_pitch() {
+        let panel = crate::style::Era::Entropism.style().mailbox.panel;
+        let actual = baselines(&panel);
+        let expected = [325.0, 346.7, 368.4, 390.1, 429.1, 450.8, 472.5, 494.2, 535.0, 556.7];
+        assert_eq!(actual.len(), expected.len());
+        for (actual, expected) in actual.iter().zip(expected) {
+            assert!((actual - expected).abs() < 0.001, "{actual} vs {expected}");
+        }
+
+        let mut fallback = panel;
+        fallback.paragraph_baselines = &[];
+        assert!((baselines(&fallback)[8] - 533.2).abs() < 0.001);
+        fallback.paragraph_baselines = &[335.0];
+        let partial = baselines(&fallback);
+        assert!((partial[0] - 335.0).abs() < 0.001);
+        assert!((partial[4] - 429.1).abs() < 0.001);
+        assert!((partial[8] - 533.2).abs() < 0.001);
+
+        for (era, first, second, third) in [
+            (crate::style::Era::Kitsch, 411.0, 525.0, 582.0),
+            (crate::style::Era::Neokitsch, 333.0, 397.5, 526.5),
+            (crate::style::Era::Neomil, 347.5, 452.5, 557.5),
+        ] {
+            let other = era.style().mailbox.panel;
+            assert!(other.paragraph_baselines.is_empty(), "{era:?}");
+            let ys = baselines(&other);
+            let second_index = other.paragraphs[0].len();
+            let third_index = second_index + other.paragraphs[1].len();
+            for (actual, expected) in [(ys[0], first), (ys[second_index], second), (ys[third_index], third)] {
+                assert!((actual - expected).abs() < 0.001, "{era:?}: {actual} vs {expected}");
+            }
+        }
+    }
+
     #[test]
     fn opening_any_row_replaces_the_fixture_even_after_returning_to_its_index() {
         for era in crate::style::Era::ALL {
@@ -559,6 +600,83 @@ mod interaction_tests {
     }
 
     #[test]
+    fn neokitsch_selected_printing_keeps_distinct_inks_across_selection_and_press() {
+        let style = crate::style::Era::Neokitsch.style();
+        let sheet = self::sheet(&style);
+        let list = &style.mailbox.list;
+        let inks = list.selected_printing.unwrap();
+        assert_eq!((inks.title, inks.sender, inks.envelope), (
+            Ink::Fixed(crate::palette::rgb(0x7b5438)),
+            Ink::Fixed(crate::palette::rgb(0x895f3b)),
+            Ink::Fixed(crate::palette::rgb(0x865c39)),
+        ));
+        for index in [sheet.selected, 0, list.rows.len() - 1] {
+            let row = list.row.shifted(0.0, index as f32 * list.pitch);
+            let (title, sender) = Sheet::printing_inks(list, index, row, true, None, None);
+            assert_eq!((title, sender, Sheet::envelope_ink(list, true, None, title)),
+                (inks.title, inks.sender, inks.envelope));
+        }
+        let held = sheet.row_coat(0, Some((0, true))).unwrap();
+        assert!(held.selection);
+        assert_eq!(held.printing, None);
+        assert_eq!(held.sender, None);
+        assert_eq!(sheet.row_material(list, Some(held)).veneer, list.veneer);
+        let row = list.row;
+        let (title, sender) = Sheet::printing_inks(list, 0, row, true, Some(Ink::Fg), None);
+        assert_eq!((title, sender, Sheet::envelope_ink(list, true, Some(Ink::Fg), title)),
+            (Ink::Fg, Ink::Fg, Ink::Fg));
+        let (title, sender) = Sheet::printing_inks(list, 0, row, true, Some(Ink::Fg), Some(Ink::Bg));
+        assert_eq!((title, sender, Sheet::envelope_ink(list, true, Some(Ink::Fg), title)),
+            (Ink::Fg, Ink::Bg, Ink::Fg));
+        let (title, sender) = Sheet::printing_inks(list, 0, row, false, None, None);
+        assert_eq!((title, sender, Sheet::envelope_ink(list, false, None, title)),
+            (list.title_ink, list.from_ink, list.title_ink));
+
+        let mut custom = style;
+        custom.palette.on_select = crate::palette::rgb(0x102030);
+        let custom_sheet = self::sheet(&custom);
+        let custom_list = custom_sheet.row_material(&custom.mailbox.list, None);
+        assert_eq!(custom_list.selected_printing, None);
+        let (title, sender) = Sheet::printing_inks(&custom_list, 0, custom_list.row, true, None, None);
+        assert_eq!((title, sender, Sheet::envelope_ink(&custom_list, true, None, title)),
+            (Ink::OnSelect, Ink::OnSelect, Ink::OnSelect));
+        assert_eq!(title.of(&custom.palette), custom.palette.on_select);
+
+        // Values published by home/themes/neokitsch/palettes.nix. Its
+        // derived panel differs from the crate's standalone bloom.
+        let published = crate::theme::Theme::parse(r##"
+            era = "neokitsch"
+            variant = "reference"
+            [colors]
+            bg = "#0a0a0a"
+            panel = "#16161f"
+            border = "#916424"
+            dim = "#8a7048"
+            fg = "#e7c686"
+            alert = "#fcc474"
+            tape = "#e3af5f"
+            banner = "#d3b279"
+            onBanner = "#3a2410"
+            bevel = "#c69a55"
+            shade = "#5e3414"
+            ornament = "#634427"
+            inset = "#2c1c14"
+        "##).unwrap();
+        let reference = crate::style::Style::from_theme(&published);
+        assert!(reference.mailbox_reference_palette());
+        assert_eq!(reference.mailbox.list.selected_printing, Some(inks));
+        let reference_sheet = self::sheet(&reference);
+        assert_eq!(reference_sheet.row_material(&reference.mailbox.list, None).selected_printing, Some(inks));
+        let mut variant = published.clone();
+        variant.variant = "bleach".into();
+        assert_eq!(crate::style::Style::from_theme(&variant).mailbox.list.selected_printing, None);
+        let mut changed_role = reference;
+        changed_role.palette.dim = crate::palette::rgb(0x554433);
+        assert!(!changed_role.mailbox_reference_palette());
+        assert_eq!(self::sheet(&changed_role).row_material(&changed_role.mailbox.list, None).selected_printing, None);
+    }
+
+    #[test]
     fn unread_vectors_share_row_contrast_and_motion_alpha() {
         let style = crate::style::Era::Neomil.style();
         let list = &style.mailbox.list;
@@ -577,6 +695,32 @@ mod interaction_tests {
     }
 
     #[test]
+    fn selected_typography_follows_selection_and_retains_row_fallback() {
+        let mut list = crate::style::Era::Kitsch.style().mailbox.list;
+        for row in 0..list.rows.len() {
+            let idle = list.row_type_at(row, false).unwrap();
+            let selected = list.row_type_at(row, true).unwrap();
+            assert!(idle.from.bold && !idle.from.semibold);
+            assert!(selected.from.semibold && !selected.from.bold);
+            assert_eq!((idle.from.x, idle.from.y, idle.from.size),
+                (selected.from.x, selected.from.y, selected.from.size));
+            assert_eq!(idle.title, selected.title);
+        }
+        list.selected_row_type = None;
+        for row in 0..=list.rows.len() {
+            assert_eq!(list.row_type_at(row, true), list.row_type_at(row, false));
+        }
+        for era in [crate::style::Era::Entropism, crate::style::Era::Neokitsch,
+            crate::style::Era::Neomil] {
+            let list = era.style().mailbox.list;
+            assert!(list.selected_row_type.is_none());
+            for row in 0..list.rows.len() {
+                assert_eq!(list.row_type_at(row, true), list.row_type_at(row, false));
+            }
+        }
+    }
+
+    #[test]
     fn measured_sender_position_controls_fill_contrast_without_overriding_feedback() {
         use crate::style::MailRowType;
         let mut list = crate::style::Era::Kitsch.style().mailbox.list;
@@ -588,6 +732,7 @@ mod interaction_tests {
                 from: Run::new(0.0, 100.0, 16.0, Ink::Bg) },
         ];
         list.row_type = ROW_TYPE;
+        list.selected_row_type = None;
         let row = list.row;
         assert_eq!(Sheet::printing_inks(&list, 0, row, true, None, None), (Ink::Mid, Ink::Mid));
         assert_eq!(Sheet::printing_inks(&list, 1, row, true, None, None), (Ink::Mid, Ink::Select));
@@ -708,8 +853,8 @@ mod interaction_tests {
             assert_eq!((dressed.row, dressed.sel, dressed.row_trim, dressed.sel_trim),
                 (list.row, list.sel, list.row_trim, list.sel_trim));
             assert_eq!(dressed.rows, list.rows);
-            assert_eq!((dressed.glyph_x, dressed.glyph_dy, dressed.glyph_w, dressed.new_pill, dressed.icons),
-                (list.glyph_x, list.glyph_dy, list.glyph_w, list.new_pill, list.icons));
+            assert_eq!((dressed.glyph_x, dressed.glyph_dy, dressed.glyph_offsets, dressed.glyph_w, dressed.new_pill, dressed.icons),
+                (list.glyph_x, list.glyph_dy, list.glyph_offsets, list.glyph_w, list.new_pill, list.icons));
             pointer.event(&Event::Window(iced::window::Event::Unfocused), None);
             assert!(sheet.row_coat(target, pointer.interaction(list.rows)).is_none());
             assert_eq!(sheet.row_material(list, None), *list);
@@ -1072,6 +1217,20 @@ fn cased(content: &str, upper: bool) -> String {
     }
 }
 
+/// Visit the trace's explicit lines at their canvas baselines. An
+/// overridden paragraph start does not alter the pitch of later ones.
+fn body_lines(panel: &MailPanel, mut emit: impl FnMut(&str, f32)) {
+    let mut pitched_y = panel.body.y;
+    for (index, paragraph) in panel.paragraphs.iter().enumerate() {
+        let offset = panel.paragraph_baselines.get(index).map(|start| start - pitched_y).unwrap_or(0.0);
+        for line in *paragraph {
+            emit(line, pitched_y + offset);
+            pitched_y += panel.line;
+        }
+        pitched_y += panel.para - panel.line;
+    }
+}
+
 impl Sheet<'_> {
     /// Region A: the list frame, its rows, their glyphs and their text.
     fn row_coat(&self, i: usize, interaction: Option<(usize, bool)>) -> Option<crate::style::MailRowCoat> {
@@ -1085,6 +1244,11 @@ impl Sheet<'_> {
 
     fn row_material(&self, list: &MailList, coat: Option<crate::style::MailRowCoat>) -> MailList {
         let mut dressed = *list;
+        // Source-sampled marks belong to the reference palette. A custom
+        // theme, including a direct palette edit, keeps its OnSelect role.
+        if !self.style.mailbox_reference_palette() {
+            dressed.selected_printing = None;
+        }
         if let Some(c) = coat {
             if let Some(fill) = c.fill {
                 dressed.row_fill = Some(fill);
@@ -1274,17 +1438,26 @@ impl Sheet<'_> {
     /// printing. A sender outside the selected fill keeps bright ink.
     fn printing_inks(list: &MailList, index: usize, row: crate::style::Frame, selected: bool, printing: Option<Ink>, sender: Option<Ink>) -> (Ink, Ink) {
         let shift = row.y - list.row.y - list.selected as f32 * list.pitch;
-        let title = printing.unwrap_or(if selected { list.selected_ink } else { list.title_ink });
+        let title = printing.unwrap_or(if selected {
+            list.selected_printing.map_or(list.selected_ink, |inks| inks.title)
+        } else { list.title_ink });
         // Kitsch's bar ends above its sender line, so contrast follows
         // the actual fill geometry rather than the selected index alone.
-        let from_dy = list.row_type.get(index).map_or(list.from_dy, |t| t.from.y);
+        let from_dy = list.row_type_at(index, selected).map_or(list.from_dy, |t| t.from.y);
         let on_fill = selected && row.y + from_dy <= list.sel.y + shift + list.sel.h;
         let from = sender.or(printing).unwrap_or(match (selected, on_fill) {
-            (true, true) => list.selected_ink,
+            (true, true) => list.selected_printing.map_or(list.selected_ink, |inks| inks.sender),
             (true, false) => Ink::Select,
             _ => list.from_ink,
         });
         (title, from)
+    }
+
+    fn envelope_ink(list: &MailList, selected: bool, printing: Option<Ink>, title_ink: Ink) -> Ink {
+        printing.unwrap_or_else(|| {
+            if selected { list.selected_printing.map_or(title_ink, |inks| inks.envelope) }
+            else { title_ink }
+        })
     }
 
     /// One row's printing: the envelope, the subject, the sender and
@@ -1293,24 +1466,26 @@ impl Sheet<'_> {
     fn printing(&self, frame: &mut canvas::Frame, scale: Scale, list: &MailList, index: usize, mail: &crate::style::Mail, row: crate::style::Frame, selected: bool, printing: Option<Ink>, sender: Option<Ink>) {
         let s = self.paint();
         let (title_ink, from_ink) = Self::printing_inks(list, index, row, selected, printing, sender);
+        let envelope_ink = Self::envelope_ink(list, selected, printing, title_ink);
+        let glyph_y = row.y + list.glyph_dy + list.glyph_offsets.get(index).copied().unwrap_or(0.0);
 
         let art = list.envelope.map(|art| if mail.unread { art.open } else { art.normal })
             .filter(|art| !art.is_empty());
         if let Some(art) = art {
             frame.with_save(|frame| {
-                let origin = scale.point(list.glyph_x, row.y + list.glyph_dy);
+                let origin = scale.point(list.glyph_x, glyph_y);
                 frame.translate(iced::Vector::new(origin.x, origin.y));
-                pieces(frame, scale, Paint { ink_override: Some(title_ink), ..s }, art);
+                pieces(frame, scale, Paint { ink_override: Some(envelope_ink), ..s }, art);
             });
         } else {
             envelope(
                 frame,
                 scale,
                 list.glyph_x,
-                row.y + list.glyph_dy,
+                glyph_y,
                 list.glyph_w,
                 mail.unread,
-                ink(s, title_ink),
+                ink(s, envelope_ink),
                 1.2,
             );
         }
@@ -1324,7 +1499,7 @@ impl Sheet<'_> {
                 title_ink,
             )
         };
-        if let Some(t) = list.row_type.get(index) {
+        if let Some(t) = list.row_type_at(index, selected) {
             title = Run { y: row.y + t.title.y, ink: title_ink, ..t.title };
         }
         label(
@@ -1356,7 +1531,7 @@ impl Sheet<'_> {
             )
             .right(),
         };
-        if let Some(t) = list.row_type.get(index) {
+        if let Some(t) = list.row_type_at(index, selected) {
             at = Run { y: row.y + t.from.y, ink: from_ink, ..t.from };
         }
         label(frame, scale, s, at, ink(s, from_ink), &sender);
@@ -1474,21 +1649,9 @@ impl Sheet<'_> {
         }
 
         // One run per line the trace sets; nothing is wrapped here.
-        let mut y = panel.body.y;
-        for para in panel.paragraphs {
-            for line in *para {
-                label(
-                    frame,
-                    scale,
-                    s,
-                    Run { y, ..panel.body },
-                    ink(s, panel.body.ink),
-                    line,
-                );
-                y += panel.line;
-            }
-            y += panel.para - panel.line;
-        }
+        body_lines(panel, |line, y| {
+            label(frame, scale, s, Run { y, ..panel.body }, ink(s, panel.body.ink), line);
+        });
     }
 
     /// The panel's heading and sender line: [`MailPart::Title`], drawn
@@ -1679,16 +1842,17 @@ impl Sheet<'_> {
                     b.caption_text,
                 );
             }
-            let role = if selected { Ink::OnSelect } else { b.label.ink };
+            let at_label = b.label_runs.get(i).copied().unwrap_or(b.label);
+            let role = if selected { Ink::OnSelect } else { at_label.ink };
             label(
                 frame,
                 scale,
                 s,
                 Run {
-                    x: at.x + b.label.x,
-                    y: at.y + b.label.y,
+                    x: at.x + at_label.x,
+                    y: at.y + at_label.y,
                     ink: role,
-                    ..b.label
+                    ..at_label
                 },
                 ink(s, role),
                 b.labels.get(i).copied().unwrap_or(""),

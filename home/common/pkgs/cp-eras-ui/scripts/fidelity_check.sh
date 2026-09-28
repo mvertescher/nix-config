@@ -309,12 +309,26 @@ for era in "${selected_eras[@]}"; do
         echo "FAIL $era/$screen: rsvg-convert errored"; overall_fail=1; continue; }
       echo "--- G1i $era/$screen: $(basename "$g1svg") vs source, as shape inventories ---"
       "$python_bin" "$here/extract_spec.py" "$src"    -o "/tmp/spec-$era-$screen-src.json" || { overall_fail=1; continue; }
-      "$python_bin" "$here/extract_spec.py" "$render" -o "/tmp/spec-$era-$screen-svg.json" || { overall_fail=1; continue; }
       # Rotated / translucent design languages (kitsch's fans, neokitsch's
       # cascades) fragment unstably under the axis-aligned templates, so
-      # their verdict comes from ink-family placement instead.
+      # their verdict comes from ink-family placement instead. Measure both
+      # sides against the source's palette: independent k-means can spend
+      # the candidate's eight bins on a stronger ground gradient and merge
+      # two source inks. Shape gates keep independent quantization because
+      # fixed bins can fragment their thin rules.
       gate="shapes"
-      case "$era" in kitsch|neokitsch) gate="inks" ;; esac
+      case "$era" in
+        kitsch|neokitsch)
+          gate="inks"
+          "$python_bin" "$here/extract_spec.py" "$render" \
+            --palette-from "/tmp/spec-$era-$screen-src.json" \
+            -o "/tmp/spec-$era-$screen-svg.json" || { overall_fail=1; continue; }
+          ;;
+        *)
+          "$python_bin" "$here/extract_spec.py" "$render" \
+            -o "/tmp/spec-$era-$screen-svg.json" || { overall_fail=1; continue; }
+          ;;
+      esac
       "$python_bin" "$here/spec_diff.py" --gate "$gate" \
         "/tmp/spec-$era-$screen-src.json" "/tmp/spec-$era-$screen-svg.json" || overall_fail=1
       echo

@@ -1,8 +1,13 @@
-## Current remaining work (2026-09-21)
+## Current remaining work (2026-09-28)
+
+The [completion campaign](todo/completion.md) tracks the active lanes and
+integrated verification for the request to work through all open items.
 
 The linked workstream records preserve the implementation history. Earlier
 "still open" lists are superseded by later completion entries, including
 the five-task feedback/native-control/extractor batch committed in `de56b25`.
+The earlier 82-file correction batch landed in `79c1a02`; its dated
+"staged" validation notes describe the state before that commit.
 
 - **All-era reference SVG fidelity:** reviewed all 24 SVGs: 16 against
   source images, four against parent traces, and four as original bars.
@@ -15,15 +20,31 @@ the five-task feedback/native-control/extractor batch committed in `de56b25`.
   [second batch](docs/reference-svg-round2.md) adds Kitsch login contours,
   Neo-kitsch badges/envelopes, Neomil socket spacing/current documentation,
   and further Entropism/Kitsch text fitting. Materials, artwork, exact
-  font shapes, Entropism baseline calibration and Neo-kitsch row placement
-  remain open. Bars are original designs.
-- **Neomil dashboard performance:** staged compositor/cache fixes reduce
+  font shapes and small typography residuals remain open. The
+  [third batch](docs/reference-svg-round3.md) corrects Kitsch's fourth-card
+  cutoff and Neo-kitsch envelope placement; the latter retains the
+  source-supported 60.2px row pitch.
+  The [fourth batch](docs/reference-svg-round4.md) calibrates Entropism's
+  mailbox baseline and corrects Neo-kitsch store tabs and shoulders.
+  The [fifth batch](docs/reference-svg-round5.md) corrects Entropism
+  paragraph/badge geometry, Kitsch lower store-card corners and stale
+  Neo-kitsch component/provenance examples.
+  The [sixth batch](docs/reference-svg-round6.md) separates Neo-kitsch's
+  selected mailbox inks, improves Neomil footer type/printing and closes
+  Kitsch citation cleanup. Fine footer printing and font fitting remain.
+  The [seventh batch](docs/reference-svg-round7.md) verifies primary login
+  artwork/printing, broad grounds and lower image-upload cost; selected
+  inverse weapon detail and remaining materials continue. Bars are original
+  designs. The [eighth batch](docs/reference-svg-round8.md) verifies broad
+  login/store materials, primary store artwork and state/clipping behavior;
+  local typography, certification, veneer flow and fine printing continue.
+- **Neomil dashboard performance:** compositor/cache fixes reduce
   the measured 4K preparation median from 36.61 s to 0.404 s while
   preserving the original image layers. Route returns stay cached.
   See the [performance record](todo/performance.md) for measurements,
   fidelity checks and remaining resize/live-desktop work.
 - **Neomil mailbox fidelity:** the six audited correctness defects are
-  fixed and staged: startup clock, selection heading, source typography,
+  fixed: startup clock, selection heading, source typography,
   materials, cartridges and omitted printing/row shading. Fine printing
   echoes and cartridge edge detail remain. The reference recheck’s lower
   reader corner/side step is corrected; upper-contour refinement remains.
@@ -31,13 +52,19 @@ the five-task feedback/native-control/extractor batch committed in `de56b25`.
   original source material. See the [mailbox record](todo/neomil-mailbox.md)
   for validation and the separate live-desktop follow-up.
 - **Neomil login correctness:** password containment, mouse submission
-  and shared ground are fixed and staged. Source artwork, printing,
-  card materials and reference colors remain. See the
+  and shared ground are fixed. The third batch corrects the extra Iced
+  card color, notch/tab/chamfer and label-tracking drift while preserving
+  custom palettes. Primary avatars/portraits, mask/card/header printing and
+  reference bright inks are now corrected and verified. Inactive card/badge
+  broad fields and frame inks also pass native review; scan modulation and
+  fine printing echoes remain. See the
   [login plan](todo/neomil-login.md) for the measured defects and preserved
   source details.
 - **Neomil store correctness:** startup, selected/cropped bounds, wash
-  contour, open edge, lower chamfer and shared ground are fixed and staged.
-  Card materials, typography, omitted printing and artwork remain,
+  contour, open edge, lower chamfer and shared ground are fixed.
+  Broad card/navigation fields and primary source logo/rifles now pass
+  native/state review. Typography, certification/symbol fitting, deterministic
+  margin CJK printing and fine scan echoes remain.
   Socket occupancy, measured spacing and per-card origins are corrected;
   directional printing echoes remain open. See the
   [store plan](todo/neomil-store.md). Frozen goldens and broad shape gates
@@ -50,6 +77,9 @@ the five-task feedback/native-control/extractor batch committed in `de56b25`.
   not establish detail completeness.
 - **Kitsch dashboard hover:** needs a hub-specific design. Press is done;
   the existing blade trails do not establish an additional hover state.
+- **Kitsch store selected-card hit regions:** fixed with selection-aware
+  bounds through the lower details and footer, retaining card4's cutoff.
+  See the [toolkit record](todo/toolkit.md#current-runtime-follow-ups).
 - **Animated interaction transitions:** need reviewed timing/easing and
   transition rules. Component sheets specify destination drawings only;
   existing boot-in/caret animation timings are not interaction timings.

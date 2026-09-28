@@ -287,7 +287,7 @@ const MICRO_M: [Seg; 5] = [
     Seg::Line(1.0000000, 0.0000000),
     Seg::Line(1.0000000, 1.0000000),
 ];
-pub(super) const MICROTEXT: &[Prim] = &[
+const MICROTEXT_PRIMARY: [Prim; 28] = [
     Prim::Path { x: 0.0, y: 0.0, segs: &placed(MICRO_P, 1220.2237099, 732.6243160, 2.9454497, 4.3127485), close: false, fill: None, stroke: Some(Ink::Fixed(rgb(0xf93333))), width: 0.4167000 },
     Prim::Path { x: 0.0, y: 0.0, segs: &placed(MICRO_R, 1224.3099598, 732.6243160, 2.9454497, 4.3127485), close: false, fill: None, stroke: Some(Ink::Fixed(rgb(0xf93333))), width: 0.4167000 },
     Prim::Path { x: 0.0, y: 0.0, segs: &placed(MICRO_E, 1228.3962097, 732.6243160, 2.9454497, 4.3127485), close: false, fill: None, stroke: Some(Ink::Fixed(rgb(0xf93333))), width: 0.4167000 },
@@ -317,6 +317,89 @@ pub(super) const MICROTEXT: &[Prim] = &[
     Prim::Path { x: 0.0, y: 0.0, segs: &placed(MICRO_L, 1273.4432759, 741.1262866, 2.8555179, 4.1797937), close: false, fill: None, stroke: Some(Ink::Fixed(rgb(0xf93333))), width: 0.4175971 },
     Prim::Path { x: 0.0, y: 0.0, segs: &placed(MICRO_E, 1277.5410286, 741.1262866, 2.8555179, 4.1797937), close: false, fill: None, stroke: Some(Ink::Fixed(rgb(0xf93333))), width: 0.4175971 },
 ];
+// The source's faint copies are fitted independently on each text line.
+// Group masks apply opacity once at letter junctions; all copies stay in
+// the existing bounded software layer and GO HOME opening clip.
+const fn micro_line<const N: usize>(start: usize) -> [Prim; N] {
+    let mut out = [MICROTEXT_PRIMARY[start]; N];
+    let mut i = 0;
+    while i < N { out[i] = MICROTEXT_PRIMARY[start + i]; i += 1; }
+    out
+}
+const MICRO_PRECISION: &[Prim] = &micro_line::<15>(0);
+const MICRO_POLYMER: &[Prim] = &micro_line::<13>(15);
+macro_rules! micro_copy {
+    ($prims:expr, $x:expr, $y:expr, $alpha:expr) => {
+        Prim::At { x: $x, y: $y, prims: &[Prim::Masked {
+            prims: $prims,
+            mask: &[fill_rect(1217.0, 730.0, 72.0, 21.0,
+                Ink::Fixed(iced::Color { a: $alpha, ..rgb(0xffffff) }))],
+        }] }
+    };
+}
+pub(super) const MICROTEXT: &[Prim] = &[
+    micro_copy!(MICRO_PRECISION, 1.444407, 0.439918, 0.002273),
+    micro_copy!(MICRO_PRECISION, 1.937394, 0.439918, 0.009090),
+    micro_copy!(MICRO_PRECISION, 2.430380, 0.439918, 0.013636),
+    micro_copy!(MICRO_PRECISION, 2.923367, 0.439918, 0.009090),
+    micro_copy!(MICRO_PRECISION, 3.416354, 0.439918, 0.002273),
+    micro_copy!(MICRO_PRECISION, 1.444407, 0.946793, 0.009090),
+    micro_copy!(MICRO_PRECISION, 1.937394, 0.946793, 0.036362),
+    micro_copy!(MICRO_PRECISION, 2.430380, 0.946793, 0.054542),
+    micro_copy!(MICRO_PRECISION, 2.923367, 0.946793, 0.036362),
+    micro_copy!(MICRO_PRECISION, 3.416354, 0.946793, 0.009090),
+    micro_copy!(MICRO_PRECISION, 1.444407, 1.453668, 0.013636),
+    micro_copy!(MICRO_PRECISION, 1.937394, 1.453668, 0.054542),
+    micro_copy!(MICRO_PRECISION, 2.430380, 1.453668, 0.081814),
+    micro_copy!(MICRO_PRECISION, 2.923367, 1.453668, 0.054542),
+    micro_copy!(MICRO_PRECISION, 3.416354, 1.453668, 0.013636),
+    micro_copy!(MICRO_PRECISION, 1.444407, 1.960543, 0.009090),
+    micro_copy!(MICRO_PRECISION, 1.937394, 1.960543, 0.036362),
+    micro_copy!(MICRO_PRECISION, 2.430380, 1.960543, 0.054542),
+    micro_copy!(MICRO_PRECISION, 2.923367, 1.960543, 0.036362),
+    micro_copy!(MICRO_PRECISION, 3.416354, 1.960543, 0.009090),
+    micro_copy!(MICRO_PRECISION, 1.444407, 2.467418, 0.002273),
+    micro_copy!(MICRO_PRECISION, 1.937394, 2.467418, 0.009090),
+    micro_copy!(MICRO_PRECISION, 2.430380, 2.467418, 0.013636),
+    micro_copy!(MICRO_PRECISION, 2.923367, 2.467418, 0.009090),
+    micro_copy!(MICRO_PRECISION, 3.416354, 2.467418, 0.002273),
+    micro_copy!(MICRO_PRECISION, -0.416667, 0.000000, 0.181299),
+    micro_copy!(MICRO_PRECISION, 0.416667, 0.000000, 0.181299),
+    micro_copy!(MICRO_PRECISION, 0.000000, -0.416667, 0.296318),
+    micro_copy!(MICRO_PRECISION, 0.000000, 0.416667, 0.296318),
+    Prim::At { x: 0.0, y: 0.0, prims: MICRO_PRECISION },
+    micro_copy!(MICRO_POLYMER, 1.695197, 0.494538, 0.002580),
+    micro_copy!(MICRO_POLYMER, 2.361151, 0.494538, 0.010321),
+    micro_copy!(MICRO_POLYMER, 3.027105, 0.494538, 0.015482),
+    micro_copy!(MICRO_POLYMER, 3.693059, 0.494538, 0.010321),
+    micro_copy!(MICRO_POLYMER, 4.359012, 0.494538, 0.002580),
+    micro_copy!(MICRO_POLYMER, 1.695197, 0.965914, 0.010321),
+    micro_copy!(MICRO_POLYMER, 2.361151, 0.965914, 0.041284),
+    micro_copy!(MICRO_POLYMER, 3.027105, 0.965914, 0.061926),
+    micro_copy!(MICRO_POLYMER, 3.693059, 0.965914, 0.041284),
+    micro_copy!(MICRO_POLYMER, 4.359012, 0.965914, 0.010321),
+    micro_copy!(MICRO_POLYMER, 1.695197, 1.437290, 0.015482),
+    micro_copy!(MICRO_POLYMER, 2.361151, 1.437290, 0.061926),
+    micro_copy!(MICRO_POLYMER, 3.027105, 1.437290, 0.092889),
+    micro_copy!(MICRO_POLYMER, 3.693059, 1.437290, 0.061926),
+    micro_copy!(MICRO_POLYMER, 4.359012, 1.437290, 0.015482),
+    micro_copy!(MICRO_POLYMER, 1.695197, 1.908666, 0.010321),
+    micro_copy!(MICRO_POLYMER, 2.361151, 1.908666, 0.041284),
+    micro_copy!(MICRO_POLYMER, 3.027105, 1.908666, 0.061926),
+    micro_copy!(MICRO_POLYMER, 3.693059, 1.908666, 0.041284),
+    micro_copy!(MICRO_POLYMER, 4.359012, 1.908666, 0.010321),
+    micro_copy!(MICRO_POLYMER, 1.695197, 2.380042, 0.002580),
+    micro_copy!(MICRO_POLYMER, 2.361151, 2.380042, 0.010321),
+    micro_copy!(MICRO_POLYMER, 3.027105, 2.380042, 0.015482),
+    micro_copy!(MICRO_POLYMER, 3.693059, 2.380042, 0.010321),
+    micro_copy!(MICRO_POLYMER, 4.359012, 2.380042, 0.002580),
+    micro_copy!(MICRO_POLYMER, -0.416667, 0.000000, 0.184115),
+    micro_copy!(MICRO_POLYMER, 0.416667, 0.000000, 0.184115),
+    micro_copy!(MICRO_POLYMER, 0.000000, -0.416667, 0.324727),
+    micro_copy!(MICRO_POLYMER, 0.000000, 0.416667, 0.324727),
+    Prim::At { x: 0.0, y: 0.0, prims: MICRO_POLYMER },
+];
+
 const HEADING_E: [Seg; 26] = [
     Seg::Move(8.5134563, 0.0000000),
     Seg::Line(1.7727778, 0.0000000),

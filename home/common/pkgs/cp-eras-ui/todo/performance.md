@@ -70,7 +70,7 @@ from the cache payload and live hardware-GPU memory usage.
 - [ ] **Live desktop verification remains separate.** Check actual
   hardware-GPU first presentation, resize and navigation when authorized
   to launch the app. Headless draw timing does not close this item.
-- [ ] **Profile remaining image upload/presentation work.** The optimized
+- [x] **Profile remaining image upload/presentation work.** The optimized
   headless 4K app still spends about 1.60 s between its first foreground
   callback and the next backdrop callback, outside the measured CPU
   compositor. Sampled software-GPU process peak remains 3.60 GiB. Locate
@@ -139,3 +139,28 @@ and the later rendering interval exceed its 360 ms duration. Both runs
 become CPU-idle. These callback times exclude upload/presentation. The
 software-GPU 4K process settles at 1.24 GiB RSS, so the compositor's peak
 memory reduction does not imply an equivalent full-application reduction.
+
+
+## Empty-band upload investigation (2026-09-27, verified)
+
+A CPU profile identified row copies in Iced's atlas upload path after
+compositing, followed by software-renderer work. The cache now omits only
+all-zero RGBA bands, preserving every nonempty band's geometry, pixels,
+filtering and original material-layer ordering. At 4K this reduces retained
+payload from 253.1 to 82.4 MiB (256 to 83 bands). Three serialized runs give
+a median post-foreground callback interval of 1.817→0.511 s and process
+peak RSS 3723→988 MiB. The first CPU backdrop callback changes from 491 to 527 ms;
+scanning for empty bands has a small cost. These are headless software-GPU
+measurements, not live presentation or GPU frame rates.
+
+Native/fractional rest and opening comparisons are pixel-identical. A
+three-pane fractional interaction preview has one reproducible pixel
+whose red channel differs by one level; Astra review accepted it as
+negligible quantization, with the cause not proven. A new 4K size still
+costs 512 ms, but returning to the old size is now 0.0049 ms because both sizes
+fit in the unchanged cache budget. Continuous resize and live hardware
+verification remain separate. See [upload measurements](../docs/neomil/image-upload.md)
+for the complete method, ranges and limitations. The integrated H snapshot
+passes 263 Rust tests and all 22 repository checks, including 27 visual
+cases at 100.000% on their first attempt. Live hardware presentation and
+continuous resize are not covered by that checkpoint.

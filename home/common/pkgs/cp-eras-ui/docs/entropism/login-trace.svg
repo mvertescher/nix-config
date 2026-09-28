@@ -76,10 +76,13 @@
                      The glyph substitute preserves the thin arms;
                      the source font and faint printing remain unfitted. -->
   <defs>
-    <radialGradient id="lift" cx="0.45" cy="0.4" r="0.8">
-      <stop offset="0"   stop-color="#1a1810"/>
-      <stop offset="0.7" stop-color="#141107"/>
-      <stop offset="1"   stop-color="#0f0a04"/>
+    <radialGradient id="lift" gradientUnits="userSpaceOnUse" cx="950" cy="-139" r="1172"
+                    gradientTransform="translate(0 -139) scale(1 0.654437) translate(0 139)">
+      <stop offset="0"    stop-color="#1a150d"/>
+      <stop offset="0.25" stop-color="#1a1a14"/>
+      <stop offset="0.5"  stop-color="#1c1a12"/>
+      <stop offset="0.75" stop-color="#0f0b04"/>
+      <stop offset="1"    stop-color="#0d0804"/>
     </radialGradient>
   </defs>
 

@@ -267,7 +267,7 @@ impl Login {
             ground(&self.style),
             canvas(Backdrop {
                 style: self.style,
-                prims: self.style.access.backdrop,
+                prims: self.style.access_backdrop(),
                 stretch: true,
                 at: self.now.saturating_duration_since(motion::origin()),
             })
@@ -322,7 +322,7 @@ impl Shown {
     /// The run the live field carries: the trace's mock until the
     /// keyboard is touched, then the typed count in masks. Without its
     /// tail in the dark half of the blink when the tail is the caret
-    /// (neomil's `__`).
+    /// when a design uses a text tail as its caret.
     fn run(&self, entry: &Entry) -> String {
         let run = if self.awake {
             let mut run: String = std::iter::repeat(entry.mask).take(self.typed).collect();
@@ -435,14 +435,17 @@ fn plate_path(g: Grid, plate: &Plate) -> canvas::Path {
             p.move_to(g.at(path.start.0, path.start.1));
             for step in path.steps {
                 match *step {
-                    Seg::Move(x, y) => { p.close(); p.move_to(g.at(x, y)); }
+                    Seg::Move(x, y) => {
+                        if path.close { p.close(); }
+                        p.move_to(g.at(x, y));
+                    }
                     Seg::Line(x, y) => p.line_to(g.at(x, y)),
                     Seg::Quad { cx, cy, x, y } => p.quadratic_curve_to(g.at(cx, cy), g.at(x, y)),
                     Seg::Cubic { c1x, c1y, c2x, c2y, x, y } =>
                         p.bezier_curve_to(g.at(c1x, c1y), g.at(c2x, c2y), g.at(x, y)),
                 }
             }
-            p.close();
+            if path.close { p.close(); }
             return;
         }
         for (i, point) in plate_vertices(plate).iter().enumerate() {
@@ -541,7 +544,7 @@ fn field_shown(g: Grid, slot: &Slot, shown: Shown) -> Shown {
         if width <= previous_width { break; }
         previous_width = width;
         let text_right = entry.rest.x + run_extent(g, &entry.rest, &trial.run(&entry));
-        let caret_right = slot.caret.filter(|_| entry.caret == Caret::Trails)
+        let caret_right = slot.caret.filter(|_| matches!(entry.caret, Caret::Trails | Caret::AfterMasks))
             .map_or(text_right, |caret| caret.at.x + width + caret.at.w);
         if text_right.max(caret_right) > right { break; }
         visible.typed = count;
@@ -555,15 +558,44 @@ struct Pen<'a> {
     style: &'a Style,
 }
 
+fn access_ink(style: &Style, ink: Ink) -> Color {
+    if ink == Ink::Fg && style.access_reference_palette() {
+        if let Some(reference) = style.access.reference_fg {
+            return reference;
+        }
+    }
+    ink.of(&style.palette)
+}
+
+fn plate_fill(style: &Style, plate: &Plate) -> Option<Color> {
+    let fill = plate.fill?;
+    if let Some(reference) = plate.reference_fill {
+        if style.access_reference_palette() {
+            return Some(reference);
+        }
+    }
+    Some(access_ink(style, fill))
+}
+
+fn plate_stroke(style: &Style, plate: &Plate) -> Option<(Color, f32)> {
+    let stroke = plate.stroke?;
+    if style.access_reference_palette() {
+        if let Some(reference) = plate.reference_stroke {
+            return Some(reference);
+        }
+    }
+    Some((access_ink(style, stroke), plate.weight))
+}
+
 impl Pen<'_> {
     fn ink(&self, ink: Ink) -> Color {
-        ink.of(&self.style.palette)
+        access_ink(self.style, ink)
     }
 
     fn plate(&mut self, plate: &Plate) {
         let path = plate_path(self.grid, plate);
-        match (plate.fill, plate.foot) {
-            (Some(fill), None) => self.frame.fill(&path, self.ink(fill)),
+        match (plate_fill(&self.style, plate), plate.foot) {
+            (Some(fill), None) => self.frame.fill(&path, fill),
             (Some(fill), Some(foot)) => {
                 // Neomil's unselected cards are translucent over the
                 // screen's glow and so grade darker downward; the trace
@@ -571,18 +603,18 @@ impl Pen<'_> {
                 let top = self.grid.at(plate.at.x, plate.at.y);
                 let bottom = self.grid.at(plate.at.x, plate.at.y + plate.at.h);
                 let gradient = canvas::gradient::Linear::new(top, bottom)
-                    .add_stop(0.0, self.ink(fill))
+                    .add_stop(0.0, fill)
                     .add_stop(1.0, self.ink(foot));
                 self.frame.fill(&path, gradient);
             }
             (None, _) => {}
         }
-        if let Some(stroke) = plate.stroke {
+        if let Some((color, weight)) = plate_stroke(self.style, plate) {
             self.frame.stroke(
                 &path,
                 canvas::Stroke::default()
-                    .with_color(self.ink(stroke))
-                    .with_width(self.grid.span(plate.weight)),
+                    .with_color(color)
+                    .with_width(self.grid.span(weight)),
             );
         }
     }
@@ -838,27 +870,6 @@ impl canvas::Program<Message, Style> for Art {
 
 // -------------------------------------------------------------- masthead
 
-/// The neomil dossier's protocol block: four rows of barcode dashes
-/// over the code tape. Constants of one drawing, so they live here and
-/// not in the era table -- the same division [`Masthead`] documents.
-const PROTOCOL_DASHES: [(f32, f32, f32); 8] = [
-    (257.0, 107.0, 18.0),
-    (279.0, 107.0, 21.0),
-    (257.0, 111.0, 26.0),
-    (287.0, 111.0, 13.0),
-    (257.0, 115.0, 12.0),
-    (273.0, 115.0, 27.0),
-    (257.0, 119.0, 22.0),
-    (283.0, 119.0, 17.0),
-];
-const TAPE_TICKS: [(f32, f32); 5] = [
-    (261.0, 1.5),
-    (264.0, 1.0),
-    (267.0, 2.0),
-    (271.0, 1.0),
-    (274.0, 1.5),
-];
-
 fn masthead(pen: &mut Pen, masthead: &Masthead) {
     match masthead {
         Masthead::Strip {
@@ -881,34 +892,15 @@ fn masthead(pen: &mut Pen, masthead: &Masthead) {
         }
         Masthead::Dossier {
             badges,
+            art,
             rule,
             labels,
         } => {
             for badge in *badges {
                 pen.plate(badge);
             }
-            for &(x, y, w) in &PROTOCOL_DASHES {
-                pen.box_at(Plot::new(x, y, w, 2.5), Ink::Dim);
-            }
-            // The code tape under the block: a filled label with its
-            // leading corner nicked off, carrying dark ticks and a
-            // registration string.
-            pen.poly(
-                &[
-                    (259.0, 151.0),
-                    (376.0, 151.0),
-                    (376.0, 160.0),
-                    (259.0, 160.0),
-                    (257.0, 158.0),
-                    (257.0, 153.0),
-                ],
-                Ink::Fg,
-            );
-            for &(x, w) in &TAPE_TICKS {
-                pen.box_at(
-                    Plot::new(x, 153.0, w, 5.0),
-                    Ink::Fixed(crate::eras::neomil::ON_CARD),
-                );
+            for plate in *art {
+                pen.plate(plate);
             }
             pen.plate(rule);
             pen.legends(labels);
@@ -917,6 +909,7 @@ fn masthead(pen: &mut Pen, masthead: &Masthead) {
         Masthead::Logotype {
             cell,
             divider,
+            art,
             labels,
         } => {
             pen.plate(cell);
@@ -928,6 +921,9 @@ fn masthead(pen: &mut Pen, masthead: &Masthead) {
                 cell.stroke.unwrap_or(Ink::Border),
                 cell.weight,
             );
+            for plate in *art {
+                pen.plate(plate);
+            }
             pen.legends(labels);
         }
     }
@@ -935,50 +931,41 @@ fn masthead(pen: &mut Pen, masthead: &Masthead) {
 
 // ------------------------------------------------------------------ slot
 
-/// The tab every neomil avatar box wears on its top-left corner:
-/// 46 wide, 7 tall, with a short diagonal off its trailing end.
-const TAB: (f32, f32, f32) = (46.0, 7.0, 6.0);
-
 /// One slot. `shown` is `Some` on the live slot the keyboard is
 /// writing into, and says what its field carries.
+fn slot_body<'a>(style: &Style, slot: &'a Slot) -> Option<&'a Plate> {
+    if style.access_reference_palette() {
+        slot.reference_body.as_ref().or(slot.body.as_ref())
+    } else {
+        slot.body.as_ref()
+    }
+}
+
 fn draw_slot(pen: &mut Pen, slot: &Slot, shown: Option<&Shown>, coat: Option<Coat>) {
-    if let Some(body) = &slot.body {
+    if let Some(body) = slot_body(pen.style, slot) {
         pen.plate(body);
     }
     if let Some(foot) = &slot.foot {
         pen.plate(foot);
     }
     if let Some(notch) = &slot.notch {
-        // A dark bite out of the card's leading edge, chamfered top and
-        // bottom, with the era's hairline rail standing in it.
-        let Plot { x, y, w, h } = *notch;
-        pen.poly(
-            &[
-                (x, y),
-                (x + w, y + 10.0),
-                (x + w, y + h - 11.0),
-                (x, y + h),
-            ],
-            Ink::Bg,
-        );
-        pen.box_at(Plot::new(x, y, 1.5, h), Ink::Dim);
+        pen.plate(notch);
+    }
+    if let Some(rail) = &slot.notch_rail {
+        pen.plate(rail);
+    }
+    if let Some(tab) = &slot.mark_tab {
+        pen.plate(tab);
     }
     if let Some(mark) = &slot.mark {
-        if matches!(slot.emblem, Emblem::Hexagon | Emblem::Portrait) {
-            let (tw, th, cut) = TAB;
-            let (x, y) = (mark.at.x, mark.at.y);
-            pen.poly(
-                &[
-                    (x, y - th),
-                    (x + tw, y - th),
-                    (x + tw + cut, y),
-                    (x, y),
-                ],
-                mark.fill.unwrap_or(Ink::Fg),
-            );
-        }
         pen.plate(mark);
-        emblem(pen, slot.emblem, mark.at);
+        if slot.emblem_art.is_empty() {
+            emblem(pen, slot.emblem, mark.at);
+        } else {
+            for plate in slot.emblem_art {
+                pen.plate(plate);
+            }
+        }
     }
     if let Some(name) = &slot.name {
         pen.legend(name);
@@ -1029,35 +1016,41 @@ fn draw_slot(pen: &mut Pen, slot: &Slot, shown: Option<&Shown>, coat: Option<Coa
 fn coated_action(mut action: Plate, coat: Option<Coat>) -> Plate {
     if let Some(coat) = coat {
         action.fill = (coat.fill != Ink::None).then_some(coat.fill);
+        action.reference_fill = None;
         action.foot = None;
         action.stroke = (coat.edge != Ink::None).then_some(coat.edge);
+        action.reference_stroke = None;
         action.weight = coat.weight;
     }
     action
 }
 
 fn draw_entry(pen: &mut Pen, slot: &Slot, shown: Option<&Shown>) {
-    // The run in the field, and how far a trailing caret has moved.
-    let mut carried = 0.0;
     if let Some(entry) = &slot.entry {
         match shown {
-            Some(shown) => {
-                pen.legend_text(&entry.rest, &shown.run(entry));
-                if shown.awake && entry.caret == Caret::Trails {
-                    carried = run_extent(pen.grid, &entry.rest, &shown.masks(entry));
-                }
-            }
+            Some(shown) => pen.legend_text(&entry.rest, &shown.run(entry)),
             None => pen.legend(&entry.rest),
         }
     }
-    // The caret plate, unless it is what blinks and this is the dark
-    // half.
-    let dark = shown.zip(slot.entry.as_ref()).is_some_and(|(s, e)| e.blink == Blink::Caret && !s.lit);
-    if let Some(caret) = slot.caret.filter(|_| !dark) {
-        let mut caret = caret;
-        caret.at.x += carried;
+    if let Some(caret) = entry_caret(pen.grid, slot, shown) {
         pen.plate(&caret);
     }
+}
+
+/// Resolve the measured caret for both the untouched fixture and live
+/// input. Its travel depends on masks, never on the secret's contents.
+fn entry_caret(grid: Grid, slot: &Slot, shown: Option<&Shown>) -> Option<Plate> {
+    let dark = shown.zip(slot.entry.as_ref()).is_some_and(|(s, e)| e.blink == Blink::Caret && !s.lit);
+    let mut caret = slot.caret.filter(|_| !dark)?;
+    if let Some(entry) = &slot.entry {
+        if let Some(shown) = shown.filter(|s| s.awake && matches!(entry.caret, Caret::Trails | Caret::AfterMasks)) {
+            caret.at.x += run_extent(grid, &entry.rest, &shown.masks(entry));
+        } else if entry.caret == Caret::AfterMasks {
+            let masks = entry.rest.text.strip_suffix(entry.tail).unwrap_or(entry.rest.text);
+            caret.at.x += run_extent(grid, &entry.rest, masks);
+        }
+    }
+    Some(caret)
 }
 
 /// The boxed footnote letter.
@@ -1270,29 +1263,12 @@ const BARS: [(f32, f32); 50] = [
 fn fixture(pen: &mut Pen, fixture: &Fixture) {
     match fixture {
         Fixture::None => {}
-        Fixture::Margins { chips, labels } => {
-            for (i, chip) in chips.iter().enumerate() {
-                // `chip` is the numbered square; the trace's `#chip` origin is
-                // one above it, so its ticks and dot sit at y+2 here.
-                let (x, y) = (chip.x, chip.y);
-                pen.box_at(Plot::new(x - 21.0, y + 2.0, 8.0, 1.5), Ink::Fg);
-                pen.box_at(Plot::new(x - 21.0, y + 6.0, 6.0, 1.5), Ink::Fg);
-                pen.box_at(Plot::new(x - 11.0, y + 2.0, 6.0, 6.0), Ink::Fg);
-                pen.box_at(Plot::new(x, y, chip.w, chip.h), Ink::Fg);
-                // The right margin carries a down-arrow under its chip.
-                if i + 1 == chips.len() {
-                    pen.box_at(Plot::new(x + 7.0, y + 63.0, 2.0, 18.0), Ink::Fg);
-                    pen.poly(
-                        &[
-                            (x + 3.0, y + 79.0),
-                            (x + 13.0, y + 79.0),
-                            (x + 8.0, y + 87.0),
-                        ],
-                        Ink::Fg,
-                    );
-                    pen.box_at(Plot::new(x + 14.0, y + 65.0, 1.5, 4.0), Ink::Dim);
-                    pen.box_at(Plot::new(x + 14.0, y + 72.0, 1.5, 4.0), Ink::Dim);
-                }
+        Fixture::Margins { chips, marks, labels } => {
+            for mark in *marks {
+                pen.plate(mark);
+            }
+            for chip in *chips {
+                pen.box_at(*chip, Ink::Fg);
             }
             pen.legends(labels);
         }
@@ -1526,24 +1502,161 @@ mod tests {
     use super::*;
     use crate::style::{Era, Fixture, Masthead};
 
+    #[test]
+    fn ornamental_strokes_stay_open_without_changing_closed_surfaces() {
+        use canvas::path::lyon_path::Event;
+        const LETTERS: &[Seg] = &[
+            Seg::Line(1.0, 9.0), Seg::Line(5.0, 9.0),
+            Seg::Move(7.0, 1.0), Seg::Line(9.0, 9.0), Seg::Line(11.0, 1.0),
+        ];
+        let plate = Plate::outlined(Plot::new(1.0, 1.0, 10.0, 8.0), Ink::Fg, 0.625);
+        let endings = |plate| {
+            let path = plate_path(Grid { sx: 1.0, sy: 1.0 }, &plate);
+            path.raw().iter().filter_map(|event| match event {
+                Event::End { close, .. } => Some(close),
+                _ => None,
+            }).collect::<Vec<_>>()
+        };
+        assert_eq!(endings(plate.open_path((1.0, 1.0), LETTERS)), [false, false]);
+        assert_eq!(endings(plate.outlined_path((1.0, 1.0), LETTERS)), [true, true]);
+        assert_eq!(endings(plate), [true]);
+    }
+
+    #[test]
+    fn source_plate_fill_preserves_custom_palette_roles_and_feedback() {
+        use crate::palette::rgb;
+        let style = Era::Neomil.style();
+        let source = rgb(0xf63333);
+        let plate = Plate::filled(Plot::new(0.0, 0.0, 20.0, 20.0), Ink::Fg)
+            .reference_fill(source);
+        assert_eq!(plate_fill(&style, &plate), Some(source));
+
+        let mut custom = style;
+        custom.palette.fg = rgb(0x37c8a0);
+        assert_eq!(plate_fill(&custom, &plate), Some(custom.palette.fg));
+        // A custom palette that retains the reference foreground is still
+        // custom: checking only fg would incorrectly brighten its card.
+        custom = style;
+        custom.palette.dim = rgb(0x123456);
+        assert_eq!(plate_fill(&custom, &plate), Some(style.palette.fg));
+
+        let held = coated_action(plate, Some(Coat::filled(Ink::Select, Ink::OnSelect)));
+        assert_eq!(plate_fill(&style, &held), Some(style.palette.select));
+        let outlined = coated_action(plate, Some(Coat::outlined(Ink::Dim, 1.0, Ink::Fg)));
+        assert_eq!(plate_fill(&style, &outlined), None);
+        assert_eq!(plate_fill(&style, &plate.over(Ink::Dim)), Some(style.palette.dim));
+    }
+
+    #[test]
+    fn source_plate_edges_preserve_custom_weight_and_feedback() {
+        use crate::palette::rgb;
+        let style = Era::Neomil.style();
+        let source = (rgb(0x792a31), 0.75);
+        let plate = Plate::outlined(Plot::new(0.0, 0.0, 20.0, 20.0), Ink::Fg, 1.5)
+            .reference_edge(source.0, source.1);
+        assert_eq!(plate_stroke(&style, &plate), Some(source));
+        let mut custom = style;
+        custom.palette.panel = rgb(0x183638);
+        assert_eq!(plate_stroke(&custom, &plate), Some((custom.palette.fg, 1.5)));
+        custom.palette.fg = rgb(0x37c8a0);
+        assert_eq!(plate_stroke(&custom, &plate), Some((custom.palette.fg, 1.5)));
+
+        let edged = plate.edged(Ink::Dim, 2.0);
+        assert_eq!(plate_stroke(&style, &edged), Some((style.palette.dim, 2.0)));
+        let held = coated_action(plate, Some(Coat::outlined(Ink::Select, 3.0, Ink::Fg)));
+        assert_eq!(plate_stroke(&style, &held), Some((style.palette.select, 3.0)));
+        let filled = coated_action(plate, Some(Coat::filled(Ink::Select, Ink::OnSelect)));
+        assert_eq!(plate_stroke(&style, &filled), None);
+    }
+
+    #[test]
+    fn access_reference_ink_does_not_recolor_custom_themes_or_explicit_plate_fills() {
+        use crate::palette::rgb;
+        let style = Era::Neomil.style();
+        assert_eq!(access_ink(&style, Ink::Fg), rgb(0xf63333));
+        assert_eq!(access_ink(&style, Ink::Dim), style.palette.dim);
+        let plate = Plate::filled(Plot::new(0.0, 0.0, 10.0, 10.0), Ink::Fg)
+            .reference_fill(rgb(0x9c2527));
+        assert_eq!(plate_fill(&style, &plate), Some(rgb(0x9c2527)));
+        let mut custom = style;
+        custom.palette.panel = rgb(0x183638);
+        assert_eq!(access_ink(&custom, Ink::Fg), custom.palette.fg);
+        assert_eq!(plate_fill(&custom, &plate), Some(custom.palette.fg));
+    }
+
+    #[test]
+    fn reference_card_material_retains_frames_and_custom_palette_surfaces() {
+        use crate::palette::rgb;
+        let source = Era::Neomil.style();
+        assert_ne!(source.access_backdrop(), source.access.backdrop);
+        let mut custom = source;
+        custom.palette.panel = rgb(0x183638);
+        assert_eq!(custom.access_backdrop(), source.access.backdrop);
+        for slot in source.access.slots.iter().skip(1) {
+            let body = slot.body.as_ref().expect("inactive card body");
+            let reference = slot_body(&source, slot).expect("source frame");
+            assert!(reference.fill.is_none(), "material below must stay visible");
+            assert_eq!(reference.at, body.at);
+            assert_eq!(reference.path, body.path);
+            assert_eq!(reference.bevel, body.bevel);
+            assert_eq!(reference.step, body.step);
+            assert_eq!(reference.stroke, body.stroke);
+            assert_eq!(reference.weight, body.weight);
+            assert_eq!(slot_body(&custom, slot), Some(body));
+        }
+        for era in [Era::Entropism, Era::Kitsch, Era::Neokitsch] {
+            let style = era.style();
+            assert_eq!(style.access_backdrop(), style.access.backdrop);
+            for slot in style.access.slots {
+                assert_eq!(slot_body(&style, slot), slot.body.as_ref());
+            }
+        }
+    }
+
+    #[test]
+    fn published_entropism_footer_uses_source_fill_and_custom_roles_stay_semantic() {
+        use crate::palette::rgb;
+        let builtin = Era::Entropism.style();
+        let Colophon::Band { plate, .. } = builtin.access.colophon else { panic!("footer band"); };
+        let mut published = builtin;
+        published.palette.panel = rgb(0x181109);
+        for style in [builtin, published] {
+            assert_eq!(plate_fill(&style, &plate), Some(rgb(0x8aac8c)));
+            let mut custom = style;
+            custom.palette.select = rgb(0xe8bf63);
+            assert_eq!(plate_fill(&custom, &plate), Some(custom.palette.select));
+            custom = style;
+            custom.palette.fg = rgb(0xe8bf63);
+            assert_eq!(plate_fill(&custom, &plate), Some(style.palette.select));
+        }
+    }
+
     fn plots(access: &Access) -> Vec<(&'static str, Plot)> {
         let mut out = Vec::new();
         match &access.masthead {
             Masthead::Strip { plate, .. } => out.push(("masthead", plate.at)),
-            Masthead::Dossier { badges, rule, .. } => {
+            Masthead::Dossier { badges, art, rule, .. } => {
                 for badge in *badges {
                     out.push(("badge", badge.at));
                 }
+                out.extend(art.iter().map(|plate| ("dossier art", plate.at)));
                 out.push(("rule", rule.at));
             }
             Masthead::Clock { .. } => {}
-            Masthead::Logotype { cell, .. } => out.push(("header cell", cell.at)),
+            Masthead::Logotype { cell, art, .. } => {
+                out.push(("header cell", cell.at));
+                out.extend(art.iter().map(|plate| ("header art", plate.at)));
+            }
         }
         for slot in access.slots {
             for (name, plate) in [
                 ("body", &slot.body),
+                ("reference body", &slot.reference_body),
                 ("foot", &slot.foot),
+                ("notch", &slot.notch),
+                ("notch rail", &slot.notch_rail),
                 ("mark", &slot.mark),
+                ("mark tab", &slot.mark_tab),
                 ("field", &slot.field),
                 ("caret", &slot.caret),
                 ("action", &slot.action),
@@ -1553,20 +1666,19 @@ mod tests {
                     out.push((name, plate.at));
                 }
             }
-            if let Some(notch) = slot.notch {
-                out.push(("notch", notch));
-            }
             for mark in slot.action_marks {
                 out.push(("action mark", mark.at));
             }
+            out.extend(slot.emblem_art.iter().map(|plate| ("emblem art", plate.at)));
         }
         if let Fixture::Bracket { barcode, .. } = &access.fixture {
             out.push(("barcode", *barcode));
         }
-        if let Fixture::Margins { chips, .. } = &access.fixture {
+        if let Fixture::Margins { chips, marks, .. } = &access.fixture {
             for chip in chips.iter() {
                 out.push(("chip", *chip));
             }
+            out.extend(marks.iter().map(|plate| ("margin mark", plate.at)));
         }
         if let Colophon::Band { plate, .. } = &access.colophon {
             out.push(("footer band", plate.at));
@@ -1691,14 +1803,39 @@ mod tests {
         }
     }
 
+    #[test]
+    fn measured_trailing_caret_preserves_fixture_and_live_input_positions() {
+        let slot = Era::Neomil.style().access.slots[0];
+        let entry = slot.entry.unwrap();
+        assert_eq!(entry.caret, Caret::AfterMasks);
+        assert_eq!(entry.tail, "");
+        let rest = Shown { awake: false, typed: 0, phase: Phase::Idle, lit: true };
+        for size in [Size::new(1600.0, 900.0), Size::new(1537.0, 947.0), Size::new(3840.0, 2160.0)] {
+            let grid = Grid::new(size);
+            let fixture = entry_caret(grid, &slot, Some(&rest)).unwrap();
+            assert_eq!(entry_caret(grid, &slot, None), Some(fixture));
+            assert_eq!(entry_caret(grid, &slot, Some(&Shown { lit: false, ..rest })), None);
+            let ten = Shown { awake: true, typed: 10, ..rest };
+            assert_eq!(entry_caret(grid, &slot, Some(&ten)), Some(fixture));
+            let empty = Shown { typed: 0, ..ten };
+            let empty_mark = entry_caret(grid, &slot, Some(&empty)).unwrap();
+            assert_eq!(empty_mark, slot.caret.unwrap());
+            assert!(fixture.at.x > empty_mark.at.x);
+            assert_eq!(fixture.at.w, empty_mark.at.w);
+            assert_eq!(fixture.at.y, empty_mark.at.y);
+            let dark = Shown { lit: false, ..ten };
+            assert_eq!(entry_caret(grid, &slot, Some(&dark)), None);
+            assert_eq!(dark.run(&entry), ten.run(&entry));
+        }
+    }
 
-    /// The dark half of the blink: neomil loses its `__` (the tail is
-    /// its caret), asleep or awake; kitsch keeps its run whole, its
-    /// caret being a plate; neokitsch has nothing to lose.
+
+    /// Neomil and kitsch blink measured caret plates without changing
+    /// their mask runs; neokitsch has no visible caret.
     #[test]
     fn the_dark_half_hides_what_the_trace_animates() {
         let neomil = Era::Neomil.style().access.slots[0].entry.unwrap();
-        assert_eq!(neomil.blink, Blink::Tail);
+        assert_eq!(neomil.blink, Blink::Caret);
         let dark = Shown {
             awake: false,
             typed: 0,
@@ -1707,7 +1844,7 @@ mod tests {
         };
         assert_eq!(dark.run(&neomil), "**********");
         assert_eq!(Shown { awake: true, typed: 3, ..dark }.run(&neomil), "***");
-        assert_eq!(Shown { lit: true, ..dark }.run(&neomil), "**********  __");
+        assert_eq!(Shown { lit: true, ..dark }.run(&neomil), "**********");
 
         let kitsch = Era::Kitsch.style().access.slots[0].entry.unwrap();
         assert_eq!(kitsch.blink, Blink::Caret);
@@ -1734,14 +1871,14 @@ mod tests {
             phase: Phase::Idle,
             lit: true,
         };
-        assert_eq!(asleep.run(&entry), "**********  __");
+        assert_eq!(asleep.run(&entry), "**********");
         let awake = Shown {
             awake: true,
             typed: 4,
             phase: Phase::Idle,
             lit: true,
         };
-        assert_eq!(awake.run(&entry), "****  __");
+        assert_eq!(awake.run(&entry), "****");
         assert_eq!(awake.masks(&entry), "****");
         let empty = Shown {
             awake: true,
@@ -1749,7 +1886,7 @@ mod tests {
             phase: Phase::Idle,
             lit: true,
         };
-        assert_eq!(empty.run(&entry), "  __");
+        assert_eq!(empty.run(&entry), "");
         assert_eq!(empty.word(&entry), None);
         assert_eq!(
             Shown {
@@ -1876,7 +2013,7 @@ mod tests {
                 let inside = field_interior(&slot.field.unwrap());
                 let right = inside.x + inside.w;
                 assert!(entry.rest.x + run_extent(grid, &entry.rest, &visible.run(&entry)) <= right);
-                if let Some(caret) = slot.caret.filter(|_| entry.caret == Caret::Trails) {
+                if let Some(caret) = slot.caret.filter(|_| matches!(entry.caret, Caret::Trails | Caret::AfterMasks)) {
                     assert!(caret.at.x + run_extent(grid, &entry.rest, &visible.masks(&entry)) + caret.at.w <= right);
                 }
                 let dark = field_shown(grid, slot, Shown { lit: false, ..shown });

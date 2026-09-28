@@ -136,14 +136,13 @@
                #86694b  #39281b (glow)
          ground #0f0b0d (67%) #3b3953 / #5b466c (violet haze) #1a2637 -->
   <defs>
-    <radialGradient id="hazeblue" gradientUnits="userSpaceOnUse"
-        cx="850" cy="-120" r="1000"
-        gradientTransform="rotate(2 850 -120) translate(850 -120) scale(1 0.47) translate(-850 120)">
-      <stop offset="0"    stop-color="#223350" stop-opacity="0"/>
-      <stop offset="0.60" stop-color="#223350" stop-opacity="0"/>
-      <stop offset="0.68" stop-color="#223350" stop-opacity="0.85"/>
-      <stop offset="0.76" stop-color="#1a2c46" stop-opacity="0.80"/>
-      <stop offset="0.84" stop-color="#101d30" stop-opacity="0"/>
+    <!-- Shared four-screen broad-field approximation, fitted to clear
+         native patches; see ground-fit.md. The photo recipe is unknown. -->
+    <radialGradient id="hazeblue" gradientUnits="userSpaceOnUse" cx="765.3" cy="-316.3" r="1188.4" gradientTransform="rotate(10.00 765.3 -316.3) translate(765.3 -316.3) scale(1 0.673177) translate(-765.3 316.3)">
+      <stop offset="0.6" stop-color="#48537d" stop-opacity="0"/>
+      <stop offset="0.68" stop-color="#21364e" stop-opacity="0.85"/>
+      <stop offset="0.76" stop-color="#0d202f" stop-opacity="0.8"/>
+      <stop offset="0.84" stop-color="#0e0d1a" stop-opacity="0"/>
     </radialGradient>
     <!-- The blue is right-weighted: on the left the violet stays on top of
          the shared annulus (source shows only a thin arm there, and none at
@@ -159,26 +158,23 @@
     <mask id="bluemask">
       <rect width="1600" height="900" fill="url(#hazebluefade)"/>
     </mask>
-    <radialGradient id="haze" gradientUnits="userSpaceOnUse"
-        cx="770" cy="-120" r="1000"
-        gradientTransform="rotate(1.3 770 -120) translate(770 -120) scale(1 0.49) translate(-770 120)">
-      <stop offset="0"     stop-color="#574568"/>
-      <stop offset="0.35" stop-color="#574568"/>
-      <stop offset="0.66" stop-color="#3a3853"/>
-      <stop offset="0.85" stop-color="#16121a"/>
-      <stop offset="1"     stop-color="#0e0a0d"/>
+    <radialGradient id="haze" gradientUnits="userSpaceOnUse" cx="712.8" cy="-61.2" r="1015.8" gradientTransform="rotate(1.76 712.8 -61.2) translate(712.8 -61.2) scale(1 0.387476) translate(-712.8 61.2)">
+      <stop offset="0" stop-color="#7a538b"/>
+      <stop offset="0.2" stop-color="#5e4169"/>
+      <stop offset="0.4" stop-color="#524064"/>
+      <stop offset="0.6" stop-color="#3c3a57"/>
+      <stop offset="0.8" stop-color="#131014"/>
+      <stop offset="1" stop-color="#0d0a0d"/>
     </radialGradient>
     <!-- the haze's bright lobe: the top-left quadrant of the photo is
          lit brighter and pinker than the centre (ground (106,76,121) at
          x 300..700 y 0..50 vs (93,68,108) at x 800..1000), and stays
          lit to the left edge; a second, flatter ellipse over the haze
          (2026-09-03) -->
-    <radialGradient id="hazelobe" gradientUnits="userSpaceOnUse"
-        cx="430" cy="-40" r="560"
-        gradientTransform="translate(430 -40) scale(1 0.30) translate(-430 40)">
-      <stop offset="0"    stop-color="#7a5288" stop-opacity="0.85"/>
-      <stop offset="0.45" stop-color="#7a5288" stop-opacity="0.55"/>
-      <stop offset="1"    stop-color="#7a5288" stop-opacity="0"/>
+    <radialGradient id="hazelobe" gradientUnits="userSpaceOnUse" cx="430" cy="-40" r="560" gradientTransform="translate(430 -40) scale(1 0.30) translate(-430 40)">
+      <stop offset="0" stop-color="#7a598a" stop-opacity="0.85"/>
+      <stop offset="0.45" stop-color="#7a598a" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#7a598a" stop-opacity="0"/>
     </radialGradient>
     <!-- boxed section letter: 26x26 rounded plate, folded bottom-right
          corner (the era's mini-SIM motif) -->
@@ -251,7 +247,7 @@
     </clipPath>
   </defs>
 
-  <rect width="1600" height="900" fill="#0e0a0d"/>
+  <rect width="1600" height="900" fill="#0d090c"/>
   <rect width="1600" height="900" fill="url(#haze)"/>
   <rect width="1600" height="300" fill="url(#hazelobe)"/>
   <rect width="1600" height="560" fill="url(#hazeblue)" mask="url(#bluemask)"/>
@@ -318,10 +314,12 @@
   </g>
 
   <!-- ==== the message list ==== -->
-  <!-- seven rows on a 60.2 pitch: a rule at y 309+60.2k (k=0..6,
+  <!-- seven ruled/text rows on a 60.2 pitch: a rule at y 309+60.2k (k=0..6,
        x 35..483; core ~3.5px at 3840, so 1.5 here) with a 5px filled
        trapezoid tab (#fdcf8c, the brightest ink on the screen) on top of
-       each at x 422..452; the k=1 rule is the selection bar's bottom edge -->
+       each at x 422..452; the k=1 rule is the selection bar's bottom edge.
+       The envelope glyphs have their own photographed y positions, fitted
+       independently of the rules and text (mailbox-row-spacing.md). -->
   <!-- #bar-fade: the selection — the veneer bar, its grain, the
        inverted tab and its dark outline, and the dark envelope on it —
        comes up after the rows, as a fade rather than a wipe: it is the
@@ -438,11 +436,11 @@
        tall), the rest CLOSED (10.5 tall); the selected row's in dark -->
   <g fill="none" stroke-width="1">
     <g stroke="#f0bf7b" transform="translate(429 271.7)"><path d="M 0,4 L 8,0 L 16,4 V 14.5 H 0 Z"/><path d="M 0,4 L 8,9.5 L 16,4"/></g>
-    <g stroke="#f0bf7b" transform="translate(429 392.1)"><path d="M 0,4 L 8,0 L 16,4 V 14.5 H 0 Z"/><path d="M 0,4 L 8,9.5 L 16,4"/></g>
-    <g stroke="#f0bf7b" transform="translate(429 455.8)"><rect x="0" y="0" width="16" height="10.5"/><path d="M 0,0 L 8,7.2 L 16,0 M 0,10.5 L 5.3,4.8 M 16,10.5 L 10.7,4.8"/></g>
-    <g stroke="#f0bf7b" transform="translate(429 516.0)"><rect x="0" y="0" width="16" height="10.5"/><path d="M 0,0 L 8,7.2 L 16,0 M 0,10.5 L 5.3,4.8 M 16,10.5 L 10.7,4.8"/></g>
-    <g stroke="#f0bf7b" transform="translate(429 576.2)"><rect x="0" y="0" width="16" height="10.5"/><path d="M 0,0 L 8,7.2 L 16,0 M 0,10.5 L 5.3,4.8 M 16,10.5 L 10.7,4.8"/></g>
-    <g stroke="#f0bf7b" transform="translate(429 632.9)"><path d="M 0,4 L 8,0 L 16,4 V 14.5 H 0 Z"/><path d="M 0,4 L 8,9.5 L 16,4"/></g>
+    <g stroke="#f0bf7b" transform="translate(429 393.6)"><path d="M 0,4 L 8,0 L 16,4 V 14.5 H 0 Z"/><path d="M 0,4 L 8,9.5 L 16,4"/></g>
+    <g stroke="#f0bf7b" transform="translate(429 457.3)"><rect x="0" y="0" width="16" height="10.5"/><path d="M 0,0 L 8,7.2 L 16,0 M 0,10.5 L 5.3,4.8 M 16,10.5 L 10.7,4.8"/></g>
+    <g stroke="#f0bf7b" transform="translate(429 518.3)"><rect x="0" y="0" width="16" height="10.5"/><path d="M 0,0 L 8,7.2 L 16,0 M 0,10.5 L 5.3,4.8 M 16,10.5 L 10.7,4.8"/></g>
+    <g stroke="#f0bf7b" transform="translate(429 579.4)"><rect x="0" y="0" width="16" height="10.5"/><path d="M 0,0 L 8,7.2 L 16,0 M 0,10.5 L 5.3,4.8 M 16,10.5 L 10.7,4.8"/></g>
+    <g stroke="#f0bf7b" transform="translate(429 637.3)"><path d="M 0,4 L 8,0 L 16,4 V 14.5 H 0 Z"/><path d="M 0,4 L 8,9.5 L 16,4"/></g>
   </g>
   </g><!-- /list-open -->
 
@@ -525,18 +523,18 @@
   <!-- the rows' titles and FROM: lines, under the rows' wipe (see
        #list-open in <defs>); the same clipPath as the rows' group in #lines -->
   <g font-family="Rajdhani" clip-path="url(#list-open-clip)">
-    <text x="193" y="276.0" font-size="18" font-weight="600" fill="#f3c583">You'll regret that</text>
-    <text x="193" y="297.0" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: JACKIE</text>
-    <text x="193" y="396.4" font-size="18" font-weight="600" fill="#f3c583">Heist data sent to you</text>
-    <text x="193" y="417.4" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: 805000451</text>
-    <text x="193" y="456.6" font-size="18" font-weight="600" fill="#f3c583">I'm worried man</text>
-    <text x="193" y="477.6" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: RACHEL ROSS</text>
-    <text x="193" y="516.8" font-size="18" font-weight="600" fill="#f3c583">Special offer to you!</text>
-    <text x="193" y="537.8" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: JINX JINX STORE</text>
-    <text x="193" y="577.0" font-size="18" font-weight="600" fill="#f3c583">I'm worried man</text>
-    <text x="193" y="598.0" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: RACHEL ROSS</text>
-    <text x="193" y="637.2" font-size="18" font-weight="600" fill="#f3c583">Special offer to you!</text>
-    <text x="193" y="658.2" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: RACHEL ROSS</text>
+    <text x="193" y="276.0" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.99 1) translate(-193 0)">You'll regret that</text>
+    <text x="193" y="297.0" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.16 1) translate(-193 0)">FROM: JACKIE</text>
+    <text x="193" y="396.4" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.99 1) translate(-193 0)">Heist data sent to you</text>
+    <text x="193" y="417.4" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.16 1) translate(-193 0)">FROM: 805000451</text>
+    <text x="193" y="456.6" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.99 1) translate(-193 0)">I'm worried man</text>
+    <text x="193" y="477.6" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.16 1) translate(-193 0)">FROM: RACHEL ROSS</text>
+    <text x="193" y="516.8" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.99 1) translate(-193 0)">Special offer to you!</text>
+    <text x="193" y="537.8" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.16 1) translate(-193 0)">FROM: JINX JINX STORE</text>
+    <text x="193" y="577.0" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.99 1) translate(-193 0)">I'm worried man</text>
+    <text x="193" y="598.0" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.16 1) translate(-193 0)">FROM: RACHEL ROSS</text>
+    <text x="193" y="637.2" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.99 1) translate(-193 0)">Special offer to you!</text>
+    <text x="193" y="658.2" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.16 1) translate(-193 0)">FROM: RACHEL ROSS</text>
   </g>
   <!-- #bar-fade-text: the selected row's title and FROM: line, dark on
        the veneer, fade in WITH the bar: the same 0 -> 1 over 0.3 s from
@@ -549,25 +547,25 @@
              begin="0.4s" dur="0.3s" calcMode="spline" keyTimes="0;1"
              keySplines="0.61 1 0.88 1" fill="freeze"/>
     <set attributeName="opacity" to="0" begin="0s" end="bar-fade-text.begin"/>
-    <text x="193.5" y="336.2" font-size="18" font-weight="600" fill="#7b5438" letter-spacing="-0.22">Urgent information (!)</text>
-    <text x="193" y="357.2" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#895f3b">FROM: MOM</text>
+    <text x="193.5" y="336.2" font-size="18" font-weight="500" fill="#7b5438" letter-spacing="0" transform="translate(193 0) scale(0.99 1) translate(-193 0)">Urgent information (!)</text>
+    <text x="193" y="357.2" font-size="13" letter-spacing="0" font-weight="500" fill="#895f3b" transform="translate(193 0) scale(1.16 1) translate(-193 0)">FROM: MOM</text>
   </g><!-- /bar-fade-text -->
 
   <!-- ==== the message body: plain text, no panel ==== -->
   <g font-family="Rajdhani" fill="#f8c884">
-    <text x="737" y="276" font-size="15" font-weight="700" letter-spacing="1.15">URGENT INFORMATION (!)</text>
-    <text x="740" y="297" font-size="11.5" letter-spacing="1.65" font-weight="600" fill="#f3c583">FROM: MOM</text>
-    <g font-size="17" font-weight="600" fill="#f3c583" letter-spacing="0.3">
-      <text x="738" y="333">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod</text>
-      <text x="738" y="354">tempor incididunt ut labore et dolore magna aliqua.</text>
-      <text x="738" y="397">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut</text>
-      <text x="738" y="418.5">aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in vo-</text>
-      <text x="738" y="440">luptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat</text>
-      <text x="738" y="461.5">cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est la-</text>
-      <text x="738" y="483">borum.</text>
-      <text x="738" y="525">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium do-</text>
-      <text x="738" y="546.5">loremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore</text>
-      <text x="738" y="568">veritatis et quasi architecto beatae vitae dicta sunt explicabo.</text>
+    <text x="736" y="276" font-size="17.5" font-weight="600" letter-spacing="0" transform="translate(736 0) scale(1.01 1) translate(-736 0)">URGENT INFORMATION (!)</text>
+    <text x="738" y="297" font-size="13" letter-spacing="0" font-weight="500" transform="translate(738 0) scale(1.16 1) translate(-738 0)" fill="#f3c583">FROM: MOM</text>
+    <g font-size="17" font-weight="500" fill="#f3c583" letter-spacing="0" transform="translate(736 0) scale(1.06 1) translate(-736 0)">
+      <text x="736" y="333">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod</text>
+      <text x="736" y="354">tempor incididunt ut labore et dolore magna aliqua.</text>
+      <text x="736" y="397">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut</text>
+      <text x="736" y="418.5">aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in vo-</text>
+      <text x="736" y="440">luptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat</text>
+      <text x="736" y="461.5">cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est la-</text>
+      <text x="736" y="483">borum.</text>
+      <text x="736" y="525">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium do-</text>
+      <text x="736" y="546.5">loremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore</text>
+      <text x="736" y="568">veritatis et quasi architecto beatae vitae dicta sunt explicabo.</text>
     </g>
   </g>
 

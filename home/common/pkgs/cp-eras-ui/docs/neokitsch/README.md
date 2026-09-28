@@ -81,7 +81,7 @@ Role mapping: `bg`=bg, `panel`=bloom field, `border`=frame gold,
 - Outlines come in onion layers: the hub's cascade cards and detail
   panel carry echo outlines (nested inside the card edge on the hub,
   stepping down and inward as they fade), and the store's cards are
-  shadowed by four fading echo strands round the step, the top-right,
+  shadowed by five fading echo strands round the shoulder, the top-right,
   the right side and the bottom.
 - Boxed letter markers (A/B/C/D) sit beside the wire band and in the
   foot, as small rounded plates with a folded corner.
@@ -160,7 +160,7 @@ is **inferred**, every rest and press **sourced**.
 on one ladder, every rung sourced: plain type on the ground (T1, a
 plain row); an outline with a bright tab (RIFLES, nav cell, product
 card); the outline *echoed* as fading hairlines (cascade card, six
-inside; product card, four; T2, a tightly swept fan descending to the
+inside; product card, five; T2, a tightly swept fan descending to the
 right and curving back into shared lower corners — the only cell in the
 run marked against plain siblings by an echo alone); the *veneer* — bright base, grain, book-match seam, outline
 and rings dropped, tab kept, dark ink (SMG, row 2, EMAIL, card 2); and
@@ -250,7 +250,10 @@ desktop interaction verification remains pending.
   groups (label, unoutlined chocolate field, solid gold ENTER / LOGIN
   bar with a bottom-left cut, letter box and micro-text), the wire band
   as a wide trapezoid across the foot, and a centred footer line.
-  Nothing else — the screen is sparse by design. Gate: PASS, inks 0.73.
+  The logotype now uses contours traced from the native source and the
+  two right-cell annotation lines fit within their plate; measurements and
+  remaining runtime check are in [login-branding.md](login-branding.md).
+  Nothing else — the screen is sparse by design. Historical gate: PASS, inks 0.73; the contour pass has not rerun the full gate.
 - `dashboard-trace.svg` — `images/neokitsch-dashboard.png` (#69), the
   **module hub**: the header (CUSTOMER / LEVEL T1, SECURITY LEVEL
   T1–T4 with T2 as a ringed badge, the wire band with boxed A and B),
@@ -294,7 +297,11 @@ desktop interaction verification remains pending.
   header wire band bridging the width with boxed A and C beside it, the
   customer / loyalty / last-update lines, five outlined nav buttons with
   SMG the veneer selection, and four weapon cards with echo strands,
-  the second expanded and solid gold across its middle. Gate: PASS,
+  the second expanded and solid gold across its middle. Product foot tabs
+  have 58px tops and 64.5px bases over an 8.5px rise; nav tabs have
+  31px tops and 36.5px bases over 5.1px. Their joins and the cards'
+  stepped top shoulders use smooth cubic curves (NK-09; see
+  [store-tabs.md](store-tabs.md)). Gate: PASS,
   inks 0.66 (third pass 2026-09-03; was 0.60). Supersedes `target-app.svg`.
 - `components.svg` — the widget sheet, rebuilt 2026-09-03 from the
   four traces and `bar.svg` (it was `target-components.svg`, drawn by
@@ -310,9 +317,12 @@ desktop interaction verification remains pending.
   the login entry group, hub detail panel, message panel, mail rows
   plain and veneer-selected, three 300px windows onto the wire bands,
   store meta lines, then 32 sampled palette values, typography, ground,
-  observed era rules and an implementation-delta box listing where
-  `src/eras/neokitsch.rs` still disagrees with the traces (DeviceFrame,
-  ClipTopRight 30, FRAME/STRATA unsampled, Bloom, the "#54-62" doc).
+  observed era rules and an implementation-delta box distinguishing the
+  current traced screen tables from generic era fallbacks. NK-12 synced
+  the selected EMAIL veneer, five-line captions and the detail panel's
+  85-strand veneer and two-line tape from the current dashboard trace;
+  the literal six-plus-two body copy was already current. See
+  [component-sync.md](component-sync.md) for exact excerpts and checks.
   Band 11 (2026-09-07, canvas 1920x1560) adds rest / hover / press
   siblings for the RIFLES button, the login field, the mail row and
   the cascade card — see "Hover and press" above for what is sourced
@@ -321,12 +331,16 @@ desktop interaction verification remains pending.
   wired/audio/CPU/MEM modules and the clock, at the 1600x220 geometry
   the bar golden tests render. The bar has no photo source, so this is
   an original composition, redrawn 2026-09-02 from the four traces'
-  chrome (the haze clipped to the strip, r3 cells with a bottom-left
+  chrome (dashboard haze clipped to the strip, r3 cells with a bottom-left
   cut and a veneer tab, veneer + grain + seam for selection, the wire
-  band bridging the centre gap). **It is no longer "exactly as `bar()`
-  composes it"**: it is the design target and `bar.rs` has not followed
-  yet (crate TODO.md § "Bar restyle"), so read the SVG's
-  IMPLEMENTATION DELTA block, not the current render.
+  band bridging the centre gap). `bar.rs` followed the four bar designs
+  through `Style::bar` on 2026-09-03; the SVG's IMPLEMENTATION DELTA /
+  STATUS block records the current small target/runtime distinctions.
+  The legacy dashboard haze citation is a design choice; the four source
+  screens use the shared field measured in [ground-fit.md](ground-fit.md).
+  The bar has no separate
+  photographic fidelity verdict. The
+  layer-shell bar remains unverified on the desktop in `todo/bar.md`.
 
 ## Deleted composites (2026-09-03)
 
@@ -395,15 +409,17 @@ also updates its badge and envelope excerpts. Remaining work is tracked in [refe
   earlier right run was incorrectly compressed to1.8px. Per-strand fade
   follows the source's downward attenuation. The runtime composites each
   header with its existing ground in sRGB, preserving that fade over the
-  varying haze. Ground and fine color fit remain independent open work.
+  varying haze. The shared broad field fit is recorded in
+  [ground-fit.md](ground-fit.md); fine color and photo residue remain
+  separate material work.
 - The hub body now transcribes its own photographed six plus two lines:
   `aliqua. Quis ipsum suspendisse` / `ultrices gravida.`, then
   `Risus commodo viverra maece-` / `nas accumsan lacus vel facilisis.`
   The second line reads `consectetur adipiscing elit, sed`, and the
   visible `maece-` hyphen is retained. The mailbox's separate message is
   unchanged. The component body now carries the same words instead of
-  rectangle placeholders; its older flat material/tape examples remain
-  in NK-12. Body line-slot tops come from native rows823/870/916/963/
+  rectangle placeholders; NK-12 subsequently synced the sheet's
+  material, caption and tape specimens. Body line-slot tops come from native rows823/870/916/963/
   1010/1057 and1152/1197. Typeface refinement remains NK-05.
 
 These corrections preserve the existing opening wipes/fades and
@@ -414,9 +430,43 @@ numbers elsewhere in this README remain dated observations.
 The same integration pass also transcribed the hub panel's current 85 SVG
 grain paths into `src/eras/neokitsch/panel_grain.rs`, including their small
 wave and lower-left sweep. The earlier runtime used straight strips. The
-paths retain the original clipping rectangle and opacity animation. This
-is implementation parity with the current reference; NK-07 still owns
-matching the photographed veneer pattern itself.
+paths retain the original clipping rectangle and opacity animation. The
+store selected body now follows the photographed vertical direction with
+a narrow cross-grain convergence near y531..540; its 125 path strands
+are clipped to the original gold body, and the socket band retains a
+horizontal fan. The same geometry is used by the trace, component sheet
+and runtime. The source photo has subtler per-strand bends and varying
+ink density, so this is a dominant-geometry fit rather than a complete
+photographic reconstruction. Dashboard panel and mailbox convergence
+remain separate NK-07 work.
+
+Store frame echoes now use a brighter ink fitted to the photographed
+selected card's top plateau. At native width, the first four echo peaks
+move from RGB `(136,111,78) / (112,95,73) / (90,81,70) / (69,69,68)`
+to `(210,163,117) / (193,151,111) / (143,117,93) / (114,98,86)`;
+the source peaks are `(207,161,114) / (193,152,108) / (143,114,91) /
+(112,93,81)`. The outer contour and five-echo count retain the NK-09
+shape. Right-edge ridge positions still differ by roughly one native
+pixel (0.42 design px), and the photographed ink varies along each
+stroke. Those are the remaining NK-14 limits for native review.
+
+The four store cards now print the shared source-native MAGNUM contour
+from `src/eras/magnum_art.rs` through a NeoKitsch-only 0.99 scale and
+card-local offset `(-8.5,-67.5)`. Plain and raised source crops fit the
+same placement, with bright-mask gold sampled at median `#ffd779` and
+the supporting metal at `#ac9152`. In the gun regions, native-sized SVG
+gold-mask IoU against the source rises from 0.562 to 0.825 on a plain
+card and from 0.566 to 0.831 on the raised card. The source's darkest
+photographic seams and glow still differ from the two reused contour
+tiers; native Iced review is pending. Card positions, hit areas and
+the raised-card veneer remain unchanged.
+
+The store card socket now prints the 25 separate 3.2px cells in the
+source and SVG, on a 3.49px pitch, in both plain and selected coats.
+The BASKET plate likewise prints its 25 separate 2.3px cells on a
+2.71px pitch. Native source and SVG agree at all 81 sampled lattice
+centres for each glyph. The card's light/dark ink polarity and BASKET's
+plate ink are unchanged; a fresh Iced capture remains the runtime gate.
 
 
 The NK-03/NK-10 follow-up remeasures the native dashboard and mail badges
@@ -436,8 +486,14 @@ and closed glyphs. Login and store have no T2 badge and are unchanged.
   meeting at (5.3,4.8)/(10.7,4.8) in their 16×10.5 box. Native row4,
   translation-aligned for the shape comparison, improves gold-mask IoU
   from 0.385 to 0.566. No actual row coordinates were shifted for that
-  comparison. Source rows drift progressively below the old 60.2px list
-  pitch, reaching about 4.4px at row7; broader list layout remains open.
+  comparison. Follow-up native measurement isolates the progressive drift
+  to the envelope glyphs: the ruled/text rows retain their 60.2px pitch,
+  while the row7 glyph sits about 4.4px below its former trace position.
+  The independent glyph positions and method are recorded in
+  [mailbox-row-spacing.md](mailbox-row-spacing.md).
+  The selected subject, FROM line and envelope now have separate
+  reference inks; native color evidence and custom-palette behavior are
+  recorded in [mailbox-inks.md](mailbox-inks.md).
   Row2 stays closed and selected; rows1/3/7 remain open. Explicit Rust
   artwork also removes the generic open glyph's unsourced horizontal
   mouth chord and aligns closed glyphs with the existing SVG offset.

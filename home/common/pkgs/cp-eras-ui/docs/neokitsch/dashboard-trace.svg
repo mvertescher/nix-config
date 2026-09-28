@@ -130,32 +130,15 @@
          ink   #f2b463 (6.2%, fills)  #bd8951  #7e5836  #3b2416
          ground #0e0a0d (63%) #3a3853 / #5b466c (violet haze) #192636 -->
   <defs>
-    <!-- The haze is a lobe, not a band: its measured 50%-boundary dips to
-         (820, 302) and rises to y~22 at both top corners, with the right
-         flank ~30px fatter than the left. Drawn as a radial centred above
-         the canvas at (825,-120), y-compressed 0.515 (so the boundary
-         ellipse passes through the apex and the corners) and rotated 1.3
-         degrees for the flank asymmetry (the source flips thin again right
-         at the corner, which a rotated ellipse cannot follow — the corner
-         sits ~40px deep as the compromise). Stops keep the sampled colours,
-         re-mapped onto the ray: y=0 -> 0.258, 146 -> 0.572, 286 -> 0.873,
-         near-black by y~345 at the dip column. -->
-    <!-- Between the violet and the black sits a BLUE transition band —
-         a second lobe family the k-means palette carried as #192636 (7.9%).
-         Measured: a thin arm on the left (y 114..142 at x=280), a ~110px
-         under-band right of centre (211..316 at x=880), and sole ownership
-         of the top-right corner from y=0 (violet is absent past x~1460).
-         Drawn as an annulus over the violet: same lobe geometry centred
-         slightly right at (900,-120), transparent core, blue band at
-         f 0.62..0.84, alpha-blended so the violet fades through it. -->
-    <radialGradient id="hazeblue" gradientUnits="userSpaceOnUse"
-        cx="900" cy="-120" r="1030"
-        gradientTransform="rotate(2 900 -120) translate(900 -120) scale(1 0.515) translate(-900 120)">
-      <stop offset="0"    stop-color="#223350" stop-opacity="0"/>
-      <stop offset="0.60" stop-color="#223350" stop-opacity="0"/>
-      <stop offset="0.68" stop-color="#223350" stop-opacity="0.85"/>
-      <stop offset="0.76" stop-color="#1a2c46" stop-opacity="0.80"/>
-      <stop offset="0.84" stop-color="#101d30" stop-opacity="0"/>
+    <!-- Shared smooth approximation of the four native screen grounds:
+         violet ellipse, flatter left lift, then the masked blue
+         transition. Geometry, colors and held-out source comparison are
+         recorded in ground-fit.md. The original photo recipe is unknown. -->
+    <radialGradient id="hazeblue" gradientUnits="userSpaceOnUse" cx="765.3" cy="-316.3" r="1188.4" gradientTransform="rotate(10.00 765.3 -316.3) translate(765.3 -316.3) scale(1 0.673177) translate(-765.3 316.3)">
+      <stop offset="0.6" stop-color="#48537d" stop-opacity="0"/>
+      <stop offset="0.68" stop-color="#21364e" stop-opacity="0.85"/>
+      <stop offset="0.76" stop-color="#0d202f" stop-opacity="0.8"/>
+      <stop offset="0.84" stop-color="#0e0d1a" stop-opacity="0"/>
     </radialGradient>
     <!-- The blue is right-weighted: on the left the violet stays on top of
          the shared annulus (source shows only a thin arm there, and none at
@@ -171,14 +154,18 @@
     <mask id="bluemask">
       <rect width="1600" height="900" fill="url(#hazebluefade)"/>
     </mask>
-    <radialGradient id="haze" gradientUnits="userSpaceOnUse"
-        cx="825" cy="-120" r="1030"
-        gradientTransform="rotate(1.3 825 -120) translate(825 -120) scale(1 0.515) translate(-825 120)">
-      <stop offset="0"     stop-color="#574568"/>
-      <stop offset="0.258" stop-color="#574568"/>
-      <stop offset="0.572" stop-color="#3a3853"/>
-      <stop offset="0.873" stop-color="#16121a"/>
-      <stop offset="1"     stop-color="#0e0a0d"/>
+<radialGradient id="hazelobe" gradientUnits="userSpaceOnUse" cx="430" cy="-40" r="560" gradientTransform="translate(430 -40) scale(1 0.30) translate(-430 40)">
+      <stop offset="0" stop-color="#7a598a" stop-opacity="0.85"/>
+      <stop offset="0.45" stop-color="#7a598a" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#7a598a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="haze" gradientUnits="userSpaceOnUse" cx="712.8" cy="-61.2" r="1015.8" gradientTransform="rotate(1.76 712.8 -61.2) translate(712.8 -61.2) scale(1 0.387476) translate(-712.8 61.2)">
+      <stop offset="0" stop-color="#7a538b"/>
+      <stop offset="0.2" stop-color="#5e4169"/>
+      <stop offset="0.4" stop-color="#524064"/>
+      <stop offset="0.6" stop-color="#3c3a57"/>
+      <stop offset="0.8" stop-color="#131014"/>
+      <stop offset="1" stop-color="#0d0a0d"/>
     </radialGradient>
     <!-- one cascade card, re-measured on the photo 2026-09-03 (the first
          pass drew an 83-wide body with a 10-wide tab well, 32 chamfers
@@ -319,8 +306,9 @@
     </clipPath>
   </defs>
 
-  <rect width="1600" height="900" fill="#0e0a0d"/>
+  <rect width="1600" height="900" fill="#0d090c"/>
   <rect width="1600" height="900" fill="url(#haze)"/>
+  <rect width="1600" height="300" fill="url(#hazelobe)"/>
   <rect width="1600" height="560" fill="url(#hazeblue)" mask="url(#bluemask)"/>
 
   <use href="#content" filter="url(#halo)" class="photo"/>

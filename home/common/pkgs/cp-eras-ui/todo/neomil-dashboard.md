@@ -162,15 +162,17 @@ The next pass-4 batch is integrated (2026-09-14):
 - [ ] **Remaining small printing ink:** chip 2's modulation failed one
   held-out red-channel check. Its dark digit and the tiny leading tape
   mark retain their current ink pending a supported local model.
-- [ ] **Correct the footer's primary lettering and printing copies.**
-  The all-reference recheck on 2026-09-21 found an additional local task:
-  in crop (1195,862)..(1372,899), source/SVG cap heights are 6.25/5.00px
-  for the code and 5.83/4.58px for both captions. The first caption's
-  width already matches at 69.17px, so a global font-size increase is
-  insufficient. Fit weight, height and baseline independently, then
-  replace the single sharp offset frame with source-supported frame/text
-  copies. Preserve the two-cell layout and code spelling. See the
-  [reference audit](../docs/reference-svg-audit.md#neomil).
+- [ ] **NM1 — Finish footer glyph and faint-print fitting.** The sixth
+  reference batch fits each primary run independently: native SVG cap
+  heights now match the source's 6.25px code and 5.83px captions, preserving
+  their narrow widths. Iced improves but retains 0.42–0.84px cap-height
+  residuals and heavier contours. Two translucent frame/text copies replace
+  the single sharp offset frame, improving eight local crop errors in SVG
+  and Iced. Fine horizontal striations, edge softness and exact repeated
+  lettering remain open; do not treat the broad copies as an exact fit.
+  The frame/divider/code are preserved; copies follow the foreground role
+  for custom palettes and add no software-rendered cache layer. See the
+  [footer measurements](../docs/neomil/dashboard-footer.md).
 
 The [printing follow-up audit](../docs/neomil/dashboard-printing.md) records
 the 2026-09-21 proposals, masks, actual-render measurements and limitations.

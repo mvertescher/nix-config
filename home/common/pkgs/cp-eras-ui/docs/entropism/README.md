@@ -42,10 +42,10 @@ dim         #3d4d38   faint rules, captions
 on-solid    #1f2a1c   dark text on sage fills
 ```
 
-The traces' own k-means samples run brighter than these (see each
+Several traces' local samples run brighter than these shared roles (see each
 trace header's palette block). Two were settled 2026-09-05: the
 outline ink by eye against the photographs -- the frames are the bright
-sage, the 1.25px core every trace's stroke profile was measured to, and
+sage, the 1.25px core measured in the hub trace, and
 #5d7752 was the one value of the four screens whose outlines receded
 into the ground -- and the solid, which followed it: at #9cb795 a
 selection fill no longer stood off the brightened frames, and the three
@@ -60,13 +60,17 @@ PETROCHEM / BETTERLIFE TEC band (`store-trace.svg` samples it at
 
 ## Observed era rules
 
-- Square everything; no rounding, no chamfers, no gradients.
-- **The designed stroke is 2px**, not 1px: `mailbox-trace.svg` measures
-  every outlined frame and every row divider at 2px. What the photo
-  adds around each bright edge — a 1px near-black undershoot and a
-  faint sage overshoot a few px out — is a photographic halo, so the
-  trace draws it and the iced implementation draws the 2px stroke only.
-  The "no glow" rule stands for the implementation.
+- Square frames and cells; no rounding or chamfers. The four traces use
+  [fitted upper light fields](ground-fit.md), while the original bar
+  composition uses a flat ground. Hub, mail and store share one field;
+  login is dimmer and keeps its solid sage footer band.
+- Frame strokes vary by screen. Login, hub and store traces use 1.25px
+  bright primary lines at the 1600px design size; the mailbox trace draws
+  its rescaled frames and row dividers at 2px #709174. Native mailbox
+  probes find no dark undershoot. The dark ring in the 1600px reference
+  is a Lanczos negative lobe; faint bright overshoot is source residue.
+  Neither is a second designed stroke. The original bar chooses 2px
+  chrome, which is a design choice rather than a photo measurement.
 - One solid sage fill per cell group — tiles, list rows, nav rows,
   buttons, T-levels. Read 2026-09-07 as the *cursor* rather than the
   selection: on the mail screen the filled row is not the open message
@@ -279,8 +283,8 @@ build strings) and make it the default.
   panel and button row, the hub detail panel, security badges, the
   login field and NEXT button, then the sampled palette, typography,
   ground stops, observed era rules and an implementation-delta box
-  listing where `src/eras/entropism.rs` still disagrees with the
-  traces (stroke 1.0, palette, OUTLINE/BG, TileRow). Not gated — the
+  recording the historical 2026-09-03 implementation gap. The current
+  state is checked in `component-sync.md`. Not gated — the
   traces are; this is derived from them. Grown to 1920x1400 on
   2026-09-07 for band C, the rest / hover / press groups ("Hover and
   press" above); nothing drawn above y 1080 moved.
@@ -289,10 +293,10 @@ build strings) and make it the default.
   the bar golden tests render. The bar has no photo source, so this is
   an original composition, redrawn 2026-09-02 from the four traces'
   chrome — the bar *is* the era's header strip: one outlined frame with
-  dividers, no cell gaps, one filled segment per run. **It no longer
-  matches `bar()`**: it is the design target and `bar.rs` has not
-  followed yet (crate TODO.md § "Bar restyle"), so read the SVG's
-  IMPLEMENTATION DELTA block, not the current render.
+  dividers, no cell gaps, one filled segment per run. It remains an original
+  design target, using the current OUTLINE and SAGE_SOLID roles. The
+  SVG's IMPLEMENTATION DELTA records the historical restyle plan;
+  `component-sync.md` compares it with current `Bar` configuration.
 
 ## Deleted composites (2026-09-03)
 

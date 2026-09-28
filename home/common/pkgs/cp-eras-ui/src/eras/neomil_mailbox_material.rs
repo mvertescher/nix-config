@@ -69,11 +69,13 @@ const MAIL_PANEL_SCAN: &[Prim] = &scans::<196>(729.0, 310.90537809, 721.0, 1.984
 // The source lower right is square, following the side-bar inward step.
 // Shared with the ordinary canvas contour so the sampled field cannot leak.
 pub const PANEL_CONTOUR: &[Seg] = &[
-    Seg::Line(1442.0, 312.0), Seg::Line(1450.0, 320.0),
+    Seg::Line(1040.0, 313.33), Seg::Line(1240.0, 312.5),
+    Seg::Line(1439.17, 312.5), Seg::Line(1450.0, 323.33),
     Seg::Line(1450.0, 544.5833), Seg::Line(1440.5548, 554.0285),
-    Seg::Line(1440.5548, 699.3177), Seg::Line(729.0, 699.3177),
+    Seg::Line(1440.5548, 699.3177), Seg::Line(729.17, 699.3177),
 ];
-const MAIL_PANEL: Prim = Prim::Masked { prims: &[Prim::At { x: 0.0, y: 0.0, prims: MAIL_PANEL_LOW }, Prim::Masked { prims: MAIL_PANEL_HIGH, mask: MAIL_PANEL_SCAN }], mask: &[fill_path(729.0, 312.0, PANEL_CONTOUR, Ink::Fixed(rgb(0xffffff)))] };
+pub const PANEL_ORIGIN: (f32, f32) = (729.17, 313.33);
+const MAIL_PANEL: Prim = Prim::Masked { prims: &[Prim::At { x: 0.0, y: 0.0, prims: MAIL_PANEL_LOW }, Prim::Masked { prims: MAIL_PANEL_HIGH, mask: MAIL_PANEL_SCAN }], mask: &[fill_path(PANEL_ORIGIN.0, PANEL_ORIGIN.1, PANEL_CONTOUR, Ink::Fixed(rgb(0xffffff)))] };
 
 /// Opaque panel material, clipped to the source contour.
 pub const PANEL: &[Prim] = &[MAIL_PANEL];
@@ -160,7 +162,7 @@ pub const BADGES: &[Prim] = &[MAIL_BADGE_CUSTOMER, MAIL_BADGE_T1, MAIL_BADGE_T2,
 
 #[cfg(test)]
 mod tests {
-    use super::PANEL;
+    use super::{PANEL, PANEL_ORIGIN};
     use crate::{screens::soft, style::{Era, Prim}};
 
     #[test]
@@ -168,9 +170,11 @@ mod tests {
         let palette = Era::Neomil.style().palette;
         // A narrow interior strip crosses every field/scan join while
         // avoiding the contour's intentionally antialiased outer edge.
-        let strip = [Prim::At { x: -900.0, y: -313.0, prims: PANEL }];
+        // The source top at x900 is y313.33. Start four design units below
+        // it and stop before the square bottom, excluding only outer-edge AA.
+        let strip = [Prim::At { x: -900.0, y: -(PANEL_ORIGIN.1 + 4.0), prims: PANEL }];
         for scale in [0.37_f32, 0.4875, 0.83, 1.0, 2.4] {
-            let height = (384.0 * scale).floor() as u32;
+            let height = (380.0 * scale).floor() as u32;
             let bytes = soft::composite(&strip, &palette, 4, height, scale);
             for (index, pixel) in bytes.chunks_exact(4).enumerate() {
                 assert_eq!(pixel[3], 255, "panel seam at scale {scale}, row {}", index / 4);

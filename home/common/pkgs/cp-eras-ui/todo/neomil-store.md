@@ -43,12 +43,15 @@ content is intentionally static; no network/payment backend is specified.
   clear-ground RGB RMS7.285→1.736 across2,262,312 pixels, corroborated
   by two spatial holdouts. SVG and Iced use identical controls; see
   [measurements](../docs/neomil/login-store-material.md).
-- [ ] **Restore card/nav materials.** Normal opaque brown
-  fields erase source blue/cyan: card1 clear-patch source mean RGB
-  (29,43,64) vs trace(27,11,14), RMS34.27/255. The cyan gap has RMS25.93.
-  Fit card and selected/nav scan material separately from shared ground.
-  SVG card gradients also become flat fills in Iced. Do not invent a
-  texture recipe from a broad shape gate.
+- [x] **Restore broad card/nav materials.** Translucent ordinary cards
+  preserve the source blue ground; selected upper/lower and navigation
+  fields use measured two-dimensional sRGB ramps.135 held-out native
+  patches have source RGB RMSE.52–.81, with SVG/native channel differences
+  at most one. All20 category/card combinations preserve hit geometry,
+  opening and permanent card4 clipping; custom themes retain semantic
+  fields. Native state review, both gates and the K1 full check pass.
+  Fine scan modulation remains in its own task below. See
+  [material measurements](../docs/neomil/store-material.md).
 - [ ] **Correct typography, footer fit and reference ink.** Source cap
   heights are roughly12–23% taller than trace. Footer code crosses its
   divider and caption spills past its cell. Match weight, glyph width,

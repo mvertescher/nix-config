@@ -55,8 +55,8 @@ Sampled off the reference and carried as the era consts in
 `src/eras/kitsch.rs`:
 
 ```
-bg           #0b0b07     warm near-black
-bloom        #a63355 → #6c1c3d   rose radial
+bg           #0b0b07     warm near-black role
+bloom        #a63355 → #6c1c3d   palette role
 teal         #7ddec8     strokes, titles, product art
 teal solid   #1cb39b     wave, chips, PROTECTED bars
 mint         #87f4d9     stat-highlight fill, the login bracket
@@ -65,11 +65,19 @@ on-yellow    #37220f
 bezel        #f08c1e     rounded CRT frame on device screens
 ```
 
+The traced screens use fitted ground tables separate from those broad
+palette roles. Dashboard, mailbox, and store share page `#0c0c0b` and
+a rose field beginning near `#ad465f`; login uses page `#050604` and
+its own rose and edge colors. The [ground fit](ground-fit.md) records
+their geometry, RGB samples, and holdout checks.
+
 The traces sample the same families off the photos (see each trace
 header's palette block, and `bar.svg`'s header for the const-by-const
-mapping): bracket and line-work peak around `#80e4d0`, the wave reads
+mapping): the login bracket peaks near `#80e4d0`; other strokes, captions, labels
+and selections have distinct measured values. The wave reads
 `#1bb6a3`/`#1db5a4`, the SMG and DETAILS selections `#ffbe18`/`#e6c020`,
-the amber `02` badge `#f0a93c`.
+and the amber `02` badge `#f0a93c`. See [source citations](source-citations.md)
+for trace paths, local measurements and their limits.
 
 Role mapping: `bg`=bg, `panel`=the bloom field, `fg`=teal, `border`=the
 outline teal `#5fd6c2` the store and mailbox traces sample off frames,
@@ -98,10 +106,12 @@ yellow is *selection*, not alarm.
 - 3D slabs (fan menus) get stacked-outline extrusion. All six blades'
   ghost stacks recede in **one shared screen-space direction**
   (up-right), not along each card's own normal.
-- A rose bloom sits over the **top of every screen, brightest at top
-  centre** and gone by y~420 — not a corner vignette. The far left of
-  the frame reads grey-green rather than black on the login, mailbox
-  and store.
+- A rose bloom sits over the **top of every screen, brightest across
+  the upper middle** and recedes through the middle. The far left of
+  the frame reads grey-green rather than black on all four screens.
+  Dashboard, mailbox, and store share one measured field; login has
+  different stop colors and a darker lower page. See the
+  [ground fit](ground-fit.md) for clear patches and held-out errors.
 - Tiny dim-teal captions everywhere; boxed A/B/C footnote markers. The
   single centred line at the foot of every screen is *bright mint*, not
   dim teal (all four trace headers record this; an earlier drawing had
@@ -159,7 +169,7 @@ the trail to one nor adding another layer follows an annotated hub state.
 *is* per era" question: all nine stills of the run (`images/run-kitsch/`
 #44–52) and the four full-res screens, cropped to the nav column, the
 cards, the mail rows and tabs, the login field and bars and both fans.
-No still carries a cursor, and every unselected sibling is drawn
+No still shows a mouse pointer, and every unselected sibling is drawn
 identically to its neighbours (RIFLES / SNIPER / SHOTGUN / PISTOL are
 four equal outlines, MODS / PRICE / DAMAGE three, mail rows 2–5 four,
 cards 1 / 3 / 4 three, badges 01 / 03 / 04 three). The states the
@@ -229,7 +239,7 @@ selection and its extra detail body. Hovering an already selected card
 adds the ghost behind its solid upper slab while preserving all grown
 art; pressing it removes that ghost. The outlined lower body is not
 filled or duplicated. This is an extension of the widget sheet's material
-rule, not a photographed product-card cursor state. It uses the same
+rule, not a photographed product-card mouse-pointer state. It uses the same
 approximate foreground alpha as the categories. The existing shelf
 animation clip trims the ghost above y=210 and at the screen edge; its
 geometry and the card hit boxes stay unchanged.
@@ -298,6 +308,16 @@ the thing the toolkit abstraction should be tested against.
   drawing, stat row, solid mint values bar, socket row) with the second
   amber-filled, grown, and continued in an amber outline. Gate: PASS,
   inks 0.73 (third pass 2026-09-03; was 0.57). Supersedes `target-app.svg`.
+
+The fourth store card is a placement-specific crop, measured in
+[store-fade.md](store-fade.md). Its solid content ends around x1523, then
+yellow and mint residues trail toward x1550. The component sheet keeps
+the full reusable card; the shelf placement in the trace and Rust applies
+the crop. The source shows only card 2 selected, so applying this edge to
+other fourth-card states is an inferred behavior.
+The normal card and selected detail body now have the source's rounded
+lower feet. Their native contour measurements, renderer offsets and
+before/after crops are recorded in [store-corners.md](store-corners.md).
 - `components.svg` — the widget sheet, rebuilt 2026-09-03 from the
   four traces and `bar.svg` (it was `target-components.svg`, drawn by
   eye: 160-wide rounded pills where the traces have 216x39 peaked
@@ -312,10 +332,9 @@ the thing the toolkit abstraction should be tested against.
   product card plain and grown, the BRAINDANCE and message panels, the
   guest card, input field, ENTER/PROTECTED bars, barcode and socket
   glyph, then the sampled palette, typography, ground, observed era
-  rules and an implementation-delta box listing where
-  `src/eras/kitsch.rs` still disagrees with the traces (Round 16,
-  "no chamfers", Ticket 18/15, Banner 12/8, top-right Bloom, stroke
-  1.5, SLAB/BEZEL, YELLOW_SHADE unsampled). Band 11 (2026-09-07, canvas
+  rules and source citations. The former implementation-delta box was
+  removed during the 2026-09-27 documentation review because its claims
+  had become stale. Band 11 (2026-09-07, canvas
   1920x1392) adds rest / hover / press siblings for the button, field,
   nav chevron and list row — see "Hover and press" above for what is
   sourced and what is inferred. Not gated — the traces are.
@@ -325,10 +344,10 @@ the thing the toolkit abstraction should be tested against.
   an original composition, redrawn 2026-09-02 from the four traces'
   chrome (chevron workspaces, stepped USER/DESCRIPTION boxes, the mint
   bracket fading along the bar foot, the teal wave in the menu foot).
-  **It is no longer "exactly as `bar()` composes it"**: it is the
-  design target and `bar.rs` has not followed yet (crate TODO.md §
-  "Bar restyle"), so read the SVG's IMPLEMENTATION DELTA block, not the
-  current render.
+  The SVG is an original design reference, not a fifth source screen;
+  its current implementation status is documented in
+  [source-citations.md](source-citations.md), with the Rust source checked
+  separately from the photographed traces.
 
 ## Deleted composites (2026-09-03)
 
@@ -377,6 +396,11 @@ or revised trace/golden artwork; live desktop interaction remains pending.
 
 ## Reference correction batch — 2026-09-21
 
+This is a dated record of that batch's source-trace corrections. It describes
+the measured references, not a claim that every current Rust value or material
+matches them; current provenance and coordinate citations are in
+[source-citations.md](source-citations.md).
+
 Native source #49 crops now supply the dashboard's eight BRAINDANCE body
 lines (4+4 on a 19px pitch), connected warning ribbon across x1172.5..1432,
 rounded tab joins and r10.5 lower panel corners. The component excerpt
@@ -411,3 +435,16 @@ y60.83..75. The chosen Rajdhani sizes/stretch/tracking reproduce these
 bounds within about one design pixel. Exact source glyph contours,
 photographic glow and the store/mail typography portions of K5 remain
 open; this local metric fit does not close those broader tasks.
+
+
+## Source citations — reviewed 2026-09-27
+
+The four trace files cite photographed screens #49–52. The component sheet is
+derived from those traces. The bar is an original composition without a source
+photograph; its borrowed silhouettes and sampled color references point back to
+the traces. Coordinate corrections, path endpoints, source-image measurements,
+and the distinction between sourced and inferred interaction states are
+recorded in [source-citations.md](source-citations.md). The documented source
+quirks remain: PRODUCTS appears twice, dashboard EVENTS is selected beside
+BRAINDANCE, and the dashboard/mailbox read GUES 7702 while the login reads
+GUEST 7702.

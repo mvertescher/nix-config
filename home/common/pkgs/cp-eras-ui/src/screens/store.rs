@@ -164,18 +164,20 @@ impl Store {
     }
 
     pub fn view(&self) -> Element<'_, Message> {
+        let style = self.style.store_style();
+        let (prims, backdrop) = self.style.store_layers(self.category, self.card);
         stack![
-            ground(&self.style),
+            ground(&style),
             Scene {
-                style: self.style,
-                prims: self.style.store,
+                style,
+                prims,
                 cursor_group: self.style.store_cursor,
                 states: self.style.store_states,
                 picked: self.picked(),
                 on_select: |group, index| Message::Select { group, index },
                 at: self.at(),
             }
-            .view(),
+            .view_with_backdrop(backdrop),
         ]
         .into()
     }
@@ -191,6 +193,48 @@ mod tests {
     /// four cards -- however differently it draws them. An era table
     /// that forgot to wrap its shelf in plates would render fine and be
     /// dead to the mouse, which is exactly the failure this catches.
+    #[test]
+    fn reference_surfaces_follow_selection_without_changing_navigation_or_custom_palettes() {
+        use crate::palette::rgb;
+        use crate::screens::scene::hit_selected;
+        let style = Era::Neomil.style();
+        let reference = style.store_reference.expect("source store material");
+        assert_eq!(reference.backdrops.len(), 20);
+        for category in 0..5 {
+            for card in 0..4 {
+                let picked = Picked { category, card, module: 0 };
+                let (scene, backdrop) = style.store_layers(category, card);
+                assert!(std::ptr::eq(scene, reference.scene));
+                assert_eq!(reference.backdrops.iter().filter(|b| b.category == category && b.card == card).count(), 1);
+                let original_motion = style.store.iter().find_map(|p| match p {
+                    crate::style::Prim::Motion { motion, .. } => Some(motion), _ => None,
+                }).unwrap();
+                assert!(backdrop.iter().any(|p| matches!(p, crate::style::Prim::Motion { motion, .. } if motion == original_motion)));
+                let mut original = Vec::new();
+                let mut actual = Vec::new();
+                plates_selected(style.store, picked, 0.0, 0.0, &mut original);
+                plates_selected(scene, picked, 0.0, 0.0, &mut actual);
+                assert_eq!(actual, original);
+                // Exercise grown-card bottoms and the permanent fourth-card
+                // cut, including points just outside each drawing.
+                for x in [147.0, 153.0, 360.0, 362.0, 436.0, 450.0, 769.0, 1039.0, 1097.0, 1426.0, 1556.0, 1558.0] {
+                    for y in [150.0, 180.0, 300.0, 580.0, 612.0, 650.0, 779.0, 797.0, 799.0] {
+                        let point = iced::Point::new(x, y);
+                        assert_eq!(hit_selected(scene, picked, 1.0, point), hit_selected(style.store, picked, 1.0, point));
+                    }
+                }
+            }
+        }
+        assert_eq!(style.store_layers(5, 4), (style.store, style.store));
+        let mut custom = style;
+        custom.palette.panel = rgb(0x183638);
+        assert_eq!(custom.store_layers(0, 1), (style.store, style.store));
+        for era in [Era::Entropism, Era::Kitsch, Era::Neokitsch] {
+            let style = era.style();
+            assert_eq!(style.store_layers(0, 1), (style.store, style.store));
+        }
+    }
+
     #[test]
     fn every_era_offers_five_categories_and_four_cards() {
         for era in Era::ALL {
@@ -319,6 +363,39 @@ mod tests {
     }
 
     #[test]
+    fn kitsch_selected_lower_body_and_footer_follow_each_card_at_all_scales() {
+        use crate::screens::scene::hit_selected;
+        use iced::Point;
+
+        let mut store = Store::new(Era::Kitsch.style());
+        let inside = [585.0, 905.0, 1224.0, 1485.0];
+        for scale in [0.75, 1.0, 1.25, 2.4] {
+            let hit = |store: &Store, x: f32, y: f32| {
+                hit_selected(store.style.store, store.picked(), scale,
+                    Point::new(x * scale, y * scale))
+            };
+            for selected in 0..4 {
+                store.update(Message::Select { group: Group::Card, index: selected });
+                for (card, x) in inside.into_iter().enumerate() {
+                    assert_eq!(hit(&store, x, 650.0),
+                        (card == selected).then_some((Group::Card, card)),
+                        "scale {scale}, selected {selected}, card {card} lower body");
+                    assert_eq!(hit(&store, x, 705.0),
+                        (card == selected).then_some((Group::Card, card)),
+                        "scale {scale}, selected {selected}, card {card} footer");
+                }
+                assert_eq!(hit(&store, 1485.0, 719.0), None,
+                    "scale {scale}, selected {selected}: below the grown face");
+                assert_eq!(hit(&store, 1549.0, 650.0),
+                    (selected == 3).then_some((Group::Card, 3)),
+                    "scale {scale}, selected {selected}: last visible pixel of card4");
+                assert_eq!(hit(&store, 1550.25, 650.0), None,
+                    "scale {scale}, selected {selected}: cropped margin");
+            }
+        }
+    }
+
+    #[test]
     fn every_selected_navigation_centre_remains_visible_and_interactive() {
         use crate::screens::scene::hit_selected;
         for era in Era::ALL {
@@ -332,6 +409,10 @@ mod tests {
                     assert_eq!(hit_selected(store.style.store, store.picked(), 1.0, centre), Some((group, index)), "{era:?}, card{card}, {centre:?}");
                     if era == Era::Neomil && group == Group::Card && index == 3 {
                         assert_eq!(centre.x, 1491.0, "fourth-card centre uses its visible132px width");
+                    }
+                    if era == Era::Kitsch && group == Group::Card && index == 3 && card == 3 {
+                        assert_eq!(centre, iced::Point::new(1496.5, 468.0),
+                            "fourth-card centre uses its visible107px width and grown height");
                     }
                 }
             }

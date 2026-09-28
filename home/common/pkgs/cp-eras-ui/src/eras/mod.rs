@@ -7,6 +7,7 @@
 
 pub mod entropism;
 pub(crate) mod control_materials;
+pub(crate) mod magnum_art;
 pub mod kitsch;
 pub mod neokitsch;
 pub mod neomil;

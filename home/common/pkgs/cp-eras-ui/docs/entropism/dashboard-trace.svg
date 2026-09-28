@@ -69,8 +69,11 @@
        are heavier and brighter: 4px at 3840 = 1.7px, #a8d7a7.
 
        Text ink, measured the same way on the 1600 rescale (bright-tail
-       mean over the run): header/footer strings #97c4a0, tile labels
-       #acddb4, body copy #9fc09c. The face is a medium weight with tight
+       mean over the run): header/footer strings #97c4a0. Native-size
+       clean upper-quartile samples of idle captions, tile labels and
+       body copy are #a2cfa7, #a2d2a8 and #add2aa respectively; the
+       panel heading and badge glyphs retain #acddb4. The face is a
+       medium weight with tight
        tracking, cap 11; Rajdhani 500 at 17px, natural tracking, lands
        each header/footer run within 4px of the photo (241/158/112 and
        127/247/140 vs 244/154/112 and 130/250/142) at the photo's cap.
@@ -114,20 +117,23 @@
          ink   #a6d3a7 (3.3%, the solid fills)  #739676  #59755b  #3a4c38
          ground #0f0a03 (63.8%) #1c1a10 (19.5%) #232419 (9.2%) -->
   <defs>
-    <radialGradient id="lift" cx="0.45" cy="0.45" r="0.75">
-      <stop offset="0"   stop-color="#1c1a10"/>
-      <stop offset="0.7" stop-color="#141107"/>
-      <stop offset="1"   stop-color="#0f0a03"/>
+    <radialGradient id="lift" gradientUnits="userSpaceOnUse" cx="935" cy="5" r="943"
+                    gradientTransform="translate(0 5) scale(1 0.445387) translate(0 -5)">
+      <stop offset="0"    stop-color="#1f1e15"/>
+      <stop offset="0.25" stop-color="#1f1f15"/>
+      <stop offset="0.5"  stop-color="#1f1e14"/>
+      <stop offset="0.75" stop-color="#18140a"/>
+      <stop offset="1"    stop-color="#0f0903"/>
     </radialGradient>
     <!-- one caption box, drawn at the tile's bottom-left corner (the
          tile's own frame is at y 0 here and the box's bottom edge lies on
          it): top rule 28px up, divider 96px in, two cells of small bold
          text at the measured runs -->
-    <g id="caption" font-family="Rajdhani" font-weight="600" text-anchor="start">
+    <g id="caption" font-family="Rajdhani" font-weight="700" text-anchor="start">
       <path d="M 0,-28 H 194 M 96,-28 V 0" fill="none" stroke-width="1.7"/>
-      <text transform="translate(6,-15) scale(0.78,1)" font-size="12">85SD4F3Q5S41</text>
-      <text transform="translate(103,-15) scale(0.685,1)" font-size="12">COMBAT COLONIZATION</text>
-      <text transform="translate(103,-6) scale(0.82,1)" font-size="10.5">DEFENCE PROGRAM</text>
+      <text transform="translate(6,-15) scale(0.78,1)" font-size="12" stroke="none">85SD4F3Q5S41</text>
+      <text transform="translate(103,-15) scale(0.685,1)" font-size="12" stroke="none">COMBAT COLONIZATION</text>
+      <text transform="translate(103,-6) scale(0.82,1)" font-size="10.5" stroke="none">DEFENCE PROGRAM</text>
     </g>
     <!-- ==== motion (docs/PIPELINE.md, Motion): how entropism comes up.
          A monochrome terminal boots in passes, not with a panel sliding
@@ -249,12 +255,12 @@
   <!-- row 1: y 226..438, caption box top rule at y 410 -->
   <g font-family="Rajdhani" font-size="22" font-weight="600" text-anchor="middle" letter-spacing="0.3">
     <rect x="128" y="226" width="194" height="212" fill="none" stroke="#8fba97" stroke-width="1.25"/>
-    <text x="221" y="327" fill="#acddb4">EMAILS</text>
-    <use href="#caption" x="128" y="438" fill="#a8d7a7" stroke="#a8d7a7"/>
+    <text x="221" y="327" fill="#a2d2a8">EMAILS</text>
+    <use href="#caption" x="128" y="438" fill="#a2cfa7" stroke="#a8d7a7"/>
 
     <rect x="418" y="226" width="194" height="212" fill="none" stroke="#8fba97" stroke-width="1.25"/>
-    <text x="514" y="327" fill="#acddb4">MATRIX</text>
-    <use href="#caption" x="418" y="438" fill="#a8d7a7" stroke="#a8d7a7"/>
+    <text x="514" y="327" fill="#a2d2a8">MATRIX</text>
+    <use href="#caption" x="418" y="438" fill="#a2cfa7" stroke="#a8d7a7"/>
 
     <!-- the selection: its solid sage fill is in #select-lit above;
          dark caption box and text -->
@@ -263,17 +269,17 @@
 
     <!-- row 2: y 499..710, caption box top rule at y 682 -->
     <rect x="128" y="499" width="194" height="211" fill="none" stroke="#8fba97" stroke-width="1.25"/>
-    <text x="222" y="591" fill="#acddb4">SECURITY</text>
-    <text x="220" y="615" fill="#acddb4">SYSTEMS</text>
-    <use href="#caption" x="128" y="710" fill="#a8d7a7" stroke="#a8d7a7"/>
+    <text x="222" y="591" fill="#a2d2a8">SECURITY</text>
+    <text x="220" y="615" fill="#a2d2a8">SYSTEMS</text>
+    <use href="#caption" x="128" y="710" fill="#a2cfa7" stroke="#a8d7a7"/>
 
     <rect x="418" y="499" width="194" height="211" fill="none" stroke="#8fba97" stroke-width="1.25"/>
-    <text x="514" y="599" fill="#acddb4">PRIVATE</text>
-    <use href="#caption" x="418" y="710" fill="#a8d7a7" stroke="#a8d7a7"/>
+    <text x="514" y="599" fill="#a2d2a8">PRIVATE</text>
+    <use href="#caption" x="418" y="710" fill="#a2cfa7" stroke="#a8d7a7"/>
 
     <rect x="716" y="499" width="194" height="211" fill="none" stroke="#8fba97" stroke-width="1.25"/>
-    <text x="814" y="599" fill="#acddb4">DEVICES</text>
-    <use href="#caption" x="716" y="710" fill="#a8d7a7" stroke="#a8d7a7"/>
+    <text x="814" y="599" fill="#a2d2a8">DEVICES</text>
+    <use href="#caption" x="716" y="710" fill="#a2cfa7" stroke="#a8d7a7"/>
   </g>
 
   <!-- ==== MESSAGE detail panel, x 1014..1275, y 215..723 ==== -->
@@ -282,10 +288,9 @@
     <text x="1033" y="264" font-size="22" font-weight="600" fill="#acddb4"
           letter-spacing="0.3">BRAINDANCE</text>
     <path d="M 1014,281 H 1275" fill="none" stroke="#8fba97" stroke-width="1.25"/>
-    <!-- body copy: 7 lines, blank, 3 lines on a 21px pitch, x 1033,
-         baselines cap-top + 11. The face is a wide medium sans: Rajdhani
-         500 at 17 stretched 1.16 lands every line's run within 4px -->
-    <g font-size="17" font-weight="500" fill="#9fc09c" transform="translate(1033,0) scale(1.16,1)">
+    <!-- body copy: 7 lines, blank, 3 lines on a 21px pitch. The native
+         source's first run ends near x 3000; 1.135 stretch fits it. -->
+    <g font-size="17" font-weight="500" fill="#add2aa" transform="translate(1032.2,1.25) scale(1.135,1)">
       <text x="0" y="321">Lorem ipsum dolor sit amet,</text>
       <text x="0" y="342">consectetur adipiscing elit,</text>
       <text x="0" y="363">sed do eiusmod tempor inci-</text>

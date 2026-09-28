@@ -16,13 +16,10 @@
 //! it (surface, menu, chrome, bracket, ornament), and those are bar /
 //! dashboard consumers; see `ERAS-DELTA.md`.
 //!
-//! Ground: the traces are not flat. All four sit on a radial lift
-//! (`login-trace.svg` `<radialGradient id="lift" cx="0.45" cy="0.4"
-//! r="0.8">` #1a1810 / #141107 / #0f0a04; mailbox #1c1b11 / #151207 /
-//! #100a03; store #1e1d12 / #151207 / #100b03; dashboard #1c1a10 /
-//! #141107 / #0f0a03). `ground: Ground::Flat` stands as a deliberate
-//! choice (the mailbox block below reads the lift as the photograph's
-//! falloff, on the trace's own instruction).
+//! Ground: the native photos have a broad upper light field, fitted from
+//! clear patches in `docs/entropism/ground-fit.md`. Hub, mail and store
+//! share one field; login has a dimmer one. `Ground::Flat` remains the
+//! fallback for surfaces and the original bar composition.
 //!
 //! The predecessor crate (`entropism-ui`) carried twelve colours --
 //! including cybr's red, cyan, mint, violet, orange and gold -- and a
@@ -89,6 +86,16 @@ pub fn palette() -> Palette {
         cta: SAGE_SOLID,
         bloom: BG,
     }
+}
+
+/// The published reference palette differs from the standalone palette
+/// only in its derived panel role (`home/themes/entropism/palettes.nix`).
+/// Exact matching confines photographed access inks to those two palettes.
+pub fn access_reference_palette(actual: &Palette) -> bool {
+    let built_in = palette();
+    let mut published = built_in;
+    published.panel = rgb(0x181109);
+    *actual == built_in || *actual == published
 }
 
 pub fn style() -> Style {
@@ -297,6 +304,8 @@ pub fn style() -> Style {
         // --- dashboard ---
         dashboard: DASHBOARD,
         dashboard_reference_fg: None,
+        store_reference_fg: None,
+        store_reference: None,
         // BRAINDANCE, row 1 tile 3: the one tile dashboard-trace.svg
         // fills solid (`<rect x="716" y="227" ... fill="#a6d3a7"/>`
         // under "the selection: solid sage fill, dark caption box and
@@ -356,26 +365,18 @@ pub fn style() -> Style {
 // about their outline ink was the larger fault; the probe stays here
 // so nobody re-measures it.
 
-/// `#lift` (login-trace.svg :2-6), `cx 0.45 cy 0.4 r 0.8` of the
-/// page: centre (720,360), radii (1280,720), its own hex -- the store
-/// measured its own `STORE_LIFT`, the hub its `LIFT`. The rim colour
-/// is also the page under it, because the frame's far corner sits at
-/// t 1.016, just outside the ellipse.
-///
-/// Why the screen has a lift at all when `Ground::Flat` is the era:
-/// the shape gate proved it. The trace's lift is bright enough at its
-/// centre to be a palette cluster of its own that never reaches the
-/// frame edge, so the extractor bins it as *ink* and reads a 1044x586
-/// shape in the middle of the screen -- 72% of the design's shape
-/// area, against a flat ground that offers nothing to match it.
+/// Login's separate, dimmer upper field; see ground-fit.md. The photo's
+/// solid footer band is drawn later and is unchanged.
 const LOGIN_LIFT: &[(f32, iced::Color)] = &[
-    (0.0, rgb(0x1a1810)),
-    (0.7, rgb(0x141107)),
-    (1.0, rgb(0x0f0a04)),
+    (0.0, rgb(0x1a150d)),
+    (0.25, rgb(0x1a1a14)),
+    (0.5, rgb(0x1c1a12)),
+    (0.75, rgb(0x0f0b04)),
+    (1.0, rgb(0x0d0804)),
 ];
 const LOGIN_GROUND: &[Prim] = &[
-    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(rgb(0x0f0a04))),
-    Prim::Lobe { x: 720.0, y: 360.0, rx: 1280.0, ry: 720.0, stops: LOGIN_LIFT },
+    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(rgb(0x0d0804))),
+    Prim::Lobe { x: 950.0, y: -139.0, rx: 1172.0, ry: 767.0, stops: LOGIN_LIFT },
 ];
 const LOGIN_BACKDROP: &[Prim] = &[Prim::Soft { prims: LOGIN_GROUND }];
 
@@ -391,6 +392,8 @@ const LOGIN_BACKDROP: &[Prim] = &[Prim::Soft { prims: LOGIN_GROUND }];
 /// NEXT medium ls 2 at x 940 baseline
 /// 433; the footer strings to baseline 863 and x 61/519/1383.
 pub const ACCESS: Access = Access {
+    reference_fg: None,
+    reference_backdrop: None,
     backdrop: LOGIN_BACKDROP,
     // Header strip, x 49..1547, y 43..69, dividers at 465 and 1353.
     masthead: Masthead::Strip {
@@ -444,7 +447,8 @@ pub const ACCESS: Access = Access {
     // dividers, unlike the thin outlined strip the hub, mail and store
     // screens use.
     colophon: Colophon::Band {
-        plate: Plate::filled(Plot::new(36.0, 765.0, 1529.0, 115.0), Ink::Select),
+        plate: Plate::filled(Plot::new(36.0, 765.0, 1529.0, 115.0), Ink::Select)
+            .reference_fill(rgb(0x8aac8c)),
         labels: &[
             Legend::new("INTERFACE LOADED", 61.0, 863.0, 15.0, Ink::OnSelect).tracked(1.0),
             Legend::new("PROVIDED BY NEXUS NETWORK V10.8", 519.0, 863.0, 15.0, Ink::OnSelect)
@@ -466,8 +470,8 @@ pub const ACCESS: Access = Access {
 //     designed glow -- README.md's 'no glow' rule stands for the iced
 //     implementation, which should draw the 2px stroke only" -- so every
 //     outline here is the single 2px stroke.
-//   * the trace's `lift` radial ground is the photograph's falloff;
-//     `Ground::Flat` stands.
+//   * the upper field is the shared native-photo ground, now painted
+//     through the mailbox backdrop like the hub and store scenes.
 //
 // Outline ink is `Ink::Border`. It was `Ink::Mid` until 2026-09-05
 // because the trace samples every frame at #709174, next to the era's
@@ -701,6 +705,15 @@ static BUTTONS: [&str; 4] = ["REPLY", "FORWARD", "DELETE", "REPORT SPAM"];
 /// the filled one.
 static LEVELS: [&str; 4] = ["T1", "T3", "T2", "T4"];
 
+// Relative to each mailbox badge; the source's four glyph widths and
+// centers differ. Their words remain supplied by LEVELS.
+const MAILBOX_BADGE_LABELS: &[Run] = &[
+    Run::new(36.0, 43.5, 27.0, Ink::Fg).bold().centered().stretched(1.44),
+    Run::new(36.0, 43.5, 27.0, Ink::Fg).bold().centered().stretched(1.48),
+    Run::new(36.0, 43.5, 27.0, Ink::Fg).bold().centered().stretched(1.47),
+    Run::new(35.5, 43.5, 27.0, Ink::Fg).bold().centered().stretched(1.42),
+];
+
 /// The seven rows, trace lines 188-207 (text) and 186 / 210-216 (the
 /// envelopes: only row 2's is `#env-open`). The trace sets them in
 /// capitals; `title_upper` / `from_upper` do that here.
@@ -773,9 +786,11 @@ static PARAGRAPHS: [&[&str]; 3] = [
 
 pub fn mailbox() -> Mailbox {
     Mailbox {
-        text_baseline: 0.95,
-        // this era's mailbox is content with its `Ground`
-        backdrop: &[],
+        // Native Iced paints the fitted Rajdhani runs about 1.2 design pixels
+        // above their SVG baselines at 3840x2160. This shared factor
+        // moves all mailbox text down without changing source-fitted Runs.
+        text_baseline: 0.89,
+        backdrop: MAIL_GROUND,
         chrome: &CHROME,
         overlay: &[],
         list: MailList {
@@ -792,6 +807,7 @@ pub fn mailbox() -> Mailbox {
             pitch: 61.95,
             rows: &ROWS,
             row_type: &ROW_TYPE,
+            selected_row_type: None,
             selected: 0,
             decor: RowDecor::Framed,
             row_fill: None,
@@ -813,6 +829,7 @@ pub fn mailbox() -> Mailbox {
             veneer: None,
             glyph_x: 102.0,
             glyph_dy: 18.0,
+            glyph_offsets: &[],
             glyph_w: 17.0,
             text_x: 138.0,
             title_dy: 30.0,
@@ -820,6 +837,7 @@ pub fn mailbox() -> Mailbox {
             title_bold: false,
             title_ink: Ink::Fg,
             selected_ink: Ink::OnSelect,
+            selected_printing: None,
             from_dy: 48.0,
             from_size: 14.0,
             from_ink: Ink::Mid,
@@ -855,6 +873,9 @@ pub fn mailbox() -> Mailbox {
             body: Run::new(556.0, 325.0, 17.0, Ink::Fg).stretched(1.14),
             line: 21.7,
             para: 39.0,
+            // The first two paragraph starts follow the common pitch;
+            // the source puts the third at y535 rather than y533.2.
+            paragraph_baselines: &[325.0, 429.1, 535.0],
             paragraphs: &PARAGRAPHS,
         },
         buttons: MailButtons {
@@ -888,7 +909,8 @@ pub fn mailbox() -> Mailbox {
             width: 2.0,
             fill: None,
             stroke: Ink::Border,
-            label: Run::new(35.0, 43.5, 27.0, Ink::Fg).bold().centered(),
+            label: Run::new(35.0, 43.5, 27.0, Ink::Fg).bold().centered().stretched(1.42),
+            label_runs: MAILBOX_BADGE_LABELS,
             caption: None,
             caption_text: "",
             labels: &LEVELS,
@@ -930,15 +952,38 @@ const QR: &[&str] = &[
     "#..#.#..#",
 ];
 
-/// The rifle illustration's outline envelope, card-local. The photo has
-/// a detailed line drawing; the trace keeps its four blocks.
-const RIFLE_STOCK: &[Seg] = &[
-    Seg::Line(242.0, 108.0),
-    Seg::Line(242.0, 157.0),
-    Seg::Line(226.0, 157.0),
-    Seg::Line(226.0, 136.0),
-    Seg::Line(154.0, 136.0),
-];
+#[path = "entropism_store_art.rs"]
+mod store_art;
+
+/// Source-native nested tone contours for the repeated MAGNUM weapon.
+/// The two thresholds retain rail holes, receiver fasteners and grip folds
+/// without strokes that can escape the weapon body (store-art.md).
+const RIFLE_PLAIN: Prim = Prim::Path {
+    x: 237.833, y: 131.667, segs: super::magnum_art::RIFLE, close: true,
+    fill: Some(Ink::Mid), stroke: None, width: 0.0,
+};
+const RIFLE_INVERSE: Prim = Prim::Path {
+    x: 72.333, y: 105.833, segs: store_art::SELECTED_DARK, close: true,
+    fill: Some(Ink::Dim), stroke: None, width: 0.0,
+};
+const RIFLE_PLAIN_DETAIL: Prim = Prim::Path {
+    x: 78.25, y: 105.833, segs: super::magnum_art::RIFLE_BRIGHT, close: true,
+    fill: Some(Ink::Select), stroke: None, width: 0.0,
+};
+const RIFLE_INVERSE_DETAIL: Prim = Prim::Path {
+    x: 72.333, y: 105.833, segs: store_art::SELECTED_CORE, close: true,
+    fill: Some(Ink::OnSelect), stroke: None, width: 0.0,
+};
+
+/// Store-local printing calibrated against card 1 at 1600x900.
+const fn store_text(x: f32, y: f32, size: f32, stretch: f32, ink: Ink, content: &'static str) -> Prim {
+    Prim::Wide { x, y, size, stretch, ink, face: Face::Medium,
+        anchor: crate::style::Anchor::Start, content }
+}
+const fn store_mid(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -> Prim {
+    Prim::Wide { x, y, size, stretch: 1.0, ink, face: Face::Medium,
+        anchor: crate::style::Anchor::Middle, content }
+}
 
 /// An unselected product card, at its own origin. 265 wide, outlined,
 /// with the socket row hung off its foot so the two frames share an
@@ -951,15 +996,12 @@ const CARD: &[Prim] = &[
     fill_rect(3.0, 62.0, 58.0, 11.0, Ink::Fixed(STORE_ON_BAND)),
     txt(6.0, 71.0, 9.5, Ink::Fixed(STORE_BAND), "PETROCHEM"),
     txt_end(259.0, 71.0, 9.5, Ink::Fixed(STORE_ON_BAND), "BETTERLIFE TEC"),
-    // the rifle: fill in the bright ink, hairlined in the solid
-    Prim::Rect { x: 60.0, y: 102.0, w: 94.0, h: 48.0, fill: Some(Ink::Fg), stroke: Some(Ink::Select), width: 1.0 },
-    Prim::Rect { x: 36.0, y: 116.0, w: 40.0, h: 41.0, fill: Some(Ink::Fg), stroke: Some(Ink::Select), width: 1.0 },
-    Prim::Rect { x: 150.0, y: 125.0, w: 21.0, h: 32.0, fill: Some(Ink::Fg), stroke: Some(Ink::Select), width: 1.0 },
-    Prim::Path { x: 154.0, y: 108.0, segs: RIFLE_STOCK, close: true, fill: Some(Ink::Fg), stroke: Some(Ink::Select), width: 1.0 },
-    txt_mid(41.0, 200.0, 20.0, Ink::Select, "DPS"),
-    txt_mid(102.0, 200.0, 20.0, Ink::Select, "PNT"),
-    txt_mid(164.0, 200.0, 20.0, Ink::Select, "ACC"),
-    txt_mid(225.0, 200.0, 20.0, Ink::Select, "ROF"),
+    RIFLE_PLAIN,
+    RIFLE_PLAIN_DETAIL,
+    txt_mid(41.0, 196.7, 17.5, Ink::Select, "DPS"),
+    txt_mid(102.0, 196.7, 17.5, Ink::Select, "PNT"),
+    txt_mid(164.0, 196.7, 17.5, Ink::Select, "ACC"),
+    txt_mid(225.0, 196.7, 17.5, Ink::Select, "ROF"),
     fill_rect(5.0, 209.0, 255.0, 25.0, Ink::Select),
     txt_mid(41.0, 230.0, 22.0, Ink::OnSelect, "86"),
     txt_mid(102.0, 230.0, 22.0, Ink::OnSelect, "30"),
@@ -971,14 +1013,14 @@ const CARD: &[Prim] = &[
     vline(119.0, 237.0, 286.0, Ink::Border, 1.5),
     vline(191.0, 237.0, 286.0, Ink::Border, 1.5),
     Prim::Dots { x: 10.5, y: 246.5, cell: 3.8, pitch: 3.5, ink: Ink::Select, rows: QR },
-    txt_mid(85.0, 258.0, 12.0, Ink::Select, "EMPTY"),
-    txt_mid(85.0, 272.0, 12.0, Ink::Select, "SOCKET"),
-    txt_mid(155.0, 258.0, 12.0, Ink::Select, "EMPTY"),
-    txt_mid(155.0, 272.0, 12.0, Ink::Select, "SOCKET"),
-    txt_mid(228.0, 258.0, 12.0, Ink::Select, "EMPTY"),
-    txt_mid(228.0, 272.0, 12.0, Ink::Select, "SOCKET"),
-    txt(5.0, 304.0, 7.5, Ink::Fg, "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO"),
-    txt(5.0, 314.0, 7.5, Ink::Fg, "MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
+    store_mid(83.5, 259.5, 13.0, Ink::Select, "EMPTY"),
+    store_mid(83.5, 273.5, 13.0, Ink::Select, "SOCKET"),
+    store_mid(153.5, 259.5, 13.0, Ink::Select, "EMPTY"),
+    store_mid(153.5, 273.5, 13.0, Ink::Select, "SOCKET"),
+    store_mid(226.5, 259.5, 13.0, Ink::Select, "EMPTY"),
+    store_mid(226.5, 273.5, 13.0, Ink::Select, "SOCKET"),
+    store_text(5.0, 306.0, 8.5, 1.04, Ink::Fg, "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO"),
+    store_text(5.0, 314.0, 8.5, 1.025, Ink::Fg, "MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
 ];
 
 /// The grown card: the header block down through the values row is one
@@ -995,42 +1037,40 @@ const GROWN: &[Prim] = &[
     fill_rect(3.0, 62.0, 58.0, 11.0, Ink::Fixed(STORE_ON_BAND)),
     txt(6.0, 71.0, 9.5, Ink::Fixed(STORE_BAND), "PETROCHEM"),
     txt_end(259.0, 71.0, 9.5, Ink::Fixed(STORE_ON_BAND), "BETTERLIFE TEC"),
-    Prim::Rect { x: 60.0, y: 102.0, w: 94.0, h: 48.0, fill: Some(Ink::OnSelect), stroke: Some(Ink::Dim), width: 1.0 },
-    Prim::Rect { x: 36.0, y: 116.0, w: 40.0, h: 41.0, fill: Some(Ink::OnSelect), stroke: Some(Ink::Dim), width: 1.0 },
-    Prim::Rect { x: 150.0, y: 125.0, w: 21.0, h: 32.0, fill: Some(Ink::OnSelect), stroke: Some(Ink::Dim), width: 1.0 },
-    Prim::Path { x: 154.0, y: 108.0, segs: RIFLE_STOCK, close: true, fill: Some(Ink::OnSelect), stroke: Some(Ink::Dim), width: 1.0 },
-    txt_mid(41.0, 200.0, 20.0, Ink::OnSelect, "DPS"),
-    txt_mid(102.0, 200.0, 20.0, Ink::OnSelect, "PNT"),
-    txt_mid(164.0, 200.0, 20.0, Ink::OnSelect, "ACC"),
-    txt_mid(225.0, 200.0, 20.0, Ink::OnSelect, "ROF"),
+    RIFLE_INVERSE,
+    RIFLE_INVERSE_DETAIL,
+    txt_mid(41.0, 196.7, 17.5, Ink::OnSelect, "DPS"),
+    txt_mid(102.0, 196.7, 17.5, Ink::OnSelect, "PNT"),
+    txt_mid(164.0, 196.7, 17.5, Ink::OnSelect, "ACC"),
+    txt_mid(225.0, 196.7, 17.5, Ink::OnSelect, "ROF"),
     fill_rect(0.0, 207.25, 265.0, 1.5, Ink::OnSelect),
     txt_mid(41.0, 230.0, 22.0, Ink::OnSelect, "86"),
     txt_mid(102.0, 230.0, 22.0, Ink::OnSelect, "30"),
     txt_mid(164.0, 230.0, 22.0, Ink::OnSelect, "5"),
     txt_mid(225.0, 230.0, 22.0, Ink::OnSelect, "5"),
     // detail block, y 494..672 on the page
-    txt(17.0, 270.0, 19.0, Ink::Select, "20"),
-    txt(51.0, 270.0, 19.0, Ink::Select, "Recoil"),
-    txt(17.0, 291.0, 19.0, Ink::Select, "22"),
-    txt(51.0, 291.0, 19.0, Ink::Select, "Sperad"),
-    txt(17.0, 312.0, 19.0, Ink::Select, "12"),
-    txt(51.0, 312.0, 19.0, Ink::Select, "Range"),
-    txt(17.0, 348.0, 19.0, Ink::Select, "Bonus"),
-    txt(17.0, 368.0, 19.0, Ink::Select, "+9 Reflexes"),
-    txt(17.0, 390.0, 19.0, Ink::Select, "+2 Modules Slots"),
+    store_text(17.0, 270.0, 19.75, 1.01, Ink::Select, "20"),
+    store_text(51.0, 270.0, 19.75, 1.01, Ink::Select, "Recoil"),
+    store_text(17.0, 291.0, 19.75, 1.01, Ink::Select, "22"),
+    store_text(51.0, 291.0, 19.75, 1.01, Ink::Select, "Sperad"),
+    store_text(17.0, 312.0, 19.75, 1.01, Ink::Select, "12"),
+    store_text(51.0, 312.0, 19.75, 1.01, Ink::Select, "Range"),
+    store_text(17.0, 348.0, 19.75, 1.01, Ink::Select, "Bonus"),
+    store_text(17.0, 368.0, 19.75, 1.01, Ink::Select, "+9 Reflexes"),
+    store_text(17.0, 390.0, 19.75, 1.01, Ink::Select, "+2 Modules Slots"),
     line_rect(0.0, 412.0, 265.0, 48.0, Ink::Border, 2.0),
     vline(52.0, 412.0, 460.0, Ink::Border, 1.5),
     vline(120.0, 412.0, 460.0, Ink::Border, 1.5),
     vline(192.0, 412.0, 460.0, Ink::Border, 1.5),
     Prim::Dots { x: 10.5, y: 420.5, cell: 3.8, pitch: 3.5, ink: Ink::Select, rows: QR },
-    txt_mid(86.0, 433.0, 12.0, Ink::Select, "EMPTY"),
-    txt_mid(86.0, 447.0, 12.0, Ink::Select, "SOCKET"),
-    txt_mid(156.0, 433.0, 12.0, Ink::Select, "EMPTY"),
-    txt_mid(156.0, 447.0, 12.0, Ink::Select, "SOCKET"),
-    txt_mid(228.0, 433.0, 12.0, Ink::Select, "EMPTY"),
-    txt_mid(228.0, 447.0, 12.0, Ink::Select, "SOCKET"),
-    txt(5.0, 478.0, 7.5, Ink::Fg, "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO"),
-    txt(5.0, 488.0, 7.5, Ink::Fg, "MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
+    store_mid(84.5, 434.5, 13.0, Ink::Select, "EMPTY"),
+    store_mid(84.5, 448.5, 13.0, Ink::Select, "SOCKET"),
+    store_mid(154.5, 434.5, 13.0, Ink::Select, "EMPTY"),
+    store_mid(154.5, 448.5, 13.0, Ink::Select, "SOCKET"),
+    store_mid(226.5, 434.5, 13.0, Ink::Select, "EMPTY"),
+    store_mid(226.5, 448.5, 13.0, Ink::Select, "SOCKET"),
+    store_text(5.0, 480.0, 8.5, 1.04, Ink::Fg, "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO"),
+    store_text(5.0, 488.0, 8.5, 1.025, Ink::Fg, "MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
 ];
 
 // Transpose the sourced grown header's reverse video onto the compact
@@ -1043,7 +1083,7 @@ const fn compact_cursor() -> [Prim; CARD.len() + 1] {
     while i < CARD.len() {
         let mut prim = CARD[i];
         match &mut prim {
-            Prim::Text { y, ink, .. } if *y <= 234.0 => {
+            Prim::Text { y, ink, .. } | Prim::Wide { y, ink, .. } if *y <= 234.0 => {
                 *ink = match *ink {
                     Ink::Select => Ink::OnSelect,
                     Ink::OnSelect => Ink::Select,
@@ -1054,9 +1094,12 @@ const fn compact_cursor() -> [Prim; CARD.len() + 1] {
                 *fill = Some(Ink::OnSelect);
                 *stroke = Some(Ink::Dim);
             }
-            Prim::Path { fill, stroke, .. } => {
-                *fill = Some(Ink::OnSelect);
-                *stroke = Some(Ink::Dim);
+            Prim::Path { fill, .. } => {
+                *fill = match *fill {
+                    Some(Ink::Select) => Some(Ink::OnSelect),
+                    Some(Ink::Mid) => Some(Ink::Dim),
+                    other => other,
+                };
             }
             // Invert the existing values strip, not the grown divider.
             Prim::Rect { y, fill, .. } if *y == 209.0 => *fill = Some(Ink::OnSelect),
@@ -1077,16 +1120,19 @@ const fn grown_outline() -> [Prim; GROWN.len() - 1] {
     while i < GROWN.len() {
         let mut prim = GROWN[i];
         match &mut prim {
-            Prim::Text { y, ink, .. } if *y <= 234.0 => {
+            Prim::Text { y, ink, .. } | Prim::Wide { y, ink, .. } if *y <= 234.0 => {
                 if let Ink::OnSelect = *ink { *ink = Ink::Select; }
             }
             Prim::Rect { y, fill, stroke, .. } if *y >= 102.0 && *y < 157.0 => {
                 *fill = Some(Ink::Fg);
                 *stroke = Some(Ink::Select);
             }
-            Prim::Path { fill, stroke, .. } => {
-                *fill = Some(Ink::Fg);
-                *stroke = Some(Ink::Select);
+            Prim::Path { fill, .. } => {
+                *fill = match *fill {
+                    Some(Ink::OnSelect) => Some(Ink::Select),
+                    Some(Ink::Dim) => Some(Ink::Mid),
+                    other => other,
+                };
             }
             Prim::Rect { y, fill, .. } if *y == 207.25 => *fill = Some(Ink::Select),
             _ => {}
@@ -1146,7 +1192,7 @@ mod store_interaction_tests {
                 *fill = None;
                 *stroke = None;
             }
-            Prim::Text { ink, .. } => *ink = Ink::Fg,
+            Prim::Text { ink, .. } | Prim::Wide { ink, .. } => *ink = Ink::Fg,
             _ => {}
         }
         prim
@@ -1159,8 +1205,8 @@ mod store_interaction_tests {
         assert_eq!(geometry(GROWN_OUTLINE), geometry(&GROWN[1..]));
         // Details, sockets, QR and compliance are outside the header;
         // none follow hover or press, including their original inks.
-        assert_eq!(&CARD_CURSOR[21..], &CARD[20..]);
-        assert_eq!(&GROWN_OUTLINE[20..], &GROWN[21..]);
+        assert_eq!(&CARD_CURSOR[19..], &CARD[18..]);
+        assert_eq!(&GROWN_OUTLINE[18..], &GROWN[19..]);
         for (index, states) in STORE_STATES.iter().enumerate() {
             assert_eq!((states.group, states.index), (Group::Card, index));
             assert_eq!(states.hover, CARD_CURSOR);
@@ -1178,42 +1224,58 @@ mod store_interaction_tests {
         assert_eq!(&GROWN_OUTLINE[3..7], &GROWN[4..8]);
         for prim in GROWN_OUTLINE {
             assert!(!matches!(prim, Prim::Motion { .. }));
-            if let Prim::Text { y, ink, .. } = prim {
+            if let Prim::Text { y, ink, .. } | Prim::Wide { y, ink, .. } = prim {
                 if *y <= 234.0 { assert_ne!(*ink, Ink::OnSelect); }
             }
         }
         assert!(matches!(CARD_CURSOR[2], Prim::Text { ink: Ink::OnSelect, .. }));
-        assert!(matches!(CARD_CURSOR[17], Prim::Text { ink: Ink::Select, .. }));
+        assert!(matches!(CARD_CURSOR[15], Prim::Text { ink: Ink::Select, .. }));
     }
 }
 
-/// The "4" of the logotype, drawn at the extractor's own bbox for it.
-/// Two subpaths, filled even-odd: the counter is the hole.
+/// The source 4 has its left corner at (137,133), a triangular counter
+/// and a lower descender ending at y152. The S follows source-measured
+/// rounded lobes and the thin y136–141 waist (store-art.md).
 const FOUR: &[Seg] = &[
-    Seg::Line(197.0, 105.0),
-    Seg::Line(197.0, 151.0),
-    Seg::Line(170.0, 151.0),
-    Seg::Line(170.0, 139.0),
-    Seg::Line(138.0, 139.0),
-    Seg::Line(138.0, 126.0),
-    Seg::Line(165.0, 105.0),
-    Seg::Move(155.0, 126.0),
-    Seg::Line(170.0, 126.0),
-    Seg::Line(170.0, 114.0),
+    Seg::Line(188.0, 105.0),
+    Seg::Line(190.0, 106.0),
+    Seg::Line(190.0, 132.0),
+    Seg::Line(198.0, 132.0),
+    Seg::Line(198.0, 144.0),
+    Seg::Line(190.0, 145.0),
+    Seg::Line(190.0, 152.0),
+    Seg::Line(173.0, 152.0),
+    Seg::Line(172.0, 145.0),
+    Seg::Line(138.0, 145.0),
+    Seg::Line(137.0, 133.0),
+    Seg::Line(157.0, 114.0),
+    Seg::Line(164.0, 105.0),
+    Seg::Move(158.0, 130.0),
+    Seg::Line(162.0, 128.0),
+    Seg::Line(172.0, 118.0),
+    Seg::Line(172.0, 132.0),
+    Seg::Line(158.0, 132.0),
 ];
 
 const ESS: &[Seg] = &[
-    Seg::Line(254.0, 102.0),
-    Seg::Line(254.0, 116.0),
-    Seg::Line(216.0, 116.0),
-    Seg::Line(216.0, 120.0),
-    Seg::Line(254.0, 120.0),
-    Seg::Line(254.0, 151.0),
-    Seg::Line(202.0, 151.0),
-    Seg::Line(202.0, 137.0),
-    Seg::Line(240.0, 137.0),
-    Seg::Line(240.0, 133.0),
-    Seg::Line(202.0, 133.0),
+    Seg::Cubic { c1x: 263.0, c1y: 146.0, c2x: 256.0, c2y: 151.0, x: 246.0, y: 153.0 },
+    Seg::Cubic { c1x: 232.0, c1y: 156.0, c2x: 218.0, c2y: 154.0, x: 211.0, y: 151.0 },
+    Seg::Cubic { c1x: 205.0, c1y: 148.0, c2x: 201.0, c2y: 143.0, x: 201.0, y: 138.0 },
+    Seg::Line(205.0, 136.0),
+    Seg::Line(218.0, 136.0),
+    Seg::Cubic { c1x: 223.0, c1y: 136.0, c2x: 226.0, c2y: 138.0, x: 226.0, y: 140.0 },
+    Seg::Cubic { c1x: 228.0, c1y: 142.0, c2x: 236.0, c2y: 142.0, x: 240.0, y: 140.0 },
+    Seg::Cubic { c1x: 242.0, c1y: 137.0, c2x: 238.0, c2y: 135.0, x: 230.0, y: 134.0 },
+    Seg::Line(211.0, 131.0),
+    Seg::Cubic { c1x: 204.0, c1y: 129.0, c2x: 202.0, c2y: 125.0, x: 202.0, y: 118.0 },
+    Seg::Cubic { c1x: 201.0, c1y: 109.0, c2x: 208.0, c2y: 103.0, x: 221.0, y: 101.0 },
+    Seg::Cubic { c1x: 234.0, c1y: 99.0, c2x: 249.0, c2y: 102.0, x: 255.0, y: 106.0 },
+    Seg::Cubic { c1x: 259.0, c1y: 109.0, c2x: 261.0, c2y: 113.0, x: 261.0, y: 118.0 },
+    Seg::Line(239.0, 118.0),
+    Seg::Cubic { c1x: 238.0, c1y: 114.0, c2x: 233.0, c2y: 112.0, x: 227.0, y: 113.0 },
+    Seg::Cubic { c1x: 223.0, c1y: 113.0, c2x: 222.0, c2y: 116.0, x: 223.0, y: 118.0 },
+    Seg::Cubic { c1x: 227.0, c1y: 120.0, c2x: 241.0, c2y: 121.0, x: 253.0, y: 122.0 },
+    Seg::Cubic { c1x: 261.0, c1y: 125.0, c2x: 264.0, c2y: 131.0, x: 264.0, y: 138.0 },
 ];
 
 /// The T is outline-only in the source; the 4 and the S are solid.
@@ -1279,25 +1341,25 @@ const SHELF_3: &[Prim] = &[Prim::Viewport {
     x: -2.0, y: -2.0, w: 137.6, h: 492.0, prims: shelf!(3),
 }];
 
-/// The store's `#lift` (:2-6), `cx 0.45 cy 0.4 r 0.8` of the page:
-/// centre (720,360), radii (1280,720), padded past the rim with its
-/// last stop. Not the dashboard's `LIFT` (cy 0.45, r 0.75, its own
-/// hex): each trace measured its own photo. Until 2026-09-04 the store
-/// drew no lift at all -- flat `17 12 7` where the design runs
-/// `22 20 9` .. `28 27 16`, 5-11 levels under it everywhere.
-const STORE_LIFT: &[(f32, iced::Color)] = &[
-    (0.0, rgb(0x1e1d12)),
-    (0.7, rgb(0x151207)),
-    (1.0, rgb(0x100b03)),
+/// Hub, mailbox and store are frames of the same photographic field.
+/// Its side margins stay near black while the upper centre receives a
+/// broad warm illumination. The Rust table matches the SVG `#lift`.
+const SHARED_LIFT: &[(f32, iced::Color)] = &[
+    (0.0, rgb(0x1f1e15)),
+    (0.25, rgb(0x1f1f15)),
+    (0.5, rgb(0x1f1e14)),
+    (0.75, rgb(0x18140a)),
+    (1.0, rgb(0x0f0903)),
 ];
-const STORE_GROUND: &[Prim] = &[
-    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(rgb(0x100b03))),
-    Prim::Lobe { x: 720.0, y: 360.0, rx: 1280.0, ry: 720.0, stops: STORE_LIFT },
+const SHARED_GROUND: &[Prim] = &[
+    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(rgb(0x0f0903))),
+    Prim::Lobe { x: 935.0, y: 5.0, rx: 943.0, ry: 420.0, stops: SHARED_LIFT },
 ];
+const MAIL_GROUND: &[Prim] = &[Prim::Soft { prims: SHARED_GROUND }];
 
 pub const STORE: &[Prim] = &[
     // ground (:168), composited
-    Prim::Soft { prims: STORE_GROUND },
+    Prim::Soft { prims: SHARED_GROUND },
     // header strip, y 43..69, dividers at x 467 and 1357: chrome,
     // standing from frame 0
     line_rect(49.0, 43.0, 1502.0, 26.0, Ink::Border, 1.5),
@@ -1325,8 +1387,8 @@ const STORE_FOOTER: &[Prim] = &[
 /// The store's body (:235-365), in the trace's paint order.
 const STORE_BODY: &[Prim] = &[
     // 4ST logotype
-    fill_path(170.0, 105.0, FOUR, Ink::Select),
-    fill_path(202.0, 102.0, ESS, Ink::Select),
+    fill_path(164.0, 105.0, FOUR, Ink::Select),
+    fill_path(264.0, 138.0, ESS, Ink::Select),
     shut_path(262.0, 102.0, TEE, Ink::Select, 2.0),
     Prim::Spaced { x: 138.0, y: 174.0, size: 16.0, ink: Ink::Fg, face: Face::Regular, pitch: 42.0, content: "STORE" },
     // customer block
@@ -1381,7 +1443,7 @@ const STORE_BODY: &[Prim] = &[
 // 1.25px core of every outlined frame at full resolution, trace header
 // "Stroke profile") and the selected tile's fill is `Ink::Select`
 // (`SAGE_SOLID` #a6d3a7). None of the other role consts above carries
-// any of them (BG #110c07 vs the trace's ground #0f0a03; SAGE_TEXT
+// any of them (BG #110c07 vs the fitted ground #0f0903; SAGE_TEXT
 // #94bb94 vs the label #acddb4; ON_SOLID #1f2a1c vs #22301f), so they
 // are spelled here as block-local consts, the way `STORE_BAND` is.
 // Reconciling the rest with the palette is ERAS-DELTA work, not this
@@ -1393,27 +1455,22 @@ use crate::style::{hline, Anchor};
 const HUB_ON_SOLID: iced::Color = rgb(0x22301f);
 /// The selected tile's caption box, drawn dark on the fill.
 const HUB_ON_CAPTION: iced::Color = rgb(0x2e4a2c);
-/// Tile labels, badge glyphs and the panel heading.
+/// Badge glyphs and the panel heading.
 const HUB_LABEL: iced::Color = rgb(0xacddb4);
+/// The five idle tile labels, fitted independently of the panel heading.
+const HUB_TILE_LABEL: iced::Color = rgb(0xa2d2a8);
 /// Header and footer strings.
 const HUB_STRIP: iced::Color = rgb(0x97c4a0);
 /// The panel's lorem body copy.
-const HUB_BODY: iced::Color = rgb(0x9fc09c);
+const HUB_BODY: iced::Color = rgb(0xadd2aa);
 /// The idle tiles' caption box: heavier and brighter than the frames.
 const HUB_CAPTION: iced::Color = rgb(0xa8d7a7);
+/// The caption lettering is a little dimmer than its rules.
+const HUB_CAPTION_TEXT: iced::Color = rgb(0xa2cfa7);
 /// The A / B / C letter boxes.
 const HUB_LETTER_BOX: iced::Color = rgb(0x9ac3a0);
 /// The boxed letters and their MAIL BOX / MESSAGE / SECURITY LEVEL labels.
 const HUB_SECTION: iced::Color = rgb(0xa0d2a9);
-
-/// The ground's radial lift, trace `<radialGradient id="lift">`: the
-/// three stops, with the outermost also painted flat under the lobe
-/// because r 0.75 leaves the page corners outside the ellipse.
-const LIFT: &[(f32, iced::Color)] = &[
-    (0.0, rgb(0x1c1a10)),
-    (0.7, rgb(0x141107)),
-    (1.0, rgb(0x0f0a03)),
-];
 
 /// Rajdhani 500 (`font-weight="500"`), start-anchored.
 const fn medium(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -> Prim {
@@ -1450,22 +1507,22 @@ const fn wide_mid(x: f32, y: f32, size: f32, stretch: f32, ink: Ink, face: Face,
 // def's `<path d="M 0,-28 H 194 M 96,-28 V 0">`), two cells of 600-weight
 // text stretched to the measured runs.
 macro_rules! caption {
-    ($ink:expr) => {
+    ($rule_ink:expr, $text_ink:expr) => {
         &[
-            hline(0.0, -28.0, 194.0, $ink, 1.7),
-            vline(96.0, -28.0, 0.0, $ink, 1.7),
-            wide(6.0, -15.0, 12.0, 0.78, $ink, Face::SemiBold, "85SD4F3Q5S41"),
-            wide(103.0, -15.0, 12.0, 0.685, $ink, Face::SemiBold, "COMBAT COLONIZATION"),
-            wide(103.0, -6.0, 10.5, 0.82, $ink, Face::SemiBold, "DEFENCE PROGRAM"),
+            hline(0.0, -28.0, 194.0, $rule_ink, 1.7),
+            vline(96.0, -28.0, 0.0, $rule_ink, 1.7),
+            wide(6.0, -15.0, 12.0, 0.78, $text_ink, Face::SemiBold, "85SD4F3Q5S41"),
+            wide(103.0, -15.0, 12.0, 0.685, $text_ink, Face::SemiBold, "COMBAT COLONIZATION"),
+            wide(103.0, -6.0, 10.5, 0.82, $text_ink, Face::SemiBold, "DEFENCE PROGRAM"),
         ]
     };
 }
 /// The box as the five idle tiles wear it, `<use href="#caption"
-/// fill="#a8d7a7" stroke="#a8d7a7">`.
-const CAPTION: &[Prim] = caption!(Ink::Fixed(HUB_CAPTION));
+/// fill="#a2cfa7" stroke="#a8d7a7">`.
+const CAPTION: &[Prim] = caption!(Ink::Fixed(HUB_CAPTION), Ink::Fixed(HUB_CAPTION_TEXT));
 /// The box as the selected tile wears it, `<use href="#caption"
 /// fill="#2e4a2c" stroke="#2e4a2c">` -- dark on the sage fill.
-const CAPTION_ON: &[Prim] = caption!(Ink::Fixed(HUB_ON_CAPTION));
+const CAPTION_ON: &[Prim] = caption!(Ink::Fixed(HUB_ON_CAPTION), Ink::Fixed(HUB_ON_CAPTION));
 
 // One menu tile, foot-anchored like the caption def so the `At` that
 // places it carries the trace's own `<use href="#caption" x y>`
@@ -1497,7 +1554,7 @@ macro_rules! tile {
             ],
             &[
                 line_rect(0.0, -$h, 194.0, $h, Ink::Border, 1.25),
-                $( label($lx, $ly, Ink::Fixed(HUB_LABEL), $label), )+
+                $( label($lx, $ly, Ink::Fixed(HUB_TILE_LABEL), $label), )+
                 Prim::At { x: 0.0, y: 0.0, prims: CAPTION },
             ],
         )
@@ -1543,18 +1600,8 @@ const MODULE_3: &[Prim] = module!(3, 211.0, TILE_ON_3, TILE_OFF_3);
 const MODULE_4: &[Prim] = module!(4, 211.0, TILE_ON_4, TILE_OFF_4);
 const MODULE_5: &[Prim] = module!(5, 211.0, TILE_ON_5, TILE_OFF_5);
 
-/// The ground, `<rect width=1600 height=900 fill="url(#lift)">`: the
-/// radial at cx 0.45 cy 0.45 r 0.75 of the page's box -> centre
-/// (720, 405), radii (1200, 675). Composited like every other ground
-/// since 2026-09-05; until then it was the last `Lobe` the canvas
-/// drew as annuli, and the only entropism screen with a banded lift.
-const HUB_GROUND: &[Prim] = &[
-    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(rgb(0x0f0a03))),
-    Prim::Lobe { x: 720.0, y: 405.0, rx: 1200.0, ry: 675.0, stops: LIFT },
-];
-
 pub const DASHBOARD: &[Prim] = &[
-    Prim::Soft { prims: HUB_GROUND },
+    Prim::Soft { prims: SHARED_GROUND },
     // header strip, y 43..69, dividers at x 465 and 1353
     line_rect(49.0, 43.0, 1498.0, 26.0, Ink::Border, 1.25),
     vline(465.0, 43.0, 69.0, Ink::Border, 1.25),
@@ -1607,18 +1654,19 @@ const HUB_SCAN: &[Prim] = &[
     line_rect(1014.0, 215.0, 261.0, 508.0, Ink::Border, 1.25),
     semibold(1033.0, 264.0, 22.0, Ink::Fixed(HUB_LABEL), "BRAINDANCE"),
     hline(1014.0, 281.0, 1275.0, Ink::Border, 1.25),
-    // body copy: 7 lines, blank, 3 lines on a 21px pitch, the group's
-    // `transform="translate(1033,0) scale(1.16,1)"` as the stretch
-    wide(1033.0, 321.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "Lorem ipsum dolor sit amet,"),
-    wide(1033.0, 342.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "consectetur adipiscing elit,"),
-    wide(1033.0, 363.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "sed do eiusmod tempor inci-"),
-    wide(1033.0, 384.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "didunt ut labore et dolore"),
-    wide(1033.0, 405.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "magna aliqua. Quis ipsum"),
-    wide(1033.0, 426.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "suspendisse ultrices gravi-"),
-    wide(1033.0, 447.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "da."),
-    wide(1033.0, 489.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "Risus commodo viverra ma-"),
-    wide(1033.0, 510.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "ecenas accumsan lacus vel"),
-    wide(1033.0, 531.0, 17.0, 1.16, Ink::Fixed(HUB_BODY), Face::Medium, "facilisis."),
+    // body copy: 7 lines, blank, 3 lines on a 21px pitch. The SVG group
+    // uses `translate(1032.2,1.25) scale(1.135,1)`; native Iced glyphs
+    // land about 2px lower, so its baselines are 0.85 design px higher.
+    wide(1032.2, 321.4, 17.0, 1.135, Ink::Fixed(HUB_BODY), Face::Medium, "Lorem ipsum dolor sit amet,"),
+    wide(1032.2, 342.4, 17.0, 1.135, Ink::Fixed(HUB_BODY), Face::Medium, "consectetur adipiscing elit,"),
+    wide(1032.2, 363.4, 17.0, 1.135, Ink::Fixed(HUB_BODY), Face::Medium, "sed do eiusmod tempor inci-"),
+    wide(1032.2, 384.4, 17.0, 1.135, Ink::Fixed(HUB_BODY), Face::Medium, "didunt ut labore et dolore"),
+    wide(1032.2, 405.4, 17.0, 1.135, Ink::Fixed(HUB_BODY), Face::Medium, "magna aliqua. Quis ipsum"),
+    wide(1032.2, 426.4, 17.0, 1.135, Ink::Fixed(HUB_BODY), Face::Medium, "suspendisse ultrices gravi-"),
+    wide(1032.2, 447.4, 17.0, 1.135, Ink::Fixed(HUB_BODY), Face::Medium, "da."),
+    wide(1032.2, 489.4, 17.0, 1.135, Ink::Fixed(HUB_BODY), Face::Medium, "Risus commodo viverra ma-"),
+    wide(1032.2, 510.4, 17.0, 1.135, Ink::Fixed(HUB_BODY), Face::Medium, "ecenas accumsan lacus vel"),
+    wide(1032.2, 531.4, 17.0, 1.135, Ink::Fixed(HUB_BODY), Face::Medium, "facilisis."),
     // SECURITY LEVEL badges: four 68x68 at x 1380, T2 filled. Glyphs
     // bold 27 stretched to the measured runs, centred at x 1414
     // (:227-233)

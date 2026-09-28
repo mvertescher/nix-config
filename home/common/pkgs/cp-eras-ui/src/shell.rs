@@ -213,7 +213,7 @@ tape = "#dedede"
 "##;
 
     #[test]
-    fn default_and_forced_reference_loads_share_the_dashboard_correction() {
+    fn default_and_forced_reference_loads_share_screen_corrections() {
         use crate::palette::rgb;
         let theme = crate::theme::Theme::parse(NEOMIL_REFERENCE).unwrap();
         let reference = Era::Neomil.style();
@@ -221,8 +221,10 @@ tape = "#dedede"
             let loaded = style_with_theme(era, &theme);
             assert_eq!(loaded, reference);
             assert_eq!(loaded.dashboard_style().palette.fg, rgb(0xef3333));
+            assert_eq!(loaded.store_style().palette.fg, rgb(0xfb3535));
             assert_eq!(loaded.palette.fg, rgb(0xde2e2e));
             assert_eq!(loaded.dashboard_style().palette.select, loaded.palette.select);
+            assert_eq!(loaded.store_style().palette.select, loaded.palette.select);
         }
         // Forcing another era takes its compiled defaults. Forcing Neomil
         // on another desktop likewise takes the compiled reference.
@@ -245,6 +247,8 @@ tape = "#dedede"
             for era in [None, Some(Era::Neomil)] {
                 let loaded = style_with_theme(era, &theme);
                 assert_eq!(loaded.dashboard_style(), loaded, "{variant}");
+                assert_eq!(loaded.store_style(), loaded, "{variant}");
+                assert_eq!(loaded.store_layers(0, 1), (loaded.store, loaded.store));
             }
         }
         let mut unknown = reference;
@@ -252,6 +256,8 @@ tape = "#dedede"
         let loaded = style_with_theme(None, &unknown);
         assert_eq!(loaded.era, Era::Neomil);
         assert_eq!(loaded.dashboard_style(), loaded);
+        assert_eq!(loaded.store_style(), loaded);
+        assert_eq!(loaded.store_layers(0, 1), (loaded.store, loaded.store));
     }
 
     #[test]
@@ -266,22 +272,30 @@ tape = "#dedede"
             for era in [None, Some(Era::Neomil)] {
                 let loaded = style_with_theme(era, &theme);
                 assert_eq!(loaded.dashboard_style(), loaded, "{original}");
+                assert_eq!(loaded.store_style(), loaded, "{original}");
+                assert_eq!(loaded.store_layers(0, 1), (loaded.store, loaded.store));
             }
         }
         let extra = format!("{NEOMIL_REFERENCE}\nbanner = \"#112233\"\n");
         let theme = crate::theme::Theme::parse(&extra).unwrap();
         let loaded = style_with_theme(None, &theme);
         assert_eq!(loaded.dashboard_style(), loaded);
+        assert_eq!(loaded.store_style(), loaded);
+        assert_eq!(loaded.store_layers(0, 1), (loaded.store, loaded.store));
     }
 
     #[test]
-    fn direct_palette_edits_keep_custom_dashboard_ink() {
+    fn direct_palette_edits_keep_custom_screen_ink() {
         let mut style = Era::Neomil.style();
         style.palette.border = crate::palette::rgb(0x112233);
         assert_eq!(style.dashboard_style(), style);
+        assert_eq!(style.store_style(), style);
+        assert_eq!(style.store_layers(0, 1), (style.store, style.store));
         style = Era::Neomil.style();
         style.palette.select = crate::palette::rgb(0x112233);
         assert_eq!(style.dashboard_style(), style);
+        assert_eq!(style.store_style(), style);
+        assert_eq!(style.store_layers(0, 1), (style.store, style.store));
     }
 
     #[test]

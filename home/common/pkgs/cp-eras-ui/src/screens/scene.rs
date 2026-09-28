@@ -112,8 +112,15 @@ impl<M: 'static> Scene<M> {
     /// child of a `stack` after the first gets a layer of its own, so
     /// the split puts the image where the era table says it goes.
     pub fn view(self) -> Element<'static, M> {
+        let backdrop = self.prims;
+        self.view_with_backdrop(backdrop)
+    }
+
+    /// A selection-specific material list below an unchanged foreground
+    /// scene. Keeping its pointer identity stable preserves held gestures.
+    pub fn view_with_backdrop(self, backdrop: &'static [Prim]) -> Element<'static, M> {
         iced::widget::stack![
-            canvas(Backdrop { style: self.style, prims: self.prims, stretch: false, at: self.at })
+            canvas(Backdrop { style: self.style, prims: backdrop, stretch: false, at: self.at })
                 .width(iced::Length::Fill)
                 .height(iced::Length::Fill),
             canvas(self).width(iced::Length::Fill).height(iced::Length::Fill),
@@ -249,9 +256,8 @@ impl Backdrop {
                     soft.image(prims, &self.style.palette, size, k)
                 };
                 under.push(prims);
-                // The bands tile the frame top to bottom; stretched,
-                // each is scaled by the same factor, so their edges
-                // meet where the rows do.
+                // Retained bands keep their original frame rows. Fully
+                // transparent bands need no image or draw call.
                 let (width, sy) = if self.stretch {
                     (frame.width(), frame.height() / size.1 as f32)
                 } else {
@@ -397,8 +403,8 @@ pub struct SoftCache {
 const SOFT_CACHE_BYTES: usize = 384 * 1024 * 1024;
 const SOFT_CACHE_ENTRIES: usize = 128;
 
-/// A composite as the canvas draws it: `(y, rows, image)` bands in
-/// frame order (`soft::Band`).
+/// A composite as the canvas draws it: nonzero `(y, rows, image)` bands
+/// in frame order (`soft::Band`). Gaps are transparent frame rows.
 pub(crate) type Bands = Arc<[(u32, u32, iced::widget::image::Handle)]>;
 
 #[derive(Debug)]
@@ -575,6 +581,10 @@ impl SoftCache {
     }
 
     fn keep(&self, key: SoftKey, bands: Vec<soft::Band>) -> Bands {
+        // An all-zero premultiplied band cannot affect the canvas. Keep
+        // every other band's full width, original rows and exact bytes;
+        // changing any of those would alter linear sampling at its edges.
+        let bands: Vec<_> = bands.into_iter().filter(|band| band.rgba.iter().any(|&byte| byte != 0)).collect();
         let bytes = bands.iter().map(|band| band.rgba.len()).sum();
         let bands: Bands = bands
             .into_iter()
@@ -1492,6 +1502,20 @@ impl<M> canvas::Program<M, Style> for Scene<M> {
 
 #[cfg(test)]
 mod tests {
+    fn material_scenes(style: Style) -> Vec<(&'static [Prim], &'static str)> {
+        let mut scenes = vec![
+            (style.dashboard, "dashboard"), (style.store, "store"),
+            (style.mailbox.backdrop, "mailbox backdrop"),
+            (style.access.backdrop, "login backdrop"),
+            (style.access.reference_backdrop.unwrap_or(&[]), "reference login backdrop"),
+        ];
+        if let Some(reference) = style.store_reference {
+            scenes.push((reference.scene, "reference store foreground"));
+            scenes.extend(reference.backdrops.iter().map(|b| (b.prims, "reference store backdrop")));
+        }
+        scenes
+    }
+    static CACHE_EMPTY: &[Prim] = &[];
     static CACHE_FG: &[Prim] = &[crate::style::fill_rect(0.0, 0.0, 4.0, 4.0, Ink::Fg)];
     static CACHE_BG: &[Prim] = &[crate::style::fill_rect(0.0, 0.0, 4.0, 4.0, Ink::Bg)];
     static CACHE_GLASS: &[Prim] = &[crate::style::fill_rect(
@@ -1518,6 +1542,49 @@ mod tests {
             rgba.extend_from_slice(pixels.as_ref());
         }
         rgba
+    }
+
+    #[test]
+    fn soft_cache_keeps_empty_images_without_creating_handles() {
+        let cache = SoftCache::default();
+        let palette = crate::style::Era::Neomil.style().palette;
+        let first = cache.image(CACHE_EMPTY, &palette, (2, 3), 1.0);
+        assert!(first.is_empty());
+        assert!(Arc::ptr_eq(&first, &cache.image(CACHE_EMPTY, &palette, (2, 3), 1.0)));
+        let state = cache.state.lock().unwrap();
+        assert_eq!(state.entries.len(), 1);
+        assert_eq!(state.bytes, 0);
+    }
+
+    #[test]
+    fn soft_cache_drops_only_all_zero_bands_and_preserves_retained_geometry() {
+        let cache = SoftCache::with_budget(16);
+        let palette = crate::style::Era::Neomil.style().palette;
+        let key = SoftKey::new(CACHE_FG, &palette, (2, 3), 1.0, None);
+        let pixels = vec![0, 0, 0, 0, 0, 0, 0, 0, 21, 34, 55, 89, 1, 2, 3, 4];
+        let bands = cache.keep(key, vec![
+            soft::Band { y: 0, h: 1, rgba: vec![0; 8] },
+            soft::Band { y: 1, h: 2, rgba: pixels.clone() },
+        ]);
+        assert_eq!(bands.len(), 1);
+        let (y, h, iced::widget::image::Handle::Rgba { width, height, pixels: got, .. }) = &bands[0] else {
+            panic!("retained band must have an RGBA handle");
+        };
+        assert_eq!((*y, *h, *width, *height), (1, 2, 2, 2));
+        assert_eq!(got.as_ref(), pixels.as_slice());
+        let state = cache.state.lock().unwrap();
+        assert_eq!(state.bytes, 16, "the dropped band's pixels do not count toward the budget");
+        assert_eq!(state.entries[0].bytes, 16);
+    }
+
+    #[test]
+    fn soft_cache_retains_zero_alpha_bands_with_nonzero_rgb() {
+        let cache = SoftCache::with_budget(4);
+        let palette = crate::style::Era::Neomil.style().palette;
+        let key = SoftKey::new(CACHE_FG, &palette, (1, 1), 1.0, None);
+        let bands = cache.keep(key, vec![soft::Band { y: 0, h: 1, rgba: vec![1, 0, 0, 0] }]);
+        assert_eq!(cached_pixels(&bands), [1, 0, 0, 0]);
+        assert_eq!(cache.state.lock().unwrap().bytes, 4);
     }
 
     fn cached_test_layers(cache: &SoftCache, k: f32) -> Vec<Bands> {
@@ -2116,10 +2183,9 @@ mod tests {
         }
         for era in crate::style::Era::ALL {
             let style = era.style();
-            check(style.dashboard, &format!("{era:?} dashboard"));
-            check(style.store, &format!("{era:?} store"));
-            check(style.mailbox.backdrop, &format!("{era:?} mailbox backdrop"));
-            check(style.access.backdrop, &format!("{era:?} login backdrop"));
+            for (prims, screen) in material_scenes(style) {
+                check(prims, &format!("{era:?} {screen}"));
+            }
         }
     }
 
@@ -2154,10 +2220,9 @@ mod tests {
         }
         for era in crate::style::Era::ALL {
             let style = era.style();
-            check(style.dashboard, &format!("{era:?} dashboard"));
-            check(style.store, &format!("{era:?} store"));
-            check(style.mailbox.backdrop, &format!("{era:?} mailbox backdrop"));
-            check(style.access.backdrop, &format!("{era:?} login backdrop"));
+            for (prims, screen) in material_scenes(style) {
+                check(prims, &format!("{era:?} {screen}"));
+            }
         }
     }
 
@@ -2185,12 +2250,7 @@ mod tests {
         }
         for era in crate::style::Era::ALL {
             let style = era.style();
-            for (prims, screen) in [
-                (style.dashboard, "dashboard"),
-                (style.store, "store"),
-                (style.mailbox.backdrop, "mailbox backdrop"),
-                (style.access.backdrop, "login backdrop"),
-            ] {
+            for (prims, screen) in material_scenes(style) {
                 let where_ = format!("{era:?} {screen}");
                 let lead = leading_soft(prims).len();
                 for prim in &prims[lead..] {
@@ -2216,12 +2276,7 @@ mod tests {
     fn soft_motions_only_clip() {
         for era in crate::style::Era::ALL {
             let style = era.style();
-            for (prims, screen) in [
-                (style.dashboard, "dashboard"),
-                (style.store, "store"),
-                (style.mailbox.backdrop, "mailbox backdrop"),
-                (style.access.backdrop, "login backdrop"),
-            ] {
+            for (prims, screen) in material_scenes(style) {
                 for prim in leading_soft(prims) {
                     if let Prim::Motion { motion, .. } = prim {
                         assert!(
@@ -2352,10 +2407,9 @@ mod tests {
         }
         for era in crate::style::Era::ALL {
             let style = era.style();
-            check(style.dashboard, &format!("{era:?} dashboard"));
-            check(style.store, &format!("{era:?} store"));
-            check(style.mailbox.backdrop, &format!("{era:?} mailbox backdrop"));
-            check(style.access.backdrop, &format!("{era:?} login backdrop"));
+            for (prims, screen) in material_scenes(style) {
+                check(prims, &format!("{era:?} {screen}"));
+            }
             for m in style.mailbox.motions {
                 rests(&m.motion, &format!("{era:?} mailbox"));
                 assert!(!m.parts.is_empty(), "{era:?} mailbox: #{} moves nothing", m.motion.id);
@@ -2481,19 +2535,29 @@ mod tests {
 
     #[test]
     fn selected_detail_gestures_cancel_when_released_in_the_hidden_margin() {
-        let style = crate::style::Era::Neomil.style();
-        let picked = Picked { card: 1, ..Picked::default() };
-        let detail = hit_selected(style.store, picked, 1.0, Point::new(900.0, 700.0));
-        let hidden = hit_selected(style.store, picked, 1.0, Point::new(1580.0, 350.0));
-        assert_eq!(detail, Some((Group::Card, 1)));
-        assert_eq!(hidden, None);
-        let mut pointer = Pointer::default();
-        pointer.sync(style.store);
-        assert_eq!(pointer.event(&press(), detail), PointerAction::Capture);
-        assert_eq!(pointer.event(&release(), hidden), PointerAction::Capture);
-        assert_eq!(pointer.event(&release(), detail), PointerAction::Ignore);
-        pointer.event(&press(), detail);
-        assert_eq!(pointer.event(&release(), detail), PointerAction::Activate((Group::Card, 1)));
+        use crate::style::Era;
+        for (era, xs, y) in [
+            (Era::Neomil, [503.0, 835.0, 1162.0, 1491.0], 700.0),
+            (Era::Kitsch, [525.0, 845.0, 1165.0, 1485.0], 650.0),
+        ] {
+            let style = era.style();
+            for (card, x) in xs.into_iter().enumerate() {
+                let picked = Picked { card, ..Picked::default() };
+                for k in [0.75, 1.0, 1.25, 2.4] {
+                    let detail = hit_selected(style.store, picked, k, Point::new(x * k, y * k));
+                    let hidden = hit_selected(style.store, picked, k, Point::new(1580.0 * k, y * k));
+                    assert_eq!(detail, Some((Group::Card, card)), "{era:?}, card{card}, scale{k}");
+                    assert_eq!(hidden, None);
+                    let mut pointer = Pointer::default();
+                    pointer.sync(style.store);
+                    assert_eq!(pointer.event(&press(), detail), PointerAction::Capture);
+                    assert_eq!(pointer.event(&release(), hidden), PointerAction::Capture);
+                    assert_eq!(pointer.event(&release(), detail), PointerAction::Ignore);
+                    pointer.event(&press(), detail);
+                    assert_eq!(pointer.event(&release(), detail), PointerAction::Activate((Group::Card, card)));
+                }
+            }
+        }
     }
 
     #[test]

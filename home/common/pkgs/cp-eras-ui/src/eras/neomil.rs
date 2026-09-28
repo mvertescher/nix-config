@@ -26,6 +26,10 @@ use crate::widgets::surface::{Corners, Cut};
 use crate::style::{
     Access, Bevel, Blink, Caret, Colophon, Emblem, Entry, Fixture, Legend, Masthead, Plate, Plot, Slot,
 };
+#[path = "neomil_login_art.rs"]
+mod neomil_login_art;
+#[path = "neomil_store_art.rs"]
+mod neomil_store_art;
 // --- end login ---
 
 pub const BG: iced::Color = rgb(0x050304);
@@ -345,6 +349,8 @@ pub fn style() -> Style {
         // --- dashboard ---
         dashboard: DASHBOARD,
         dashboard_reference_fg: Some(rgb(0xef3333)),
+        store_reference_fg: Some(rgb(0xfb3535)),
+        store_reference: Some(store_material::REFERENCE),
         // The photo distinguishes no unit (trace header :107-121 and
         // components.svg :722-723: "the source shows NO selected
         // state"), so every plate wears one dress and the opening
@@ -387,6 +393,8 @@ pub fn style() -> Style {
 /// darker than the trace's #420f10, which is what the photo shows under
 /// USER 01, `Login` and the code tape.
 pub const ON_CARD: iced::Color = rgb(0x420f10);
+/// Ink retained for the legacy built-in portrait fallback.
+pub const PORTRAIT: iced::Color = rgb(0x4f1a1e);
 /// Card two: translucent red over the blue glow, top and foot.
 pub const CARD_OPEN: iced::Color = rgb(0x74272c);
 pub const CARD_OPEN_FOOT: iced::Color = rgb(0x5e1516);
@@ -398,12 +406,11 @@ pub const SECTION_OPEN: iced::Color = rgb(0x461012);
 pub const SECTION_LOCKED: iced::Color = rgb(0x2f0b0c);
 /// Card three's outline: a stop under the mid red the others take.
 pub const EDGE_LOCKED: iced::Color = rgb(0x8a2027);
-/// The avatar plate on the live card, and the near-black its hexagon
-/// glyph is drawn in.
+/// The ground visible inside each cut on the cards' leading edges.
+pub const NOTCH_GROUND: iced::Color = rgb(0x080405);
+/// The avatar plate on the live card, and its near-black insignia.
 pub const AVATAR: iced::Color = rgb(0xc72a2b);
 pub const GLYPH_INK: iced::Color = rgb(0x200506);
-/// The portrait silhouette inside the other two cards' avatar photos.
-pub const PORTRAIT: iced::Color = rgb(0x4f1a1e);
 /// The live card's password well and its Login button.
 pub const WELL: iced::Color = rgb(0x430e0f);
 pub const COMMIT: iced::Color = rgb(0xa52223);
@@ -419,51 +426,333 @@ const NOTICE_2: &str = "MANIPULATE, ACCESS OR DISABLE THIS DEVICE.";
 const LOGIN_GROUND: &[Prim] = dashboard_ground::BACKGROUND;
 const LOGIN_BACKDROP: &[Prim] = &[Prim::Soft { prims: LOGIN_GROUND }];
 
+// Source-fit two-axis inactive card material. Each side grades vertically;
+// a horizontal luminance mask mixes the two in sRGB. Outer white masks
+// cut the top-right chamfer before the existing lower section paints.
+// These fixed stops are selected only with the complete source palette;
+// custom palettes continue to draw each Slot's original body gradient.
+const OPEN_LEFT_STOPS: &[(f32, iced::Color)] = &[(0.0, rgb(0x7d2b31)), (1.0, rgb(0x6c1516))];
+const OPEN_RIGHT_STOPS: &[(f32, iced::Color)] = &[(0.0, rgb(0x612d38)), (1.0, rgb(0x540d0e))];
+const LOCKED_LEFT_STOPS: &[(f32, iced::Color)] = &[(0.0, rgb(0x5f2c38)), (1.0, rgb(0x500f0e))];
+const LOCKED_RIGHT_STOPS: &[(f32, iced::Color)] = &[(0.0, rgb(0x45222b)), (1.0, rgb(0x3c0b0a))];
+const MIX_STOPS: &[(f32, iced::Color)] = &[(0.0, rgb(0x000000)), (1.0, rgb(0xffffff))];
+const OPEN_MATERIAL_LEFT: &[Prim] = &[Prim::Ramp {
+    x: 692.0, y: 315.0, w: 255.0, h: 254.0,
+    from: (0.0, 0.0), to: (0.0, 1.0), stops: OPEN_LEFT_STOPS,
+}];
+const OPEN_MATERIAL_RIGHT: &[Prim] = &[Prim::Ramp {
+    x: 692.0, y: 315.0, w: 255.0, h: 254.0,
+    from: (0.0, 0.0), to: (0.0, 1.0), stops: OPEN_RIGHT_STOPS,
+}];
+const OPEN_MIX_MASK: &[Prim] = &[Prim::Ramp {
+    x: 692.0, y: 315.0, w: 255.0, h: 254.0,
+    from: (0.0, 0.0), to: (1.0, 0.0), stops: MIX_STOPS,
+}];
+const OPEN_TOP_EDGE: &[Seg] = &[
+    Seg::Line(896.0, 315.0), Seg::Line(947.0, 366.0),
+    Seg::Line(947.0, 569.0), Seg::Line(692.0, 569.0),
+];
+const OPEN_SHAPE_MASK: &[Prim] = &[Prim::Path {
+    x: 692.0, y: 315.0, segs: OPEN_TOP_EDGE, close: true,
+    fill: Some(Ink::Fixed(rgb(0xffffff))), stroke: None, width: 0.0,
+}];
+const OPEN_MATERIAL_MIX: &[Prim] = &[
+    OPEN_MATERIAL_LEFT[0],
+    Prim::Masked { prims: OPEN_MATERIAL_RIGHT, mask: OPEN_MIX_MASK },
+];
+const LOCKED_MATERIAL_LEFT: &[Prim] = &[Prim::Ramp {
+    x: 982.0, y: 315.0, w: 254.0, h: 254.0,
+    from: (0.0, 0.0), to: (0.0, 1.0), stops: LOCKED_LEFT_STOPS,
+}];
+const LOCKED_MATERIAL_RIGHT: &[Prim] = &[Prim::Ramp {
+    x: 982.0, y: 315.0, w: 254.0, h: 254.0,
+    from: (0.0, 0.0), to: (0.0, 1.0), stops: LOCKED_RIGHT_STOPS,
+}];
+const LOCKED_MIX_MASK: &[Prim] = &[Prim::Ramp {
+    x: 982.0, y: 315.0, w: 254.0, h: 254.0,
+    from: (0.0, 0.0), to: (1.0, 0.0), stops: MIX_STOPS,
+}];
+const LOCKED_TOP_EDGE: &[Seg] = &[
+    Seg::Line(1185.0, 315.0), Seg::Line(1236.0, 366.0),
+    Seg::Line(1236.0, 569.0), Seg::Line(982.0, 569.0),
+];
+const LOCKED_SHAPE_MASK: &[Prim] = &[Prim::Path {
+    x: 982.0, y: 315.0, segs: LOCKED_TOP_EDGE, close: true,
+    fill: Some(Ink::Fixed(rgb(0xffffff))), stroke: None, width: 0.0,
+}];
+const LOCKED_MATERIAL_MIX: &[Prim] = &[
+    LOCKED_MATERIAL_LEFT[0],
+    Prim::Masked { prims: LOCKED_MATERIAL_RIGHT, mask: LOCKED_MIX_MASK },
+];
+const LOGIN_CARD_MATERIAL: &[Prim] = &[
+    Prim::Masked { prims: OPEN_MATERIAL_MIX, mask: OPEN_SHAPE_MASK },
+    Prim::Masked { prims: LOCKED_MATERIAL_MIX, mask: LOCKED_SHAPE_MASK },
+];
+const LOGIN_REFERENCE_BACKDROP: &[Prim] = &[
+    // Backdrop's first top-level primitive must remain Soft; the same
+    // LOGIN_GROUND coefficients are reused without nesting that Soft.
+    Prim::Soft { prims: LOGIN_GROUND },
+    Prim::Soft { prims: LOGIN_CARD_MATERIAL },
+];
+
+// The notch is cut at y 390/405/483/496 in all three source cards.
+// Plate paths use absolute design coordinates, as does the SVG trace.
+const NOTCH_1: &[Seg] = &[Seg::Line(387.0, 405.0), Seg::Line(387.0, 483.0), Seg::Line(372.0, 496.0)];
+const NOTCH_2: &[Seg] = &[Seg::Line(707.0, 405.0), Seg::Line(707.0, 483.0), Seg::Line(692.0, 496.0)];
+const NOTCH_3: &[Seg] = &[Seg::Line(997.0, 405.0), Seg::Line(997.0, 483.0), Seg::Line(982.0, 496.0)];
+const AVATAR_TAB_1: &[Seg] = &[Seg::Line(492.0, 386.0), Seg::Line(498.0, 393.0), Seg::Line(452.0, 393.0)];
+const AVATAR_TAB_2: &[Seg] = &[Seg::Line(818.0, 386.0), Seg::Line(824.0, 393.0), Seg::Line(772.0, 393.0)];
+const AVATAR_TAB_3: &[Seg] = &[Seg::Line(1107.0, 386.0), Seg::Line(1113.0, 393.0), Seg::Line(1061.0, 393.0)];
+
+// Filled insignia measured from the native login photo. The split between
+// the two broad halves is 6–7px on scan rows y420..440. The wedge and small
+// marks at left are independently visible, not part of a wire outline.
+const GLYPH_RIM: &[Seg] = &[
+    Seg::Line(534.2, 413.5), Seg::Line(534.2, 444.5), Seg::Line(506.0, 459.5),
+    Seg::Line(480.5, 444.5), Seg::Line(480.5, 415.0), Seg::Line(482.0, 412.5),
+];
+const GLYPH_TOP: &[Seg] = &[Seg::Line(531.0, 412.0), Seg::Line(483.0, 440.0), Seg::Line(482.0, 440.0), Seg::Line(482.0, 414.0)];
+const GLYPH_BOTTOM: &[Seg] = &[Seg::Line(532.0, 444.0), Seg::Line(506.0, 459.0), Seg::Line(482.0, 444.0)];
+const GLYPH_WEDGE: &[Seg] = &[Seg::Line(475.0, 418.0), Seg::Line(475.0, 442.0), Seg::Line(452.0, 456.0)];
+const GLYPH_STRIPE_1: &[Seg] = &[Seg::Line(465.0, 402.0), Seg::Line(474.0, 409.0), Seg::Line(468.0, 409.0), Seg::Line(461.0, 405.0), Seg::Line(456.0, 405.0)];
+const GLYPH_STRIPE_2: &[Seg] = &[Seg::Line(462.0, 406.0), Seg::Line(472.0, 413.0), Seg::Line(468.0, 413.0), Seg::Line(461.0, 409.0), Seg::Line(456.0, 409.0)];
+const GLYPH_STRIPE_3: &[Seg] = &[Seg::Line(464.0, 410.0), Seg::Line(475.0, 417.0), Seg::Line(471.0, 417.0), Seg::Line(462.0, 413.0), Seg::Line(456.0, 413.0)];
+const GLYPH_STRIPE_4: &[Seg] = &[Seg::Line(462.0, 414.0), Seg::Line(473.0, 420.0), Seg::Line(468.0, 420.0), Seg::Line(461.0, 417.0), Seg::Line(456.0, 417.0)];
+const GLYPH_DOT: &[Seg] = &[
+    Seg::Line(472.1, 471.9), Seg::Line(473.0, 474.0), Seg::Line(472.1, 476.1),
+    Seg::Line(470.0, 477.0), Seg::Line(467.9, 476.1), Seg::Line(467.0, 474.0),
+    Seg::Line(467.9, 471.9), Seg::Line(470.0, 471.0),
+];
+const GLYPH_SLASH: &[Seg] = &[Seg::Line(486.0, 468.0), Seg::Line(496.0, 478.0), Seg::Line(496.0, 480.0)];
+const ACTIVE_INSIGNIA: &[Plate] = &[
+    Plate::outlined(Plot::new(480.5, 397.5, 53.7, 62.0), Ink::Fixed(rgb(0x9c2324)), 1.4)
+        .outlined_path((506.0, 397.5), GLYPH_RIM),
+    Plate::filled(Plot::new(482.0, 398.0, 50.0, 42.0), Ink::Fixed(GLYPH_INK))
+        .outlined_path((506.5, 399.5), GLYPH_TOP),
+    Plate::filled(Plot::new(482.0, 416.0, 50.0, 43.0), Ink::Fixed(GLYPH_INK))
+        .outlined_path((532.0, 416.0), GLYPH_BOTTOM),
+    Plate::filled(Plot::new(452.0, 418.0, 23.0, 38.0), Ink::Fixed(GLYPH_INK))
+        .outlined_path((452.0, 418.0), GLYPH_WEDGE),
+    Plate::filled(Plot::new(456.0, 402.0, 18.0, 7.0), Ink::Fixed(GLYPH_INK))
+        .outlined_path((456.0, 402.0), GLYPH_STRIPE_1),
+    Plate::filled(Plot::new(456.0, 406.0, 16.0, 7.0), Ink::Fixed(GLYPH_INK))
+        .outlined_path((456.0, 406.0), GLYPH_STRIPE_2),
+    Plate::filled(Plot::new(456.0, 410.0, 19.0, 7.0), Ink::Fixed(GLYPH_INK))
+        .outlined_path((456.0, 410.0), GLYPH_STRIPE_3),
+    Plate::filled(Plot::new(456.0, 414.0, 17.0, 6.0), Ink::Fixed(GLYPH_INK))
+        .outlined_path((456.0, 414.0), GLYPH_STRIPE_4),
+    Plate::filled(Plot::new(456.0, 470.0, 6.0, 7.0), Ink::Fixed(GLYPH_INK)),
+    Plate::filled(Plot::new(467.0, 471.0, 6.0, 6.0), Ink::Fixed(GLYPH_INK))
+        .outlined_path((470.0, 471.0), GLYPH_DOT),
+    Plate::outlined(Plot::new(484.0, 468.0, 12.0, 12.0), Ink::Fixed(GLYPH_INK), 2.0),
+    Plate::filled(Plot::new(484.0, 468.0, 12.0, 12.0), Ink::Fixed(GLYPH_INK))
+        .outlined_path((484.0, 468.0), GLYPH_SLASH),
+    Plate::filled(Plot::new(499.0, 468.0, 3.0, 3.0), Ink::Fixed(GLYPH_INK)),
+    Plate::filled(Plot::new(499.0, 473.0, 3.0, 3.0), Ink::Fixed(GLYPH_INK)),
+];
+
+// Login-local reuse of the thin badge alphabet: native img-06 bounds
+// agree with the dashboard glyph geometry, but the positions and ink are
+// fitted on this login image. LEVEL is an open, single-pass line drawing.
+const LOGIN_BADGE_LEVEL_LOCAL: [Seg; 22] = [
+    Seg::Line(0.0, 6.9), Seg::Line(6.3, 6.9),
+    Seg::Move(7.9, 0.0), Seg::Line(7.9, 6.9), Seg::Line(14.6, 6.9),
+    Seg::Move(7.9, 0.0), Seg::Line(14.6, 0.0),
+    Seg::Move(7.9, 3.5), Seg::Line(14.3, 3.5),
+    Seg::Move(16.2, 0.0), Seg::Line(20.8, 6.9), Seg::Line(25.1, 0.0),
+    Seg::Move(26.7, 0.0), Seg::Line(26.7, 6.9), Seg::Line(33.6, 6.9),
+    Seg::Move(26.7, 0.0), Seg::Line(33.6, 0.0),
+    Seg::Move(26.7, 3.5), Seg::Line(33.1, 3.5),
+    Seg::Move(35.9, 0.0), Seg::Line(35.9, 6.9), Seg::Line(42.1, 6.9),
+];
+const LOGIN_BADGE_TIER1_LOCAL: [Seg; 18] = [
+Seg::Move(0.0, 0.8333),
+        Seg::Line(12.9167, 0.8333),
+        Seg::Line(12.9167, 2.5),
+        Seg::Line(7.5, 2.5),
+        Seg::Line(7.5, 12.9167),
+        Seg::Line(5.4167, 12.9167),
+        Seg::Line(5.4167, 2.5),
+        Seg::Line(0.0, 2.5),
+        Seg::Line(0.0, 0.8333),
+        Seg::Move(15.0, 2.0833),
+        Seg::Line(16.6667, 2.0833),
+        Seg::Line(18.3333, 0.0),
+        Seg::Line(19.5833, 0.0),
+        Seg::Line(19.5833, 12.9167),
+        Seg::Line(17.9167, 12.9167),
+        Seg::Line(17.9167, 3.3333),
+        Seg::Line(15.0, 3.3333),
+        Seg::Line(15.0, 2.0833)
+];
+const LOGIN_BADGE_TIER2_LOCAL: [Seg; 22] = [
+Seg::Move(0.0, 0.4167),
+        Seg::Line(12.9167, 0.4167),
+        Seg::Line(12.9167, 2.0833),
+        Seg::Line(7.5, 2.0833),
+        Seg::Line(7.5, 12.5),
+        Seg::Line(5.4167, 12.5),
+        Seg::Line(5.4167, 2.0833),
+        Seg::Line(0.0, 2.0833),
+        Seg::Line(0.0, 0.4167),
+        Seg::Move(15.3, 1.4),
+        Seg::Cubic { c1x: 18.2, c1y: -0.4, c2x: 21.3, c2y: -0.2, x: 23.4, y: 0.3 },
+        Seg::Cubic { c1x: 26.7, c1y: 1.5, c2x: 27.0, c2y: 4.3, x: 25.6, y: 6.1 },
+        Seg::Cubic { c1x: 24.4, c1y: 7.4, c2x: 21.8, c2y: 8.0, x: 20.3, y: 8.7 },
+        Seg::Cubic { c1x: 18.6, c1y: 9.6, c2x: 18.0, c2y: 10.5, x: 18.0, y: 10.8 },
+        Seg::Line(26.5, 10.8),
+        Seg::Line(26.5, 12.5),
+        Seg::Line(15.3, 12.5),
+        Seg::Line(15.3, 10.4),
+        Seg::Cubic { c1x: 15.3, c1y: 8.0, c2x: 17.3, c2y: 6.9, x: 20.8, y: 5.8 },
+        Seg::Cubic { c1x: 24.2, c1y: 4.7, c2x: 25.0, c2y: 4.0, x: 24.1, y: 2.8 },
+        Seg::Cubic { c1x: 22.8, c1y: 1.3, c2x: 19.6, c2y: 1.7, x: 16.0, y: 3.0 },
+        Seg::Line(15.3, 1.4)
+];
+const LOGIN_BADGE_TIER3_LOCAL: [Seg; 23] = [
+Seg::Move(0.0, 0.4167),
+        Seg::Line(12.9167, 0.4167),
+        Seg::Line(12.9167, 2.0833),
+        Seg::Line(7.5, 2.0833),
+        Seg::Line(7.5, 12.5),
+        Seg::Line(5.4167, 12.5),
+        Seg::Line(5.4167, 2.0833),
+        Seg::Line(0.0, 2.0833),
+        Seg::Line(0.0, 0.4167),
+        Seg::Move(15.2, 1.8),
+        Seg::Cubic { c1x: 18.6, c1y: -0.1, c2x: 22.7, c2y: -0.3, x: 25.1, y: 1.8 },
+        Seg::Cubic { c1x: 27.0, c1y: 3.6, c2x: 25.8, c2y: 6.0, x: 23.2, y: 6.9 },
+        Seg::Cubic { c1x: 26.8, c1y: 7.9, c2x: 27.3, c2y: 10.5, x: 24.7, y: 12.0 },
+        Seg::Cubic { c1x: 22.0, c1y: 13.9, c2x: 17.5, c2y: 13.4, x: 14.9, y: 11.7 },
+        Seg::Line(15.6, 10.1),
+        Seg::Cubic { c1x: 18.0, c1y: 11.7, c2x: 20.9, c2y: 12.0, x: 23.3, y: 10.9 },
+        Seg::Cubic { c1x: 25.2, c1y: 9.9, c2x: 24.1, c2y: 8.1, x: 22.3, y: 8.1 },
+        Seg::Line(18.4, 8.1),
+        Seg::Line(18.4, 6.4),
+        Seg::Line(22.0, 6.4),
+        Seg::Cubic { c1x: 24.5, c1y: 6.3, c2x: 24.8, c2y: 4.6, x: 23.7, y: 3.3 },
+        Seg::Cubic { c1x: 22.1, c1y: 1.8, c2x: 19.0, c2y: 2.0, x: 16.0, y: 3.5 },
+        Seg::Line(15.2, 1.8)
+];
+const LOGIN_BADGE_TIER4_LOCAL: [Seg; 25] = [
+Seg::Move(0.0, 0.0),
+        Seg::Line(12.9167, 0.0),
+        Seg::Line(12.9167, 2.0833),
+        Seg::Line(7.5, 2.0833),
+        Seg::Line(7.5, 12.0833),
+        Seg::Line(5.4167, 12.0833),
+        Seg::Line(5.4167, 2.0833),
+        Seg::Line(0.0, 2.0833),
+        Seg::Line(0.0, 0.0),
+        Seg::Move(15.0, 7.5),
+        Seg::Line(22.5, 0.0),
+        Seg::Line(24.5833, 0.0),
+        Seg::Line(24.5833, 7.5),
+        Seg::Line(27.0833, 7.5),
+        Seg::Line(27.0833, 9.1667),
+        Seg::Line(24.5833, 9.1667),
+        Seg::Line(24.5833, 12.0833),
+        Seg::Line(22.5, 12.0833),
+        Seg::Line(22.5, 9.1667),
+        Seg::Line(15.0, 9.1667),
+        Seg::Line(15.0, 7.5),
+        Seg::Move(17.9167, 7.5),
+        Seg::Line(22.5, 7.5),
+        Seg::Line(22.5, 3.3333),
+        Seg::Line(17.9167, 7.5)
+];
+
+const fn badge_at<const N: usize>(source: &[Seg; N], dx: f32, dy: f32) -> [Seg; N] {
+    let mut out = [Seg::Move(0.0, 0.0); N];
+    let mut i = 0;
+    while i < N {
+        out[i] = match source[i] {
+            Seg::Move(x, y) => Seg::Move(x + dx, y + dy),
+            Seg::Line(x, y) => Seg::Line(x + dx, y + dy),
+            Seg::Quad { cx, cy, x, y } => Seg::Quad { cx: cx + dx, cy: cy + dy, x: x + dx, y: y + dy },
+            Seg::Cubic { c1x, c1y, c2x, c2y, x, y } => Seg::Cubic {
+                c1x: c1x + dx, c1y: c1y + dy, c2x: c2x + dx, c2y: c2y + dy, x: x + dx, y: y + dy,
+            },
+        };
+        i += 1;
+    }
+    out
+}
+const LOGIN_LEVEL_0: &[Seg] = &badge_at(&LOGIN_BADGE_LEVEL_LOCAL, 127.32, 109.9);
+const LOGIN_LEVEL_1: &[Seg] = &badge_at(&LOGIN_BADGE_LEVEL_LOCAL, 1140.6533, 109.9);
+const LOGIN_LEVEL_2: &[Seg] = &badge_at(&LOGIN_BADGE_LEVEL_LOCAL, 1201.0733, 109.9);
+const LOGIN_LEVEL_3: &[Seg] = &badge_at(&LOGIN_BADGE_LEVEL_LOCAL, 1261.9033, 110.73);
+const LOGIN_LEVEL_4: &[Seg] = &badge_at(&LOGIN_BADGE_LEVEL_LOCAL, 1322.7333, 110.73);
+const LOGIN_TIER_0: &[Seg] = &badge_at(&LOGIN_BADGE_TIER1_LOCAL, 137.5, 125.83);
+const LOGIN_TIER_1: &[Seg] = &badge_at(&LOGIN_BADGE_TIER1_LOCAL, 1150.83, 125.83);
+const LOGIN_TIER_2: &[Seg] = &badge_at(&LOGIN_BADGE_TIER2_LOCAL, 1208.75, 126.25);
+const LOGIN_TIER_3: &[Seg] = &badge_at(&LOGIN_BADGE_TIER3_LOCAL, 1269.16, 126.25);
+const LOGIN_TIER_4: &[Seg] = &badge_at(&LOGIN_BADGE_TIER4_LOCAL, 1329.58, 126.67);
+
 pub const ACCESS: Access = Access {
+    reference_fg: Some(rgb(0xf63333)),
     backdrop: LOGIN_BACKDROP,
+    reference_backdrop: Some(LOGIN_REFERENCE_BACKDROP),
     masthead: Masthead::Dossier {
+        art: neomil_login_art::DOSSIER_ART,
         // 59x57, bottom-left chamfer 15. The customer badge at the
         // left, then four security badges of which the second is
         // filled in the mid red.
         badges: &[
             Plate::filled(Plot::new(117.0, 104.0, 59.0, 57.0), Ink::Border)
                 .bevelled(Bevel::bl(15.0))
-                .edged(Ink::Fg, 1.5),
+                .reference_fill(rgb(0x422e34))
+                .edged(Ink::Fg, 1.5).reference_edge(rgb(0x792a31), 0.75),
             Plate::filled(Plot::new(1133.0, 104.0, 59.0, 57.0), Ink::Border)
                 .bevelled(Bevel::bl(15.0))
-                .edged(Ink::Fg, 1.5),
+                .reference_fill(rgb(0x2f224a))
+                .edged(Ink::Fg, 1.5).reference_edge(rgb(0x6b1a37), 1.0),
             Plate::filled(Plot::new(1193.0, 104.0, 59.0, 57.0), Ink::Dim)
                 .bevelled(Bevel::bl(15.0))
-                .edged(Ink::Fg, 1.5),
+                .reference_fill(rgb(0x722942))
+                .edged(Ink::Fg, 1.5).reference_edge(rgb(0x73223c), 1.0),
             Plate::filled(Plot::new(1253.0, 104.0, 59.0, 57.0), Ink::Border)
                 .bevelled(Bevel::bl(15.0))
-                .edged(Ink::Fg, 1.5),
+                .reference_fill(rgb(0x2c2448))
+                .edged(Ink::Fg, 1.5).reference_edge(rgb(0x691b36), 1.0),
             Plate::filled(Plot::new(1313.0, 104.0, 59.0, 57.0), Ink::Border)
                 .bevelled(Bevel::bl(15.0))
-                .edged(Ink::Fg, 1.5),
+                .reference_fill(rgb(0x2b2546))
+                .edged(Ink::Fg, 1.5).reference_edge(rgb(0x691c36), 1.0),
+            // Login-local thin badge alphabet. The photo's LEVEL line
+            // is 42px wide; Rajdhani 12 was only about 24px wide.
+            Plate::outlined(Plot::new(127.32, 109.9, 42.1, 6.9), Ink::Fg, 0.625)
+                .open_path((127.32, 109.9), LOGIN_LEVEL_0),
+            Plate::outlined(Plot::new(1140.6533, 109.9, 42.1, 6.9), Ink::Fg, 0.625)
+                .open_path((1140.6533, 109.9), LOGIN_LEVEL_1),
+            Plate::outlined(Plot::new(1201.0733, 109.9, 42.1, 6.9), Ink::Fg, 0.625)
+                .open_path((1201.0733, 109.9), LOGIN_LEVEL_2),
+            Plate::outlined(Plot::new(1261.9033, 110.73, 42.1, 6.9), Ink::Fg, 0.625)
+                .open_path((1261.9033, 110.73), LOGIN_LEVEL_3),
+            Plate::outlined(Plot::new(1322.7333, 110.73, 42.1, 6.9), Ink::Fg, 0.625)
+                .open_path((1322.7333, 110.73), LOGIN_LEVEL_4),
+            Plate::filled(Plot::new(137.5, 125.83, 19.5833, 12.9167), Ink::Fg)
+                .outlined_path((137.5, 125.83), LOGIN_TIER_0).edged(Ink::Fg, 0.35),
+            Plate::filled(Plot::new(1150.83, 125.83, 19.5833, 12.9167), Ink::Fg)
+                .outlined_path((1150.83, 125.83), LOGIN_TIER_1).edged(Ink::Fg, 0.35),
+            Plate::filled(Plot::new(1208.75, 126.25, 26.5, 12.5), Ink::Fg)
+                .outlined_path((1208.75, 126.25), LOGIN_TIER_2).edged(Ink::Fg, 0.35),
+            Plate::filled(Plot::new(1269.16, 126.25, 27.0, 13.5), Ink::Fg)
+                .outlined_path((1269.16, 126.25), LOGIN_TIER_3).edged(Ink::Fg, 0.35),
+            Plate::filled(Plot::new(1329.58, 126.67, 27.0833, 12.0833), Ink::Fg)
+                .outlined_path((1329.58, 126.67), LOGIN_TIER_4).edged(Ink::Fg, 0.35),
         ],
         rule: Plate::filled(Plot::new(42.0, 188.0, 1516.0, 1.5), Ink::Dim),
         labels: &[
-            Legend::new("CUSTOMER", 124.0, 90.0, 14.0, Ink::Fg),
-            Legend::new("LEVEL", 125.0, 121.0, 12.0, Ink::Fg),
-            Legend::new("T1", 132.0, 140.0, 20.0, Ink::Fg).bold(),
-            Legend::new("#NC488402", 256.0, 90.0, 14.0, Ink::Fg),
-            Legend::new("PROTOCOL", 257.0, 131.0, 9.0, Ink::Fg).bold(),
-            Legend::new("6520-A44", 257.0, 141.0, 9.0, Ink::Fg).bold(),
+            Legend::new("CUSTOMER", 123.6, 90.0, 14.0, Ink::Fg).stretched(0.93),
+            Legend::new("#NC488402", 253.9, 90.0, 14.0, Ink::Fg).stretched(0.93),
+            Legend::new("PROTOCOL", 257.4, 127.7, 8.5, Ink::Fg).bold().tracked(1.2),
+            Legend::new("6520-A44", 257.8, 135.6, 8.5, Ink::Fg).bold().tracked(1.2),
             Legend::new("ONLY CC35 CERTIFIED", 305.0, 108.0, 6.5, Ink::Dim),
             Legend::new("AND DHSF 5TH CLASS OFFICERS", 305.0, 116.5, 6.5, Ink::Dim),
             Legend::new("ARE ALLOWED TO MANIPULATE,", 305.0, 125.0, 6.5, Ink::Dim),
             Legend::new("ACCESS OR DISABLE THIS DEVICE.", 305.0, 133.5, 6.5, Ink::Dim),
-            Legend::new("JHN 102 CKC 151 CC10 AS5", 283.0, 158.0, 7.0, Ink::Fixed(ON_CARD)),
-            Legend::new("SECURITY LEVEL", 1141.0, 90.0, 14.0, Ink::Fg),
-            Legend::new("LEVEL", 1141.0, 121.0, 12.0, Ink::Fg),
-            Legend::new("LEVEL", 1201.0, 121.0, 12.0, Ink::Fg),
-            Legend::new("LEVEL", 1261.0, 121.0, 12.0, Ink::Fg),
-            Legend::new("LEVEL", 1321.0, 121.0, 12.0, Ink::Fg),
-            Legend::new("T1", 1148.0, 140.0, 20.0, Ink::Fg).bold(),
-            Legend::new("T2", 1208.0, 140.0, 20.0, Ink::Fg).bold(),
-            Legend::new("T3", 1268.0, 140.0, 20.0, Ink::Fg).bold(),
-            Legend::new("T4", 1328.0, 140.0, 20.0, Ink::Fg).bold(),
+            Legend::new("SECURITY LEVEL", 1136.0, 90.0, 14.0, Ink::Fg).stretched(0.935),
         ],
     },
     slots: &[
@@ -472,34 +761,41 @@ pub const ACCESS: Access = Access {
         Slot {
             body: Some(
                 Plate::filled(Plot::new(372.0, 315.0, 253.0, 255.0), Ink::Fg)
+                    .reference_fill(rgb(0xf63333))
                     .bevelled(Bevel::tr(51.0)),
             ),
-            notch: Some(Plot::new(372.0, 392.0, 15.0, 105.0)),
+            notch: Some(Plate::filled(Plot::new(372.0, 390.0, 15.0, 106.0), Ink::Bg)
+                .reference_fill(NOTCH_GROUND)
+                .outlined_path((372.0, 390.0), NOTCH_1)),
+            notch_rail: Some(Plate::filled(Plot::new(372.0, 390.0, 1.5, 106.0), Ink::Dim)),
             mark: Some(Plate::filled(
                 Plot::new(452.0, 393.0, 94.0, 94.0),
                 Ink::Fixed(AVATAR),
             )),
+            mark_tab: Some(Plate::filled(Plot::new(452.0, 386.0, 46.0, 7.0), Ink::Fixed(AVATAR))
+                .outlined_path((452.0, 386.0), AVATAR_TAB_1)),
             emblem: Emblem::Hexagon,
-            name: Some(
-                Legend::new("USER 01", 499.0, 530.0, 18.0, Ink::Fixed(ON_CARD)).centred(),
-            ),
-            prompt: Some(Legend::new("password:", 378.0, 595.0, 14.0, Ink::Fg)),
+            emblem_art: ACTIVE_INSIGNIA,
+            name: Some(Legend::new("USER 01", 499.0, 528.3, 20.0, Ink::Fixed(ON_CARD))
+                .medium().centred().tracked(-0.4)),
+            prompt: Some(Legend::new("password:", 379.0, 594.0, 15.0, Ink::Fg)),
             field: Some(
                 Plate::filled(Plot::new(372.5, 602.5, 252.0, 32.0), Ink::Fixed(WELL))
                     .edged(Ink::Dim, 1.0),
             ),
-            // The mock is ten stars with a blinking text tail. Typing
-            // changes the star count; the separate hollow button mark
-            // below stays fixed and does not blink.
+            // The illustrated fixture has ten stars followed by one
+            // horizontal stroke. Awake input uses the same pitch and
+            // moving stroke; its full secret remains independent of ink.
             entry: Some(Entry {
-                rest: Legend::new("**********  __", 381.0, 626.0, 12.0, Ink::Fg).tracked(3.0),
+                rest: Legend::new("**********", 381.9, 632.1, 23.0, Ink::Fg).tracked(1.93),
                 mask: '*',
-                tail: "  __",
-                caret: Caret::Fixed,
-                blink: Blink::Tail,
+                tail: "",
+                caret: Caret::AfterMasks,
+                blink: Blink::Caret,
                 busy: "verifying:",
                 failed: "access denied:",
             }),
+            caret: Some(Plate::filled(Plot::new(388.425, 622.92, 13.75, 0.83), Ink::Fg)),
             action: Some(
                 Plate::filled(Plot::new(372.0, 635.0, 253.0, 48.0), Ink::Fixed(COMMIT))
                     .bevelled(Bevel::br(9.0)),
@@ -514,8 +810,8 @@ pub const ACCESS: Access = Access {
                 Plate::filled(Plot::new(498.1373, 653.7446, 1.4460, 0.8871), Ink::Fixed(ON_CARD)),
             ],
             notes: &[
-                Legend::new(NOTICE_1, 378.0, 700.0, 7.5, Ink::Fixed(NOTICE)),
-                Legend::new(NOTICE_2, 378.0, 709.0, 7.5, Ink::Fixed(NOTICE)),
+                Legend::new(NOTICE_1, 378.0, 701.4, 8.43, Ink::Fixed(NOTICE)),
+                Legend::new(NOTICE_2, 378.0, 710.4, 8.43, Ink::Fixed(NOTICE)),
             ],
             ..Slot::EMPTY
         },
@@ -525,12 +821,15 @@ pub const ACCESS: Access = Access {
                 Plate::filled(Plot::new(692.0, 315.0, 255.0, 340.0), Ink::Fixed(CARD_OPEN))
                     .grading(Ink::Fixed(CARD_OPEN_FOOT))
                     .bevelled(Bevel {
-                        tr: 47.0,
+                        tr: 51.0,
                         bl: 22.0,
                         ..Bevel::NONE
                     })
                     .edged(Ink::Dim, 1.5),
             ),
+            reference_body: Some(Plate::outlined(
+                Plot::new(692.0, 315.0, 255.0, 340.0), Ink::Dim, 1.5,
+            ).bevelled(Bevel { tr: 51.0, bl: 22.0, ..Bevel::NONE })),
             foot: Some(
                 Plate::filled(
                     Plot::new(692.0, 569.0, 255.0, 86.0),
@@ -539,13 +838,22 @@ pub const ACCESS: Access = Access {
                 .bevelled(Bevel::bl(22.0))
                 .edged(Ink::Dim, 1.0),
             ),
-            notch: Some(Plot::new(692.0, 392.0, 15.0, 105.0)),
-            mark: Some(Plate::filled(Plot::new(772.0, 393.0, 96.0, 94.0), Ink::Fg)),
+            notch: Some(Plate::filled(Plot::new(692.0, 390.0, 15.0, 106.0), Ink::Bg)
+                .reference_fill(NOTCH_GROUND)
+                .outlined_path((692.0, 390.0), NOTCH_2)),
+            notch_rail: Some(Plate::filled(Plot::new(692.0, 390.0, 1.5, 106.0), Ink::Dim)),
+            mark: Some(Plate::filled(Plot::new(772.0, 393.0, 96.0, 94.0), Ink::Fg)
+                .reference_fill(rgb(0xf63333))),
+            mark_tab: Some(Plate::filled(Plot::new(772.0, 386.0, 52.0, 7.0), Ink::Fg)
+                .reference_fill(rgb(0xf63333))
+                .outlined_path((772.0, 386.0), AVATAR_TAB_2)),
             emblem: Emblem::Portrait,
-            name: Some(Legend::new("USER 01", 821.0, 530.0, 18.0, Ink::Fg).centred()),
+            emblem_art: neomil_login_art::OPEN,
+            name: Some(Legend::new("USER 01", 821.0, 528.3, 20.0, Ink::Fg)
+                .medium().centred().tracked(-0.4)),
             notes: &[
-                Legend::new(NOTICE_1, 699.0, 587.0, 7.5, Ink::Fixed(NOTICE)),
-                Legend::new(NOTICE_2, 699.0, 596.0, 7.5, Ink::Fixed(NOTICE)),
+                Legend::new(NOTICE_1, 699.0, 588.4, 8.43, Ink::Fixed(NOTICE)),
+                Legend::new(NOTICE_2, 699.0, 597.4, 8.43, Ink::Fixed(NOTICE)),
             ],
             ..Slot::EMPTY
         },
@@ -558,12 +866,15 @@ pub const ACCESS: Access = Access {
                 )
                 .grading(Ink::Fixed(CARD_LOCKED_FOOT))
                 .bevelled(Bevel {
-                    tr: 47.0,
+                    tr: 51.0,
                     bl: 22.0,
                     ..Bevel::NONE
                 })
                 .edged(Ink::Fixed(EDGE_LOCKED), 1.5),
             ),
+            reference_body: Some(Plate::outlined(
+                Plot::new(982.0, 315.0, 254.0, 340.0), Ink::Fixed(EDGE_LOCKED), 1.5,
+            ).bevelled(Bevel { tr: 51.0, bl: 22.0, ..Bevel::NONE })),
             foot: Some(
                 Plate::filled(
                     Plot::new(982.0, 569.0, 254.0, 86.0),
@@ -572,25 +883,51 @@ pub const ACCESS: Access = Access {
                 .bevelled(Bevel::bl(22.0))
                 .edged(Ink::Fixed(EDGE_LOCKED), 1.0),
             ),
-            notch: Some(Plot::new(982.0, 392.0, 15.0, 105.0)),
-            mark: Some(Plate::filled(Plot::new(1061.0, 393.0, 96.0, 94.0), Ink::Fg)),
+            notch: Some(Plate::filled(Plot::new(982.0, 390.0, 15.0, 106.0), Ink::Bg)
+                .reference_fill(NOTCH_GROUND)
+                .outlined_path((982.0, 390.0), NOTCH_3)),
+            notch_rail: Some(Plate::filled(Plot::new(982.0, 390.0, 1.5, 106.0), Ink::Fixed(EDGE_LOCKED))),
+            mark: Some(Plate::filled(Plot::new(1061.0, 393.0, 96.0, 94.0), Ink::Fg)
+                .reference_fill(rgb(0xf63333))),
+            mark_tab: Some(Plate::filled(Plot::new(1061.0, 386.0, 52.0, 7.0), Ink::Fg)
+                .reference_fill(rgb(0xf63333))
+                .outlined_path((1061.0, 386.0), AVATAR_TAB_3)),
             emblem: Emblem::Portrait,
-            name: Some(Legend::new("USER 01", 1110.0, 530.0, 18.0, Ink::Fg).centred()),
+            emblem_art: neomil_login_art::LOCKED,
+            name: Some(Legend::new("USER 01", 1110.0, 528.3, 20.0, Ink::Fg)
+                .medium().centred().tracked(-0.4)),
             notes: &[
-                Legend::new(NOTICE_1, 989.0, 587.0, 7.5, Ink::Dim),
-                Legend::new(NOTICE_2, 989.0, 596.0, 7.5, Ink::Dim),
+                Legend::new(NOTICE_1, 989.0, 588.4, 8.43, Ink::Dim),
+                Legend::new(NOTICE_2, 989.0, 597.4, 8.43, Ink::Dim),
             ],
             ..Slot::EMPTY
         },
     ],
     fixture: Fixture::Margins {
         chips: &[Plot::new(60.0, 347.0, 12.5, 12.5), Plot::new(1541.0, 347.0, 12.5, 12.5)],
+        // The flanking bars are opposite-handed in the native photo.
+        // Keep them independent of the two correctly placed squares.
+        marks: &[
+            Plate::filled(Plot::new(45.5, 347.5, 9.5, 1.3), Ink::Dim),
+            Plate::filled(Plot::new(50.0, 350.0, 5.0, 1.3), Ink::Dim),
+            Plate::filled(Plot::new(55.8, 347.5, 4.2, 4.5), Ink::Fg),
+            Plate::filled(Plot::new(1530.8, 347.5, 5.0, 4.5), Ink::Fg),
+            Plate::filled(Plot::new(1554.5, 347.5, 3.5, 1.3), Ink::Dim),
+            Plate::filled(Plot::new(1554.5, 350.0, 3.0, 1.3), Ink::Dim),
+            Plate::filled(Plot::new(1548.0, 411.0, 1.5, 18.0), Ink::Fg),
+            Plate::filled(Plot::new(1548.0, 427.0, 4.0, 12.0), Ink::Fg)
+                .outlined_path((1548.0, 427.0), &[
+                    Seg::Line(1552.0, 427.0), Seg::Line(1549.0, 439.0),
+                ]),
+            Plate::filled(Plot::new(1555.0, 412.0, 1.5, 4.0), Ink::Border),
+            Plate::filled(Plot::new(1555.0, 419.0, 1.5, 4.0), Ink::Border),
+        ],
         labels: &[
             Legend::new("1", 63.0, 357.0, 10.0, Ink::Fixed(ON_CARD)).bold(),
             Legend::new("2", 1544.0, 357.0, 10.0, Ink::Fixed(ON_CARD)).bold(),
-            Legend::new("00032 05 54 08 CP", 57.0, 472.0, 11.0, Ink::Dim).turned(),
-            Legend::new("JHN 102 CKC 151 CC10 AS5", 1556.0, 554.0, 11.0, Ink::Dim).turned(),
-            Legend::new("KIROSHI", 1556.0, 651.0, 11.0, Ink::Dim).turned(),
+            Legend::new("00032 05 54 08 CP", 53.0, 471.6, 10.5, Ink::Dim).turned().stretched(1.1),
+            Legend::new("JHN 102 CKC 151 CC10 AS5", 1554.0, 552.33, 10.0, Ink::Dim).turned().stretched(1.084),
+            Legend::new("KIROSHI", 1554.75, 647.25, 12.0, Ink::Dim).turned().stretched(1.02),
         ],
     },
     // Nothing below y 720 but ground: the cards carry their own
@@ -736,7 +1073,7 @@ static CHROME: &[Piece] = &[
 /// The bright edge rides above the body panel and follows its opening clip.
 static OVERLAY: &[Piece] = &[
     Piece::Curve {
-        start: (729.0, 312.0),
+        start: mailbox_material::PANEL_ORIGIN,
         steps: mailbox_material::PANEL_CONTOUR,
         fill: None,
         stroke: Some(Ink::Fixed(rgb(0xfb3535))),
@@ -745,7 +1082,7 @@ static OVERLAY: &[Piece] = &[
     },
     // The upper-right source stem is thicker than the thin lower contour.
     Piece::Poly {
-        points: &[(1450.0, 320.0), (1450.0, 544.5833)],
+        points: &[(1450.0, 323.33), (1450.0, 544.5833)],
         fill: None,
         stroke: Some(Ink::Fixed(rgb(0xfb3535))),
         width: 1.8,
@@ -820,6 +1157,7 @@ pub fn mailbox() -> Mailbox {
         overlay: OVERLAY,
         list: MailList {
             row_type: &[],
+            selected_row_type: None,
             footer: MAIL_LIST_FOOTER,
             feedback: Some(MailRowStates {
                 hover: MailRowCoat {
@@ -876,6 +1214,7 @@ pub fn mailbox() -> Mailbox {
             // cartridge column instead
             glyph_x: 0.0,
             glyph_dy: 0.0,
+            glyph_offsets: &[],
             glyph_w: 0.0,
             envelope: None,
             text_x: 248.3333,
@@ -887,6 +1226,7 @@ pub fn mailbox() -> Mailbox {
             from_size: 17.5,
             from_ink: Ink::Fixed(rgb(0xfb3535)),
             selected_ink: Ink::Fixed(rgb(0x531719)),
+            selected_printing: None,
             from_at: FromAt::Trailing,
             from_prefix: "",
             title_upper: false,
@@ -929,6 +1269,7 @@ pub fn mailbox() -> Mailbox {
             body: Run::new(750.0, 347.5, 17.5, Ink::Fixed(rgb(0xfb3535))),
             line: 21.0,
             para: 42.0,
+            paragraph_baselines: &[],
             paragraphs: &PARAGRAPHS,
         },
         buttons: MailButtons {
@@ -956,6 +1297,7 @@ pub fn mailbox() -> Mailbox {
             first: Frame::ZERO, dx: 0.0, dy: 0.0, cols: 1, count: 0,
             selected: None, trim: Trim::NONE, width: 0.0, fill: None,
             stroke: Ink::Fg, label: Run::new(0.0, 0.0, 0.0, Ink::Fg),
+            label_runs: &[],
             caption: None, caption_text: "", labels: &[],
         },
         motions: MAILBOX_MOTIONS,
@@ -1020,17 +1362,13 @@ pub const MAILBOX_MOTIONS: &[MailMotion] = &[
 // `transform="translate(437,0)"` groups do, so a figure here reads
 // against the SVG line it came from.
 //
-// Two things the trace draws that are not transcribed, and why: the
-// thin horizontal *glitch streaks* trailing the logotype and its band,
-// and the ghosted title 15px right of card 4's. Both are the
-// photograph's residue rather than the design (docs/PIPELINE.md), and
-// the trace's own comment calls the second one "not drawn". The rotated
-// micro-text in the left margin and down each card's right edge is
-// omitted with it: iced's canvas text has no transform and neither run
-// carries a shape in either inventory.
+// The measured rotated code/branding and card-edge maker runs use
+// `Prim::Turn`; the rifle's source-supported SVG linework is carried in
+// the shared gun template. The source's printing echoes, logotype
+// streaks and Japanese skew remain separate artwork work.
 
 use crate::style::{
-    fill_path, fill_rect, line_path, line_rect, shut_path, txt, txt_bold, txt_bold_mid, txt_end, Anchor,
+    fill_path, fill_rect, line_path, line_rect, shut_path, txt, txt_bold, txt_end, Anchor,
     Change, Group, Motion, Prim, Seg,
 };
 use iced::animation::Easing;
@@ -1131,11 +1469,9 @@ pub const HUB_VIGNETTE: Prim = Prim::Lobe { x: 32.0, y: 540.0, rx: 544.0, ry: 30
 
 /// The source shares its clear background with the login and dashboard.
 const STORE_GROUND: &[Prim] = dashboard_ground::BACKGROUND;
-/// The two tones the gun drawing takes on the selected card, and the
-/// two dark faces it takes on the others.
+/// The selected card's maker-box line; the rifle itself has measured
+/// nested tone contours in `neomil_store_art`.
 pub const GUN_LIT: iced::Color = rgb(0xb02c30);
-pub const GUN_CRADLE: iced::Color = rgb(0x902d34);
-pub const GUN_SHADE: iced::Color = rgb(0x5a1e22);
 
 /// The scatter-code glyph: 25 loose 3px squares on a 9x9 lattice at a
 /// measured 3.6667px pitch, with no finder patterns -- not a QR.
@@ -1157,152 +1493,69 @@ const QR: &[&str] = &[
 // and lit layers inherit fill only, which is what lets card 2 draw the
 // same drawing solid where the others draw it outlined.
 
-const MUZZLE: &[Seg] = &[
-    Seg::Line(56.0, 294.0),
-    Seg::Line(79.0, 297.0),
-    Seg::Line(79.0, 300.0),
-    Seg::Line(63.0, 300.0),
-    Seg::Line(63.0, 311.0),
-    Seg::Line(36.0, 311.0),
-];
-const TRIGGER: &[Seg] = &[
-    Seg::Line(175.0, 312.0),
-    Seg::Line(181.0, 338.0),
-    Seg::Line(167.0, 338.0),
-];
-const RAIL_ARM: &[Seg] = &[
-    Seg::Line(180.0, 300.0),
-    Seg::Line(200.0, 317.0),
-    Seg::Line(200.0, 323.0),
-    Seg::Line(175.0, 306.0),
-];
-const SLING: &[Seg] = &[
-    Seg::Line(197.0, 328.0),
-    Seg::Line(197.0, 331.0),
-    Seg::Line(182.0, 338.0),
-];
-const BUFFER: &[Seg] = &[
-    Seg::Line(224.0, 322.0),
-    Seg::Line(224.0, 330.0),
-    Seg::Line(198.0, 330.0),
-];
-const STOCK_UP: &[Seg] = &[
-    Seg::Line(230.0, 315.0),
-    Seg::Line(253.0, 322.0),
-    Seg::Line(253.0, 327.0),
-    Seg::Line(243.0, 327.0),
-    Seg::Line(225.0, 320.0),
-];
-const STOCK_LOW: &[Seg] = &[
-    Seg::Line(231.0, 330.0),
-    Seg::Line(247.0, 352.0),
-    Seg::Line(247.0, 355.0),
-    Seg::Line(237.0, 355.0),
-    Seg::Line(237.0, 350.0),
-    Seg::Line(226.0, 334.0),
-];
-const FOREND_A: &[Seg] = &[Seg::Line(89.0, 314.0), Seg::Line(89.0, 340.0)];
-const FOREND_B: &[Seg] = &[
-    Seg::Line(119.0, 324.0),
-    Seg::Line(123.0, 324.0),
-    Seg::Line(123.0, 346.0),
-    Seg::Line(89.0, 346.0),
-];
-const WEDGE: &[Seg] = &[
-    Seg::Line(144.0, 310.0),
-    Seg::Line(154.0, 322.0),
-    Seg::Line(143.0, 325.0),
-];
+// Primary rifle contours are native-grid source traces in the scoped
+// art module. Normal and selected masks retain their own measured tone
+// and position; hover/held recolor the same geometry through roles.
+/// Source-traced RG5 / SC / E certification marks at each card's head and foot.
+/// Two leaf paths retain semantic feedback recoloring for both tone tiers.
+const ICONS_HEAD: &[Prim] = neomil_store_art::CERT_HEAD;
+const ICONS_FOOT: &[Prim] = neomil_store_art::CERT_FOOT;
+const ICONS_FOOT_SEL: &[Prim] = neomil_store_art::CERT_FOOT_SEL;
 
-/// The three small icons at a card's head and foot: two outlined
-/// squares (the second holding a circle) and a C-bracket whose arc the
-/// scene walks as two quadratics. Card-local, with the row's own top.
-macro_rules! icons {
-    ($y:expr) => {
-        &[
-            line_rect(9.0, $y, 16.0, 17.0, Ink::Fg, 1.5),
-            line_rect(31.0, $y, 18.0, 17.0, Ink::Fg, 1.5),
-            Prim::Circle { x: 40.0, y: $y + 8.5, r: 4.5, fill: None, stroke: Some(Ink::Fg), width: 1.5 },
-            Prim::Path {
-                x: 73.0,
-                y: $y + 1.0,
-                segs: &[
-                    Seg::Line(62.0, $y + 1.0),
-                    Seg::Quad { cx: 54.0, cy: $y + 1.0, x: 54.0, y: $y + 9.0 },
-                    Seg::Quad { cx: 54.0, cy: $y + 17.0, x: 62.0, y: $y + 17.0 },
-                    Seg::Line(73.0, $y + 17.0),
-                ],
-                close: false,
-                fill: None,
-                stroke: Some(Ink::Fg),
-                width: 1.5,
-            },
-        ]
-    };
+/// STORE source labels use one design unit of letter spacing. The socket
+/// line is regular, unlike its earlier bold Iced approximation.
+const fn store_track(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -> Prim {
+    Prim::Tracked { x, y, size, ink, face: Face::Regular, anchor: Anchor::Start, tracking: 1.0, content }
+}
+const fn store_track_bold(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -> Prim {
+    Prim::Tracked { x, y, size, ink, face: Face::Bold, anchor: Anchor::Start, tracking: 1.0, content }
+}
+const fn store_track_bold_mid(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -> Prim {
+    Prim::Tracked { x, y, size, ink, face: Face::Bold, anchor: Anchor::Middle, tracking: 1.0, content }
+}
+const fn store_track_mid(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -> Prim {
+    Prim::Tracked { x, y, size, ink, face: Face::Regular, anchor: Anchor::Middle, tracking: 1.0, content }
 }
 
-const ICONS_HEAD: &[Prim] = icons!(163.0);
-const ICONS_FOOT: &[Prim] = icons!(584.0);
-const ICONS_FOOT_SEL: &[Prim] = icons!(776.0);
+const GUN_OUTLINED: &[Prim] = neomil_store_art::GUN_NORMAL;
+const GUN_SOLID: &[Prim] = neomil_store_art::GUN_SELECTED;
 
-macro_rules! gun {
-    ($body:expr, $edge:expr, $w:expr, $dark:expr, $hi:expr) => {
-        &[
-            Prim::Path { x: 36.0, y: 294.0, segs: MUZZLE, close: true, fill: Some($body), stroke: $edge, width: $w },
-            Prim::Rect { x: 61.0, y: 300.0, w: 114.0, h: 10.0, fill: Some($body), stroke: $edge, width: $w },
-            Prim::Rect { x: 42.0, y: 315.0, w: 11.0, h: 31.0, fill: Some($body), stroke: $edge, width: $w },
-            Prim::Rect { x: 53.0, y: 313.0, w: 70.0, h: 33.0, fill: Some($body), stroke: $edge, width: $w },
-            Prim::Rect { x: 123.0, y: 313.0, w: 9.0, h: 33.0, fill: Some($body), stroke: $edge, width: $w },
-            Prim::Rect { x: 136.0, y: 322.0, w: 19.0, h: 24.0, fill: Some($body), stroke: $edge, width: $w },
-            Prim::Rect { x: 149.0, y: 300.0, w: 26.0, h: 13.0, fill: Some($body), stroke: $edge, width: $w },
-            Prim::Path { x: 163.0, y: 312.0, segs: TRIGGER, close: true, fill: Some($body), stroke: $edge, width: $w },
-            Prim::Path { x: 175.0, y: 300.0, segs: RAIL_ARM, close: true, fill: Some($body), stroke: $edge, width: $w },
-            Prim::Path { x: 181.0, y: 335.0, segs: SLING, close: true, fill: Some($body), stroke: $edge, width: $w },
-            Prim::Path { x: 198.0, y: 318.0, segs: BUFFER, close: true, fill: Some($body), stroke: $edge, width: $w },
-            Prim::Path { x: 225.0, y: 315.0, segs: STOCK_UP, close: true, fill: Some($body), stroke: $edge, width: $w },
-            Prim::Path { x: 226.0, y: 330.0, segs: STOCK_LOW, close: true, fill: Some($body), stroke: $edge, width: $w },
-            Prim::Rect { x: 252.0, y: 322.0, w: 10.0, h: 33.0, fill: Some($body), stroke: $edge, width: $w },
-            // the forend's shaded triangle and its hatched grid
-            fill_path(63.0, 330.0, FOREND_A, $dark),
-            fill_path(89.0, 340.0, FOREND_B, $dark),
-            // the magazine studs, the toothed under-rail, the module
-            // studs and the bright angled block
-            fill_rect(33.0, 315.0, 9.0, 7.0, $hi),
-            fill_rect(33.0, 323.0, 9.0, 7.0, $hi),
-            fill_rect(33.0, 331.0, 9.0, 7.0, $hi),
-            fill_rect(33.0, 339.0, 9.0, 7.0, $hi),
-            fill_rect(55.0, 340.0, 34.0, 9.0, $hi),
-            fill_rect(125.5, 317.0, 4.0, 4.0, $hi),
-            fill_rect(125.5, 325.0, 4.0, 4.0, $hi),
-            fill_rect(125.5, 333.0, 4.0, 4.0, $hi),
-            fill_rect(125.5, 341.0, 4.0, 4.0, $hi),
-            fill_path(133.0, 312.0, WEDGE, $hi),
-            fill_rect(206.0, 311.0, 6.0, 4.0, $hi),
-        ]
-    };
-}
-
-const GUN_OUTLINED: &[Prim] = gun!(Ink::Dim, Some(Ink::Fg), 1.0, Ink::Fixed(GUN_SHADE), Ink::Fg);
-const GUN_SOLID: &[Prim] = gun!(Ink::Fg, None, 0.0, Ink::Fg, Ink::Fixed(GUN_LIT));
+// The source and SVG print two narrow, clockwise runs at each rifle
+// card's upper-right edge. `Turn` rotates the text with its local origin;
+// the outer card translation then places it at each shelf column.
+const PETROCHEM_PRINT: &[Prim] = &[
+    Prim::Tracked { x: 0.0, y: 0.0, size: 7.5, ink: Ink::Fg,
+        face: Face::Regular, anchor: Anchor::Start, tracking: 0.5,
+        content: "PETROCHEM" },
+];
+const BETTERLIFE_PRINT: &[Prim] = &[
+    Prim::Tracked { x: 0.0, y: 0.0, size: 7.5, ink: Ink::Fg,
+        face: Face::Bold, anchor: Anchor::Start, tracking: 1.0,
+        content: "BETTERLIFE TEC" },
+];
+const CARD_EDGE_PRINT: &[Prim] = &[
+    Prim::Turn { x: 262.5, y: 183.0, angle: 90.0, prims: PETROCHEM_PRINT },
+    Prim::Turn { x: 272.0, y: 182.5, angle: 90.0, prims: BETTERLIFE_PRINT },
+];
 
 /// The stats block and everything under it, on an unselected card.
 const STATS: &[Prim] = &[
-    txt(32.0, 434.0, 15.0, Ink::Fg, "DPS"),
-    txt(96.0, 434.0, 15.0, Ink::Fg, "PNT"),
-    txt(161.0, 434.0, 15.0, Ink::Fg, "ACC"),
-    txt(225.0, 434.0, 15.0, Ink::Fg, "ROF"),
-    txt_bold_mid(46.0, 467.0, 20.0, Ink::Fg, "86"),
-    txt_bold_mid(109.0, 467.0, 20.0, Ink::Fg, "30"),
-    txt_bold_mid(174.0, 467.0, 20.0, Ink::Fg, "5"),
-    txt_bold_mid(238.0, 467.0, 20.0, Ink::Fg, "5"),
+    store_track(32.0, 434.0, 15.0, Ink::Fg, "DPS"),
+    store_track(96.0, 434.0, 15.0, Ink::Fg, "PNT"),
+    store_track(161.0, 434.0, 15.0, Ink::Fg, "ACC"),
+    store_track(225.0, 434.0, 15.0, Ink::Fg, "ROF"),
+    store_track_bold_mid(46.0, 467.0, 20.0, Ink::Fg, "86"),
+    store_track_bold_mid(109.0, 467.0, 20.0, Ink::Fg, "30"),
+    store_track_bold_mid(174.0, 467.0, 20.0, Ink::Fg, "5"),
+    store_track_bold_mid(238.0, 467.0, 20.0, Ink::Fg, "5"),
     txt(11.0, 492.0, 8.0, Ink::Dim, "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED"),
     txt(11.0, 500.0, 8.0, Ink::Dim, "TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
-    txt_bold_mid(90.0, 534.0, 12.0, Ink::Fg, "EMPTY"),
-    txt_bold_mid(90.0, 547.5, 12.0, Ink::Fg, "SOCKET"),
-    txt_bold_mid(165.0, 534.0, 12.0, Ink::Fg, "EMPTY"),
-    txt_bold_mid(165.0, 547.5, 12.0, Ink::Fg, "SOCKET"),
-    txt_bold_mid(240.0, 534.0, 12.0, Ink::Fg, "EMPTY"),
-    txt_bold_mid(240.0, 547.5, 12.0, Ink::Fg, "SOCKET"),
+    store_track_mid(90.0, 534.0, 12.0, Ink::Fg, "EMPTY"),
+    store_track_mid(90.0, 547.5, 12.0, Ink::Fg, "SOCKET"),
+    store_track_mid(165.0, 534.0, 12.0, Ink::Fg, "EMPTY"),
+    store_track_mid(165.0, 547.5, 12.0, Ink::Fg, "SOCKET"),
+    store_track_mid(240.0, 534.0, 12.0, Ink::Fg, "EMPTY"),
+    store_track_mid(240.0, 547.5, 12.0, Ink::Fg, "SOCKET"),
 ];
 
 /// A standard card's frame: a 13px top-right chamfer, the right edge
@@ -1329,9 +1582,10 @@ macro_rules! card {
             fill_path(284.0, 266.0, EDGE_BAR_PATH, Ink::Fg),
             Prim::At { x: 0.0, y: 0.0, prims: ICONS_HEAD },
             Prim::At { x: 0.0, y: 0.0, prims: ICONS_FOOT },
-            txt_bold(11.0, 202.0, 20.0, Ink::Fg, "MAGNUM 650"),
-            txt(11.0, 223.0, 17.0, Ink::Fg, "HAND GUN"),
+            store_track_bold(11.0, 202.0, 20.0, Ink::Fg, "MAGNUM 650"),
+            store_track(11.0, 223.0, 17.0, Ink::Fg, "HAND GUN"),
             line_rect(261.4, 182.9, 7.2, 48.4, Ink::Dim, 0.8),
+            Prim::At { x: 0.0, y: 0.0, prims: CARD_EDGE_PRINT },
             Prim::At { x: 0.0, y: 0.0, prims: GUN_OUTLINED },
             Prim::At { x: 0.0, y: 0.0, prims: STATS },
             Prim::Dots { x: $scatter_x, y: 520.5833, cell: 3.0, pitch: 3.6667, ink: Ink::Fg, rows: QR },
@@ -1407,21 +1661,20 @@ const GROWN: &[Prim] = &[
     fill_path(282.0, 266.0, EDGE_BAR_SEL, Ink::Fg),
     Prim::At { x: 0.0, y: 0.0, prims: ICONS_HEAD },
     Prim::At { x: 0.0, y: 0.0, prims: ICONS_FOOT_SEL },
-    txt_bold(11.0, 202.0, 20.0, Ink::Fg, "MAGNUM 650"),
-    txt(11.0, 223.0, 17.0, Ink::Fg, "HAND GUN"),
+    store_track_bold(11.0, 202.0, 20.0, Ink::Fg, "MAGNUM 650"),
+    store_track(11.0, 223.0, 17.0, Ink::Fg, "HAND GUN"),
     line_rect(261.4, 182.9, 7.2, 48.4, Ink::Fixed(GUN_LIT), 0.8),
+    Prim::At { x: 0.0, y: 0.0, prims: CARD_EDGE_PRINT },
     // the solid variant, 14px left of the frame-relative position
     Prim::At { x: -14.0, y: 0.0, prims: GUN_SOLID },
-    // on the solid gun only the trigger cradle reads dark
-    fill_rect(122.0, 322.0, 19.0, 24.0, Ink::Fixed(GUN_CRADLE)),
-    txt(32.0, 434.0, 15.0, Ink::Fg, "DPS"),
-    txt(96.0, 434.0, 15.0, Ink::Fg, "PNT"),
-    txt(161.0, 434.0, 15.0, Ink::Fg, "ACC"),
-    txt(225.0, 434.0, 15.0, Ink::Fg, "ROF"),
-    txt_bold_mid(46.0, 467.0, 20.0, Ink::Fg, "86"),
-    txt_bold_mid(109.0, 467.0, 20.0, Ink::Fg, "30"),
-    txt_bold_mid(174.0, 467.0, 20.0, Ink::Fg, "5"),
-    txt_bold_mid(238.0, 467.0, 20.0, Ink::Fg, "5"),
+    store_track(32.0, 434.0, 15.0, Ink::Fg, "DPS"),
+    store_track(96.0, 434.0, 15.0, Ink::Fg, "PNT"),
+    store_track(161.0, 434.0, 15.0, Ink::Fg, "ACC"),
+    store_track(225.0, 434.0, 15.0, Ink::Fg, "ROF"),
+    store_track_bold_mid(46.0, 467.0, 20.0, Ink::Fg, "86"),
+    store_track_bold_mid(109.0, 467.0, 20.0, Ink::Fg, "30"),
+    store_track_bold_mid(174.0, 467.0, 20.0, Ink::Fg, "5"),
+    store_track_bold_mid(238.0, 467.0, 20.0, Ink::Fg, "5"),
     txt(11.0, 492.0, 8.0, Ink::Fg, "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE"),
     txt(11.0, 500.0, 8.0, Ink::Fg, "ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
     txt(27.0, 548.0, 17.0, Ink::Fg, "20"),
@@ -1436,12 +1689,12 @@ const GROWN: &[Prim] = &[
     txt(27.0, 680.0, 17.0, Ink::Fg, "+2"),
     txt(53.0, 680.0, 17.0, Ink::Fg, "MODULES SLOTS"),
     Prim::Dots { x: 12.4167, y: 711.2917, cell: 3.0, pitch: 3.6667, ink: Ink::Fg, rows: QR },
-    txt_bold_mid(88.0, 723.0, 12.0, Ink::Fg, "EMPTY"),
-    txt_bold_mid(88.0, 737.5, 12.0, Ink::Fg, "SOCKET"),
-    txt_bold_mid(163.0, 723.0, 12.0, Ink::Fg, "EMPTY"),
-    txt_bold_mid(163.0, 737.5, 12.0, Ink::Fg, "SOCKET"),
-    txt_bold_mid(238.0, 723.0, 12.0, Ink::Fg, "EMPTY"),
-    txt_bold_mid(238.0, 737.5, 12.0, Ink::Fg, "SOCKET"),
+    store_track_mid(88.0, 723.0, 12.0, Ink::Fg, "EMPTY"),
+    store_track_mid(88.0, 737.5, 12.0, Ink::Fg, "SOCKET"),
+    store_track_mid(163.0, 723.0, 12.0, Ink::Fg, "EMPTY"),
+    store_track_mid(163.0, 737.5, 12.0, Ink::Fg, "SOCKET"),
+    store_track_mid(238.0, 723.0, 12.0, Ink::Fg, "EMPTY"),
+    store_track_mid(238.0, 737.5, 12.0, Ink::Fg, "SOCKET"),
     // The contour stays visible over the wash, including its chamfer.
     shut_path(0.0, 151.0, FRAME_SEL, Ink::Fg, 1.2),
 ];
@@ -1452,13 +1705,14 @@ const GROWN: &[Prim] = &[
 const CARD_CUT: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: ICONS_HEAD },
     Prim::At { x: 0.0, y: 0.0, prims: ICONS_FOOT },
-    txt_bold(11.0, 202.0, 20.0, Ink::Fg, "MAGNUM 650"),
-    txt(11.0, 223.0, 17.0, Ink::Fg, "HAND GUN"),
+    store_track_bold(11.0, 202.0, 20.0, Ink::Fg, "MAGNUM 650"),
+    store_track(11.0, 223.0, 17.0, Ink::Fg, "HAND GUN"),
+    Prim::At { x: 0.0, y: 0.0, prims: CARD_EDGE_PRINT },
     Prim::At { x: 0.0, y: 0.0, prims: GUN_OUTLINED },
-    txt(32.0, 434.0, 15.0, Ink::Fg, "DPS"),
-    txt(96.0, 434.0, 15.0, Ink::Fg, "PNT"),
-    txt_bold_mid(46.0, 467.0, 20.0, Ink::Fg, "86"),
-    txt_bold_mid(109.0, 467.0, 20.0, Ink::Fg, "30"),
+    store_track(32.0, 434.0, 15.0, Ink::Fg, "DPS"),
+    store_track(96.0, 434.0, 15.0, Ink::Fg, "PNT"),
+    store_track_bold_mid(46.0, 467.0, 20.0, Ink::Fg, "86"),
+    store_track_bold_mid(109.0, 467.0, 20.0, Ink::Fg, "30"),
     // The caption is cut at the frame edge, and it is cut *here* rather
     // than by the covering strip below: a canvas frame layers all of
     // its text above all of its geometry, whatever order it was drawn
@@ -1467,8 +1721,8 @@ const CARD_CUT: &[Prim] = &[
     txt(11.0, 492.0, 8.0, Ink::Dim, "ONLY CC35 CERTIFIED AND DHSF 5TH"),
     txt(11.0, 500.0, 8.0, Ink::Dim, "TO MANIPULATE, ACCESS OR DISABLE"),
     Prim::Dots { x: 11.7917, y: 520.5833, cell: 3.0, pitch: 3.6667, ink: Ink::Fg, rows: QR },
-    txt_bold_mid(90.0, 534.0, 12.0, Ink::Fg, "EMPTY"),
-    txt_bold_mid(90.0, 547.5, 12.0, Ink::Fg, "SOCKET"),
+    store_track_mid(90.0, 534.0, 12.0, Ink::Fg, "EMPTY"),
+    store_track_mid(90.0, 547.5, 12.0, Ink::Fg, "SOCKET"),
 ];
 /// Card 4's frame is an open path: its top and bottom edges run to the
 /// cut and there is no right edge line at all.
@@ -1520,7 +1774,7 @@ const fn card_leaf_inks<const N: usize>(source: &[Prim], held: bool) -> [Prim; N
                 if let Some(ink) = fill { *ink = card_ink(*ink, held); }
                 if let Some(ink) = stroke { *ink = card_ink(*ink, held); }
             }
-            Prim::Text { ink, .. } | Prim::Dots { ink, .. } => *ink = card_ink(*ink, held),
+            Prim::Text { ink, .. } | Prim::Tracked { ink, .. } | Prim::Dots { ink, .. } => *ink = card_ink(*ink, held),
             _ => {},
         }
         i += 1;
@@ -1535,6 +1789,12 @@ macro_rules! card_content_states {
             pub(super) const HEAD: &[Prim] = &card_leaf_inks::<{ ICONS_HEAD.len() }>(ICONS_HEAD, $held);
             pub(super) const FOOT: &[Prim] = &card_leaf_inks::<{ ICONS_FOOT.len() }>(ICONS_FOOT, $held);
             pub(super) const FOOT_SEL: &[Prim] = &card_leaf_inks::<{ ICONS_FOOT_SEL.len() }>(ICONS_FOOT_SEL, $held);
+            pub(super) const PETRO: &[Prim] = &card_leaf_inks::<{ PETROCHEM_PRINT.len() }>(PETROCHEM_PRINT, $held);
+            pub(super) const BETTER: &[Prim] = &card_leaf_inks::<{ BETTERLIFE_PRINT.len() }>(BETTERLIFE_PRINT, $held);
+            pub(super) const EDGE: &[Prim] = &[
+                Prim::Turn { x: 262.5, y: 183.0, angle: 90.0, prims: PETRO },
+                Prim::Turn { x: 272.0, y: 182.5, angle: 90.0, prims: BETTER },
+            ];
             pub(super) const GUN: &[Prim] = &card_leaf_inks::<{ GUN_OUTLINED.len() }>(GUN_OUTLINED, $held);
             pub(super) const GUN_SEL: &[Prim] = &card_leaf_inks::<{ GUN_SOLID.len() }>(GUN_SOLID, $held);
             pub(super) const SPECS: &[Prim] = &card_leaf_inks::<{ STATS.len() }>(STATS, $held);
@@ -1542,7 +1802,8 @@ macro_rules! card_content_states {
                 let mut out = card_leaf_inks::<{ CARD_CUT.len() }>(CARD_CUT, $held);
                 out[0] = Prim::At { x: 0.0, y: 0.0, prims: HEAD };
                 out[1] = Prim::At { x: 0.0, y: 0.0, prims: FOOT };
-                out[4] = Prim::At { x: 0.0, y: 0.0, prims: GUN };
+                out[4] = Prim::At { x: 0.0, y: 0.0, prims: EDGE };
+                out[5] = Prim::At { x: 0.0, y: 0.0, prims: GUN };
                 out
             };
         }
@@ -1571,12 +1832,12 @@ const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bo
         Prim::Rect { fill, .. } => *fill = Some(coat),
         _ => panic!("card must begin with its frame"),
     }
-    let (head, foot, gun, specs, cut_content) = if held {
+    let (head, foot, edge, gun, specs, cut_content) = if held {
         (card_held::HEAD, if selected { card_held::FOOT_SEL } else { card_held::FOOT },
-         if selected { card_held::GUN_SEL } else { card_held::GUN }, card_held::SPECS, card_held::CUT)
+         card_held::EDGE, if selected { card_held::GUN_SEL } else { card_held::GUN }, card_held::SPECS, card_held::CUT)
     } else {
         (card_hover::HEAD, if selected { card_hover::FOOT_SEL } else { card_hover::FOOT },
-         if selected { card_hover::GUN_SEL } else { card_hover::GUN }, card_hover::SPECS, card_hover::CUT)
+         card_hover::EDGE, if selected { card_hover::GUN_SEL } else { card_hover::GUN }, card_hover::SPECS, card_hover::CUT)
     };
     if cut {
         out[1] = Prim::At { x: 0.0, y: 0.0, prims: cut_content };
@@ -1587,7 +1848,8 @@ const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bo
         out[1 + offset] = source[1 + offset]; // the bright spine
         out[2 + offset] = Prim::At { x: 0.0, y: 0.0, prims: head };
         out[3 + offset] = Prim::At { x: 0.0, y: 0.0, prims: foot };
-        out[7 + offset] = Prim::At { x: if selected { -14.0 } else { 0.0 }, y: 0.0, prims: gun };
+        out[7 + offset] = Prim::At { x: 0.0, y: 0.0, prims: edge };
+        out[8 + offset] = Prim::At { x: if selected { -14.0 } else { 0.0 }, y: 0.0, prims: gun };
         if selected {
             out[1] = Prim::At { x: 0.0, y: 0.0,
                 prims: if held { CARD_GROWN_HELD_WASH } else { CARD_GROWN_HOVER_WASH } };
@@ -1595,7 +1857,7 @@ const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bo
                 *stroke = if held { None } else { Some(Ink::Fg) };
             }
         } else {
-            out[8] = Prim::At { x: 0.0, y: 0.0, prims: specs };
+            out[9] = Prim::At { x: 0.0, y: 0.0, prims: specs };
         }
     }
     out
@@ -1627,11 +1889,11 @@ macro_rules! nav {
         (
             &[
                 Prim::At { x: 153.0, y: $top, prims: NAV_SELECTED },
-                txt(163.0, $base, 15.0, Ink::OnSelect, $label),
+                store_track(163.0, $base, 15.0, Ink::OnSelect, $label),
             ],
             &[
                 Prim::At { x: 153.0, y: $top, prims: NAV_ROW },
-                txt(163.0, $base, 15.0, Ink::Fg, $label),
+                store_track(163.0, $base, 15.0, Ink::Fg, $label),
             ],
         )
     };
@@ -1716,19 +1978,19 @@ macro_rules! nav_states {
             index: $index,
             hover: &[
                 Prim::At { x: 153.0, y: $top, prims: NAV_HOVER },
-                txt(163.0, $base, 15.0, Ink::Fg, $label),
+                store_track(163.0, $base, 15.0, Ink::Fg, $label),
             ],
             pressed: &[
                 Prim::At { x: 153.0, y: $top, prims: NAV_PRESSED },
-                txt(163.0, $base, 15.0, Ink::Fixed(rgb(0x4a0f10)), $label),
+                store_track(163.0, $base, 15.0, Ink::Fixed(rgb(0x4a0f10)), $label),
             ],
             selected_hover: Some(&[
                 Prim::At { x: 153.0, y: $top, prims: NAV_SELECTED_HOVER },
-                txt(163.0, $base, 15.0, Ink::OnSelect, $label),
+                store_track(163.0, $base, 15.0, Ink::OnSelect, $label),
             ]),
             selected_pressed: Some(&[
                 Prim::At { x: 153.0, y: $top, prims: NAV_SELECTED_PRESSED },
-                txt(163.0, $base, 15.0, Ink::Fixed(rgb(0x4a0f10)), $label),
+                store_track(163.0, $base, 15.0, Ink::Fixed(rgb(0x4a0f10)), $label),
             ]),
             selected_away: None,
             preserve_selected_hover: false,
@@ -1755,18 +2017,17 @@ const CHIP: &[Prim] = &[
     fill_rect(-11.0, 3.0, 6.0, 6.0, Ink::Fg),
     fill_rect(0.0, 1.0, 12.5, 12.5, Ink::Fg),
 ];
-/// The MASURAO band, solid to x~275, and the slanted bar left of the
-/// kanji. The band's decay into diagonal hatching past x 275 is the
-/// photograph's, not the design's, and is left out.
-const BAND: &[Seg] = &[
-    Seg::Line(275.0, 108.0),
-    Seg::Line(265.0, 130.0),
-    Seg::Line(153.0, 130.0),
+const MARGIN_CODE: &[Prim] = &[
+    Prim::Tracked { x: 0.0, y: 0.0, size: 11.0, ink: Ink::Fg,
+        face: Face::Regular, anchor: Anchor::Start, tracking: 1.0,
+        content: "00032 05 54 08 CP" },
 ];
-const SLANT: &[Seg] = &[
-    Seg::Line(190.0, 72.0),
-    Seg::Line(173.0, 105.0),
-    Seg::Line(170.0, 105.0),
+const MARGIN_BRAND: &[Prim] = &[
+    fill_rect(0.0, -4.0, 107.0, 1.5, Ink::Fg),
+    Prim::Tracked { x: 4.0, y: 8.0, size: 9.0, ink: Ink::Fg,
+        face: Face::Regular, anchor: Anchor::Start, tracking: 2.0,
+        content: "MASURAO" },
+    neomil_store_art::MARGIN_KANJI,
 ];
 const ARROW: &[Seg] = &[Seg::Line(985.0, 35.0), Seg::Line(985.0, 45.0)];
 
@@ -1779,24 +2040,20 @@ const SHELF: &[Prim] = &[
     Prim::At { x: 1425.0, y: 0.0, prims: SHELF_3 },
 ];
 
+#[path = "neomil/store_material.rs"]
+mod store_material;
+
 pub const STORE: &[Prim] = &[
     // Source-measured ground shared with the login and dashboard.
     Prim::Soft { prims: STORE_GROUND },
     // top strip
-    fill_rect(752.0, 35.0, 5.0, 5.0, Ink::Fg),
-    fill_rect(762.0, 31.0, 14.0, 15.0, Ink::Fg),
-    txt_bold(765.0, 43.0, 10.0, Ink::OnSelect, "2"),
-    txt(780.0, 44.0, 11.0, Ink::Dim, "KIROSHI"),
+    Prim::At { x: 0.0, y: 0.0, prims: neomil_store_art::KIROSHI_HEADER },
     txt(862.0, 44.0, 9.0, Ink::Dim, "JHN 102 CKC 151 CC10 AS5"),
     fill_rect(983.0, 39.0, 17.0, 2.0, Ink::Fg),
     fill_path(977.0, 40.0, ARROW, Ink::Fg),
-    // MASURAO logotype
-    // (`:252-254`: translate(188,102) skewX(-13), letter-spacing 5 -- the
-    // tracking is drawn, the 13-degree skew is not: `Prim` has no shear)
-    Prim::Tracked { x: 192.0, y: 104.0, size: 36.0, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, tracking: 5.0, content: "益荒男" },
-    fill_path(187.0, 72.0, SLANT, Ink::Fg),
-    fill_path(160.0, 108.0, BAND, Ink::Fg),
-    txt_bold(165.0, 125.0, 15.0, Ink::OnSelect, "MASURAO"),
+    // Actual source kanji/wordmark/hatching, retained as editable
+    // contours rather than an image or a font-dependent skew.
+    Prim::At { x: 0.0, y: 0.0, prims: neomil_store_art::LOGO },
     // customer block
     fill_rect(153.0, 158.0, 210.0, 21.0, Ink::Dim),
     txt(160.0, 173.0, 12.0, Ink::Fg, "CUSTOMER"),
@@ -1815,6 +2072,8 @@ pub const STORE: &[Prim] = &[
     // left margin
     Prim::At { x: 62.0, y: 186.0, prims: CHIP },
     txt_bold(65.0, 197.0, 10.0, Ink::OnSelect, "1"),
+    Prim::Turn { x: 58.0, y: 470.0, angle: -90.0, prims: MARGIN_CODE },
+    Prim::Turn { x: 52.0, y: 584.0, angle: -90.0, prims: MARGIN_BRAND },
     // the shelf, wiped in from the top at boot: `#shelf-open` (:240-246)
     // grows one clip over all four cards from no height to 664 over
     // 0.5 s from 0, `keySplines="0.33 1 0.68 1"` = EaseOutCubic, and
@@ -2101,6 +2360,11 @@ mod store_interaction_tests {
                     same_geometry_and_content(ap, bp);
                     continue;
                 }
+                (Prim::Turn { x: ax, y: ay, angle: aa, prims: ap }, Prim::Turn { x: bx, y: by, angle: ba, prims: bp }) => {
+                    assert_eq!((ax, ay, aa), (bx, by, ba));
+                    same_geometry_and_content(ap, bp);
+                    continue;
+                }
                 (Prim::Path { fill: af, stroke: as_, width: aw, .. }, Prim::Path { fill: bf, stroke: bs, width: bw, .. }) => {
                     *af = None; *bf = None;
                     *as_ = None; *bs = None;
@@ -2111,6 +2375,9 @@ mod store_interaction_tests {
                     *as_ = None; *bs = None;
                 }
                 (Prim::Text { ink: ai, .. }, Prim::Text { ink: bi, .. }) => {
+                    *ai = Ink::Fg; *bi = Ink::Fg;
+                }
+                (Prim::Tracked { ink: ai, .. }, Prim::Tracked { ink: bi, .. }) => {
                     *ai = Ink::Fg; *bi = Ink::Fg;
                 }
                 (Prim::Circle { fill: af, stroke: as_, .. }, Prim::Circle { fill: bf, stroke: bs, .. }) => {
@@ -2160,7 +2427,7 @@ mod store_interaction_tests {
         }
         for state in STORE_STATES.iter().filter(|state| state.group == Group::Category) {
             for drawing in [state.pressed, state.selected_pressed.unwrap()] {
-                assert!(matches!(drawing[1], Prim::Text { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
+                assert!(matches!(drawing[1], Prim::Tracked { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
             }
         }
     }
@@ -2190,6 +2457,28 @@ mod store_interaction_tests {
     }
 
     #[test]
+    fn source_certification_marks_keep_both_tones_through_card_feedback() {
+        for (rest, hover, held) in [
+            (ICONS_HEAD, card_hover::HEAD, card_held::HEAD),
+            (ICONS_FOOT, card_hover::FOOT, card_held::FOOT),
+            (ICONS_FOOT_SEL, card_hover::FOOT_SEL, card_held::FOOT_SEL),
+        ] {
+            assert_eq!(rest.len(), 2); // bright frames/SC/E and dim RG5
+            assert!(matches!(rest[0], Prim::Path { fill: Some(Ink::Fg), .. }));
+            assert!(matches!(rest[1], Prim::Path { fill: Some(Ink::Dim), .. }));
+            for (base, active) in rest.iter().zip(hover) {
+                same_geometry_and_content(std::slice::from_ref(base), std::slice::from_ref(active));
+                assert!(matches!(active, Prim::Path { fill: Some(Ink::Fg), .. }));
+            }
+            for (base, active) in rest.iter().zip(held) {
+                same_geometry_and_content(std::slice::from_ref(base), std::slice::from_ref(active));
+                assert!(matches!(active, Prim::Path { fill: Some(Ink::Fixed(c)), .. } if *c == rgb(0x4a0f10)));
+            }
+        }
+        assert!(matches!(neomil_store_art::KIROSHI_HEADER[0], Prim::Path { fill: Some(Ink::Fg), .. }));
+    }
+
+    #[test]
     fn product_coats_preserve_the_cut_and_keep_held_text_readable() {
         let states: Vec<_> = STORE_STATES.iter().filter(|s| s.group == Group::Card).collect();
         assert_eq!(states.len(), 4);
@@ -2198,7 +2487,9 @@ mod store_interaction_tests {
                 assert!(matches!(drawing[0], Prim::Path { fill: Some(Ink::Fixed(c)), .. } | Prim::Rect { fill: Some(Ink::Fixed(c)), .. } if c == fill));
             }
             let held = state.selected_pressed.unwrap();
-            assert!(matches!(held[5], Prim::Text { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
+            assert!(matches!(held[5], Prim::Tracked { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
+            assert!(matches!(held[8], Prim::At { prims, .. } if prims == card_held::EDGE));
+            assert!(matches!(held[9], Prim::At { prims, .. } if prims == card_held::GUN_SEL));
             assert_eq!(held[2], GROWN[2], "selected spine stays bright");
             let Prim::At { prims: wash, .. } = held[1] else { panic!("missing contoured wash") };
             assert!(wash.iter().all(|p| matches!(p, Prim::Path { fill: Some(Ink::Fixed(c)), .. } if *c == rgb(0xa52223))));
@@ -2207,6 +2498,9 @@ mod store_interaction_tests {
             assert_eq!(&drawing[2..], &CARD4[2..], "open cut edge remains untouched");
         }
         assert!(matches!(card_held::SPECS[8], Prim::Text { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
+        assert!(matches!(card_held::SPECS[10], Prim::Tracked { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
+        assert!(matches!(card_held::PETRO[0], Prim::Tracked { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
+        assert!(card_held::GUN.iter().all(|p| matches!(p, Prim::Path { fill: Some(Ink::Fixed(c)), .. } if *c == rgb(0x4a0f10) || *c == rgb(0x59171b))));
     }
 
     #[test]
@@ -2352,13 +2646,47 @@ pub const DASHBOARD: &[Prim] = &[
         prims: GO_HOME,
     },
     Prim::At { x: 0.0, y: 0.0, prims: dashboard_chrome::MARGINS },
-    // footer tape (:276-285): the dim echo 3px right and down, the
-    // bright frame, the divider and the two cells' text
-    line_rect(1212.5, 867.5, 144.0, 24.0, Ink::Border, 1.0),
+    Prim::Motion {
+        motion: Motion { id: "footer-frame-echo-1", begin: 0, dur: 1,
+            ease: Easing::Linear, change: Change::Opacity { alpha: (0.25, 0.25) } },
+        prims: DASHBOARD_FOOTER_FRAME_ECHO_1,
+    },
+    Prim::Motion {
+        motion: Motion { id: "footer-frame-echo-2", begin: 0, dur: 1,
+            ease: Easing::Linear, change: Change::Opacity { alpha: (0.13, 0.13) } },
+        prims: DASHBOARD_FOOTER_FRAME_ECHO_2,
+    },
+    Prim::Motion {
+        motion: Motion { id: "footer-text-echo-1", begin: 0, dur: 1,
+            ease: Easing::Linear, change: Change::Opacity { alpha: (0.23, 0.23) } },
+        prims: DASHBOARD_FOOTER_TEXT_ECHO_1,
+    },
+    Prim::Motion {
+        motion: Motion { id: "footer-text-echo-2", begin: 0, dur: 1,
+            ease: Easing::Linear, change: Change::Opacity { alpha: (0.11, 0.11) } },
+        prims: DASHBOARD_FOOTER_TEXT_ECHO_2,
+    },
+    // Footer tape: narrow/tall primary lettering over soft local copies.
     line_rect(1209.5, 864.5, 144.0, 24.0, Ink::Fg, 1.0),
     fill_rect(1270.0, 864.5, 1.2, 24.0, Ink::Fg),
-    txt_bold(1215.0, 875.0, 8.0, Ink::Fg, "68SD1D1100D1S"),
-    Prim::Text { x: 1277.0, y: 874.0, size: 7.5, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
-    Prim::Text { x: 1277.0, y: 882.0, size: 7.5, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
+    Prim::Wide { x: 1214.2, y: 875.1, size: 9.8, stretch: 0.844, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
+    Prim::Wide { x: 1276.2, y: 874.6, size: 9.5, stretch: 0.79, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
+    Prim::Wide { x: 1276.6, y: 883.0, size: 9.5, stretch: 0.807, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
+];
+const DASHBOARD_FOOTER_FRAME_ECHO_1: &[Prim] = &[
+    line_rect(1211.5, 866.5, 144.0, 24.0, Ink::Fg, 2.5),
+];
+const DASHBOARD_FOOTER_FRAME_ECHO_2: &[Prim] = &[
+    line_rect(1212.5, 867.5, 144.0, 24.0, Ink::Fg, 2.5),
+];
+const DASHBOARD_FOOTER_TEXT_ECHO_1: &[Prim] = &[
+    Prim::Wide { x: 1215.0, y: 876.1, size: 9.8, stretch: 0.844, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
+    Prim::Wide { x: 1277.0, y: 875.6, size: 9.5, stretch: 0.79, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
+    Prim::Wide { x: 1277.4, y: 884.0, size: 9.5, stretch: 0.807, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
+];
+const DASHBOARD_FOOTER_TEXT_ECHO_2: &[Prim] = &[
+    Prim::Wide { x: 1216.0, y: 877.1, size: 9.8, stretch: 0.844, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
+    Prim::Wide { x: 1278.0, y: 876.6, size: 9.5, stretch: 0.79, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
+    Prim::Wide { x: 1278.4, y: 885.0, size: 9.5, stretch: 0.807, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
 ];
 // --- end dashboard -------------------------------------------------------

@@ -18,8 +18,17 @@ The 2026-09-21 login/store review records runtime and source-detail work
 in [the login plan](../../todo/neomil-login.md) and
 [the store plan](../../todo/neomil-store.md). Both now use the measured
 shared ground: [native holdout measurements](login-store-material.md).
-Their card materials, primary artwork and printing have separate open
-items; a passing shape inventory does not establish detailed fidelity.
+Their source-detail work has separate records; a passing shape inventory
+does not establish detailed fidelity.
+The active login insignia, USER 01, prompt, caption, ten-mask field,
+source-traced inactive portraits, badge glyphs, protocol/tape marks
+and margin marks are measured in [the login primary record](login-primary.md).
+The inactive card material now has two measured spatial axes in the
+reference palette. Secondary printing echoes remain open; the new
+material needs native runtime capture.
+The [login rendering drift record](login-rendering-drift.md) measures the
+active-card color and the SVG-to-Iced card geometry corrections separately
+from those remaining source-detail tasks.
 
 Each carries a header comment narrating its source region by region
 with measurements; read that header, not this file, for geometry.
@@ -44,7 +53,9 @@ Each is held to its photo by
   edge tabs over the shared outer silhouettes — and a chamfered GO HOME
   info panel at the right with a bar-and-step motif on its edge, the
   bar chamfered 8 at both ends. A two-cell outlined footer tape sits
-  under the panel. Gate: PASS, 82% area after the 2026-09-14 printing batch;
+  under the panel. Its [footer type and local printing fit](dashboard-footer.md)
+  keeps the code and captions in the measured two-cell frame. Gate: PASS,
+  82% area after the 2026-09-14 printing batch;
   [the fidelity report](dashboard-fidelity.md) explains the inventory
   limits and the previous 94% result. It corrects a previous
   revision that drew three red chart cards, a right rail and a corner
@@ -57,13 +68,19 @@ Each is held to its photo by
   typography, cartridge detail, blue/cyan material and margin/maker printing;
   see [the fidelity record](mailbox-fidelity.md) and
   [material measurements](mailbox-material.md). The earlier 86% shape-area
-  PASS did not establish detail correctness.
+  PASS did not establish detail correctness. The remaining upper reader
+  contour and terminal rib fit is recorded in
+  [the mailbox upper-contour record](mailbox-upper-contour.md).
 - `store-trace.svg` — `images/img-09-store.png` (#62): **no header
   row** — a KIROSHI chip strip, the MASURAO logotype, a filled
   CUSTOMER bar, LOYALTY DISCOUNT / LAST UPDATE lines, a five-row nav
   with bottom-left chamfers, and four MAGNUM 650 HAND GUN cards with
   the second selected and grown to y 797.1. The source scatter has 25 cells
   on a measured 3.6667px lattice; see [socket measurements](socket-spacing.md).
+  The rotated card/margin printing and local caption tracking are covered
+  in [the STORE printing record](store-printing.md). The main MASURAO
+  logotype and five-tone rifle vectors are measured in
+  [the STORE primary-art record](store-primary-art.md).
   Current source gate results are in the [correction record](../reference-svg-fixes.md).
 
 ## Dashboard fidelity, 2026-09-14
@@ -153,8 +170,8 @@ top-down wipes — a `<clipPath>` whose rect grows from no height,
 EaseOutCubic (`0.33 1 0.68 1`), at ~1280 px/s — and the cycle on the
 login. The ids, all frozen well before `motion::REST` (2.4 s):
 
-- `login-trace.svg` `#caret-blink` — the `__` at the end of the masked
-  password run, 1.2 s discrete cycle.
+- `login-trace.svg` `#caret-blink` — the single horizontal stroke after
+  the masked password run, 1.2 s discrete cycle.
 - `dashboard-trace.svg` `#panel-open` — the GO HOME panel and its
   glitch echoes, clip x 1120..1380, y 306..766, 0.36 s from 0 s.
   Transcribed (`src/eras/neomil.rs`).
@@ -268,7 +285,7 @@ edge at its centre**, also visible in stills 55 and 57. Corrected
 2026-09-14 in the trace, both sheet specimens and app: three dark bars
 form a 3.05×19.63 open-top slot at x 497.3342..500.3799, y 635..654.6317.
 The side bars are about 0.8 wide and the bottom 0.89 high. This static
-action detail is separate from the password text's blinking `__` caret.
+action detail is separate from the password field's blinking stroke.
 None of the four mailbox buttons has one, so its meaning remains
 undetermined; default-action focus is only a candidate interpretation.
 The native-source fit and held-out render comparisons are recorded in

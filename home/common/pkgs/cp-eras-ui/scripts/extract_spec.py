@@ -19,6 +19,7 @@ fabrication" from something you need eyes to notice into a failing gate.
 It is deterministic: no RNG, no sampling. Same bytes in, same JSON out.
 
     extract_spec.py IMAGE.png [-o spec.json] [--canvas 1600x900]
+                              [--palette-from SOURCE.json]
                               [--crops DIR] [--debug DIR]
 
 Pipeline:
@@ -75,6 +76,16 @@ GROUND_BORDER_SHARE = 0.015
 GROUND_NEIGHBOUR_DIST = 10.0
 # Ink clusters below this coverage are resampling noise, not a design colour.
 MIN_INK_COVERAGE = 0.002
+# The existing small-gap cleanup spans two pixels on either side. Changes
+# within that square's diagonal are raster-scale evidence, not a new lobe.
+INK_CLOSE_SIZE = 5
+RASTER_RADIUS = math.sqrt(2) * (INK_CLOSE_SIZE // 2)
+# Existing straight-side evidence used to contradict a missing corner.
+STRAIGHT_SIDE_SUPPORT = 0.8
+# spec_diff pairs ink families only when RGB distance is below 110. A
+# candidate pixel farther away than that from every source center cannot
+# represent any source family under the same comparison rule.
+MAX_REFERENCE_RGB_DISTANCE = 110.0
 
 
 # --------------------------------------------------------------------------
@@ -114,11 +125,58 @@ def quantize(rgb, k, iters=12):
     return labels, centres
 
 
+def reference_palette(spec, k):
+    """Read an extractor spec as fixed candidate colour centers and roles.
+
+    A source/candidate comparison should measure both images in the same
+    colour space. Re-running k-means on the candidate lets a large backdrop
+    consume the clusters that represented small source inks. Reject malformed
+    or incompatible specs instead of silently falling back to a new palette.
+    """
+    entries = spec.get("palette", [])
+    if len(entries) != k or sorted(e.get("index") for e in entries) != list(range(k)):
+        raise ValueError("reference palette must have --colors indexed entries")
+    entries = sorted(entries, key=lambda e: e["index"])
+    if any(e.get("role") not in ("ink", "ground") for e in entries):
+        raise ValueError("reference palette has an invalid ground/ink role")
+    centres = np.asarray([e.get("rgb") for e in entries], dtype=np.float32)
+    if centres.shape != (k, 3) or not np.isfinite(centres).all() or not ((0 <= centres) & (centres <= 255)).all():
+        raise ValueError("reference palette needs three RGB values per entry")
+    return centres, [e["role"] for e in entries]
+
+
+def assign_palette(rgb, centres):
+    """Assign pixels to fixed centers, leaving unsupported colours unassigned."""
+    flat = rgb.reshape(-1, 3)
+    labels = np.empty(len(flat), dtype=np.int32)
+    distances2 = np.empty(len(flat), dtype=np.float32)
+    # Bounded temporary arrays matter for large native-resolution images.
+    for start in range(0, len(flat), 100000):
+        part = flat[start:start + 100000]
+        d = ((part[:, None, :] - centres[None, :, :]) ** 2).sum(2)
+        owner = d.argmin(1)
+        labels[start:start + len(part)] = owner
+        distances2[start:start + len(part)] = d[np.arange(len(part)), owner]
+    residual = residual_summary(distances2, labels, len(centres))
+    labels[distances2 >= MAX_REFERENCE_RGB_DISTANCE ** 2] = -1
+    return labels.reshape(rgb.shape[:2]), residual
+
+
+def residual_summary(distances2, labels, ncentres):
+    """Coverage that lies far from its nearest palette center."""
+    outside = distances2 >= MAX_REFERENCE_RGB_DISTANCE ** 2
+    per_bin = np.bincount(labels[outside], minlength=ncentres)
+    return {
+        "rgb_distance_at_least_110": round(float(outside.mean()), 5),
+        "outside_by_nearest_bin": [round(int(n) / len(labels), 5) for n in per_bin],
+    }
+
+
 def hexof(c):
     return "#%02x%02x%02x" % tuple(int(round(max(0, min(255, v)))) for v in c)
 
 
-def palette_spec(labels, centres, h, w):
+def palette_spec(labels, centres, h, w, roles=None, rgb=None):
     """Per-cluster coverage, border share, and the ground/ink verdict."""
     border = np.zeros((h, w), bool)
     border[0, :] = border[-1, :] = True
@@ -129,24 +187,30 @@ def palette_spec(labels, centres, h, w):
     for i, c in enumerate(centres):
         m = labels == i
         share = (m & border).sum() / nborder
+        # Fixed centers define bin membership; the entry's colour still
+        # describes pixels actually drawn by this image. This keeps hue
+        # mistakes visible to spec_diff's colour-family pairing.
+        measured = rgb[m].mean(0) if rgb is not None and m.any() else (c if rgb is None else None)
         out.append({
             "index": int(i),
-            "hex": hexof(c),
-            "rgb": [int(round(v)) for v in c],
+            "hex": hexof(measured) if measured is not None else None,
+            "rgb": [int(round(v)) for v in measured] if measured is not None else None,
             "coverage": round(float(m.mean()), 5),
             "border_share": round(float(share), 4),
-            "role": "ground" if share > GROUND_BORDER_SHARE else "ink",
+            "role": (roles[i] if roles is not None else
+                     ("ground" if share > GROUND_BORDER_SHARE else "ink")),
         })
     # Second pass: inner bands of a ground gradient. Only border-touching
     # clusters seed this, so two near-identical inks never pull each other
     # into the ground.
-    seeds = [np.array(e["rgb"], float) for e in out if e["role"] == "ground"]
-    for e in out:
-        if e["role"] == "ink" and any(
-            np.linalg.norm(np.array(e["rgb"], float) - s) <= GROUND_NEIGHBOUR_DIST
-            for s in seeds
-        ):
-            e["role"] = "ground"
+    if roles is None:
+        seeds = [np.array(e["rgb"], float) for e in out if e["role"] == "ground"]
+        for e in out:
+            if e["role"] == "ink" and any(
+                np.linalg.norm(np.array(e["rgb"], float) - s) <= GROUND_NEIGHBOUR_DIST
+                for s in seeds
+            ):
+                e["role"] = "ground"
     out.sort(key=lambda e: -e["coverage"])
     return out
 
@@ -208,7 +272,7 @@ def score(template, ink, cell):
     return (hit / denom) if denom else 0.0
 
 
-def fit_shape(ink, cell, dist, canvas):
+def fit_shape(ink, cell, dist, canvas, raw=None, observed=None):
     """Best (class, params, iou, bbox) for one component."""
     ys, xs = np.where(cell)
     if len(xs) == 0:
@@ -216,6 +280,41 @@ def fit_shape(ink, cell, dist, canvas):
     x0, x1 = int(xs.min()), int(xs.max()) + 1
     y0, y1 = int(ys.min()), int(ys.max()) + 1
     best = None
+    observed = cell if observed is None else observed
+    oy, ox = np.where(observed)
+    observed_box = (ox.min(), oy.min(), ox.max(), oy.max())
+    boundary_distance = None
+
+    def supported_diamond(cx, cy, radius):
+        """Do not invent wide tips around a rectangular material patch.
+
+        A Voronoi cell may cover only part of an overlapping diamond, so
+        the extent belongs to its whole observed component. Occluded tips
+        may still be inferred when two diagonal sides retain independently
+        measured boundary support; a large rectangular fill cannot supply it.
+        """
+        nonlocal boundary_distance
+        left, top, right, bottom = observed_box
+        if (cx - radius >= left - RASTER_RADIUS and
+                cy - radius >= top - RASTER_RADIUS and
+                cx + radius <= right + RASTER_RADIUS and
+                cy + radius <= bottom + RASTER_RADIUS):
+            return True
+        if boundary_distance is None:
+            boundary = observed & ~ndimage.binary_erosion(observed)
+            boundary_distance = ndimage.distance_transform_edt(~boundary)
+        tips = [(cx, cy - radius), (cx + radius, cy),
+                (cx, cy + radius), (cx - radius, cy)]
+        supported = 0
+        for a, b in zip(tips, tips[1:] + tips[:1]):
+            points = np.rint(np.linspace(a, b, max(2, int(radius * 2)))).astype(int)
+            inside = ((points[:, 0] >= 0) & (points[:, 0] < canvas[1]) &
+                      (points[:, 1] >= 0) & (points[:, 1] < canvas[0]))
+            near = np.zeros(len(points), bool)
+            valid = points[inside]
+            near[inside] = boundary_distance[valid[:, 1], valid[:, 0]] <= RASTER_RADIUS
+            supported += near.mean() >= MIN_SHAPE_IOU
+        return supported >= 2
 
     def consider(cls, template, params, bbox):
         nonlocal best
@@ -240,6 +339,8 @@ def fit_shape(ink, cell, dist, canvas):
             for ox in (-4, 0, 4):
                 for oy in (-4, 0, 4):
                     cx, cy, d = px + ox, py + oy, d0 + dd
+                    if not supported_diamond(cx, cy, d):
+                        continue
                     consider("diamond", t_diamond(canvas, (cx, cy, d)),
                              {"cx": int(cx), "cy": int(cy), "half_diagonal": round(float(d), 1)},
                              (cx - d, cy - d, 2 * d, 2 * d))
@@ -249,6 +350,20 @@ def fit_shape(ink, cell, dist, canvas):
     for corners in range(1, 16):
         for frac in (0.18, 0.26, 0.34):
             cut = short * frac
+            # A cut cannot remove a corner when the original image still
+            # draws that corner's straight side. Hole filling can make an
+            # outlined panel appear cut because rows of text break its top
+            # interior into separate distance-transform cells. Test the raw
+            # perimeter, rather than the hole-filled fitting mask.
+            if raw is not None and cut >= 8:
+                top = raw[y0 + 2:min(y1, y0 + int(cut) - 2)]
+                bottom = raw[max(y0, y1 - int(cut) + 2):y1 - 2]
+                sides = ((1, top, x0), (2, top, x1 - 1),
+                         (4, bottom, x1 - 1), (8, bottom, x0))
+                if any(corners & bit and side.size and
+                       side[:, max(0, x - 1):min(canvas[1], x + 2)].any(axis=1).mean() > STRAIGHT_SIDE_SUPPORT
+                       for bit, side, x in sides):
+                    continue
             p = (x0, y0, x1, y1, cut, corners)
             names = [n for b, n in ((1, "tl"), (2, "tr"), (4, "br"), (8, "bl")) if corners & b]
             consider("chamfer", t_chamfer(canvas, p),
@@ -284,6 +399,33 @@ def split_blob(mask, dist, peak_floor_frac=0.55, win_frac=2.0):
     if pn <= 1:
         return [mask], pn
     cents = np.array(ndimage.center_of_mass(peaks, plab, range(1, pn + 1)))
+    # A tiny nick in an otherwise continuous distance ridge makes several
+    # local maxima. Keep only persistent maxima: a smaller summit belongs
+    # to a taller one when the connecting saddle is within the cleanup's
+    # raster radius. Genuine touching lobes have a deeper intervening neck.
+    heights = np.asarray(ndimage.maximum(dist, plab, range(1, pn + 1)))
+    ys, xs = np.where(mask)
+    y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
+    local_mask, local_dist = mask[y0:y1, x0:x1], dist[y0:y1, x0:x1]
+    representatives = np.asarray(ndimage.maximum_position(dist, plab, range(1, pn + 1)))
+    representatives -= (y0, x0)
+    keep = np.ones(pn, bool)
+    order = sorted(range(pn), key=lambda i: (-heights[i], i))
+    for position, i in enumerate(order):
+        if not keep[i]:
+            continue
+        level = max(np.nextafter(0.0, 1.0), heights[i] - RASTER_RADIUS)
+        connected, _ = ndimage.label(local_mask & (local_dist >= level),
+                                    structure=np.ones((3, 3)))
+        # Use actual peak pixels, not a plateau's centroid (which can lie
+        # in a hole or outside a curved ridge).
+        labels = connected[representatives[:, 0], representatives[:, 1]]
+        if any(keep[j] and labels[j] == labels[i] for j in order[:position]):
+            keep[i] = False
+    cents = cents[keep]
+    pn = len(cents)
+    if pn <= 1:
+        return [mask], pn
     ys, xs = np.where(mask)
     pts = np.stack([ys, xs], 1)
     d = ((pts[:, None, :] - cents[None, :, :]) ** 2).sum(2)
@@ -295,6 +437,52 @@ def split_blob(mask, dist, peak_floor_frac=0.55, win_frac=2.0):
         c[ys[sel], xs[sel]] = True
         cells.append(c)
     return cells, pn
+
+
+def supported_whole_outline(shape, observed):
+    """Prefer one measured panel over internal texture's distance peaks.
+
+    Each straight or diagonal polygon edge needs its own observed contour
+    support. A good filled-area score alone cannot turn overlapping lobes
+    into a single panel. Use the same side evidence, raster uncertainty and
+    small local alignment search as the shape fitter.
+    """
+    if shape is None or shape["class"] not in ("rect", "chamfer"):
+        return False
+    x, y, w, h = shape["bbox"]
+    right, bottom = x + w - 1, y + h - 1
+    params = shape["params"]
+    cut = params.get("cut", 0)
+    corners = params.get("corners", [])
+    tl, tr, br, bl = [cut if name in corners else 0
+                      for name in ("tl", "tr", "br", "bl")]
+    vertices = [(x + tl, y), (right - tr, y), (right, y + tr),
+                (right, bottom - br), (right - br, bottom),
+                (x + bl, bottom), (x, bottom - bl), (x, y + tl)]
+    edges = []
+    for a, b in zip(vertices, vertices[1:] + vertices[:1]):
+        length = math.dist(a, b)
+        if length >= 1:
+            edges.append(np.rint(np.linspace(a, b, max(2, int(length * 2)))).astype(int))
+    boundary = observed & ~ndimage.binary_erosion(observed)
+    distance = ndimage.distance_transform_edt(~boundary)
+    height, width = observed.shape
+    for dx in (0, -2, 2):
+        for dy in (0, -2, 2):
+            supported = True
+            for edge in edges:
+                points = edge + (dx, dy)
+                inside = ((points[:, 0] >= 0) & (points[:, 0] < width) &
+                          (points[:, 1] >= 0) & (points[:, 1] < height))
+                near = np.zeros(len(points), bool)
+                valid = points[inside]
+                near[inside] = distance[valid[:, 1], valid[:, 0]] <= RASTER_RADIUS
+                if near.mean() <= STRAIGHT_SIDE_SUPPORT:
+                    supported = False
+                    break
+            if supported:
+                return True
+    return False
 
 
 def text_runs(small_mask, rgb):
@@ -387,15 +575,58 @@ def components(raw, ink, canvas, family):
         blob = lab == bid
         dist = ndimage.distance_transform_edt(blob)
         cells, _ = split_blob(blob, dist)
+        whole = None
+        if len(cells) > 1:
+            whole = fit_shape(ink, blob, dist, canvas, raw, blob)
+            if supported_whole_outline(whole, blob):
+                cells = [blob]
+            else:
+                whole = None
         for cell in cells:
             if cell.sum() < MIN_SHAPE_AREA // 2:
                 continue
-            fit = fit_shape(ink, cell, dist, canvas)
+            fit = whole if whole is not None else fit_shape(ink, cell, dist, canvas, raw, blob)
             if fit:
                 fit["ink"] = family
                 fit["area"] = int(cell.sum())
+                x, y, w, _ = fit["bbox"]
+                # Keep this extraction-only evidence for distinguishing a
+                # partial border from a real panel docked to its parent.
+                if w > 10:
+                    top = raw[max(0, y - 1):min(canvas[0], y + 2),
+                              max(0, x + 5):min(canvas[1], x + w - 5)]
+                    fit["_top_edge_support"] = float(top.any(axis=0).mean()) if top.size else 0.0
                 out.append(fit)
     return out, small
+
+
+def collapse_shared_outlines(shapes):
+    """Keep one supported fit for coincident rectangular border fragments.
+
+    Photographs often quantize adjacent pixels of one thin border into
+    several colour families. If the left, right and bottom edges coincide,
+    the shorter vertical detection is a fragment only when its alleged top
+    edge has no measured ink. A docked panel with its own top edge survives.
+    """
+    ranked = sorted(shapes, key=lambda s: -s["bbox"][2] * s["bbox"][3])
+    kept = []
+    for shape in ranked:
+        x, y, w, h = shape["bbox"]
+        duplicate = False
+        if shape["class"] in ("rect", "chamfer") and w * h >= 10000:
+            for parent in kept:
+                if parent["class"] not in ("rect", "chamfer"):
+                    continue
+                px, py, pw, ph = parent["bbox"]
+                if (abs(x - px) <= 3 and abs(x + w - px - pw) <= 3 and
+                        abs(y + h - py - ph) <= 3 and py <= y + 3 and
+                        h >= ph * 0.5 and
+                        shape.get("_top_edge_support", 1.0) < 0.2):
+                    duplicate = True
+                    break
+        if not duplicate:
+            kept.append(shape)
+    return kept
 
 
 def occupancy(mask, h, w, rows, cols):
@@ -421,15 +652,22 @@ def occupancy(mask, h, w, rows, cols):
     return (total / np.maximum(count, 1)).reshape(rows, cols)
 
 
-def extract(path, canvas_wh, k=8):
+def extract(path, canvas_wh, k=8, palette_from=None):
     w, h = canvas_wh
     im = Image.open(path).convert("RGB")
     if im.size != canvas_wh:
         im = im.resize(canvas_wh, Image.Resampling.LANCZOS)
     rgb = np.asarray(im).astype(np.float32)
 
-    labels, centres = quantize(rgb, k)
-    pal = palette_spec(labels, centres, h, w)
+    if palette_from is None:
+        labels, centres = quantize(rgb, k)
+        roles = None
+    else:
+        if palette_from.get("canvas") != [w, h]:
+            raise ValueError("reference palette canvas must match candidate canvas")
+        centres, roles = reference_palette(palette_from, k)
+        labels, residual = assign_palette(rgb, centres)
+    pal = palette_spec(labels, centres, h, w, roles, rgb if roles is not None else None)
 
     # Segment each ink colour separately rather than unioning them. A drop
     # shadow and the shape casting it are different elements: merged into one
@@ -439,7 +677,8 @@ def extract(path, canvas_wh, k=8):
     entries = [entry for entry in pal
                if entry["role"] == "ink" and entry["coverage"] >= MIN_INK_COVERAGE]
     masks = [labels == entry["index"] for entry in entries]
-    closed = [ndimage.binary_closing(mask, np.ones((5, 5))) for mask in masks]
+    closed = [ndimage.binary_closing(mask, np.ones((INK_CLOSE_SIZE, INK_CLOSE_SIZE)))
+              for mask in masks]
     filled = [ndimage.binary_fill_holes(mask) for mask in closed]
     repaired = repair_striped_regions(
         masks, filled, [centres[entry["index"]] for entry in entries])
@@ -461,6 +700,9 @@ def extract(path, canvas_wh, k=8):
         shapes.extend(found)
         smalls.append(small)
 
+    shapes = collapse_shared_outlines(shapes)
+    for shape in shapes:
+        shape.pop("_top_edge_support", None)
     shapes.sort(key=lambda s: (s["class"], s["bbox"][1], s["bbox"][0]))
     for i, s in enumerate(shapes, start=1):
         s["id"] = "%s-%02d" % (s["class"], i)
@@ -469,13 +711,17 @@ def extract(path, canvas_wh, k=8):
     for m in smalls[1:]:
         small |= m
 
-    return {
+    spec = {
         "source": os.path.relpath(path),
         "canvas": [w, h],
         "palette": pal,
         "shapes": shapes,
         "text_runs": text_runs(small, rgb),
-    }, inkmask, im
+    }
+    if roles is not None:
+        spec["palette_mode"] = "source_anchored"
+        spec["palette_residual"] = residual
+    return spec, inkmask, im
 
 
 def main():
@@ -485,13 +731,19 @@ def main():
     ap.add_argument("-o", "--out", help="write JSON here (default: stdout)")
     ap.add_argument("--canvas", default="1600x900")
     ap.add_argument("--colors", type=int, default=8, help="palette size (default 8)")
+    ap.add_argument("--palette-from", metavar="SOURCE.json",
+                    help="assign to source spec palette; keep its ground/ink roles")
     ap.add_argument("--crops", metavar="DIR",
                     help="write a zoom crop per shape, for visual inspection")
     ap.add_argument("--debug", metavar="DIR", help="write the ink mask")
     a = ap.parse_args()
 
     cw, ch = (int(v) for v in a.canvas.lower().split("x"))
-    spec, ink, im = extract(a.image, (cw, ch), a.colors)
+    reference = None
+    if a.palette_from:
+        with open(a.palette_from) as fh:
+            reference = json.load(fh)
+    spec, ink, im = extract(a.image, (cw, ch), a.colors, reference)
 
     text = json.dumps(spec, indent=2)
     if a.out:

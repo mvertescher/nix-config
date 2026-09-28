@@ -75,17 +75,14 @@ pub const FRAME_LIT: iced::Color = rgb(0xc69a55);
 /// `home/themes/neokitsch/palettes.nix`.
 pub const STRATA: iced::Color = rgb(0x634427);
 
-/// The four stops of the violet haze every screen in the run sits in,
-/// measured in `docs/neokitsch/dashboard-trace.svg` and copied verbatim
-/// into `store-trace.svg`'s `<radialGradient id="haze">`. Separate
-/// constants from `BLOOM` because they are a *measurement of the
-/// material* and `BLOOM` is the single colour the page-ground widget
-/// stacks discs of: the lobe is violet at the core and cold grey two
-/// thirds out, which one colour at one alpha cannot say.
-pub const HAZE_CORE: iced::Color = rgb(0x574568);
-pub const HAZE_MID: iced::Color = rgb(0x3a3853);
-pub const HAZE_EDGE: iced::Color = rgb(0x16121a);
-pub const HAZE_OUT: iced::Color = rgb(0x0e0a0d);
+/// Broad-field fit shared by the four native screens. These are stops of
+/// the fitted violet ellipse, separate from the generic `BLOOM` role.
+/// The original photographic material recipe is unknown; see
+/// `docs/neokitsch/ground-fit.md` for the clear-patch fit and holdout.
+pub const HAZE_CORE: iced::Color = rgb(0x7a538b);
+pub const HAZE_MID: iced::Color = rgb(0x3c3a57);
+pub const HAZE_EDGE: iced::Color = rgb(0x131014);
+pub const HAZE_OUT: iced::Color = rgb(0x0d0a0d);
 
 pub fn palette() -> Palette {
     Palette {
@@ -127,6 +124,17 @@ pub fn palette() -> Palette {
         cta: AMBER,
         bloom: BLOOM,
     }
+}
+
+/// The published reference palette differs from the standalone palette
+/// only in its derived panel role (`home/themes/neokitsch/palettes.nix`).
+/// Exact matching keeps the mailbox's photographed inks out of variants
+/// and out of direct edits to any role, including `on_select`.
+pub fn mailbox_reference_palette(actual: &Palette) -> bool {
+    let built_in = palette();
+    let mut published = built_in;
+    published.panel = rgb(0x16161f);
+    *actual == built_in || *actual == published
 }
 
 pub fn style() -> Style {
@@ -198,16 +206,15 @@ pub fn style() -> Style {
             tape_extra: 10.0,
             tape_ticks: false,
 
-            // The strip is the top 31px of the screen and every trace
-            // is violet there and black at the ends. `bar.svg` (:119-
-            // 145, :170-175) copies the dashboard trace's `#haze` and
-            // `#hazeblue` verbatim, so the strip's ground *is* the
-            // dashboard's, composited at the bar's own pixels -- the
+            // The strip is violet at the centre and black at the ends.
+            // `bar.svg` keeps the former dashboard haze as its own
+            // design field, independent of the four fitted source
+            // screens. Its ground is composited at the bar's pixels -- the
             // blue annulus included, which is what casts the bar's
             // last 150px (design #2b2e40 at x 1520). Until 2026-09-05
             // this carried the `#haze` lobe's numbers and the strip
             // stacked 64 discs from them, without the blue.
-            ground: BarGround::Haze { prims: HUB_GROUND },
+            ground: BarGround::Haze { prims: BAR_GROUND },
             chrome: BarChrome::Loose,
             ornament: BarOrnament::Wire,
 
@@ -416,6 +423,8 @@ pub fn style() -> Style {
         // --- dashboard ---
         dashboard: DASHBOARD,
         dashboard_reference_fg: None,
+        store_reference_fg: None,
+        store_reference: None,
         dashboard_selection: 0,
         dashboard_cursor: false,
         mailbox_cursor: false,
@@ -470,7 +479,189 @@ pub const WIRE_GLOW: iced::Color = rgb(0x371c11);
 const NOTE_1: &str = "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.";
 const NOTE_2: &str = "SERVING CUSTOMERS SINCE 2006.";
 
+// Native #70 logo foreground traced from the 3840x2160 source at its
+// 1600x900 design coordinates. Outer contours run clockwise, and the four
+// counters run counterclockwise so the canvas nonzero fill retains the
+// background inside each lowercase a. The s cap and lower stroke share
+// one contour. This is the source mark, not a stretched font run.
+const LOGIN_LOGO_PATH: &[Seg] = &[
+    Seg::Line(108.75, 63.33),
+    Seg::Line(117.5, 69.17),
+    Seg::Line(117.92, 75.42),
+    Seg::Line(115.83, 76.25),
+    Seg::Line(117.5, 77.5),
+    Seg::Line(117.92, 79.17),
+    Seg::Line(117.08, 86.67),
+    Seg::Line(111.67, 86.67),
+    Seg::Line(111.25, 85.0),
+    Seg::Line(105.83, 86.67),
+    Seg::Line(101.25, 86.25),
+    Seg::Line(96.25, 83.75),
+    Seg::Line(93.33, 80.42),
+    Seg::Line(92.08, 77.5),
+    Seg::Line(92.08, 72.92),
+    Seg::Line(93.33, 69.58),
+    Seg::Line(96.67, 65.83),
+    Seg::Move(119.58, 63.33),
+    Seg::Line(141.25, 63.75),
+    Seg::Line(144.58, 68.75),
+    Seg::Line(144.58, 74.17),
+    Seg::Line(137.92, 74.17),
+    Seg::Line(137.92, 71.67),
+    Seg::Line(136.25, 69.58),
+    Seg::Line(125.83, 69.58),
+    Seg::Line(125.83, 74.17),
+    Seg::Line(143.33, 86.25),
+    Seg::Line(133.33, 86.67),
+    Seg::Line(125.83, 82.08),
+    Seg::Line(125.83, 86.25),
+    Seg::Line(119.58, 86.67),
+    Seg::Line(119.17, 77.92),
+    Seg::Line(120.83, 77.92),
+    Seg::Line(118.75, 75.42),
+    Seg::Move(156.67, 63.33),
+    Seg::Line(162.92, 63.33),
+    Seg::Line(171.67, 69.58),
+    Seg::Line(171.67, 75.83),
+    Seg::Line(169.58, 76.25),
+    Seg::Line(171.67, 77.92),
+    Seg::Line(171.25, 86.67),
+    Seg::Line(165.83, 86.67),
+    Seg::Line(165.0, 85.0),
+    Seg::Line(160.0, 86.67),
+    Seg::Line(155.42, 86.25),
+    Seg::Line(150.83, 84.17),
+    Seg::Line(147.5, 80.83),
+    Seg::Line(145.83, 75.83),
+    Seg::Line(147.08, 70.0),
+    Seg::Line(150.83, 65.83),
+    Seg::Move(184.17, 63.33),
+    Seg::Line(194.58, 63.33),
+    Seg::Line(196.67, 65.42),
+    Seg::Line(196.25, 66.25),
+    Seg::Line(197.08, 66.25),
+    Seg::Line(198.33, 68.75),
+    Seg::Line(197.5, 70.0),
+    Seg::Line(183.75, 70.0),
+    Seg::Line(198.75, 79.58),
+    Seg::Line(198.33, 86.67),
+    Seg::Line(177.5, 86.67),
+    Seg::Line(176.25, 85.83),
+    Seg::Line(176.67, 84.58),
+    Seg::Line(175.42, 85.0),
+    Seg::Line(173.75, 82.92),
+    Seg::Line(172.92, 80.0),
+    Seg::Line(173.33, 75.83),
+    Seg::Line(179.58, 75.83),
+    Seg::Line(181.25, 80.42),
+    Seg::Line(188.33, 80.42),
+    Seg::Line(173.33, 70.42),
+    Seg::Line(173.33, 69.58),
+    Seg::Line(175.0, 69.17),
+    Seg::Line(183.75, 69.58),
+    Seg::Move(210.42, 63.33),
+    Seg::Line(217.08, 63.75),
+    Seg::Line(217.5, 65.0),
+    Seg::Line(218.75, 65.0),
+    Seg::Line(225.0, 69.58),
+    Seg::Line(225.0, 75.83),
+    Seg::Line(223.33, 76.25),
+    Seg::Line(225.0, 77.92),
+    Seg::Line(224.58, 86.67),
+    Seg::Line(219.17, 86.67),
+    Seg::Line(218.33, 85.0),
+    Seg::Line(212.92, 86.67),
+    Seg::Line(207.5, 85.83),
+    Seg::Line(202.08, 82.5),
+    Seg::Line(200.42, 80.0),
+    Seg::Line(199.58, 77.5),
+    Seg::Line(200.42, 70.0),
+    Seg::Line(203.75, 66.25),
+    Seg::Line(204.58, 66.67),
+    Seg::Line(204.17, 65.83),
+    Seg::Move(227.08, 63.33),
+    Seg::Line(232.5, 63.33),
+    Seg::Line(232.92, 68.33),
+    Seg::Line(237.08, 65.83),
+    Seg::Line(238.33, 66.25),
+    Seg::Line(237.92, 65.42),
+    Seg::Line(241.25, 63.33),
+    Seg::Line(250.0, 63.33),
+    Seg::Line(249.58, 65.42),
+    Seg::Line(235.0, 74.58),
+    Seg::Line(235.0, 75.42),
+    Seg::Line(249.17, 84.17),
+    Seg::Line(250.0, 85.0),
+    Seg::Line(249.58, 86.67),
+    Seg::Line(241.25, 86.67),
+    Seg::Line(233.75, 81.67),
+    Seg::Line(232.92, 81.67),
+    Seg::Line(232.5, 86.67),
+    Seg::Line(226.67, 86.25),
+    Seg::Line(226.67, 77.92),
+    Seg::Line(228.33, 77.92),
+    Seg::Line(226.67, 76.25),
+    Seg::Line(226.25, 68.75),
+    Seg::Move(258.75, 63.33),
+    Seg::Line(263.33, 63.33),
+    Seg::Line(272.08, 69.58),
+    Seg::Line(272.08, 75.83),
+    Seg::Line(270.0, 76.25),
+    Seg::Line(272.08, 77.92),
+    Seg::Line(272.08, 86.25),
+    Seg::Line(266.25, 86.67),
+    Seg::Line(265.83, 85.0),
+    Seg::Line(262.92, 86.25),
+    Seg::Line(255.83, 86.25),
+    Seg::Line(250.83, 83.75),
+    Seg::Line(247.92, 80.83),
+    Seg::Line(246.67, 77.92),
+    Seg::Line(246.67, 72.5),
+    Seg::Line(247.92, 69.58),
+    Seg::Line(252.5, 65.0),
+    Seg::Move(258.75, 69.17),
+    Seg::Line(254.17, 71.25),
+    Seg::Line(252.92, 73.75),
+    Seg::Line(253.33, 77.5),
+    Seg::Line(256.67, 80.42),
+    Seg::Line(262.92, 80.0),
+    Seg::Line(265.83, 84.17),
+    Seg::Line(265.42, 72.5),
+    Seg::Move(103.33, 69.58),
+    Seg::Line(99.17, 72.08),
+    Seg::Line(99.17, 77.92),
+    Seg::Line(102.5, 80.42),
+    Seg::Line(108.33, 80.0),
+    Seg::Line(111.25, 84.17),
+    Seg::Line(110.83, 72.5),
+    Seg::Line(106.25, 69.58),
+    Seg::Move(157.08, 69.58),
+    Seg::Line(155.0, 70.42),
+    Seg::Line(152.92, 72.92),
+    Seg::Line(153.33, 77.92),
+    Seg::Line(156.67, 80.42),
+    Seg::Line(160.0, 80.83),
+    Seg::Line(162.5, 80.0),
+    Seg::Line(165.0, 83.75),
+    Seg::Line(165.0, 72.5),
+    Seg::Line(160.42, 69.58),
+    Seg::Move(210.42, 69.58),
+    Seg::Line(206.25, 72.5),
+    Seg::Line(206.25, 77.5),
+    Seg::Line(210.0, 80.42),
+    Seg::Line(215.83, 80.0),
+    Seg::Line(218.33, 83.75),
+    Seg::Line(218.33, 72.5),
+    Seg::Line(213.75, 69.58),
+];
+const LOGIN_LOGO: &[Plate] = &[Plate::filled(
+    Plot::new(92.08, 63.33, 180.0, 23.34),
+    Ink::Fg,
+).outlined_path((102.5, 63.33), LOGIN_LOGO_PATH)];
+
 pub const ACCESS: Access = Access {
+    reference_fg: None,
+    reference_backdrop: None,
     // The trace's haze is the store's to the number ("identical
     // backdrop to dashboard-trace.svg; re-verified here by column
     // profile"), so the ground is `PAGE_BACKDROP` from the store block:
@@ -481,26 +672,34 @@ pub const ACCESS: Access = Access {
     // backdrop holding two of the frame's palette clusters and none.
     backdrop: PAGE_BACKDROP,
     masthead: Masthead::Logotype {
+        art: LOGIN_LOGO,
         cell: Plate::outlined(Plot::new(90.0, 100.0, 185.0, 25.0), Ink::Fixed(HAIRLINE), 1.0),
         divider: 195.0,
         labels: &[
-            // Scaled onto the measured ink extent x 92..272. The
-            // trace used to say `textLength="185"`, which librsvg
-            // ignores; both it and this now carry the transform.
-            Legend::new("ARASAKA", 91.0, 87.0, 36.0, Ink::Fg)
-                .bold()
-                .tracked(3.0)
-                .stretched(1.155),
-            Legend::new(
-                "ARASAKA CONSUMER TECHNOLOGY",
-                118.0,
-                97.0,
-                8.0,
-                Ink::Fixed(CAPTION),
-            ),
-            Legend::new("57ASD4AV15AA", 96.0, 115.0, 9.0, Ink::Fixed(CAPTION)),
-            Legend::new("COMBAT COLONIZATION", 200.0, 110.0, 8.0, Ink::Fixed(CAPTION)),
-            Legend::new("DEFENCE PROGRAM", 200.0, 120.0, 8.0, Ink::Fixed(CAPTION)),
+            // The vector stencil above occupies x 92.08..272.08;
+            // the two captions are independent measured type runs.
+            Legend {
+                weight: iced::font::Weight::Semibold,
+                ..Legend::new(
+                    "ARASAKA CONSUMER TECHNOLOGY", 118.5, 96.5, 9.0,
+                    Ink::Fixed(CAPTION),
+                ).tracked(0.8).stretched(0.90)
+            },
+            Legend {
+                weight: iced::font::Weight::Semibold,
+                ..Legend::new("57ASD4AV15AA", 95.0, 113.7, 8.4,
+                    Ink::Fixed(CAPTION)).tracked(0.5).stretched(0.98)
+            },
+            Legend {
+                weight: iced::font::Weight::Semibold,
+                ..Legend::new("COMBAT COLONIZATION", 201.5, 112.0, 8.2,
+                    Ink::Fixed(CAPTION)).stretched(0.85)
+            },
+            Legend {
+                weight: iced::font::Weight::Semibold,
+                ..Legend::new("DEFENCE PROGRAM", 201.5, 119.6, 8.2,
+                    Ink::Fixed(CAPTION)).stretched(0.88)
+            },
             Legend::new("10:10 PM", 1293.0, 87.0, 28.0, Ink::Fg).medium(),
             Legend::new("NIGHT CITY", 1295.0, 110.0, 13.0, Ink::Fg).medium(),
             Legend::new("AREA", 1295.0, 129.0, 13.0, Ink::Fg).medium(),
@@ -641,7 +840,7 @@ pub const ACCESS: Access = Access {
 // The wire band's eleven strands use the trace's measured cubic curves;
 // source #71 has two more resolved strands than the hub.
 use crate::style::{
-    Frame, Mail, MailBadges, MailButtons, MailEnvelope, MailList, MailRowCoat, MailRowStates, MailRowEcho, MailMotion, MailPanel, MailPart, Mailbox,
+    Frame, Mail, MailBadges, MailButtons, MailEnvelope, MailList, MailSelectedPrinting, MailRowCoat, MailRowStates, MailRowEcho, MailRowType, MailMotion, MailPanel, MailPart, Mailbox,
     Note, Piece, RowDecor, Run, Seg, Trim, Veneer, FromAt, BL, TR,
 };
 
@@ -968,6 +1167,19 @@ static PARAGRAPHS: [&[&str]; 3] = [
     ],
 ];
 
+// Width and weight measured against the native #71 source; the seven rows
+// keep their original baselines and 60.2 pitch. The selected title alone
+// begins half a design pixel to the right, as in the trace.
+const MAIL_TITLE: Run = Run::new(193.0, 27.2, 18.0, Ink::Fg).medium().stretched(0.99);
+const MAIL_TITLE_SELECTED: Run = Run::new(193.5, 27.2, 18.0, Ink::Fg).medium().stretched(0.99);
+const MAIL_FROM: Run = Run::new(193.0, 48.2, 13.0, Ink::Mid).medium().stretched(1.16);
+const MAIL_ROW_PLAIN: MailRowType = MailRowType { title: MAIL_TITLE, from: MAIL_FROM };
+const MAIL_ROW_SELECTED: MailRowType = MailRowType { title: MAIL_TITLE_SELECTED, from: MAIL_FROM };
+const MAIL_ROW_TYPE: &[MailRowType] = &[
+    MAIL_ROW_PLAIN, MAIL_ROW_SELECTED, MAIL_ROW_PLAIN, MAIL_ROW_PLAIN,
+    MAIL_ROW_PLAIN, MAIL_ROW_PLAIN, MAIL_ROW_PLAIN,
+];
+
 pub fn mailbox() -> Mailbox {
     Mailbox {
         text_baseline: 0.95,
@@ -978,7 +1190,8 @@ pub fn mailbox() -> Mailbox {
         overlay: &[],
         list: MailList {
             envelope: Some(MailEnvelope { normal: CLOSED_ENVELOPE, open: OPEN_ENVELOPE }),
-            row_type: &[],
+            row_type: MAIL_ROW_TYPE,
+            selected_row_type: None,
             footer: &[],
             feedback: Some(MailRowStates {
                 hover: MailRowCoat {
@@ -1002,8 +1215,9 @@ pub fn mailbox() -> Mailbox {
             frame: None,
             frame_ink: Ink::Fg,
             frame_width: 0.0,
-            // seven rows on a 60.2 pitch; a hairline x 35..483 under
-            // each one, carrying a small filled trapezoid tab
+            // The ruled rows and both text lines fit the source's 60.2
+            // pitch. The envelopes alone sit progressively lower in the
+            // photo; keep their independent, measured offsets below.
             row: Frame::new(35.0, 248.8, 477.0, 60.2),
             pitch: 60.2,
             rows: &ROWS,
@@ -1042,15 +1256,23 @@ pub fn mailbox() -> Mailbox {
             // the one era that puts the envelope on the right
             glyph_x: 429.0,
             glyph_dy: 22.9,
+            glyph_offsets: &[0.0, 0.0, 1.5, 1.5, 2.3, 3.2, 4.4],
             glyph_w: 16.0,
             text_x: 193.0,
             title_dy: 27.2,
             title_size: 18.0,
-            title_bold: true,
+            title_bold: false,
             title_ink: Ink::Fg,
             selected_ink: Ink::OnSelect,
+            // The photograph and trace distinguish all three marks over
+            // the veneer; the general palette's on_select is much darker.
+            selected_printing: Some(MailSelectedPrinting {
+                title: Ink::Fixed(rgb(0x7b5438)),
+                sender: Ink::Fixed(rgb(0x895f3b)),
+                envelope: Ink::Fixed(rgb(0x865c39)),
+            }),
             from_dy: 48.2,
-            from_size: 11.5,
+            from_size: 13.0,
             from_ink: Ink::Mid,
             from_at: FromAt::Beneath,
             from_prefix: "FROM: ",
@@ -1075,15 +1297,17 @@ pub fn mailbox() -> Mailbox {
             // the message is the selected row's, URGENT INFORMATION (!)
             // / FROM: MOM, trace lines 460-461
             message: 1,
-            title: Run::new(738.0, 277.0, 15.0, Ink::Fg).bold(),
+            title: Run::new(736.0, 276.0, 17.5, Ink::Fg).semibold().stretched(1.01),
             title_upper: true,
-            from: Some(Run::new(740.0, 297.0, 11.5, Ink::Fg)),
+            from: Some(Run::new(738.0, 297.0, 13.0, Ink::Fg).medium().stretched(1.16)),
             heading: None,
             sender: None,
-            // weight 600, trace line 462
-            body: Run::new(738.0, 333.0, 17.0, Ink::Fg).semibold(),
+            // Source body is a light, wide face; the photo's glow is
+            // excluded from the font weight fit.
+            body: Run::new(736.0, 333.0, 17.0, Ink::Fg).medium().stretched(1.06),
             line: 21.5,
             para: 43.0,
+            paragraph_baselines: &[],
             paragraphs: &PARAGRAPHS,
         },
         buttons: MailButtons {
@@ -1123,6 +1347,7 @@ pub fn mailbox() -> Mailbox {
             fill: None,
             stroke: Ink::Fg,
             label: Run::new(0.0, 0.0, 0.0, Ink::Fg),
+            label_runs: &[],
             caption: None,
             caption_text: "",
             labels: &LEVELS,
@@ -1219,11 +1444,10 @@ pub const MAILBOX_MOTIONS: &[MailMotion] = &[
 // The trace spends about four fifths of its bytes on **wood-veneer
 // grain** -- hundreds of 0.7px polylines clipped to the three gold
 // fills, "drawn as clipped 0.7 strokes in a mid gold over the fill *so
-// the average stays at the sampled mean*". That IS transcribed, as
-// `Prim::Grain` in `GRAIN_LINE` at each fill's pitch (`GROWN_BODY`, the
-// nav bar, the BASKET plate), with one simplification `Prim::Grain`
-// makes and its doc owns: the strands are straight, and the source's
-// wander. (This comment said until 2026-09-07 that the grain was left
+// the average stays at the sampled mean*". The selected store body
+// uses longitudinal paths and a narrow seam in `store_grain`; inferred
+// pressed feedback and the nav/BASKET bands still use `Prim::Grain`.
+// (This comment said until 2026-09-07 that the grain was left
 // out as photographic texture; the tables below had carried it since
 // the store's first pass.) The soft `#38261a` halo under every stroke
 // is the photograph's glow and is out (docs/PIPELINE.md). Everything
@@ -1253,58 +1477,62 @@ pub const LABEL: iced::Color = rgb(0xe9bd7a);
 pub const STORE_MICRO: iced::Color = rgb(0xd9a877);
 pub const ON_GOLD: iced::Color = rgb(0x3a2010);
 pub const PLATE_INK: iced::Color = rgb(0x5a3418);
-pub const GUN_FILL: iced::Color = rgb(0xf2c06e);
-pub const GUN_LINE: iced::Color = rgb(0x2d2518);
+pub const GUN_BASE: iced::Color = rgb(0xac9152);
+pub const GUN_BRIGHT: iced::Color = rgb(0xffd779);
 /// The mid gold the source's veneer grain is drawn in.
 pub const GRAIN_LINE: iced::Color = rgb(0xcd9553);
-/// The four echo strands shadowing a card outline, with the trace's
-/// stroke opacities (`0.55 / 0.40 / 0.28 / 0.18`) composited onto the
-/// haze they sit on -- iced's canvas stroke has no opacity of its own.
+/// Dark convergence in the store card's selected-body veneer.
+pub const GRAIN_SEAM: iced::Color = rgb(0xa86e33);
+/// Low-contrast wire-band echoes. The card frames use the brighter
+/// source-fitted `FRAME_ECHO*` inks below.
 ///
 /// The fade matters and is not cosmetic: drawn at one flat strand
-/// colour the four strands form a closed ring that hole-fills into a
+/// colour the five strands form a closed ring that hole-fills into a
 /// solid slab the size of a card, and the extractor then reports one
 /// on each of cards 1, 3 and 4 that the design does not have.
 pub const ECHO1: iced::Color = rgb(0x795d4a);
 pub const ECHO2: iced::Color = rgb(0x604a3a);
 pub const ECHO3: iced::Color = rgb(0x4b3b2f);
 pub const ECHO4: iced::Color = rgb(0x3a2f28);
+pub const ECHO5: iced::Color = rgb(0x32251c);
+// The frames cross both dark blue ground and gold body; their source
+// opacity must blend with the ground at each point, especially echo 5.
+const FRAME_ECHO1: iced::Color = rgba(0xebb57f, 0.84);
+const FRAME_ECHO2: iced::Color = rgba(0xebb57f, 0.74);
+const FRAME_ECHO3: iced::Color = rgba(0xebb57f, 0.46);
+const FRAME_ECHO4: iced::Color = rgba(0xebb57f, 0.34);
+const FRAME_ECHO5: iced::Color = rgba(0xebb57f, 0.08);
 
 const fn rgba(hex: u32, a: f32) -> iced::Color {
     iced::Color { a, ..rgb(hex) }
 }
 
-/// The page under the haze (`:231`), and the last haze stop.
-pub const PAGE: iced::Color = rgb(0x0e0a0d);
+/// Near-black field beyond the fitted haze.
+pub const PAGE: iced::Color = rgb(0x0d090c);
 
-/// The run's violet haze and the cold blue annulus the right half
-/// carries, as the trace's own stop tables. Both are
-/// `gradientUnits="userSpaceOnUse"` radials scaled 0.49 / 0.47 in y,
-/// so both are ellipses roughly 2:1, and each is turned about its own
-/// centre (`rotate(1.3 770 -120)`, `rotate(2 850 -120)`: :169, :146),
-/// which is what the `Turn` around each `Lobe` at the origin does.
+/// Shared upper violet field, fitted to low-variation patches common to
+/// all four 3840x2160 source frames. Coordinates use the 1600x900 trace
+/// frame; the radial is turned about its own centre to match the SVG.
 const STORE_HAZE: &[(f32, iced::Color)] = &[
-    (0.00, rgb(0x574568)),
-    (0.35, rgb(0x574568)),
-    (0.66, rgb(0x3a3853)),
-    (0.85, rgb(0x16121a)),
-    (1.00, PAGE),
+    (0.00, HAZE_CORE),
+    (0.20, rgb(0x5e4169)),
+    (0.40, rgb(0x524064)),
+    (0.60, HAZE_MID),
+    (0.80, HAZE_EDGE),
+    (1.00, HAZE_OUT),
 ];
-const HAZE_LOBE: &[Prim] = &[Prim::Lobe { x: 0.0, y: 0.0, rx: 1000.0, ry: 490.0, stops: STORE_HAZE }];
-/// The cold blue the right half carries. An *annulus* -- transparent
-/// inside and out, and only briefly opaque across `t 0.60..0.84` -- so
-/// its stops are opacities and it needs the same alpha treatment the
-/// left margin does. Drawn as a thick flat stroke instead it has two
-/// hard edges where the source has none.
+const HAZE_LOBE: &[Prim] = &[Prim::Lobe { x: 0.0, y: 0.0, rx: 1015.8, ry: 393.6, stops: STORE_HAZE }];
+/// The right-weighted blue transition. Its radial has a transparent
+/// core and exterior; the horizontal mask suppresses the left edge.
 const BLUE: &[(f32, iced::Color)] = &[
-    (0.60, rgba(0x223350, 0.00)),
-    (0.68, rgba(0x223350, 0.85)),
-    (0.76, rgba(0x1a2c46, 0.80)),
-    (0.84, rgba(0x101d30, 0.00)),
-    (1.00, rgba(0x101d30, 0.00)),
+    (0.60, rgba(0x48537d, 0.00)),
+    (0.68, rgba(0x21364e, 0.85)),
+    (0.76, rgba(0x0d202f, 0.80)),
+    (0.84, rgba(0x0e0d1a, 0.00)),
+    (1.00, rgba(0x0e0d1a, 0.00)),
 ];
-const BLUE_LOBE: &[Prim] = &[Prim::Lobe { x: 0.0, y: 0.0, rx: 1000.0, ry: 470.0, stops: BLUE }];
-const BLUE_TURNED: &[Prim] = &[Prim::Turn { x: 850.0, y: -120.0, angle: 2.0, prims: BLUE_LOBE }];
+const BLUE_LOBE: &[Prim] = &[Prim::Lobe { x: 0.0, y: 0.0, rx: 1188.4, ry: 800.0, stops: BLUE }];
+const BLUE_TURNED: &[Prim] = &[Prim::Turn { x: 765.3, y: -316.3, angle: 10.0, prims: BLUE_LOBE }];
 /// `#hazebluefade` (:157-163), the luminance mask the blue annulus is
 /// laid through (`mask="url(#bluemask)"`, :234): black at the left
 /// edge, full from x 640, so the violet stays on top on the left where
@@ -1326,20 +1554,19 @@ const BLUE_MASK: &[Prim] = &[Prim::Ramp {
     to: (1.0, 0.0),
     stops: BLUE_FADE,
 }];
-/// `#hazelobe` (:181-187): the top-left lift, a third and flatter
-/// radial (cx 430, cy -40, r 560, y-scaled 0.30) of one violet at
-/// three opacities, over the haze. Not turned.
+/// The top-left lift preserves the earlier trace's elliptical shape and
+/// opacity falloff; the fitted violet is one step lighter.
 const LOBE: &[(f32, iced::Color)] = &[
-    (0.00, rgba(0x7a5288, 0.85)),
-    (0.45, rgba(0x7a5288, 0.55)),
-    (1.00, rgba(0x7a5288, 0.00)),
+    (0.00, rgba(0x7a598a, 0.85)),
+    (0.45, rgba(0x7a598a, 0.55)),
+    (1.00, rgba(0x7a598a, 0.00)),
 ];
 
 /// The store's ground in the trace's paint order (:231-234): page,
 /// haze, lobe, then the blue through its mask.
 const BACKDROP: &[Prim] = &[
     fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(PAGE)),
-    Prim::Turn { x: 770.0, y: -120.0, angle: 1.3, prims: HAZE_LOBE },
+    Prim::Turn { x: 712.8, y: -61.2, angle: 1.76, prims: HAZE_LOBE },
     Prim::Lobe { x: 430.0, y: -40.0, rx: 560.0, ry: 168.0, stops: LOBE },
     Prim::Masked { prims: BLUE_TURNED, mask: BLUE_MASK },
 ];
@@ -1347,25 +1574,36 @@ const BACKDROP: &[Prim] = &[
 /// `STORE` opens.
 const PAGE_BACKDROP: &[Prim] = &[Prim::Soft { prims: BACKDROP }];
 
-/// The 9x9 socket glyph, read off card 1. Not a lattice of equal cells:
-/// the finder blocks are 13.8 and the rest 3.1 or 6.7, so it is spelled
-/// out rather than gridded.
+/// The 9x9 socket glyph, read off card 1 as 25 separate 3.2 squares on
+/// the source's 3.49 pitch. The same occupancy is used on both coats.
 macro_rules! qr {
     ($ink:expr) => {
         &[
-            fill_rect(0.0, 0.0, 13.8, 13.8, $ink),
-            fill_rect(10.6, 0.0, 3.1, 3.1, $ink),
-            fill_rect(17.8, 0.0, 6.7, 6.7, $ink),
-            fill_rect(28.4, 0.0, 3.1, 3.1, $ink),
-            fill_rect(24.8, 7.1, 6.7, 6.7, $ink),
-            fill_rect(0.0, 10.6, 3.1, 3.1, $ink),
-            fill_rect(17.8, 10.6, 3.1, 3.1, $ink),
-            fill_rect(0.0, 17.8, 13.8, 13.8, $ink),
-            fill_rect(17.8, 17.8, 6.7, 6.7, $ink),
-            fill_rect(28.4, 17.8, 3.1, 3.1, $ink),
-            fill_rect(24.8, 24.8, 6.7, 6.7, $ink),
-            fill_rect(10.6, 28.4, 3.1, 3.1, $ink),
-            fill_rect(17.8, 28.4, 3.1, 3.1, $ink),
+            fill_rect(0.00, 0.00, 3.2, 3.2, $ink),
+            fill_rect(10.47, 0.00, 3.2, 3.2, $ink),
+            fill_rect(17.45, 0.00, 3.2, 3.2, $ink),
+            fill_rect(27.92, 0.00, 3.2, 3.2, $ink),
+            fill_rect(3.49, 3.49, 3.2, 3.2, $ink),
+            fill_rect(20.94, 3.49, 3.2, 3.2, $ink),
+            fill_rect(6.98, 6.98, 3.2, 3.2, $ink),
+            fill_rect(27.92, 6.98, 3.2, 3.2, $ink),
+            fill_rect(0.00, 10.47, 3.2, 3.2, $ink),
+            fill_rect(10.47, 10.47, 3.2, 3.2, $ink),
+            fill_rect(17.45, 10.47, 3.2, 3.2, $ink),
+            fill_rect(24.43, 10.47, 3.2, 3.2, $ink),
+            fill_rect(3.49, 17.45, 3.2, 3.2, $ink),
+            fill_rect(10.47, 17.45, 3.2, 3.2, $ink),
+            fill_rect(20.94, 17.45, 3.2, 3.2, $ink),
+            fill_rect(27.92, 17.45, 3.2, 3.2, $ink),
+            fill_rect(0.00, 20.94, 3.2, 3.2, $ink),
+            fill_rect(6.98, 20.94, 3.2, 3.2, $ink),
+            fill_rect(17.45, 20.94, 3.2, 3.2, $ink),
+            fill_rect(3.49, 24.43, 3.2, 3.2, $ink),
+            fill_rect(24.43, 24.43, 3.2, 3.2, $ink),
+            fill_rect(0.00, 27.92, 3.2, 3.2, $ink),
+            fill_rect(10.47, 27.92, 3.2, 3.2, $ink),
+            fill_rect(17.45, 27.92, 3.2, 3.2, $ink),
+            fill_rect(27.92, 27.92, 3.2, 3.2, $ink),
         ]
     };
 }
@@ -1439,7 +1677,12 @@ macro_rules! nav_plate {
 }
 macro_rules! nav_tab {
     ($y:expr) => {
-        &[Seg::Line(275.5, $y), Seg::Line(272.5, $y + 3.4), Seg::Line(244.7, $y + 3.4)]
+        &[
+            Seg::Line(274.0, $y),
+            Seg::Cubic { c1x: 275.2, c1y: $y, c2x: 274.5, c2y: $y + 5.1, x: 277.0, y: $y + 5.1 },
+            Seg::Line(240.5, $y + 5.1),
+            Seg::Cubic { c1x: 243.0, c1y: $y + 5.1, c2x: 241.8, c2y: $y, x: 243.0, y: $y },
+        ]
     };
 }
 
@@ -1448,52 +1691,14 @@ const NAV2: &[Seg] = nav_plate!(418.6);
 const NAV3: &[Seg] = nav_plate!(479.3);
 const NAV4: &[Seg] = nav_plate!(540.0);
 const NAV5: &[Seg] = nav_plate!(600.7);
-const TAB1: &[Seg] = nav_tab!(394.1);
-const TAB2: &[Seg] = nav_tab!(454.8);
-const TAB3: &[Seg] = nav_tab!(515.5);
-const TAB4: &[Seg] = nav_tab!(576.2);
-const TAB5: &[Seg] = nav_tab!(636.9);
+const TAB1: &[Seg] = nav_tab!(391.4);
+const TAB2: &[Seg] = nav_tab!(452.1);
+const TAB3: &[Seg] = nav_tab!(512.8);
+const TAB4: &[Seg] = nav_tab!(573.5);
+const TAB5: &[Seg] = nav_tab!(634.2);
 
-/// The rifle illustration: a slotted rail over a magazine block, a
-/// trigger group and a stock. Card-local to its own `translate`.
-const GUN_MAG: &[Seg] = &[
-    Seg::Line(70.0, 9.0),
-    Seg::Line(70.0, 43.0),
-    Seg::Quad { cx: 70.0, cy: 47.0, x: 66.0, y: 47.0 },
-    Seg::Line(4.0, 47.0),
-    Seg::Quad { cx: 0.0, cy: 47.0, x: 0.0, y: 43.0 },
-];
-const GUN_TRIGGER: &[Seg] = &[
-    Seg::Line(117.0, 9.0),
-    Seg::Line(117.0, 28.0),
-    Seg::Line(102.0, 28.0),
-    Seg::Line(95.0, 43.0),
-    Seg::Line(85.0, 43.0),
-    Seg::Line(82.0, 28.0),
-    Seg::Line(70.0, 28.0),
-];
-const GUN_STOCK: &[Seg] = &[
-    Seg::Line(162.0, 9.0),
-    Seg::Line(187.0, 20.0),
-    Seg::Line(187.0, 53.0),
-    Seg::Line(175.0, 53.0),
-    Seg::Line(167.0, 28.0),
-    Seg::Line(162.0, 26.0),
-    Seg::Line(117.0, 26.0),
-];
-const GUN_SLOTS: &[Seg] = &[
-    Seg::Line(64.0, 16.0),
-    Seg::Move(6.0, 23.0), Seg::Line(64.0, 23.0),
-    Seg::Move(6.0, 30.0), Seg::Line(64.0, 30.0),
-    Seg::Move(6.0, 37.0), Seg::Line(64.0, 37.0),
-];
-const GUN: &[Prim] = &[
-    Prim::Rect { x: 0.0, y: 0.0, w: 162.0, h: 9.0, fill: Some(Ink::Fixed(GUN_FILL)), stroke: Some(Ink::Fixed(GUN_LINE)), width: 0.8 },
-    Prim::Path { x: 0.0, y: 9.0, segs: GUN_MAG, close: true, fill: Some(Ink::Fixed(GUN_FILL)), stroke: Some(Ink::Fixed(GUN_LINE)), width: 0.8 },
-    Prim::Path { x: 70.0, y: 9.0, segs: GUN_TRIGGER, close: true, fill: Some(Ink::Fixed(GUN_FILL)), stroke: Some(Ink::Fixed(GUN_LINE)), width: 0.8 },
-    Prim::Path { x: 117.0, y: 9.0, segs: GUN_STOCK, close: true, fill: Some(Ink::Fixed(GUN_FILL)), stroke: Some(Ink::Fixed(GUN_LINE)), width: 0.8 },
-    line_path(6.0, 16.0, GUN_SLOTS, Ink::Fixed(GUN_LINE), 0.6),
-];
+#[path = "neokitsch/weapon.rs"]
+mod weapon;
 
 /// A standard card's frame, card-local: an r13 top-left, a 37-degree
 /// step up to the raised top edge, an r18 top-right, and a bottom-left
@@ -1502,19 +1707,31 @@ const CARD_EDGE: &[Seg] = &[
     Seg::Line(0.0, 358.0),
     Seg::Quad { cx: 0.0, cy: 345.0, x: 13.0, y: 345.0 },
     Seg::Line(136.2, 345.0),
-    Seg::Line(176.2, 314.6),
+    Seg::Cubic { c1x: 151.2, c1y: 345.0, c2x: 167.2, c2y: 314.6, x: 182.2, y: 314.6 },
     Seg::Line(244.1, 314.6),
     Seg::Quad { cx: 262.1, cy: 314.6, x: 262.1, y: 332.6 },
     Seg::Line(262.1, 632.4),
     Seg::Quad { cx: 262.1, cy: 640.4, x: 254.1, y: 640.4 },
     Seg::Line(19.2, 640.4),
 ];
+// Native shoulder profiles share one low tangent. These controls fit the
+// five resolved source ridges; high plateaus retain their measured spacing.
+const fn store_shoulder(low: f32, high: f32, index: usize) -> Seg {
+    const X: [(f32, f32, f32); 5] = [
+        (151.14, 163.80, 182.2), (152.53, 162.25, 182.7),
+        (153.00, 162.55, 183.2), (154.76, 160.70, 183.7),
+        (155.63, 161.24, 184.2),
+    ];
+    let (c1x, c2x, x) = X[index];
+    Seg::Cubic { c1x, c1y: low, c2x, c2y: high, x, y: high }
+}
+
 macro_rules! echo {
     ($d:expr, $ink:expr) => {
-        line_path(141.3 + 5.1 * $d, 345.0, &[
-            Seg::Line(178.0 + 1.85 * $d, 317.0 + 2.45 * ($d - 1.0)),
-            Seg::Line(244.1, 317.0 + 2.45 * ($d - 1.0)),
-            Seg::Quad { cx: 259.1 - 3.05 * ($d - 1.0), cy: 317.0 + 2.45 * ($d - 1.0), x: 259.1 - 3.05 * ($d - 1.0), y: 332.0 - 0.6 * ($d - 1.0) },
+        line_path(136.2, 345.0, &[
+            store_shoulder(345.0, 318.3 + 3.2 * ($d - 1.0), $d as usize - 1),
+            Seg::Line(244.1, 318.3 + 3.2 * ($d - 1.0)),
+            Seg::Quad { cx: 259.1 - 3.05 * ($d - 1.0), cy: 318.3 + 3.2 * ($d - 1.0), x: 259.1 - 3.05 * ($d - 1.0), y: 333.3 + 0.15 * ($d - 1.0) },
             Seg::Line(259.1 - 3.05 * ($d - 1.0), 632.4 - 1.3 * ($d - 1.0) * ($d - 1.0)),
             Seg::Quad { cx: 259.1 - 3.05 * ($d - 1.0), cy: 637.4 - 1.55 * ($d - 1.0), x: 254.1 - 1.55 * ($d - 1.0), y: 637.4 - 1.55 * ($d - 1.0) },
             Seg::Line(16.6 - 2.6 * ($d - 1.0), 637.4 - 1.55 * ($d - 1.0)),
@@ -1522,23 +1739,32 @@ macro_rules! echo {
     };
 }
 const ECHOES: &[Prim] = &[
-    echo!(1.0, Ink::Fixed(ECHO1)),
-    echo!(2.0, Ink::Fixed(ECHO2)),
-    echo!(3.0, Ink::Fixed(ECHO3)),
-    echo!(4.0, Ink::Fixed(ECHO4)),
+    echo!(1.0, Ink::Fixed(FRAME_ECHO1)),
+    echo!(2.0, Ink::Fixed(FRAME_ECHO2)),
+    echo!(3.0, Ink::Fixed(FRAME_ECHO3)),
+    echo!(4.0, Ink::Fixed(FRAME_ECHO4)),
+    line_path(136.2, 345.0, &[
+        store_shoulder(345.0, 331.1, 4),
+        Seg::Line(244.1, 331.1),
+        Seg::Quad { cx: 246.9, cy: 331.1, x: 246.9, y: 333.9 },
+        Seg::Line(246.9, 627.2),
+        Seg::Quad { cx: 246.9, cy: 631.2, x: 242.9, y: 631.2 },
+        Seg::Line(6.2, 631.2),
+    ], Ink::Fixed(FRAME_ECHO5), 1.0),
 ];
 /// The solid tab under a card's bottom edge.
 const CARD_TAB: &[Seg] = &[
-    Seg::Line(163.5, 632.9),
-    Seg::Line(160.0, 641.4),
-    Seg::Line(102.0, 641.4),
+    Seg::Line(160.0, 632.9),
+    Seg::Cubic { c1x: 162.0, c1y: 632.9, c2x: 160.5, c2y: 641.4, x: 163.5, y: 641.4 },
+    Seg::Line(99.0, 641.4),
+    Seg::Cubic { c1x: 102.0, c1y: 641.4, c2x: 100.0, c2y: 632.9, x: 102.0, y: 632.9 },
 ];
 
 const CARD: &[Prim] = &[
-    shut_path(0.0, 618.0, CARD_EDGE, Ink::Fixed(OUTLINE), 1.3),
     Prim::At { x: 0.0, y: 0.0, prims: ECHOES },
-    fill_path(99.0, 632.9, CARD_TAB, Ink::Fixed(TAB)),
-    Prim::At { x: 37.2, y: 384.0, prims: GUN },
+    shut_path(0.0, 618.0, CARD_EDGE, Ink::Fixed(OUTLINE), 1.3),
+    fill_path(102.0, 632.9, CARD_TAB, Ink::Fixed(TAB)),
+    Prim::At { x: 0.0, y: 345.0, prims: weapon::PATHS },
     txt(22.0, 485.0, 16.5, Ink::Fixed(BRIGHT), "DPS"),
     txt(86.0, 485.0, 16.5, Ink::Fixed(BRIGHT), "PNT"),
     txt(137.0, 485.0, 16.5, Ink::Fixed(BRIGHT), "ACC"),
@@ -1570,7 +1796,7 @@ const GROWN_EDGE: &[Seg] = &[
     Seg::Line(0.0, 276.3),
     Seg::Quad { cx: 0.0, cy: 263.3, x: 13.0, y: 263.3 },
     Seg::Line(136.2, 263.3),
-    Seg::Line(176.2, 232.9),
+    Seg::Cubic { c1x: 151.2, c1y: 263.3, c2x: 167.2, c2y: 232.9, x: 182.2, y: 232.9 },
     Seg::Line(244.1, 232.9),
     Seg::Quad { cx: 262.1, cy: 232.9, x: 262.1, y: 250.9 },
     Seg::Line(262.1, 703.3),
@@ -1579,10 +1805,10 @@ const GROWN_EDGE: &[Seg] = &[
 ];
 macro_rules! grown_echo {
     ($d:expr, $ink:expr) => {
-        line_path(141.3 + 5.1 * $d, 263.3, &[
-            Seg::Line(178.0 + 1.85 * $d, 235.3 + 2.45 * ($d - 1.0)),
-            Seg::Line(244.1, 235.3 + 2.45 * ($d - 1.0)),
-            Seg::Quad { cx: 259.1 - 3.05 * ($d - 1.0), cy: 235.3 + 2.45 * ($d - 1.0), x: 259.1 - 3.05 * ($d - 1.0), y: 250.3 - 0.6 * ($d - 1.0) },
+        line_path(136.2, 263.3, &[
+            store_shoulder(263.3, 236.6 + 3.2 * ($d - 1.0), $d as usize - 1),
+            Seg::Line(244.1, 236.6 + 3.2 * ($d - 1.0)),
+            Seg::Quad { cx: 259.1 - 3.05 * ($d - 1.0), cy: 236.6 + 3.2 * ($d - 1.0), x: 259.1 - 3.05 * ($d - 1.0), y: 251.6 + 0.15 * ($d - 1.0) },
             Seg::Line(259.1 - 3.05 * ($d - 1.0), 703.3 - 1.3 * ($d - 1.0) * ($d - 1.0)),
             Seg::Quad { cx: 259.1 - 3.05 * ($d - 1.0), cy: 708.2 - 1.55 * ($d - 1.0), x: 254.1 - 1.55 * ($d - 1.0), y: 708.2 - 1.55 * ($d - 1.0) },
             Seg::Line(16.6 - 2.6 * ($d - 1.0), 708.2 - 1.55 * ($d - 1.0)),
@@ -1590,19 +1816,28 @@ macro_rules! grown_echo {
     };
 }
 const GROWN_TAB: &[Seg] = &[
-    Seg::Line(163.5, 703.8),
-    Seg::Line(160.0, 712.3),
-    Seg::Line(102.0, 712.3),
+    Seg::Line(160.0, 703.8),
+    Seg::Cubic { c1x: 162.0, c1y: 703.8, c2x: 160.5, c2y: 712.3, x: 163.5, y: 712.3 },
+    Seg::Line(99.0, 712.3),
+    Seg::Cubic { c1x: 102.0, c1y: 712.3, c2x: 100.0, c2y: 703.8, x: 102.0, y: 703.8 },
 ];
 
 const GROWN: &[Prim] = &[
+    grown_echo!(1.0, Ink::Fixed(FRAME_ECHO1)),
+    grown_echo!(2.0, Ink::Fixed(FRAME_ECHO2)),
+    grown_echo!(3.0, Ink::Fixed(FRAME_ECHO3)),
+    grown_echo!(4.0, Ink::Fixed(FRAME_ECHO4)),
+    line_path(136.2, 263.3, &[
+        store_shoulder(263.3, 249.4, 4),
+        Seg::Line(244.1, 249.4),
+        Seg::Quad { cx: 246.9, cy: 249.4, x: 246.9, y: 252.2 },
+        Seg::Line(246.9, 698.1),
+        Seg::Quad { cx: 246.9, cy: 702.1, x: 242.9, y: 702.1 },
+        Seg::Line(6.2, 702.1),
+    ], Ink::Fixed(FRAME_ECHO5), 1.0),
     shut_path(0.0, 688.9, GROWN_EDGE, Ink::Fixed(OUTLINE), 1.3),
-    grown_echo!(1.0, Ink::Fixed(ECHO1)),
-    grown_echo!(2.0, Ink::Fixed(ECHO2)),
-    grown_echo!(3.0, Ink::Fixed(ECHO3)),
-    grown_echo!(4.0, Ink::Fixed(ECHO4)),
-    fill_path(99.0, 703.8, GROWN_TAB, Ink::Fixed(TAB)),
-    Prim::At { x: 37.2, y: 302.3, prims: GUN },
+    fill_path(102.0, 703.8, GROWN_TAB, Ink::Fixed(TAB)),
+    Prim::At { x: 0.0, y: 263.3, prims: weapon::PATHS },
     txt(22.0, 403.3, 16.5, Ink::Fixed(BRIGHT), "DPS"),
     txt(86.0, 403.3, 16.5, Ink::Fixed(BRIGHT), "PNT"),
     txt(137.0, 403.3, 16.5, Ink::Fixed(BRIGHT), "ACC"),
@@ -1643,10 +1878,18 @@ const GROWN: &[Prim] = &[
 /// lines, the dark socket rules and QR and the EMPTY / SOCKET pairs --
 /// every dark run that sits on the gold. Its own table because `GROWN`
 /// fades it in under `#body-fade`.
+#[path = "neokitsch/store_grain.rs"]
+mod store_grain;
+
+const BODY_SURFACE: &[Prim] = &[
+    fill_rect(0.0, 411.2, 262.1, 241.7, Ink::Fixed(BODY_FILL)),
+    Prim::At { x: 0.0, y: 0.0, prims: store_grain::PATHS },
+    Prim::Grain { x: 0.0, y: 603.8, w: 262.1, h: 49.1, pitch: 2.4, width: 0.7, ink: Ink::Fixed(GRAIN_LINE) },
+];
+
 const GROWN_BODY: &[Prim] = &[
     // the gold body, and the veneer grain the source fills it with
-    fill_rect(0.0, 411.2, 262.1, 241.7, Ink::Fixed(BODY_FILL)),
-    Prim::Grain { x: 0.0, y: 411.2, w: 262.1, h: 241.7, pitch: 2.4, width: 0.7, ink: Ink::Fixed(GRAIN_LINE) },
+    Prim::Viewport { x: 0.0, y: 411.2, w: 262.1, h: 241.7, prims: BODY_SURFACE },
     Prim::Text { x: 15.0, y: 440.3, size: 27.0, ink: Ink::OnSelect, face: Face::Medium, anchor: Anchor::Start, content: "620" },
     txt(88.0, 437.3, 21.0, Ink::OnSelect, "30"),
     txt(147.0, 437.3, 21.0, Ink::OnSelect, "5"),
@@ -1685,7 +1928,7 @@ macro_rules! product_echo {
             Seg::Line(-0.6 * $n, $top + 43.4 - 2.1 * $n),
             Seg::Quad { cx: -0.6 * $n, cy: $top + 30.4 - 2.1 * $n, x: 13.0 - 0.6 * $n, y: $top + 30.4 - 2.1 * $n },
             Seg::Line(136.2, $top + 30.4 - 2.1 * $n),
-            Seg::Line(176.2, $top - 2.1 * $n),
+            Seg::Cubic { c1x: 151.2, c1y: $top + 30.4 - 2.1 * $n, c2x: 167.2, c2y: $top - 2.1 * $n, x: 182.2, y: $top - 2.1 * $n },
             Seg::Line(244.1 + 1.6 * $n, $top - 2.1 * $n),
             Seg::Quad { cx: 262.1 + 1.6 * $n, cy: $top - 2.1 * $n, x: 262.1 + 1.6 * $n, y: $top + 18.0 - 2.1 * $n },
             Seg::Line(262.1 + 1.6 * $n, $bottom - 8.0 + 0.3 * $n),
@@ -1752,23 +1995,31 @@ const PLATE_LOWER: &[Seg] = &[
     Seg::Line(1291.7, 90.0),
 ];
 const BASKET_QR: &[Prim] = &[
-    fill_rect(1463.0, 28.0, 7.0, 7.0, Ink::Fixed(PLATE_INK)),
-    fill_rect(1472.0, 28.0, 4.0, 4.0, Ink::Fixed(PLATE_INK)),
-    fill_rect(1478.0, 28.0, 6.0, 6.0, Ink::Fixed(PLATE_INK)),
-    fill_rect(1486.0, 28.0, 6.0, 6.0, Ink::Fixed(PLATE_INK)),
-    fill_rect(1469.0, 35.0, 4.0, 4.0, Ink::Fixed(PLATE_INK)),
-    fill_rect(1483.0, 33.0, 4.0, 4.0, Ink::Fixed(PLATE_INK)),
-    fill_rect(1463.0, 38.0, 4.0, 4.0, Ink::Fixed(PLATE_INK)),
-    fill_rect(1472.0, 38.0, 6.0, 6.0, Ink::Fixed(PLATE_INK)),
-    fill_rect(1481.0, 39.0, 4.0, 4.0, Ink::Fixed(PLATE_INK)),
-    fill_rect(1488.0, 38.0, 4.0, 4.0, Ink::Fixed(PLATE_INK)),
-    fill_rect(1463.0, 45.0, 6.0, 6.0, Ink::Fixed(PLATE_INK)),
-    fill_rect(1471.0, 46.0, 4.0, 4.0, Ink::Fixed(PLATE_INK)),
-    fill_rect(1478.0, 45.0, 6.0, 6.0, Ink::Fixed(PLATE_INK)),
-    fill_rect(1486.0, 46.0, 6.0, 6.0, Ink::Fixed(PLATE_INK)),
-    fill_rect(1469.0, 53.0, 4.0, 4.0, Ink::Fixed(PLATE_INK)),
-    fill_rect(1476.0, 53.0, 7.0, 4.0, Ink::Fixed(PLATE_INK)),
-    fill_rect(1486.0, 53.0, 4.0, 4.0, Ink::Fixed(PLATE_INK)),
+    fill_rect(1464.25, 29.80, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1472.38, 29.80, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1477.80, 29.80, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1485.93, 29.80, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1469.67, 32.51, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1483.22, 32.51, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1464.25, 35.22, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1480.51, 35.22, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1466.96, 37.93, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1472.38, 37.93, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1477.80, 37.93, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1485.93, 37.93, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1464.25, 43.35, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1469.67, 43.35, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1477.80, 43.35, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1483.22, 43.35, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1472.38, 46.06, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1480.51, 46.06, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1485.93, 46.06, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1466.96, 48.77, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1483.22, 48.77, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1464.25, 51.48, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1472.38, 51.48, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1477.80, 51.48, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
+    fill_rect(1485.93, 51.48, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
 ];
 
 /// The logotype's outlined T, x 237..277 with its stem centred.
@@ -1792,27 +2043,27 @@ macro_rules! nav {
             &[
                 fill_path(97.0, $top, $plate, Ink::Fixed(SMG_FILL)),
                 Prim::Grain { x: 97.0, y: $top, w: 196.5, h: 34.0, pitch: 2.1, width: 0.7, ink: Ink::Fixed(GRAIN_LINE) },
-                fill_path(241.7, $tabtop, $tab, Ink::Fixed(NAV_TAB)),
+                fill_path(243.0, $tabtop, $tab, Ink::Fixed(NAV_TAB)),
                 txt(115.0, $base, 17.0, Ink::OnSelect, $label),
             ],
             &[
                 shut_path(97.0, $top, $plate, Ink::Fixed(OUTLINE), 1.3),
-                fill_path(241.7, $tabtop, $tab, Ink::Fixed(NAV_TAB)),
+                fill_path(243.0, $tabtop, $tab, Ink::Fixed(NAV_TAB)),
                 txt(115.0, $base, 17.0, Ink::Fixed(BRIGHT), $label),
             ],
         )
     };
 }
-const NAV_ON_0: &[Prim] = nav!(NAV1, TAB1, 357.9, 394.1, 384.4, "RIFLES").0;
-const NAV_OFF_0: &[Prim] = nav!(NAV1, TAB1, 357.9, 394.1, 384.4, "RIFLES").1;
-const NAV_ON_1: &[Prim] = nav!(NAV2, TAB2, 418.6, 454.8, 445.1, "SMG").0;
-const NAV_OFF_1: &[Prim] = nav!(NAV2, TAB2, 418.6, 454.8, 445.1, "SMG").1;
-const NAV_ON_2: &[Prim] = nav!(NAV3, TAB3, 479.3, 515.5, 505.8, "SNIPER").0;
-const NAV_OFF_2: &[Prim] = nav!(NAV3, TAB3, 479.3, 515.5, 505.8, "SNIPER").1;
-const NAV_ON_3: &[Prim] = nav!(NAV4, TAB4, 540.0, 576.2, 566.5, "SHOTGUN").0;
-const NAV_OFF_3: &[Prim] = nav!(NAV4, TAB4, 540.0, 576.2, 566.5, "SHOTGUN").1;
-const NAV_ON_4: &[Prim] = nav!(NAV5, TAB5, 600.7, 636.9, 627.2, "PISTOL").0;
-const NAV_OFF_4: &[Prim] = nav!(NAV5, TAB5, 600.7, 636.9, 627.2, "PISTOL").1;
+const NAV_ON_0: &[Prim] = nav!(NAV1, TAB1, 357.9, 391.4, 384.4, "RIFLES").0;
+const NAV_OFF_0: &[Prim] = nav!(NAV1, TAB1, 357.9, 391.4, 384.4, "RIFLES").1;
+const NAV_ON_1: &[Prim] = nav!(NAV2, TAB2, 418.6, 452.1, 445.1, "SMG").0;
+const NAV_OFF_1: &[Prim] = nav!(NAV2, TAB2, 418.6, 452.1, 445.1, "SMG").1;
+const NAV_ON_2: &[Prim] = nav!(NAV3, TAB3, 479.3, 512.8, 505.8, "SNIPER").0;
+const NAV_OFF_2: &[Prim] = nav!(NAV3, TAB3, 479.3, 512.8, 505.8, "SNIPER").1;
+const NAV_ON_3: &[Prim] = nav!(NAV4, TAB4, 540.0, 573.5, 566.5, "SHOTGUN").0;
+const NAV_OFF_3: &[Prim] = nav!(NAV4, TAB4, 540.0, 573.5, 566.5, "SHOTGUN").1;
+const NAV_ON_4: &[Prim] = nav!(NAV5, TAB5, 600.7, 634.2, 627.2, "PISTOL").0;
+const NAV_OFF_4: &[Prim] = nav!(NAV5, TAB5, 600.7, 634.2, 627.2, "PISTOL").1;
 
 // components.svg #nk-button-hover retains the inferred seven-ring outward echo;
 // it is not a literal copy of the source-corrected T2 badge fan.
@@ -2036,8 +2287,8 @@ const CONTENT: &[Prim] = &[
 /// The run's dashboard ink families, the trace's hex values. None of
 /// them is an existing era const (`GOLD_TEXT #e7c686` and `AMBER
 /// #fcc474` are each a step off), so they are named here rather than
-/// approximated; `MICRO #a97c48`, `CAPTION #d9a877`, `PAGE #0e0a0d` and
-/// the `HAZE_*` stops are reused where the trace samples the same hex.
+/// approximated; `MICRO #a97c48` and `CAPTION #d9a877` are reused where
+/// the trace samples the same hex.
 /// Mid gold: header text, onion rings, captions, the tape, letterbox strokes.
 pub const HUB_MID: iced::Color = rgb(0xbd8951);
 /// The front outline of every card and of the panel (:407, :485).
@@ -2061,7 +2312,8 @@ pub const BADGE_LIT: iced::Color = rgb(0xe8c186);
 /// The interior of the A/B letterboxes where they mask the wire band (:329).
 pub const BOX_FILL: iced::Color = rgb(0x4c3f5f);
 
-/// `HUB_MID` at the trace's ring opacities over `PAGE`. The cards' six
+/// `HUB_MID` at the trace's ring opacities over the original `#0e0a0d`
+/// base. The cards' six
 /// rings run 0.85 0.73 0.61 0.49 0.37 0.25 outermost to innermost
 /// (:362-367); the panel's four run 0.70 0.70 0.55 0.25 (:480-483).
 pub const RING_85: iced::Color = rgb(0xa37647);
@@ -2072,29 +2324,37 @@ pub const RING_55: iced::Color = rgb(0x6e5032);
 pub const RING_49: iced::Color = rgb(0x64482e);
 pub const RING_37: iced::Color = rgb(0x4f3926);
 pub const RING_25: iced::Color = rgb(0x3a2a1e);
-/// The haze (`#haze`, :131-139): the same four colours the bar and store
-/// use, at this trace's own stop offsets, centred (825,-120), r 1030,
-/// y-scaled 0.515, turned 1.3 degrees (:133). The blue annulus
-/// (`#hazeblue`, :108-116) is the store's `BLUE` table stop for stop,
-/// at (900,-120) and the same radii, turned 2 degrees (:110), and laid
-/// through the store's `BLUE_MASK` (`#bluemask`, :128-130, :267).
-const HUB_HAZE: &[(f32, iced::Color)] = &[
-    (0.0, HAZE_CORE),
-    (0.258, HAZE_CORE),
-    (0.572, HAZE_MID),
-    (0.873, HAZE_EDGE),
-    (1.0, HAZE_OUT),
+/// The four native screens share the same clear-patch field. The hub
+/// uses the fitted backdrop, including the left lift and blue transition.
+const HUB_GROUND: &[Prim] = BACKDROP;
+
+/// The standalone bar is an original design, not one of the four native
+/// screens. Keep its previously cited dashboard-era haze unchanged.
+/// `docs/neokitsch/bar.svg` uses these legacy colors and geometry.
+const BAR_HAZE: &[(f32, iced::Color)] = &[
+    (0.0, rgb(0x574568)),
+    (0.258, rgb(0x574568)),
+    (0.572, rgb(0x3a3853)),
+    (0.873, rgb(0x16121a)),
+    (1.0, rgb(0x0e0a0d)),
 ];
-const HUB_HAZE_LOBE: &[Prim] =
-    &[Prim::Lobe { x: 0.0, y: 0.0, rx: 1030.0, ry: 530.45, stops: HUB_HAZE }];
-const HUB_BLUE_LOBE: &[Prim] =
-    &[Prim::Lobe { x: 0.0, y: 0.0, rx: 1030.0, ry: 530.45, stops: BLUE }];
-const HUB_BLUE_TURNED: &[Prim] =
-    &[Prim::Turn { x: 900.0, y: -120.0, angle: 2.0, prims: HUB_BLUE_LOBE }];
-const HUB_GROUND: &[Prim] = &[
-    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(PAGE)),
-    Prim::Turn { x: 825.0, y: -120.0, angle: 1.3, prims: HUB_HAZE_LOBE },
-    Prim::Masked { prims: HUB_BLUE_TURNED, mask: BLUE_MASK },
+const BAR_HAZE_LOBE: &[Prim] =
+    &[Prim::Lobe { x: 0.0, y: 0.0, rx: 1030.0, ry: 530.45, stops: BAR_HAZE }];
+const BAR_BLUE: &[(f32, iced::Color)] = &[
+    (0.60, rgba(0x223350, 0.00)),
+    (0.68, rgba(0x223350, 0.85)),
+    (0.76, rgba(0x1a2c46, 0.80)),
+    (0.84, rgba(0x101d30, 0.00)),
+    (1.00, rgba(0x101d30, 0.00)),
+];
+const BAR_BLUE_LOBE: &[Prim] =
+    &[Prim::Lobe { x: 0.0, y: 0.0, rx: 1030.0, ry: 530.45, stops: BAR_BLUE }];
+const BAR_BLUE_TURNED: &[Prim] =
+    &[Prim::Turn { x: 900.0, y: -120.0, angle: 2.0, prims: BAR_BLUE_LOBE }];
+const BAR_GROUND: &[Prim] = &[
+    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(rgb(0x0e0a0d))),
+    Prim::Turn { x: 825.0, y: -120.0, angle: 1.3, prims: BAR_HAZE_LOBE },
+    Prim::Masked { prims: BAR_BLUE_TURNED, mask: BLUE_MASK },
 ];
 
 /// One cascade card (`#ncard`, :154): r6.5 top-left, the 45-degree
@@ -2196,12 +2456,14 @@ const CARD_SELECTED: &[Prim] = &[
 
 /// components.svg #nk-card-hover: lift the six existing rings from
 /// HUB_MID to HUB_EDGE and the front to HUB_FILL, with geometry and
-/// opacity unchanged. Like the resting rings, preblend over PAGE.
+/// opacity unchanged. Like the resting rings, preblend over the legacy
+/// `#0e0a0d` base to preserve the existing inferred feedback inks.
+const RING_BASE: iced::Color = rgb(0x0e0a0d);
 const fn hover_ring(alpha: f32) -> Ink {
     Ink::Fixed(iced::Color {
-        r: PAGE.r + (HUB_EDGE.r - PAGE.r) * alpha,
-        g: PAGE.g + (HUB_EDGE.g - PAGE.g) * alpha,
-        b: PAGE.b + (HUB_EDGE.b - PAGE.b) * alpha,
+        r: RING_BASE.r + (HUB_EDGE.r - RING_BASE.r) * alpha,
+        g: RING_BASE.g + (HUB_EDGE.g - RING_BASE.g) * alpha,
+        b: RING_BASE.b + (HUB_EDGE.b - RING_BASE.b) * alpha,
         a: 1.0,
     })
 }
@@ -2687,7 +2949,11 @@ mod dashboard_tests {
                 assert!(fill.is_none());
                 assert_eq!(*width, 0.7);
                 assert_eq!(*x, -0.6 * n);
-                assert_eq!(segs[3], Seg::Line(176.2, top - 2.1 * n));
+                assert_eq!(segs[3], Seg::Cubic {
+                    c1x: 151.2, c1y: top + 30.4 - 2.1 * n,
+                    c2x: 167.2, c2y: top - 2.1 * n,
+                    x: 182.2, y: top - 2.1 * n,
+                });
                 assert_eq!(segs[6], Seg::Line(262.1 + 1.6 * n, bottom - 8.0 + 0.3 * n));
                 assert!((ink.a - (0.55 + 0.05 * i as f32)).abs() < 0.00001);
             }

@@ -9,12 +9,13 @@
        buttons, and a veneer plate for whatever is selected.
 
        WHAT IS BORROWED, FROM WHERE
-       1. GROUND — store-trace.svg <radialGradient id="haze"> (measured in
-          dashboard-trace: lobe centred (825,-120), r 1030, y-scale 0.515, stops
-          #574568 / #3a3853 / #16121a / #0e0a0d) plus the blue annulus and its
-          left fade mask, copied verbatim and CLIPPED to the strip y 0..31. At
-          y<31 this is violet across x~200..1460 and near-black at both ends —
-          the top strip of every screen in the run. Nothing below y 31 is the bar.
+       1. GROUND — legacy dashboard-era <radialGradient id="haze">, centred
+          (825,-120), r 1030, y-scale 0.515, with stops at
+          0/.258/.572/.873/1; its blue annulus with left fade is also copied
+          into this original bar composition and clipped to y 0..31. The
+          four source screens now use one separately fitted shared field
+          (ground-fit.md); the bar keeps this earlier design field. This is
+          a design citation, not a photographic fidelity verdict for the bar.
        2. OUTLINED CELL — store-trace nav buttons x 93..293.5, 39 tall (RIFLES,
           SNIPER, SHOTGUN, PISTOL): r4 corners, a bottom-LEFT cut (93,385)-(108,396.5)
           i.e. 15x11.6, stroke #dab176 1.3; and mailbox-trace RIFLES buttons
@@ -49,7 +50,7 @@
           tall), dark text #6b3f1e in a wide light face. The README's rule: amber
           is the one strong CTA. Here: SYNC and the attention-state SNI icon =
           AMBER #fcc474 plate, cut 10x7, no radius, no tab, text ON_VENEER,
-          letter-spacing 2 (ENTER / LOGIN is spaced 3 at 14px).
+          letter-spacing 2 (the login source ENTER / LOGIN is 4.1 at 14px).
        6. WIRE BAND — store-trace header: 8 strands at 3.2 pitch on the low outer
           runs (y 160.4+3.2i, x 35..290 and 1290..1562), each rising through one
           S-bend (x 290 -> 349, "C 322,ys 316,yb 349,yb") onto ONE bridge line at
@@ -116,7 +117,7 @@
        VENEER_DARK #d8a558, GRAIN #b98a44, AMBER #fcc474, ON_VENEER #3a2410,
        DIM #8a7048) plus the traces' measured haze stops. -->
   <defs>
-    <!-- 1. ground: the measured haze, verbatim from store/dashboard-trace -->
+    <!-- 1. ground: legacy dashboard-era haze and blue annulus, retained as bar design ink -->
     <radialGradient id="haze" gradientUnits="userSpaceOnUse"
         cx="825" cy="-120" r="1030"
         gradientTransform="rotate(1.3 825 -120) translate(825 -120) scale(1 0.515) translate(-825 120)">
@@ -367,126 +368,29 @@
   </g>
   </g>
 
-  <!-- IMPLEMENTATION DELTA (for bar.rs / Style) — every change from the current
-       neokitsch bar rendering, in plain text; the SVG above is the target.
+  <!-- IMPLEMENTATION DELTA / STATUS (2026-09-27)
+       This SVG is an original design target. Its source citations above describe
+       the four photographed screens; they do not make the bar itself sourced.
 
-       GROUND
-       - Bar strip background: the era's Ground::Bloom (BLOOM #34344c lobe from
-         top-centre, radius 0.75) instead of flat BG #0a0a0a. The strip is the top
-         31px of the screen, and every trace is violet there and black at the ends.
+       `src/bar.rs` followed the four era bar designs on 2026-09-03, using the
+       `Style::bar` table in `src/eras/neokitsch.rs`. The current Neo-kitsch
+       table has a 31px strip, `BarGround::Haze { prims: HUB_GROUND }`, loose
+       chrome, an eight-strand wire ornament, r3 idle cells with a 10x7
+       bottom-left cut and tab, veneer selection and host tape, an amber
+       alert plate, a plain 18px clock, and menu panels with four inner rings.
+       These are implemented features, not requested future changes.
 
-       CELL (idle: workspaces 1,2,4,5,6; idle SNI icon; BLUE; WIFI; VOL; CPU; MEM; date)
-       - Corner: rounded r=3 on top-left, top-right, bottom-right; the bottom-LEFT
-         corner is a chamfer 10 wide x 7 tall. (Replaces ClipTopRight cut 30.)
-       - Outline: stroke 1.6 (unchanged) in FRAME_LIT #c69a55 (was FRAME #916424).
-         No fill.
-       - Tab: a filled trapezoid inside the cell on its bottom edge, fill
-         VENEER_LIGHT #f4c474: base 22 wide, top 16 wide, 4 tall (y 24..28),
-         base right end 8px in from the cell's right edge. Workspace and icon
-         cells use base 14 / top 8. Every outlined cell carries one; plates
-         (below) do not, except the active workspace.
-       - Label: GOLD_TEXT #e7c686 14px weight 600 letter-spacing 0.8,
-         LEFT-aligned at x0+12, baseline 20 (cap centred on y 15.5).
-       - Width: 12 + text width + 38 (8 gap + 22 tab + 8 inset). Gap between
-         cells 9 (7.2 between workspaces). Workspace cells are 38 wide with the
-         digit centred at x0+12.5; the idle SNI icon cell is 44 wide with the
-         16px pixmap centred at x0+14. Attention icon plate stays 35 wide.
-       - No dividers (unchanged).
+       Known target/runtime distinctions: `Style::bar.stroke` is 2.0, while
+       this SVG calls for 1.6 on idle cell outlines; the source sample icons
+       used by the bar window are raster icons, while the SVG uses diamond
+       stand-ins. `todo/bar.md` records a 52% Neo-kitsch shape inventory gate
+       accepted in 2026-09-03 because grain and rings fragment the extractor.
+       That number is not a pixel fidelity measurement. The layer-shell bar
+       remains unverified on the desktop in that record; no new runtime
+       comparison is claimed here.
 
-       ACTIVE (workspace 3)
-       - Same silhouette and tab as an idle cell, no outline, filled with the
-         veneer: gradient VENEER_LIGHT (top) -> VENEER (45%) -> VENEER_DARK
-         (bottom) plus 14 hairlines at 1.7px pitch across the plate, GRAIN
-         #b98a44, width 0.6, opacity 0.5, wobbling +-0.9px, mirrored about a
-         vertical seam at the plate's x-midpoint (a 0.9 GRAIN line, opacity 0.8).
-         Label ON_VENEER #3a2410.
-
-       HOST TAPE
-       - Shape: square left edge and square top-left; top-RIGHT chamfer 10x10;
-         bottom-right rounded r=4; y 3..28, x 6..77. Filled with the same veneer
-         + grain + midpoint seam as above; no tab; text ON_VENEER at x 16. (Was
-         the clipped-corner tape.)
-
-       ALERT (SYNC; SNI icon in attention state)
-       - A solid AMBER #fcc474 plate: square corners, only a bottom-left chamfer
-         10x7, no outline, no tab. Label ON_VENEER #3a2410, letter-spacing 2,
-         CENTRED (width 12 + text + 12). The icon pixmap is drawn as supplied on
-         the plate. (Was amber outline + amber text.)
-
-       DISABLED (menu row Disconnect): text DIM #8a7048, no chrome (unchanged).
-
-       FOCUSED WINDOW LABEL
-       - CHAMPAGNE #d3b279, 14px weight 400, no tracking, centred in the gap
-         between the workspace group and the tray (here x 509.5), baseline 20
-         (was DIM #8a7048).
-
-       WIRE BAND (new ornament, drawn by the bar, not by a cell)
-       - Spans the gap between the last workspace cell and the first tray cell,
-         inset 6 from each: here x 354..665. Low runs 32 wide at each end
-         (354..386, 633..665), S-bends 32 wide (386..418, 601..633), bridge
-         between (418..601). 8 strands, stroke CHAMPAGNE #d3b279 width 1.0, at
-         y 13.5 + 2.0*i (i = 0..7), stroke opacity 0.35 0.44 0.54 0.63 0.72 0.81
-         0.91 1.00 from top to bottom. Each strand: along its y on the left run,
-         then a cubic S-bend "C (x+17,ys) (x+15,5) (x+32,5)" onto the bridge at
-         y 5, straight across, then the mirror "C (x+17,5) (x+15,ys) (x+32,ys)"
-         back down, straight to the right end. Strands 0..6 start and end with
-         a 3px quarter curve down (they enter from y ys+3 at the run's outer
-         end). A 1.2 vertical in the same colour at both outer ends from y 13.5
-         to 27.5 (the overlapped end hooks). The label sits centred on the
-         bridge; if the gap is narrower than the label + 2*64, drop the band and
-         draw only the label.
-
-       CLOCK
-       - Plain text, no cell: GOLD_TEXT 18px weight 500 letter-spacing 1,
-         right-aligned to the bar's right padding (x 1594), baseline 21.
-
-       MENU PANELS (root and submenu) — rings redrawn 2026-09-04
-       - Silhouette: chamfer 22 on top-right and bottom-left, rounded r=6 on
-         top-left and bottom-right. Fill BG #0a0a0a, outline FRAME_LIT #c69a55
-         1.6. Root: x 1281..1480, y 31..180.6. Submenu: x 1141..1281,
-         y 31..120.6, opening leftwards, touching the root's left edge.
-       - Rings: 4 echo outlines NESTED INSIDE each panel, drawn over its fill
-         and under its rows. Ring i (1..4), d = 3.2*i: starts on the panel's
-         left edge at y0+6+d, rounds r6 onto the top line y0+d, runs to the
-         chamfer's fixed start x (right-22), descends at 45 degrees to
-         x = right-d (so the chamfer foot stays at y0+22), down the right edge
-         to r6 above the bottom line y1-d, rounds onto it, and runs left to
-         where it meets the bottom-left chamfer (x = left+22-d); drawn OPEN,
-         the front draws the shared left edge and chamfer once. Stroke
-         FRAME_LIT 1.0, opacity 0.7 0.7 0.55 0.25. Nothing outside the
-         panel: no echo padding, no top clip.
-       - Air: the rows sit inside the innermost ring — 12.8 (4 x 3.2) beyond
-         the panel's own 6 on the TOP, RIGHT and BOTTOM; the left keeps 0.
-
-       MENU ROWS (25.6 tall, first at y 49.8)
-       - Icon column: 16px wide starting at panel x+10 (icons x 1291..1307 in
-         the root, 1151..1167 in the submenu); label starts at panel x+34
-         (x 1315 / x 1175). This is the icon/label overlap fix.
-       - Label: GOLD_TEXT 14px weight 600 letter-spacing 0.8.
-       - Open submenu parent (Devices): an outlined r=3 rounded rect inset 6 from
-         the panel's left edge and 6 from the rings' inner edge on the right
-         (x 1287..1461.2, y 49.8..75.4), stroke GOLD_TEXT 1.1, no fill, with a
-         VENEER_LIGHT tab (base 26, top 18, 4.6 tall) on its inside bottom edge,
-         right end 6 in from the outline; the "<" glyph weight 400 right-aligned
-         at x 1420.2 so it clears the tab. (Until 2026-09-05 the box ended at
-         1445.2, a number carried over from before the rings nested, when
-         the rows began at y 37 inside the panel's 22px chamfer and the box
-         had to stop at the chamfer's foot; the rows now start below the
-         innermost ring's 9.2px chamfer, which clears 1461.2 by 3px.)
-       - Highlighted row (Enable networking): a veneer bar from the panel's
-         left edge, ACROSS the rings, to 8 PAST its right edge (x 1281..1488;
-         the mail bar runs past its list rules), top-RIGHT chamfer 10x10,
-         bottom-right r=4, square elsewhere, veneer gradient + 15 grain
-         hairlines at 1.7 pitch + midpoint seam as above; text ON_VENEER, drawn
-         over the panel outline and rings.
-       - Separator: a 1.5 rule in CHAMPAGNE from panel x+6 to the rings' inner
-         edge less 6 (x 1287..1461.2) at the row boundary (y 105.8), carrying a
-         VENEER_LIGHT tab (base 30, top 23, 5 tall) standing on it, right end
-         12 in from the rule's end.
-       - Submenu chevron and Quit/Mount icons: GOLD_TEXT diamonds as placeholders.
-
-       HALO (optional)
-       - A blurred (sigma 1.5 x 4.5), darkened (RGB x0.43/0.32/0.21, alpha x1.45)
-         copy of the strip and menu content drawn beneath it. Purely additive;
-         if the renderer has no blur, skip it — no geometry above depends on it. -->
+       The dashboard haze and blue annulus in this bar are a design choice.
+       The dashboard fit differs from the newer shared fit in the other three
+       traces (NK-11). ENTER / LOGIN source tracking is 4.1 at 14px; the
+       bar's own SYNC uses 2px tracking by design. -->
 </svg>

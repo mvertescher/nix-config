@@ -124,6 +124,11 @@ def main():
     print("== shape inventory ==")
     print("  %-10s %8s %10s   %s" % ("class", "source", "candidate", "verdict"))
     classes = sorted({s["class"] for s in ss} | {s["class"] for s in cs})
+    # The matcher treats these two classes as one family because a photo's
+    # glow can erase the corner detail. The absent-class gate must use the
+    # same equivalence; matched area still requires a one-to-one box match.
+    equivalent = {"rect": {"rect", "chamfer"},
+                  "chamfer": {"rect", "chamfer"}}
     missing_class = []
     count_diff = False
     src_area = area(ss) or 1
@@ -132,7 +137,8 @@ def main():
         n_c = sum(1 for s in cs if s["class"] == cl)
         cl_area = area([s for s in ss if s["class"] == cl])
         verdict = ""
-        if n_s and not n_c:
+        n_equiv = sum(1 for s in cs if s["class"] in equivalent.get(cl, {cl}))
+        if n_s and not n_equiv:
             if cl_area / src_area < a.min_class_share:
                 verdict = "absent, but %.0f%% of source area — not gating" % (100 * cl_area / src_area)
             else:
@@ -185,9 +191,18 @@ def main():
     print("\n== palette (informational) ==")
     for role in ("ink", "ground"):
         f = lambda sp: ", ".join("%s %.1f%%" % (e["hex"], 100 * e["coverage"])
-                                 for e in sp["palette"] if e["role"] == role)
+                                 for e in sp["palette"] if e["role"] == role and e["coverage"] > 0)
         print("  %-7s source:    %s" % (role, f(src)))
         print("  %-7s candidate: %s" % ("", f(cand)))
+    if cand.get("palette_mode") == "source_anchored":
+        residual = cand["palette_residual"]
+        print("  candidate pixels outside source palette (RGB distance >= 110): %.2f%%"
+              % (100 * residual["rgb_distance_at_least_110"]))
+        # This is evidence for review, not an extra failure threshold: a
+        # candidate-only annotation is permitted by the existing ink gate.
+        for i, residual_share in enumerate(residual["outside_by_nearest_bin"]):
+            if residual_share >= 0.001:
+                print("    nearest source bin %d: %.2f%% of canvas" % (i, 100 * residual_share))
 
     # ---- ink-family placement -------------------------------------------
     def fams(sp):

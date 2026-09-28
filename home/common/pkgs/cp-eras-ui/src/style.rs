@@ -814,6 +814,13 @@ pub struct Style {
     /// Optional foreground hover/held drawings for store plates. These
     /// do not change hit boxes or the selected product's geometry.
     pub store_states: &'static [PlateStates],
+    /// Bright source printing for the complete reference store palette.
+    /// Other variants and direct palette edits retain their foreground role.
+    pub store_reference_fg: Option<Color>,
+    /// Source material layers for an unmodified reference palette.
+    /// Selection chooses static cached backgrounds; hit geometry stays in
+    /// the paired scene, with the original scene retained for custom themes.
+    pub store_reference: Option<StoreReference>,
     // --- end store ---
 
     // --- dashboard ---
@@ -855,6 +862,21 @@ pub struct Style {
     /// `s` the store), not by standing the last module in for it.
     pub dashboard_destinations: [Option<Destination>; 6],
     // --- end dashboard ---
+}
+
+/// Cached reference surfaces paired with a store's foreground scene.
+/// Every backdrop uses the normal leading-Soft grammar and opening clips.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct StoreReference {
+    pub scene: &'static [Prim],
+    pub backdrops: &'static [StoreBackdrop],
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct StoreBackdrop {
+    pub category: usize,
+    pub card: usize,
+    pub prims: &'static [Prim],
 }
 
 /// The four UI eras of the reference material.
@@ -1010,6 +1032,9 @@ impl Style {
         style.palette = style.palette.with_theme(theme);
         if named_era != Some(era) || theme.variant != "reference" {
             style.dashboard_reference_fg = None;
+            style.store_reference_fg = None;
+            style.store_reference = None;
+            style.mailbox.list.selected_printing = None;
         }
         style
     }
@@ -1025,6 +1050,62 @@ impl Style {
             }
         }
         self
+    }
+
+    /// Drawing palette for the store; the shell and sibling screens keep
+    /// their normal foreground. Full-palette equality protects custom roles.
+    pub fn store_style(mut self) -> Style {
+        if let Some(fg) = self.store_reference_fg {
+            if self.palette == self.era.style().palette {
+                self.palette.fg = fg;
+            }
+        }
+        self
+    }
+
+    pub fn store_layers(&self, category: usize, card: usize) -> (&'static [Prim], &'static [Prim]) {
+        if self.palette == self.era.style().palette {
+            if let Some(reference) = self.store_reference {
+                if let Some(background) = reference.backdrops.iter()
+                    .find(|b| b.category == category && b.card == card)
+                {
+                    return (reference.scene, background.prims);
+                }
+            }
+        }
+        (self.store, self.store)
+    }
+
+    /// Whether access-screen source fills can use this palette. The
+    /// published Entropism and NeoKitsch source palettes have a different
+    /// panel role from their standalone fallback, but still name the same
+    /// source design. Any other role edit keeps semantic theme fills.
+    pub fn access_reference_palette(&self) -> bool {
+        match self.era {
+            Era::Entropism => crate::eras::entropism::access_reference_palette(&self.palette),
+            _ => self.mailbox_reference_palette(),
+        }
+    }
+
+    /// Source-only access materials replace the backdrop only for the
+    /// complete reference palette; custom themes keep their semantic field.
+    pub fn access_backdrop(&self) -> &'static [Prim] {
+        if self.access_reference_palette() {
+            if let Some(prims) = self.access.reference_backdrop {
+                return prims;
+            }
+        }
+        self.access.backdrop
+    }
+
+    /// Whether source-only mailbox inks can use this palette. The
+    /// published NeoKitsch reference has a derived panel role, while
+    /// its standalone era table retains the photographed bloom role.
+    pub fn mailbox_reference_palette(&self) -> bool {
+        match self.era {
+            Era::Neokitsch => crate::eras::neokitsch::mailbox_reference_palette(&self.palette),
+            _ => self.palette == self.era.style().palette,
+        }
     }
 }
 
@@ -1216,6 +1297,8 @@ pub struct Step {
 pub struct PlatePath {
     pub start: (f32, f32),
     pub steps: &'static [Seg],
+    /// Close each contour for surfaces; leave ornamental linework open.
+    pub close: bool,
 }
 
 /// A filled and/or stroked access-screen control. A custom contour is
@@ -1230,12 +1313,18 @@ pub struct Plate {
     /// A shoulder in the top edge; `None` is a level one.
     pub step: Option<Step>,
     pub fill: Option<Ink>,
+    /// Source fill for this plate when the complete reference palette is
+    /// active. Custom palettes continue to resolve `fill` normally.
+    pub reference_fill: Option<Color>,
     /// Bottom stop where the era grades its fill downward. Neomil's
     /// unselected cards are translucent red over a blue glow and so
     /// read lighter at the top than at the foot; every other plate in
     /// the four traces is flat, and leaves this `None`.
     pub foot: Option<Ink>,
     pub stroke: Option<Ink>,
+    /// Source edge color and weight for the complete reference palette.
+    /// Custom themes retain the semantic stroke and its original weight.
+    pub reference_stroke: Option<(Color, f32)>,
     pub weight: f32,
 }
 
@@ -1247,8 +1336,10 @@ impl Plate {
             bevel: Bevel::NONE,
             step: None,
             fill: Some(fill),
+            reference_fill: None,
             foot: None,
             stroke: None,
+            reference_stroke: None,
             weight: 0.0,
         }
     }
@@ -1260,8 +1351,10 @@ impl Plate {
             bevel: Bevel::NONE,
             step: None,
             fill: None,
+            reference_fill: None,
             foot: None,
             stroke: Some(stroke),
+            reference_stroke: None,
             weight,
         }
     }
@@ -1272,7 +1365,14 @@ impl Plate {
     }
 
     pub const fn outlined_path(mut self, start: (f32, f32), steps: &'static [Seg]) -> Plate {
-        self.path = Some(PlatePath { start, steps });
+        self.path = Some(PlatePath { start, steps, close: true });
+        self
+    }
+
+    /// Ornamental strokes with separate open subpaths, such as lettering.
+    /// Filled controls should keep the closed `outlined_path` form.
+    pub const fn open_path(mut self, start: (f32, f32), steps: &'static [Seg]) -> Plate {
+        self.path = Some(PlatePath { start, steps, close: false });
         self
     }
 
@@ -1283,6 +1383,12 @@ impl Plate {
 
     pub const fn over(mut self, fill: Ink) -> Plate {
         self.fill = Some(fill);
+        self.reference_fill = None;
+        self
+    }
+
+    pub const fn reference_fill(mut self, fill: Color) -> Plate {
+        self.reference_fill = Some(fill);
         self
     }
 
@@ -1293,7 +1399,13 @@ impl Plate {
 
     pub const fn edged(mut self, stroke: Ink, weight: f32) -> Plate {
         self.stroke = Some(stroke);
+        self.reference_stroke = None;
         self.weight = weight;
+        self
+    }
+
+    pub const fn reference_edge(mut self, color: Color, weight: f32) -> Plate {
+        self.reference_stroke = Some((color, weight));
         self
     }
 }
@@ -1319,22 +1431,16 @@ pub struct Legend {
     ///
     /// The sources are set in a wider face than Rajdhani, and the
     /// polished traces stopped pretending otherwise: they stretch the
-    /// runs whose width was measured -- neokitsch's ARASAKA logotype
-    /// `scale(1.155 1)` onto its measured ink extent x 92..272,
-    /// kitsch's guest notes `scale(1.32 1)` and the boxed letter
+    /// runs whose width was measured -- kitsch's guest notes
+    /// `scale(1.32 1)` and the boxed letter
     /// `scale(1.7 1)`. `textLength` would have been the SVG way and
     /// librsvg ignores it, which is why the traces carry a transform
     /// and why this is a number rather than a target width.
     pub stretch: f32,
     /// Letter-spacing, in design pixels between glyphs.
     ///
-    /// Carried as the traces carry it. `screens::login` has no glyph
-    /// spacing to set -- the toolkit has no tracking -- so it fits the
-    /// run's *extent* instead, by measuring the natural width and
-    /// stretching by `(w + tracking * (glyphs - 1)) / w`. The ink ends
-    /// where the trace says it ends, which is what was measured off the
-    /// photo and what the extractor reads; the difference is inside the
-    /// glyphs rather than between them.
+    /// The login renderer positions glyphs using their measured advances
+    /// plus this spacing; horizontal `stretch` applies to the whole run.
     pub tracking: f32,
 }
 
@@ -1392,11 +1498,11 @@ impl Legend {
 
 /// What an era draws inside a slot's identity box.
 ///
-/// A variant rather than geometry because the three eras that draw one
-/// draw genuinely different objects, and none of them is a dressed
-/// rectangle: neomil's live card carries a wire hexagon over four
-/// dashes and a cluster of compliance marks, its other two carry a
-/// photographic portrait, and kitsch's is a printed chip -- a dark
+/// Built-in fallback drawings for identity boxes. Measured era-owned
+/// shapes can replace these through [`Slot::emblem_art`]. Neomil's
+/// live card now uses measured filled halves and small marks, while
+/// the fallback retains the earlier wire emblem. Its other two cards
+/// carry a photographic portrait, and kitsch's is a printed chip -- a dark
 /// hexagon split by a teal slash with a hatched wedge in one corner.
 /// The figures are constants of one drawing, so they live in the
 /// screen; which drawing an era uses is the era's business, so it lives
@@ -1404,7 +1510,7 @@ impl Legend {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Emblem {
     None,
-    /// Neomil's active card: the wire hexagon and its satellites.
+    /// Legacy Neomil wire hexagon and its satellites.
     Hexagon,
     /// Neomil's other cards: a portrait silhouette filling the box.
     Portrait,
@@ -1415,15 +1521,14 @@ pub enum Emblem {
 /// How a live slot's field takes typed input.
 ///
 /// The traces draw every field at rest with a mock in it -- neomil's
-/// `**********  __`, entropism's ten thin asterisks -- or with
+/// ten asterisks and a separate caret, entropism's ten thin asterisks -- or with
 /// nothing but a cursor (kitsch's mint block, neokitsch's bare
 /// chocolate well). That rest run is `rest`, exactly as transcribed,
 /// and it is what the screen draws until somebody touches the
 /// keyboard; the login goldens hold because of it. Once awake, the
-/// field shows one `mask` per typed character followed by `tail`:
-/// neomil's mock leaves two slots open after its ten stars, so its
-/// tail is `"  __"` and four typed characters read `****  __`; the
-/// other three tails are empty. The typed run is drawn where `rest`
+/// field shows one `mask` per typed character followed by an optional
+/// text `tail`. Measured caret geometry belongs to the slot's caret
+/// plate rather than a font's underscore. The typed run is drawn where `rest`
 /// is drawn, in `rest`'s face and ink, so `rest` doubles as the
 /// field's typography -- which is why kitsch and neokitsch carry a
 /// `rest` with no text: the trace shows an empty well, and the
@@ -1456,20 +1561,22 @@ pub struct Entry {
 /// What a slot's caret does while a run is typed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Caret {
-    /// No separate caret plate advances. Neomil's caret is the tail of
-    /// its text run; neokitsch has no visible caret.
+    /// No separate caret plate advances; neokitsch has no visible caret.
     Fixed,
     /// Follows the run: drawn where the table puts it, moved right by
     /// the width of the masks typed so far. Entropism's underline and
     /// kitsch's block both stand at the head of the field in the trace,
     /// which is where a run of nothing ends.
     Trails,
+    /// Follows both the initial fixture's masks and the typed run.
+    /// The plate's x is the position for an empty field.
+    AfterMasks,
 }
 
 /// The thing a login's `#caret-blink` turns on and off. The traces
 /// disagree on what their caret *is*: kitsch's block and entropism's
-/// underline are the slot's caret plate, neomil's is the `__` that
-/// ends its masked run -- the tail -- and neokitsch draws none.
+/// underline and neomil's trailing rule are the slot's caret plate;
+/// neokitsch draws none. Text tails remain supported for other designs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Blink {
     /// Nothing blinks: the trace has no `#caret-blink`.
@@ -1492,14 +1599,23 @@ pub enum Blink {
 pub struct Slot {
     /// The card behind everything, where the era draws one.
     pub body: Option<Plate>,
+    /// An alternate body above source-only backdrop materials, normally
+    /// retaining just the frame. Custom palettes keep `body` unchanged.
+    pub reference_body: Option<Plate>,
     /// The darker lower section neomil's unselected cards carry.
     pub foot: Option<Plate>,
-    /// The dark notch cut into a card's leading edge, and the rail
-    /// beside it.
-    pub notch: Option<Plot>,
+    /// The dark notch cut into a card's leading edge. Its contour and
+    /// the separate rail are source data, independent of the emblem.
+    pub notch: Option<Plate>,
+    pub notch_rail: Option<Plate>,
     /// The identity box: an avatar, a chip.
     pub mark: Option<Plate>,
+    /// Optional tab drawn behind the identity box.
+    pub mark_tab: Option<Plate>,
     pub emblem: Emblem,
+    /// Measured artwork in absolute design coordinates. A nonempty
+    /// list replaces the built-in emblem inside the identity box.
+    pub emblem_art: &'static [Plate],
     pub name: Option<Legend>,
     /// The label over the field, where the era sets one. It is also
     /// where the screen says how a sign-in went: [`Entry::busy`] and
@@ -1512,7 +1628,7 @@ pub struct Slot {
     pub entry: Option<Entry>,
     /// The insertion mark: entropism's underline beneath the first pair
     /// of masked characters or kitsch's block in the field. Neomil's
-    /// blinking tail is text; its static button mark is in `action_marks`.
+    /// trailing rule is separate from its static button `action_marks`.
     pub caret: Option<Plate>,
     /// The control that commits, or the bar that says you may not.
     pub action: Option<Plate>,
@@ -1529,10 +1645,14 @@ pub struct Slot {
 impl Slot {
     pub const EMPTY: Slot = Slot {
         body: None,
+        reference_body: None,
         foot: None,
         notch: None,
+        notch_rail: None,
         mark: None,
+        mark_tab: None,
         emblem: Emblem::None,
+        emblem_art: &[],
         name: None,
         prompt: None,
         field: None,
@@ -1567,11 +1687,12 @@ pub enum Masthead {
     /// Neomil: the dossier block -- a customer badge at the left, a
     /// protocol barcode and code tape in the middle, four security
     /// badges at the right, all over a full-width hairline rule. The
-    /// badge outline and the barcode dashes are constants of the
-    /// drawing and live in the screen; where the badges sit, and which
-    /// of them is filled, is measured and lives here.
+    /// badge, barcode and tape geometry is measured in the era table.
+    /// The screen only controls their drawing order.
     Dossier {
         badges: &'static [Plate],
+        /// Protocol bars, code tape and its printed marks.
+        art: &'static [Plate],
         rule: Plate,
         labels: &'static [Legend],
     },
@@ -1582,6 +1703,8 @@ pub enum Masthead {
     Logotype {
         cell: Plate,
         divider: f32,
+        /// Era-owned vector lettering, independent of caption fonts.
+        art: &'static [Plate],
         labels: &'static [Legend],
     },
 }
@@ -1595,11 +1718,11 @@ pub enum Fixture {
     /// Entropism. The emptiness is the design.
     None,
     /// Neomil: a numbered chip and rotated micro-text down each margin.
-    /// The chip is a fixed cluster -- two dashes, a dot and a filled
-    /// square -- so the screen draws it; where the squares sit is
-    /// measured and lives here.
+    /// Square positions and their surrounding printed marks are measured
+    /// independently; moving a dash must not move the numbered square.
     Margins {
         chips: &'static [Plot],
+        marks: &'static [Plate],
         labels: &'static [Legend],
     },
     /// Kitsch: the full-height bracket, the filled lobe outside its
@@ -1643,6 +1766,12 @@ pub enum Colophon {
 /// The era's access screen, measured off `docs/<era>/login-trace.svg`.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Access {
+    /// Bright printing sampled on this screen, for an unchanged reference
+    /// palette. Custom palettes retain their foreground role.
+    pub reference_fg: Option<Color>,
+    /// Complete backdrop with measured card materials. This uses the
+    /// same source-palette condition as reference printing and body plates.
+    pub reference_backdrop: Option<&'static [Prim]>,
     /// The ground this screen's own trace draws, as the leading
     /// [`Prim::Soft`] group(s) a store or dashboard table would open
     /// with, composited under the art by `scene::Backdrop` -- what
@@ -2028,6 +2157,15 @@ pub struct MailEnvelope {
     pub open: &'static [Piece],
 }
 
+/// Inks printed over one era's selected mailbox surface. When absent,
+/// marks on that fill use `MailList::selected_ink` as before.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct MailSelectedPrinting {
+    pub title: Ink,
+    pub sender: Ink,
+    pub envelope: Ink,
+}
+
 /// A measured subject/sender pair for one message row.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MailRowType {
@@ -2056,6 +2194,8 @@ pub struct MailList {
     /// Optional measured typography per row; missing entries use the
     /// common title/from settings below.
     pub row_type: &'static [MailRowType],
+    /// Optional typography on the selected fill, independent of message index.
+    pub selected_row_type: Option<MailRowType>,
     pub selected: usize,
     pub decor: RowDecor,
     pub row_fill: Option<Ink>,
@@ -2098,6 +2238,9 @@ pub struct MailList {
     /// The envelope glyph: left edge, offset down the row, width.
     pub glyph_x: f32,
     pub glyph_dy: f32,
+    /// Per-row extra vertical displacement of the glyph only. Missing
+    /// entries mean zero; text, rules and hit regions keep their layout.
+    pub glyph_offsets: &'static [f32],
     pub glyph_w: f32,
     pub envelope: Option<MailEnvelope>,
     pub text_x: f32,
@@ -2107,9 +2250,12 @@ pub struct MailList {
     /// Resting unselected subject/glyph ink. Selection and transient
     /// printing overrides take precedence.
     pub title_ink: Ink,
-    /// Printing on the selected fill. Transient printing overrides
+    /// Default printing on the selected fill. Transient printing overrides
     /// still win; a sender outside the fill keeps `Ink::Select`.
     pub selected_ink: Ink,
+    /// Optional separate inks on the selected fill. A sender outside that
+    /// fill still uses `Ink::Select`; transient overrides still win.
+    pub selected_printing: Option<MailSelectedPrinting>,
     pub from_dy: f32,
     pub from_size: f32,
     /// Resting unselected sender ink, below transient sender/printing
@@ -2138,6 +2284,11 @@ pub struct MailList {
 }
 
 impl MailList {
+    pub fn row_type_at(&self, row: usize, selected: bool) -> Option<&MailRowType> {
+        if selected { self.selected_row_type.as_ref().or_else(|| self.row_type.get(row)) }
+        else { self.row_type.get(row) }
+    }
+
     pub fn row_fill_at(&self, row: usize) -> Option<Ink> {
         self.row_fills.get(row).copied().or(self.row_fill)
     }
@@ -2185,6 +2336,10 @@ pub struct MailPanel {
     /// Baseline-to-baseline within a paragraph, and between them.
     pub line: f32,
     pub para: f32,
+    /// Optional SVG baselines for each paragraph's first line. Missing
+    /// entries use the common line/paragraph pitch, so existing layouts
+    /// retain their positions.
+    pub paragraph_baselines: &'static [f32],
     /// The body copy: paragraphs of lines, each line exactly as the
     /// trace sets it, hyphenated breaks ("incidi-" / "dunt") included.
     /// The traces break the same lorem four different ways -- two of
@@ -2242,6 +2397,9 @@ pub struct MailBadges {
     pub stroke: Ink,
     /// Label position, relative to the badge's top-left.
     pub label: Run,
+    /// Optional label geometry for each badge, relative to its top-left.
+    /// Missing entries use `label`; the words still come from `labels`.
+    pub label_runs: &'static [Run],
     /// Neomil heads each badge with a LEVEL caption.
     pub caption: Option<Run>,
     pub caption_text: &'static str,

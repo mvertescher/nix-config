@@ -24,12 +24,12 @@
           segment (the focused window) and a right group (tray, modules,
           clock). Cells no longer float with gaps between them; they are
           segments of one frame, like RIPPERDOC / STORE ACCESS SCREEN / FLAIR.
-       2. STROKE 2px, SQUARE. mailbox-trace.svg's header measures the designed
-          stroke of every outlined frame at 2px (#5e8268 mean, drawn there as
-          #709174 inside a photographic halo). Only the 2px stroke is drawn
-          here — no halo, no undershoot: README.md's "no glow" rule for the
-          implementation. Stroke ink is OUTLINE #5d7752, the palette const
-          nearest the measured mean. Frame and dividers sit on integer
+       2. STROKE 2px, SQUARE. mailbox-trace.svg draws its rescaled
+          header at 2px #709174; the hub, login and store draw their native
+          primary frames at 1.25px. The bar chooses 2px chrome. The dark
+          ring on mailbox's rescale is a Lanczos negative lobe, not a
+          designed shadow; the bar draws no ring. Stroke ink is the accepted
+          OUTLINE #8fba97 role. Frame and dividers sit on integer
           coordinates so the 2px lines rasterise crisp. Nothing is rounded or
           chamfered anywhere (all four traces: every corner is a right angle).
        3. TEXT INSET 12px. The header strings start 12px inside their segment
@@ -43,9 +43,9 @@
           x 1091..1279) filled solid with dark ink. The workspace run is that
           row with six equal segments and the active one (3) filled; the
           clock is REPORT SPAM — the filled last segment of the right run.
-          Fills are inset inside the stroke, as the trace draws them
-          (fill rect x 1091 w 188 under the 2px chrome; list selection
-          x 85..451 inside the frame at 84/451).
+          The bar insets fills 1px by design. The trace's REPORT SPAM
+          fill is x1091..1279 under 2px chrome; the list selection runs
+          x85..451 in the frame at x84..451, flush at the right edge.
        5. NUMBERED SQUARES, ONE FILLED = the T1..T4 badges and the boxed
           letters. mailbox-trace C: 69x69 squares at x 1341/1418, y 227/305,
           T2 filled; the [A] [B] [C] boxes are 26x26 (y 98..124). The
@@ -71,11 +71,11 @@
           README.md's "top-bar text, secondary" and the micro-caption ink of
           mailbox-trace (x 102, y 145/155, #709174 ≈ MID). Legible at 14px on
           the ground, unlike the DIM label it replaces.
-       9. DISABLED = OUTLINE ink. Nothing in the material is disabled; the
-          quietest text on any screen is the dashboard tile caption strip
-          (dashboard-trace #caption, bars in #59755b ≈ OUTLINE #5d7752), so a
-          disabled menu row is set in OUTLINE. DIM #3d4d38 is the faint-rule
-          tone and is not legible at 14px.
+       9. DISABLED = MID ink. Nothing in the material is disabled. The
+          bar uses MID #728f76 for a legible but quiet menu label, the
+          same role as the current BarMenu. This is an original inference.
+          OUTLINE #8fba97 is now too bright for that role; DIM #3d4d38
+          is a faint-rule tone and is not legible at 14px.
       10. TRAY MENU = the category nav / the mail list. store-trace A: an
           outlined frame x 112..330, y 301..740, rows on a 61px pitch
           separated by dividers, SMG (y 358..421) filled solid sage — the
@@ -94,15 +94,15 @@
 
        Not borrowed, deliberately: the header strings' 1px letter-spacing
        (the bar's labels are mixed-case system strings and iced 0.13 exposes
-       no tracking); the photographic edge halo; the trace's radial ground
+       no tracking); the rescale edge residue; the trace's radial ground
        lift (the golden ground is flat BG). No ornament is added — this is
        the "necessity over style" era; the chrome is the ornament.
 
        Palette: only src/eras/entropism.rs consts — BG #110c07, SAGE_SOLID
-       #9cb795, SAGE_TEXT #94bb94, MID #728f76, OUTLINE #5d7752, ON_SOLID
+       #a6d3a7, SAGE_TEXT #94bb94, MID #728f76, OUTLINE #8fba97, ON_SOLID
        #1f2a1c. DIM #3d4d38 is no longer used on this surface.
 
-       Golden geometry kept: 1600x220; strip y 3..28 (bar height 31); tray
+       Historical golden geometry: 1600x220; strip y 3..28 (bar height 31); tray
        menu beneath, right edge x 1480; modules and order as bar.rs composes
        them from the example's sample readings. The diamonds stand in for
        StatusNotifierItem pixmaps, which the app draws as supplied (the
@@ -125,12 +125,12 @@
   <g font-size="14">
     <!-- fills first, inset inside the chrome -->
     <rect x="8"    y="5" width="63" height="21" fill="#728f76"/>   <!-- host tape: the band, MID -->
-    <rect x="129"  y="5" width="26" height="21" fill="#9cb795"/>   <!-- workspace 3, active -->
-    <rect x="1529" y="5" width="63" height="21" fill="#9cb795"/>   <!-- clock: the filled last segment -->
+    <rect x="129"  y="5" width="26" height="21" fill="#a6d3a7"/>   <!-- workspace 3, active -->
+    <rect x="1529" y="5" width="63" height="21" fill="#a6d3a7"/>   <!-- clock: the filled last segment -->
 
     <!-- chrome: the strip and its dividers, 2px OUTLINE, square -->
-    <rect x="7" y="4" width="1586" height="23" fill="none" stroke="#5d7752" stroke-width="2"/>
-    <path fill="none" stroke="#5d7752" stroke-width="2"
+    <rect x="7" y="4" width="1586" height="23" fill="none" stroke="#8fba97" stroke-width="2"/>
+    <path fill="none" stroke="#8fba97" stroke-width="2"
           d="M 72,4 V 27 M 100,4 V 27 M 128,4 V 27 M 156,4 V 27 M 184,4 V 27 M 212,4 V 27 M 240,4 V 27
              M 784,4 V 27 M 821,4 V 27 M 888,4 V 27 M 945,4 V 27 M 1034,4 V 27 M 1172,4 V 27
              M 1261,4 V 27 M 1342,4 V 27 M 1423,4 V 27 M 1528,4 V 27"/>
@@ -173,29 +173,29 @@
 
   <!-- Devices submenu: Mount / Eject -->
   <g font-size="14">
-    <rect x="1141" y="31" width="140" height="52" fill="#110c07" stroke="#5d7752" stroke-width="2"/>
-    <path d="M 1142,57 H 1280" fill="none" stroke="#5d7752" stroke-width="2"/>
+    <rect x="1141" y="31" width="140" height="52" fill="#110c07" stroke="#8fba97" stroke-width="2"/>
+    <path d="M 1142,57 H 1280" fill="none" stroke="#8fba97" stroke-width="2"/>
     <path d="M 1153 44 L 1161 36 L 1169 44 L 1161 52 Z" fill="#94bb94"/>
     <text x="1177" y="49" fill="#94bb94">Mount</text>
     <text x="1177" y="75" fill="#94bb94">Eject</text>
   </g>
 
-  <!-- root menu: Devices (open parent, solid) / Disconnect (disabled, OUTLINE ink)
+  <!-- root menu: Devices (open parent, solid) / Disconnect (disabled, MID ink)
        / empty separator cell / Enable networking (highlighted, solid) / Quit -->
   <g font-size="14">
-    <rect x="1281" y="31" width="199" height="114" fill="#110c07" stroke="#5d7752" stroke-width="2"/>
+    <rect x="1281" y="31" width="199" height="114" fill="#110c07" stroke="#8fba97" stroke-width="2"/>
     <!-- solid rows, inset inside the chrome -->
-    <rect x="1282" y="32" width="197" height="24" fill="#9cb795"/>
-    <rect x="1282" y="94" width="197" height="24" fill="#9cb795"/>
+    <rect x="1282" y="32" width="197" height="24" fill="#a6d3a7"/>
+    <rect x="1282" y="94" width="197" height="24" fill="#a6d3a7"/>
     <!-- row dividers: after Devices, after Disconnect, after the empty cell, after Enable networking -->
     <path d="M 1282,57 H 1479 M 1282,83 H 1479 M 1282,93 H 1479 M 1282,119 H 1479"
-          fill="none" stroke="#5d7752" stroke-width="2"/>
+          fill="none" stroke="#8fba97" stroke-width="2"/>
 
     <path d="M 1293 44 L 1301 36 L 1309 44 L 1301 52 Z" fill="#1f2a1c"/>
     <text x="1317" y="49" fill="#1f2a1c">Devices</text>
     <text x="1468" y="49" text-anchor="end" fill="#1f2a1c">&lt;</text>
 
-    <text x="1317" y="75" fill="#5d7752">Disconnect</text>
+    <text x="1317" y="75" fill="#728f76">Disconnect</text>
 
     <text x="1317" y="111" fill="#1f2a1c">Enable networking</text>
 
@@ -204,13 +204,15 @@
   </g>
 
   <!-- IMPLEMENTATION DELTA (for bar.rs / Style) — every change from the
-       current bar.rs rendering, in the order a coding model would apply it.
-       The SVG above is the target; bar.rs follows it.
+       historical bar.rs rendering when this drawing was made. The SVG
+       is an original design target, and several style fields have since
+       changed. Check current Bar configuration before treating a line
+       below as open work.
 
        CORNERS   Square everywhere (Corner::Square already). Nothing else.
 
        STRIP     The bar is one outlined frame, not a row of outlined cells.
-                 Outer frame 2px OUTLINE (#5d7752) at x 6..1594, y 3..28 (the
+                 Outer frame 2px OUTLINE (#8fba97) at x 6..1594, y 3..28 (the
                  bar's [3,6] padding, stroke inside it). Cells have NO
                  individual outline and NO spacing (gap 0 instead of
                  metrics.gap*0.4); adjacent cells are separated by one 2px
@@ -221,10 +223,9 @@
                  that close each run (x 240 and x 784 in the golden layout).
 
        STROKE    2px for the bar frame and every divider and menu panel
-                 stroke (mailbox-trace measures the designed stroke at 2px
-                 on all frames). Either raise entropism metrics.stroke to
-                 2.0 (the screens' traces measure the same 2px) or give
-                 Bar/menu their own stroke; the bar must not draw 1px here.
+                 stroke. This is the bar design choice and the current
+                 Bar.stroke setting, not a universal screen measurement.
+                 Login/hub/store traces use 1.25px; mailbox uses 2px.
 
        INSET     Text inset 12px from a segment's divider (cell padding
                  [2,12], width_for = chars x 0.58em + 24). Workspace cells
@@ -232,7 +233,7 @@
                  9 + icon + 9 wide (icon_size unchanged: 19px).
 
        FILLS     idle: none (ground BG shows through the frame).
-                 active/selected (workspace, clock): SAGE_SOLID #9cb795,
+                 active/selected (workspace, clock): SAGE_SOLID #a6d3a7,
                    inset 1px inside the stroke (x from divider+1 to next
                    divider-1, y 5..26), ink ON_SOLID #1f2a1c.
                  tape (host): MID #728f76 fill, same inset, ink ON_SOLID
@@ -243,7 +244,9 @@
                    "NET (!)" for the offline label, dashes kept); an attention icon cell draws "(!)" in body
                    ink 6px after the pixmap. palette.alert is therefore
                    unused by the bar in this era; leave it MID for screens.
-                 disabled (menu): ink OUTLINE #5d7752 (was DIM #3d4d38).
+                 disabled (menu): ink MID #728f76, matching current
+                   BarMenu. This quiet state is inferred; the source
+                   contains no disabled control.
                  window label: ink MID #728f76 (was DIM), left-aligned 12px
                    after the left run's closing divider, not centred.
 
@@ -272,5 +275,5 @@
                  coincident with the parent panel's left edge, top aligned
                  to the parent row. Panel widths unchanged (199 / 140).
 
-       ORNAMENT  None added. No glow, no halo, no gradient, no tracking. -->
+       ORNAMENT  None added. No designed glow, no dark ring, no tracking. -->
 </svg>

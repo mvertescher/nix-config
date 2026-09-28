@@ -88,11 +88,19 @@
          ground #0d0d0c (46%) #9e4458 (15%) #211f1c (13%) #7a3346 (10%)
                 #4f2630 (7%) -->
   <defs>
-    <radialGradient id="bloom" cx="0.52" cy="-0.05" r="0.85">
-      <stop offset="0"    stop-color="#a84a5e"/>
-      <stop offset="0.45" stop-color="#7a3346"/>
-      <stop offset="0.75" stop-color="#3a1c24"/>
-      <stop offset="1"    stop-color="#0d0d0c"/>
+    <radialGradient id="bloom" cx="0.46875" cy="-0.356297" r="1">
+      <stop offset="0" stop-color="#ad465f"/>
+      <stop offset="0.2" stop-color="#ad465f"/>
+      <stop offset="0.4" stop-color="#ae4c60"/>
+      <stop offset="0.6" stop-color="#8c334d"/>
+      <stop offset="0.8" stop-color="#16100f"/>
+      <stop offset="1" stop-color="#0c0c0b"/>
+    </radialGradient>
+    <radialGradient id="leftwash" cx="0" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#1f211c"/>
+      <stop offset="0.4" stop-color="#202620" stop-opacity="0.85"/>
+      <stop offset="0.7" stop-color="#15281e" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#26884f" stop-opacity="0"/>
     </radialGradient>
     <!-- one fan card, centred on its own origin -->
     <rect id="card"  x="-81" y="-25" width="162" height="50" rx="8"/>
@@ -160,8 +168,9 @@
     </clipPath>
   </defs>
 
-  <rect width="1600" height="900" fill="#0d0d0c"/>
-  <rect width="1600" height="620" fill="url(#bloom)"/>
+  <rect width="1600" height="900" fill="#0c0c0b"/>
+  <rect width="1600" height="929" fill="url(#bloom)"/>
+  <rect x="0" y="-7" width="1070" height="800" fill="url(#leftwash)"/>
 
   <!-- ==== header: boxed letters, annotations, labels ==== -->
   <g font-family="Rajdhani" fill="#7fd4cc">

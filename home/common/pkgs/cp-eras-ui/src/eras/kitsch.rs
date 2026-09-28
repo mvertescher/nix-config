@@ -30,6 +30,7 @@ use crate::style::{
     PanelEcho, PlateStates, Selection, Style, Ticket, WindowLabel,
 };
 use crate::widgets::surface::{Corners, Cut};
+use super::magnum_art::{RIFLE, RIFLE_BRIGHT};
 // --- login ---
 use crate::style::{
     Access, Blink, Caret, Colophon, Emblem, Entry, Fixture, Legend, Masthead, Plate, Plot, Slot,
@@ -415,6 +416,8 @@ pub fn style() -> Style {
         // --- dashboard ---
         dashboard: DASHBOARD,
         dashboard_reference_fg: None,
+        store_reference_fg: None,
+        store_reference: None,
         // EVENTS, the fifth solid card in `dashboard-trace.svg` (group at
         // `translate(731 586) rotate(-30)`, the one `<use href="#card"
         // fill="#f5cb23" stroke="#fce89a">` under the comment "the
@@ -492,36 +495,27 @@ const NOTE_1: &str = "ACCESS MANAGER WAS DEVE-";
 const NOTE_2: &str = "LOPED BY SEOCHO. SERVING";
 const NOTE_3: &str = "CUSTOMERS SINCE 2006.";
 
-/// The ground as the trace paints it (:148-150): the page `#0a0907`;
-/// `#bloom`, `cx 0.5 cy -0.25 r 0.95` over the 1600x620 rect -> centre
-/// (800,-155), radii (1520,589), the same ellipse as the store's
-/// `ROSE` at this photo's own hex, fading to this page; and
-/// `#leftwash`, `cx 0 cy 0.5 r 0.5` over the 600x780 rect at (0,60) ->
-/// centre (0,450), radii (300,390), the store `MARGIN`'s alphas over
-/// `#262a24` rather than its `#2a2e2a`. The trace's clip rects are
-/// not carried: both ellipses end inside them.
-///
-/// Why the screen does not take `Ground::Bloom`: the era's declared
-/// bloom is a disc out of the top *right* (`x: 0.82`), sampled off
-/// its store sheet, where this photo blooms from the top *centre* and
-/// reaches `#a34e60` at y 10.
-const LOGIN_PAGE: iced::Color = rgb(0x0a0907);
+/// Native #50 retains the three-screen rose footprint, but its lower
+/// page and the left cast are different. See docs/kitsch/ground-fit.md.
+const LOGIN_PAGE: iced::Color = rgb(0x050604);
 const LOGIN_BLOOM: &[(f32, iced::Color)] = &[
-    (0.00, rgb(0xa84f62)),
-    (0.35, rgb(0x8e3b52)),
-    (0.60, rgb(0x5a2236)),
-    (0.85, rgb(0x1e0f14)),
+    (0.00, rgb(0xa4455e)),
+    (0.20, rgb(0xa4455e)),
+    (0.40, rgb(0xa34b5d)),
+    (0.60, rgb(0x85354c)),
+    (0.80, rgb(0x1a1215)),
     (1.00, LOGIN_PAGE),
 ];
 const LOGIN_WASH: &[(f32, iced::Color)] = &[
-    (0.0, rgb(0x262a24)),
-    (0.6, iced::Color { a: 0.5, ..rgb(0x262a24) }),
-    (1.0, iced::Color { a: 0.0, ..rgb(0x262a24) }),
+    (0.0, rgb(0x21231f)),
+    (0.4, iced::Color { a: 0.85, ..rgb(0x202621) }),
+    (0.7, iced::Color { a: 0.45, ..rgb(0x1f342a) }),
+    (1.0, iced::Color { a: 0.0, ..rgb(0x5c8974) }),
 ];
 const LOGIN_GROUND: &[Prim] = &[
     fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(LOGIN_PAGE)),
-    Prim::Lobe { x: 800.0, y: -155.0, rx: 1520.0, ry: 589.0, stops: LOGIN_BLOOM },
-    Prim::Lobe { x: 0.0, y: 450.0, rx: 300.0, ry: 390.0, stops: LOGIN_WASH },
+    Prim::Lobe { x: 750.0, y: -331.0, rx: 1600.0, ry: 929.0, stops: LOGIN_BLOOM },
+    Prim::Lobe { x: 0.0, y: 434.0, rx: 700.0, ry: 433.0, stops: LOGIN_WASH },
 ];
 const LOGIN_BACKDROP: &[Prim] = &[Prim::Soft { prims: LOGIN_GROUND }];
 
@@ -590,9 +584,11 @@ const LOGIN_PROTECTED_3: &[Seg] = &[
 ];
 
 pub const ACCESS: Access = Access {
+    reference_fg: None,
+    reference_backdrop: None,
     backdrop: LOGIN_BACKDROP,
     masthead: Masthead::Clock {
-        labels: &[Legend::new("10:20 PM", 779.17, 74.9, 21.75, Ink::Fixed(rgb(0xb4ece3)))],
+        labels: &[Legend::new("10:20 PM", 779.17, 74.9, 21.75, Ink::Fixed(rgb(0xb4ece3))).medium()],
     },
     slots: &[
         // Row 1, inside the bracket: the live one.
@@ -654,7 +650,7 @@ pub const ACCESS: Access = Access {
             ),
             action_label: Some(
                 Legend {
-                    weight: iced::font::Weight::Semibold,
+                    weight: iced::font::Weight::Medium,
                     ..Legend::new("ENTER", 510.625, 484.0, 12.7, Ink::Fixed(ON_LIT))
                         .centred()
                         .stretched(1.77)
@@ -811,7 +807,7 @@ pub const ACCESS: Access = Access {
 // row's body cuts a *diagonal* trailing corner on an era that rounds
 // everything else.
 use crate::style::{
-    Change, Frame, Mail, MailBadges, MailButtons, MailEnvelope, MailList, MailRowCoat, MailRowEcho, MailRowStates, MailMotion, MailPanel, MailPart,
+    Change, Frame, Mail, MailBadges, MailButtons, MailEnvelope, MailList, MailRowType, MailRowCoat, MailRowEcho, MailRowStates, MailMotion, MailPanel, MailPart,
     Mailbox, Motion, Note, Piece, RowDecor, Run, Trim, FromAt, BL, BR, TL, TR,
 };
 use iced::animation::Easing;
@@ -823,26 +819,12 @@ const fn text(x: f32, y: f32, size: f32, ink: Ink, s: &'static str) -> Piece {
     })
 }
 
-/// The page, `<rect fill="#0e0d0c">` (:145): a step darker in B than
-/// the store's `PAGE`, and what `#bloom` fades to.
-const MAIL_PAGE: iced::Color = rgb(0x0e0d0c);
-/// `#bloom` (:2-8): `cx=0.5 cy=-0.25 r=0.9` over the 1600x620 rect at
-/// :146, so centre (800,-155), rx 1440, ry 558 -- the store's `ROSE`
-/// stops, but a smaller radius and this page's black at the rim.
-const MAIL_ROSE: &[(f32, iced::Color)] = &[
-    (0.00, rgb(0xb05064)),
-    (0.35, rgb(0x933b53)),
-    (0.60, rgb(0x5c2236)),
-    (0.85, rgb(0x1e0f14)),
-    (1.00, MAIL_PAGE),
-];
-/// The ground, composited: page, bloom, and `#leftwash` (:9-13, :147),
-/// which is the store's `MARGIN` lobe to the number -- `cx=0 cy=0.5
-/// r=0.5` over the 600x780 rect at (0,60).
+/// Native #51's clear pixels agree with #49 and #52, so all three use
+/// the same broad page, rose, and left wash; see ground-fit.md.
 const MAIL_GROUND: &[Prim] = &[
-    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(MAIL_PAGE)),
-    Prim::Lobe { x: 800.0, y: -155.0, rx: 1440.0, ry: 558.0, stops: MAIL_ROSE },
-    Prim::Lobe { x: 0.0, y: 450.0, rx: 300.0, ry: 390.0, stops: MARGIN },
+    fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(PAGE)),
+    Prim::Lobe { x: 750.0, y: -331.0, rx: 1600.0, ry: 929.0, stops: ROSE },
+    Prim::Lobe { x: 0.0, y: 393.0, rx: 535.0, ry: 400.0, stops: MARGIN },
 ];
 const MAIL_BACKDROP: &[Prim] = &[Prim::Soft { prims: MAIL_GROUND }];
 
@@ -1036,21 +1018,26 @@ static MESSAGE_FLAG: [Piece; 3] = [
         width: 1.25,
         close: false,
     },
-    text(
-        578.0,
-        365.0,
-        6.0,
-        Ink::Select,
-        "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE",
-    ),
-    text(
-        578.0,
-        373.0,
-        6.0,
-        Ink::Select,
-        "ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.",
-    ),
+    Piece::Label(Note {
+        at: Run::new(578.4, 366.1, 8.0, Ink::Fixed(rgb(0xe6b522))).semibold().stretched(1.09),
+        text: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE",
+    }),
+    Piece::Label(Note {
+        at: Run::new(578.4, 374.0, 8.0, Ink::Fixed(rgb(0xe6b522))).semibold().stretched(1.09),
+        text: "ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.",
+    }),
 ];
+
+/// Dark selected printing uses a lighter sender face than bright idle printing.
+/// The selected template follows selection, including after changing messages.
+const MAIL_SELECTED_ROW_TYPE: MailRowType = MailRowType {
+    title: Run::new(220.0, 27.0, 18.0, Ink::Fg),
+    from: Run::new(220.0, 48.0, 13.5, Ink::Mid).semibold(),
+};
+static MAIL_ROW_TYPE: [MailRowType; 5] = [MailRowType {
+    from: Run::new(220.0, 48.0, 13.5, Ink::Mid).bold(),
+    ..MAIL_SELECTED_ROW_TYPE
+}; 5];
 
 /// `#message-extrude` (trace lines 164-170): the message -- its tab
 /// with the title on it, its flag, the body outline and paragraphs,
@@ -1205,17 +1192,20 @@ pub fn mailbox() -> Mailbox {
             envelope: Some(MailEnvelope { normal: MAIL_CLOSED_ENVELOPE, open: MAIL_OPEN_ENVELOPE }),
             glyph_x: 165.0,
             glyph_dy: 12.0,
+            glyph_offsets: &[],
             glyph_w: 20.0,
             text_x: 220.0,
             title_dy: 27.0,
             title_size: 18.0,
-            row_type: &[],
+            row_type: &MAIL_ROW_TYPE,
+            selected_row_type: Some(MAIL_SELECTED_ROW_TYPE),
             title_bold: false,
             title_ink: Ink::Fg,
             selected_ink: Ink::OnSelect,
-            from_dy: 49.0,
-            from_size: 11.0,
-            from_ink: Ink::Mid,
+            selected_printing: None,
+            from_dy: 48.0,
+            from_size: 13.5,
+            from_ink: Ink::Fixed(rgb(0x87f9d8)),
             from_at: FromAt::Beneath,
             from_prefix: "from: ",
             title_upper: true,
@@ -1248,6 +1238,7 @@ pub fn mailbox() -> Mailbox {
             line: 19.0,
             para: 38.0,
             paragraphs: &PARAGRAPHS,
+            paragraph_baselines: &[],
         },
         buttons: MailButtons {
             // four chevron tabs stacked down the right, where the other
@@ -1280,6 +1271,7 @@ pub fn mailbox() -> Mailbox {
             fill: None,
             stroke: Ink::Fg,
             label: Run::new(27.5, 24.5, 23.0, Ink::Fg).bold().centered(),
+            label_runs: &[],
             caption: None,
             caption_text: "",
             labels: &LEVELS,
@@ -1326,43 +1318,38 @@ pub const BAND_RULE: iced::Color = rgb(0xc9931a);
 /// The band, and the dark ink its marks and tag are set in.
 pub const BAND: iced::Color = rgb(0xfec32f);
 pub const ON_BAND: iced::Color = rgb(0x5a3a08);
+/// The photographed warning print is lighter than the four main symbols.
+pub const BAND_MICRO_INK: iced::Color = rgb(0xb38a39);
 /// The solid teal the nav bracket ends in.
 pub const WAVE_INK: iced::Color = rgb(0x1bb6a3);
 /// The card's compliance micro-text, the footnote bodies, the marker
 /// boxes and the bright line centred at the foot.
 pub const MICRO: iced::Color = rgb(0x5fc9b5);
+/// The two CC35 lines under a card, measured separately from footnotes.
+pub const CARD_COMPLIANCE: iced::Color = rgb(0x65e5c8);
+pub const GROWN_COMPLIANCE: iced::Color = rgb(0xe9a50d);
 pub const MARK: iced::Color = rgb(0x7fd4cc);
 pub const FOOT_MICRO: iced::Color = rgb(0x82f0d3);
 /// The logotype's heavy mint.
 pub const LOGO: iced::Color = rgb(0x8ff2dc);
-/// The rose bloom over the top of the page, and the grey-green left
-/// margin under it: the trace's two `radialGradient`s, as their own
-/// stop tables.
-///
-/// Both are bounding-box radials and so *elliptical*. The bloom is
-/// `cx=0.5 cy=-0.25 r=0.95` over a 1600x620 rect, which is rx 1520 by
-/// ry 589 -- a 2.6:1 lobe centred 155px above the page; getting the
-/// aspect wrong puts the haze 300px down. The left wash is `cx=0
-/// cy=0.5 r=0.5` over a 600x780 rect at x 0, y 60, and its stops are
-/// *opacities* over `#2a2e2a`, composited here onto the page ground the
-/// bloom has already faded to at that distance.
-pub const PAGE: iced::Color = rgb(0x0e0e0d);
+/// Measured shared ground for native #49/#51/#52. The rose ellipse is
+/// centred at (750,-331) with radii (1600,929); the edge wash is centred
+/// at (0,393) with radii (535,400). See docs/kitsch/ground-fit.md.
+pub const PAGE: iced::Color = rgb(0x0c0c0b);
 
 const ROSE: &[(f32, iced::Color)] = &[
-    (0.00, rgb(0xb05064)),
-    (0.35, rgb(0x933b53)),
-    (0.60, rgb(0x5c2236)),
-    (0.85, rgb(0x1e0f14)),
+    (0.00, rgb(0xad465f)),
+    (0.20, rgb(0xad465f)),
+    (0.40, rgb(0xae4c60)),
+    (0.60, rgb(0x8c334d)),
+    (0.80, rgb(0x16100f)),
     (1.00, PAGE),
 ];
-/// The left margin's stops are *opacities* over `#2a2e2a`, not
-/// colours, so they are spelled with their alpha: painted opaque they
-/// black out the rose bloom they are supposed to sit on.
-const MARGIN_TONE: (f32, f32, f32) = (42.0 / 255.0, 46.0 / 255.0, 42.0 / 255.0);
 const MARGIN: &[(f32, iced::Color)] = &[
-    (0.00, iced::Color { r: MARGIN_TONE.0, g: MARGIN_TONE.1, b: MARGIN_TONE.2, a: 1.0 }),
-    (0.60, iced::Color { r: MARGIN_TONE.0, g: MARGIN_TONE.1, b: MARGIN_TONE.2, a: 0.5 }),
-    (1.00, iced::Color { r: MARGIN_TONE.0, g: MARGIN_TONE.1, b: MARGIN_TONE.2, a: 0.0 }),
+    (0.00, rgb(0x1f211c)),
+    (0.40, iced::Color { a: 0.85, ..rgb(0x202620) }),
+    (0.70, iced::Color { a: 0.45, ..rgb(0x15281e) }),
+    (1.00, iced::Color { a: 0.0, ..rgb(0x26884f) }),
 ];
 
 /// The backdrop. Ground rather than ink -- but ground the extractor's
@@ -1375,8 +1362,8 @@ const MARGIN: &[(f32, iced::Color)] = &[
 /// trace's sRGB one.
 const BACKDROP: &[Prim] = &[
     fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(PAGE)),
-    Prim::Lobe { x: 800.0, y: -155.0, rx: 1520.0, ry: 589.0, stops: ROSE },
-    Prim::Lobe { x: 0.0, y: 450.0, rx: 300.0, ry: 390.0, stops: MARGIN },
+    Prim::Lobe { x: 750.0, y: -331.0, rx: 1600.0, ry: 929.0, stops: ROSE },
+    Prim::Lobe { x: 0.0, y: 393.0, rx: 535.0, ry: 400.0, stops: MARGIN },
 ];
 
 /// The nav chevron, 216x39 at its own origin: the left edge rises to a
@@ -1452,13 +1439,15 @@ const TEE: &[Seg] = &[
     Seg::Line(280.0, 99.0),
 ];
 
-/// The card outline: an r6 top-left, a 24px top-right chamfer, down to
-/// the socket row's foot at y 320.
+/// The card outline: an r6 top-left, a 24px top-right chamfer, and
+/// source-measured 10.5px quadratic lower corners at the socket row's foot.
 const CARD_EDGE: &[Seg] = &[
     Seg::Line(237.0, 0.0),
     Seg::Line(261.0, 24.0),
-    Seg::Line(261.0, 320.0),
-    Seg::Line(0.0, 320.0),
+    Seg::Line(261.0, 310.0),
+    Seg::Quad { cx: 261.0, cy: 320.5, x: 250.5, y: 320.5 },
+    Seg::Line(10.5, 320.5),
+    Seg::Quad { cx: 0.0, cy: 320.5, x: 0.0, y: 310.0 },
     Seg::Line(0.0, 6.0),
     Seg::Quad { cx: 0.0, cy: 0.0, x: 6.0, y: 0.0 },
 ];
@@ -1488,109 +1477,129 @@ const MINT_SHAPE: &[Seg] = &[
     Seg::Quad { cx: 4.0, cy: 232.0, x: 8.0, y: 232.0 },
 ];
 
-/// The gun silhouette, card-local, with its three dark openings as
-/// even-odd subpaths: the ejection port, the magazine well and the
-/// trigger guard. Measured off the photo's mint mask.
-const GUN_BODY: &[Seg] = &[
-    Seg::Line(76.0, 131.0), Seg::Line(76.0, 133.7), Seg::Line(136.0, 133.7),
-    Seg::Line(137.7, 132.0), Seg::Line(146.0, 132.0), Seg::Line(169.3, 140.3),
-    Seg::Line(196.0, 145.8), Seg::Line(197.7, 148.7), Seg::Line(202.7, 149.5),
-    Seg::Line(205.2, 147.4), Seg::Line(235.2, 154.5), Seg::Line(235.2, 180.3),
-    Seg::Line(231.0, 179.9), Seg::Line(228.5, 182.0), Seg::Line(228.5, 157.4),
-    Seg::Line(223.5, 157.4), Seg::Line(223.5, 182.0), Seg::Line(221.0, 182.8),
-    Seg::Line(214.3, 180.8), Seg::Line(211.8, 171.6), Seg::Line(201.8, 159.1),
-    Seg::Line(184.3, 159.1), Seg::Line(183.5, 161.2), Seg::Line(180.2, 161.2),
-    Seg::Line(157.7, 170.8), Seg::Line(135.2, 170.3), Seg::Line(131.8, 172.4),
-    Seg::Line(121.0, 172.4), Seg::Line(116.8, 170.8), Seg::Line(115.2, 175.8),
-    Seg::Line(111.8, 176.2), Seg::Line(86.0, 176.2), Seg::Line(85.2, 173.2),
-    Seg::Line(59.3, 173.2), Seg::Line(56.8, 173.2), Seg::Line(56.0, 176.6),
-    Seg::Line(55.2, 175.3), Seg::Line(45.2, 175.3), Seg::Line(43.5, 172.0),
-    Seg::Line(38.5, 174.1), Seg::Line(36.8, 172.0), Seg::Line(36.8, 148.7),
-    Seg::Line(40.2, 144.5), Seg::Line(41.0, 130.8),
-    // the ejection port
-    Seg::Move(127.0, 144.5), Seg::Line(146.0, 144.5), Seg::Line(146.0, 146.0),
-    Seg::Line(148.0, 149.0), Seg::Line(147.0, 151.0), Seg::Line(135.0, 152.5),
-    Seg::Line(131.0, 150.0), Seg::Line(124.0, 149.0), Seg::Line(124.0, 146.5),
-    // the magazine well
-    Seg::Move(135.0, 152.5), Seg::Line(153.0, 152.5), Seg::Line(153.0, 167.0),
-    Seg::Line(135.0, 167.0),
-    // the trigger guard
-    Seg::Move(159.0, 147.0), Seg::Line(171.0, 147.0), Seg::Line(174.0, 150.0),
-    Seg::Line(174.0, 156.0), Seg::Line(170.0, 158.5), Seg::Line(164.0, 159.5),
-    Seg::Line(164.0, 152.0),
-];
+#[path = "kitsch_store_art.rs"]
+mod store_art;
 
-/// The gun's inner detail, drawn in the ground colour over the
-/// silhouette: the rail rule and its ticks, the panel lines, the 3x4
-/// grid, the magazine tubes and the row of squares along the foot.
-const GUN_DETAIL: &[Seg] = &[
-    Seg::Line(136.0, 137.0),
-    Seg::Move(50.0, 131.0), Seg::Line(50.0, 137.0),
-    Seg::Move(58.0, 131.0), Seg::Line(58.0, 137.0),
-    Seg::Move(66.0, 131.0), Seg::Line(66.0, 137.0),
-    Seg::Move(74.0, 131.0), Seg::Line(74.0, 137.0),
-    Seg::Move(61.0, 140.0), Seg::Line(61.0, 172.0),
-    Seg::Move(84.0, 140.0), Seg::Line(84.0, 172.0),
-    Seg::Move(66.0, 145.0), Seg::Line(88.0, 167.0),
-    Seg::Move(41.0, 147.0), Seg::Line(61.0, 147.0),
-    Seg::Move(88.0, 147.0), Seg::Line(118.0, 147.0),
-    Seg::Move(94.0, 152.0), Seg::Line(116.0, 152.0),
-    Seg::Move(94.0, 157.0), Seg::Line(116.0, 157.0),
-    Seg::Move(94.0, 162.0), Seg::Line(116.0, 162.0),
-    Seg::Move(94.0, 167.0), Seg::Line(116.0, 167.0),
-    Seg::Move(101.0, 152.0), Seg::Line(101.0, 167.0),
-    Seg::Move(109.0, 152.0), Seg::Line(109.0, 167.0),
-    Seg::Move(49.0, 149.0), Seg::Line(49.0, 172.0),
-    Seg::Move(37.0, 152.0), Seg::Line(49.0, 152.0),
-    Seg::Move(37.0, 158.0), Seg::Line(49.0, 158.0),
-    Seg::Move(37.0, 164.0), Seg::Line(49.0, 164.0),
-    Seg::Move(37.0, 170.0), Seg::Line(49.0, 170.0),
-    Seg::Move(59.0, 171.0), Seg::Line(83.0, 171.0),
-    Seg::Move(63.0, 171.0), Seg::Line(63.0, 175.0),
-    Seg::Move(67.0, 171.0), Seg::Line(67.0, 175.0),
-    Seg::Move(71.0, 171.0), Seg::Line(71.0, 175.0),
-    Seg::Move(75.0, 171.0), Seg::Line(75.0, 175.0),
-    Seg::Move(79.0, 171.0), Seg::Line(79.0, 175.0),
-    Seg::Move(150.0, 138.0), Seg::Line(190.0, 146.0),
-    Seg::Move(214.0, 166.0), Seg::Line(223.0, 166.0),
-    Seg::Move(228.5, 166.0), Seg::Line(235.0, 166.0),
+// The first two paths reuse the Entropism MAGNUM source geometry with
+// Kitsch's measured plain-card offset. A Kitsch-only dark mask restores
+// source rail, receiver and grip seams that this photograph prints more
+// sharply than the shared mint body.
+const GUN_PLAIN_BASE: &[Seg] = &store_art::translated(RIFLE, -2.0, 26.0);
+const GUN_PLAIN_BRIGHT: &[Seg] = &store_art::translated(RIFLE_BRIGHT, -2.0, 26.0);
+const GUN_PLAIN: &[Prim] = &[
+    Prim::Path { x: 235.833, y: 157.667, segs: GUN_PLAIN_BASE, close: true,
+        fill: Some(Ink::Fixed(rgb(0x79cdb8))), stroke: None, width: 0.0 },
+    Prim::Path { x: 76.25, y: 131.833, segs: GUN_PLAIN_BRIGHT, close: true,
+        fill: Some(Ink::Fixed(GUN)), stroke: None, width: 0.0 },
 ];
+const GUN_LIFT: &[Prim] = &[
+    Prim::Path { x: 235.833, y: 157.667, segs: GUN_PLAIN_BASE, close: true,
+        fill: Some(Ink::Fixed(ON_MINT_BAR)), stroke: None, width: 0.0 },
+    Prim::Path { x: 76.25, y: 131.833, segs: GUN_PLAIN_BRIGHT, close: true,
+        fill: Some(Ink::Fixed(ON_MINT_BAR)), stroke: None, width: 0.0 },
+];
+const GUN_FLAT: &[Prim] = &[
+    Prim::Path { x: 235.833, y: 157.667, segs: GUN_PLAIN_BASE, close: true,
+        fill: Some(Ink::Fixed(GROWN_GUN)), stroke: None, width: 0.0 },
+    Prim::Path { x: 76.25, y: 131.833, segs: GUN_PLAIN_BRIGHT, close: true,
+        fill: Some(Ink::Fixed(GROWN_GUN)), stroke: None, width: 0.0 },
+];
+const GUN_SELECTED: &[Prim] = &[
+    Prim::Path { x: 77.667, y: 117.833, segs: store_art::SELECTED_DARK, close: true,
+        fill: Some(Ink::Fixed(GROWN_GUN)), stroke: None, width: 0.0 },
+    Prim::Path { x: 57.667, y: 115.75, segs: store_art::SELECTED_CORE, close: true,
+        fill: Some(Ink::Fixed(rgb(0x302010))), stroke: None, width: 0.0 },
+];
+const GUN_SEAM: Prim = Prim::Path {
+    x: 59.333, y: 129.083, segs: store_art::PLAIN_SEAM, close: true,
+    fill: Some(Ink::Fixed(rgb(0x0e0e0d))), stroke: None, width: 0.0,
+};
 
-/// The socket row's QR glyph: fifteen 5px cells on a 6px row pitch and
-/// no fixed column pitch, so it is spelled out rather than gridded.
+/// Source-native 9×9 scatter, 25 cells; it matches the repeated MAGNUM
+/// socket glyph in Entropism (card 1, native x1185/y1201).
 macro_rules! qr {
-    ($ink:expr) => {
-        &[
-            fill_rect(12.0, 283.0, 5.0, 5.0, $ink), fill_rect(22.0, 283.0, 5.0, 5.0, $ink), fill_rect(32.0, 283.0, 5.0, 5.0, $ink),
-            fill_rect(17.0, 289.0, 5.0, 5.0, $ink), fill_rect(37.0, 289.0, 5.0, 5.0, $ink),
-            fill_rect(12.0, 295.0, 5.0, 5.0, $ink), fill_rect(24.0, 295.0, 5.0, 5.0, $ink), fill_rect(32.0, 295.0, 5.0, 5.0, $ink),
-            fill_rect(18.0, 301.0, 5.0, 5.0, $ink), fill_rect(27.0, 301.0, 5.0, 5.0, $ink), fill_rect(37.0, 301.0, 5.0, 5.0, $ink),
-            fill_rect(12.0, 307.0, 5.0, 5.0, $ink), fill_rect(22.0, 307.0, 5.0, 5.0, $ink), fill_rect(32.0, 307.0, 5.0, 5.0, $ink),
-        ]
-    };
+    ($ink:expr, $top:expr) => { &[
+        // row 0: #..#.#..#
+        fill_rect(9.60, $top + 0.00, 3.8, 3.8, $ink),
+        fill_rect(20.07, $top + 0.00, 3.8, 3.8, $ink),
+        fill_rect(27.05, $top + 0.00, 3.8, 3.8, $ink),
+        fill_rect(37.52, $top + 0.00, 3.8, 3.8, $ink),
+        // row 1: .#....#..
+        fill_rect(13.09, $top + 3.49, 3.8, 3.8, $ink),
+        fill_rect(30.54, $top + 3.49, 3.8, 3.8, $ink),
+        // row 2: ..#.....#
+        fill_rect(16.58, $top + 6.98, 3.8, 3.8, $ink),
+        fill_rect(37.52, $top + 6.98, 3.8, 3.8, $ink),
+        // row 3: #..#.#.#.
+        fill_rect(9.60, $top + 10.47, 3.8, 3.8, $ink),
+        fill_rect(20.07, $top + 10.47, 3.8, 3.8, $ink),
+        fill_rect(27.05, $top + 10.47, 3.8, 3.8, $ink),
+        fill_rect(34.03, $top + 10.47, 3.8, 3.8, $ink),
+        // row 4: .........
+        // row 5: .#.#..#.#
+        fill_rect(13.09, $top + 17.45, 3.8, 3.8, $ink),
+        fill_rect(20.07, $top + 17.45, 3.8, 3.8, $ink),
+        fill_rect(30.54, $top + 17.45, 3.8, 3.8, $ink),
+        fill_rect(37.52, $top + 17.45, 3.8, 3.8, $ink),
+        // row 6: #.#..#...
+        fill_rect(9.60, $top + 20.94, 3.8, 3.8, $ink),
+        fill_rect(16.58, $top + 20.94, 3.8, 3.8, $ink),
+        fill_rect(27.05, $top + 20.94, 3.8, 3.8, $ink),
+        // row 7: .#.....#.
+        fill_rect(13.09, $top + 24.43, 3.8, 3.8, $ink),
+        fill_rect(34.03, $top + 24.43, 3.8, 3.8, $ink),
+        // row 8: #..#.#..#
+        fill_rect(9.60, $top + 27.92, 3.8, 3.8, $ink),
+        fill_rect(20.07, $top + 27.92, 3.8, 3.8, $ink),
+        fill_rect(27.05, $top + 27.92, 3.8, 3.8, $ink),
+        fill_rect(37.52, $top + 27.92, 3.8, 3.8, $ink),
+    ] };
 }
-const QR_STD: &[Prim] = qr!(Ink::Fixed(MINT_BAR));
-// Same compact socket geometry, printed dark on the transient slab.
-const QR_LIFT: &[Prim] = qr!(Ink::Fixed(ON_MINT_BAR));
-const QR_FLAT: &[Prim] = qr!(Ink::Fixed(ON_BAND));
+const QR_STD: &[Prim] = qr!(Ink::Fixed(MINT_BAR), 282.5);
+const QR_LIFT: &[Prim] = qr!(Ink::Fixed(ON_MINT_BAR), 282.5);
+const QR_FLAT: &[Prim] = qr!(Ink::Fixed(ON_BAND), 282.5);
 
-/// The band's compliance marks, in the band's LOWER half: a
-/// certification square, a disc-in-square, a C-in-C mark and a rounded
-/// text block holding a warning triangle.
+/// The source socket lettering has a 20-native-pixel cap, independently
+/// measured in all three cells of both card states.
+const fn socket_label(x: f32, y: f32, ink: Ink, content: &'static str) -> Prim {
+    Prim::Text { x, y, size: 13.0, ink, face: Face::SemiBold, anchor: Anchor::Middle, content }
+}
+
+const fn card_stat(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -> Prim {
+    Prim::Text { x, y, size, ink, face: Face::Medium, anchor: Anchor::Middle, content }
+}
+
+/// Four certification marks, measured from the band at native 2.4x.
+/// The warning block contains a source-thresholded micro contour.
 macro_rules! band_marks {
     ($ink:expr, $knock:expr) => {
         &[
-            line_path(-16.5, 78.5, &[Seg::Line(-6.0, 78.5), Seg::Line(-6.0, 89.5), Seg::Line(-16.5, 89.5), Seg::Line(-16.5, 78.5)], $ink, 1.0),
-            line_path(-0.5, 78.5, &[Seg::Line(10.0, 78.5), Seg::Line(10.0, 89.5), Seg::Line(-0.5, 89.5), Seg::Line(-0.5, 78.5)], $ink, 1.0),
-            Prim::Circle { x: 4.75, y: 84.0, r: 4.2, fill: Some($ink), stroke: None, width: 0.0 },
-            line_path(24.5, 78.5, &[Seg::Line(17.5, 78.5), Seg::Quad { cx: 15.5, cy: 78.5, x: 15.5, y: 80.5 }, Seg::Line(15.5, 87.5), Seg::Quad { cx: 15.5, cy: 89.5, x: 17.5, y: 89.5 }, Seg::Line(24.5, 89.5)], $ink, 1.4),
+            // Framed RG5 certification, then the filled square/disc SC mark.
+            fill_rect(-16.5, 78.5, 10.8, 11.0, $ink),
+            fill_rect(-15.0, 80.0, 7.8, 7.8, $knock),
+            txt_bold(-14.5, 83.8, 3.2, $ink, "RG5"),
+            fill_rect(-0.7, 78.5, 11.1, 11.0, $ink),
+            Prim::Circle { x: 4.8, y: 84.0, r: 4.05, fill: Some($knock), stroke: None, width: 0.0 },
+            txt_bold(2.35, 85.6, 4.5, $ink, "SC"),
+            // The source C has short angular shoulders and a second inset C.
+            line_path(24.5, 81.2, &[
+                Seg::Line(22.6, 78.5), Seg::Line(17.6, 78.5), Seg::Line(15.5, 80.6),
+                Seg::Line(15.5, 87.4), Seg::Line(17.6, 89.5), Seg::Line(22.6, 89.5),
+                Seg::Line(24.5, 86.8),
+            ], $ink, 1.3),
+            line_path(22.0, 82.4, &[
+                Seg::Line(19.5, 82.4), Seg::Line(18.5, 83.4), Seg::Line(18.5, 84.5),
+                Seg::Line(19.5, 85.5), Seg::Line(22.0, 85.5),
+            ], $ink, 0.8),
             Prim::Round { x: 28.5, y: 74.0, w: 64.0, h: 18.0, r: 1.5, fill: None, stroke: Some($ink), width: 0.5 },
-            fill_path(30.5, 90.0, &[Seg::Line(36.5, 78.0), Seg::Line(42.5, 90.0)], $ink),
-            fill_rect(45.0, 77.0, 46.0, 1.0, $ink),
-            fill_rect(45.0, 81.2, 45.0, 1.0, $ink),
-            fill_rect(45.0, 85.4, 46.0, 1.0, $ink),
-            fill_rect(45.0, 89.5, 42.0, 1.0, $ink),
-            fill_rect(36.0, 82.5, 1.1, 4.2, $knock),
+            // Hollow warning triangle and positive exclamation on amber.
+            fill_path(30.3, 90.0, &[
+                Seg::Line(36.5, 77.6), Seg::Line(42.7, 90.0),
+                Seg::Move(33.0, 88.7), Seg::Line(40.0, 88.7), Seg::Line(36.5, 81.0),
+            ], $ink),
+            fill_rect(36.0, 82.8, 1.0, 3.9, $ink),
+            Prim::Circle { x: 36.5, y: 88.0, r: 0.55, fill: Some($ink), stroke: None, width: 0.0 },
+            fill_path(0.0, 0.0, store_art::BAND_MICRO, Ink::Fixed(BAND_MICRO_INK)),
         ]
     };
 }
@@ -1600,37 +1609,37 @@ const BAND_MARKS_SEL: &[Prim] = band_marks!(Ink::Fixed(ON_BAND), Ink::Select);
 /// A standard product card, at its outline's own origin.
 const CARD: &[Prim] = &[
     shut_path(6.0, 0.0, CARD_EDGE, Ink::Border, 1.5),
-    txt(12.0, 29.0, 19.0, Ink::Fg, "MAGNUM 650"),
-    txt(12.0, 49.0, 17.0, Ink::Fg, "HAND GUN"),
+    Prim::Tracked { x: 10.5, y: 29.5, size: 24.4, tracking: -0.75, ink: Ink::Fixed(GUN), face: Face::Medium, anchor: Anchor::Start, content: "MAGNUM 650" },
+    Prim::Tracked { x: 10.0, y: 48.5, size: 19.5, tracking: 0.6, ink: Ink::Fixed(GUN), face: Face::Medium, anchor: Anchor::Start, content: "HAND GUN" },
     fill_path(-27.0, 94.0, BAND_SHAPE, Ink::Fixed(BAND)),
     Prim::At { x: 0.0, y: 0.0, prims: BAND_MARKS },
     fill_rect(160.0, 70.0, 60.0, 9.0, Ink::Fixed(ON_BAND)),
     txt_bold(163.0, 78.0, 8.0, Ink::Fixed(BAND), "PETROCHEM"),
     txt(160.0, 89.0, 8.0, Ink::Fixed(ON_BAND), "BETTERLIFE TEC"),
-    fill_path(41.0, 131.0, GUN_BODY, Ink::Fixed(GUN)),
-    line_path(41.0, 137.0, GUN_DETAIL, Ink::Fixed(PAGE), 1.0),
-    txt_mid(41.0, 225.0, 17.0, Ink::Fg, "DPS"),
-    txt_mid(101.0, 225.0, 17.0, Ink::Fg, "PNT"),
-    txt_mid(162.0, 225.0, 17.0, Ink::Fg, "ACC"),
-    txt_mid(222.0, 225.0, 17.0, Ink::Fg, "ROF"),
+    Prim::At { x: 0.0, y: 0.0, prims: GUN_PLAIN },
+    GUN_SEAM,
+    card_stat(41.0, 225.0, 19.0, Ink::Fixed(MINT_BAR), "DPS"),
+    card_stat(101.0, 225.0, 19.0, Ink::Fixed(MINT_BAR), "PNT"),
+    card_stat(162.0, 225.0, 19.0, Ink::Fixed(MINT_BAR), "ACC"),
+    card_stat(222.0, 225.0, 19.0, Ink::Fixed(MINT_BAR), "ROF"),
     fill_path(8.0, 232.0, MINT_SHAPE, Ink::Fixed(MINT_BAR)),
-    txt_mid(41.0, 255.0, 20.0, Ink::Fixed(ON_MINT_BAR), "86"),
-    txt_mid(101.0, 255.0, 20.0, Ink::Fixed(ON_MINT_BAR), "30"),
-    txt_mid(162.0, 255.0, 20.0, Ink::Fixed(ON_MINT_BAR), "5"),
-    txt_mid(222.0, 255.0, 20.0, Ink::Fixed(ON_MINT_BAR), "5"),
+    card_stat(41.0, 254.7, 25.0, Ink::Fixed(ON_MINT_BAR), "86"),
+    card_stat(101.0, 254.7, 25.0, Ink::Fixed(ON_MINT_BAR), "30"),
+    card_stat(162.0, 254.7, 25.0, Ink::Fixed(ON_MINT_BAR), "5"),
+    card_stat(222.0, 254.7, 25.0, Ink::Fixed(ON_MINT_BAR), "5"),
     fill_rect(0.0, 273.25, 261.0, 1.5, Ink::Border),
-    fill_rect(51.25, 274.0, 1.5, 46.0, Ink::Border),
-    fill_rect(118.25, 274.0, 1.5, 46.0, Ink::Border),
-    fill_rect(189.25, 274.0, 1.5, 46.0, Ink::Border),
+    fill_rect(51.25, 274.0, 1.5, 46.5, Ink::Border),
+    fill_rect(118.25, 274.0, 1.5, 46.5, Ink::Border),
+    fill_rect(189.25, 274.0, 1.5, 46.5, Ink::Border),
     Prim::At { x: 0.0, y: 0.0, prims: QR_STD },
-    txt_mid(85.0, 295.0, 9.0, Ink::Fg, "EMPTY"),
-    txt_mid(85.0, 307.0, 9.0, Ink::Fg, "SOCKET"),
-    txt_mid(154.0, 295.0, 9.0, Ink::Fg, "EMPTY"),
-    txt_mid(154.0, 307.0, 9.0, Ink::Fg, "SOCKET"),
-    txt_mid(225.0, 295.0, 9.0, Ink::Fg, "EMPTY"),
-    txt_mid(225.0, 307.0, 9.0, Ink::Fg, "SOCKET"),
-    txt(4.0, 341.0, 6.5, Ink::Fixed(MICRO), "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO"),
-    txt(4.0, 349.0, 6.5, Ink::Fixed(MICRO), "MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
+    socket_label(82.75, 295.5, Ink::Fg, "EMPTY"),
+    socket_label(82.75, 308.5, Ink::Fg, "SOCKET"),
+    socket_label(153.5, 295.5, Ink::Fg, "EMPTY"),
+    socket_label(153.5, 308.5, Ink::Fg, "SOCKET"),
+    socket_label(224.5, 295.5, Ink::Fg, "EMPTY"),
+    socket_label(224.5, 308.5, Ink::Fg, "SOCKET"),
+    Prim::Tracked { x: 4.0, y: 341.0, size: 8.0, tracking: 0.3, ink: Ink::Fixed(CARD_COMPLIANCE), face: Face::Bold, anchor: Anchor::Start, content: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO" },
+    Prim::Tracked { x: 4.0, y: 349.0, size: 8.0, tracking: 0.3, ink: Ink::Fixed(CARD_COMPLIANCE), face: Face::Bold, anchor: Anchor::Start, content: "MANIPULATE, ACCESS OR DISABLE THIS DEVICE." },
 ];
 
 /// The selection: the same layout filled amber to a stepped bottom,
@@ -1653,41 +1662,36 @@ const GROWN_FLAG: &[Seg] = &[
     Seg::Line(0.0, 59.0),
     Seg::Line(0.0, 94.0),
 ];
-const QR_SEL: &[Prim] = &[
-    fill_rect(12.0, 423.0, 5.0, 5.0, Ink::Fixed(GROWN_DETAIL)), fill_rect(22.0, 423.0, 5.0, 5.0, Ink::Fixed(GROWN_DETAIL)), fill_rect(32.0, 423.0, 5.0, 5.0, Ink::Fixed(GROWN_DETAIL)),
-    fill_rect(17.0, 429.0, 5.0, 5.0, Ink::Fixed(GROWN_DETAIL)), fill_rect(37.0, 429.0, 5.0, 5.0, Ink::Fixed(GROWN_DETAIL)),
-    fill_rect(12.0, 435.0, 5.0, 5.0, Ink::Fixed(GROWN_DETAIL)), fill_rect(24.0, 435.0, 5.0, 5.0, Ink::Fixed(GROWN_DETAIL)), fill_rect(32.0, 435.0, 5.0, 5.0, Ink::Fixed(GROWN_DETAIL)),
-    fill_rect(18.0, 441.0, 5.0, 5.0, Ink::Fixed(GROWN_DETAIL)), fill_rect(27.0, 441.0, 5.0, 5.0, Ink::Fixed(GROWN_DETAIL)), fill_rect(37.0, 441.0, 5.0, 5.0, Ink::Fixed(GROWN_DETAIL)),
-    fill_rect(12.0, 447.0, 5.0, 5.0, Ink::Fixed(GROWN_DETAIL)), fill_rect(22.0, 447.0, 5.0, 5.0, Ink::Fixed(GROWN_DETAIL)), fill_rect(32.0, 447.0, 5.0, 5.0, Ink::Fixed(GROWN_DETAIL)),
-];
+const QR_SEL: &[Prim] = qr!(Ink::Fixed(GROWN_DETAIL), 422.5);
 
 const GROWN: &[Prim] = &[
     fill_path(6.0, 0.0, GROWN_EDGE, Ink::Select),
     fill_path(-27.0, 94.0, GROWN_FLAG, Ink::Select),
     fill_rect(0.0, 58.5, 256.0, 1.0, Ink::Fixed(BAND_RULE)),
     fill_rect(0.0, 93.5, 261.0, 1.0, Ink::Fixed(BAND_RULE)),
-    txt(12.0, 29.0, 19.0, Ink::Fixed(ON_GROWN), "MAGNUM 650"),
-    txt(12.0, 49.0, 17.0, Ink::Fixed(ON_GROWN), "HAND GUN"),
+    Prim::Tracked { x: 10.5, y: 29.5, size: 24.4, tracking: -0.75, ink: Ink::Fixed(ON_GROWN), face: Face::Medium, anchor: Anchor::Start, content: "MAGNUM 650" },
+    Prim::Tracked { x: 10.0, y: 48.5, size: 19.5, tracking: 0.6, ink: Ink::Fixed(ON_GROWN), face: Face::Medium, anchor: Anchor::Start, content: "HAND GUN" },
     Prim::At { x: 0.0, y: 0.0, prims: BAND_MARKS_SEL },
     fill_rect(160.0, 70.0, 60.0, 9.0, Ink::Fixed(ON_GROWN)),
     txt_bold(163.0, 78.0, 8.0, Ink::Select, "PETROCHEM"),
     txt(160.0, 89.0, 8.0, Ink::Fixed(ON_BAND), "BETTERLIFE TEC"),
-    // the gun, dark on amber, 14px higher than on a standard card
-    Prim::At { x: 1.5, y: -13.7, prims: &[
-        fill_path(41.0, 131.0, GUN_BODY, Ink::Fixed(GROWN_GUN)),
-        line_path(41.0, 137.0, GUN_DETAIL, Ink::Select, 1.0),
-    ] },
-    txt_mid(41.0, 204.0, 17.0, Ink::Fixed(ON_BAND), "DPS"),
-    txt_mid(101.0, 204.0, 17.0, Ink::Fixed(ON_BAND), "PNT"),
-    txt_mid(162.0, 204.0, 17.0, Ink::Fixed(ON_BAND), "ACC"),
-    txt_mid(222.0, 204.0, 17.0, Ink::Fixed(ON_BAND), "ROF"),
-    txt_mid(41.0, 233.0, 20.0, Ink::Fixed(ON_BAND), "86"),
-    txt_mid(101.0, 233.0, 20.0, Ink::Fixed(ON_BAND), "30"),
-    txt_mid(162.0, 233.0, 20.0, Ink::Fixed(ON_BAND), "5"),
-    txt_mid(222.0, 233.0, 20.0, Ink::Fixed(ON_BAND), "5"),
-    // the lower body, amber-outlined
+    // The grown card has its own native dark print and light openings.
+    Prim::At { x: 0.0, y: 0.0, prims: GUN_SELECTED },
+    card_stat(41.0, 202.5, 18.5, Ink::Fixed(ON_BAND), "DPS"),
+    card_stat(101.0, 202.5, 18.5, Ink::Fixed(ON_BAND), "PNT"),
+    card_stat(162.0, 202.5, 18.5, Ink::Fixed(ON_BAND), "ACC"),
+    card_stat(222.0, 202.5, 18.5, Ink::Fixed(ON_BAND), "ROF"),
+    card_stat(41.0, 232.7, 25.0, Ink::Fixed(ON_BAND), "86"),
+    card_stat(101.0, 232.7, 25.0, Ink::Fixed(ON_BAND), "30"),
+    card_stat(162.0, 232.7, 25.0, Ink::Fixed(ON_BAND), "5"),
+    card_stat(222.0, 232.7, 25.0, Ink::Fixed(ON_BAND), "5"),
+    // the lower body, amber-outlined with the same measured lower feet
     line_path(0.0, 239.0, &[
-        Seg::Line(0.0, 462.0), Seg::Line(261.0, 462.0), Seg::Line(261.0, 239.0),
+        Seg::Line(0.0, 451.5),
+        Seg::Quad { cx: 0.0, cy: 462.0, x: 10.5, y: 462.0 },
+        Seg::Line(250.5, 462.0),
+        Seg::Quad { cx: 261.0, cy: 462.0, x: 261.0, y: 451.5 },
+        Seg::Line(261.0, 239.0),
         Seg::Move(0.0, 414.0), Seg::Line(261.0, 414.0),
         Seg::Move(52.0, 414.0), Seg::Line(52.0, 462.0),
         Seg::Move(118.0, 414.0), Seg::Line(118.0, 462.0),
@@ -1703,14 +1707,14 @@ const GROWN: &[Prim] = &[
     txt(16.0, 371.0, 16.0, Ink::Fixed(GROWN_DETAIL), "+9 Reflexes"),
     txt(16.0, 392.0, 16.0, Ink::Fixed(GROWN_DETAIL), "+2 Modules Slots"),
     Prim::At { x: 0.0, y: 0.0, prims: QR_SEL },
-    txt_mid(85.0, 436.0, 9.0, Ink::Fixed(GROWN_DETAIL), "EMPTY"),
-    txt_mid(85.0, 448.0, 9.0, Ink::Fixed(GROWN_DETAIL), "SOCKET"),
-    txt_mid(154.0, 436.0, 9.0, Ink::Fixed(GROWN_DETAIL), "EMPTY"),
-    txt_mid(154.0, 448.0, 9.0, Ink::Fixed(GROWN_DETAIL), "SOCKET"),
-    txt_mid(225.0, 436.0, 9.0, Ink::Fixed(GROWN_DETAIL), "EMPTY"),
-    txt_mid(225.0, 448.0, 9.0, Ink::Fixed(GROWN_DETAIL), "SOCKET"),
-    txt(4.0, 481.0, 6.5, Ink::Fixed(GROWN_MICRO), "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO"),
-    txt(4.0, 489.0, 6.5, Ink::Fixed(GROWN_MICRO), "MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
+    socket_label(82.75, 436.5, Ink::Fixed(GROWN_DETAIL), "EMPTY"),
+    socket_label(82.75, 450.0, Ink::Fixed(GROWN_DETAIL), "SOCKET"),
+    socket_label(153.5, 436.5, Ink::Fixed(GROWN_DETAIL), "EMPTY"),
+    socket_label(153.5, 450.0, Ink::Fixed(GROWN_DETAIL), "SOCKET"),
+    socket_label(224.5, 436.5, Ink::Fixed(GROWN_DETAIL), "EMPTY"),
+    socket_label(224.5, 450.0, Ink::Fixed(GROWN_DETAIL), "SOCKET"),
+    Prim::Tracked { x: 4.0, y: 483.0, size: 8.0, tracking: 0.3, ink: Ink::Fixed(GROWN_COMPLIANCE), face: Face::Bold, anchor: Anchor::Start, content: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO" },
+    Prim::Tracked { x: 4.0, y: 491.0, size: 8.0, tracking: 0.3, ink: Ink::Fixed(GROWN_COMPLIANCE), face: Face::Bold, anchor: Anchor::Start, content: "MANIPULATE, ACCESS OR DISABLE THIS DEVICE." },
 ];
 
 
@@ -1771,7 +1775,11 @@ const fn card_face(pressed: bool) -> [Prim; CARD.len()] {
     while i < CARD.len() {
         face[i] = CARD[i];
         match &mut face[i] {
-            Prim::Text { ink: color @ Ink::Fg, .. } => *color = ink,
+            // Title, stat and socket printing sits on the feedback slab.
+            // The source-fitted idle inks are fixed, so recolor by their
+            // card positions for both Text and Tracked runs.
+            Prim::Text { ink: color, .. } | Prim::Tracked { ink: color, .. }
+                if i == 1 || i == 2 || (i >= 10 && i <= 13) || (i >= 24 && i <= 29) => *color = ink,
             Prim::Rect { fill: Some(color @ Ink::Border), .. } => *color = ink,
             _ => {}
         }
@@ -1785,9 +1793,9 @@ const fn card_face(pressed: bool) -> [Prim; CARD.len()] {
     };
     // A filled slab needs the gun's dark-on-fill treatment, without
     // GROWN's translation. Both paths keep their original coordinates.
-    face[8] = fill_path(41.0, 131.0, GUN_BODY,
-        if pressed { Ink::Fixed(GROWN_GUN) } else { ink });
-    face[9] = line_path(41.0, 137.0, GUN_DETAIL, fill, 1.0);
+    face[8] = Prim::At { x: 0.0, y: 0.0, prims: if pressed { GUN_FLAT } else { GUN_LIFT } };
+    face[9] = Prim::Path { x: 59.333, y: 129.083, segs: store_art::PLAIN_SEAM,
+        close: true, fill: Some(fill), stroke: None, width: 0.0 };
     face[23] = Prim::At {
         x: 0.0, y: 0.0, prims: if pressed { QR_FLAT } else { QR_LIFT },
     };
@@ -1813,6 +1821,41 @@ const GROWN_LIFT: &[Prim] = &[
     Prim::At { x: 20.0, y: -20.0, prims: &[card_ghost(GROWN_EDGE)] },
     Prim::At { x: 0.0, y: 0.0, prims: GROWN },
 ];
+// The fourth card is cropped by the photographed right edge. The main
+// drawing stops at x1523 (local 80); five narrow translucent copies carry
+// only its coloured residue through x1550. Applying this to each face
+// keeps the single interactive Plate and all selection/feedback states.
+macro_rules! fourth_face {
+    ($face:expr) => {
+        &[
+            // Retain the projecting flag, half-strokes and lifted ghost;
+            // only the right edge is meant to crop the artwork.
+            Prim::Viewport { x: -32.0, y: -24.0, w: 112.0, h: 538.0, prims: $face },
+            fourth_strip!($face, 80.0, 2.0, 0.85, "kitsch-card4-bleed-1"),
+            fourth_strip!($face, 82.0, 3.0, 0.30, "kitsch-card4-bleed-2"),
+            fourth_strip!($face, 85.0, 5.0, 0.20, "kitsch-card4-bleed-3"),
+            fourth_strip!($face, 90.0, 7.0, 0.08, "kitsch-card4-bleed-4"),
+            fourth_strip!($face, 97.0, 10.0, 0.02, "kitsch-card4-bleed-5"),
+        ]
+    };
+}
+macro_rules! fourth_strip {
+    ($face:expr, $x:expr, $w:expr, $alpha:expr, $id:expr) => {
+        Prim::Viewport {
+            x: $x, y: -24.0, w: $w, h: 538.0,
+            prims: &[Prim::Motion {
+                motion: Motion { id: $id, begin: 0, dur: 1,
+                    ease: Easing::Linear, change: Change::Opacity { alpha: ($alpha, $alpha) } },
+                prims: $face,
+            }],
+        }
+    };
+}
+const CARD_4: &[Prim] = fourth_face!(CARD);
+const GROWN_4: &[Prim] = fourth_face!(GROWN);
+const CARD_LIFT_4: &[Prim] = fourth_face!(CARD_LIFT);
+const CARD_FLAT_4: &[Prim] = fourth_face!(CARD_FLAT);
+const GROWN_LIFT_4: &[Prim] = fourth_face!(GROWN_LIFT);
 macro_rules! card_states {
     ($index:expr) => {
         PlateStates {
@@ -1839,27 +1882,51 @@ pub(crate) const STORE_STATES: &[PlateStates] = &[
     card_states!(0),
     card_states!(1),
     card_states!(2),
-    card_states!(3),
+    PlateStates {
+        group: Group::Card, index: 3,
+        hover: CARD_LIFT_4, pressed: CARD_FLAT_4,
+        preserve_selected_hover: true, selected_away: None,
+        selected_hover: Some(GROWN_LIFT_4), selected_pressed: Some(GROWN_4),
+    },
 ];
 
 macro_rules! shelf {
     ($i:expr) => {
-        &[Prim::Plate {
+        &[Prim::Pick {
             group: Group::Card,
             index: $i,
-            x: 0.0,
-            y: 0.0,
-            w: 261.0,
-            h: 320.0,
-            on: GROWN,
-            off: CARD,
+            on: &[Prim::Plate {
+                group: Group::Card, index: $i,
+                x: 0.0, y: 0.0, w: 261.0, h: 500.0,
+                on: GROWN, off: CARD,
+            }],
+            off: &[Prim::Plate {
+                group: Group::Card, index: $i,
+                x: 0.0, y: 0.0, w: 261.0, h: 320.0,
+                on: GROWN, off: CARD,
+            }],
         }]
     };
 }
 const SHELF_0: &[Prim] = shelf!(0);
 const SHELF_1: &[Prim] = shelf!(1);
 const SHELF_2: &[Prim] = shelf!(2);
-const SHELF_3: &[Prim] = shelf!(3);
+const SHELF_3: &[Prim] = &[Prim::Viewport {
+    x: -32.0, y: -24.0, w: 139.0, h: 538.0,
+    prims: &[Prim::Pick {
+        group: Group::Card, index: 3,
+        on: &[Prim::Plate {
+            group: Group::Card, index: 3,
+            x: 0.0, y: 0.0, w: 261.0, h: 500.0,
+            on: GROWN_4, off: CARD_4,
+        }],
+        off: &[Prim::Plate {
+            group: Group::Card, index: 3,
+            x: 0.0, y: 0.0, w: 261.0, h: 320.0,
+            on: GROWN_4, off: CARD_4,
+        }],
+    }],
+}];
 
 /// The four cards, tops at y 218.
 const SHELF: &[Prim] = &[
@@ -1918,8 +1985,8 @@ pub const STORE: &[Prim] = &[
     line_rect(1500.0, 733.0, 29.0, 27.0, Ink::Fixed(MARK), 1.5),
     txt_mid(1514.5, 752.0, 14.0, Ink::Fixed(MARK), "C"),
     // one line of bright micro-text centred at the foot
-    txt_bold(503.0, 870.0, 9.0, Ink::Fixed(FOOT_MICRO), "ARASAKA CONSUMER TECHNOLOGY"),
-    txt(640.0, 870.0, 9.0, Ink::Fixed(FOOT_MICRO), "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
+    Prim::Tracked { x: 503.0, y: 870.0, size: 9.0, tracking: 0.25, ink: Ink::Fixed(FOOT_MICRO), face: Face::Bold, anchor: Anchor::Start, content: "ARASAKA CONSUMER TECHNOLOGY" },
+    Prim::Tracked { x: 641.0, y: 870.0, size: 9.0, tracking: 0.24, ink: Ink::Fixed(FOOT_MICRO), face: Face::Bold, anchor: Anchor::Start, content: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE." },
 ];
 // --- end store -----------------------------------------------------------
 
@@ -1929,6 +1996,28 @@ mod store_interaction_tests {
 
     #[test]
     fn card_material_feedback_keeps_idle_geometry_and_content_until_selection() {
+        fn fourth_face_keeps_content(face: &[Prim], source: &[Prim]) {
+            assert_eq!(face.len(), 6, "opaque slice plus five residue slices");
+            let Prim::Viewport { x, y, w, h, prims } = face[0] else { panic!("opaque fourth-card slice") };
+            assert!(x < -27.0 && y < -20.0 && y + h > 500.0,
+                "retain the projecting flag, lifted ghost and selected footer");
+            assert_eq!(prims, source);
+            let mut right = x + w;
+            let mut previous_alpha = 1.0;
+            for slice in &face[1..] {
+                let Prim::Viewport { x: sx, y, w: sw, h, prims } = *slice else { panic!("fourth-card residue slice") };
+                assert_eq!(sx, right, "residue slices must not overlap or leave gaps");
+                assert!(sw > 0.0 && y < -20.0 && y + h > 500.0);
+                let [Prim::Motion { motion, prims }] = prims else { panic!("fourth-card residue opacity") };
+                let Change::Opacity { alpha: (start, end) } = motion.change else { panic!("static residue opacity") };
+                assert_eq!(start, end, "persistent fade is independent of opening time");
+                assert!(start > 0.0 && start < previous_alpha);
+                assert_eq!(*prims, source);
+                right += sw;
+                previous_alpha = start;
+            }
+            assert_eq!(right, 107.0, "source foreground ends at x1550");
+        }
         fn geometry(mut prim: Prim) -> Prim {
             match &mut prim {
                 Prim::Path { fill, stroke, width, .. }
@@ -1937,9 +2026,12 @@ mod store_interaction_tests {
                     *stroke = None;
                     *width = 0.0;
                 }
-                Prim::Text { ink, .. } => *ink = Ink::Fg,
+                Prim::Text { ink, .. } | Prim::Tracked { ink, .. } => *ink = Ink::Fg,
                 Prim::At { prims, .. } if *prims == QR_LIFT || *prims == QR_FLAT => {
                     *prims = QR_STD;
+                }
+                Prim::At { prims, .. } if *prims == GUN_LIFT || *prims == GUN_FLAT => {
+                    *prims = GUN_PLAIN;
                 }
                 _ => {}
             }
@@ -1949,6 +2041,26 @@ mod store_interaction_tests {
         assert_eq!(states.len(), 4);
         for (index, state) in states.into_iter().enumerate() {
             assert_eq!(state.index, index);
+            if index == 3 {
+                fourth_face_keeps_content(CARD_4, CARD);
+                fourth_face_keeps_content(GROWN_4, GROWN);
+                fourth_face_keeps_content(state.hover, CARD_LIFT);
+                fourth_face_keeps_content(state.pressed, CARD_FLAT);
+                fourth_face_keeps_content(state.selected_hover.unwrap(), GROWN_LIFT);
+                fourth_face_keeps_content(state.selected_pressed.unwrap(), GROWN);
+                assert_eq!(SHELF_3.len(), 1);
+                let Prim::Viewport { x, y, w, h, prims } = SHELF_3[0] else { panic!("one fourth-card hit viewport") };
+                assert_eq!(x + w, 107.0);
+                assert!(x < -27.0 && y < -20.0 && y + h > 500.0);
+                let [Prim::Pick { group, index, on, off }] = prims else { panic!("one fourth-card Pick") };
+                assert_eq!((*group, *index), (Group::Card, 3));
+                for (face, height) in [(*on, 500.0), (*off, 320.0)] {
+                    let [Prim::Plate { group, index, w, h, on, off, .. }] = face else { panic!("one fourth-card Plate per selection") };
+                    assert_eq!((*group, *index, *w, *h), (Group::Card, 3, 261.0, height));
+                    assert_eq!((*on, *off), (GROWN_4, CARD_4));
+                }
+                continue;
+            }
             let Prim::At { x, y, prims: hover } = state.hover[1] else { panic!("lifted face") };
             assert_eq!((x, y), (0.0, 0.0));
             for face in [hover, state.pressed] {
@@ -1995,8 +2107,14 @@ mod store_interaction_tests {
         for (face, expected) in [(card_face(false), Ink::Fixed(rgb(0x2c9798))), (card_face(true), Ink::Select)] {
             let Prim::Path { fill, .. } = face[0] else { panic!("slab") };
             assert_eq!(fill, Some(expected));
-            let Prim::Text { ink, .. } = face[1] else { panic!("title") };
-            assert_eq!(ink, if expected == Ink::Select { Ink::Fixed(ON_BAND) } else { Ink::Fixed(ON_MINT_BAR) });
+            let feedback_ink = if expected == Ink::Select { Ink::Fixed(ON_BAND) } else { Ink::Fixed(ON_MINT_BAR) };
+            for index in [1, 2, 10, 11, 12, 13, 24, 25, 26, 27, 28, 29] {
+                let ink = match face[index] {
+                    Prim::Text { ink, .. } | Prim::Tracked { ink, .. } => ink,
+                    _ => panic!("feedback printing at {index}"),
+                };
+                assert_eq!(ink, feedback_ink);
+            }
         }
     }
 
@@ -2088,22 +2206,13 @@ mod store_interaction_tests {
 //   moved each letter under a pixel left -- onto the columns rsvg
 //   draws the trace's on (A / B ink boxes measured identical to the
 //   trace render after, a pixel right before).
-// - the bloom: `radialGradient cx=0.52 cy=-0.05 r=0.85` over the
-//   1600x620 rect is an ellipse centred (832, -31) with radii 1360 x
-//   527, composited by `soft.rs`; its foot stop is the page
-//   ground, so the rect's clip edge at y 620 (beyond ry) never shows.
+// - the shared rose and left-wash field is measured from clear native
+//   patches across dashboard/mail/store; see ground-fit.md.
 
 use crate::style::Anchor;
 
-/// The hub's page ground and bloom stops: its own samples, a shade
-/// off the store's `PAGE` / `ROSE`.
-pub const HUB_GROUND: iced::Color = rgb(0x0d0d0c);
-const HUB_ROSE: &[(f32, iced::Color)] = &[
-    (0.00, rgb(0xa84a5e)),
-    (0.45, rgb(0x7a3346)),
-    (0.75, rgb(0x3a1c24)),
-    (1.00, HUB_GROUND),
-];
+/// The hub uses the shared native #49/#51/#52 page.
+pub const HUB_GROUND: iced::Color = PAGE;
 /// The selection yellow the hub samples -- EVENTS, badge 02, the
 /// BRAINDANCE tab and outlines -- and the inks set on it. A hair off
 /// the palette's `YELLOW` (#fcc428) and the store's `BAND` (#fec32f).
@@ -2334,9 +2443,10 @@ const USER_STEP: &[Seg] = &[
 /// this group sits under the header and the solid blades, so drawing
 /// it first, ahead of the header text, changes no pixel's order.
 const HUB_BACK: &[Prim] = &[
-    // ground and bloom (trace lines 89-94, 100-101)
+    // measured ground, rose and left wash (trace defs; ground-fit.md)
     fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(HUB_GROUND)),
-    Prim::Lobe { x: 832.0, y: -31.0, rx: 1360.0, ry: 527.0, stops: HUB_ROSE },
+    Prim::Lobe { x: 750.0, y: -331.0, rx: 1600.0, ry: 929.0, stops: ROSE },
+    Prim::Lobe { x: 0.0, y: 393.0, rx: 535.0, ry: 400.0, stops: MARGIN },
 ];
 
 // The ghosts, farthest first, every trail stepping (+20,-20) in screen

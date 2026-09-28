@@ -279,11 +279,12 @@ tape = "#b02226"
 "##;
 
     #[test]
-    fn no_config_fallback_retains_the_dashboard_reference_correction() {
+    fn no_config_fallback_retains_reference_screen_corrections() {
         let loaded = crate::style::Style::from_theme(&Theme::fallback());
         assert_eq!(loaded, crate::style::Era::Neomil.style());
         assert_eq!(loaded.palette.fg, crate::palette::rgb(0xde2e2e));
         assert_eq!(loaded.dashboard_style().palette.fg, crate::palette::rgb(0xef3333));
+        assert_eq!(loaded.store_style().palette.fg, crate::palette::rgb(0xfb3535));
     }
 
     #[test]

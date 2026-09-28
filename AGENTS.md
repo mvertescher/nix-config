@@ -38,6 +38,12 @@ from a wrapper checkout, not from here.
   package when its purpose isn't obvious (e.g. `bat # better cat`).
 - Keep files free of trailing whitespace.
 
+## cp-eras-ui work
+
+Before planning or dispatching cp-eras work, read
+[`home/common/pkgs/cp-eras-ui/AGENTS.md`](home/common/pkgs/cp-eras-ui/AGENTS.md)
+for model selection and verification responsibilities.
+
 ## Taking screenshots
 
 To capture the screen during verification in a Wayland/Hyprland

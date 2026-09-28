@@ -1,42 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="220" viewBox="0 0 1600 220" font-family="Rajdhani">
   <!-- KITSCH BAR reference (2026-09-02 restyle).
 
-       The bar has no Behance source; this is an original composition cut from the
-       chrome of the era's four measured traces, docs/kitsch/{login,dashboard,mailbox,
-       store}-trace.svg (1600x900, every coordinate a photo measurement). Nothing here
-       is a shape that no kitsch screen shows. Palette is the consts at the top of
-       src/eras/kitsch.rs only: bg #0b0b07, teal #7ddec8 (traces stroke #5fd6c2..#80e4d0),
-       teal dim #4d9484 (trace caption ink #4f9a92), teal solid #1cb39b (wave #1bb6a3 /
-       #1db5a4), mint #87f4d9 (login bracket peak #80e4d0), yellow #fcc428 (SMG #ffbe18,
-       DETAILS #e6c020, message outline #f2c825), on-yellow #37220f (#5a3a08 / #4a3a05 on
-       the solid tabs), bezel #f08c1e (the amber 02 badge, #f0a93c). Yellow is SELECTION
-       in this era (README "Observed era rules"); the tray's alert role is the same ink.
+       The bar has no Behance source image; it is an original composition. Its
+       screen-derived references point into the four measured traces, but its
+       1600x220 coordinates describe this bar design rather than photo pixels.
+       Colors are local samples, not a global palette or universal ink rule:
+       the login bracket, captions, labels, selected controls and wave use
+       distinct measured values. Yellow is selection in this era; the tray's
+       alert role also resolves to yellow. See source-citations.md.
 
        Golden geometry kept: 1600x220; the cells occupy y 3..28 inside the 31px bar; the
        tray menu drops beneath, right-aligned to x=1480; module set and order unchanged.
 
        What is borrowed, and from where:
 
-       1. LINE WEIGHT. Every outline is 1.25px on .5 coordinates. mailbox-trace.svg
-          measured the message body outline at 1.2px full-brightness (pixels
-          1127.1..1127.9 across the right edge at y 500) and login-trace.svg the
-          bracket at 1.2px (peak #80e4d0 at y 200/300/450); both notes record that
-          1.5px on integer coordinates rendered as two half-bright pixels and read
-          dimmer. The era's line-work is thin and bright, not thick and dim.
+       1. LINE WEIGHT. This bar drawing uses 1.25px for its main outline
+          paths on half-pixel coordinates. That is a bar design choice, not a
+          universal kitsch trace rule: login bracket, mailbox body, badges,
+          small glyphs and decorative marks have separately measured widths.
+          See source-citations.md for the trace-specific measurements.
 
        2. THE BRACKET (bottom-left). A mint line drops from the top edge at x 1.5, turns
           an r8 corner and runs right along y 29.5, fading out by x 440. This is the
           list bracket of mailbox-trace.svg (left edge x 120.5, top line y 268 "from
           x 138 fading out by x~402", stop 0/0.6/1 gradient #fadeR) and the nav bracket
-          of store-trace.svg (left edge x 106.5, bottom line "y 718 that runs right and
-          fades by x~445"), scaled to the 3px margin the bar leaves under its cells.
+          of store-trace.svg (left edge x 106.5, bottom line at y 718 fading by x~445),
+          adapted to the bar's own 3px margin under its cells.
           The bracket's wave (the solid teal swell at its foot) does not fit in 3px and
           is drawn at the foot of the tray menu instead (item 9).
 
        3. HOST TAPE = the USER box. mailbox-trace.svg draws GUES 7702 as a box whose
-          bottom edge steps down under its first 55px through a 12px diagonal
-          (M 155,185 H 349 V 228 H 220 L 208,236 H 155 Z; dashboard-trace.svg has the
-          same box at x 155..331). The host name is the bar's USER field, so it wears
+          bottom edge steps down along about 52.5px, then returns through a 12px diagonal
+          (mailbox-trace.svg path M 155.5,185.5 H 349.5 V 228.5 H 220 L 208,236.5 H 155.5 Z;
+          dashboard-trace.svg has its own USER box x 155.5..349.5). The host name is the bar's USER field, so it wears
           that silhouette: body y 3..24, the first 26px of the bottom stepping to y 28
           through a 6px diagonal. Filled solid with the tape role (bezel orange) the way
           the 02 security badge is a solid amber block with dark ink (mailbox-trace
@@ -52,13 +48,12 @@
           on a 40px body, 6px apart (mailbox pitch 53..55 on a 46px tab = 7..9 gap).
           Active workspace = solid yellow with dark ink, exactly SMG / DETAILS.
 
-       5. FOCUSED WINDOW = the DESCRIPTION box. The mailbox header is USER box,
-          DESCRIPTION box, SECURITY badges (mailbox-trace x 155 / 575 / 1215, y 185..236);
-          the bar's left half reads the same way: host box, workspaces, window box. The
-          window label sits in the outlined form of the same stepped box (MAILBOX,
-          M 575,185 H 769 V 228 H 640 L 628,236 H 575 Z), full teal ink: in the traces
-          dim teal is reserved for the 7.5px in-fiction captions, every readable label
-          is full teal (row titles #7fe0c8, labels #7fd4cc).
+       5. FOCUSED WINDOW = the DESCRIPTION box. The mailbox header has USER,
+          DESCRIPTION and SECURITY boxes (mailbox-trace x 155 / 575 / 1215,
+          y 185..236); the bar's left half reads similarly: host box, workspaces,
+          window box. The window label sits in an outlined stepped box. Trace labels
+          use multiple measured teals; they are not all one full-teal ink. See
+          source-citations.md.
 
        6. TRAY CELLS = the customer chip. store-trace.svg x 123..338, y 178..200, rx 8:
           a 22px-tall rounded outline holding a label and a value, the closest thing in
@@ -104,7 +99,7 @@
            next to 400-weight Rajdhani reads heavier than the text). No tracking: the
            traces' 14px boxed letters carry none.
 
-       Considered and left out: the fan ghost trail on the clock (every trail in
+       Original bar decisions (not source-cited shapes): the fan ghost trail on the clock (every trail in
        dashboard-trace recedes up-right by (+20,-20) per step; from a cell whose top is
        y 3 that leaves the bar); the shelf-band overhang on the open parent row (needs a
        negative margin in iced and would cross the abutting submenu); the rose bloom
@@ -159,7 +154,7 @@
       <text x="341" y="20">6</text>
     </g>
 
-    <!-- focused window: the DESCRIPTION box, outlined, centred in the free run (361..758), full teal ink -->
+    <!-- focused window: the outlined DESCRIPTION cell, centred in the free run (361..758), bar fg ink -->
     <path d="M 437.5,3.5 H 681.5 V 23.5 H 469.5 L 463.5,27.5 H 437.5 Z" fill="none" stroke="#7ddec8" stroke-width="1.25"/>
     <text x="559.5" y="19" text-anchor="middle" fill="#7ddec8">~/src/cp-eras-ui - nvim src/bar.rs</text>
 
@@ -230,69 +225,10 @@
     <text x="1319" y="141.3" fill="#7ddec8">Quit</text>
   </g>
 
-  <!-- IMPLEMENTATION DELTA (for bar.rs / Style) — every change from the current kitsch
-       bar render (tests/golden/bar-kitsch-1600x220.png), in the order a coding model
-       would apply them. Coordinates above are the target; the app follows the SVG.
-
-       CORNERS. Bar cells and menu panels: Corner::Round radius 8 (today: Round 16,
-         clamped to a 12.5 full pill on 25px cells). Do not clamp to a pill; r8 on a
-         25px cell leaves 9px of straight edge top and bottom.
-       STROKE. 1.25px for every outline, centred on half-pixel coordinates
-         (today: metrics.stroke 1.5 on integer coordinates). Applies to idle cells,
-         alert cells, the window box, menu panels, the separator rule, the bracket.
-       TYPE. Labels 14px weight Medium (500) (today: Normal). No tracking.
-       HOST TAPE. Shape: a stepped box, not a pill. Body from the cell top to 4px above
-         the cell bottom; the first 26px of the bottom edge step down to the cell bottom
-         through a 6px diagonal: relative path M 0,0 H w V h-4 H 32 L 26,h H 0 Z for a
-         w x h cell. Fill palette.tape (#f08c1e), no stroke; ink on_select (#37220f)
-         (today: bg #0b0b07). Label baseline sits in the 21px body, i.e. 1px higher
-         than in a full-height cell. Cell starts at x 10 (today 6), width unchanged.
-       WORKSPACES. Shape: the chevron, 40x25 per workspace at a 46px pitch (today: 35x25
-         pills at 43): relative path M 0,25 V 13 L 12,0 L 15.2,4.9 H 36.7 Q 40,4.9 40,7.6
-         V 13 L 28,25 Z. Idle: 1.25px border stroke, no fill, fg ink. Active: solid
-         select (#fcc428), on_select ink (#37220f), no stroke. Digit centred at x 20.
-       FOCUSED WINDOW. Becomes a shrink-width cell, not bare text: the stepped box of
-         the host tape as an outline (1.25px border, no fill), 12px side padding, ink
-         fg (#7ddec8) (today: mid ink, no box). Body 21px + 4px step, label baseline as
-         the tape's.
-       TRAY / STATUS CELLS. r8 outlines, 1.25px; idle stroke border, fg ink. Alert cell
-         (SYNC, muted audio, attention icon): stroke alert (#fcc428) AND label/icon ink
-         alert; same shape (unchanged from today apart from radius and stroke).
-         Clock: Surface::selected — r8 solid select (#fcc428), on_select ink, no stroke.
-         Widths and the 8px gap unchanged.
-       BRACKET (new ornament, bar level). A 1.25px line in emphasis mint (#87f4d9):
-         from (1.5,0) down to (1.5,21.5), quadratic corner to (9.5,29.5), then along
-         y 29.5 to x 440 with opacity 1 until x 264 (60%) fading linearly to 0 at
-         x 440. Lives in the bar's own 3px bottom padding and 10px left margin,
-         under nothing. Draw it on a canvas beneath the cells.
-       MENU PANELS. r8 outline, 1.25px border, bg fill (today: r16, 1.5px). Levels in
-         the chain spaced 4px apart (today: abutting). Root level only: MENU_PANEL_AIR
-         at the bottom grows from 6 to 26, a 20px foot holding the wave (below).
-       MENU ROWS. Row height 25.6 unchanged; the icon column is 26px wide (icon 16 centred),
-         then a 2px gap, then the body with 6px side padding — label x = panel inner
-         left + 34 (today: icon then 6px gap then label; the icon and label overlap in
-         the sibling bars because the row's padding is not reserved for the icon).
-         Selected row (open submenu parent, Toggle(true), highlighted): solid select
-         (#fcc428) in TWO pieces when the level has icons — icon cell 26 wide with its
-         bottom-right chamfered 12 wide x 4 tall (relative M 0,0 H 26 V 21.6 L 14,25.6
-         H 0 Z), the 2px gap unfilled, then the body — and ONE piece spanning the
-         inset width when it has none. The body's right end is chamfered: straight for
-         the top 9.3px, then a 15.5px-wide diagonal to the bottom (relative
-         M 0,0 H w V 9.3 L w-15.5,25.6 H 0 Z). Ink on_select, submenu marker "<"
-         end-anchored 10px inside the body's right edge. Not a pill (today: rx 12.8).
-         Disabled row: dim ink (#4d9484), no fill (unchanged).
-         Separator: 1.25px border rule spanning the FULL panel width, edge to edge
-           (today: inset MENU_RULE_SIDE 6 and 1.5px).
-       WAVE (new ornament, root menu panel only). In the 20px foot: solid ornament teal
-         (#1cb39b) bounded by the panel's left edge and bottom edge and, on top, a
-         curve that starts on the left edge 28px above the bottom, turns an r8 corner
-         into a horizontal 20px above the bottom, runs right 32.5px, curves into a
-         diagonal down-right reaching the bottom edge 65px from the panel's left, and
-         that upper curve is stroked 1.25px border. Relative to the panel's
-         bottom-left corner (0,0) with y up: fill M 0,28 Q 0,20 8,20 H 40.5
-         Q 47.5,20 51.5,14.5 L 62,1.5 Q 63.2,0 65,0 H 8 Q 0,0 0,8 Z. The panel outline
-         is drawn unchanged over it; the wave never touches a row (the last row ends
-         6px above the foot).
-       ICONS. Tray placeholders unchanged (19px diamond, fg idle / alert attention);
-         menu row placeholders 16px, fg idle / on_select on a selected row. -->
+  <!-- Historical comparison note, reviewed 2026-09-27. The comparison
+       below was removed because its "today"/target language no longer
+       describes the checked-in implementation. Current bar configuration is
+       in src/eras/kitsch.rs; this SVG remains an original design reference.
+       The original trace citations above remain the basis for borrowed
+       silhouettes and sampled color families. -->
 </svg>
