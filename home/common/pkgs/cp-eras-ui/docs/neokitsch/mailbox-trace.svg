@@ -523,18 +523,18 @@
   <!-- the rows' titles and FROM: lines, under the rows' wipe (see
        #list-open in <defs>); the same clipPath as the rows' group in #lines -->
   <g font-family="Rajdhani" clip-path="url(#list-open-clip)">
-    <text x="193" y="276.0" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.99 1) translate(-193 0)">You'll regret that</text>
-    <text x="193" y="297.0" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.16 1) translate(-193 0)">FROM: JACKIE</text>
-    <text x="193" y="396.4" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.99 1) translate(-193 0)">Heist data sent to you</text>
-    <text x="193" y="417.4" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.16 1) translate(-193 0)">FROM: 805000451</text>
-    <text x="193" y="456.6" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.99 1) translate(-193 0)">I'm worried man</text>
-    <text x="193" y="477.6" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.16 1) translate(-193 0)">FROM: RACHEL ROSS</text>
-    <text x="193" y="516.8" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.99 1) translate(-193 0)">Special offer to you!</text>
-    <text x="193" y="537.8" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.16 1) translate(-193 0)">FROM: JINX JINX STORE</text>
-    <text x="193" y="577.0" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.99 1) translate(-193 0)">I'm worried man</text>
-    <text x="193" y="598.0" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.16 1) translate(-193 0)">FROM: RACHEL ROSS</text>
-    <text x="193" y="637.2" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.99 1) translate(-193 0)">Special offer to you!</text>
-    <text x="193" y="658.2" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.16 1) translate(-193 0)">FROM: RACHEL ROSS</text>
+    <text x="193" y="275.5833" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.975 1) translate(-193 0)">You'll regret that</text>
+    <text x="193.4167" y="297.0000" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.15 1) translate(-193 0)">FROM: JACKIE</text>
+    <text x="193" y="395.1500" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.975 1) translate(-193 0)">Heist data sent to you</text>
+    <text x="193.4167" y="416.5667" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.13 1) translate(-193 0)">FROM: 805000451</text>
+    <text x="193" y="455.7667" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.975 1) translate(-193 0)">I'm worried man</text>
+    <text x="193.4167" y="477.1833" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.15 1) translate(-193 0)">FROM: RACHEL ROSS</text>
+    <text x="193" y="515.1333" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.975 1) translate(-193 0)">Special offer to you!</text>
+    <text x="193.4167" y="536.9667" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.13 1) translate(-193 0)">FROM: JINX JINX STORE</text>
+    <text x="193" y="575.3333" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.975 1) translate(-193 0)">I'm worried man</text>
+    <text x="193.4167" y="596.7500" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.15 1) translate(-193 0)">FROM: RACHEL ROSS</text>
+    <text x="193" y="635.1167" font-size="18" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(0.975 1) translate(-193 0)">Special offer to you!</text>
+    <text x="193.4167" y="656.5333" font-size="13" letter-spacing="0" font-weight="500" fill="#f3c583" transform="translate(193 0) scale(1.15 1) translate(-193 0)">FROM: RACHEL ROSS</text>
   </g>
   <!-- #bar-fade-text: the selected row's title and FROM: line, dark on
        the veneer, fade in WITH the bar: the same 0 -> 1 over 0.3 s from
@@ -547,7 +547,7 @@
              begin="0.4s" dur="0.3s" calcMode="spline" keyTimes="0;1"
              keySplines="0.61 1 0.88 1" fill="freeze"/>
     <set attributeName="opacity" to="0" begin="0s" end="bar-fade-text.begin"/>
-    <text x="193.5" y="336.2" font-size="18" font-weight="500" fill="#7b5438" letter-spacing="0" transform="translate(193 0) scale(0.99 1) translate(-193 0)">Urgent information (!)</text>
+    <text x="193.5" y="334.9500" font-size="18" font-weight="500" fill="#7b5438" letter-spacing="0" transform="translate(193 0) scale(0.975 1) translate(-193 0)">Urgent information (!)</text>
     <text x="193" y="357.2" font-size="13" letter-spacing="0" font-weight="500" fill="#895f3b" transform="translate(193 0) scale(1.16 1) translate(-193 0)">FROM: MOM</text>
   </g><!-- /bar-fade-text -->
 

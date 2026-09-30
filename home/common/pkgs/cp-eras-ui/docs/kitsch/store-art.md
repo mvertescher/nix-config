@@ -13,3 +13,30 @@ The shelf/card outlines, fourth-card residue and hit viewport, card typography, 
 ## M certification pass
 
 The source band at card-local x−17..92/y74..92 has a heavy frame around RG5, a dark square around a light disc marked SC, a double angular C, and a hollow warning triangle. The previous SVG/runtime had thin corner ticks, a bare dark disc and a solid triangle. The source crop is `images/kitsch-store.png` native x1094..1392/y696..744; `/tmp/k-band-source-large.png` is a temporary 3× inspection crop. The four marks now use the same measured paths in the parent SVG, component sheet and runtime. Knockouts follow the band's normal yellow or selected amber fill. The warning micro-print uses 97 row contours from the source's dark pixels, sampled in 2-native-pixel cells after excluding isolated grain. This retains the source's illegible print pattern without inventing words; its exact photographic softness remains unresolved. The refreshed SVG crop is `/tmp/k-band-m-crop.png`. Native M review is pending.
+
+Native M review resolves the inset certification mark as three bars on
+a vertical stem, with angular upper/lower tips, rather than a second small
+C. Its native stem is near x1203, and bars near y717/725/734; the new inset
+uses a 0.65 design-pixel stroke in both SVG and Rust. This also removes the
+M mismatch between SVG 1.3 and Rust 0.8. Native confirmation is pending.
+
+## Integrated validation — 2026-09-29
+
+N native review accepts the corrected full-height inset three-bar mark and the broader certification silhouettes. The source/SVG/Iced crop confirms placement and continuity; exact tiny RG5/SC glyphs, coarse warning microprint and photographic softness remain outside that closure. All 22 repository checks pass.
+
+## SC corner apertures — 2026-09-29
+
+The original SC mark also has four small light apertures inside the dark square, outside the central disc. The prior square/disc path omitted them. Four compact triangular contours were fitted to card 1's source pixels and checked without moving them against selected card 2 and ordinary cards 3–4. The traced SVG uses even-odd cutouts; runtime paints the same shapes in the disc's band ink, so ordinary yellow and selected/held feedback retain their existing color mapping. The square, disc, SC letters, and adjacent certification art stay in place.
+
+At 3840 × 2160, RGB absolute error across fixed corner patches falls by 17.1% on card 1, 8.7% on selected card 2, 15.0% on card 3, and 13.9% on card 4. The SVG trial changes 178 pixels, all inside the four corner patches on each card; its central disc and SC letter region are pixel-identical. Source/current/trial native-pixel and enlarged crops, exact bounds, and conservative false-cutout counts are in `/tmp/cp-eras-resume-20260929/ab-k8-fit/findings.md`. The lower-right aperture on card 4 is the weakest holdout because its photographed opening is softer and closer to the square edge. Exact photographic softness and the warning microprint's unreadable contours remain unresolved; fresh AB native captures now verify the geometry. Fifteen of sixteen
+native corner patches improve, as does every card's combined score; the
+fourth card's lower-right patch worsens20.06→22.63. Fractional held,
+selected-last, custom-color and opening captures retain the band/knockout
+relationship and clipping. Both gates and the full AB check pass; see the integrated acceptance below.
+
+### AB integrated acceptance
+
+The source/native/state review is integrated: all 286 Rust tests and 22
+repository checks pass, including 27 exact visual cases on their first
+attempt. All 199 frozen file hashes match the Nix source. This closes the
+bounded AB correction above; its stated photographic/glyph limits remain.

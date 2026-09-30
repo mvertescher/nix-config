@@ -128,7 +128,7 @@
            7.5 regular ls 0.6 in #4f9a92: 20-30% short and a fifth of
            the photo's ink); boxed A/C redrawn at the measured 24x24
            2px squares with a size-18 bold letter stretched 1.7x
-         - foot line: both runs Rajdhani 700, ls 0.25 / 0.24 from x 503
+         - foot line: both runs Rajdhani 700, ls 0.18 / 0.24 from x 503
            and 641 (the notice was regular; coverage 0.116 -> 0.165 vs
            the photo's 0.172, extent unchanged)
          - G1i inks 0.57 -> 0.73 (yellow 0.68 -> 0.91, teal 0.48 -> 0.48,
@@ -187,9 +187,10 @@
       <!-- Source-supported frame, RG5, SC disc, angular C and hollow warning mark. -->
       <path d="M-16.5 78.5H-5.7V89.5H-16.5Z M-15 80H-7.2V87.8H-15Z" fill="#5a3a08" fill-rule="evenodd"/>
       <text x="-14.5" y="83.8" font-family="Rajdhani" font-size="3.2" font-weight="700" fill="#5a3a08">RG5</text>
-      <path d="M-0.7 78.5H10.4V89.5H-0.7Z M8.85 84A4.05 4.05 0 1 1 0.75 84A4.05 4.05 0 1 1 8.85 84Z" fill="#5a3a08" fill-rule="evenodd"/>
+      <path d="M-0.7 78.5H10.4V89.5H-0.7Z M8.85 84A4.05 4.05 0 1 1 0.75 84A4.05 4.05 0 1 1 8.85 84Z M0.3 79.58L1.6 79.58L0.75 80.75Z M8.55 79.58L9.7 79.58L9.05 80.75Z M0.22 89.08L0.65 87.42L1.95 89.08Z M8.52 89.08L9.5 87.42L10.12 89.08Z" fill="#5a3a08" fill-rule="evenodd"/>
       <text x="2.35" y="85.6" font-family="Rajdhani" font-size="4.5" font-weight="700" fill="#5a3a08">SC</text>
-      <path d="M24.5 81.2L22.6 78.5H17.6L15.5 80.6V87.4L17.6 89.5H22.6L24.5 86.8 M22 82.4H19.5L18.5 83.4V84.5L19.5 85.5H22" fill="none" stroke="#5a3a08" stroke-width="1.3"/>
+      <path d="M24.5 81.2L22.6 78.5H17.6L15.5 80.6V87.4L17.6 89.5H22.6L24.5 86.8" fill="none" stroke="#5a3a08" stroke-width="1.3"/>
+      <path d="M23.5 81.8L21.75 80.5H17.25V88H21.75L23.5 86.8 M17.25 84.1H22.25" fill="none" stroke="#5a3a08" stroke-width="0.65"/>
       <rect x="28.5" y="74" width="64" height="18" rx="1.5" fill="none" stroke="#5a3a08" stroke-width="0.5"/>
       <path d="M30.3 90L36.5 77.6L42.7 90Z M33 88.7H40L36.5 81Z" fill="#5a3a08" fill-rule="evenodd"/>
       <path d="M36 82.8H37V86.7H36Z M36.5 87.45A0.55 0.55 0 1 1 36.5 88.55A0.55 0.55 0 1 1 36.5 87.45Z" fill="#5a3a08"/>
@@ -272,7 +273,7 @@
       </g>
       <!-- micro-text y 554..567 (local 336..349) -->
       <g font-family="Rajdhani" font-size="8" font-weight="700" letter-spacing="0.3" fill="#65e5c8">
-        <text x="4" y="341">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
+        <text x="4" y="341" letter-spacing="0.381967">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
         <text x="4" y="349">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
       </g>
     </g>
@@ -422,7 +423,7 @@
       <text x="224.5" y="436.5">EMPTY</text><text x="224.5" y="450">SOCKET</text>
     </g>
     <g font-family="Rajdhani" font-size="8" font-weight="700" letter-spacing="0.3" fill="#e9a50d">
-      <text x="4" y="483">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
+      <text x="4" y="483" letter-spacing="0.381967">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
       <text x="4" y="491">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
     </g>
   </g>
@@ -460,7 +461,7 @@
   <!-- one weight for the whole line (the notice is as bold as ARASAKA in the photo); tracking holds the extent
        x 504..1095 with ARASAKA ending at 634 and ONLY starting at 641 -->
   <g font-family="Rajdhani" font-size="9" font-weight="700" fill="#82f0d3">
-    <text x="503" y="870" letter-spacing="0.25">ARASAKA CONSUMER TECHNOLOGY</text>
+  <text x="503" y="870" letter-spacing="0.18">ARASAKA CONSUMER TECHNOLOGY</text>
     <text x="641" y="870" letter-spacing="0.24">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
   </g>
 </svg>

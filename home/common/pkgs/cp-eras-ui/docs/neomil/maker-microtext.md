@@ -50,3 +50,7 @@ The source still contains horizontal striations and pixel variation that
 this local approximation does not claim to reconstruct. Native and
 fractional Iced captures, opening review and final repository checks are
 required before accepting the runtime change.
+
+## Integrated validation — 2026-09-29
+
+The N integrated checkpoint accepts the runtime fit: native source RGB RMS falls 21.19→12.18 and 23.02→12.82. All 5,184 changed 4K pixels lie inside the two runs; the fractional capture changes 941 pixels in the same region and the early opening capture is unchanged. Relevant fidelity gates and all 22 repository checks pass, including exact dashboard/fallback goldens. Horizontal striations and the original rendering recipe remain outside this local model.

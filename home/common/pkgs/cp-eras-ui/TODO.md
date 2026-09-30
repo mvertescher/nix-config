@@ -1,4 +1,4 @@
-## Current remaining work (2026-09-28)
+## Current remaining work (2026-09-29)
 
 The [completion campaign](todo/completion.md) tracks the active lanes and
 integrated verification for the request to work through all open items.
@@ -8,12 +8,15 @@ The linked workstream records preserve the implementation history. Earlier
 the five-task feedback/native-control/extractor batch committed in `de56b25`.
 The earlier 82-file correction batch landed in `79c1a02`; its dated
 "staged" validation notes describe the state before that commit.
+The N–AC corrections and resize work are included in the current commit;
+their dated "staged" notes likewise preserve the state during validation.
 
 - **All-era reference SVG fidelity:** reviewed all 24 SVGs: 16 against
   source images, four against parent traces, and four as original bars.
   All 16 source gates pass, but
-  visual review finds missing content, simplified artwork, wrong geometry,
-  typography and material differences. The [reference correction plan](todo/reference-svg.md)
+  the original audit found missing content, simplified artwork, geometry,
+  typography and material differences. The later batches below resolve
+  primary defects; named local typography/printing/material residuals remain. The [reference correction plan](todo/reference-svg.md)
   lists concrete work; the [audit](docs/reference-svg-audit.md) records
   coverage, source evidence and gate limits. The first correction batch
   completes nine tasks and parts of E2/K2 across ten screens. The
@@ -38,6 +41,32 @@ The earlier 82-file correction batch landed in `79c1a02`; its dated
   designs. The [eighth batch](docs/reference-svg-round8.md) verifies broad
   login/store materials, primary store artwork and state/clipping behavior;
   local typography, certification, veneer flow and fine printing continue.
+  The [ninth batch](docs/reference-svg-round9.md) validates the recovered
+  L/M work and N fixes: all 269 Rust tests, 22 repository checks and 27 exact
+  visual matches pass. Source-derived margin CJK is deterministic; mailbox
+  upper contours, socket scatter and maker tails are now verified. The
+  [tenth batch](docs/reference-svg-round10.md) verifies store/mail/dashboard
+  typography and printing, Kitsch face/ghost fields and a bounded Neomil
+  resize preview: 272 Rust tests, 22 repository checks and all 27 exact
+  visual matches pass. Selected-frame geometry and finer materials continue.
+  The [eleventh batch](docs/reference-svg-round11.md) is verified:
+  Z passes 275 Rust tests, all 22 repository checks and all 27 exact
+  visual matches on their first attempt. V–Y native review accepts the selected frame,
+  chip-2, dashboard labels, fan materials/ghosts, value baselines, mailbox
+  ribs, lower frame echoes and veneer seam. Z calibrates the native footer
+  code. The Neo-kitsch implementation gate's classification mismatch is
+  corrected using strict component-mask evidence and negative controls;
+  it now passes at 89%, with existing thresholds unchanged.
+  The [twelfth batch](docs/reference-svg-round12.md) adds locally verified
+  socket trails and asynchronous eligible resize preparation: 285 Rust
+  tests, affected gates, all 22 repository checks and all 27 exact visual
+  cases pass. The [thirteenth batch](docs/reference-svg-round13.md) verifies
+  the Neomil margin word/slash, Kitsch badge apertures and native shelf
+  brands, and Neo-kitsch action labels: 286 Rust tests, all 22 checks and
+  27 exact visual cases pass. The [fourteenth batch](docs/reference-svg-round14.md)
+  then corrects the small margin plaque boundary with ten native-state
+  captures, both gates and another full check: 22 checks and 27 exact cases.
+  Changes remain staged/uncommitted.
 - **Neomil dashboard performance:** compositor/cache fixes reduce
   the measured 4K preparation median from 36.61 s to 0.404 s while
   preserving the original image layers. Route returns stay cached.
@@ -47,7 +76,7 @@ The earlier 82-file correction batch landed in `79c1a02`; its dated
   fixed: startup clock, selection heading, source typography,
   materials, cartridges and omitted printing/row shading. Fine printing
   echoes and cartridge edge detail remain. The reference recheck’s lower
-  reader corner/side step is corrected; upper-contour refinement remains.
+  reader corner/side step and upper contour are corrected and verified.
   Exact background texture needs
   original source material. See the [mailbox record](todo/neomil-mailbox.md)
   for validation and the separate live-desktop follow-up.
@@ -63,16 +92,24 @@ The earlier 82-file correction batch landed in `79c1a02`; its dated
 - **Neomil store correctness:** startup, selected/cropped bounds, wash
   contour, open edge, lower chamfer and shared ground are fixed.
   Broad card/navigation fields and primary source logo/rifles now pass
-  native/state review. Typography, certification/symbol fitting, deterministic
-  margin CJK printing and fine scan echoes remain.
+  native/state review. Primary certification/KIROSHI and deterministic
+  margin CJK also pass. Independent ordinary/selected typography and footer
+  fits are verified through T. V's selected top/right frame and side-printing
+  correction passes native/state review and the full Z check.
+  AB corrects the small MASURAO word and slash, preserving CJK. Its
+  O/plaque leading edge is corrected in AC; inner ink and the second-A
+  junction remain local follow-ups, alongside repeated printing and fine
+  scan echoes.
   Socket occupancy, measured spacing and per-card origins are corrected;
-  directional printing echoes remain open. See the
+  directional printing echoes now pass AA native/state and integrated
+  review; irregular fine grain remains open. See the
   [store plan](todo/neomil-store.md). Frozen goldens and broad shape gates
   passed despite the audited defects; retain live/state-specific checks.
-- **Neomil dashboard source fidelity:** local tasks remain for maker
-  microtext trails/edge softness, chip-2/tiny tape-mark ink, and newly
-  identified footer typography/printing. The fine background still needs
-  its original asset or authoring recipe. Follow
+- **Neomil dashboard source fidelity:** chip-2 ink passes local native/state
+  review; Z corrects footer code height/baseline. Fine footer printing and
+  exact glyph contours remain. Tiny tape-mark ink and maker microtext
+  tails/edge softness are verified; exact horizontal scan detail remains. The fine
+  background still needs its original asset or authoring recipe. Follow
   the [measured plan](todo/neomil-dashboard.md); broad shape-area gates do
   not establish detail completeness.
 - **Kitsch dashboard hover:** needs a hub-specific design. Press is done;
@@ -127,6 +164,11 @@ desktop verification remain open.
   theme plumbing, motion, caller-dependent widgets and desktop follow-ups.
 - [Verification infrastructure](todo/verification.md): headless rendering,
   desktop renderer troubleshooting and golden-history notes.
+
+## Historical validation before the reference campaign
+
+These batch counts and staging notes describe their original checkpoints;
+the current completion record above supersedes them.
 
 The resumed batch adds six matrix/code ink fits, margin and vertical-brand
 copies, and GO HOME heading/maker corrections. The earlier dashboard/reader

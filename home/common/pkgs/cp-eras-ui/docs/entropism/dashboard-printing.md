@@ -59,3 +59,7 @@ and 854–873, while Iced rows are 754–775, 805–825, and 855–875. Their Ru
 baselines move up 0.85 design pixels. The source-fitted SVG baselines remain
 unchanged. This is a renderer calibration of the panel copy, not a different
 source layout.
+
+## Integrated validation — 2026-09-29
+
+L/N native review accepts the ten-line baseline correction. SVG/native text-mask IoU improves .509→.801; all copy remains complete and unclipped. The integrated N repository check passes, including the refreshed dashboard golden at 100.000%. Exact source glyph contours/glow remain separate.

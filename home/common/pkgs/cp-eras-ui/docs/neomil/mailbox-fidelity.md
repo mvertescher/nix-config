@@ -81,6 +81,36 @@ state; the source only establishes the initial row 1 selection. The list
 opening clip starts at x115 and is 410px wide so the corrected left tip
 at about x122 is fully visible. It retains the original 440ms timing.
 
+The normal terminal's ribs follow a separate source measurement. Row 2
+gives a 3.316-native-pixel rib pitch; six independent rows give 3.311–3.320.
+The old 22-rib template had a 2.999-pixel pitch, so the normal template
+uses 20 ribs. W's first 20-rib correction improved its native changed-footprint
+RGB error from 26.73 to 22.64, and full-strip error on held-out rows 3, 5,
+and 7 from 24.65/27.96/29.54 to 21.76/25.72/24.06. It retained a visible
+angle residual: its native phase slope was about −0.612, while source rows
+2, 3, 5, and 7 were −0.86 to −0.87 at the same 3.316-pixel cadence.
+
+Those phase slopes are measured at increasing depth relative to the
+terminal's sloping top border, not as a path endpoint `dx/dy`. With top
+slope 0.33846, measured phase slope `m` relates to physical line slope
+`s` by `m=s/(1−0.33846s)`. A row-2 source fit and three independent row
+holdouts give `m≈−0.85`, or inferred `s≈−1.20`; W's endpoint slope was
+about −0.815. The revised scratch geometry moves the 20 starts +0.70
+native pixel along the top for phase registration and sets each endpoint
+−2.48 design x and +2.0773 design y from its start, on the same lower
+border. Native-size SVG full-strip RGB MAE moves 21.48→20.38 on row 2
+and 19.86→17.76, 23.27→21.70, 21.79→20.01 on held-out rows 3, 5,
+and 7. Their gap-only errors worsen by 0.33–0.56, so softness/ink remains
+an independent limit. This revised angle awaits the next native trial.
+The terminal rule, stroke ink `#9a2326`, 0.4-design width, shell, disc,
+and selected cartridge are unchanged. No backing or secondary material
+was added.
+
+The row-2 rib signal has source red amplitude 8.36; opaque W SVG ink
+yields 12.35, so contrast remains too strong. The revised geometry is a
+direction/count/phase correction, not exact terminal ink; its new native
+render and row feedback still need review.
+
 ## Review and remaining limits
 
 Inspect source→SVG→Iced with `scripts/triptych.sh --diff neomil mailbox`,
@@ -129,3 +159,39 @@ Bold. The pill centreline frame is75.4167×10.8333, with a1px stroke and
 selected origin is relative(162.5,46.875), both measured against the
 logical row. Keeping the selected offset explicit preserves the initial
 source placement without shifting every normal pill down.
+
+### X native angle confirmation
+
+The corrected angle changes 1,141 native pixels, all confined to the seven
+normal terminal strips. Changed-pixel RGB MAE improves 24.264→20.396.
+Full-strip errors improve on row 2 (22.889→21.105) and held-out rows 3, 5,
+and 7 (21.758→19.633, 25.716→23.494, 24.060→22.759). Source cadence
+is 3.311–3.316 native pixels and X measures 3.313–3.316. Its apparent
+sloped-coordinate phase slope improves from about −.612 to −.800, versus
+the source's −.861 to −.870; finite stroke coverage remains approximate.
+The fitted row's gap error increases slightly (22.767→23.031), while
+all three held-out gaps improve. This is an explicit local tradeoff,
+not a claim that faint printing is exact. Fractional rest, last-row
+selection and ordinary held feedback are reviewed; selected art and all
+other screen pixels remain unchanged. Both affected X fidelity gates pass.
+
+### AA uniform-contrast trial rejected
+
+A single opacity fitted to the normal row-2 ribs (.721) does not transfer
+to held-out rows 3/5/7, which independently imply .943/.824/1.025. The
+fit row's central RGB MAE improves only 15.354→15.299; two held-out rows
+worsen, and row 3's rib-footprint error rises 11.871→13.636. Dark gaps
+do not improve. Source, SVG and native crop review shows residual local
+softness that uniform opacity cannot reproduce. The 20-rib geometry and
+current ink remain unchanged; selected art and shell controls are identical.
+This rejected trial does not close the fine printing/material task.
+
+A follow-up rib-only Gaussian diagnostic also fails to identify a shared
+material correction. A .4-native-pixel spread improves SVG whole-patch RGB
+error in all four rows, but row 3's positive-ridge red error worsens
+21.41→22.20. Native positive cores and adjacent gaps are both already
+brighter than source, so spreading that native ink can worsen the gaps.
+The source's ridge-to-gap modulation varies substantially by row. This
+image-space probe preserves geometry but cannot separate local background,
+registration and adjacent edge printing well enough to justify an actual
+renderer change. No blur or anisotropic fit is adopted.

@@ -1,14 +1,15 @@
 # Reference SVG correctness
 
-Rechecked 2026-09-21. [All workstreams](../TODO.md) ·
+Initial audit 2026-09-21; correction status updated through AC, 2026-09-29. [All workstreams](../TODO.md) ·
 [Evidence and complete inventory](../docs/reference-svg-audit.md).
 
 All 24 references were rendered and reviewed: 16 source-backed screen
 traces, four derived component sheets and four original bars. All 16 G1i
 checks pass, but they do not validate text, detailed art or local material.
-The source images are available locally. These are actionable corrections;
-exact unknown texture recipes and unsourced interaction design remain
-separate. The audit itself changed documentation only; the first
+The source images are available locally. Completed entries record accepted
+corrections; open entries distinguish bounded local fits from unresolved
+source-material research. Exact unknown texture recipes and unsourced
+interaction design remain separate. The audit itself changed documentation only; the first
 [correction batch](../docs/reference-svg-fixes.md) now implements nine tasks
 and parts of E2/K2 across ten screens. The [second batch](../docs/reference-svg-round2.md)
 adds login/badge/envelope contours, mailbox text fitting, socket spacing and
@@ -29,38 +30,35 @@ mailbox inks, improves NM1 footer typography/copies, and corrects K9 citations.
   eleven, with heavier glyphs and tighter pitch. Match the ten primary
   stars and underline, then synchronize component examples and source
   descriptions. Preserve runtime secret semantics.
-- [ ] **E2 — Mailbox text fit:** first body line ends at x1233.3 in the
-  source versus x1149.6 in the SVG. The remaining lines have similar
-  width errors. `textLength`/`lengthAdjust` do not affect the pinned render;
-  use supported geometry/typography, preserving actual words and breaks.
-  Body fit and boxed A/B/C are corrected: mean body line-end error is
-  2.46px, down from77.04px. The second pass fits 26 section/row/sender/panel/
-  button/micro-print runs: mean edge error 2.76→0.20px. Source-font contours
-  and per-action width residuals up to 2.92px remain. The fourth batch
-  calibrates the shared mailbox baseline factor: native SVG-to-Iced
-  vertical-edge error over 26 runs falls 1.210→0.056px, with widths
-  unchanged. The fifth batch moves the third paragraph from y533.2 to
-  y535 without changing earlier lines, and fits each badge's width and
-  center in SVG, component sheet and Iced. Native runtime horizontal
-  bounds match the source except one T4 edge by 0.417px. Font contours,
-  small vertical raster differences and action-label width residuals
-  remain open. Words/breaks are preserved. See the
-  [baseline measurements](../docs/entropism/mailbox-baseline.md) and
-  [paragraph/badge correction](../docs/entropism/mailbox-layout.md).
+- [ ] **E2 — Remaining mailbox glyph/printing fidelity:** body widths,
+  paragraph spacing, badge geometry, native baselines and all four action
+  widths are fitted. N source/native action endpoints agree within one
+  pixel. Original typeface contours and photographed edge modulation remain
+  separate from those completed layout corrections; further changes need
+  source-supported local comparisons, not another global scale adjustment.
+  Preserve words and breaks. See [baseline measurements](../docs/entropism/mailbox-baseline.md)
+  and [paragraph/badge correction](../docs/entropism/mailbox-layout.md).
 - [x] **E3 — Store fourth-card crop:** primary source drawing stops near
   x1564.6, while the SVG continues to x1600. Measure a persistent viewport
   and retain the open cut; classify faint residue beyond it separately.
-- [ ] **E4 — Store artwork and lettering:** replace the block rifle and
-  angular 4ST substitute with measured contours/detail. Refit stats,
-  sockets and compliance text. Preserve inverse ink on selected card1.
-- [ ] **E5 — Four-screen materials and remaining hub printing:** fit broad
-  light fields before fine texture. Current radial ground is too olive
-  at the sides and misses the upper illumination. Check each source before
-  sharing a model; retain the already-close login footer fill in SVG. Native
-  integration review found Iced still substitutes the brighter selection
-  role there; the reference-only override is now verified for standalone
-  and published palettes. Hub geometry
-  and 7+3 body lines are supported; refine caption/body ink locally.
+- [ ] **E4 — Remaining store fine lettering/printing:** primary rifles,
+  inverse seams, 4ST contours, socket scatter and local stat/socket fit are
+  implemented and native-reviewed. W fits the value glyph size/weight and
+  X calibrates the stretched native baselines; ordinary and selected
+  holdouts improve while the unchanged `5` runs preserve their fit.
+  See [value measurements](../docs/entropism/store-typography.md).
+  Do not replace that artwork again.
+  Remaining exact glyph forms and fine weapon/printing echoes need a newly
+  identified source crop before implementation. See [art measurements](../docs/entropism/store-art.md).
+- [x] **E5 — Broad four-screen materials and hub printing:** independent
+  login/shared grounds replace the olive field; native/SVG patch medians
+  agree within one RGB level. Caption stroke contamination, tile/caption/
+  body inks, complete ten-line copy and native body baselines are corrected.
+  Reference login footer fill also matches source while custom themes keep
+  semantic selection. H/K1/L/N review and the N full check support these
+  scoped corrections. Fine grain, local exposure and exact letter edges
+  remain source-material limits. See [ground fit](../docs/entropism/ground-fit.md)
+  and [hub printing](../docs/entropism/dashboard-printing.md).
 - [x] **E6 — Derived sheet, bar palette and provenance:** update inherited
   specimens; reconcile bar border/selection `#5d7752`/`#9cb795` with the
   accepted `#8fba97`/`#a6d3a7` roles. Correct obsolete stroke/halo claims
@@ -74,10 +72,15 @@ mailbox inks, improves NM1 footer typography/copies, and corrects K9 citations.
 - [x] **K1 — Dashboard content and panel:** replace nine placeholder bars
   with the source's eight lines; reconstruct the connected warning ribbon,
   tab and rounded panel corners. Keep the source BRAINDANCE content.
-- [ ] **K2 — Dashboard fan printing/material:** idle labels need source
-  mint ink instead of dark `#123c38`. Keep selected EVENTS dark on yellow.
-  Label polarity is corrected. Face fields and stroke/material fitting
-  remain open; supported fan/ghost geometry is preserved.
+- [ ] **K2 — Remaining dashboard fan overlap/softness:** mint idle labels,
+  dark selected EVENTS, broad face illumination and label placement are
+  corrected. W also fits ghost width, count and pitch; all seven measured
+  edge profiles improve, and independent opposite-edge positions stay
+  within one native pixel across fan depth. Fractional held/selection and
+  opening checks preserve the added far silhouettes. Translucent overlap
+  visibility and photographed softness remain approximate; do not repeat
+  the rejected uniform ghost-opacity reduction. See the
+  [material measurements](../docs/kitsch/dashboard-material.md).
 - [x] **K3 — Four-screen grounds:** fit the rose and grey-green fields
   against clear patches/holdouts. Test common dashboard/mail/store data;
   login differs. This includes broad color error, beyond fine grain.
@@ -88,12 +91,28 @@ mailbox inks, improves NM1 footer typography/copies, and corrects K9 citations.
 - [x] **K4 — Login control contours:** restore the input's stepped lower
   edge and gap above ENTER, plus rounded step/control corners. Preserve
   the full-height bracket and the three-card arrangement.
-- [ ] **K5 — Scoped typography:** fit login ENTER/PROTECTED/clock, store
-  metadata/stats/socket/compliance labels and mailbox sender/notice text.
-  PROTECTED spans about101px in the source versus78px in the SVG. Preserve
-  correct mailbox body wording and line breaks; avoid global scaling.
-  Login metrics are fitted within about 1px; store/mail and exact glyph
-  forms remain open.
+- [ ] **K5 — Remaining store compliance/metadata fit:** login controls and
+  clock, store titles/stats/values/sockets/footer tracking, and mailbox
+  senders/notices are fitted. Selected sender weight follows selection;
+  native notice primary areas now agree with source within 0.5%. P corrects
+  the first compliance line's width; three native endpoints are within one
+  source pixel. T fits the footer brand tracking and passes native/state,
+  gate and full-check review. Exact glyph contours, softness and fine
+  metadata printing remain approximate. See [printing fits](../docs/kitsch/typography-fit.md).
+- [x] **K5 follow-up — Port shelf-brand width/weight to native drawing.**
+  AB review separates a runtime transcription gap from exact glyph limits:
+  source and SVG PETROCHEM span native x1558–1683 on card 1, while Iced
+  ends at x1644; selected card 2 and ordinary card 3 repeat the 39-pixel
+  deficit. BETTERLIFE TEC is also too narrow and uses Regular rather than
+  the source/SVG's bold weight. Fit these two native runs independently,
+  preserve their boxes, band geometry and semantic inks, and validate
+  ordinary/selected/fractional feedback plus first/middle/last segments.
+  The already fitted SVG and unrelated compliance/footer runs stay fixed.
+  AB source/native/state review and both gates pass. The full check passes
+  all 22 checks and 27 exact visual cases; 286 Rust tests pass. See the
+  [AB checkpoint](../docs/reference-svg-round13.md) for the local metrics
+  and retained fine-printing limits.
+
 - [x] **K6 — Selected mailbox envelope:** source row1 has an open flap;
   the SVG reuses the closed symbol. Trace a distinct open glyph and retain
   closed icons for the remaining four rows. Correct the old prose claiming
@@ -105,17 +124,28 @@ mailbox inks, improves NM1 footer typography/copies, and corrects K9 citations.
   applies to selection/feedback. The source's broader ground vignette and
   exact chromatic echo remain separate material limits. See the
   [measurement record](../docs/kitsch/store-fade.md).
-- [ ] **K8 — Store artwork and feet:** finish rifle internals, source
-  socket scatter and certification marks. Rounded lower corners on
-  normal/selected cards are corrected with a measured 10.5px quadratic
-  corner span; normal/selected right-edge errors fall to 0.67/0.42px.
-  Selected card2's gun offset, feedback and fourth-card fade are preserved.
-  Source rifle contours and 25-cell socket scatter are now verified in K1;
-  native primary-mask IoU is .911/.941 for ordinary/selected rifles.
-  Certification/warning SVG details are ported, but the source comparison
-  still shows schematic RG5/ring/E lettering and warning micro-lines;
-  their primary contour/printing fit remains actionable. Exact halo
-  fitting is separate. See [corner measurements](../docs/kitsch/store-corners.md).
+- [ ] **K8 — Remaining tiny certification printing:** source rifle and
+  inverse contours, 25-cell socket scatter, lower card corners and the
+  primary certification/warning silhouettes are implemented and reviewed.
+  N corrects the RG5 frame, SC disc, hollow warning and inset three-bar mark;
+  tiny RG5/SC glyphs and warning microprint remain approximate. Further work
+  must use local source comparisons and retain selected contrast/fourth-card
+  clipping. Exact photographic halo remains separate. See
+  [art measurements](../docs/kitsch/store-art.md).
+- [x] **K8 follow-up — Restore four SC badge corner apertures.** A local
+  source recheck finds four small light cutouts inside the dark square,
+  outside its circular disc, repeated on all four photographed cards.
+  SVG and Iced omit them. Fit compact knockout contours against card 1
+  and check the selected and remaining ordinary copies independently.
+  Preserve the square, disc, SC letters, band colors and fourth-card clip;
+  verify source/SVG/native pixels and feedback before closing. This is
+  a bounded topology correction, separate from illegible warning text and
+  exact photographic halo.
+  AB source/native/state review and both gates pass. The full check passes
+  all 22 checks and 27 exact visual cases; 286 Rust tests pass. See the
+  [AB checkpoint](../docs/reference-svg-round13.md) for the local metrics
+  and retained fine-printing limits.
+
 - [x] **K9 — Source citations:** corrected login bracket/barcode bounds,
   bar USER-box extent and blanket ink/stroke claims. Descriptions distinguish
   path control points from endpoints and thresholded source ink from exact
@@ -147,16 +177,45 @@ mailbox inks, improves NM1 footer typography/copies, and corrects K9 citations.
   inks (#7b5438/#895f3b/#865c39) in the reference runtime, including held
   selection. Custom palettes retain semantic roles. Native captures confirm
   the change is confined to those marks; the photo remains darker/softer,
-  and subject/sender font fitting remains open. See the
-  [ink measurements](../docs/neokitsch/mailbox-inks.md).
+  while exact glyph contours and photographic softness remain. Through T,
+  the store 4ST/stat/socket fits, seven mailbox title/sender rows and
+  dashboard CUSTOMER header pass source/native/state and integrated checks.
+  V also improves all seven dashboard module-label center errors and
+  aligns the left LEVEL bounding box, with fractional/custom/opening
+  review. Exact glyph contours, local header ink and photographic softness
+  remain; rejected uniform ink/left-T1 changes stay unapplied. CTA geometry
+  is already close to source. See the
+  [ink measurements](../docs/neokitsch/mailbox-inks.md) and
+  [header fits](../docs/neokitsch/dashboard-header-typography.md).
+- [x] **NK-05 follow-up — Port mailbox action-label typography.** AB
+  source/SVG/native review finds all four RIFLES runs still use 15px Regular
+  in Iced, versus the SVG's 16px Medium with tracking. Native widths are
+  92–93 pixels, source 109 and SVG 111; native caps are also five pixels
+  short. Fit native size/weight/width and label origins independently of
+  the button frames, preserving action content and semantic ink. These
+  action drawings have no pointer behavior in the current mailbox; do not
+  invent interaction states for this typography correction. Check all four
+  source copies, fractional row-selection states and custom ink.
+  Photographic halo and exact font contours remain separate.
+  AB source/native/state review and both gates pass. The full check passes
+  all 22 checks and 27 exact visual cases; 286 Rust tests pass. See the
+  [AB checkpoint](../docs/reference-svg-round13.md) for the local metrics
+  and retained fine-printing limits.
+
 - [x] **NK-06 — Dashboard reference copy:** restore the source's 6+2 body
   lines. Current SVG intentionally substitutes 5+3 mailbox lines; keep
   application content choices separate from the source reference.
-- [ ] **NK-07 — Veneer pattern:** correct dominant direction, seam and
-  coverage per source surface. Store selected body is mostly vertical in
-  the source but horizontal in SVG; dashboard panel and mailbox bar also
-  have different convergence patterns. This follows earlier grain-presence
-  work. Dominant geometry is actionable without the exact authoring asset.
+- [ ] **NK-07 — Remaining veneer curvature and convergence:** the selected
+  store body already has 125 longitudinal strands and its cross-grain seam
+  in SVG/Iced; the old horizontal-body premise is superseded. Its remaining
+  local differences are straighter/evenly spaced strands and a regular
+  socket-band stripe in place of the photographed fan. Y corrects the
+  right seam bend; broader convergence remains unresolved. A local cubic
+  family improves angles but worsens ridge density and tight RGB holdouts,
+  so it is rejected.
+  Dashboard lower convergence and mailbox bar corner/central branching
+  remain open. Rejected fits and their held-out failures are recorded in
+  [veneer measurements](../docs/neokitsch/veneer-fit.md).
 - [x] **NK-08 — Store weapons:** shared source-native MAGNUM contours
   replace the block silhouettes, fitted at 0.99 scale with measured local
   translation. Both plain and raised cards retain their placement and
@@ -197,19 +256,35 @@ mailbox inks, improves NM1 footer typography/copies, and corrects K9 citations.
 
 - [ ] **NK-14 — Store frame ink and right-corner refinement:** the outer
   contour and five echo strokes still differ in brightness/softness from
-  the photo; the innermost right turns are tighter. Fit stroke materials
-  and corner extents on both plain and selected backgrounds, retaining
+  the photo. The inner upper turns are corrected below; fit remaining stroke
+  materials on both backgrounds, retaining
   NK-09's corrected common shoulder foot, tab taper and contour count.
   Native source profiles at x1320/1360/1400 resolve all six strokes;
   at x1360 the faint innermost line peaks near RGB76/58/37. Avoid a bright
-  mask that drops it. See the [frame record](../docs/neokitsch/store-tabs.md).
+  mask that drops it. The ninth batch corrects the three inner upper
+  turns: native ridge positions agree with source within about 1–2 pixels
+  on both backgrounds, and full stems/lower joins retain continuity.
+  W corrects the lower outer extents; X restores the missing fifth lower
+  echo and fits the side turns. Native ordinary bottom ridges are within
+  one source pixel; selected inner ridges retain 1–3px errors. A selected
+  spacing trial improves the straight span but worsens independent bends
+  and is rejected. The innermost line remains too dim, with no supported
+  uniform opacity correction. The implementation gate's classifier-boundary
+  failure is corrected through strict component-mask identity, preserving
+  missing/moved/overlap failures and the existing thresholds. See the
+  [frame measurements](../docs/neokitsch/store-frame.md) and
+  [gate diagnosis](../docs/reference-svg-round11.md).
 
-- [ ] **NK-15 — Runtime socket scatter:** native K review finds the
+- [x] **NK-15 — Runtime socket scatter:** native K review found the
   selected store socket still renders a schematic block QR, while the
   source and SVG have scattered cells. Port the measured SVG occupancy,
   pitch and origins to ordinary/selected runtime cards and inspect the
   BASKET variant. Preserve source orientation and feedback recoloring;
-  this is artwork, not an encoded QR payload.
+  this is artwork, not an encoded QR payload. Completed with 25 discrete
+  cells, measured pitch/origins and the BASKET variant. Native/SVG socket
+  mask IoU is .973; source/native improves .463→.644. Held fourth-card
+  clipping and recoloring pass native review and the N repository check.
+  Source glow/material remains separate.
 
 ## Neomil
 
@@ -219,13 +294,16 @@ Keep the existing screen records as the owners of these tasks:
   screen-specific materials, palette/geometry drift and fine echoes.
 - [Dashboard](neomil-dashboard.md): **NM1** footer primary typography and
   broad printing copies are improved; runtime cap-height residuals and fine
-  striations remain, alongside maker microtext and remaining small ink.
+  striations remain. Maker microtext, tiny tape ink and chip-2's bounded
+  ink correction have passed local native review.
 - [Mailbox](neomil-mailbox.md): **NM2 is fixed**, including the inward
   side step, square lower corner and measured primary stroke. Upper-edge
-  fit and fine cartridge/text detail remain.
+  fit and normal-cartridge count/cadence/angle are corrected; fine
+  cartridge/text contrast and echoes remain.
 - [Store](neomil-store.md): **NM3 is fixed**, restoring the 25th socket
   cell and selected origin. The second batch fits cell spacing and all four
-  origins; materials, printing and artwork remain.
+  origins. Primary artwork/materials and selected frame geometry are
+  corrected; repeated/margin printing and scan echoes remain.
 
 - [x] **NM4 — Current source/excerpt descriptions:** correct stale
   component statements about deleted `Layout::OpsCharts` and different

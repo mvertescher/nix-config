@@ -172,7 +172,7 @@ impl Store {
                 style,
                 prims,
                 cursor_group: self.style.store_cursor,
-                states: self.style.store_states,
+                states: self.style.store_states_for(self.category, self.card),
                 picked: self.picked(),
                 on_select: |group, index| Message::Select { group, index },
                 at: self.at(),
@@ -205,9 +205,12 @@ mod tests {
                 let picked = Picked { category, card, module: 0 };
                 let (scene, backdrop) = style.store_layers(category, card);
                 assert!(std::ptr::eq(scene, reference.scene));
+                assert!(std::ptr::eq(style.store_states_for(category, card), reference.states.unwrap()));
                 assert_eq!(reference.backdrops.iter().filter(|b| b.category == category && b.card == card).count(), 1);
                 let original_motion = style.store.iter().find_map(|p| match p {
-                    crate::style::Prim::Motion { motion, .. } => Some(motion), _ => None,
+                    crate::style::Prim::Motion { motion, .. }
+                        if matches!(motion.change, crate::style::Change::Clip { .. }) => Some(motion),
+                    _ => None,
                 }).unwrap();
                 assert!(backdrop.iter().any(|p| matches!(p, crate::style::Prim::Motion { motion, .. } if motion == original_motion)));
                 let mut original = Vec::new();
@@ -226,12 +229,15 @@ mod tests {
             }
         }
         assert_eq!(style.store_layers(5, 4), (style.store, style.store));
+        assert!(std::ptr::eq(style.store_states_for(5, 4), style.store_states));
         let mut custom = style;
         custom.palette.panel = rgb(0x183638);
         assert_eq!(custom.store_layers(0, 1), (style.store, style.store));
+        assert!(std::ptr::eq(custom.store_states_for(0, 1), style.store_states));
         for era in [Era::Entropism, Era::Kitsch, Era::Neokitsch] {
             let style = era.style();
             assert_eq!(style.store_layers(0, 1), (style.store, style.store));
+            assert!(std::ptr::eq(style.store_states_for(0, 1), style.store_states));
         }
     }
 

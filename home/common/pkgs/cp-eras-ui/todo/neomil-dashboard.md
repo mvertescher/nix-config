@@ -155,18 +155,34 @@ The next pass-4 batch is integrated (2026-09-14):
 - [x] **Vertical-brand echoes:** both small rotated runs have independent
   source fits, completed 2026-09-21. Their finite softened copies remain
   before the primary frame under the existing panel opening clip.
-- [ ] **Maker microtext trailing copies and edge softness:** the corrected
-  geometric PRECISION LIQUID / POLYMER MUSCLE strokes improve primary
-  shape, weight and spacing; faint copies and local edge/ink detail remain.
-  Fit each run against its own crop, without reusing the body/heading fit.
-- [ ] **Remaining small printing ink:** chip 2's modulation failed one
-  held-out red-channel check. Its dark digit and the tiny leading tape
-  mark retain their current ink pending a supported local model.
+- [x] **Maker microtext trailing copies and edge softness:** each geometric
+  run now has its own softened trailing copies under the existing panel
+  clip. Native source RGB RMS improves 21.19→12.18 and 23.02→12.82; all
+  changed pixels are inside these two runs. Fractional and opening review,
+  fidelity gates and the N full check pass. Exact horizontal scan
+  striations remain a fine-printing limit; the unknown original recipe is
+  not claimed. See [measurements](../docs/neomil/maker-microtext.md).
+- [x] **Fit the tiny leading tape-mark ink.** Eight existing paths receive
+  a local ink correction. Exactly 99 native pixels change inside their
+  footprint; source RGB MAE falls 20.49→10.07. Independent holdouts,
+  fractional/opening review, both gates and the T full check pass. Exact
+  contours and edge softness remain approximate.
+- [x] **Integrate the reviewed chip-2 ink correction.** V's local lateral
+  gradient and echo-phase model passes all three native regions: aggregate
+  core error falls 15.73→11.95 RGB levels, and edge error 20.05→17.43.
+  Fractional rest/opening review, both gates and the full Z check pass.
+  Earlier modulation and constant-color trials failed
+  independent holdouts and remain rejected. Exact photographed printing
+  softness is not claimed; see the
+  [eleventh checkpoint](../docs/reference-svg-round11.md).
 - [ ] **NM1 — Finish footer glyph and faint-print fitting.** The sixth
   reference batch fits each primary run independently: native SVG cap
   heights now match the source's 6.25px code and 5.83px captions, preserving
-  their narrow widths. Iced improves but retains 0.42–0.84px cap-height
-  residuals and heavier contours. Two translucent frame/text copies replace
+  their narrow widths. Z corrects Iced's code height/baseline independently
+  of the already-fitted SVG: the first `6` now matches source bounds, and
+  all 13 glyph comparisons improve. Production parity, fractional states
+  and both gates pass. Exact contours and caption differences remain.
+  Two translucent frame/text copies replace
   the single sharp offset frame, improving eight local crop errors in SVG
   and Iced. Fine horizontal striations, edge softness and exact repeated
   lettering remain open; do not treat the broad copies as an exact fit.

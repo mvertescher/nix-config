@@ -56,3 +56,47 @@ Measurement scripts and JSON results are in
 `/tmp/cp-eras-round4/entropism-baseline/`; native before/after Iced captures
 are `/tmp/cp-eras-round4/{before,after}-entropism-mailbox-3840x2160.png`,
 with matching `1537x947` fractional captures.
+
+## Per-action width calibration, 2026-09-29
+
+A single 1.03 horizontal scale left independent action-width errors: REPLY
+was too wide, FORWARD and DELETE too narrow, and REPORT SPAM too wide.
+Each run now has its own horizontal scale and anchor correction, retaining
+23.5px Medium, the accepted baseline, label contents, role colors and all
+button geometry. `MailButtons::label_runs` follows the existing badge
+convention: absent entries use the common label. The other eras provide an
+empty list and keep their existing drawing.
+
+| Run | SVG scale | Iced scale | Source width, native pixels | Corrected SVG width |
+| --- | ---: | ---: | ---: | ---: |
+| REPLY | .992681 | .978500 | 133 | 133 |
+| FORWARD | 1.043857 | 1.043857 | 226 | 225 |
+| DELETE | 1.075346 | 1.075346 | 166 | 166 |
+| REPORT SPAM | 1.013856 | 1.013856 | 314 | 314 |
+
+The native source and current SVG use the same clean-ink thresholds as the
+prior calibration (green >130 for bright text, <140 for reverse printing).
+All four left edges now match source pixels; right-edge residual is at
+most one native pixel. REPLY's separate Iced scale compensates its measured
+58.33 versus SVG57.50 design-pixel width before correction. The component
+action strip and three REPORT SPAM state examples follow the new SVG fit.
+New native/state review is still required before accepting the runtime
+change. Exact glyph outlines and photographic softness remain distinct
+from these measured width corrections.
+## Remaining glyph review — 2026-09-29
+
+A fresh source/SVG/native comparison does not support another global
+width or baseline adjustment. In the selected first-row title, the dark
+source run spans native x332–747, versus x332–750 in SVG and x332–749 in
+Iced; the sender spans x332–533 in all three. At an R/G threshold of 125,
+the source title contains 1,126 dark pixels, versus 1,377 in SVG and 1,234
+in Iced. Lowering the threshold to 85 leaves only 231 source pixels but
+1,077 SVG pixels. This indicates a substantial printing/edge difference
+that a small origin change would not resolve.
+
+Body words, line breaks and fitted action endpoints remain intact. The
+source has visible fine repeated edges and material modulation; their
+exact font/opacity construction is unresolved. Further work needs an
+isolated, repeatable printing feature with independent holdouts, or the
+original font/material layers. This audit leaves E2 open and makes no
+drawing changes.

@@ -123,9 +123,9 @@
         <text x="164" y="196.7">ACC</text><text x="225" y="196.7">ROF</text>
       </g>
       <rect x="5" y="209" width="255" height="25" fill="#a8d4a2"/>
-      <g font-size="22" fill="#35462e" text-anchor="middle">
-        <text x="41" y="230">86</text><text x="102" y="230">30</text>
-        <text x="164" y="230">5</text><text x="225" y="230">5</text>
+      <g font-size="24.5" font-weight="600" fill="#35462e" text-anchor="middle">
+        <text x="41.4167" y="229.1667" transform="translate(41.4167 0) scale(0.97 1) translate(-41.4167 0)">86</text><text x="102" y="229.1667">30</text>
+        <text x="164" y="229.1667">5</text><text x="225" y="229.1667">5</text>
       </g>
       <rect x="0" y="237" width="265" height="49" fill="none" stroke="#93bd95" stroke-width="1.25"/>
       <path d="M 52,237 V 286 M 119,237 V 286 M 191,237 V 286" fill="none" stroke="#93bd95" stroke-width="1.25"/>
@@ -591,9 +591,9 @@
       <text x="164" y="196.7">ACC</text><text x="225" y="196.7">ROF</text>
     </g>
     <path d="M 0,208 H 265" fill="none" stroke="#35462e" stroke-width="1.5"/>
-    <g font-size="22" fill="#35462e" text-anchor="middle">
-      <text x="41" y="230">86</text><text x="102" y="230">30</text>
-      <text x="164" y="230">5</text><text x="225" y="230">5</text>
+    <g font-size="24.5" font-weight="600" fill="#35462e" text-anchor="middle">
+      <text x="41.4167" y="229.1667" transform="translate(41.4167 0) scale(1.07 1) translate(-41.4167 0)">86</text><text x="102.4167" y="229.1667" transform="translate(102.4167 0) scale(1.07 1) translate(-102.4167 0)">30</text>
+      <text x="164" y="229.1667">5</text><text x="225" y="229.1667">5</text>
     </g>
     <g font-size="19.75" font-weight="500" fill="#a8d4a2">
       <text x="17" y="270">20</text><text x="51" y="270">Recoil</text>
@@ -689,10 +689,10 @@
     <rect x="602" y="824" width="188" height="52" fill="#a6d2a8"/>
     <path d="M 40,824 H 790 V 876 H 40 Z M 227,824 V 876 M 414,824 V 876 M 602,824 V 876"
           fill="none" stroke="#709174" stroke-width="2"/>
-    <text transform="translate(61,848.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">REPLY</text>
-    <text transform="translate(248.33,848.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">FORWARD</text>
-    <text transform="translate(435.66,848.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">DELETE</text>
-    <text transform="translate(622.99,848.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#25281d">REPORT SPAM</text>
+    <text transform="translate(61.07548,848.5) scale(0.992681,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">REPLY</text>
+    <text transform="translate(247.88862,848.5) scale(1.043857,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">FORWARD</text>
+    <text transform="translate(434.73832,848.5) scale(1.075346,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">DELETE</text>
+    <text transform="translate(622.18425,848.5) scale(1.013856,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#25281d">REPORT SPAM</text>
   </g>
   <g font-family="Rajdhani" font-size="9" font-weight="500" fill="#88a789">
     <text x="40" y="888">panel 750x481, stroke 2 #709174; title bar 746x61 inset 2px at +2,+22 with the title 23.3 x1.063 baseline +25.5 and from 18.5 x1.098 baseline +51.75</text>
@@ -974,7 +974,7 @@
   <text x="40" y="1230" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">BUTTON &#183; REST</text>
   <g id="button-rest" transform="translate(40,1236)" font-family="Rajdhani">
     <rect x="0" y="0" width="188" height="52" fill="none" stroke="#709174" stroke-width="2"/>
-    <text transform="translate(21,24.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">REPORT SPAM</text>
+    <text transform="translate(20.19425,24.5) scale(1.013856,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">REPORT SPAM</text>
   </g>
 
   <!-- BUTTON, HOVER. mailbox-trace.svg button row, the REPORT SPAM
@@ -989,7 +989,7 @@
   <text x="252" y="1230" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">BUTTON &#183; HOVER (SOURCED)</text>
   <g id="button-hover" transform="translate(252,1236)" font-family="Rajdhani">
     <rect x="0" y="0" width="188" height="52" fill="#a6d2a8"/>
-    <text transform="translate(21,24.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#25281d">REPORT SPAM</text>
+    <text transform="translate(20.19425,24.5) scale(1.013856,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#25281d">REPORT SPAM</text>
   </g>
 
   <!-- BUTTON, PRESS. INFERRED, no still shows a held button. The
@@ -999,7 +999,7 @@
   <text x="464" y="1230" font-family="Rajdhani" font-size="10" font-weight="600" letter-spacing="1" fill="#8fba97">BUTTON &#183; PRESS (INFERRED)</text>
   <g id="button-press" transform="translate(464,1236)" font-family="Rajdhani">
     <rect x="0" y="0" width="188" height="52" fill="none" stroke="#709174" stroke-width="2"/>
-    <text transform="translate(21,24.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">REPORT SPAM</text>
+    <text transform="translate(20.19425,24.5) scale(1.013856,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">REPORT SPAM</text>
   </g>
   <g font-family="Rajdhani" font-size="9" font-weight="500" fill="#88a789">
     <text x="40" y="1304">rest: 188x52, stroke 2 #709174, label medium 23.5 x1.03 #a6d2a8 at +21, baseline +24.5. Sourced, REPLY / FORWARD / DELETE.</text>

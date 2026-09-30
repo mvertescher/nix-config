@@ -27,3 +27,25 @@ The store vector and text edits are confined to the store trace, its copied stor
 ## M local lettering adjustment
 
 The M source/native comparison found the four plain and selected DPS/PNT/ACC/ROF labels about 4–8 native pixels low and 4 native pixels too tall. Their local size/baseline now changes from 20/200 to 17.5/196.7 in Rust, source trace and component excerpt. In the grown card's first socket cell, EMPTY was source native x2041..2118/y1228..1247 against J native x2044..2123/y1224..1243; SOCKET was x2033..2127/y1261..1279 against x2037..2130/y1258..1277. The three plain and three grown pairs shift 1.5 scene pixels left and 1.5 down, retaining their size and ink. The supplied comparison is a local estimate; native M capture must confirm the new bounds.
+
+Native M review confirms EMPTY within one source pixel and the stat cap
+height within one pixel. SOCKET remains 1–2 native pixels low, so its Rust
+baselines alone move up 0.5 design units in the next checkpoint. The source
+SVG remains fixed; EMPTY and all socket horizontal positions are preserved.
+
+## Remaining printing review — 2026-09-29
+
+Source/SVG/native review confirms the accepted rifle, stat-label, socket and
+compliance layout. The first compliance line ends at native x1726 in the
+source and x1727 in Iced. Existing selected and ordinary rifle masks have
+source/native IoU .9665 and .931 respectively. The first broad crop did not
+isolate a new rifle or compliance feature from grain, faint seams, glyph
+contours and bright edge spread; a global scale or silhouette redraw remains
+unsupported.
+
+A separate value-only comparison then isolated a repeatable type defect:
+in the SVG, `86 / 30 / 5 / 5` was six native pixels short at the cap and two
+low at the baseline. The local size, baseline, weight and two-digit width fit is in
+[store typography](store-typography.md), with selected and ordinary holdouts.
+This does not revise the art or claim exact photographed printing. Compliance
+font/material and fine glyph edges remain open.

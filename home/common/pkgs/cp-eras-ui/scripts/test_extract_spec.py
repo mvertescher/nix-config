@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Focused segmentation regressions; run with Python + numpy/scipy/Pillow."""
 import unittest
+import base64
 import json
 import subprocess
 import sys
 import tempfile
+import zlib
 from pathlib import Path
 
 import numpy as np
@@ -13,7 +15,8 @@ from scipy import ndimage
 
 from extract_spec import (assign_palette, palette_spec, reference_palette,
                           repair_striped_regions, extract, collapse_shared_outlines,
-                          fit_shape, t_chamfer, t_diamond, split_blob, components)
+                          fit_shape, t_chamfer, t_diamond, split_blob, components,
+                          observed_mask)
 
 
 class ShapeSupportTests(unittest.TestCase):
@@ -215,6 +218,81 @@ class ShapeSupportTests(unittest.TestCase):
                     self.assertEqual(result.returncode == 0, passes, result.stdout)
                     if name == "missing":
                         self.assertIn("58% of source shape area", result.stdout)
+
+
+class ClassUnstableMaskTests(unittest.TestCase):
+    """A blob may recover only with actual component pixels and the same corner."""
+
+    def test_pixel_backed_class_recovery_and_negative_controls(self):
+        canvas = (500, 260)
+        panel = t_chamfer((canvas[1], canvas[0]), (20, 30, 170, 150, 28, 1))
+
+        def shape(kind, mask, number, *, box=(20, 30, 150, 120),
+                  corner="tl", latent="chamfer", evidence=True):
+            result = {"class": kind, "bbox": list(box), "id": str(number),
+                      "ink": "#ca9d62", "area": int(mask.sum()),
+                      "iou": .6217 if kind == "chamfer" else .5808,
+                      "params": {"corners": [corner], "cut": 28.0}}
+            if evidence:
+                result["template_class"] = latent
+                result["observed_mask"] = observed_mask(mask)
+            return result
+
+        source = shape("chamfer", panel, 1)
+        identical = shape("blob", panel.copy(), 2)
+        moved = np.zeros_like(panel)
+        moved[:, 10:] = panel[:, :-10]
+        ring = panel & ~ndimage.binary_erosion(panel, iterations=8)
+        other = t_chamfer((canvas[1], canvas[0]), (110, 30, 260, 150, 28, 1))
+        source2 = shape("chamfer", other, 3, box=(110, 30, 150, 120))
+        cases = {
+            "same-component-under-template-cutoff": ([source], [identical], 0),
+            "mask-moved-ten-pixels-same-box": ([source], [shape("blob", moved, 2)], 1),
+            "same-box-different-corner": ([source], [shape("blob", panel, 2, corner="tr")], 1),
+            "filled-versus-hollow": ([source], [shape("blob", ring, 2)], 1),
+            "merged-overlap": ([source, source2], [shape("blob", panel | other, 2,
+                                                        box=(20, 30, 240, 120))], 1),
+            "missing-component": ([source], [], 1),
+            "duplicate-sources-one-candidate": ([source, shape("chamfer", panel, 3)],
+                                                 [identical], 1),
+            "legacy-without-mask": ([shape("chamfer", panel, 1, evidence=False)],
+                                    [shape("blob", panel, 2, evidence=False)], 1),
+        }
+        malformed = shape("blob", panel, 2)
+        malformed["observed_mask"]["data"] = "not base64"
+        cases["malformed-mask"] = ([source], [malformed], 2)
+        incomplete = shape("blob", panel, 2)
+        del incomplete["observed_mask"]
+        cases["incomplete-evidence"] = ([source], [incomplete], 2)
+        zero_area = shape("blob", panel, 2)
+        mask_size = zero_area["observed_mask"]["size"]
+        packed_size = ((mask_size[0] + 7) // 8) * mask_size[1]
+        zero_area["observed_mask"]["data"] = base64.b64encode(
+            zlib.compress(bytes(packed_size))).decode("ascii")
+        zero_area["area"] = 0
+        cases["zero-area-mask"] = ([source], [zero_area], 2)
+        overrun = shape("blob", panel, 2)
+        overrun["observed_mask"]["data"] = base64.b64encode(
+            zlib.compress(bytes(packed_size + 1))).decode("ascii")
+        cases["decompression-overrun"] = ([source], [overrun], 2)
+
+        checker = Path(__file__).with_name("spec_diff.py")
+        with tempfile.TemporaryDirectory() as temp:
+            temp = Path(temp)
+            for name, (src_shapes, cand_shapes, expected) in cases.items():
+                with self.subTest(name=name):
+                    src = temp / (name + "-source.json")
+                    cand = temp / (name + "-candidate.json")
+                    src.write_text(json.dumps({"canvas": list(canvas), "palette": [],
+                                               "shapes": src_shapes}))
+                    cand.write_text(json.dumps({"canvas": list(canvas), "palette": [],
+                                                "shapes": cand_shapes}))
+                    result = subprocess.run([sys.executable, str(checker), str(src), str(cand)],
+                                            capture_output=True, text=True)
+                    self.assertEqual(result.returncode, expected,
+                                     result.stdout + result.stderr)
+                    if expected == 0:
+                        self.assertIn("class-unstable components recovered", result.stdout)
 
 
 class ReferencePaletteTests(unittest.TestCase):

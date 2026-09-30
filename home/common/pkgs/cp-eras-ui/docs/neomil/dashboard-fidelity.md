@@ -359,11 +359,41 @@ or gate exclusions. Seventeen ramp stops represent the two harmonics;
 there is no per-row fit or random texture. Rust reuses the accepted glyph
 paths as masks and composites their color over the local bright faces.
 
-Chip 2's dark ink remains open: the equivalent model worsens held-out red
-MAE from 18.52 to 23.66 in one fold despite improving the reverse fold.
-Eroding the contour mask or adding drift does not resolve that inconsistency.
-Its dark digit and the eight tiny leading tape-mark paths remain unchanged.
+An earlier chip-2 two-harmonic model was rejected: one held-out red fold
+worsened from 18.52 to 23.66. Eroding the contour or adding drift did not
+resolve it. The eight tiny leading tape-mark paths
+retain their measured contours, with only their flat ink changed from
+`#671b21` to `#8a2a2f`. On the complete 100-pixel changed footprint in
+the source and actual SVG render, RGB mean absolute error falls from
+19.49 to 9.45 levels. Independent left/right, alternating-column, and
+alternating-row masks all improve. The 85 core pixels improve from 20.24
+to 8.04, while the 15 antialiased edge pixels worsen from 15.27 to 17.42;
+edge softness and glyph geometry remain separate local questions. Clear
+source tape face samples have median RGB 251,53,53 and stay unchanged.
 Exterior tape/chip copies are also outside this correction.
+
+## Chip-2 dark numeral ink
+
+The second chip's existing exterior echo provides an independent row-phase
+reference. Its source/SVG red row profiles at native x3729..3738/y587..606
+correlate at 0.988. The source digit's intrinsic red also follows the source
+echo (correlation 0.779), while its green and blue do not support the same
+modulation. The accepted ink therefore varies only red: the SVG uses the
+exterior echo's 20 row medians as a vertical alpha mask over two horizontal
+red gradients, with green/blue held at `#1b21`. Rust uses those same 20
+source-supported row values and horizontal gradients under a white mask
+made from the existing `CHIP2` numeral path. No new numeral contour, chip
+face, exterior echo, or tiny tape path is introduced.
+
+Three actual SVG variants each fit two source regions and score only the
+third. Their held-out core aggregate RGB MAE changes from 15.16 to 14.76
+(top y587..590, 25 pixels), 14.31 to 10.65 (middle y591..603, 52 pixels),
+and 18.10 to 14.19 (foot y604..606, 36 pixels). The full-fit SVG changes
+only 181 native pixels within x3702..3715/y587..606; all 113 core pixels
+improve from 15.71 to 11.95 aggregate RGB MAE. The middle AA edge worsens
+slightly from 15.47 to 15.77 in its held-out fold, so this is ink correction,
+not contour closure. Source and SVG have been checked; Rust native rendering
+and the complete changed footprint remain to be reviewed.
 
 ## Six menu-label printing echoes
 
@@ -501,7 +531,7 @@ cover these loading and isolation cases, including the no-config fallback.
 
 Two upper/outward face copies now sit behind each accepted bright tape,
 chip and fragment. Primary face geometry, #fb3535 face color, tape/chip-1
-ink cycles, chip-2 digit and the unreadable tape mark remain unchanged.
+ink cycles, chip-2 digit geometry and the unreadable tape-mark geometry remain unchanged.
 Four finite widths (3.0, 1.6, 0.6 and 0.0 design pixels) approximate the
 soft profile, with one opacity applied to each opaque fill/stroke union.
 Both copies share a silhouette; the second translation is twice the first.
@@ -536,7 +566,7 @@ remains about 2.7–5.3 levels and can worsen by up to 0.35 on fragment 2.
 The right fragment's overlap and small primary corners remain approximate.
 These exterior face copies do not explain interior dark-code modulation,
 identify the original renderer, or establish a global screen transform.
-Chip-2 ink and the tiny tape mark therefore retain their unresolved status.
+The exterior copies remain separate from the locally fitted dark chip-2 ink below.
 
 ## GO HOME body and maker-shape echoes
 
@@ -674,8 +704,8 @@ absent from the source. Keep this red and the flat fills.
 Matrix artwork, margin printing, GO HOME heading, maker primary/lettering
 and vertical-brand trails still need local examination, as detailed above.
 Slight expansion explains several direction changes but does not establish
-one whole-screen recipe. Chip 2's dark ink and the tiny leading tape mark
-also retain unresolved local ink variation. Header profiles and primary
+one whole-screen recipe. Chip 2's dark contour and the tiny leading tape mark's
+edge softness retain unresolved local variation. Header profiles and primary
 text still have the localized residuals documented above.
 
 Four clear background patches have native high-pass channel RMS of about
@@ -703,3 +733,38 @@ background material or authoring inputs are still needed. No arbitrary
 noise or new `photo` tags hide unresolved pixels from a gate. Favorable
 local measurements do not by themselves close pass 4 or its end-to-end
 validation.
+
+## Native S tiny tape-mark review
+
+Iced confirms the scoped eight-path ink correction: exactly 99 native
+pixels change, all inside x626–671/y375–379. On that complete changed
+footprint, source RGB MAE falls 20.49→10.07. No other native pixel changes
+against the exact R baseline. Fractional rest and opening captures retain
+their layout. Glyph contours and edge softness remain approximate; this
+accepts the local ink only. Both fidelity gates pass; the final integrated
+check remains pending.
+
+## Rejected footer side-edge stripe trial
+
+The source footer's outer frame echoes show coherent horizontal bands at
+about 4.745 native pixels of vertical pitch. A left-edge fit at native
+x2907–2910/y2085–2104 transferred in SVG to later left-edge rows and to
+the right edge. It did not establish a safe native compositor change.
+
+In the X trial, the two foreground frame copies were moved into the
+existing software layer and given continuous, side-only alpha masks.
+Compared with the unchanged W native footer, X changed 7,215 pixels in
+x2904..3258/y2076..2142. The complete changed-footprint source RGB MAE
+worsened 15.55→16.56. The left-later edge improved in red 15.54→10.14
+and RGB 9.75→8.95, but the right-later edge's RGB worsened 9.52→10.94.
+The top-left and bottom-left frame controls also worsened in red
+31.46→35.27 and 46.40→49.27. Bright code and caption cores were
+byte-identical; the regression came from the frame copies' different
+antialiasing and material composition outside the narrow stripe windows.
+The trial was rejected and the W footer code, trace and component excerpt
+were restored. Its source-supported stripe phase remains a local research
+lead, not accepted production art.
+
+A separate right-edge source lobe peaks near native x3260 and tapers to
+x3264; the current frame echo ends at x3258. Widening its rectangle would
+fill the source trough between lobes, so this also remains unmodeled.

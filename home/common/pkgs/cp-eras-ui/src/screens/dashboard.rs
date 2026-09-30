@@ -37,7 +37,7 @@
 use crate::motion;
 use crate::screens::nav::{self, Dir, Stroke};
 use crate::screens::scene::{plates, Picked, Scene, SceneFeedback};
-use crate::style::{Destination, Group, Style};
+use crate::style::{Destination, Era, Group, Style};
 use crate::widgets::ground;
 use crate::Element;
 use iced::widget::stack;
@@ -177,9 +177,7 @@ impl Dashboard {
         // One scoped palette reaches the foreground, software backdrop
         // and all hover/held drawings; the stored hub/shell style stays shared.
         let drawing_style = self.style.dashboard_style();
-        stack![
-            ground(&drawing_style),
-            Scene {
+        let scene = Scene {
                 style: drawing_style,
                 prims: self.style.dashboard,
                 cursor_group: self.style.dashboard_cursor.then_some(Group::Module),
@@ -192,9 +190,17 @@ impl Dashboard {
                 // worth carrying: any plate in this scene is a module.
                 on_select: |_group, index| Message::Select { index },
                 at: self.at(),
-            }
-            .view_with_feedback(self.backdrop(), Message::Feedback),
-        ]
+            };
+        let scene = if matches!(self.style.era, Era::Neomil)
+            && !motion::frozen()
+            && scene.at >= self.motion_end
+            && self.held.is_none()
+        {
+            scene.view_with_feedback_resize_preview(self.backdrop(), Message::Feedback)
+        } else {
+            scene.view_with_feedback(self.backdrop(), Message::Feedback)
+        };
+        stack![ground(&drawing_style), scene]
         .into()
     }
 }

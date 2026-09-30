@@ -11,10 +11,13 @@ the same things the source does", which is what a trace has to mean.
 Shapes are matched greedily by bounding-box IoU, best pair first, so the
 result does not depend on input order. A matched pair whose class differs is
 reported as a reclass, not a match: a diamond redrawn as a rectangle is a
-trace error even though it occupies the same box. The one exception is
+trace error even though it occupies the same box. In ordinary matching,
+the one exception is
 rect <-> chamfer, which is counted as a match: that corner detail is what
 a photo's glow erases, so it separates photo from render, not right from
-wrong.
+wrong. Unmatched templates may also recover an unclassified component
+with compatible latent template/ink/corners and at least .95 observed-mask
+IoU at the original canvas coordinates; legacy specs lack this evidence.
 
 Two gate modes, chosen with --gate:
 
@@ -39,8 +42,136 @@ count difference.
 """
 
 import argparse
+import base64
+import binascii
 import json
+import math
 import sys
+import zlib
+
+
+# A class-unstable pair must agree in the observed pixels, not merely its
+# fitted box. This is deliberately much stricter than the template cutoff.
+MIN_OBSERVED_MASK_IOU = 0.95
+
+
+def decoded_mask(shape, canvas):
+    """Validate and decode one lossless observed component mask, if present.
+
+    Old specs have neither evidence field and retain the old gate behavior.
+    An incomplete or malformed new record is an error, never a fallback.
+    """
+    has_mask = "observed_mask" in shape
+    has_template = "template_class" in shape
+    if not has_mask and not has_template:
+        return None
+    if not (has_mask and has_template):
+        raise ValueError("incomplete component evidence")
+    if shape["template_class"] not in ("rect", "chamfer", "diamond", "rule"):
+        raise ValueError("invalid latent template class")
+    if shape["class"] != "blob" and shape["template_class"] != shape["class"]:
+        raise ValueError("classified shape disagrees with latent template")
+    mask = shape["observed_mask"]
+    if not isinstance(mask, dict) or mask.get("encoding") != "zlib-packbits-little-row":
+        raise ValueError("invalid component mask encoding")
+    origin, size = mask.get("origin"), mask.get("size")
+    if (not isinstance(origin, list) or not isinstance(size, list) or
+            len(origin) != 2 or len(size) != 2 or
+            any(type(v) is not int for v in origin + size)):
+        raise ValueError("invalid component mask bounds")
+    x, y = origin
+    w, h = size
+    if w <= 0 or h <= 0 or x < 0 or y < 0 or x + w > canvas[0] or y + h > canvas[1]:
+        raise ValueError("component mask extends outside canvas")
+    encoded = mask.get("data")
+    if not isinstance(encoded, str):
+        raise ValueError("missing component mask data")
+    try:
+        compressed = base64.b64decode(encoded, validate=True)
+        expected = ((w + 7) // 8) * h
+        inflater = zlib.decompressobj()
+        raw = inflater.decompress(compressed, expected + 1)
+    except (ValueError, binascii.Error, zlib.error) as error:
+        raise ValueError("invalid component mask data") from error
+    if (len(raw) != expected or not inflater.eof or inflater.unused_data or
+            inflater.unconsumed_tail):
+        raise ValueError("component mask data length mismatch")
+    stride = (w + 7) // 8
+    rows = [int.from_bytes(raw[i * stride:(i + 1) * stride], "little")
+            for i in range(h)]
+    if any(row >> w for row in rows):
+        raise ValueError("nonzero component mask padding")
+    count = sum(row.bit_count() for row in rows)
+    if type(shape.get("area")) is not int or count == 0 or count != shape["area"]:
+        raise ValueError("component mask area mismatch")
+    return (x, y, w, h, rows, count)
+
+
+def observed_iou(a, b):
+    ax, ay, _, ah, ar, acount = a
+    bx, by, _, bh, br, bcount = b
+    hit = 0
+    for y in range(max(ay, by), min(ay + ah, by + bh)):
+        hit += ((ar[y - ay] << ax) & (br[y - by] << bx)).bit_count()
+    return hit / (acount + bcount - hit)
+
+
+def compatible_template(source, candidate):
+    a, b = source["class"], candidate["template_class"]
+    if a != b and frozenset((a, b)) != frozenset(("rect", "chamfer")):
+        return False
+    if a == b == "chamfer":
+        sp, cp = source.get("params"), candidate.get("params")
+        if not isinstance(sp, dict) or not isinstance(cp, dict):
+            return False
+        sc, cc = sp.get("corners"), cp.get("corners")
+        def valid(corners):
+            return (isinstance(corners, list) and bool(corners) and
+                    all(type(c) is str and c in ("tl", "tr", "br", "bl")
+                        for c in corners) and len(set(corners)) == len(corners))
+        return valid(sc) and valid(cc) and set(sc) == set(cc)
+    return True
+
+
+def compatible_ink(source, candidate):
+    def rgb(shape):
+        value = shape.get("ink")
+        if not isinstance(value, str) or len(value) != 7 or value[0] != "#":
+            return None
+        try:
+            return [int(value[i:i + 2], 16) for i in (1, 3, 5)]
+        except ValueError:
+            return None
+    a, b = rgb(source), rgb(candidate)
+    return a is not None and b is not None and math.dist(a, b) < 110
+
+
+def recover_class_unstable(missing, blobs, source_masks, candidate_masks, bbox_threshold):
+    """One-to-one, strict pixel-backed recovery of unmatched template/blob pairs."""
+    options = []
+    for i, source in enumerate(missing):
+        sm = source_masks.get(id(source))
+        if sm is None:
+            continue
+        for j, candidate in enumerate(blobs):
+            cm = candidate_masks.get(id(candidate))
+            if (cm is None or not compatible_template(source, candidate) or
+                    not compatible_ink(source, candidate)):
+                continue
+            box_score = iou(source["bbox"], candidate["bbox"])
+            if box_score < bbox_threshold:
+                continue
+            pixel_score = observed_iou(sm, cm)
+            if pixel_score >= MIN_OBSERVED_MASK_IOU:
+                options.append((pixel_score, box_score, i, j))
+    options.sort(key=lambda item: (-item[0], -item[1], item[2], item[3]))
+    used_source, used_candidate, recovered = set(), set(), []
+    for pixel_score, box_score, i, j in options:
+        if i not in used_source and j not in used_candidate:
+            used_source.add(i)
+            used_candidate.add(j)
+            recovered.append((box_score, missing[i], blobs[j], pixel_score))
+    return recovered, [s for i, s in enumerate(missing) if i not in used_source]
 
 
 def iou(a, b):
@@ -118,8 +249,31 @@ def main():
         print("canvas mismatch: %s vs %s" % (src["canvas"], cand["canvas"]), file=sys.stderr)
         return 2
 
+    try:
+        source_masks = {id(shape): decoded_mask(shape, src["canvas"])
+                        for shape in src["shapes"]}
+        candidate_masks = {id(shape): decoded_mask(shape, cand["canvas"])
+                           for shape in cand["shapes"]}
+    except ValueError as error:
+        print("invalid component evidence: %s" % error, file=sys.stderr)
+        return 2
+
     keep = lambda ss: [s for s in ss if not (a.ignore_blobs and s["class"] == "blob")]
     ss, cs = keep(src["shapes"]), keep(cand["shapes"])
+
+    pairs, miss, spurious = match(ss, cs, a.match_iou)
+    # rect <-> chamfer is not a reclass: the corner detail that separates
+    # the two templates is exactly what a photo's glow erases (a rounded
+    # outline fits as a chamfer in the source and as a rect in a clean
+    # render). Every other class change stays a trace error.
+    soft = {frozenset(("rect", "chamfer"))}
+    same = lambda s, c: s["class"] == c["class"] or frozenset((s["class"], c["class"])) in soft
+    reclass = [(v, s, c) for v, s, c in pairs if not same(s, c)]
+    good = [(v, s, c) for v, s, c in pairs if same(s, c)]
+    softened = [(v, s, c) for v, s, c in good if s["class"] != c["class"]]
+    recovered, miss = recover_class_unstable(
+        miss, [s for s in cand["shapes"] if s["class"] == "blob"],
+        source_masks, candidate_masks, a.match_iou)
 
     print("== shape inventory ==")
     print("  %-10s %8s %10s   %s" % ("class", "source", "candidate", "verdict"))
@@ -137,7 +291,9 @@ def main():
         n_c = sum(1 for s in cs if s["class"] == cl)
         cl_area = area([s for s in ss if s["class"] == cl])
         verdict = ""
-        n_equiv = sum(1 for s in cs if s["class"] in equivalent.get(cl, {cl}))
+        n_equiv = (sum(1 for s in cs if s["class"] in equivalent.get(cl, {cl})) +
+                   sum(1 for _, s, _, _ in recovered
+                       if s["class"] in equivalent.get(cl, {cl})))
         if n_s and not n_equiv:
             if cl_area / src_area < a.min_class_share:
                 verdict = "absent, but %.0f%% of source area — not gating" % (100 * cl_area / src_area)
@@ -149,32 +305,25 @@ def main():
             count_diff = True
         print("  %-10s %8d %10d   %s" % (cl, n_s, n_c, verdict))
 
-    pairs, miss, spurious = match(ss, cs, a.match_iou)
-    # rect <-> chamfer is not a reclass: the corner detail that separates
-    # the two templates is exactly what a photo's glow erases (a rounded
-    # outline fits as a chamfer in the source and as a rect in a clean
-    # render). Every other class change — a diamond redrawn as a rect, a
-    # rule as a box — is a trace error and stays one.
-    soft = {frozenset(("rect", "chamfer"))}
-    same = lambda s, c: s["class"] == c["class"] or frozenset((s["class"], c["class"])) in soft
-    reclass = [(v, s, c) for v, s, c in pairs if not same(s, c)]
-    good = [(v, s, c) for v, s, c in pairs if same(s, c)]
-    softened = [(v, s, c) for v, s, c in good if s["class"] != c["class"]]
-
-    matched_area = area([s for _, s, _ in good])
+    matched_area = area([s for _, s, _ in good] + [s for _, s, _, _ in recovered])
     total_area = area(ss) or 1
     share = matched_area / total_area
 
     print("\n== matching (bbox IoU >= %.2f) ==" % a.match_iou)
     print("  matched      %d/%d source shapes (%.0f%% of source shape area)"
-          % (len(good), len(ss), 100 * share))
-    if good:
+          % (len(good) + len(recovered), len(ss), 100 * share))
+    if good or recovered:
         errs = sorted(((centre(s["bbox"])[0] - centre(c["bbox"])[0]) ** 2 +
                        (centre(s["bbox"])[1] - centre(c["bbox"])[1]) ** 2) ** 0.5
-                      for _, s, c in good)
+                      for _, s, c in good + [(v, s, c) for v, s, c, _ in recovered])
         print("  centre error median %.1fpx, worst %.1fpx" % (errs[len(errs) // 2], errs[-1]))
     if softened:
         print("  rect/chamfer swaps counted as matches: %d" % len(softened))
+    if recovered:
+        print("  class-unstable components recovered by observed mask: %d" % len(recovered))
+        for _, s, c, pixel_score in recovered[:10]:
+            print("     %-12s -> %-12s at %s  mask IoU %.3f"
+                  % (s["id"], c["id"], s["bbox"], pixel_score))
     if reclass:
         print("  reclassified %d (same box, different shape):" % len(reclass))
         for v, s, c in reclass[:10]:

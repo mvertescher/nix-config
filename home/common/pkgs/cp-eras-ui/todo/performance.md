@@ -164,3 +164,45 @@ for the complete method, ranges and limitations. The integrated H snapshot
 passes 263 Rust tests and all 22 repository checks, including 27 visual
 cases at 100.000% on their first attempt. Live hardware presentation and
 continuous resize are not covered by that checkpoint.
+
+## Continuous new-size characterization (2026-09-29)
+
+- [x] **Characterize repeated size changes after empty-band removal.**
+  Three serialized 41-size sequences confirm recent-size retention and
+  bounded payload. Across 108 complete misses, median preparation is
+  422.06 ms; 12 full hits take 0.00376 ms. Peak retained RGBA is 383.905 MiB
+  and 46 entries, within the existing budget. Each reversal reuses four
+  recent sizes, then a partial size, then returns to misses. Equivalent
+  fresh-cache controls preserve batching. No production code changed.
+- [x] **Implement and evaluate a bounded resize preview.** A resting,
+  unheld Neomil dashboard reuses a complete cached material set within
+  10% scale and a 200 ms quiet deadline. Palette/context checks, separate
+  layers, opening clips and the 384 MiB budget are preserved. Real headless
+  compositor events exercise it; an independent deterministic preview is
+  visually reviewed. Final integer pixels match the exact control, while
+  a fractional resized control differs at three pixels by one level. One
+  sequence still incurs a 404 ms intermediate preparation; this does not
+  establish smooth continuous resize. T passes 272 Rust tests, all 22
+  repository checks and all 27 visual cases exactly. Live hardware/event
+  presentation remains in the separate desktop verification task.
+- [x] **Keep eligible resize preparation off the UI thread after the
+  quiet timer expires.** The 3600×2025 trace first reuses the complete
+  3840×2160 preview, then clears the deadline and synchronously prepares
+  the target for 404 ms. The ratio is valid and retained payload is below
+  budget; eviction is not the cause. Another new-size draw precedes its
+  resize event, so the actual canvas bounds must participate in target
+  tracking. AA uses one worker, latest-target coalescing, owner/generation
+  checks and atomic complete-set publication. Tests cover stale completion,
+  missing preview, palette/scale changes and failure fallback. The actual
+  no-heartbeat compositor sequence redraws the exact snapshot before its
+  screenshot signal. Full preview callbacks take .015–.033 ms, with no
+  eligible synchronous preparation. CPU preparation itself is not faster;
+  the shared cache stays at 384 MiB while one temporary job-local cache
+  may retain an additional 384 MiB. Final 4K pixels match exactly;
+  fractional repeat controls retain three one-red-level edge differences.
+  AA passes 285 Rust tests, all 22 repository checks and all 27 exact visual
+  cases. Live hardware presentation and smooth dragging remain separate.
+
+See [method and results](../docs/neomil/resize-preparation.md). The original
+N characterization added no artwork or golden change; AA completes the
+eligible preparation offload. Live hardware verification remains separate.

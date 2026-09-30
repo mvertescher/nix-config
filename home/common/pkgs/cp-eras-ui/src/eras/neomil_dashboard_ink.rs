@@ -1,5 +1,5 @@
 //! Measured local tape/chip faces and two validated printing modulations.
-//! Main tile red, vector contours and the unreadable tape mark stay unchanged.
+//! Main tile red, vector contours and the tape mark geometry stay unchanged.
 use crate::palette::rgb;
 use crate::style::{fill_rect, Ink, Prim};
 use super::dashboard_type;
@@ -83,6 +83,59 @@ const CHIP1_FIELD: &[Prim] = &[fill_rect(59.0, 244.0, 5.0, 11.0, Ink::Fixed(rgb(
 
 const CHIP1_MASK: &[Prim] = &printing_mask::<1>(dashboard_type::CHIP1);
 
+// Native rows 587..606 of the accepted chip-2 exterior echo, sampled in a
+// text-free strip at x3729..3738. The numeral uses that row phase and a
+// source-fitted left-to-right red slope; its green/blue ink stays #1b21.
+const CHIP2_ECHO_RED: [u8; 20] = [
+    80, 62, 63, 84, 92, 77, 60, 68, 88, 90,
+    71, 59, 73, 89, 86, 67, 60, 77, 91, 61,
+];
+
+const CHIP2_BASE_X: &[(f32, iced::Color)] = &[
+    (0.0, rgb(0x4b1b21)), (1.0, rgb(0x751b21)),
+];
+const CHIP2_BRIGHT_X: &[(f32, iced::Color)] = &[
+    (0.0, rgb(0x751b21)), (1.0, rgb(0x9e1b21)),
+];
+
+const fn chip2_alpha_stops() -> [(f32, iced::Color); 20] {
+    let white = iced::Color { r: 1.0, g: 1.0, b: 1.0, a: 1.0 };
+    let mut out = [(0.0, white); 20];
+    let mut i = 0;
+    while i < out.len() {
+        out[i] = (i as f32 / 19.0, iced::Color {
+            a: (CHIP2_ECHO_RED[i] as f32 - 59.0) / 33.0, ..white
+        });
+        i += 1;
+    }
+    out
+}
+
+const CHIP2_ALPHA_STOPS: [(f32, iced::Color); 20] = chip2_alpha_stops();
+// The two horizontal axes are the accepted SVG's x1542.9167..1547.5,
+// and the vertical mask axis is y244.7917..252.7083. Full-area ramps
+// let the compositor interpolate continuously at every scale.
+const CHIP2_BASE: &[Prim] = &[Prim::Ramp {
+    x: 1541.0, y: 243.0, w: 9.0, h: 12.0,
+    from: ((1542.9167 - 1541.0) / 9.0, 0.0),
+    to: ((1547.5 - 1541.0) / 9.0, 0.0), stops: CHIP2_BASE_X,
+}];
+const CHIP2_BRIGHT: &[Prim] = &[Prim::Ramp {
+    x: 1541.0, y: 243.0, w: 9.0, h: 12.0,
+    from: ((1542.9167 - 1541.0) / 9.0, 0.0),
+    to: ((1547.5 - 1541.0) / 9.0, 0.0), stops: CHIP2_BRIGHT_X,
+}];
+const CHIP2_ALPHA_MASK: &[Prim] = &[Prim::Ramp {
+    x: 1541.0, y: 243.0, w: 9.0, h: 12.0,
+    from: (0.0, (244.7917 - 243.0) / 12.0),
+    to: (0.0, (252.7083 - 243.0) / 12.0), stops: &CHIP2_ALPHA_STOPS,
+}];
+const CHIP2_FIELD: &[Prim] = &[
+    CHIP2_BASE[0],
+    Prim::Masked { prims: CHIP2_BRIGHT, mask: CHIP2_ALPHA_MASK },
+];
+const CHIP2_MASK: &[Prim] = &printing_mask::<1>(dashboard_type::CHIP2);
+
 pub(super) const TAPE_FACE: Prim = Prim::Path { x: 0.0, y: 0.0, segs: &[
         Seg::Move(258.0, 150.4167),
         Seg::Line(375.4167, 150.4167),
@@ -97,12 +150,15 @@ pub(super) const TAPE_FACE: Prim = Prim::Path { x: 0.0, y: 0.0, segs: &[
     ], close: true, fill: Some(LOCAL_FACE), stroke: None, width: 1.0 };
 
 /// Add to the first Soft after dashboard ground and badge material.
-/// Remove only the corresponding tape face/code and chip-1 foreground prims.
-/// Keep the eight tiny leading tape-mark paths in HEADER unchanged.
+/// Remove only the corresponding tape face/code and both chips' foreground prims.
+/// Keep the eight tiny leading tape-mark paths in HEADER; their local ink is fitted there.
 pub(super) const MATERIAL: &[Prim] = &[
     TAPE_FACE,
     Prim::Masked { prims: TAPE_FIELD, mask: TAPE_MASK },
     fill_rect(56.25, 243.3333, 12.5, 12.5, LOCAL_FACE),
     fill_rect(46.25, 243.75, 4.5833, 4.5833, LOCAL_FACE),
     Prim::Masked { prims: CHIP1_FIELD, mask: CHIP1_MASK },
+    fill_rect(1539.1667, 242.5, 12.5, 12.5, LOCAL_FACE),
+    fill_rect(1529.1667, 243.3333, 4.5833, 4.5833, LOCAL_FACE),
+    Prim::Masked { prims: CHIP2_FIELD, mask: CHIP2_MASK },
 ];

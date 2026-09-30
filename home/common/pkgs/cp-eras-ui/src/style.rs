@@ -870,6 +870,8 @@ pub struct Style {
 pub struct StoreReference {
     pub scene: &'static [Prim],
     pub backdrops: &'static [StoreBackdrop],
+    /// Optional feedback drawings paired with this source-only scene.
+    pub states: Option<&'static [PlateStates]>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -1063,17 +1065,30 @@ impl Style {
         self
     }
 
-    pub fn store_layers(&self, category: usize, card: usize) -> (&'static [Prim], &'static [Prim]) {
+    fn eligible_store_reference(&self, category: usize, card: usize) -> Option<(StoreReference, &'static StoreBackdrop)> {
         if self.palette == self.era.style().palette {
             if let Some(reference) = self.store_reference {
                 if let Some(background) = reference.backdrops.iter()
                     .find(|b| b.category == category && b.card == card)
                 {
-                    return (reference.scene, background.prims);
+                    return Some((reference, background));
                 }
             }
         }
+        None
+    }
+
+    pub fn store_layers(&self, category: usize, card: usize) -> (&'static [Prim], &'static [Prim]) {
+        if let Some((reference, background)) = self.eligible_store_reference(category, card) {
+            return (reference.scene, background.prims);
+        }
         (self.store, self.store)
+    }
+
+    pub fn store_states_for(&self, category: usize, card: usize) -> &'static [PlateStates] {
+        self.eligible_store_reference(category, card)
+            .and_then(|(reference, _)| reference.states)
+            .unwrap_or(self.store_states)
     }
 
     /// Whether access-screen source fills can use this palette. The
@@ -2377,6 +2392,8 @@ pub struct MailButtons {
     pub stroke: Ink,
     /// Label position, relative to the button's top-left.
     pub label: Run,
+    /// Optional per-action typography; missing entries use `label`.
+    pub label_runs: &'static [Run],
     /// Neokitsch's filled trapezoid on the bottom edge, relative.
     pub tab: Option<Frame>,
     pub labels: &'static [&'static str],

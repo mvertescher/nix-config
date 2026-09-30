@@ -278,7 +278,7 @@ pub const HEADER: &[Prim] = &[
         Seg::Line(260.8333, 158.3333),
         Seg::Line(260.8333, 157.9167),
         Seg::Line(260.8333, 157.9167)
-    ], close: true, fill: Some(Ink::Fixed(rgb(0x671b21))), stroke: None, width: 1.0 },
+    ], close: true, fill: Some(Ink::Fixed(rgb(0x8a2a2f))), stroke: None, width: 1.0 },
     Prim::Path { x: 0.0, y: 0.0, segs: &[
         Seg::Move(262.0833, 157.5),
         Seg::Line(262.5, 157.5),
@@ -290,7 +290,7 @@ pub const HEADER: &[Prim] = &[
         Seg::Line(262.0833, 158.3333),
         Seg::Line(262.0833, 157.5),
         Seg::Line(262.0833, 157.5)
-    ], close: true, fill: Some(Ink::Fixed(rgb(0x671b21))), stroke: None, width: 1.0 },
+    ], close: true, fill: Some(Ink::Fixed(rgb(0x8a2a2f))), stroke: None, width: 1.0 },
     Prim::Path { x: 0.0, y: 0.0, segs: &[
         Seg::Move(263.3333, 156.6667),
         Seg::Line(264.5833, 156.6667),
@@ -302,7 +302,7 @@ pub const HEADER: &[Prim] = &[
         Seg::Line(263.3333, 158.3333),
         Seg::Line(263.3333, 156.6667),
         Seg::Line(263.3333, 156.6667)
-    ], close: true, fill: Some(Ink::Fixed(rgb(0x671b21))), stroke: None, width: 1.0 },
+    ], close: true, fill: Some(Ink::Fixed(rgb(0x8a2a2f))), stroke: None, width: 1.0 },
     Prim::Path { x: 0.0, y: 0.0, segs: &[
         Seg::Move(265.8333, 157.5),
         Seg::Line(266.25, 157.5),
@@ -314,7 +314,7 @@ pub const HEADER: &[Prim] = &[
         Seg::Line(265.8333, 158.3333),
         Seg::Line(265.8333, 157.5),
         Seg::Line(265.8333, 157.5)
-    ], close: true, fill: Some(Ink::Fixed(rgb(0x671b21))), stroke: None, width: 1.0 },
+    ], close: true, fill: Some(Ink::Fixed(rgb(0x8a2a2f))), stroke: None, width: 1.0 },
     Prim::Path { x: 0.0, y: 0.0, segs: &[
         Seg::Move(267.5, 157.5),
         Seg::Line(267.9167, 157.5),
@@ -330,7 +330,7 @@ pub const HEADER: &[Prim] = &[
         Seg::Line(267.5, 158.3333),
         Seg::Line(267.5, 157.5),
         Seg::Line(267.5, 157.5)
-    ], close: true, fill: Some(Ink::Fixed(rgb(0x671b21))), stroke: None, width: 1.0 },
+    ], close: true, fill: Some(Ink::Fixed(rgb(0x8a2a2f))), stroke: None, width: 1.0 },
     Prim::Path { x: 0.0, y: 0.0, segs: &[
         Seg::Move(270.4167, 156.6667),
         Seg::Line(271.25, 156.6667),
@@ -344,7 +344,7 @@ pub const HEADER: &[Prim] = &[
         Seg::Line(270.4167, 158.3333),
         Seg::Line(270.4167, 156.6667),
         Seg::Line(270.4167, 156.6667)
-    ], close: true, fill: Some(Ink::Fixed(rgb(0x671b21))), stroke: None, width: 1.0 },
+    ], close: true, fill: Some(Ink::Fixed(rgb(0x8a2a2f))), stroke: None, width: 1.0 },
     Prim::Path { x: 0.0, y: 0.0, segs: &[
         Seg::Move(273.3333, 156.6667),
         Seg::Line(273.75, 156.6667),
@@ -354,7 +354,7 @@ pub const HEADER: &[Prim] = &[
         Seg::Line(273.3333, 158.3333),
         Seg::Line(273.3333, 156.6667),
         Seg::Line(273.3333, 156.6667)
-    ], close: true, fill: Some(Ink::Fixed(rgb(0x671b21))), stroke: None, width: 1.0 },
+    ], close: true, fill: Some(Ink::Fixed(rgb(0x8a2a2f))), stroke: None, width: 1.0 },
     Prim::Path { x: 0.0, y: 0.0, segs: &[
         Seg::Move(274.5833, 156.6667),
         Seg::Line(275.8333, 156.6667),
@@ -374,13 +374,10 @@ pub const HEADER: &[Prim] = &[
         Seg::Line(274.5833, 157.0833),
         Seg::Line(274.5833, 156.6667),
         Seg::Line(274.5833, 156.6667)
-    ], close: true, fill: Some(Ink::Fixed(rgb(0x671b21))), stroke: None, width: 1.0 },
+    ], close: true, fill: Some(Ink::Fixed(rgb(0x8a2a2f))), stroke: None, width: 1.0 },
 ];
 
 pub const TABS: &[Prim] = &[
-    Prim::Rect { x: 1539.1667, y: 242.5, w: 12.5, h: 12.5, fill: Some(super::dashboard_ink::LOCAL_FACE), stroke: None, width: 1.0 },
-    Prim::Rect { x: 1529.1667, y: 243.3333, w: 4.5833, h: 4.5833, fill: Some(super::dashboard_ink::LOCAL_FACE), stroke: None, width: 1.0 },
-    Prim::At { x: 0.0, y: 0.0, prims: dashboard_type::CHIP2 },
     Prim::Rect { x: 475.0, y: 237.0, w: 211.0, h: 21.0, fill: Some(Ink::Fixed(rgb(0x302839))), stroke: Some(Ink::Fixed(rgb(0x68232e))), width: 0.8333 },
     Prim::Text { x: 526.6667, y: 252.5, size: 12.9167, ink: Ink::Fg, face: Face::Medium, anchor: Anchor::Start, content: "COMPUTER SYSTEMS" },
     Prim::Rect { x: 1132.5, y: 237.0, w: 221.6667, h: 21.0, fill: Some(Ink::Fixed(rgb(0x232239))), stroke: Some(Ink::Fixed(rgb(0x63232f))), width: 0.8333 },

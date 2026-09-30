@@ -40,8 +40,8 @@
              rot -30 c(551,414); PRODUCTS rot 90 c(458,575)
              right hub ~(825,535): PRODUCTS rot 90 c(825,424); EVENTS
              rot -30 c(731,586) — SOLID YELLOW, the selection;
-             LOCATIONS rot 30 c(919,586). ALL SIX trails recede up-right
-             at -45 deg in screen space (see the fan block below)
+             LOCATIONS rot 30 c(919,586). All six trails recede up-right
+             at about -45 deg in screen space (see the fan block below)
          - BRAINDANCE detail panel: yellow header tab at x 1207.5..1432/y 260.5..300,
            rounded at upper-left and around its upper-right chamfer; a
            connected warning ribbon spanning x 1172.5..1432/y 283..331.5;
@@ -83,7 +83,8 @@
          - G1i inks 0.59 -> 0.69 (dark teal 0.44 -> 0.45, teal 0.80 ->
            0.92, yellow 0.51 -> 0.79)
 
-       Palette sampled by k-means (extract_spec.py):
+       Palette sampled by k-means (extract_spec.py), before the clear-field
+       fan material fit in dashboard-material.md:
          ink   #2c9798 (3.8%)  #195147 (4.1%)  #f5cb23 (1.5%)
          ground #0d0d0c (46%) #9e4458 (15%) #211f1c (13%) #7a3346 (10%)
                 #4f2630 (7%) -->
@@ -108,7 +109,8 @@
     <!-- #fan-left-extrude / #fan-right-extrude: kitsch comes up as DEPTH.
          The solid blades stand from frame 0 (the fan is a physical
          rotor laid on the table, run image #45) and each fan's ghost
-         stack — the extrusion every blade trails (+20,-20) up-right —
+         stack — up-right extrusion at (+20,-20) for four blades and
+         (+19.15,-19.0) for right PRODUCTS and LOCATIONS —
          is wiped on from the LEFT, so the bright near ghost shows first
          and the trail extends away from the card into the dark: the
          depth extrudes out of the face. It is not neomil's top-down
@@ -118,8 +120,8 @@
          grows its own depth at once (their ghost boxes overlap in x
          668..774, which is why they are not one rect). Each rect is
          the fan's whole ghost box plus a 5px margin (left fan: ghosts
-         x 301.4..773.6, y 211.8..636; right fan: x 668.4..1121.6,
-         y 223..628.2, from the card's rotated 162x50 extents 82.65 x
+         x 301.4..773.6, y 211.8..636; right fan: x 668.4..1135.6,
+         y 209.7..628.2, from the card's rotated 162x50 extents 82.65 x
          62.15 for +-30 deg and 25 x 81 for 90 deg), so at rest nothing
          of any stack is nicked. Width from 0 over 0.45 s, eased out:
          0.33 1 0.68 1 is easings.net's EaseOutCubic. The rect's own
@@ -138,8 +140,8 @@
       </rect>
     </clipPath>
     <clipPath id="fan-right-extrude-clip">
-      <rect x="663" y="217" width="465" height="418">
-        <animate id="fan-right-extrude" attributeName="width" from="0" to="465"
+      <rect x="663" y="200" width="480" height="435">
+        <animate id="fan-right-extrude" attributeName="width" from="0" to="480"
                  begin="0s" dur="0.45s" calcMode="spline" keyTimes="0;1"
                  keySplines="0.33 1 0.68 1" fill="freeze"/>
       </rect>
@@ -166,6 +168,84 @@
         <set attributeName="width" to="0" begin="0s" end="panel-extrude.begin"/>
       </rect>
     </clipPath>
+    <linearGradient id="u-vehicles" gradientUnits="userSpaceOnUse" x1="-81" y1="0" x2="81" y2="0">
+      <stop offset="0" stop-color="#17858f"/>
+      <stop offset="0.1" stop-color="#16858f"/>
+      <stop offset="0.2" stop-color="#16858f"/>
+      <stop offset="0.3" stop-color="#16858f"/>
+      <stop offset="0.4" stop-color="#15858f"/>
+      <stop offset="0.5" stop-color="#15858f"/>
+      <stop offset="0.6" stop-color="#15858f"/>
+      <stop offset="0.7" stop-color="#14858f"/>
+      <stop offset="0.8" stop-color="#14858f"/>
+      <stop offset="0.9" stop-color="#14858f"/>
+      <stop offset="1" stop-color="#13858f"/>
+    </linearGradient>
+    <linearGradient id="u-weapons" gradientUnits="userSpaceOnUse" x1="-81" y1="0" x2="81" y2="0">
+      <stop offset="0" stop-color="#14858f"/>
+      <stop offset="0.1" stop-color="#14858f"/>
+      <stop offset="0.2" stop-color="#15858f"/>
+      <stop offset="0.3" stop-color="#15858f"/>
+      <stop offset="0.4" stop-color="#16858f"/>
+      <stop offset="0.5" stop-color="#17858f"/>
+      <stop offset="0.6" stop-color="#17858f"/>
+      <stop offset="0.7" stop-color="#1d858f"/>
+      <stop offset="0.8" stop-color="#25858f"/>
+      <stop offset="0.9" stop-color="#2c858f"/>
+      <stop offset="1" stop-color="#33858f"/>
+    </linearGradient>
+    <linearGradient id="u-products_l" gradientUnits="userSpaceOnUse" x1="-81" y1="0" x2="81" y2="0">
+      <stop offset="0" stop-color="#11858f"/>
+      <stop offset="0.1" stop-color="#10858f"/>
+      <stop offset="0.2" stop-color="#0f858f"/>
+      <stop offset="0.3" stop-color="#0e858f"/>
+      <stop offset="0.4" stop-color="#0d858f"/>
+      <stop offset="0.5" stop-color="#0c858f"/>
+      <stop offset="0.6" stop-color="#0b858f"/>
+      <stop offset="0.7" stop-color="#0b858f"/>
+      <stop offset="0.8" stop-color="#0b858f"/>
+      <stop offset="0.9" stop-color="#0b858f"/>
+      <stop offset="1" stop-color="#0b858f"/>
+    </linearGradient>
+    <linearGradient id="u-products_r" gradientUnits="userSpaceOnUse" x1="-81" y1="0" x2="81" y2="0">
+      <stop offset="0" stop-color="#4d858f"/>
+      <stop offset="0.1" stop-color="#40858f"/>
+      <stop offset="0.2" stop-color="#33858f"/>
+      <stop offset="0.3" stop-color="#26858f"/>
+      <stop offset="0.4" stop-color="#1a858f"/>
+      <stop offset="0.5" stop-color="#17858f"/>
+      <stop offset="0.6" stop-color="#15858f"/>
+      <stop offset="0.7" stop-color="#14858f"/>
+      <stop offset="0.8" stop-color="#13858f"/>
+      <stop offset="0.9" stop-color="#12858f"/>
+      <stop offset="1" stop-color="#11858f"/>
+    </linearGradient>
+    <linearGradient id="u-locations" gradientUnits="userSpaceOnUse" x1="-81" y1="0" x2="81" y2="0">
+      <stop offset="0" stop-color="#0e858f"/>
+      <stop offset="0.1" stop-color="#0e858f"/>
+      <stop offset="0.2" stop-color="#0d858f"/>
+      <stop offset="0.3" stop-color="#0d858f"/>
+      <stop offset="0.4" stop-color="#0c858f"/>
+      <stop offset="0.5" stop-color="#0b858f"/>
+      <stop offset="0.6" stop-color="#0b858f"/>
+      <stop offset="0.7" stop-color="#0b858f"/>
+      <stop offset="0.8" stop-color="#0b858f"/>
+      <stop offset="0.9" stop-color="#0b858f"/>
+      <stop offset="1" stop-color="#0b858f"/>
+    </linearGradient>
+    <linearGradient id="u-events" gradientUnits="userSpaceOnUse" x1="-81" y1="0" x2="81" y2="0">
+      <stop offset="0" stop-color="#0b858f"/>
+      <stop offset="0.1" stop-color="#0b858f"/>
+      <stop offset="0.2" stop-color="#0b858f"/>
+      <stop offset="0.3" stop-color="#0b858f"/>
+      <stop offset="0.4" stop-color="#0b858f"/>
+      <stop offset="0.5" stop-color="#0c858f"/>
+      <stop offset="0.6" stop-color="#0c858f"/>
+      <stop offset="0.7" stop-color="#0d858f"/>
+      <stop offset="0.8" stop-color="#0d858f"/>
+      <stop offset="0.9" stop-color="#0e858f"/>
+      <stop offset="1" stop-color="#0e858f"/>
+    </linearGradient>
   </defs>
 
   <rect width="1600" height="900" fill="#0c0c0b"/>
@@ -250,96 +330,115 @@
              VEHICLES  (+7.5,-27)  -> (+20.0,-19.6)
              WEAPONS   (+27.4,-7)  -> (+20.2,-19.8)
              L PRODUCTS (-20,-20)  -> (+20.0,-20.0)
-             R PRODUCTS (-19.5,-19.6) -> (+19.6,-19.5)
-             LOCATIONS (+7,-26)    -> (+20.0,-19.5)
+             R PRODUCTS (-19.5,-19.6) -> (+19.15,-19.0) on six measured steps
+             LOCATIONS (+7,-26)    -> (+19.15,-19.0) on six measured steps
              EVENTS: same (+27,-7) frame step as WEAPONS by eye
-           so a single (+20,-20) is used for all six
+           so the other four keep (+20,-20)
          - ghost counts, where the fill drops into the ground/bloom:
-           VEHICLES 6, WEAPONS 7 (fades into the rose bloom), left
-           PRODUCTS 6 (+1 barely there), right PRODUCTS 6, EVENTS 5 (the
-           rest run under the right PRODUCTS card), LOCATIONS 6
+           VEHICLES 7 (last stroke-only), WEAPONS 7 (fades into the rose
+           bloom), left PRODUCTS 7 (last barely there), right PRODUCTS 7, EVENTS 5 (the
+           rest run under the right PRODUCTS card), LOCATIONS 7
          - ghost fill sampled mid-strip over the black ground, G channel
            92 / 77 / 64 / 47 / 33 / 20 for ghosts 1..6 (LOCATIONS; VEHICLES
            93 / 78 / 67 / 59 / 47 / 39 on the bloom) with R~12, B~0.85 G —
-           i.e. a greener teal than the solid #3cbbb4, hence #0f9f80 at
-           opacity 0.58 / 0.48 / 0.40 / 0.30 / 0.21 / 0.12
+           i.e. a greener teal than the solid #3cbbb4. The fitted trace keeps
+           #0f9f80 but halves fill opacity to 0.29 / 0.24 / 0.20 / 0.15 /
+           0.105 / 0.06; existing edge opacities are retained. The seventh
+           far right PRODUCTS ghost has .035 fill/.065 edge; LOCATIONS'
+           seventh is stroke-only at .09. VEHICLES' seventh is also
+           stroke-only at .09; left PRODUCTS' is .035 fill/.10 edge
+           (dashboard-material.md)
        (An earlier version drew 190x60 r14 cards with 6-9 ghosts on
        13-21px steps; the ink gate at 80x45 passed both at ~0.54.) -->
   <!-- the left fan's ghosts, extruded under #fan-left-extrude (defs) -->
-  <g fill="#0f9f80" stroke="#6cc4bd" stroke-width="1.2" clip-path="url(#fan-left-extrude-clip)">
-    <!-- VEHICLES: c(364,413) rot 30, 6 ghosts -->
-    <use href="#card" transform="translate(484 293) rotate(30)" fill-opacity="0.12" stroke-opacity="0.24"/>
-    <use href="#card" transform="translate(464 313) rotate(30)" fill-opacity="0.21" stroke-opacity="0.34"/>
-    <use href="#card" transform="translate(444 333) rotate(30)" fill-opacity="0.30" stroke-opacity="0.45"/>
-    <use href="#card" transform="translate(424 353) rotate(30)" fill-opacity="0.40" stroke-opacity="0.56"/>
-    <use href="#card" transform="translate(404 373) rotate(30)" fill-opacity="0.48" stroke-opacity="0.68"/>
-    <use href="#card" transform="translate(384 393) rotate(30)" fill-opacity="0.58" stroke-opacity="0.80"/>
+  <g fill="#0f9f80" stroke="#6cc4bd" stroke-width="0.9" clip-path="url(#fan-left-extrude-clip)">
+    <!-- VEHICLES: c(364,413) rot 30, 7 ghosts -->
+    <use href="#card" transform="translate(504.7 274) rotate(30)" fill="none" stroke-opacity="0.09"/>
+    <use href="#card" transform="translate(484 293) rotate(30)" fill-opacity="0.06" stroke-opacity="0.24"/>
+    <use href="#card" transform="translate(464 313) rotate(30)" fill-opacity="0.105" stroke-opacity="0.34"/>
+    <use href="#card" transform="translate(444 333) rotate(30)" fill-opacity="0.15" stroke-opacity="0.45"/>
+    <use href="#card" transform="translate(424 353) rotate(30)" fill-opacity="0.20" stroke-opacity="0.56"/>
+    <use href="#card" transform="translate(404 373) rotate(30)" fill-opacity="0.24" stroke-opacity="0.68"/>
+    <use href="#card" transform="translate(384 393) rotate(30)" fill-opacity="0.29" stroke-opacity="0.80"/>
     <!-- WEAPONS: c(551,414) rot -30, 7 ghosts -->
-    <use href="#card" transform="translate(691 274) rotate(-30)" fill-opacity="0.07" stroke-opacity="0.16"/>
-    <use href="#card" transform="translate(671 294) rotate(-30)" fill-opacity="0.12" stroke-opacity="0.24"/>
-    <use href="#card" transform="translate(651 314) rotate(-30)" fill-opacity="0.21" stroke-opacity="0.34"/>
-    <use href="#card" transform="translate(631 334) rotate(-30)" fill-opacity="0.30" stroke-opacity="0.45"/>
-    <use href="#card" transform="translate(611 354) rotate(-30)" fill-opacity="0.40" stroke-opacity="0.56"/>
-    <use href="#card" transform="translate(591 374) rotate(-30)" fill-opacity="0.48" stroke-opacity="0.68"/>
-    <use href="#card" transform="translate(571 394) rotate(-30)" fill-opacity="0.58" stroke-opacity="0.80"/>
-    <!-- left PRODUCTS: c(458,575) rot 90, 6 ghosts -->
-    <use href="#card" transform="translate(578 455) rotate(90)" fill-opacity="0.12" stroke-opacity="0.24"/>
-    <use href="#card" transform="translate(558 475) rotate(90)" fill-opacity="0.21" stroke-opacity="0.34"/>
-    <use href="#card" transform="translate(538 495) rotate(90)" fill-opacity="0.30" stroke-opacity="0.45"/>
-    <use href="#card" transform="translate(518 515) rotate(90)" fill-opacity="0.40" stroke-opacity="0.56"/>
-    <use href="#card" transform="translate(498 535) rotate(90)" fill-opacity="0.48" stroke-opacity="0.68"/>
-    <use href="#card" transform="translate(478 555) rotate(90)" fill-opacity="0.58" stroke-opacity="0.80"/>
+    <use href="#card" transform="translate(691 274) rotate(-30)" fill-opacity="0.035" stroke-opacity="0.16"/>
+    <use href="#card" transform="translate(671 294) rotate(-30)" fill-opacity="0.06" stroke-opacity="0.24"/>
+    <use href="#card" transform="translate(651 314) rotate(-30)" fill-opacity="0.105" stroke-opacity="0.34"/>
+    <use href="#card" transform="translate(631 334) rotate(-30)" fill-opacity="0.15" stroke-opacity="0.45"/>
+    <use href="#card" transform="translate(611 354) rotate(-30)" fill-opacity="0.20" stroke-opacity="0.56"/>
+    <use href="#card" transform="translate(591 374) rotate(-30)" fill-opacity="0.24" stroke-opacity="0.68"/>
+    <use href="#card" transform="translate(571 394) rotate(-30)" fill-opacity="0.29" stroke-opacity="0.80"/>
+    <!-- left PRODUCTS: c(458,575) rot 90, 7 ghosts -->
+    <use href="#card" transform="translate(598 435) rotate(90)" fill-opacity="0.035" stroke-opacity="0.10"/>
+    <use href="#card" transform="translate(578 455) rotate(90)" fill-opacity="0.06" stroke-opacity="0.24"/>
+    <use href="#card" transform="translate(558 475) rotate(90)" fill-opacity="0.105" stroke-opacity="0.34"/>
+    <use href="#card" transform="translate(538 495) rotate(90)" fill-opacity="0.15" stroke-opacity="0.45"/>
+    <use href="#card" transform="translate(518 515) rotate(90)" fill-opacity="0.20" stroke-opacity="0.56"/>
+    <use href="#card" transform="translate(498 535) rotate(90)" fill-opacity="0.24" stroke-opacity="0.68"/>
+    <use href="#card" transform="translate(478 555) rotate(90)" fill-opacity="0.29" stroke-opacity="0.80"/>
   </g>
   <!-- the right fan's ghosts, extruded under #fan-right-extrude (defs) -->
-  <g fill="#0f9f80" stroke="#6cc4bd" stroke-width="1.2" clip-path="url(#fan-right-extrude-clip)">
-    <!-- right PRODUCTS: c(825,424) rot 90, 6 ghosts -->
-    <use href="#card" transform="translate(945 304) rotate(90)" fill-opacity="0.12" stroke-opacity="0.24"/>
-    <use href="#card" transform="translate(925 324) rotate(90)" fill-opacity="0.21" stroke-opacity="0.34"/>
-    <use href="#card" transform="translate(905 344) rotate(90)" fill-opacity="0.30" stroke-opacity="0.45"/>
-    <use href="#card" transform="translate(885 364) rotate(90)" fill-opacity="0.40" stroke-opacity="0.56"/>
-    <use href="#card" transform="translate(865 384) rotate(90)" fill-opacity="0.48" stroke-opacity="0.68"/>
-    <use href="#card" transform="translate(845 404) rotate(90)" fill-opacity="0.58" stroke-opacity="0.80"/>
+  <g fill="#0f9f80" stroke="#6cc4bd" stroke-width="0.9" clip-path="url(#fan-right-extrude-clip)">
+    <!-- right PRODUCTS: c(825,424) rot 90, 7 ghosts -->
+    <use href="#card" transform="translate(959.7 290.65) rotate(90)" fill-opacity="0.035" stroke-opacity="0.065"/>
+    <use href="#card" transform="translate(940.55 309.65) rotate(90)" fill-opacity="0.06" stroke-opacity="0.24"/>
+    <use href="#card" transform="translate(921.4 328.65) rotate(90)" fill-opacity="0.105" stroke-opacity="0.34"/>
+    <use href="#card" transform="translate(902.25 347.65) rotate(90)" fill-opacity="0.15" stroke-opacity="0.45"/>
+    <use href="#card" transform="translate(883.1 366.65) rotate(90)" fill-opacity="0.20" stroke-opacity="0.56"/>
+    <use href="#card" transform="translate(863.95 385.65) rotate(90)" fill-opacity="0.24" stroke-opacity="0.68"/>
+    <use href="#card" transform="translate(844.8 404.65) rotate(90)" fill-opacity="0.29" stroke-opacity="0.80"/>
     <!-- EVENTS (selection): c(731,586) rot -30, 5 ghosts -->
-    <use href="#card" transform="translate(831 486) rotate(-30)" fill-opacity="0.21" stroke-opacity="0.34"/>
-    <use href="#card" transform="translate(811 506) rotate(-30)" fill-opacity="0.30" stroke-opacity="0.45"/>
-    <use href="#card" transform="translate(791 526) rotate(-30)" fill-opacity="0.40" stroke-opacity="0.56"/>
-    <use href="#card" transform="translate(771 546) rotate(-30)" fill-opacity="0.48" stroke-opacity="0.68"/>
-    <use href="#card" transform="translate(751 566) rotate(-30)" fill-opacity="0.58" stroke-opacity="0.80"/>
-    <!-- LOCATIONS: c(919,586) rot 30, 6 ghosts -->
-    <use href="#card" transform="translate(1039 466) rotate(30)" fill-opacity="0.12" stroke-opacity="0.24"/>
-    <use href="#card" transform="translate(1019 486) rotate(30)" fill-opacity="0.21" stroke-opacity="0.34"/>
-    <use href="#card" transform="translate(999 506) rotate(30)" fill-opacity="0.30" stroke-opacity="0.45"/>
-    <use href="#card" transform="translate(979 526) rotate(30)" fill-opacity="0.40" stroke-opacity="0.56"/>
-    <use href="#card" transform="translate(959 546) rotate(30)" fill-opacity="0.48" stroke-opacity="0.68"/>
-    <use href="#card" transform="translate(939 566) rotate(30)" fill-opacity="0.58" stroke-opacity="0.80"/>
+    <use href="#card" transform="translate(831 486) rotate(-30)" fill-opacity="0.105" stroke-opacity="0.34"/>
+    <use href="#card" transform="translate(811 506) rotate(-30)" fill-opacity="0.15" stroke-opacity="0.45"/>
+    <use href="#card" transform="translate(791 526) rotate(-30)" fill-opacity="0.20" stroke-opacity="0.56"/>
+    <use href="#card" transform="translate(771 546) rotate(-30)" fill-opacity="0.24" stroke-opacity="0.68"/>
+    <use href="#card" transform="translate(751 566) rotate(-30)" fill-opacity="0.29" stroke-opacity="0.80"/>
+    <!-- LOCATIONS: c(919,586) rot 30, 7 ghosts; farthest has no fill -->
+    <use href="#card" transform="translate(1052.9 452.45) rotate(30)" fill="none" stroke-opacity="0.09"/>
+    <use href="#card" transform="translate(1033.75 471.45) rotate(30)" fill-opacity="0.06" stroke-opacity="0.24"/>
+    <use href="#card" transform="translate(1014.6 490.45) rotate(30)" fill-opacity="0.105" stroke-opacity="0.34"/>
+    <use href="#card" transform="translate(995.45 509.45) rotate(30)" fill-opacity="0.15" stroke-opacity="0.45"/>
+    <use href="#card" transform="translate(976.3 528.45) rotate(30)" fill-opacity="0.20" stroke-opacity="0.56"/>
+    <use href="#card" transform="translate(957.15 547.45) rotate(30)" fill-opacity="0.24" stroke-opacity="0.68"/>
+    <use href="#card" transform="translate(938 566.45) rotate(30)" fill-opacity="0.29" stroke-opacity="0.80"/>
   </g>
 
-  <!-- solid cards + labels -->
-  <g font-family="Rajdhani" font-size="19" letter-spacing="2" text-anchor="middle">
+  <!-- idle blade fields: rose-correlated red under the existing outlines -->
+  <g id="u-idle-face-field">
+    <g transform="translate(364 413) rotate(30)"><use href="#card" fill="url(#u-vehicles)" stroke="none"/></g>
+    <g transform="translate(551 414) rotate(-30)"><use href="#card" fill="url(#u-weapons)" stroke="none"/></g>
+    <g transform="translate(458 575) rotate(90)"><use href="#card" fill="url(#u-products_l)" stroke="none"/></g>
+    <g transform="translate(825 424) rotate(90)"><use href="#card" fill="url(#u-products_r)" stroke="none"/></g>
+    <g transform="translate(919 586) rotate(30)"><use href="#card" fill="url(#u-locations)" stroke="none"/></g>
+    <g transform="translate(731 586) rotate(-30)"><use href="#card" fill="url(#u-events)" stroke="none"/></g>
+  </g>
+  <!-- solid cards + individually fitted Rajdhani Medium labels;
+       the same local run geometry is used for idle, selected and pressed states. -->
+  <g font-family="Rajdhani" text-anchor="middle">
     <g transform="translate(364 413) rotate(30)">
-      <use href="#card" fill="#2c9798" stroke="#a9e6df" stroke-width="1.8"/>
-      <text y="6.5" fill="#7cffe5">VEHICLES</text>
+      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.8"/>
+      <text x="0.83" y="5.25" font-size="21" font-weight="500" letter-spacing="0" fill="#7cffe5">VEHICLES</text>
     </g>
     <g transform="translate(551 414) rotate(-30)">
-      <use href="#card" fill="#2c9798" stroke="#a9e6df" stroke-width="1.8"/>
-      <text y="6.5" fill="#7cffe5">WEAPONS</text>
+      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.8"/>
+      <text x="1.67" y="5.67" font-size="20" font-weight="500" letter-spacing="1" fill="#7cffe5">WEAPONS</text>
     </g>
     <g transform="translate(458 575) rotate(90)">
-      <use href="#card" fill="#2c9798" stroke="#a9e6df" stroke-width="1.8"/>
-      <text y="6.5" fill="#7cffe5">PRODUCTS</text>
+      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.8"/>
+      <text x="-3.33" y="6.50" font-size="20" font-weight="500" letter-spacing="1" fill="#7cffe5">PRODUCTS</text>
     </g>
     <g transform="translate(825 424) rotate(90)">
-      <use href="#card" fill="#2c9798" stroke="#a9e6df" stroke-width="1.8"/>
-      <text y="6.5" fill="#7cffe5">PRODUCTS</text>
+      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.8"/>
+      <text x="-4.17" y="8.58" font-size="20" font-weight="500" letter-spacing="1" fill="#7cffe5">PRODUCTS</text>
     </g>
     <!-- the selection -->
     <g transform="translate(731 586) rotate(-30)">
       <use href="#card" fill="#f5cb23" stroke="#fce89a" stroke-width="1.8"/>
-      <text y="6.5" fill="#4a3a05">EVENTS</text>
+      <text x="-1.25" y="6.50" font-size="20" font-weight="500" letter-spacing="0.75" fill="#4a3a05">EVENTS</text>
     </g>
     <g transform="translate(919 586) rotate(30)">
-      <use href="#card" fill="#2c9798" stroke="#a9e6df" stroke-width="1.8"/>
-      <text y="6.5" fill="#7cffe5">LOCATIONS</text>
+      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.8"/>
+      <text x="-2.50" y="6.08" font-size="20" font-weight="500" letter-spacing="0.5" fill="#7cffe5">LOCATIONS</text>
     </g>
   </g>
 

@@ -1127,6 +1127,15 @@ static CHROME: [Piece; 33] = [
 ];
 
 static BUTTONS: [&str; 4] = ["RIFLES", "RIFLES", "RIFLES", "RIFLES"];
+
+// Native cap/advance calibration of the four source action labels. Their
+// small independent x offsets preserve the existing uniform button frames.
+const MAIL_ACTION_TYPE: &[Run] = &[
+    Run::new(21.0, 27.5, 16.75, Ink::Fg).medium().stretched(1.050746),
+    Run::new(23.4667, 27.5, 16.75, Ink::Fg).medium().stretched(1.050746),
+    Run::new(21.9833, 27.5, 16.75, Ink::Fg).medium().stretched(1.050746),
+    Run::new(20.0833, 27.5, 16.75, Ink::Fg).medium().stretched(1.050746),
+];
 static LEVELS: [&str; 0] = [];
 
 /// The seven rows, trace lines 442-455; the envelopes at lines 361-367
@@ -1167,17 +1176,38 @@ static PARAGRAPHS: [&[&str]; 3] = [
     ],
 ];
 
-// Width and weight measured against the native #71 source; the seven rows
-// keep their original baselines and 60.2 pitch. The selected title alone
-// begins half a design pixel to the right, as in the trace.
-const MAIL_TITLE: Run = Run::new(193.0, 27.2, 18.0, Ink::Fg).medium().stretched(0.99);
-const MAIL_TITLE_SELECTED: Run = Run::new(193.5, 27.2, 18.0, Ink::Fg).medium().stretched(0.99);
-const MAIL_FROM: Run = Run::new(193.0, 48.2, 13.0, Ink::Mid).medium().stretched(1.16);
-const MAIL_ROW_PLAIN: MailRowType = MailRowType { title: MAIL_TITLE, from: MAIL_FROM };
-const MAIL_ROW_SELECTED: MailRowType = MailRowType { title: MAIL_TITLE_SELECTED, from: MAIL_FROM };
+// The source titles share one face and width. Their row-local baselines
+// account for the native renderer's offset from the SVG text baselines;
+// the row frames and 60.2 pitch stay fixed. Only row 2 starts at x 193.5.
 const MAIL_ROW_TYPE: &[MailRowType] = &[
-    MAIL_ROW_PLAIN, MAIL_ROW_SELECTED, MAIL_ROW_PLAIN, MAIL_ROW_PLAIN,
-    MAIL_ROW_PLAIN, MAIL_ROW_PLAIN, MAIL_ROW_PLAIN,
+    MailRowType {
+        title: Run::new(193.0, 27.825, 18.0, Ink::Fg).medium().stretched(0.975),
+        from: Run::new(193.4167, 49.0333, 13.0, Ink::Mid).medium().stretched(1.15),
+    },
+    MailRowType {
+        title: Run::new(193.5, 27.4083, 18.0, Ink::Fg).medium().stretched(0.975),
+        from: Run::new(193.0, 49.0333, 13.0, Ink::Mid).medium().stretched(1.16),
+    },
+    MailRowType {
+        title: Run::new(193.0, 27.2, 18.0, Ink::Fg).medium().stretched(0.975),
+        from: Run::new(193.4167, 48.4083, 13.0, Ink::Mid).medium().stretched(1.13),
+    },
+    MailRowType {
+        title: Run::new(193.0, 27.2, 18.0, Ink::Fg).medium().stretched(0.975),
+        from: Run::new(193.4167, 48.2, 13.0, Ink::Mid).medium().stretched(1.15),
+    },
+    MailRowType {
+        title: Run::new(193.0, 26.7833, 18.0, Ink::Fg).medium().stretched(0.975),
+        from: Run::new(193.4167, 48.2, 13.0, Ink::Mid).medium().stretched(1.13),
+    },
+    MailRowType {
+        title: Run::new(193.0, 26.575, 18.0, Ink::Fg).medium().stretched(0.975),
+        from: Run::new(193.4167, 47.575, 13.0, Ink::Mid).medium().stretched(1.15),
+    },
+    MailRowType {
+        title: Run::new(193.0, 26.1583, 18.0, Ink::Fg).medium().stretched(0.975),
+        from: Run::new(193.4167, 47.3667, 13.0, Ink::Mid).medium().stretched(1.15),
+    },
 ];
 
 pub fn mailbox() -> Mailbox {
@@ -1328,8 +1358,9 @@ pub fn mailbox() -> Mailbox {
             trim: Trim::chamfer(BL, 13.0),
             width: 1.25,
             stroke: Ink::Fg,
-            label: Run::new(22.0, 26.0, 15.0, Ink::Fg),
+            label: MAIL_ACTION_TYPE[0],
             tab: Some(Frame::new(131.0, 32.0, 37.0, 7.0)),
+            label_runs: MAIL_ACTION_TYPE,
             labels: &BUTTONS,
         },
         badges: MailBadges {
@@ -1479,6 +1510,8 @@ pub const ON_GOLD: iced::Color = rgb(0x3a2010);
 pub const PLATE_INK: iced::Color = rgb(0x5a3418);
 pub const GUN_BASE: iced::Color = rgb(0xac9152);
 pub const GUN_BRIGHT: iced::Color = rgb(0xffd779);
+const STORE_LOGO_SOLID: iced::Color = rgb(0xfdcd9d);
+const STORE_LOGO_OUTLINE: iced::Color = rgb(0xf0c48a);
 /// The mid gold the source's veneer grain is drawn in.
 pub const GRAIN_LINE: iced::Color = rgb(0xcd9553);
 /// Dark convergence in the store card's selected-body veneer.
@@ -1710,8 +1743,10 @@ const CARD_EDGE: &[Seg] = &[
     Seg::Cubic { c1x: 151.2, c1y: 345.0, c2x: 167.2, c2y: 314.6, x: 182.2, y: 314.6 },
     Seg::Line(244.1, 314.6),
     Seg::Quad { cx: 262.1, cy: 314.6, x: 262.1, y: 332.6 },
-    Seg::Line(262.1, 632.4),
-    Seg::Quad { cx: 262.1, cy: 640.4, x: 254.1, y: 640.4 },
+    Seg::Line(262.1, 590.0),
+    Seg::Cubic { c1x: 262.1, c1y: 605.0, c2x: 262.5, c2y: 615.0, x: 262.5, y: 634.4 },
+    Seg::Quad { cx: 262.5, cy: 641.2, x: 255.8, y: 641.2 },
+    Seg::Line(19.2, 641.2),
     Seg::Line(19.2, 640.4),
 ];
 // Native shoulder profiles share one low tangent. These controls fit the
@@ -1726,15 +1761,83 @@ const fn store_shoulder(low: f32, high: f32, index: usize) -> Seg {
     Seg::Cubic { c1x, c1y: low, c2x, c2y: high, x, y: high }
 }
 
+// The three inner right turns spread across the photographed corner before
+// becoming vertical. Keep the outer two arcs and the common shoulder intact.
+const fn store_corner_start(index: usize) -> f32 {
+    match index {
+        2 => 237.9,
+        3 => 236.23,
+        4 => 232.9,
+        _ => 244.1,
+    }
+}
+const fn store_corner_x(index: usize) -> f32 {
+    match index {
+        2 => 252.9,
+        3 => 250.4,
+        4 => 247.07,
+        _ => 259.1 - 3.05 * index as f32,
+    }
+}
+const fn store_corner_turn(high: f32, index: usize) -> Seg {
+    match index {
+        2 => Seg::Cubic { c1x: 250.35, c1y: high, c2x: 252.9, c2y: high + 10.01, x: 252.9, y: high + 11.58 },
+        3 => Seg::Cubic { c1x: 239.3, c1y: high, c2x: 250.4, c2y: high + 3.04, x: 250.4, y: high + 13.8 },
+        4 => Seg::Cubic { c1x: 237.17, c1y: high, c2x: 247.07, c2y: high + 4.4, x: 247.07, y: high + 11.02 },
+        _ => {
+            let x = store_corner_x(index);
+            Seg::Quad { cx: x, cy: high, x, y: high + 15.0 - 3.05 * index as f32 }
+        }
+    }
+}
+
+// The photographed bottom has five distinct echo ridges. Their lower turns
+// share one card-local shape; the selected card extends it by 70.9 in y.
+// The upper turns and shoulder keep their separately measured controls.
+const fn store_echo_stem(index: usize) -> f32 {
+    [259.5, 256.4, 253.5, 250.4, 247.07][index]
+}
+const fn store_echo_start(index: usize, selected: bool) -> f32 {
+    [632.4, 630.5, 627.4, 622.7, 621.0][index] + if selected { 70.9 } else { 0.0 }
+}
+const fn store_echo_bottom(index: usize, selected: bool) -> f32 {
+    [637.8, 634.7, 631.2, 628.6, 625.5][index] + if selected { 70.9 } else { 0.0 }
+}
+const fn store_echo_transition(index: usize, selected: bool) -> Seg {
+    Seg::Cubic {
+        c1x: store_corner_x(index),
+        c1y: if selected { 675.0 } else { 605.0 },
+        c2x: store_echo_stem(index),
+        c2y: if selected { 685.0 } else { 615.0 },
+        x: store_echo_stem(index),
+        y: store_echo_start(index, selected),
+    }
+}
+const fn store_echo_bend(index: usize, selected: bool) -> Seg {
+    Seg::Quad {
+        cx: store_echo_stem(index),
+        cy: store_echo_bottom(index, selected),
+        x: [254.5, 253.1, 250.9, 245.9, 242.9][index],
+        y: store_echo_bottom(index, selected),
+    }
+}
+const fn store_echo_left(index: usize, selected: bool) -> Seg {
+    Seg::Line(
+        if index == 4 { 6.2 } else { 16.6 - 2.6 * index as f32 },
+        store_echo_bottom(index, selected),
+    )
+}
+
 macro_rules! echo {
     ($d:expr, $ink:expr) => {
         line_path(136.2, 345.0, &[
             store_shoulder(345.0, 318.3 + 3.2 * ($d - 1.0), $d as usize - 1),
-            Seg::Line(244.1, 318.3 + 3.2 * ($d - 1.0)),
-            Seg::Quad { cx: 259.1 - 3.05 * ($d - 1.0), cy: 318.3 + 3.2 * ($d - 1.0), x: 259.1 - 3.05 * ($d - 1.0), y: 333.3 + 0.15 * ($d - 1.0) },
-            Seg::Line(259.1 - 3.05 * ($d - 1.0), 632.4 - 1.3 * ($d - 1.0) * ($d - 1.0)),
-            Seg::Quad { cx: 259.1 - 3.05 * ($d - 1.0), cy: 637.4 - 1.55 * ($d - 1.0), x: 254.1 - 1.55 * ($d - 1.0), y: 637.4 - 1.55 * ($d - 1.0) },
-            Seg::Line(16.6 - 2.6 * ($d - 1.0), 637.4 - 1.55 * ($d - 1.0)),
+            Seg::Line(store_corner_start($d as usize - 1), 318.3 + 3.2 * ($d - 1.0)),
+            store_corner_turn(318.3 + 3.2 * ($d - 1.0), $d as usize - 1),
+            Seg::Line(store_corner_x($d as usize - 1), 590.0),
+            store_echo_transition($d as usize - 1, false),
+            store_echo_bend($d as usize - 1, false),
+            store_echo_left($d as usize - 1, false),
         ], $ink, 1.0)
     };
 }
@@ -1745,11 +1848,12 @@ const ECHOES: &[Prim] = &[
     echo!(4.0, Ink::Fixed(FRAME_ECHO4)),
     line_path(136.2, 345.0, &[
         store_shoulder(345.0, 331.1, 4),
-        Seg::Line(244.1, 331.1),
-        Seg::Quad { cx: 246.9, cy: 331.1, x: 246.9, y: 333.9 },
-        Seg::Line(246.9, 627.2),
-        Seg::Quad { cx: 246.9, cy: 631.2, x: 242.9, y: 631.2 },
-        Seg::Line(6.2, 631.2),
+        Seg::Line(store_corner_start(4), 331.1),
+        store_corner_turn(331.1, 4),
+        Seg::Line(store_corner_x(4), 590.0),
+        store_echo_transition(4, false),
+        store_echo_bend(4, false),
+        store_echo_left(4, false),
     ], Ink::Fixed(FRAME_ECHO5), 1.0),
 ];
 /// The solid tab under a card's bottom edge.
@@ -1760,31 +1864,43 @@ const CARD_TAB: &[Seg] = &[
     Seg::Cubic { c1x: 102.0, c1y: 641.4, c2x: 100.0, c2y: 632.9, x: 102.0, y: 632.9 },
 ];
 
+// Canvas Rajdhani baselines land two native pixels below librsvg here.
+const STORE_NATIVE_BASELINE_LIFT: f32 = 0.833_333;
+const fn store_stat(x: f32, y: f32, ink: Ink, content: &'static str) -> Prim {
+    Prim::Text { x, y: y - STORE_NATIVE_BASELINE_LIFT, size: 18.0, ink, face: Face::Medium, anchor: Anchor::Start, content }
+}
+const fn store_number(x: f32, y: f32, ink: Ink, content: &'static str) -> Prim {
+    Prim::Text { x, y: y - STORE_NATIVE_BASELINE_LIFT, size: 22.5, ink, face: Face::SemiBold, anchor: Anchor::Start, content }
+}
+const fn store_socket(x: f32, y: f32, ink: Ink, content: &'static str) -> Prim {
+    Prim::Text { x, y, size: 13.0, ink, face: Face::Medium, anchor: Anchor::Middle, content }
+}
+
 const CARD: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: ECHOES },
     shut_path(0.0, 618.0, CARD_EDGE, Ink::Fixed(OUTLINE), 1.3),
     fill_path(102.0, 632.9, CARD_TAB, Ink::Fixed(TAB)),
     Prim::At { x: 0.0, y: 345.0, prims: weapon::PATHS },
-    txt(22.0, 485.0, 16.5, Ink::Fixed(BRIGHT), "DPS"),
-    txt(86.0, 485.0, 16.5, Ink::Fixed(BRIGHT), "PNT"),
-    txt(137.0, 485.0, 16.5, Ink::Fixed(BRIGHT), "ACC"),
-    txt(192.0, 485.0, 16.5, Ink::Fixed(BRIGHT), "ROF"),
-    Prim::Text { x: 15.0, y: 522.0, size: 27.0, ink: Ink::Fixed(BRIGHT), face: Face::Medium, anchor: Anchor::Start, content: "620" },
-    txt(88.0, 519.0, 21.0, Ink::Fixed(BRIGHT), "30"),
-    txt(147.0, 519.0, 21.0, Ink::Fixed(BRIGHT), "5"),
-    txt(200.0, 519.0, 21.0, Ink::Fixed(BRIGHT), "5"),
+    store_stat(33.0, 483.3, Ink::Fixed(BRIGHT), "DPS"),
+    store_stat(97.0, 483.3, Ink::Fixed(BRIGHT), "PNT"),
+    store_stat(149.25, 483.3, Ink::Fixed(BRIGHT), "ACC"),
+    store_stat(203.0, 483.3, Ink::Fixed(BRIGHT), "ROF"),
+    Prim::Text { x: 26.5, y: 520.5 - STORE_NATIVE_BASELINE_LIFT, size: 28.0, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "620" },
+    store_number(99.5, 517.5, Ink::Fixed(BRIGHT), "30"),
+    store_number(158.5, 517.5, Ink::Fixed(BRIGHT), "5"),
+    store_number(211.5, 517.5, Ink::Fixed(BRIGHT), "5"),
     fill_rect(0.0, 532.35, 262.1, 1.1, Ink::Fixed(STRAND)),
     fill_rect(0.0, 580.25, 262.1, 1.1, Ink::Fixed(STRAND)),
     fill_rect(50.75, 532.9, 1.1, 47.9, Ink::Fixed(STRAND)),
     fill_rect(118.25, 532.9, 1.1, 47.9, Ink::Fixed(STRAND)),
     fill_rect(189.85, 532.9, 1.1, 47.9, Ink::Fixed(STRAND)),
     Prim::At { x: 9.8, y: 542.2, prims: QR_LIGHT },
-    txt_mid(85.1, 553.4, 11.5, Ink::Fixed(LABEL), "EMPTY"),
-    txt_mid(85.1, 568.9, 11.5, Ink::Fixed(LABEL), "SOCKET"),
-    txt_mid(154.6, 553.4, 11.5, Ink::Fixed(LABEL), "EMPTY"),
-    txt_mid(154.6, 568.9, 11.5, Ink::Fixed(LABEL), "SOCKET"),
-    txt_mid(226.3, 553.4, 11.5, Ink::Fixed(LABEL), "EMPTY"),
-    txt_mid(226.3, 568.9, 11.5, Ink::Fixed(LABEL), "SOCKET"),
+    store_socket(83.1, 555.4, Ink::Fixed(LABEL), "EMPTY"),
+    store_socket(83.1, 568.9 - STORE_NATIVE_BASELINE_LIFT, Ink::Fixed(LABEL), "SOCKET"),
+    store_socket(154.6, 555.4, Ink::Fixed(LABEL), "EMPTY"),
+    store_socket(154.6, 568.9 - STORE_NATIVE_BASELINE_LIFT, Ink::Fixed(LABEL), "SOCKET"),
+    store_socket(226.3, 555.4, Ink::Fixed(LABEL), "EMPTY"),
+    store_socket(226.3, 568.9 - STORE_NATIVE_BASELINE_LIFT, Ink::Fixed(LABEL), "SOCKET"),
     txt_bold(24.0, 613.0, 19.0, Ink::Fixed(BRIGHT), "MAGNUM 650"),
     txt(133.0, 613.0, 19.0, Ink::Fixed(BRIGHT), "HAND GUN"),
 ];
@@ -1799,19 +1915,22 @@ const GROWN_EDGE: &[Seg] = &[
     Seg::Cubic { c1x: 151.2, c1y: 263.3, c2x: 167.2, c2y: 232.9, x: 182.2, y: 232.9 },
     Seg::Line(244.1, 232.9),
     Seg::Quad { cx: 262.1, cy: 232.9, x: 262.1, y: 250.9 },
-    Seg::Line(262.1, 703.3),
-    Seg::Quad { cx: 262.1, cy: 711.3, x: 254.1, y: 711.3 },
+    Seg::Line(262.1, 660.0),
+    Seg::Cubic { c1x: 262.1, c1y: 675.0, c2x: 262.9, c2y: 690.0, x: 262.9, y: 705.3 },
+    Seg::Quad { cx: 262.9, cy: 712.55, x: 256.2, y: 712.55 },
+    Seg::Line(19.2, 712.55),
     Seg::Line(19.2, 711.3),
 ];
 macro_rules! grown_echo {
     ($d:expr, $ink:expr) => {
         line_path(136.2, 263.3, &[
             store_shoulder(263.3, 236.6 + 3.2 * ($d - 1.0), $d as usize - 1),
-            Seg::Line(244.1, 236.6 + 3.2 * ($d - 1.0)),
-            Seg::Quad { cx: 259.1 - 3.05 * ($d - 1.0), cy: 236.6 + 3.2 * ($d - 1.0), x: 259.1 - 3.05 * ($d - 1.0), y: 251.6 + 0.15 * ($d - 1.0) },
-            Seg::Line(259.1 - 3.05 * ($d - 1.0), 703.3 - 1.3 * ($d - 1.0) * ($d - 1.0)),
-            Seg::Quad { cx: 259.1 - 3.05 * ($d - 1.0), cy: 708.2 - 1.55 * ($d - 1.0), x: 254.1 - 1.55 * ($d - 1.0), y: 708.2 - 1.55 * ($d - 1.0) },
-            Seg::Line(16.6 - 2.6 * ($d - 1.0), 708.2 - 1.55 * ($d - 1.0)),
+            Seg::Line(store_corner_start($d as usize - 1), 236.6 + 3.2 * ($d - 1.0)),
+            store_corner_turn(236.6 + 3.2 * ($d - 1.0), $d as usize - 1),
+            Seg::Line(store_corner_x($d as usize - 1), 660.0),
+            store_echo_transition($d as usize - 1, true),
+            store_echo_bend($d as usize - 1, true),
+            store_echo_left($d as usize - 1, true),
         ], $ink, 1.0)
     };
 }
@@ -1829,19 +1948,20 @@ const GROWN: &[Prim] = &[
     grown_echo!(4.0, Ink::Fixed(FRAME_ECHO4)),
     line_path(136.2, 263.3, &[
         store_shoulder(263.3, 249.4, 4),
-        Seg::Line(244.1, 249.4),
-        Seg::Quad { cx: 246.9, cy: 249.4, x: 246.9, y: 252.2 },
-        Seg::Line(246.9, 698.1),
-        Seg::Quad { cx: 246.9, cy: 702.1, x: 242.9, y: 702.1 },
-        Seg::Line(6.2, 702.1),
+        Seg::Line(store_corner_start(4), 249.4),
+        store_corner_turn(249.4, 4),
+        Seg::Line(store_corner_x(4), 660.0),
+        store_echo_transition(4, true),
+        store_echo_bend(4, true),
+        store_echo_left(4, true),
     ], Ink::Fixed(FRAME_ECHO5), 1.0),
     shut_path(0.0, 688.9, GROWN_EDGE, Ink::Fixed(OUTLINE), 1.3),
     fill_path(102.0, 703.8, GROWN_TAB, Ink::Fixed(TAB)),
     Prim::At { x: 0.0, y: 263.3, prims: weapon::PATHS },
-    txt(22.0, 403.3, 16.5, Ink::Fixed(BRIGHT), "DPS"),
-    txt(86.0, 403.3, 16.5, Ink::Fixed(BRIGHT), "PNT"),
-    txt(137.0, 403.3, 16.5, Ink::Fixed(BRIGHT), "ACC"),
-    txt(192.0, 403.3, 16.5, Ink::Fixed(BRIGHT), "ROF"),
+    store_stat(33.0, 401.6, Ink::Fixed(BRIGHT), "DPS"),
+    store_stat(97.0, 401.6, Ink::Fixed(BRIGHT), "PNT"),
+    store_stat(149.25, 401.6, Ink::Fixed(BRIGHT), "ACC"),
+    store_stat(203.0, 401.6, Ink::Fixed(BRIGHT), "ROF"),
     txt_bold(24.0, 683.9, 19.0, Ink::Fixed(BRIGHT), "MAGNUM 650"),
     txt(133.0, 683.9, 19.0, Ink::Fixed(BRIGHT), "HAND GUN"),
     // the gold body, faded in after the shelf's wipe: `#body-fade`
@@ -1890,10 +2010,10 @@ const BODY_SURFACE: &[Prim] = &[
 const GROWN_BODY: &[Prim] = &[
     // the gold body, and the veneer grain the source fills it with
     Prim::Viewport { x: 0.0, y: 411.2, w: 262.1, h: 241.7, prims: BODY_SURFACE },
-    Prim::Text { x: 15.0, y: 440.3, size: 27.0, ink: Ink::OnSelect, face: Face::Medium, anchor: Anchor::Start, content: "620" },
-    txt(88.0, 437.3, 21.0, Ink::OnSelect, "30"),
-    txt(147.0, 437.3, 21.0, Ink::OnSelect, "5"),
-    txt(200.0, 437.3, 21.0, Ink::OnSelect, "5"),
+    Prim::Text { x: 26.5, y: 438.8 - STORE_NATIVE_BASELINE_LIFT, size: 28.0, ink: Ink::OnSelect, face: Face::SemiBold, anchor: Anchor::Start, content: "620" },
+    store_number(99.5, 435.8, Ink::OnSelect, "30"),
+    store_number(158.5, 435.8, Ink::OnSelect, "5"),
+    store_number(211.5, 435.8, Ink::OnSelect, "5"),
     txt(5.9, 468.0, 19.0, Ink::OnSelect, "20"),
     txt(32.9, 468.0, 19.0, Ink::OnSelect, "Recoil"),
     txt(5.9, 488.0, 19.0, Ink::OnSelect, "22"),
@@ -1911,12 +2031,12 @@ const GROWN_BODY: &[Prim] = &[
     fill_rect(118.25, 603.8, 1.1, 47.9, Ink::OnSelect),
     fill_rect(189.85, 603.8, 1.1, 47.9, Ink::OnSelect),
     Prim::At { x: 9.8, y: 613.1, prims: QR_DARK },
-    txt_mid(85.1, 624.3, 11.5, Ink::OnSelect, "EMPTY"),
-    txt_mid(85.1, 639.8, 11.5, Ink::OnSelect, "SOCKET"),
-    txt_mid(154.6, 624.3, 11.5, Ink::OnSelect, "EMPTY"),
-    txt_mid(154.6, 639.8, 11.5, Ink::OnSelect, "SOCKET"),
-    txt_mid(226.3, 624.3, 11.5, Ink::OnSelect, "EMPTY"),
-    txt_mid(226.3, 639.8, 11.5, Ink::OnSelect, "SOCKET"),
+    store_socket(83.1, 626.3, Ink::OnSelect, "EMPTY"),
+    store_socket(83.1, 639.8 - STORE_NATIVE_BASELINE_LIFT, Ink::OnSelect, "SOCKET"),
+    store_socket(154.6, 626.3, Ink::OnSelect, "EMPTY"),
+    store_socket(154.6, 639.8 - STORE_NATIVE_BASELINE_LIFT, Ink::OnSelect, "SOCKET"),
+    store_socket(226.3, 626.3, Ink::OnSelect, "EMPTY"),
+    store_socket(226.3, 639.8 - STORE_NATIVE_BASELINE_LIFT, Ink::OnSelect, "SOCKET"),
 ];
 
 // Product hover borrows #nk-button-hover's T2 fan, adapted to the
@@ -2022,15 +2142,62 @@ const BASKET_QR: &[Prim] = &[
     fill_rect(1485.93, 51.48, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
 ];
 
-/// The logotype's outlined T, x 237..277 with its stem centred.
+// The photographed 4ST mark repeats the source-native contours used by the
+// Entropism store, shifted (-28.333, -35) in design coordinates here.
+const STORE_FOUR: &[Seg] = &[
+    Seg::Line(188.0, 105.0),
+    Seg::Line(190.0, 106.0),
+    Seg::Line(190.0, 132.0),
+    Seg::Line(198.0, 132.0),
+    Seg::Line(198.0, 144.0),
+    Seg::Line(190.0, 145.0),
+    Seg::Line(190.0, 152.0),
+    Seg::Line(173.0, 152.0),
+    Seg::Line(172.0, 145.0),
+    Seg::Line(138.0, 145.0),
+    Seg::Line(137.0, 133.0),
+    Seg::Line(157.0, 114.0),
+    Seg::Line(164.0, 105.0),
+    Seg::Move(158.0, 130.0),
+    Seg::Line(162.0, 128.0),
+    Seg::Line(172.0, 118.0),
+    Seg::Line(172.0, 132.0),
+    Seg::Line(158.0, 132.0),
+];
+const STORE_ESS: &[Seg] = &[
+    Seg::Cubic { c1x: 263.0, c1y: 146.0, c2x: 256.0, c2y: 151.0, x: 246.0, y: 153.0 },
+    Seg::Cubic { c1x: 232.0, c1y: 156.0, c2x: 218.0, c2y: 154.0, x: 211.0, y: 151.0 },
+    Seg::Cubic { c1x: 205.0, c1y: 148.0, c2x: 201.0, c2y: 143.0, x: 201.0, y: 138.0 },
+    Seg::Line(205.0, 136.0),
+    Seg::Line(218.0, 136.0),
+    Seg::Cubic { c1x: 223.0, c1y: 136.0, c2x: 226.0, c2y: 138.0, x: 226.0, y: 140.0 },
+    Seg::Cubic { c1x: 228.0, c1y: 142.0, c2x: 236.0, c2y: 142.0, x: 240.0, y: 140.0 },
+    Seg::Cubic { c1x: 242.0, c1y: 137.0, c2x: 238.0, c2y: 135.0, x: 230.0, y: 134.0 },
+    Seg::Line(211.0, 131.0),
+    Seg::Cubic { c1x: 204.0, c1y: 129.0, c2x: 202.0, c2y: 125.0, x: 202.0, y: 118.0 },
+    Seg::Cubic { c1x: 201.0, c1y: 109.0, c2x: 208.0, c2y: 103.0, x: 221.0, y: 101.0 },
+    Seg::Cubic { c1x: 234.0, c1y: 99.0, c2x: 249.0, c2y: 102.0, x: 255.0, y: 106.0 },
+    Seg::Cubic { c1x: 259.0, c1y: 109.0, c2x: 261.0, c2y: 113.0, x: 261.0, y: 118.0 },
+    Seg::Line(239.0, 118.0),
+    Seg::Cubic { c1x: 238.0, c1y: 114.0, c2x: 233.0, c2y: 112.0, x: 227.0, y: 113.0 },
+    Seg::Cubic { c1x: 223.0, c1y: 113.0, c2x: 222.0, c2y: 116.0, x: 223.0, y: 118.0 },
+    Seg::Cubic { c1x: 227.0, c1y: 120.0, c2x: 241.0, c2y: 121.0, x: 253.0, y: 122.0 },
+    Seg::Cubic { c1x: 261.0, c1y: 125.0, c2x: 264.0, c2y: 131.0, x: 264.0, y: 138.0 },
+];
+const STORE_SOLID_MARK: &[Prim] = &[
+    fill_path(164.0, 105.0, STORE_FOUR, Ink::Fixed(STORE_LOGO_SOLID)),
+    fill_path(264.0, 138.0, STORE_ESS, Ink::Fixed(STORE_LOGO_SOLID)),
+];
+
+/// The outlined T follows its photographed bar and narrower stem.
 const TEE: &[Seg] = &[
-    Seg::Line(277.0, 66.0),
-    Seg::Line(277.0, 79.0),
-    Seg::Line(264.0, 79.0),
-    Seg::Line(264.0, 117.0),
-    Seg::Line(250.0, 117.0),
-    Seg::Line(250.0, 79.0),
-    Seg::Line(237.0, 79.0),
+    Seg::Line(276.2, 68.5),
+    Seg::Line(276.2, 77.0),
+    Seg::Line(262.1, 77.0),
+    Seg::Line(262.1, 115.0),
+    Seg::Line(251.7, 115.0),
+    Seg::Line(251.7, 77.0),
+    Seg::Line(237.5, 77.0),
 ];
 
 
@@ -2169,9 +2336,9 @@ pub const STORE: &[Prim] = &[
 ];
 
 const CONTENT: &[Prim] = &[
-    // logotype: a very heavy face, "4S" solid and the "T" outline only
-    Prim::Wide { x: 109.0, y: 117.0, size: 70.0, stretch: 1.73, ink: Ink::Fixed(BRIGHT), face: Face::Bold, anchor: Anchor::Start, content: "4S" },
-    shut_path(237.0, 66.0, TEE, Ink::Fixed(BRIGHT), 1.4),
+    // solid source contours for 4S; the T remains an outline
+    Prim::At { x: -28.333, y: -35.0, prims: STORE_SOLID_MARK },
+    shut_path(237.5, 68.5, TEE, Ink::Fixed(STORE_LOGO_OUTLINE), 2.0),
     Prim::Spaced { x: 113.0, y: 138.0, size: 16.5, ink: Ink::Fixed(LABEL), face: Face::Bold, pitch: 39.0, content: "STORE" },
     // BASKET plate
     fill_path(1291.7, 19.6, PLATE_EDGE, Ink::Fixed(PLATE)),
@@ -2653,8 +2820,8 @@ const PANEL_FRAME: &[Prim] = &[
 // The badge's ink-only silhouette is in the existing header Soft group;
 // text remains native alongside the other security-level labels.
 const T2_BADGE: &[Prim] = &[
-    txt(1295.0, 71.0, 12.0, Ink::Fixed(CAPTION), "LEVEL"),
-    Prim::Text { x: 1296.0, y: 95.0, size: 21.0, ink: Ink::Fixed(BADGE_LIT), face: Face::SemiBold, anchor: Anchor::Start, content: "T2" },
+    Prim::Tracked { x: 1294.2, y: 69.6, size: 12.5, tracking: 0.3, ink: Ink::Fixed(CAPTION), face: Face::Regular, anchor: Anchor::Start, content: "LEVEL" },
+    Prim::Wide { x: 1296.0, y: 91.6, size: 21.0, stretch: 1.45, ink: Ink::Fixed(BADGE_LIT), face: Face::SemiBold, anchor: Anchor::Start, content: "T2" },
 ];
 
 /// Dashboard source #69 header strand; mailbox #71 uses the separately
@@ -2732,13 +2899,13 @@ const CASCADE: &[Prim] = &[
     module!(4, 724.0, 284.0),
     module!(5, 826.0, 182.0),
     // labels (:441-449), right-anchored beside each card
-    txt_end(238.0, 466.7, 17.0, Ink::Fixed(HUB_FILL), "EMAIL"),
-    txt_end(338.0, 366.3, 17.0, Ink::Fixed(HUB_FILL), "MATRIX"),
-    txt_end(440.0, 264.6, 17.0, Ink::Fixed(HUB_FILL), "BRAINDANCE"),
-    txt_end(615.0, 466.7, 17.0, Ink::Fixed(HUB_FILL), "PRIVATE"),
-    txt_end(714.0, 356.3, 17.0, Ink::Fixed(HUB_FILL), "SECURITY"),
-    txt_end(714.0, 377.9, 17.0, Ink::Fixed(HUB_FILL), "SYSTEMS"),
-    txt_end(817.0, 264.6, 17.0, Ink::Fixed(HUB_FILL), "DEVICES"),
+    Prim::Tracked { x: 237.0, y: 466.7, size: 17.0, tracking: 0.69, ink: Ink::Fixed(HUB_FILL), face: Face::Regular, anchor: Anchor::End, content: "EMAIL" },
+    Prim::Tracked { x: 337.375, y: 366.3, size: 17.0, tracking: 0.77, ink: Ink::Fixed(HUB_FILL), face: Face::Regular, anchor: Anchor::End, content: "MATRIX" },
+    Prim::Tracked { x: 439.375, y: 264.6, size: 17.0, tracking: 0.74, ink: Ink::Fixed(HUB_FILL), face: Face::Regular, anchor: Anchor::End, content: "BRAINDANCE" },
+    Prim::Tracked { x: 614.375, y: 466.7, size: 17.0, tracking: 0.68, ink: Ink::Fixed(HUB_FILL), face: Face::Regular, anchor: Anchor::End, content: "PRIVATE" },
+    Prim::Tracked { x: 714.625, y: 356.3, size: 17.0, tracking: 0.67, ink: Ink::Fixed(HUB_FILL), face: Face::Regular, anchor: Anchor::End, content: "SECURITY" },
+    Prim::Tracked { x: 714.625, y: 377.9, size: 17.0, tracking: 0.76, ink: Ink::Fixed(HUB_FILL), face: Face::Regular, anchor: Anchor::End, content: "SYSTEMS" },
+    Prim::Tracked { x: 816.792, y: 264.6, size: 17.0, tracking: 0.63, ink: Ink::Fixed(HUB_FILL), face: Face::Regular, anchor: Anchor::End, content: "DEVICES" },
     // captions under each foot (:571-576), at the first line's text
     // origin: 4.2..5.2 in from the card's left edge, 347.2 below its top
     Prim::At { x: 250.7, y: 731.25, prims: NCAPTION },
@@ -2817,17 +2984,19 @@ pub const DASHBOARD: &[Prim] = &[
     // lobes carry opacities and stack.
     Prim::Soft { prims: HUB_HEADER_BACKDROP },
     // ==== header (:271-308) ====
-    txt(120.0, 42.0, 15.0, Ink::Fixed(HUB_MID), "CUSTOMER #NC488402"),
-    txt(120.0, 70.0, 12.0, Ink::Fixed(HUB_MID), "LEVEL"),
-    Prim::Text { x: 126.0, y: 90.0, size: 21.0, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T1" },
-    txt(1131.0, 68.0, 12.0, Ink::Fixed(HUB_MID), "SECURITY"),
-    txt(1131.0, 83.0, 12.0, Ink::Fixed(HUB_MID), "LEVEL"),
-    txt(1229.0, 63.0, 12.0, Ink::Fixed(HUB_MID), "LEVEL"),
-    txt(1354.0, 63.0, 12.0, Ink::Fixed(HUB_MID), "LEVEL"),
-    txt(1417.0, 63.0, 12.0, Ink::Fixed(HUB_MID), "LEVEL"),
-    Prim::Text { x: 1236.0, y: 86.0, size: 20.0, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T1" },
-    Prim::Text { x: 1361.0, y: 86.0, size: 20.0, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T3" },
-    Prim::Text { x: 1424.0, y: 86.0, size: 20.0, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T4" },
+    // Iced native cap alignment: one pixel above the SVG baseline at 4K.
+    Prim::Text { x: 118.3, y: 41.7833, size: 13.0, ink: Ink::Fixed(HUB_MID),
+        face: Face::SemiBold, anchor: Anchor::Start, content: "CUSTOMER #NC488402" },
+    Prim::Wide { x: 118.7667, y: 69.6, size: 12.0, stretch: 1.6, ink: Ink::Fixed(HUB_MID), face: Face::Regular, anchor: Anchor::Start, content: "LEVEL" },
+    Prim::Wide { x: 131.5, y: 92.1, size: 21.0, stretch: 1.45, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T1" },
+    Prim::Tracked { x: 1137.7, y: 71.4, size: 12.0, tracking: 0.75, ink: Ink::Fixed(HUB_MID), face: Face::Regular, anchor: Anchor::Start, content: "SECURITY" },
+    Prim::Tracked { x: 1137.7, y: 87.2, size: 12.0, tracking: 0.75, ink: Ink::Fixed(HUB_MID), face: Face::Regular, anchor: Anchor::Start, content: "LEVEL" },
+    Prim::Tracked { x: 1232.75, y: 68.8, size: 12.0, tracking: 0.75, ink: Ink::Fixed(HUB_MID), face: Face::Regular, anchor: Anchor::Start, content: "LEVEL" },
+    Prim::Tracked { x: 1354.8, y: 69.6, size: 12.0, tracking: 0.75, ink: Ink::Fixed(HUB_MID), face: Face::Regular, anchor: Anchor::Start, content: "LEVEL" },
+    Prim::Tracked { x: 1415.75, y: 69.6, size: 12.0, tracking: 0.75, ink: Ink::Fixed(HUB_MID), face: Face::Regular, anchor: Anchor::Start, content: "LEVEL" },
+    Prim::Wide { x: 1238.1, y: 90.9, size: 20.0, stretch: 1.45, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T1" },
+    Prim::Wide { x: 1356.8, y: 90.9, size: 20.0, stretch: 1.45, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T3" },
+    Prim::Wide { x: 1417.75, y: 91.8, size: 20.0, stretch: 1.45, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T4" },
     Prim::At { x: 0.0, y: 0.0, prims: T2_BADGE },
     // boxed letters (:325-352): A/B mask the strands with an r3 interior
     Prim::Round { x: 238.0, y: 98.0, w: 26.0, h: 26.0, r: 3.0, fill: Some(Ink::Fixed(BOX_FILL)), stroke: None, width: 0.0 },

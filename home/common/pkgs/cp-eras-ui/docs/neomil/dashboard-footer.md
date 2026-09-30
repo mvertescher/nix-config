@@ -3,11 +3,11 @@
 Source: `images/img-07-dashboard.png`, screen #60, 3840×2160. The affected
 design crop is `(1195,862)..(1372,899)` on the 1600×900 canvas. The trace,
 component excerpt, and Neomil scene table use the same literal code,
-captions, two-cell frame, and divider. No shared text or scene renderer was
-changed.
+captions, two-cell frame, and divider. The native-only code calibration below
+changes its three scene runs; no shared text or scene renderer was changed.
 
 The former Rajdhani Bold 8 code and Semibold 7.5 captions rendered too
-short. Each run now has its own baseline and horizontal fit: Bold 9.8 at
+short. In the SVG, each run has its own baseline and horizontal fit: Bold 9.8 at
 `0.844×` for `68SD1D1100D1S`, Semibold 9.5 at `0.79×` for `COMBAT
 COLONIZATION`, and Semibold 9.5 at `0.807×` for `DEFENCE PROGRAM`. The
 horizontal fits preserve the narrow source lettering while raising its cap
@@ -68,3 +68,37 @@ The source also shows fine horizontal striations and softer repeated ink
 that these two broad copies do not reproduce. The local copies are a
 measured approximation; exact faint printing and live desktop behavior
 remain open for the orchestrator's final review.
+
+## Native code cap-height calibration (2026-09-29)
+
+At 3840×2160, the first source `6` has a bright-core box of
+`x=2915..2923, y=2085..2099`. The restored native capture painted the same
+horizontal box at `y=2086..2101`, even though the SVG box matched the source.
+Four native previews changed only the primary code run and its two local
+copies. The unmodified control was pixel-identical to the restored capture.
+The chosen Bold 9.2 preview moved all three baselines up by `0.833333` design
+px and used the computed horizontal stretch `0.844 × 9.8 / 9.2` to retain
+their nominal width. Rust now uses these exact expressions; the trace and
+component SVGs retain the source-aligned Bold 9.8 fit.
+
+| Independent native region | Restored / calibrated bright-core IoU | Restored / calibrated RGB MAE |
+| --- | ---: | ---: |
+| First `6` | `0.500 / 0.702` | `25.017 / 15.694` |
+| Held-out `8` | `0.475 / 0.680` | `23.501 / 18.109` |
+| Remaining code | `0.416 / 0.544` | `29.064 / 24.191` |
+| Whole code | `0.428 / 0.569` | `28.237 / 22.956` |
+
+The calibrated first `6` and held-out `8` match the source's thresholded
+vertical boxes `y=2085..2099`. The trial changes 1,749 pixels, confined to
+`x=2915..3040, y=2085..2106`; the frame, divider, captions, and all pixels
+outside the code region remain identical. The later glyphs still have
+horizontal phase and contour differences, particularly the last `S` at
+`x=3025..3036` versus source `3026..3035`. Semibold improved that later
+region further, but worsened the first `6` and left a one-pixel bottom
+overshoot. This is a bounded native code correction, not a claim of exact
+photographic printing fidelity. The Z production capture matches the
+approved trial at every pixel. Fractional rest, custom, opening and held
+comparisons change only the code lettering; frame/caption controls are
+unchanged, and the no-config fallback matches the reference dashboard.
+Both fidelity gates pass. Integrated verification is recorded in the
+[eleventh checkpoint](../reference-svg-round11.md).

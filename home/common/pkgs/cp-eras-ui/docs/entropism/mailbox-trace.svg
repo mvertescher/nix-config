@@ -360,11 +360,11 @@
   <!-- ==== button row, y 694..746, cells at x 529 / 716 / 903 / 1091 / 1279
        (chrome above) ==== -->
   <g font-family="Rajdhani">
-    <text transform="translate(550,718.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">REPLY</text>
-    <text transform="translate(737.33,718.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">FORWARD</text>
-    <text transform="translate(924.66,718.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">DELETE</text>
+    <text transform="translate(550.07548,718.5) scale(0.992681,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">REPLY</text>
+    <text transform="translate(736.88862,718.5) scale(1.043857,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">FORWARD</text>
+    <text transform="translate(923.73832,718.5) scale(1.075346,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#a6d2a8">DELETE</text>
     <!-- REPORT SPAM: the filled button (the fill is in #select-lit above) -->
-    <text transform="translate(1111.99,718.5) scale(1.03,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#25281d">REPORT SPAM</text>
+    <text transform="translate(1111.18425,718.5) scale(1.013856,1)" font-size="23.5" font-weight="500" letter-spacing="0" fill="#25281d">REPORT SPAM</text>
   </g>
 
   <!-- ==== C: ENCRIPTION LEVEL 2x2 badges, 69x69, T2 filled ==== -->

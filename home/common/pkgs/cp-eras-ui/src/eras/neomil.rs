@@ -925,7 +925,7 @@ pub const ACCESS: Access = Access {
         labels: &[
             Legend::new("1", 63.0, 357.0, 10.0, Ink::Fixed(ON_CARD)).bold(),
             Legend::new("2", 1544.0, 357.0, 10.0, Ink::Fixed(ON_CARD)).bold(),
-            Legend::new("00032 05 54 08 CP", 53.0, 471.6, 10.5, Ink::Dim).turned().stretched(1.1),
+            Legend::new("00032 05 54 0B CP", 53.0, 471.6, 10.5, Ink::Dim).turned().stretched(1.1),
             Legend::new("JHN 102 CKC 151 CC10 AS5", 1554.0, 552.33, 10.0, Ink::Dim).turned().stretched(1.084),
             Legend::new("KIROSHI", 1554.75, 647.25, 12.0, Ink::Dim).turned().stretched(1.02),
         ],
@@ -1291,6 +1291,7 @@ pub fn mailbox() -> Mailbox {
             stroke: Ink::Dim,
             label: Run::new(12.5, 44.6667, 16.6667, Ink::Fixed(rgb(0xfb3535))),
             tab: None,
+            label_runs: &[],
             labels: &BUTTONS,
         },
         badges: MailBadges {
@@ -1368,7 +1369,7 @@ pub const MAILBOX_MOTIONS: &[MailMotion] = &[
 // streaks and Japanese skew remain separate artwork work.
 
 use crate::style::{
-    fill_path, fill_rect, line_path, line_rect, shut_path, txt, txt_bold, txt_end, Anchor,
+    fill_path, fill_rect, hline, line_path, line_rect, shut_path, txt, txt_bold, txt_end, Anchor,
     Change, Group, Motion, Prim, Seg,
 };
 use iced::animation::Easing;
@@ -1502,19 +1503,56 @@ const ICONS_HEAD: &[Prim] = neomil_store_art::CERT_HEAD;
 const ICONS_FOOT: &[Prim] = neomil_store_art::CERT_FOOT;
 const ICONS_FOOT_SEL: &[Prim] = neomil_store_art::CERT_FOOT_SEL;
 
-/// STORE source labels use one design unit of letter spacing. The socket
-/// line is regular, unlike its earlier bold Iced approximation.
-const fn store_track(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -> Prim {
-    Prim::Tracked { x, y, size, ink, face: Face::Regular, anchor: Anchor::Start, tracking: 1.0, content }
-}
-const fn store_track_bold(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -> Prim {
-    Prim::Tracked { x, y, size, ink, face: Face::Bold, anchor: Anchor::Start, tracking: 1.0, content }
-}
-const fn store_track_bold_mid(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -> Prim {
-    Prim::Tracked { x, y, size, ink, face: Face::Bold, anchor: Anchor::Middle, tracking: 1.0, content }
-}
+/// STORE sockets use one design unit of letter spacing and regular weight.
 const fn store_track_mid(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -> Prim {
     Prim::Tracked { x, y, size, ink, face: Face::Regular, anchor: Anchor::Middle, tracking: 1.0, content }
+}
+
+// The selected card sits on a different printed grid from the three
+// ordinary cards. These per-card origins follow the strong source glyphs;
+// selection still swaps in GROWN at whichever shelf position is chosen.
+const fn card_title(card: usize, selected: bool, ink: Ink) -> Prim {
+    let (x, y) = if selected { (10.6, 205.75) } else {
+        match card { 1 => (10.2, 203.25), 3 => (8.9, 203.25), _ => (8.1, 203.25) }
+    };
+    Prim::Wide { x, y, size: 22.5, stretch: 0.98, ink,
+        face: Face::Bold, anchor: Anchor::Start, content: "MAGNUM 650" }
+}
+const fn card_subtitle(card: usize, selected: bool, ink: Ink) -> Prim {
+    let (x, size, stretch) = if selected { (10.3, 19.5, 0.96) } else {
+        match card { 1 => (10.7, 19.0, 0.99), 3 => (8.6, 19.0, 0.99),
+            _ => (8.2, 19.0, 0.99) }
+    };
+    Prim::Wide { x, y: 222.4, size, stretch, ink,
+        face: Face::Medium, anchor: Anchor::Start, content: "HAND GUN" }
+}
+const fn card_stat_label(card: usize, index: usize) -> Prim {
+    let (content, x, tracking) = match (card, index) {
+        (1, 0) => ("DPS", 31.5, 0.4), (1, 1) => ("PNT", 96.75, 0.3),
+        (1, 2) => ("ACC", 160.03, 0.4), (1, _) => ("ROF", 224.45, 0.6),
+        (3, 0) => ("DPS", 29.83, 0.4), (3, 1) => ("PNT", 94.67, 0.3),
+        (3, 2) => ("ACC", 157.95, 0.4), (3, _) => ("ROF", 222.78, 0.6),
+        (4, 0) => ("DPS", 29.0, 0.3), (4, _) => ("PNT", 93.85, 0.4),
+        (2, 0) => ("DPS", 29.0, 1.0), (2, 1) => ("PNT", 94.25, 0.5),
+        (2, 2) => ("ACC", 156.7, 0.6), _ => ("ROF", 220.7, 0.8),
+    };
+    Prim::Tracked { x, y: if card == 2 { 432.75 } else { 435.2 },
+        size: if card == 2 { 17.5 } else { 17.75 }, ink: Ink::Fg,
+        face: Face::Medium, anchor: Anchor::Start, tracking, content }
+}
+const fn card_stat_value(card: usize, index: usize) -> Prim {
+    let (content, x) = match (card, index) {
+        (1, 0) => ("86", 46.6), (1, 1) => ("30", 110.4),
+        (1, 2) => ("5", 174.6), (1, _) => ("5", 238.3),
+        (3, 0) => ("86", 44.1), (3, 1) => ("30", 108.7),
+        (3, 2) => ("5", 172.95), (3, _) => ("5", 236.7),
+        (4, 0) => ("86", 43.7), (4, _) => ("30", 107.9),
+        (2, 0) => ("86", 44.5), (2, 1) => ("30", 107.9),
+        (2, 2) => ("5", 171.7), _ => ("5", 235.0),
+    };
+    Prim::Wide { x, y: if card == 2 { 464.05 } else { 467.0 },
+        size: 23.0, stretch: if card == 2 { 0.96 } else { 0.98 },
+        ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Middle, content }
 }
 
 const GUN_OUTLINED: &[Prim] = neomil_store_art::GUN_NORMAL;
@@ -1525,7 +1563,7 @@ const GUN_SOLID: &[Prim] = neomil_store_art::GUN_SELECTED;
 // the outer card translation then places it at each shelf column.
 const PETROCHEM_PRINT: &[Prim] = &[
     Prim::Tracked { x: 0.0, y: 0.0, size: 7.5, ink: Ink::Fg,
-        face: Face::Regular, anchor: Anchor::Start, tracking: 0.5,
+        face: Face::Regular, anchor: Anchor::Start, tracking: 1.3,
         content: "PETROCHEM" },
 ];
 const BETTERLIFE_PRINT: &[Prim] = &[
@@ -1538,16 +1576,14 @@ const CARD_EDGE_PRINT: &[Prim] = &[
     Prim::Turn { x: 272.0, y: 182.5, angle: 90.0, prims: BETTERLIFE_PRINT },
 ];
 
-/// The stats block and everything under it, on an unselected card.
-const STATS: &[Prim] = &[
-    store_track(32.0, 434.0, 15.0, Ink::Fg, "DPS"),
-    store_track(96.0, 434.0, 15.0, Ink::Fg, "PNT"),
-    store_track(161.0, 434.0, 15.0, Ink::Fg, "ACC"),
-    store_track(225.0, 434.0, 15.0, Ink::Fg, "ROF"),
-    store_track_bold_mid(46.0, 467.0, 20.0, Ink::Fg, "86"),
-    store_track_bold_mid(109.0, 467.0, 20.0, Ink::Fg, "30"),
-    store_track_bold_mid(174.0, 467.0, 20.0, Ink::Fg, "5"),
-    store_track_bold_mid(238.0, 467.0, 20.0, Ink::Fg, "5"),
+/// Ordinary cards share the content below their stats while retaining
+/// the small source-measured type shifts of each card column.
+macro_rules! plain_stats {
+    ($card:expr) => { &[
+    card_stat_label($card, 0), card_stat_label($card, 1),
+    card_stat_label($card, 2), card_stat_label($card, 3),
+    card_stat_value($card, 0), card_stat_value($card, 1),
+    card_stat_value($card, 2), card_stat_value($card, 3),
     txt(11.0, 492.0, 8.0, Ink::Dim, "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED"),
     txt(11.0, 500.0, 8.0, Ink::Dim, "TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
     store_track_mid(90.0, 534.0, 12.0, Ink::Fg, "EMPTY"),
@@ -1556,7 +1592,10 @@ const STATS: &[Prim] = &[
     store_track_mid(165.0, 547.5, 12.0, Ink::Fg, "SOCKET"),
     store_track_mid(240.0, 534.0, 12.0, Ink::Fg, "EMPTY"),
     store_track_mid(240.0, 547.5, 12.0, Ink::Fg, "SOCKET"),
-];
+] };
+}
+const STATS_1: &[Prim] = plain_stats!(1);
+const STATS_3: &[Prim] = plain_stats!(3);
 
 /// A standard card's frame: a 13px top-right chamfer, the right edge
 /// stepping 12px inward below the bright bar's foot at y 416.
@@ -1576,70 +1615,97 @@ const EDGE_BAR_PATH: &[Seg] = &[
 ];
 
 macro_rules! card {
-    ($fill:expr, $scatter_x:expr) => {
+    ($card:expr, $fill:expr, $scatter_x:expr, $stats:ident) => {
         &[
             Prim::Path { x: 0.0, y: 151.0, segs: FRAME_STD, close: true, fill: Some(Ink::Fixed($fill)), stroke: Some(Ink::Fg), width: 1.2 },
             fill_path(284.0, 266.0, EDGE_BAR_PATH, Ink::Fg),
             Prim::At { x: 0.0, y: 0.0, prims: ICONS_HEAD },
             Prim::At { x: 0.0, y: 0.0, prims: ICONS_FOOT },
-            store_track_bold(11.0, 202.0, 20.0, Ink::Fg, "MAGNUM 650"),
-            store_track(11.0, 223.0, 17.0, Ink::Fg, "HAND GUN"),
+            card_title($card, false, Ink::Fg),
+            card_subtitle($card, false, Ink::Fg),
             line_rect(261.4, 182.9, 7.2, 48.4, Ink::Dim, 0.8),
             Prim::At { x: 0.0, y: 0.0, prims: CARD_EDGE_PRINT },
             Prim::At { x: 0.0, y: 0.0, prims: GUN_OUTLINED },
-            Prim::At { x: 0.0, y: 0.0, prims: STATS },
+            Prim::At { x: 0.0, y: 0.0, prims: $stats },
             Prim::Dots { x: $scatter_x, y: 520.5833, cell: 3.0, pitch: 3.6667, ink: Ink::Fg, rows: QR },
         ]
     };
 }
 
-const CARD1: &[Prim] = card!(CARD1_FILL, 14.375);
-const CARD3: &[Prim] = card!(CARD3_FILL, 12.4583);
+const CARD1: &[Prim] = card!(1, CARD1_FILL, 14.375, STATS_1);
+const CARD3: &[Prim] = card!(3, CARD3_FILL, 12.4583, STATS_3);
 
 /// The selected card: the same drawing grown to y797.1, its upper two
 /// thirds washed, its gun solid and 14px further left, and the detail
 /// block in the room the growth buys.
 const FRAME_SEL: &[Seg] = &[
-    Seg::Line(269.0, 151.0),
-    Seg::Line(282.0, 164.0),
-    Seg::Line(282.0, 270.0),
-    Seg::Line(270.0, 282.0),
-    Seg::Line(270.0, 779.5),
+    Seg::Line(267.25, 154.5833),
+    Seg::Line(279.3333, 166.6667),
+    Seg::Line(279.3333, 262.9167),
+    Seg::Line(269.75, 271.25),
+    Seg::Line(269.75, 779.5),
     Seg::Line(252.0, 797.1),
     Seg::Line(0.0, 797.1),
 ];
+// The native full-width top stroke overpainted the wash for four rows.
+// Keep every other contour segment at the accepted width, and draw the
+// source's narrow two-row top profile in the same final GROWN slot.
+const FRAME_SEL_BODY: &[Seg] = &[
+    Seg::Line(279.3333, 166.6667),
+    Seg::Line(279.3333, 262.9167),
+    Seg::Line(269.75, 271.25),
+    Seg::Line(269.75, 779.5),
+    Seg::Line(252.0, 797.1),
+    Seg::Line(0.0, 797.1),
+    Seg::Line(0.0, 154.5833),
+];
+const FRAME_SEL_OVER_WASH: &[Prim] = &[
+    line_path(267.25, 154.5833, FRAME_SEL_BODY, Ink::Fg, 1.2),
+    hline(0.0, 154.5, 267.25, Ink::Fg, 0.4),
+];
+const FRAME_SEL_HELD: &[Prim] = &{
+    let mut outline = [FRAME_SEL_OVER_WASH[0], FRAME_SEL_OVER_WASH[1]];
+    if let Prim::Path { stroke, .. } = &mut outline[0] { *stroke = None; }
+    if let Prim::Rect { fill, .. } = &mut outline[1] { *fill = None; }
+    outline
+};
 const EDGE_BAR_SEL: &[Seg] = &[
-    Seg::Line(282.0, 404.0),
-    Seg::Line(270.0, 416.0),
-    Seg::Line(270.0, 278.0),
+    Seg::Line(279.3333, 403.75),
+    Seg::Line(269.75, 413.3333),
+    Seg::Line(269.75, 271.25),
 ];
 
 /// Horizontal one-pixel bands follow the SVG upper wash contour.
-/// Sharing their endpoints retains the same sRGB interpolation as
-/// `Prim::Ramp`, while cutting the chamfer, side step and lower corner.
+/// Their color uses the original y151..516 world ramp, while the first
+/// band starts at the source-fit y154.5833 contour. The final band still
+/// ends at y516, keeping the accepted wash under the lower diagonal.
 const fn upper_wash_right(y: f32) -> f32 {
-    if y < 164.0 { 269.0 + y - 151.0 }
-    else if y <= 270.0 { 282.0 }
-    else if y < 282.0 { 282.0 - (y - 270.0) }
-    else if y <= 492.0 { 270.0 }
-    else { 270.0 - (y - 492.0) }
+    if y <= 154.5833 { 267.25 }
+    else if y < 166.6667 { 267.25 + (279.3333 - 267.25) * (y - 154.5833) / (166.6667 - 154.5833) }
+    else if y <= 262.9167 { 279.3333 }
+    else if y < 271.25 { 279.3333 - (279.3333 - 269.75) * (y - 262.9167) / (271.25 - 262.9167) }
+    else if y <= 492.0 { 269.75 }
+    else { 269.75 - (269.75 - 246.0) * (y - 492.0) / 24.0 }
 }
-const UPPER_WASH_SEGMENTS: [[Seg; 3]; 365] = {
-    let mut bands = [[Seg::Line(0.0, 0.0); 3]; 365];
+const UPPER_WASH_SEGMENTS: [[Seg; 3]; 362] = {
+    let mut bands = [[Seg::Line(0.0, 0.0); 3]; 362];
     let mut i = 0;
     while i < bands.len() {
-        let y = 151.0 + i as f32;
-        bands[i] = [Seg::Line(upper_wash_right(y), y),
+        let y = 154.0 + i as f32;
+        let y0 = if i == 0 { 154.5833 } else { y };
+        bands[i] = [Seg::Line(upper_wash_right(y0), y0),
             Seg::Line(upper_wash_right(y + 1.0), y + 1.0), Seg::Line(0.0, y + 1.0)];
         i += 1;
     }
     bands
 };
-const fn upper_wash(stops: &[(f32, iced::Color)]) -> [Prim; 365] {
-    let mut bands = [fill_rect(0.0, 0.0, 0.0, 0.0, Ink::Fg); 365];
+const fn upper_wash(stops: &[(f32, iced::Color)]) -> [Prim; 362] {
+    let mut bands = [fill_rect(0.0, 0.0, 0.0, 0.0, Ink::Fg); 362];
     let mut i = 0;
     while i < bands.len() {
-        let t = (i as f32 + 0.5) / 365.0;
+        let y = 154.0 + i as f32;
+        let y0 = if i == 0 { 154.5833 } else { y };
+        let t = ((y0 + y + 1.0) * 0.5 - 151.0) / 365.0;
         let mut j = 1;
         while j + 1 < stops.len() && stops[j].0 < t { j += 1; }
         let (lo, a) = stops[j - 1];
@@ -1647,7 +1713,7 @@ const fn upper_wash(stops: &[(f32, iced::Color)]) -> [Prim; 365] {
         let f = (t - lo) / (hi - lo);
         let color = iced::Color { r: a.r + (b.r - a.r) * f, g: a.g + (b.g - a.g) * f,
             b: a.b + (b.b - a.b) * f, a: a.a + (b.a - a.a) * f };
-        bands[i] = Prim::Path { x: 0.0, y: 151.0 + i as f32,
+        bands[i] = Prim::Path { x: 0.0, y: y0,
             segs: &UPPER_WASH_SEGMENTS[i], close: true, fill: Some(Ink::Fixed(color)), stroke: None, width: 0.0 };
         i += 1;
     }
@@ -1656,25 +1722,21 @@ const fn upper_wash(stops: &[(f32, iced::Color)]) -> [Prim; 365] {
 const UPPER_WASH: &[Prim] = &upper_wash(C2UPPER);
 
 const GROWN: &[Prim] = &[
-    Prim::Path { x: 0.0, y: 151.0, segs: FRAME_SEL, close: true, fill: Some(Ink::Fixed(CARD2_FILL)), stroke: None, width: 0.0 },
+    Prim::Path { x: 0.0, y: 154.5833, segs: FRAME_SEL, close: true, fill: Some(Ink::Fixed(CARD2_FILL)), stroke: None, width: 0.0 },
     Prim::At { x: 0.0, y: 0.0, prims: UPPER_WASH },
-    fill_path(282.0, 266.0, EDGE_BAR_SEL, Ink::Fg),
+    fill_path(279.3333, 262.9167, EDGE_BAR_SEL, Ink::Fg),
     Prim::At { x: 0.0, y: 0.0, prims: ICONS_HEAD },
     Prim::At { x: 0.0, y: 0.0, prims: ICONS_FOOT_SEL },
-    store_track_bold(11.0, 202.0, 20.0, Ink::Fg, "MAGNUM 650"),
-    store_track(11.0, 223.0, 17.0, Ink::Fg, "HAND GUN"),
-    line_rect(261.4, 182.9, 7.2, 48.4, Ink::Fixed(GUN_LIT), 0.8),
-    Prim::At { x: 0.0, y: 0.0, prims: CARD_EDGE_PRINT },
+    card_title(2, true, Ink::Fg),
+    card_subtitle(2, true, Ink::Fg),
+    line_rect(256.8, 182.9, 7.2, 48.4, Ink::Fg, 0.8),
+    Prim::At { x: -4.6, y: 0.0, prims: CARD_EDGE_PRINT },
     // the solid variant, 14px left of the frame-relative position
     Prim::At { x: -14.0, y: 0.0, prims: GUN_SOLID },
-    store_track(32.0, 434.0, 15.0, Ink::Fg, "DPS"),
-    store_track(96.0, 434.0, 15.0, Ink::Fg, "PNT"),
-    store_track(161.0, 434.0, 15.0, Ink::Fg, "ACC"),
-    store_track(225.0, 434.0, 15.0, Ink::Fg, "ROF"),
-    store_track_bold_mid(46.0, 467.0, 20.0, Ink::Fg, "86"),
-    store_track_bold_mid(109.0, 467.0, 20.0, Ink::Fg, "30"),
-    store_track_bold_mid(174.0, 467.0, 20.0, Ink::Fg, "5"),
-    store_track_bold_mid(238.0, 467.0, 20.0, Ink::Fg, "5"),
+    card_stat_label(2, 0), card_stat_label(2, 1),
+    card_stat_label(2, 2), card_stat_label(2, 3),
+    card_stat_value(2, 0), card_stat_value(2, 1),
+    card_stat_value(2, 2), card_stat_value(2, 3),
     txt(11.0, 492.0, 8.0, Ink::Fg, "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE"),
     txt(11.0, 500.0, 8.0, Ink::Fg, "ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
     txt(27.0, 548.0, 17.0, Ink::Fg, "20"),
@@ -1695,8 +1757,9 @@ const GROWN: &[Prim] = &[
     store_track_mid(163.0, 737.5, 12.0, Ink::Fg, "SOCKET"),
     store_track_mid(238.0, 723.0, 12.0, Ink::Fg, "EMPTY"),
     store_track_mid(238.0, 737.5, 12.0, Ink::Fg, "SOCKET"),
-    // The contour stays visible over the wash, including its chamfer.
-    shut_path(0.0, 151.0, FRAME_SEL, Ink::Fg, 1.2),
+    // Keep the chamfer and stem over the wash; calibrate only the top's
+    // native ink coverage. One At preserves this GROWN slot in feedback.
+    Prim::At { x: 0.0, y: 0.0, prims: FRAME_SEL_OVER_WASH },
 ];
 
 /// Card 4 is the same drawing cut off by the frame edge at x=1557: no
@@ -1705,14 +1768,12 @@ const GROWN: &[Prim] = &[
 const CARD_CUT: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: ICONS_HEAD },
     Prim::At { x: 0.0, y: 0.0, prims: ICONS_FOOT },
-    store_track_bold(11.0, 202.0, 20.0, Ink::Fg, "MAGNUM 650"),
-    store_track(11.0, 223.0, 17.0, Ink::Fg, "HAND GUN"),
+    card_title(4, false, Ink::Fg),
+    card_subtitle(4, false, Ink::Fg),
     Prim::At { x: 0.0, y: 0.0, prims: CARD_EDGE_PRINT },
     Prim::At { x: 0.0, y: 0.0, prims: GUN_OUTLINED },
-    store_track(32.0, 434.0, 15.0, Ink::Fg, "DPS"),
-    store_track(96.0, 434.0, 15.0, Ink::Fg, "PNT"),
-    store_track_bold_mid(46.0, 467.0, 20.0, Ink::Fg, "86"),
-    store_track_bold_mid(109.0, 467.0, 20.0, Ink::Fg, "30"),
+    card_stat_label(4, 0), card_stat_label(4, 1),
+    card_stat_value(4, 0), card_stat_value(4, 1),
     // The caption is cut at the frame edge, and it is cut *here* rather
     // than by the covering strip below: a canvas frame layers all of
     // its text above all of its geometry, whatever order it was drawn
@@ -1774,7 +1835,8 @@ const fn card_leaf_inks<const N: usize>(source: &[Prim], held: bool) -> [Prim; N
                 if let Some(ink) = fill { *ink = card_ink(*ink, held); }
                 if let Some(ink) = stroke { *ink = card_ink(*ink, held); }
             }
-            Prim::Text { ink, .. } | Prim::Tracked { ink, .. } | Prim::Dots { ink, .. } => *ink = card_ink(*ink, held),
+            Prim::Text { ink, .. } | Prim::Wide { ink, .. } |
+            Prim::Tracked { ink, .. } | Prim::Dots { ink, .. } => *ink = card_ink(*ink, held),
             _ => {},
         }
         i += 1;
@@ -1797,7 +1859,8 @@ macro_rules! card_content_states {
             ];
             pub(super) const GUN: &[Prim] = &card_leaf_inks::<{ GUN_OUTLINED.len() }>(GUN_OUTLINED, $held);
             pub(super) const GUN_SEL: &[Prim] = &card_leaf_inks::<{ GUN_SOLID.len() }>(GUN_SOLID, $held);
-            pub(super) const SPECS: &[Prim] = &card_leaf_inks::<{ STATS.len() }>(STATS, $held);
+            pub(super) const SPECS_1: &[Prim] = &card_leaf_inks::<{ STATS_1.len() }>(STATS_1, $held);
+            pub(super) const SPECS_3: &[Prim] = &card_leaf_inks::<{ STATS_3.len() }>(STATS_3, $held);
             pub(super) const CUT: &[Prim] = &{
                 let mut out = card_leaf_inks::<{ CARD_CUT.len() }>(CARD_CUT, $held);
                 out[0] = Prim::At { x: 0.0, y: 0.0, prims: HEAD };
@@ -1824,7 +1887,8 @@ const CARD_GROWN_HELD_RAMP: &[(f32, iced::Color)] = &[
 const CARD_GROWN_HOVER_WASH: &[Prim] = &upper_wash(CARD_GROWN_HOVER_RAMP);
 const CARD_GROWN_HELD_WASH: &[Prim] = &upper_wash(CARD_GROWN_HELD_RAMP);
 
-const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bool, cut: bool, rest: iced::Color) -> [Prim; N] {
+const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bool,
+    cut: bool, rest: iced::Color, specs: &'static [Prim]) -> [Prim; N] {
     let mut out = card_leaf_inks::<N>(source, held);
     let coat = Ink::Fixed(if held { rgb(0xa52223) } else { card_wash(rest) });
     match &mut out[0] {
@@ -1832,12 +1896,12 @@ const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bo
         Prim::Rect { fill, .. } => *fill = Some(coat),
         _ => panic!("card must begin with its frame"),
     }
-    let (head, foot, edge, gun, specs, cut_content) = if held {
+    let (head, foot, edge, gun, cut_content) = if held {
         (card_held::HEAD, if selected { card_held::FOOT_SEL } else { card_held::FOOT },
-         card_held::EDGE, if selected { card_held::GUN_SEL } else { card_held::GUN }, card_held::SPECS, card_held::CUT)
+         card_held::EDGE, if selected { card_held::GUN_SEL } else { card_held::GUN }, card_held::CUT)
     } else {
         (card_hover::HEAD, if selected { card_hover::FOOT_SEL } else { card_hover::FOOT },
-         card_hover::EDGE, if selected { card_hover::GUN_SEL } else { card_hover::GUN }, card_hover::SPECS, card_hover::CUT)
+         card_hover::EDGE, if selected { card_hover::GUN_SEL } else { card_hover::GUN }, card_hover::CUT)
     };
     if cut {
         out[1] = Prim::At { x: 0.0, y: 0.0, prims: cut_content };
@@ -1848,14 +1912,15 @@ const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bo
         out[1 + offset] = source[1 + offset]; // the bright spine
         out[2 + offset] = Prim::At { x: 0.0, y: 0.0, prims: head };
         out[3 + offset] = Prim::At { x: 0.0, y: 0.0, prims: foot };
-        out[7 + offset] = Prim::At { x: 0.0, y: 0.0, prims: edge };
+        out[7 + offset] = Prim::At { x: if selected { -4.6 } else { 0.0 }, y: 0.0, prims: edge };
         out[8 + offset] = Prim::At { x: if selected { -14.0 } else { 0.0 }, y: 0.0, prims: gun };
         if selected {
             out[1] = Prim::At { x: 0.0, y: 0.0,
                 prims: if held { CARD_GROWN_HELD_WASH } else { CARD_GROWN_HOVER_WASH } };
-            if let Prim::Path { stroke, .. } = &mut out[N - 1] {
-                *stroke = if held { None } else { Some(Ink::Fg) };
-            }
+            // Held cards retain their flat face and bright side spine,
+            // but omit the outer outline, including the separate top rule.
+            out[N - 1] = Prim::At { x: 0.0, y: 0.0,
+                prims: if held { FRAME_SEL_HELD } else { FRAME_SEL_OVER_WASH } };
         } else {
             out[9] = Prim::At { x: 0.0, y: 0.0, prims: specs };
         }
@@ -1863,15 +1928,15 @@ const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bo
     out
 }
 
-const CARD_GROWN_HOVER: &[Prim] = &card_feedback::<{ GROWN.len() }>(GROWN, false, true, false, CARD2_FILL);
-const CARD_GROWN_HELD: &[Prim] = &card_feedback::<{ GROWN.len() }>(GROWN, true, true, false, CARD2_FILL);
+const CARD_GROWN_HOVER: &[Prim] = &card_feedback::<{ GROWN.len() }>(GROWN, false, true, false, CARD2_FILL, &[]);
+const CARD_GROWN_HELD: &[Prim] = &card_feedback::<{ GROWN.len() }>(GROWN, true, true, false, CARD2_FILL, &[]);
 
 macro_rules! product_states {
-    ($index:expr, $off:ident, $fill:expr, $cut:expr) => {
+    ($index:expr, $off:ident, $fill:expr, $cut:expr, $specs:ident) => {
         crate::style::PlateStates {
             group: Group::Card, index: $index,
-            hover: &card_feedback::<{ $off.len() }>($off, false, false, $cut, $fill),
-            pressed: &card_feedback::<{ $off.len() }>($off, true, false, $cut, $fill),
+            hover: &card_feedback::<{ $off.len() }>($off, false, false, $cut, $fill, card_hover::$specs),
+            pressed: &card_feedback::<{ $off.len() }>($off, true, false, $cut, $fill, card_held::$specs),
             selected_hover: Some(CARD_GROWN_HOVER),
             selected_pressed: Some(CARD_GROWN_HELD),
             selected_away: None,
@@ -1884,30 +1949,44 @@ macro_rules! product_states {
 // selected nav row is 5px taller and filled where the others are dark
 // boxes, which is what the material shows; the selected card is the
 // grown one.
+/// The photographed nav labels are larger and much more tightly set than
+/// the 15px/1px-tracked placeholder. Keep one glyph prescription for all
+/// selected, idle, hover and pressed coats so state changes affect ink only.
+const fn nav_label(index: usize, ink: Ink) -> Prim {
+    let (x, y, size, tracking, content) = match index {
+        0 => (162.5, 297.4167, 18.0, -0.21, "VIDEO"),
+        1 => (162.92, 364.58, 17.5, -0.20, "AUDIO"),
+        2 => (162.5, 430.7467, 18.0, -0.30, "GAMEPLAY"),
+        3 => (162.5, 497.7467, 18.0, -0.36, "CYBERWARE"),
+        _ => (162.5, 564.7533, 17.5, 0.0, "CONTROLLER"),
+    };
+    Prim::Tracked { x, y, size, ink, face: Face::Medium,
+        anchor: Anchor::Start, tracking, content }
+}
 macro_rules! nav {
-    ($top:expr, $base:expr, $label:expr) => {
+    ($index:expr, $top:expr) => {
         (
             &[
                 Prim::At { x: 153.0, y: $top, prims: NAV_SELECTED },
-                store_track(163.0, $base, 15.0, Ink::OnSelect, $label),
+                nav_label($index, Ink::OnSelect),
             ],
             &[
                 Prim::At { x: 153.0, y: $top, prims: NAV_ROW },
-                store_track(163.0, $base, 15.0, Ink::Fg, $label),
+                nav_label($index, Ink::Fg),
             ],
         )
     };
 }
-const NAV_ON_0: &[Prim] = nav!(248.0, 297.0, "VIDEO").0;
-const NAV_OFF_0: &[Prim] = nav!(248.0, 297.0, "VIDEO").1;
-const NAV_ON_1: &[Prim] = nav!(318.0, 365.0, "AUDIO").0;
-const NAV_OFF_1: &[Prim] = nav!(318.0, 365.0, "AUDIO").1;
-const NAV_ON_2: &[Prim] = nav!(385.0, 432.0, "GAMEPLAY").0;
-const NAV_OFF_2: &[Prim] = nav!(385.0, 432.0, "GAMEPLAY").1;
-const NAV_ON_3: &[Prim] = nav!(452.0, 499.0, "CYBERWARE").0;
-const NAV_OFF_3: &[Prim] = nav!(452.0, 499.0, "CYBERWARE").1;
-const NAV_ON_4: &[Prim] = nav!(519.0, 566.0, "CONTROLLER").0;
-const NAV_OFF_4: &[Prim] = nav!(519.0, 566.0, "CONTROLLER").1;
+const NAV_ON_0: &[Prim] = nav!(0, 248.0).0;
+const NAV_OFF_0: &[Prim] = nav!(0, 248.0).1;
+const NAV_ON_1: &[Prim] = nav!(1, 318.0).0;
+const NAV_OFF_1: &[Prim] = nav!(1, 318.0).1;
+const NAV_ON_2: &[Prim] = nav!(2, 385.0).0;
+const NAV_OFF_2: &[Prim] = nav!(2, 385.0).1;
+const NAV_ON_3: &[Prim] = nav!(3, 452.0).0;
+const NAV_OFF_3: &[Prim] = nav!(3, 452.0).1;
+const NAV_ON_4: &[Prim] = nav!(4, 519.0).0;
+const NAV_OFF_4: &[Prim] = nav!(4, 519.0).1;
 
 macro_rules! shelf {
     ($i:expr, $off:expr) => {
@@ -1972,25 +2051,25 @@ const NAV_SELECTED_PRESSED: &[Prim] = &[
     fill_rect(-5.0, 0.0, 3.0, 51.0, Ink::Fg),
 ];
 macro_rules! nav_states {
-    ($index:expr, $top:expr, $base:expr, $label:expr) => {
+    ($index:expr, $top:expr) => {
         crate::style::PlateStates {
             group: Group::Category,
             index: $index,
             hover: &[
                 Prim::At { x: 153.0, y: $top, prims: NAV_HOVER },
-                store_track(163.0, $base, 15.0, Ink::Fg, $label),
+                nav_label($index, Ink::Fg),
             ],
             pressed: &[
                 Prim::At { x: 153.0, y: $top, prims: NAV_PRESSED },
-                store_track(163.0, $base, 15.0, Ink::Fixed(rgb(0x4a0f10)), $label),
+                nav_label($index, Ink::Fixed(rgb(0x4a0f10))),
             ],
             selected_hover: Some(&[
                 Prim::At { x: 153.0, y: $top, prims: NAV_SELECTED_HOVER },
-                store_track(163.0, $base, 15.0, Ink::OnSelect, $label),
+                nav_label($index, Ink::OnSelect),
             ]),
             selected_pressed: Some(&[
                 Prim::At { x: 153.0, y: $top, prims: NAV_SELECTED_PRESSED },
-                store_track(163.0, $base, 15.0, Ink::Fixed(rgb(0x4a0f10)), $label),
+                nav_label($index, Ink::Fixed(rgb(0x4a0f10))),
             ]),
             selected_away: None,
             preserve_selected_hover: false,
@@ -1998,15 +2077,15 @@ macro_rules! nav_states {
     };
 }
 pub(crate) const STORE_STATES: &[crate::style::PlateStates] = &[
-    nav_states!(0, 248.0, 297.0, "VIDEO"),
-    nav_states!(1, 318.0, 365.0, "AUDIO"),
-    nav_states!(2, 385.0, 432.0, "GAMEPLAY"),
-    nav_states!(3, 452.0, 499.0, "CYBERWARE"),
-    nav_states!(4, 519.0, 566.0, "CONTROLLER"),
-    product_states!(0, CARD1, CARD1_FILL, false),
-    product_states!(1, CARD1, CARD1_FILL, false),
-    product_states!(2, CARD3, CARD3_FILL, false),
-    product_states!(3, CARD4, CARD4_FILL, true),
+    nav_states!(0, 248.0),
+    nav_states!(1, 318.0),
+    nav_states!(2, 385.0),
+    nav_states!(3, 452.0),
+    nav_states!(4, 519.0),
+    product_states!(0, CARD1, CARD1_FILL, false, SPECS_1),
+    product_states!(1, CARD1, CARD1_FILL, false, SPECS_1),
+    product_states!(2, CARD3, CARD3_FILL, false, SPECS_3),
+    product_states!(3, CARD4, CARD4_FILL, true, SPECS_1),
 ];
 
 /// The left-margin chip: two ticks, a block and the numbered 12.5
@@ -2018,17 +2097,22 @@ const CHIP: &[Prim] = &[
     fill_rect(0.0, 1.0, 12.5, 12.5, Ink::Fg),
 ];
 const MARGIN_CODE: &[Prim] = &[
-    Prim::Tracked { x: 0.0, y: 0.0, size: 11.0, ink: Ink::Fg,
-        face: Face::Regular, anchor: Anchor::Start, tracking: 1.0,
-        content: "00032 05 54 08 CP" },
+    Prim::Tracked { x: 0.0, y: 0.0, size: 10.5, ink: Ink::Fg,
+        face: Face::Regular, anchor: Anchor::Start, tracking: 0.4,
+        content: "00032 05 54 0B CP" },
 ];
-const MARGIN_BRAND: &[Prim] = &[
-    fill_rect(0.0, -4.0, 107.0, 1.5, Ink::Fg),
-    Prim::Tracked { x: 4.0, y: 8.0, size: 9.0, ink: Ink::Fg,
-        face: Face::Regular, anchor: Anchor::Start, tracking: 2.0,
-        content: "MASURAO" },
+const MARGIN_BRAND_PRIMARY: &[Prim] = store_margin::PRIMARY;
+const MARGIN_BRAND_HATCH: &[Prim] = &[
+    Prim::Turn { x: 52.0, y: 584.0, angle: -90.0, prims: store_margin::HATCH },
+];
+const MARGIN_BRAND_END: &[Prim] = &[
+    Prim::At { x: 0.0, y: 0.0, prims: store_margin::RING },
     neomil_store_art::MARGIN_KANJI,
 ];
+const MARGIN_HATCH_OPACITY: Motion = Motion {
+    id: "store-margin-hatch", begin: 0, dur: 1, ease: Easing::Linear,
+    change: Change::Opacity { alpha: (0.67, 0.67) },
+};
 const ARROW: &[Seg] = &[Seg::Line(985.0, 35.0), Seg::Line(985.0, 45.0)];
 
 /// The four product cards at their columns (:341-514): its own table
@@ -2042,6 +2126,10 @@ const SHELF: &[Prim] = &[
 
 #[path = "neomil/store_material.rs"]
 mod store_material;
+#[path = "neomil/store_echo.rs"]
+mod store_echo;
+#[path = "neomil/store_margin.rs"]
+mod store_margin;
 
 pub const STORE: &[Prim] = &[
     // Source-measured ground shared with the login and dashboard.
@@ -2072,8 +2160,10 @@ pub const STORE: &[Prim] = &[
     // left margin
     Prim::At { x: 62.0, y: 186.0, prims: CHIP },
     txt_bold(65.0, 197.0, 10.0, Ink::OnSelect, "1"),
-    Prim::Turn { x: 58.0, y: 470.0, angle: -90.0, prims: MARGIN_CODE },
-    Prim::Turn { x: 52.0, y: 584.0, angle: -90.0, prims: MARGIN_BRAND },
+    Prim::Turn { x: 55.9833, y: 468.5833, angle: -90.0, prims: MARGIN_CODE },
+    Prim::Turn { x: 52.0, y: 584.0, angle: -90.0, prims: MARGIN_BRAND_PRIMARY },
+    Prim::Motion { motion: MARGIN_HATCH_OPACITY, prims: MARGIN_BRAND_HATCH },
+    Prim::Turn { x: 52.0, y: 584.0, angle: -90.0, prims: MARGIN_BRAND_END },
     // the shelf, wiped in from the top at boot: `#shelf-open` (:240-246)
     // grows one clip over all four cards from no height to 664 over
     // 0.5 s from 0, `keySplines="0.33 1 0.68 1"` = EaseOutCubic, and
@@ -2097,11 +2187,16 @@ pub const STORE: &[Prim] = &[
     // footer
     Prim::Rect { x: 153.5, y: 851.5, w: 144.0, h: 22.0, fill: Some(Ink::Border), stroke: Some(Ink::Fg), width: 1.0 },
     fill_rect(215.0, 851.5, 1.0, 22.0, Ink::Fg),
-    txt_bold(159.0, 866.0, 10.0, Ink::Fg, "68SD1D1100D1S"),
-    txt(221.0, 861.0, 8.0, Ink::Fg, "COMBAT COLONIZATION"),
-    txt(221.0, 870.0, 8.0, Ink::Fg, "DEFENCE PROGRAM"),
+    Prim::Wide { x: 158.4, y: 861.3833, size: 10.0, stretch: 0.82, ink: Ink::Fg,
+        face: Face::SemiBold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
+    Prim::Wide { x: 220.2, y: 860.5833, size: 8.5, stretch: 0.89, ink: Ink::Fg,
+        face: Face::Medium, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
+    Prim::Wide { x: 220.2, y: 868.7833, size: 8.5, stretch: 0.91, ink: Ink::Fg,
+        face: Face::Medium, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
     fill_rect(153.0, 878.0, 147.0, 1.0, Ink::Border),
-    txt(313.0, 872.0, 11.0, Ink::Dim, "00032 05 54 08 CP"),
+    Prim::Wide { x: 313.0, y: 873.25, size: 9.5, stretch: 1.1965,
+        ink: Ink::Dim, face: Face::Regular, anchor: Anchor::Start,
+        content: "00032 05 54 0B CP" },
 ];
 // --- end store -----------------------------------------------------------
 
@@ -2377,6 +2472,9 @@ mod store_interaction_tests {
                 (Prim::Text { ink: ai, .. }, Prim::Text { ink: bi, .. }) => {
                     *ai = Ink::Fg; *bi = Ink::Fg;
                 }
+                (Prim::Wide { ink: ai, .. }, Prim::Wide { ink: bi, .. }) => {
+                    *ai = Ink::Fg; *bi = Ink::Fg;
+                }
                 (Prim::Tracked { ink: ai, .. }, Prim::Tracked { ink: bi, .. }) => {
                     *ai = Ink::Fg; *bi = Ink::Fg;
                 }
@@ -2487,7 +2585,7 @@ mod store_interaction_tests {
                 assert!(matches!(drawing[0], Prim::Path { fill: Some(Ink::Fixed(c)), .. } | Prim::Rect { fill: Some(Ink::Fixed(c)), .. } if c == fill));
             }
             let held = state.selected_pressed.unwrap();
-            assert!(matches!(held[5], Prim::Tracked { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
+            assert!(matches!(held[5], Prim::Wide { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
             assert!(matches!(held[8], Prim::At { prims, .. } if prims == card_held::EDGE));
             assert!(matches!(held[9], Prim::At { prims, .. } if prims == card_held::GUN_SEL));
             assert_eq!(held[2], GROWN[2], "selected spine stays bright");
@@ -2497,32 +2595,49 @@ mod store_interaction_tests {
         for drawing in [states[3].hover, states[3].pressed] {
             assert_eq!(&drawing[2..], &CARD4[2..], "open cut edge remains untouched");
         }
-        assert!(matches!(card_held::SPECS[8], Prim::Text { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
-        assert!(matches!(card_held::SPECS[10], Prim::Tracked { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
+        assert!(matches!(card_held::SPECS_1[8], Prim::Text { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
+        assert!(matches!(card_held::SPECS_1[10], Prim::Tracked { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
         assert!(matches!(card_held::PETRO[0], Prim::Tracked { ink: Ink::Fixed(c), .. } if c == rgb(0x4a0f10)));
         assert!(card_held::GUN.iter().all(|p| matches!(p, Prim::Path { fill: Some(Ink::Fixed(c)), .. } if *c == rgb(0x4a0f10) || *c == rgb(0x59171b))));
     }
 
     #[test]
     fn selected_wash_follows_the_chamfer_step_and_lower_diagonal() {
-        assert_eq!(upper_wash_right(151.0), 269.0);
-        assert_eq!(upper_wash_right(157.0), 275.0);
-        assert_eq!(upper_wash_right(164.0), 282.0);
-        assert_eq!(upper_wash_right(276.0), 276.0);
-        assert_eq!(upper_wash_right(282.0), 270.0);
-        assert_eq!(upper_wash_right(492.0), 270.0);
+        assert_eq!(upper_wash_right(154.5833), 267.25);
+        assert_eq!(upper_wash_right(166.6667), 279.3333);
+        assert_eq!(upper_wash_right(262.9167), 279.3333);
+        assert_eq!(upper_wash_right(271.25), 269.75);
+        assert_eq!(upper_wash_right(492.0), 269.75);
         assert_eq!(upper_wash_right(516.0), 246.0);
         for (i, prim) in UPPER_WASH.iter().enumerate() {
             let Prim::Path { x, y, segs, close: true, fill: Some(Ink::Fixed(color)), stroke: None, .. } = prim else {
                 panic!("wash must consist of joined filled contour bands")
             };
-            assert_eq!((*x, *y), (0.0, 151.0 + i as f32));
+            let row = 154.0 + i as f32;
+            let y0 = if i == 0 { 154.5833 } else { row };
+            assert_eq!((*x, *y), (0.0, y0));
             assert_eq!(*segs, &UPPER_WASH_SEGMENTS[i]);
-            let expected = crate::screens::soft::stop(C2UPPER, (i as f32 + 0.5) / 365.0);
+            let expected = crate::screens::soft::stop(C2UPPER, ((y0 + row + 1.0) * 0.5 - 151.0) / 365.0);
             assert_eq!(*color, expected);
         }
-        assert!(matches!(GROWN.last(), Some(Prim::Path { segs, stroke: Some(Ink::Fg), .. }) if *segs == FRAME_SEL));
-        assert!(FRAME_SEL.ends_with(&[Seg::Line(270.0, 779.5), Seg::Line(252.0, 797.1), Seg::Line(0.0, 797.1)]));
+        let Some(Prim::At { prims: outline, .. }) = GROWN.last() else { panic!("missing selected over-wash outline") };
+        assert_eq!(outline.len(), 2);
+        assert!(matches!(outline[0], Prim::Path { x: 267.25, y: 154.5833, segs, close: false, stroke: Some(Ink::Fg), width: 1.2, .. } if segs == FRAME_SEL_BODY));
+        assert!(matches!(outline[1], Prim::Rect { x: 0.0, y: 154.3, w: 267.25, h: 0.4, fill: Some(Ink::Fg), stroke: None, .. }));
+        assert!(FRAME_SEL.ends_with(&[Seg::Line(269.75, 779.5), Seg::Line(252.0, 797.1), Seg::Line(0.0, 797.1)]));
+        assert!(matches!(GROWN[7], Prim::Rect { stroke: Some(Ink::Fg), .. }));
+        assert!(matches!(GROWN[8], Prim::At { x: -4.6, .. }));
+        for state in STORE_STATES.iter().filter(|s| s.group == Group::Card) {
+            for drawing in [state.selected_hover.unwrap(), state.selected_pressed.unwrap()] {
+                assert!(matches!(drawing[8], Prim::At { x: -4.6, .. }));
+            }
+            assert!(matches!(state.selected_hover.unwrap().last(),
+                Some(Prim::At { prims, .. }) if *prims == FRAME_SEL_OVER_WASH));
+            assert!(matches!(state.selected_pressed.unwrap().last(),
+                Some(Prim::At { prims, .. }) if prims.iter().all(|p| matches!(p,
+                    Prim::Path { fill: None, stroke: None, .. }
+                    | Prim::Rect { fill: None, stroke: None, .. }))));
+        }
     }
 
     #[test]
@@ -2590,6 +2705,11 @@ const GO_HOME_OPEN: Motion = Motion {
     id: "panel-open", begin: 0, dur: 360, ease: Easing::EaseOutCubic,
     change: Change::Clip { x: 1120.0, y: 306.0, w: (260.0, 260.0), h: (0.0, 460.0) },
 };
+
+// Native cap-height calibration; the SVG's original 9.8 fit stays unchanged.
+const DASHBOARD_FOOTER_CODE_SIZE: f32 = 9.2;
+const DASHBOARD_FOOTER_CODE_BASELINE_DY: f32 = -0.833333;
+const DASHBOARD_FOOTER_CODE_STRETCH: f32 = 0.844 * 9.8 / DASHBOARD_FOOTER_CODE_SIZE;
 
 pub const DASHBOARD: &[Prim] = &[
     // Sampled dashboard composite ground, independent of the other screens.
@@ -2669,7 +2789,7 @@ pub const DASHBOARD: &[Prim] = &[
     // Footer tape: narrow/tall primary lettering over soft local copies.
     line_rect(1209.5, 864.5, 144.0, 24.0, Ink::Fg, 1.0),
     fill_rect(1270.0, 864.5, 1.2, 24.0, Ink::Fg),
-    Prim::Wide { x: 1214.2, y: 875.1, size: 9.8, stretch: 0.844, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
+    Prim::Wide { x: 1214.2, y: 875.1 + DASHBOARD_FOOTER_CODE_BASELINE_DY, size: DASHBOARD_FOOTER_CODE_SIZE, stretch: DASHBOARD_FOOTER_CODE_STRETCH, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
     Prim::Wide { x: 1276.2, y: 874.6, size: 9.5, stretch: 0.79, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
     Prim::Wide { x: 1276.6, y: 883.0, size: 9.5, stretch: 0.807, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
 ];
@@ -2680,12 +2800,12 @@ const DASHBOARD_FOOTER_FRAME_ECHO_2: &[Prim] = &[
     line_rect(1212.5, 867.5, 144.0, 24.0, Ink::Fg, 2.5),
 ];
 const DASHBOARD_FOOTER_TEXT_ECHO_1: &[Prim] = &[
-    Prim::Wide { x: 1215.0, y: 876.1, size: 9.8, stretch: 0.844, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
+    Prim::Wide { x: 1215.0, y: 876.1 + DASHBOARD_FOOTER_CODE_BASELINE_DY, size: DASHBOARD_FOOTER_CODE_SIZE, stretch: DASHBOARD_FOOTER_CODE_STRETCH, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
     Prim::Wide { x: 1277.0, y: 875.6, size: 9.5, stretch: 0.79, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
     Prim::Wide { x: 1277.4, y: 884.0, size: 9.5, stretch: 0.807, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
 ];
 const DASHBOARD_FOOTER_TEXT_ECHO_2: &[Prim] = &[
-    Prim::Wide { x: 1216.0, y: 877.1, size: 9.8, stretch: 0.844, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
+    Prim::Wide { x: 1216.0, y: 877.1 + DASHBOARD_FOOTER_CODE_BASELINE_DY, size: DASHBOARD_FOOTER_CODE_SIZE, stretch: DASHBOARD_FOOTER_CODE_STRETCH, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
     Prim::Wide { x: 1278.0, y: 876.6, size: 9.5, stretch: 0.79, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
     Prim::Wide { x: 1278.4, y: 885.0, size: 9.5, stretch: 0.807, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
 ];

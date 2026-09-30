@@ -1,105 +1,106 @@
-# Kitsch source printing fit
+# Dashboard blade-label fit
 
-This pass compares the photographed login and store at 3840 × 2160 with
-their SVG traces and the prior native Iced captures. `images/kitsch-store.png`
-is the 4ST store, and `images/kitsch-login.png` is the access screen. Values
-below describe the clean source glyph mask and the resulting SVG rendering;
-they do not claim recovery of photographic glow or exact letter outlines.
+The source's six blade words are broader in stroke and mostly narrower in
+extent than the earlier Rajdhani Regular 19 / tracking 2 trace. This pass
+keeps the words, inks, card contours, rose face fields, ghosts, motion and
+plate hit regions unchanged. Each visible run now uses bundled Rajdhani
+Medium with its own local coordinates; the same run geometry is used in the
+idle, selected and pressed branches, so state changes cannot move a label.
 
-The three `EMPTY / SOCKET` pairs in both card states have a native cap about
-20 pixels high. The prior 9-design-pixel text rendered only 14 native pixels
-high. Each source pair uses approximately 79 native pixels for `EMPTY` and
-95 for `SOCKET`; the old SVG widths were 56 and 66. Rajdhani Semibold at
-13 design pixels, with centers fitted separately at card-local x 82.75,
-153.5, and 224.5, matches the source extents much more closely. In the first
-cell, source/SVG mask intersection-over-union rises from 0.122 to 0.437
-for plain `EMPTY`, 0.145 to 0.500 for plain `SOCKET`, 0.126 to 0.520 for
-selected `EMPTY`, and 0.150 to 0.535 for selected `SOCKET`. The QR scatter
-and cell geometry are unchanged.
+| Word | Local center `(x,y)` | Size | Tracking |
+| --- | ---: | ---: | ---: |
+| VEHICLES | `(0.83, 5.25)` | 21 | 0 |
+| WEAPONS | `(1.67, 5.67)` | 20 | 1 |
+| Left PRODUCTS | `(-3.33, 6.50)` | 20 | 1 |
+| Right PRODUCTS | `(-4.17, 8.58)` | 20 | 1 |
+| EVENTS | `(-1.25, 6.50)` | 20 | 0.75 |
+| LOCATIONS | `(-2.50, 6.08)` | 20 | 0.5 |
 
-The plain card's `MAGNUM 650 / HAND GUN` trace already used Rajdhani Medium
-24.4/19.5 with tracking −0.75/+0.6, but Iced still used 19/17 Regular.
-The old Iced first line ended around native x 1431 against the source's
-x 1480; the SVG reached x 1482. Rust now uses the traced sizes, weight, and
-tracking. Source title ink is brighter than the prior SVG/Iced green, so the
-plain titles use the independently measured gun highlight `#93ffe4`.
+The fit used `images/kitsch-dashboard.png` and native-size (3840×2160)
+librsvg 2.62.3 renders of the accepted U dashboard trace. A card was
+rectified to its own 162×50 frame; the first, middle and last third of the
+word along the card axis were scored separately. The grid covered bundled
+Regular, Medium and SemiBold; sizes 19–23; tracking 0–2; and local
+translation. It fit the middle region at two conservative ink thresholds,
+then checked the first and last regions. The final settings were chosen from
+the balanced candidates after those checks, so the endpoint results are
+diagnostic glyph holdouts rather than a second untouched validation set.
 
-The plain `DPS` source bbox is x 1226..1291, y 1036..1064. The old SVG
-was x 1230..1289, y 1037..1062; 19px Medium, baseline y 226, and the
-local `#81fee7` stat ink raise first-label mask IoU from 0.340 to 0.613.
-The first pass used 25px Regular and baseline y 256.2 for `86`: its source
-bbox is x 1233..1284, y 1098..1137, and source/SVG IoU rose 0.161 to
-0.474. The native K1 calibration below refines its weight and Rust baseline.
-Selected stat runs retain dark ink.
+For idle mint, the mask requires green above 220, blue above 165, and green
+above 1.2×red within `|t|<70, |v|<15`. This excludes the teal face and most
+photographic halo. At that threshold, F1 overlap on source versus trace
+changed as follows (first / middle / last):
 
-The two CC35 lines beneath the cards were much smaller and shorter than the
-source. Plain first-line source pixels span x 1171..1774, y 1330..1341;
-the old SVG ended at x 1663. An 8px Bold run with 0.3 tracking and local
-`#65e5c8` reaches x 1763 and raises first-line mask IoU from 0.102 to
-0.347. The second plain line rises 0.133 to 0.500. On the amber card,
-the same type at y 483/491 and local `#e9a50d` raises first-/second-line
-IoU from 0.080/0.092 to 0.313/0.506. The remaining first-line width
-shortfall is about 11 native pixels, and photographic edge softness remains.
+| Word | Earlier Regular 19 | Fitted Medium |
+| --- | --- | --- |
+| VEHICLES | .059 / .125 / .083 | .760 / .641 / .674 |
+| WEAPONS | .088 / .196 / .200 | .744 / .675 / .588 |
+| Left PRODUCTS | .138 / .078 / .090 | .723 / .524 / .632 |
+| Right PRODUCTS | .064 / .059 / .033 | .621 / .556 / .494 |
+| LOCATIONS | .370 / .153 / .070 | .483 / .715 / .331 |
 
-On login, the clock's native clean-ink area was 1,425 pixels against 913
-in the Regular SVG; Medium gives 1,419 while keeping its measured bounds.
-The `ENTER` bar glyph had 1,147 dark SVG pixels against 778 in the source;
-Medium reduces it to 860. Its shape overlap falls slightly (IoU 0.650 to
-0.630), so this is a stroke-density fit rather than a claim of contour
-parity. The `PROTECTED` bounds and coverage already fit and retain Semibold.
+The gains hold at green thresholds 205 and 235 as well. Selected EVENTS
+needs a separate dark-ink mask on its yellow face. At red below 180, green
+below 150 and blue below 40, its first/middle/last overlap changes
+`.757/.448/.156 → .713/.749/.628`. Its first glyph loses .044 while the
+middle and last improve substantially. SemiBold scores slightly higher in
+some dark masks but visibly over-inks the selected word; Medium is the
+bounded choice. The selected photograph is lighter/softer than the fixed
+trace ink, so exact core-pixel counts cannot establish font weight alone.
 
-The store foot line remains 9px Bold with 0.25/0.24 tracking as traced.
-Iced's previous untracked first and second runs ended at native x 1510 and
-2572, compared with source x about 1534 and 2628; the store primitives now
-carry that tracking. The matching login foot line was already tracked.
+The scratch candidate `v-k-labels/candidate-events-medium-075.svg` and
+source/U/candidate native crops were reviewed before transfer. The source
+retains glow and photographic softness; this fit addresses the letter
+geometry, not those image effects. RSVG verifies the trace candidate;
+native Iced glyph placement and state transitions need their own capture
+checks. No observed idle EVENTS source exists; its off branch uses the same
+Medium run as the selected branch with the existing mint ink.
 
-## Native K1 calibration
+## Native glyph-origin calibration
 
-The K1 native capture confirms the corrected card title widths: source
-`MAGNUM 650` spans native x1191–1480 and Iced x1191–1482. Iced's plain
-title rows y561–598 remain about two to three native pixels below the
-source y559–595; the selected card shows the same offset. Both Rust title
-baselines move up one design pixel. The plain `DPS` label spans source
-y1036–1064 and Iced y1038–1067, and the selected label has a similar
-two-to-three-pixel offset. Rust stat-label baselines also move up one design
-pixel; the already source-fitted SVG baselines stay fixed.
+The V native Iced capture retained the fitted Medium contours but rasterized
+four label origins slightly below the correctly placed SVG reference.
+Source/native mask comparisons at three mint thresholds fitted the first
+third of each run and checked the middle and last thirds independently.
+The runtime label origins alone move in local card coordinates: VEHICLES
+`(0,−0.5)`, WEAPONS `(−0.25,−0.5)`, and both PRODUCTS `(0,−1.0)` design
+units. In the pre-W projection, central-threshold middle/last F1 scores change
+`.520/.378 → .572/.528` for VEHICLES, `.590/.521 → .722/.578`
+for WEAPONS, `.392/.416 → .530/.641` for left PRODUCTS, and
+`.387/.345 → .541/.520` for right PRODUCTS. The gains hold at all three
+tested thresholds. The SVG trace keeps its source-fitted origins; both
+runtime on/off branches share each calibrated position. Proposed EVENTS and
+LOCATIONS offsets failed the middle/last holdouts and were rejected.
 
-The first plain `86` value spans source x1233–1284/y1098–1137, versus
-K1 Iced x1234–1285/y1103–1140. The selected value is similarly low,
-y1051–1088 against source y1045–1085. Rust value baselines move up 1.5
-design pixels on plain cards and 1.8 on the grown card. K1's Regular
-value had only 466 clean pixels against 641 in the plain source. A local
-SVG Medium trial raises first-value source/SVG mask IoU from 0.474 to
-0.536; Bold overfills. SVG and Iced therefore use Medium for the four
-values in each state. The card's feedback recoloring still selects the
-same eight stat/value positions and changes their inks only.
+The W native 3840×2160 rest capture verifies those four runtime-only
+calibrations against the V native baseline. At the central mint threshold,
+the first/middle/last F1 scores change as follows:
 
-The mailbox's `from: Jackie` source bbox is x530–687/y843–866, whereas
-the prior SVG and Iced ended near x654. `from: Mom` spans source
-x530–670/y987–1008 and the prior render ended near x639. Rajdhani
-13.5px with a one-design-pixel higher baseline gives the source widths.
-The selected sender uses Semibold; the four plain senders use Bold and
-source-local `#87f9d8`. In the source/SVG clean-ink masks, the selected
-sender IoU rose from 0.092 to 0.602 with Semibold and the first plain
-sender from 0.075 to 0.605 with Bold. The row title, hit frame, pitch,
-envelopes, and feedback geometry are unchanged.
+| Run | V native | W native |
+| --- | --- | --- |
+| VEHICLES | .722/.520/.378 | .772/.573/.524 |
+| WEAPONS | .707/.590/.521 | .780/.725/.590 |
+| Left PRODUCTS | .479/.393/.416 | .752/.533/.635 |
+| Right PRODUCTS | .419/.387/.345 | .695/.555/.547 |
 
-The two mailbox CC35 notice lines span source x1389–1875/y866–876 and
-x1389–1895/y884–896. Their old SVG ends were x1760 and x1772, and the
-old Iced ends were x1724 and x1735. The fitted SVG uses 8px Bold,
-0.34px tracking, x578.4, baselines 365.5/373.3, and local `#e6b522`;
-the first line reaches x1869 and the second x1889 in the trial render.
-Iced uses the corresponding 8px Bold run with 1.08 horizontal stretch,
-which requires native review because its letter spacing differs from
-SVG tracking. Source glow and glyph contours remain outside this fit.
+Every first, middle and last segment improves at all three tested mint
+thresholds. EVENTS and LOCATIONS remain unchanged in W native, as intended.
+These are mask-overlap measurements of native glyph placement; the source's
+photographic bloom and softness remain outside this calibration.
 
-Selection review caught a runtime distinction: the lighter sender face must
-follow the selected fill, rather than remain attached to the first message.
-The optional selected-row type now resolves through the same path as sender
-fill contrast; ordinary rows keep Bold and the current selected row uses
-Semibold. Resting source geometry and inks are unchanged. Selection-transfer
-native review and the regression test are part of the following checkpoint.
+## Store shelf-brand native fit — 2026-09-29
 
-## M mailbox notice renderer fit
+The store SVG already gives `PETROCHEM` and `BETTERLIFE TEC` broad, bold lettering, but the runtime still printed unscaled size-8 text; the second run was Regular. In the frozen T native capture, the top run's bright core ends 39 native pixels before source on each of the first three cards. The lower run on ordinary card 1 ends at x1662 instead of source x1724, and is visibly too thin. The literal content and the compliance sentences agree with the source; this correction is limited to the two shelf-brand runs.
 
-The source/SVG first notice line already shares x1389..1875 and y865/866..876 native bounds. L Iced was x1389..1870/y863..875 and 2997 clean ink pixels against 2345 source and 2364 SVG; its second line had 3140 against 2448 source. Only the Iced `MESSAGE_FLAG` runs change from Bold to Semibold, width stretch 1.08→1.09, and baselines 365.5/373.3→366.1/374.0. The parent SVG and component stay at their source-fitted Bold values. Native M ink and bounds remain to be reviewed.
+A scratch StorePreview compiled against the frozen AA rlib substituted `Prim::Wide` for only these two `Prim::Text` runs. Card 1 set the geometry, while selected card 2 and ordinary card 3 checked the same settings. The runtime uses Bold size 8 for both, top stretch 1.42 at `(163, 78.416667)`, and lower stretch 1.50 at `(160.416667, 89.416667)`. Ordinary and selected branches share those coordinates and keep their pre-existing inks. The source-fitted SVG remains unchanged because its transform and tracking already place the text near the photographed extents.
+
+At 3840 × 2160, the top bright-core box becomes x1558–1683/y699–712 versus source x1558–1684/y699–712 on card 1. Selected card 2 reaches exactly x2326–2451; card 3 differs by at most two pixels at the right edge. Source/native F1 at the central bright threshold improves .382→.729, .392→.818, and .375→.684 on cards 1–3. The first, middle, and last thirds each improve on all three cards and at the tested bright thresholds 170/180/190.
+
+The lower dark-core box on ordinary card 1 becomes x1554–1725/y726–738 versus source x1556–1724/y725–738. The selected and third-card right endpoints agree within one pixel. Central-threshold F1 improves .076→.311, .148→.427, and .106→.394 on cards 1–3, with each third improving over the old native run. At the strictest ordinary-card-1 dark threshold 145, source has only 90 core pixels and F1 remains about .05; this is a material/photographic contour limit, not evidence of exact letterform recovery. The trial still prints darker, sharper glyphs than the photograph. Scratch source/SVG/T-native/trial crops and threshold results are in `/tmp/cp-eras-resume-20260929/ab-k5-audit/compare.json` and its `top-trial2-3x.png` / `bottom-trial2-3x.png` panels. The production port matches trial2 pixels exactly in all three brand regions. Fractional ordinary/selected/last-card held and custom-color captures preserve the original inks and clipping. Both store gates and the full AB check pass; see the integrated acceptance below.
+
+### AB integrated acceptance
+
+The source/native/state review is integrated: all 286 Rust tests and 22
+repository checks pass, including 27 exact visual cases on their first
+attempt. All 199 frozen file hashes match the Nix source. This closes the
+bounded AB correction above; its stated photographic/glyph limits remain.

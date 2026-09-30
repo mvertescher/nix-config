@@ -56,11 +56,11 @@ pub const ON_MINT: iced::Color = rgb(0x0b3b31);
 /// stacked outlines recede in. Sampled off the braindance screens; see
 /// the old `docs/kitsch/target-components.svg`, "EXTRUDED FAN MENU" (the
 /// by-eye sheet replaced 2026-09-03 by `components.svg`, rebuilt from the
-/// traces; `dashboard-trace.svg` has 162x50 r8 cards with ghosts fading
-/// 0.58 to 0.12, not extruded slabs). The trace fills those cards
-/// `#2c9798` under a 1.8px `#a9e6df` stroke (`<use href="#card"
-/// fill="#2c9798" stroke="#a9e6df" stroke-width="1.8"/>`); `SLAB` stays
-/// `#2bc4ac` because its only reader is `relief` -> `Palette::relief()`,
+/// traces; `dashboard-trace.svg` has 162x50 r8 cards with ghost fills
+/// fading 0.29 to 0.06 on the visible trails, not extruded slabs). The
+/// idle cards carry a rose-correlated red field around the accepted
+/// `#20858f` flat baseline under a 1.8px `#a9e6df` stroke;
+/// `SLAB` stays `#2bc4ac` because its only reader is `relief` -> `Palette::relief()`,
 /// consumed by bar / menu / chrome widgets, and in every gated render
 /// `home/themes/kitsch/palettes.nix` overrides `bevel`/`shade` anyway.
 pub const SLAB: iced::Color = rgb(0x2bc4ac);
@@ -421,7 +421,7 @@ pub fn style() -> Style {
         // EVENTS, the fifth solid card in `dashboard-trace.svg` (group at
         // `translate(731 586) rotate(-30)`, the one `<use href="#card"
         // fill="#f5cb23" stroke="#fce89a">` under the comment "the
-        // selection"); the other five fill `#2c9798`.
+        // selection"); the other five fill `#20858f`.
         dashboard_selection: 4,
         dashboard_cursor: false,
         mailbox_cursor: false,
@@ -812,13 +812,6 @@ use crate::style::{
 };
 use iced::animation::Easing;
 
-const fn text(x: f32, y: f32, size: f32, ink: Ink, s: &'static str) -> Piece {
-    Piece::Label(Note {
-        at: Run::new(x, y, size, ink),
-        text: s,
-    })
-}
-
 /// Native #51's clear pixels agree with #49 and #52, so all three use
 /// the same broad page, rose, and left wash; see ground-fit.md.
 const MAIL_GROUND: &[Prim] = &[
@@ -1019,11 +1012,11 @@ static MESSAGE_FLAG: [Piece; 3] = [
         close: false,
     },
     Piece::Label(Note {
-        at: Run::new(578.4, 366.1, 8.0, Ink::Fixed(rgb(0xe6b522))).semibold().stretched(1.09),
+        at: Run::new(578.4, 366.1, 7.5, Ink::Fixed(rgb(0xe6b522))).semibold().stretched(1.163),
         text: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE",
     }),
     Piece::Label(Note {
-        at: Run::new(578.4, 374.0, 8.0, Ink::Fixed(rgb(0xe6b522))).semibold().stretched(1.09),
+        at: Run::new(578.4, 374.0, 7.5, Ink::Fixed(rgb(0xe6b522))).semibold().stretched(1.163),
         text: "ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.",
     }),
 ];
@@ -1257,6 +1250,7 @@ pub fn mailbox() -> Mailbox {
             stroke: Ink::Fg,
             label: Run::new(27.0, 33.0, 16.0, Ink::Fg),
             tab: None,
+            label_runs: &[],
             labels: &TABS,
         },
         badges: MailBadges {
@@ -1299,8 +1293,8 @@ pub fn mailbox() -> Mailbox {
 // the neutral choice it looks like.
 
 use crate::style::{
-    fill_path, fill_rect, line_path, line_rect, shut_path, txt, txt_bold, txt_end, tracked_mid, txt_mid,
-    Group, Prim, Seg,
+    fill_path, fill_rect, line_path, line_rect, shut_path, txt, txt_bold, txt_end, txt_mid,
+    Anchor, Group, Prim, Seg,
 };
 
 /// The gun drawing and the stat bar under the figures.
@@ -1580,17 +1574,25 @@ macro_rules! band_marks {
             txt_bold(-14.5, 83.8, 3.2, $ink, "RG5"),
             fill_rect(-0.7, 78.5, 11.1, 11.0, $ink),
             Prim::Circle { x: 4.8, y: 84.0, r: 4.05, fill: Some($knock), stroke: None, width: 0.0 },
+            // Four photographed corner apertures reveal the same band ink as the disc.
+            fill_path(0.3, 79.58, &[
+                Seg::Line(1.6, 79.58), Seg::Line(0.75, 80.75),
+                Seg::Move(8.55, 79.58), Seg::Line(9.7, 79.58), Seg::Line(9.05, 80.75),
+                Seg::Move(0.22, 89.08), Seg::Line(0.65, 87.42), Seg::Line(1.95, 89.08),
+                Seg::Move(8.52, 89.08), Seg::Line(9.5, 87.42), Seg::Line(10.12, 89.08),
+            ], $knock),
             txt_bold(2.35, 85.6, 4.5, $ink, "SC"),
-            // The source C has short angular shoulders and a second inset C.
+            // Angular outer contour with the source's three-bar inset mark.
             line_path(24.5, 81.2, &[
                 Seg::Line(22.6, 78.5), Seg::Line(17.6, 78.5), Seg::Line(15.5, 80.6),
                 Seg::Line(15.5, 87.4), Seg::Line(17.6, 89.5), Seg::Line(22.6, 89.5),
                 Seg::Line(24.5, 86.8),
             ], $ink, 1.3),
-            line_path(22.0, 82.4, &[
-                Seg::Line(19.5, 82.4), Seg::Line(18.5, 83.4), Seg::Line(18.5, 84.5),
-                Seg::Line(19.5, 85.5), Seg::Line(22.0, 85.5),
-            ], $ink, 0.8),
+            line_path(23.5, 81.8, &[
+                Seg::Line(21.75, 80.5), Seg::Line(17.25, 80.5),
+                Seg::Line(17.25, 88.0), Seg::Line(21.75, 88.0), Seg::Line(23.5, 86.8),
+                Seg::Move(17.25, 84.1), Seg::Line(22.25, 84.1),
+            ], $ink, 0.65),
             Prim::Round { x: 28.5, y: 74.0, w: 64.0, h: 18.0, r: 1.5, fill: None, stroke: Some($ink), width: 0.5 },
             // Hollow warning triangle and positive exclamation on amber.
             fill_path(30.3, 90.0, &[
@@ -1614,8 +1616,8 @@ const CARD: &[Prim] = &[
     fill_path(-27.0, 94.0, BAND_SHAPE, Ink::Fixed(BAND)),
     Prim::At { x: 0.0, y: 0.0, prims: BAND_MARKS },
     fill_rect(160.0, 70.0, 60.0, 9.0, Ink::Fixed(ON_BAND)),
-    txt_bold(163.0, 78.0, 8.0, Ink::Fixed(BAND), "PETROCHEM"),
-    txt(160.0, 89.0, 8.0, Ink::Fixed(ON_BAND), "BETTERLIFE TEC"),
+    Prim::Wide { x: 163.0, y: 78.416667, size: 8.0, stretch: 1.42, ink: Ink::Fixed(BAND), face: Face::Bold, anchor: Anchor::Start, content: "PETROCHEM" },
+    Prim::Wide { x: 160.416667, y: 89.416667, size: 8.0, stretch: 1.50, ink: Ink::Fixed(ON_BAND), face: Face::Bold, anchor: Anchor::Start, content: "BETTERLIFE TEC" },
     Prim::At { x: 0.0, y: 0.0, prims: GUN_PLAIN },
     GUN_SEAM,
     card_stat(41.0, 225.0, 19.0, Ink::Fixed(MINT_BAR), "DPS"),
@@ -1638,7 +1640,7 @@ const CARD: &[Prim] = &[
     socket_label(153.5, 308.5, Ink::Fg, "SOCKET"),
     socket_label(224.5, 295.5, Ink::Fg, "EMPTY"),
     socket_label(224.5, 308.5, Ink::Fg, "SOCKET"),
-    Prim::Tracked { x: 4.0, y: 341.0, size: 8.0, tracking: 0.3, ink: Ink::Fixed(CARD_COMPLIANCE), face: Face::Bold, anchor: Anchor::Start, content: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO" },
+    Prim::Tracked { x: 4.0, y: 341.0, size: 8.0, tracking: 0.381967, ink: Ink::Fixed(CARD_COMPLIANCE), face: Face::Bold, anchor: Anchor::Start, content: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO" },
     Prim::Tracked { x: 4.0, y: 349.0, size: 8.0, tracking: 0.3, ink: Ink::Fixed(CARD_COMPLIANCE), face: Face::Bold, anchor: Anchor::Start, content: "MANIPULATE, ACCESS OR DISABLE THIS DEVICE." },
 ];
 
@@ -1673,8 +1675,8 @@ const GROWN: &[Prim] = &[
     Prim::Tracked { x: 10.0, y: 48.5, size: 19.5, tracking: 0.6, ink: Ink::Fixed(ON_GROWN), face: Face::Medium, anchor: Anchor::Start, content: "HAND GUN" },
     Prim::At { x: 0.0, y: 0.0, prims: BAND_MARKS_SEL },
     fill_rect(160.0, 70.0, 60.0, 9.0, Ink::Fixed(ON_GROWN)),
-    txt_bold(163.0, 78.0, 8.0, Ink::Select, "PETROCHEM"),
-    txt(160.0, 89.0, 8.0, Ink::Fixed(ON_BAND), "BETTERLIFE TEC"),
+    Prim::Wide { x: 163.0, y: 78.416667, size: 8.0, stretch: 1.42, ink: Ink::Select, face: Face::Bold, anchor: Anchor::Start, content: "PETROCHEM" },
+    Prim::Wide { x: 160.416667, y: 89.416667, size: 8.0, stretch: 1.50, ink: Ink::Fixed(ON_BAND), face: Face::Bold, anchor: Anchor::Start, content: "BETTERLIFE TEC" },
     // The grown card has its own native dark print and light openings.
     Prim::At { x: 0.0, y: 0.0, prims: GUN_SELECTED },
     card_stat(41.0, 202.5, 18.5, Ink::Fixed(ON_BAND), "DPS"),
@@ -1713,7 +1715,7 @@ const GROWN: &[Prim] = &[
     socket_label(153.5, 450.0, Ink::Fixed(GROWN_DETAIL), "SOCKET"),
     socket_label(224.5, 436.5, Ink::Fixed(GROWN_DETAIL), "EMPTY"),
     socket_label(224.5, 450.0, Ink::Fixed(GROWN_DETAIL), "SOCKET"),
-    Prim::Tracked { x: 4.0, y: 483.0, size: 8.0, tracking: 0.3, ink: Ink::Fixed(GROWN_COMPLIANCE), face: Face::Bold, anchor: Anchor::Start, content: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO" },
+    Prim::Tracked { x: 4.0, y: 483.0, size: 8.0, tracking: 0.381967, ink: Ink::Fixed(GROWN_COMPLIANCE), face: Face::Bold, anchor: Anchor::Start, content: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO" },
     Prim::Tracked { x: 4.0, y: 491.0, size: 8.0, tracking: 0.3, ink: Ink::Fixed(GROWN_COMPLIANCE), face: Face::Bold, anchor: Anchor::Start, content: "MANIPULATE, ACCESS OR DISABLE THIS DEVICE." },
 ];
 
@@ -1985,7 +1987,7 @@ pub const STORE: &[Prim] = &[
     line_rect(1500.0, 733.0, 29.0, 27.0, Ink::Fixed(MARK), 1.5),
     txt_mid(1514.5, 752.0, 14.0, Ink::Fixed(MARK), "C"),
     // one line of bright micro-text centred at the foot
-    Prim::Tracked { x: 503.0, y: 870.0, size: 9.0, tracking: 0.25, ink: Ink::Fixed(FOOT_MICRO), face: Face::Bold, anchor: Anchor::Start, content: "ARASAKA CONSUMER TECHNOLOGY" },
+    Prim::Tracked { x: 503.0, y: 870.0, size: 9.0, tracking: 0.18, ink: Ink::Fixed(FOOT_MICRO), face: Face::Bold, anchor: Anchor::Start, content: "ARASAKA CONSUMER TECHNOLOGY" },
     Prim::Tracked { x: 641.0, y: 870.0, size: 9.0, tracking: 0.24, ink: Ink::Fixed(FOOT_MICRO), face: Face::Bold, anchor: Anchor::Start, content: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE." },
 ];
 // --- end store -----------------------------------------------------------
@@ -2182,14 +2184,11 @@ mod store_interaction_tests {
 //   162x50 r8 card turned a quarter is a 50x162 r8 `Prim::Round`.
 // - the labels rotate with their blade in the trace (`components.svg`
 //   line 575). Each label is a `Prim::Turn` at the blade's centre and
-//   angle (+-30, or 90 for the two PRODUCTS cards) holding one
-//   `txt_mid(0, 6.5, 19, ..)`, which is the trace's `<text y="6.5"
-//   text-anchor="middle">` inside its `translate() rotate()` group, so
-//   the label lies along the card. The card path itself stays
-//   pre-rotated (above) rather than moving into the `Turn`, so the
-//   hit boxes and the `BLADE_*` tables are unchanged. The group's
-//   `letter-spacing="2"` is `Prim::Tracked`, drawn glyph by glyph off
-//   measured advances since iced text has no tracking of its own.
+//   angle (+-30, or 90 for the two PRODUCTS cards) holding a measured
+//   Rajdhani Medium `Prim::Tracked` run in the card's own coordinates.
+//   The card path itself stays pre-rotated (above), so the hit boxes
+//   and `BLADE_*` tables are unchanged. Tracking is drawn glyph by
+//   glyph off measured advances since iced text has none of its own.
 // - `fill-opacity` / `stroke-opacity` on the ghosts are carried as the
 //   alpha of an `Ink::Fixed` colour (`faded`); nothing is pre-mixed.
 //   They composite onto the bloom the way the SVG does because the
@@ -2209,8 +2208,6 @@ mod store_interaction_tests {
 // - the shared rose and left-wash field is measured from clear native
 //   patches across dashboard/mail/store; see ground-fit.md.
 
-use crate::style::Anchor;
-
 /// The hub uses the shared native #49/#51/#52 page.
 pub const HUB_GROUND: iced::Color = PAGE;
 /// The selection yellow the hub samples -- EVENTS, badge 02, the
@@ -2221,11 +2218,13 @@ pub const ON_HUB_YELLOW: iced::Color = rgb(0x4a3a05);
 pub const ON_BADGE: iced::Color = rgb(0x6b4d08);
 /// The selected blade's lit edge.
 pub const SELECT_EDGE: iced::Color = rgb(0xfce89a);
-/// An idle blade's fill; its edge is `NAME_INK`. The source idle label
-/// is mint, distinct from the dark printing on the selected yellow face.
+/// The source idle label is mint, distinct from the dark printing on
+/// the selected yellow face.
 /// The core median on #49's vertical PRODUCTS is #7cffe5.
 pub const BLADE_LABEL: iced::Color = rgb(0x7cffe5);
-pub const BLADE: iced::Color = rgb(0x2c9798);
+/// The accepted flat fit, used as the base colour of the idle red-field
+/// stop table; its outlines still use `NAME_INK`.
+pub const BLADE: iced::Color = rgb(0x20858f);
 /// A ghost's fill and edge: a greener teal than the solid blade,
 /// sampled mid-strip over the black ground (trace lines 189-193).
 pub const GHOST: iced::Color = rgb(0x0f9f80);
@@ -2266,7 +2265,7 @@ const CARD_CCW: &[Seg] = &[
 const CARD_CCW_X: f32 = -75.72;
 const CARD_CCW_Y: f32 = 14.85;
 
-/// One ghost at its own origin: `#card` in `#0f9f80` under a 1.2px
+/// One ghost at its own origin: `#card` in `#0f9f80` under a 0.9px
 /// `#6cc4bd`, at one of the trace's seven opacity pairs (fill /
 /// stroke). The ramp is the same for every blade, selected or not
 /// (`components.svg` lines 560-564).
@@ -2279,7 +2278,7 @@ macro_rules! ghost {
             close: true,
             fill: Some(Ink::Fixed(faded(GHOST, $fill))),
             stroke: Some(Ink::Fixed(faded(GHOST_EDGE, $edge))),
-            width: 1.2,
+            width: 0.9,
         }]
     };
 }
@@ -2293,63 +2292,155 @@ macro_rules! ghost_v {
             r: 8.0,
             fill: Some(Ink::Fixed(faded(GHOST, $fill))),
             stroke: Some(Ink::Fixed(faded(GHOST_EDGE, $edge))),
-            width: 1.2,
+            width: 0.9,
         }]
     };
 }
 /// Ghost dresses by depth, index 0 the faintest (WEAPONS' seventh) and
 /// 6 the one nearest its solid card.
 const GHOST_CW: [&[Prim]; 7] = [
-    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.07, 0.16),
-    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.12, 0.24),
-    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.21, 0.34),
-    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.30, 0.45),
-    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.40, 0.56),
-    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.48, 0.68),
-    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.58, 0.80),
+    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.035, 0.16),
+    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.06, 0.24),
+    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.105, 0.34),
+    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.15, 0.45),
+    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.20, 0.56),
+    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.24, 0.68),
+    ghost!(CARD_CW_X, CARD_CW_Y, CARD_CW, 0.29, 0.80),
 ];
 const GHOST_CCW: [&[Prim]; 7] = [
-    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.07, 0.16),
-    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.12, 0.24),
-    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.21, 0.34),
-    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.30, 0.45),
-    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.40, 0.56),
-    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.48, 0.68),
-    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.58, 0.80),
+    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.035, 0.16),
+    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.06, 0.24),
+    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.105, 0.34),
+    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.15, 0.45),
+    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.20, 0.56),
+    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.24, 0.68),
+    ghost!(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, 0.29, 0.80),
 ];
 const GHOST_V: [&[Prim]; 7] = [
-    ghost_v!(0.07, 0.16),
-    ghost_v!(0.12, 0.24),
-    ghost_v!(0.21, 0.34),
-    ghost_v!(0.30, 0.45),
-    ghost_v!(0.40, 0.56),
-    ghost_v!(0.48, 0.68),
-    ghost_v!(0.58, 0.80),
+    ghost_v!(0.035, 0.16),
+    ghost_v!(0.06, 0.24),
+    ghost_v!(0.105, 0.34),
+    ghost_v!(0.15, 0.45),
+    ghost_v!(0.20, 0.56),
+    ghost_v!(0.24, 0.68),
+    ghost_v!(0.29, 0.80),
 ];
+// VEHICLES, both PRODUCTS and LOCATIONS gain a seventh source silhouette;
+// WEAPONS already had seven. Their added farthest edges are weaker than
+// the shared 0.16 step; the prior six keep their own ramps.
+const GHOST_V_SEVENTH: &[Prim] = ghost_v!(0.035, 0.065);
+const GHOST_V_LEFT_SEVENTH: &[Prim] = ghost_v!(0.035, 0.10);
+// VEHICLES and LOCATIONS share a stroke-only seventh with the same edge ink.
+const GHOST_CW_SEVENTH: &[Prim] = &[Prim::Path {
+    x: CARD_CW_X,
+    y: CARD_CW_Y,
+    segs: CARD_CW,
+    close: true,
+    fill: None,
+    stroke: Some(Ink::Fixed(faded(GHOST_EDGE, 0.09))),
+    width: 0.9,
+}];
 
-/// The solid blades at their own origin: idle `#2c9798` under 1.8px
-/// `#a9e6df`, selected `#f5cb23` under 1.8px `#fce89a` (trace lines
-/// 244 and 261; `components.svg` line 574).
-const BLADE_CW_OFF: &[Prim] = &[shut_and_fill(CARD_CW_X, CARD_CW_Y, CARD_CW, Ink::Fixed(BLADE), Ink::Fixed(NAME_INK))];
+/// The solid blades at their own origin: idle face fields are in the
+/// leading software layer below, with these unchanged 1.8px outlines
+/// above them. Selected/pressed gold stays an opaque foreground fill.
+const BLADE_CW_OFF: &[Prim] = &[shut_path(CARD_CW_X, CARD_CW_Y, CARD_CW, Ink::Fixed(NAME_INK), 1.8)];
 const BLADE_CW_ON: &[Prim] = &[shut_and_fill(CARD_CW_X, CARD_CW_Y, CARD_CW, Ink::Fixed(HUB_YELLOW), Ink::Fixed(SELECT_EDGE))];
-const BLADE_CCW_OFF: &[Prim] = &[shut_and_fill(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, Ink::Fixed(BLADE), Ink::Fixed(NAME_INK))];
+const BLADE_CCW_OFF: &[Prim] = &[shut_path(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, Ink::Fixed(NAME_INK), 1.8)];
 const BLADE_CCW_ON: &[Prim] = &[shut_and_fill(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, Ink::Fixed(HUB_YELLOW), Ink::Fixed(SELECT_EDGE))];
-const BLADE_V_OFF: &[Prim] = &[Prim::Round { x: -25.0, y: -81.0, w: 50.0, h: 162.0, r: 8.0, fill: Some(Ink::Fixed(BLADE)), stroke: Some(Ink::Fixed(NAME_INK)), width: 1.8 }];
+const BLADE_V_OFF: &[Prim] = &[Prim::Round { x: -25.0, y: -81.0, w: 50.0, h: 162.0, r: 8.0, fill: None, stroke: Some(Ink::Fixed(NAME_INK)), width: 1.8 }];
 const BLADE_V_ON: &[Prim] = &[Prim::Round { x: -25.0, y: -81.0, w: 50.0, h: 162.0, r: 8.0, fill: Some(Ink::Fixed(HUB_YELLOW)), stroke: Some(Ink::Fixed(SELECT_EDGE)), width: 1.8 }];
 
 const fn shut_and_fill(x: f32, y: f32, segs: &'static [Seg], fill: Ink, stroke: Ink) -> Prim {
     Prim::Path { x, y, segs, close: true, fill: Some(fill), stroke: Some(stroke), width: 1.8 }
 }
 
+/// Source red follows the shared rose lobe on the five visible idle faces.
+/// These 11 sRGB stops sample `R = -3.777 + 1.234 * rose_R` along each
+/// blade's long axis; G/B stay at the accepted `#20858f`. EVENTS uses
+/// the same field when another module becomes selected. See
+/// `docs/kitsch/dashboard-material.md` for native held-out patches.
+const fn face_stops(red: [u8; 11]) -> [(f32, iced::Color); 11] {
+    let mut stops = [(0.0, BLADE); 11];
+    let mut i = 0;
+    while i < 11 {
+        stops[i] = (i as f32 / 10.0, rgb(((red[i] as u32) << 16) | 0x858f));
+        i += 1;
+    }
+    stops
+}
+const FACE_VEHICLES: [(f32, iced::Color); 11] = face_stops([23, 22, 22, 22, 21, 21, 21, 20, 20, 20, 19]);
+const FACE_WEAPONS: [(f32, iced::Color); 11] = face_stops([20, 20, 21, 21, 22, 23, 23, 29, 37, 44, 51]);
+const FACE_PRODUCTS_L: [(f32, iced::Color); 11] = face_stops([17, 16, 15, 14, 13, 12, 11, 11, 11, 11, 11]);
+const FACE_PRODUCTS_R: [(f32, iced::Color); 11] = face_stops([77, 64, 51, 38, 26, 23, 21, 20, 19, 18, 17]);
+const FACE_EVENTS: [(f32, iced::Color); 11] = face_stops([11, 11, 11, 11, 11, 12, 12, 13, 13, 14, 14]);
+const FACE_LOCATIONS: [(f32, iced::Color); 11] = face_stops([14, 14, 13, 13, 12, 11, 11, 11, 11, 11, 11]);
+
+const FACE_CW_MASK: &[Prim] = &[Prim::Path {
+    x: CARD_CW_X, y: CARD_CW_Y, segs: CARD_CW, close: true,
+    fill: Some(Ink::Fixed(rgb(0xffffff))), stroke: None, width: 0.0,
+}];
+const FACE_CCW_MASK: &[Prim] = &[Prim::Path {
+    x: CARD_CCW_X, y: CARD_CCW_Y, segs: CARD_CCW, close: true,
+    fill: Some(Ink::Fixed(rgb(0xffffff))), stroke: None, width: 0.0,
+}];
+const FACE_V_MASK: &[Prim] = &[Prim::Round {
+    x: -25.0, y: -81.0, w: 50.0, h: 162.0, r: 8.0,
+    fill: Some(Ink::Fixed(rgb(0xffffff))), stroke: None, width: 0.0,
+}];
+
+// Ramp axes are in object-bounding-box fractions. The diagonal values
+// compensate for its 166x126 box so the projected gradient follows
+// the card's actual ±30° long axis, not a skewed box-space diagonal.
+macro_rules! face_slant {
+    ($cx:expr, $cy:expr, $mask:expr, $stops:expr, $from:expr, $to:expr) => {
+        Prim::At { x: $cx, y: $cy, prims: &[Prim::Masked {
+            prims: &[Prim::Ramp {
+                x: -83.0, y: -63.0, w: 166.0, h: 126.0,
+                from: $from, to: $to, stops: &$stops,
+            }],
+            mask: $mask,
+        }] }
+    };
+}
+macro_rules! face_vertical {
+    ($cx:expr, $cy:expr, $stops:expr) => {
+        Prim::At { x: $cx, y: $cy, prims: &[Prim::Masked {
+            prims: &[Prim::Ramp {
+                x: -25.0, y: -81.0, w: 50.0, h: 162.0,
+                from: (0.5, 0.0), to: (0.5, 1.0), stops: &$stops,
+            }],
+            mask: FACE_V_MASK,
+        }] }
+    };
+}
+const CW_FROM: (f32, f32) = (0.027334893, 0.2928641);
+const CW_TO: (f32, f32) = (0.97266513, 0.7071359);
+const CCW_FROM: (f32, f32) = (0.027334893, 0.7071359);
+const CCW_TO: (f32, f32) = (0.97266513, 0.2928641);
+const FACE_FIELDS: &[Prim] = &[
+    face_slant!(364.0, 413.0, FACE_CW_MASK, FACE_VEHICLES, CW_FROM, CW_TO),
+    face_slant!(551.0, 414.0, FACE_CCW_MASK, FACE_WEAPONS, CCW_FROM, CCW_TO),
+    face_vertical!(458.0, 575.0, FACE_PRODUCTS_L),
+    face_vertical!(825.0, 424.0, FACE_PRODUCTS_R),
+    face_slant!(731.0, 586.0, FACE_CCW_MASK, FACE_EVENTS, CCW_FROM, CCW_TO),
+    face_slant!(919.0, 586.0, FACE_CW_MASK, FACE_LOCATIONS, CW_FROM, CW_TO),
+];
+
+/// A blade label in its own card frame; both on and off branches use
+/// the same geometry so changing the selection never moves the word.
+const fn blade_label(x: f32, y: f32, size: f32, tracking: f32, ink: Ink, content: &'static str) -> Prim {
+    Prim::Tracked { x, y, size, ink, face: Face::Medium, anchor: Anchor::Middle, tracking, content }
+}
+
 /// A +-30 blade as a plate: the hit box is the rotated card's bounding
 /// box (half extents 81 cos 30 + 25 sin 30 = 82.65 by 81 sin 30 +
-/// 25 cos 30 = 62.15), the label the trace's Rajdhani 19 centred at
-/// baseline +6.5 inside a `Prim::Turn` at the blade's angle `$a`, so
-/// it lies along the card as the trace's `rotate(a)` group has it,
-/// tracked 2 as that group's `letter-spacing` says.
+/// 25 cos 30 = 62.15). Its individually measured Medium label sits in
+/// a `Prim::Turn` at the blade's angle `$a`, with local text offset,
+/// size and tracking supplied by the call, so it lies along the card.
 /// `$on` / `$off` carry the pre-rotated card path for the same angle.
 macro_rules! blade {
-    ($i:expr, $cx:expr, $cy:expr, $a:expr, $on:expr, $off:expr, $label:expr) => {
+    ($i:expr, $cx:expr, $cy:expr, $a:expr, $on:expr, $off:expr, $label:expr, $tx:expr, $ty:expr, $size:expr, $tracking:expr) => {
         Prim::Plate {
             group: Group::Module,
             index: $i,
@@ -2359,27 +2450,35 @@ macro_rules! blade {
             h: 124.3,
             on: &[
                 Prim::At { x: $cx, y: $cy, prims: $on },
-                Prim::Turn { x: $cx, y: $cy, angle: $a, prims: &[tracked_mid(0.0, 6.5, 19.0, 2.0, Ink::Fixed(ON_HUB_YELLOW), $label)] },
+                Prim::Turn { x: $cx, y: $cy, angle: $a, prims: &[blade_label($tx, $ty, $size, $tracking, Ink::Fixed(ON_HUB_YELLOW), $label)] },
             ],
             off: &[
                 Prim::At { x: $cx, y: $cy, prims: $off },
-                Prim::Turn { x: $cx, y: $cy, angle: $a, prims: &[tracked_mid(0.0, 6.5, 19.0, 2.0, Ink::Fixed(BLADE_LABEL), $label)] },
+                Prim::Turn { x: $cx, y: $cy, angle: $a, prims: &[blade_label($tx, $ty, $size, $tracking, Ink::Fixed(BLADE_LABEL), $label)] },
             ],
         }
     };
 }
 /// A 90-degree blade: hit box the 50x162 card itself, PRODUCTS set
 /// once, centred, in a `Prim::Turn` at 90 so it reads down the card.
-const PRODUCTS_ON: &[Prim] = &[
+const PRODUCTS_L_ON: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: BLADE_V_ON },
-    Prim::Turn { x: 0.0, y: 0.0, angle: 90.0, prims: &[tracked_mid(0.0, 6.5, 19.0, 2.0, Ink::Fixed(ON_HUB_YELLOW), "PRODUCTS")] },
+    Prim::Turn { x: 0.0, y: 0.0, angle: 90.0, prims: &[blade_label(-3.33, 5.5, 20.0, 1.0, Ink::Fixed(ON_HUB_YELLOW), "PRODUCTS")] },
 ];
-const PRODUCTS_OFF: &[Prim] = &[
+const PRODUCTS_L_OFF: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: BLADE_V_OFF },
-    Prim::Turn { x: 0.0, y: 0.0, angle: 90.0, prims: &[tracked_mid(0.0, 6.5, 19.0, 2.0, Ink::Fixed(BLADE_LABEL), "PRODUCTS")] },
+    Prim::Turn { x: 0.0, y: 0.0, angle: 90.0, prims: &[blade_label(-3.33, 5.5, 20.0, 1.0, Ink::Fixed(BLADE_LABEL), "PRODUCTS")] },
+];
+const PRODUCTS_R_ON: &[Prim] = &[
+    Prim::At { x: 0.0, y: 0.0, prims: BLADE_V_ON },
+    Prim::Turn { x: 0.0, y: 0.0, angle: 90.0, prims: &[blade_label(-4.17, 7.58, 20.0, 1.0, Ink::Fixed(ON_HUB_YELLOW), "PRODUCTS")] },
+];
+const PRODUCTS_R_OFF: &[Prim] = &[
+    Prim::At { x: 0.0, y: 0.0, prims: BLADE_V_OFF },
+    Prim::Turn { x: 0.0, y: 0.0, angle: 90.0, prims: &[blade_label(-4.17, 7.58, 20.0, 1.0, Ink::Fixed(BLADE_LABEL), "PRODUCTS")] },
 ];
 macro_rules! blade_v {
-    ($i:expr, $cx:expr, $cy:expr) => {
+    ($i:expr, $cx:expr, $cy:expr, $on:expr, $off:expr) => {
         Prim::Plate {
             group: Group::Module,
             index: $i,
@@ -2387,8 +2486,8 @@ macro_rules! blade_v {
             y: $cy - 81.0,
             w: 50.0,
             h: 162.0,
-            on: &[Prim::At { x: $cx, y: $cy, prims: PRODUCTS_ON }],
-            off: &[Prim::At { x: $cx, y: $cy, prims: PRODUCTS_OFF }],
+            on: &[Prim::At { x: $cx, y: $cy, prims: $on }],
+            off: &[Prim::At { x: $cx, y: $cy, prims: $off }],
         }
     };
 }
@@ -2449,8 +2548,9 @@ const HUB_BACK: &[Prim] = &[
     Prim::Lobe { x: 0.0, y: 393.0, rx: 535.0, ry: 400.0, stops: MARGIN },
 ];
 
-// The ghosts, farthest first, every trail stepping (+20,-20) in screen
-// space from its solid card (lines 196-239); they belong to no plate
+// The ghosts, farthest first. Four trails step (+20,-20) in screen space;
+// right PRODUCTS and LOCATIONS use the measured (+19.15,-19.0) pitch.
+// They belong to no plate
 // because they do not change with the selection (held feedback removes
 // only its own trail), and the solid cards
 // paint over them in one pass. Two groups, one per fan, because each
@@ -2462,7 +2562,8 @@ const HUB_BACK: &[Prim] = &[
 
 /// The left fan's ghosts: VEHICLES, WEAPONS, the left PRODUCTS.
 const FAN_LEFT: &[Prim] = &[
-    // VEHICLES c(364,413) rot 30, 6 ghosts (lines 198-203)
+    // VEHICLES c(364,413) rot 30, 7 ghosts
+    Prim::At { x: 504.7, y: 274.0, prims: GHOST_CW_SEVENTH },
     Prim::At { x: 484.0, y: 293.0, prims: GHOST_CW[1] },
     Prim::At { x: 464.0, y: 313.0, prims: GHOST_CW[2] },
     Prim::At { x: 444.0, y: 333.0, prims: GHOST_CW[3] },
@@ -2477,7 +2578,8 @@ const FAN_LEFT: &[Prim] = &[
     Prim::At { x: 611.0, y: 354.0, prims: GHOST_CCW[4] },
     Prim::At { x: 591.0, y: 374.0, prims: GHOST_CCW[5] },
     Prim::At { x: 571.0, y: 394.0, prims: GHOST_CCW[6] },
-    // left PRODUCTS c(458,575) rot 90, 6 ghosts (lines 213-218)
+    // left PRODUCTS c(458,575) rot 90, 7 ghosts
+    Prim::At { x: 598.0, y: 435.0, prims: GHOST_V_LEFT_SEVENTH },
     Prim::At { x: 578.0, y: 455.0, prims: GHOST_V[1] },
     Prim::At { x: 558.0, y: 475.0, prims: GHOST_V[2] },
     Prim::At { x: 538.0, y: 495.0, prims: GHOST_V[3] },
@@ -2488,26 +2590,28 @@ const FAN_LEFT: &[Prim] = &[
 
 /// The right fan's ghosts: the right PRODUCTS, EVENTS, LOCATIONS.
 const FAN_RIGHT: &[Prim] = &[
-    // right PRODUCTS c(825,424) rot 90, 6 ghosts (lines 220-225)
-    Prim::At { x: 945.0, y: 304.0, prims: GHOST_V[1] },
-    Prim::At { x: 925.0, y: 324.0, prims: GHOST_V[2] },
-    Prim::At { x: 905.0, y: 344.0, prims: GHOST_V[3] },
-    Prim::At { x: 885.0, y: 364.0, prims: GHOST_V[4] },
-    Prim::At { x: 865.0, y: 384.0, prims: GHOST_V[5] },
-    Prim::At { x: 845.0, y: 404.0, prims: GHOST_V[6] },
+    // right PRODUCTS c(825,424) rot 90, 7 ghosts
+    Prim::At { x: 959.7, y: 290.65, prims: GHOST_V_SEVENTH },
+    Prim::At { x: 940.55, y: 309.65, prims: GHOST_V[1] },
+    Prim::At { x: 921.4, y: 328.65, prims: GHOST_V[2] },
+    Prim::At { x: 902.25, y: 347.65, prims: GHOST_V[3] },
+    Prim::At { x: 883.1, y: 366.65, prims: GHOST_V[4] },
+    Prim::At { x: 863.95, y: 385.65, prims: GHOST_V[5] },
+    Prim::At { x: 844.8, y: 404.65, prims: GHOST_V[6] },
     // EVENTS c(731,586) rot -30, 5 ghosts (lines 227-231)
     Prim::At { x: 831.0, y: 486.0, prims: GHOST_CCW[2] },
     Prim::At { x: 811.0, y: 506.0, prims: GHOST_CCW[3] },
     Prim::At { x: 791.0, y: 526.0, prims: GHOST_CCW[4] },
     Prim::At { x: 771.0, y: 546.0, prims: GHOST_CCW[5] },
     Prim::At { x: 751.0, y: 566.0, prims: GHOST_CCW[6] },
-    // LOCATIONS c(919,586) rot 30, 6 ghosts (lines 233-238)
-    Prim::At { x: 1039.0, y: 466.0, prims: GHOST_CW[1] },
-    Prim::At { x: 1019.0, y: 486.0, prims: GHOST_CW[2] },
-    Prim::At { x: 999.0, y: 506.0, prims: GHOST_CW[3] },
-    Prim::At { x: 979.0, y: 526.0, prims: GHOST_CW[4] },
-    Prim::At { x: 959.0, y: 546.0, prims: GHOST_CW[5] },
-    Prim::At { x: 939.0, y: 566.0, prims: GHOST_CW[6] },
+    // LOCATIONS c(919,586) rot 30, 7 ghosts
+    Prim::At { x: 1052.9, y: 452.45, prims: GHOST_CW_SEVENTH },
+    Prim::At { x: 1033.75, y: 471.45, prims: GHOST_CW[1] },
+    Prim::At { x: 1014.6, y: 490.45, prims: GHOST_CW[2] },
+    Prim::At { x: 995.45, y: 509.45, prims: GHOST_CW[3] },
+    Prim::At { x: 976.3, y: 528.45, prims: GHOST_CW[4] },
+    Prim::At { x: 957.15, y: 547.45, prims: GHOST_CW[5] },
+    Prim::At { x: 938.0, y: 566.45, prims: GHOST_CW[6] },
 ];
 
 // Held feedback removes only the target trail. Keeping all remaining
@@ -2519,17 +2623,17 @@ const fn without_trail<const N: usize>(source: &[Prim], begin: usize, count: usi
     out
 }
 const LEFT_HELD: [&[Prim]; 3] = [
-    &without_trail::<13>(FAN_LEFT, 0, 6),
-    &without_trail::<12>(FAN_LEFT, 6, 7),
-    &without_trail::<13>(FAN_LEFT, 13, 6),
+    &without_trail::<14>(FAN_LEFT, 0, 7),
+    &without_trail::<14>(FAN_LEFT, 7, 7),
+    &without_trail::<14>(FAN_LEFT, 14, 7),
 ];
 const RIGHT_HELD: [&[Prim]; 3] = [
-    &without_trail::<11>(FAN_RIGHT, 0, 6),
-    &without_trail::<12>(FAN_RIGHT, 6, 5),
-    &without_trail::<11>(FAN_RIGHT, 11, 6),
+    &without_trail::<12>(FAN_RIGHT, 0, 7),
+    &without_trail::<14>(FAN_RIGHT, 7, 5),
+    &without_trail::<12>(FAN_RIGHT, 12, 7),
 ];
-const fn held_backdrop(index: usize, fan: &'static [Prim]) -> [Prim; 3] {
-    let mut out = [DASHBOARD[0], DASHBOARD[1], DASHBOARD[2]];
+const fn held_backdrop(index: usize, fan: &'static [Prim]) -> [Prim; 4] {
+    let mut out = [DASHBOARD[0], DASHBOARD[1], DASHBOARD[2], DASHBOARD[3]];
     if let Prim::Motion { motion, .. } = out[index] {
         out[index] = Prim::Motion { motion, prims: fan };
     }
@@ -2582,10 +2686,14 @@ pub const DASHBOARD: &[Prim] = &[
             begin: 0,
             dur: 450,
             ease: Easing::EaseOutCubic,
-            change: Change::Clip { x: 663.0, y: 217.0, w: (0.0, 465.0), h: (418.0, 418.0) },
+            change: Change::Clip { x: 663.0, y: 200.0, w: (0.0, 480.0), h: (435.0, 435.0) },
         },
         prims: &[Prim::Soft { prims: FAN_RIGHT }],
     },
+    // Opaque idle materials sit above both ghost fans and below their
+    // foreground outlines/labels. The same fixed field remains under a
+    // selected face, whose opaque gold fill covers it.
+    Prim::Soft { prims: FACE_FIELDS },
     // header notes: Rajdhani 600 8 stretched 1.3 (lines 107-122)
     Prim::Wide { x: 205.0, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "SPARE TIME MANAGER WAS DEVELO-" },
     Prim::Wide { x: 205.0, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "PED BY SEOCHO. SERVING CUSTO-" },
@@ -2621,12 +2729,12 @@ pub const DASHBOARD: &[Prim] = &[
     Prim::Text { x: 872.0, y: 222.0, size: 22.0, ink: Ink::Fixed(MARK), face: Face::SemiBold, anchor: Anchor::Middle, content: "04" },
     // the six solid blades in the trace's order (lines 243-267);
     // EVENTS is the selection
-    blade!(0, 364.0, 413.0, 30.0, BLADE_CW_ON, BLADE_CW_OFF, "VEHICLES"),
-    blade!(1, 551.0, 414.0, -30.0, BLADE_CCW_ON, BLADE_CCW_OFF, "WEAPONS"),
-    blade_v!(2, 458.0, 575.0),
-    blade_v!(3, 825.0, 424.0),
-    blade!(4, 731.0, 586.0, -30.0, BLADE_CCW_ON, BLADE_CCW_OFF, "EVENTS"),
-    blade!(5, 919.0, 586.0, 30.0, BLADE_CW_ON, BLADE_CW_OFF, "LOCATIONS"),
+    blade!(0, 364.0, 413.0, 30.0, BLADE_CW_ON, BLADE_CW_OFF, "VEHICLES", 0.83, 4.75, 21.0, 0.0),
+    blade!(1, 551.0, 414.0, -30.0, BLADE_CCW_ON, BLADE_CCW_OFF, "WEAPONS", 1.42, 5.17, 20.0, 1.0),
+    blade_v!(2, 458.0, 575.0, PRODUCTS_L_ON, PRODUCTS_L_OFF),
+    blade_v!(3, 825.0, 424.0, PRODUCTS_R_ON, PRODUCTS_R_OFF),
+    blade!(4, 731.0, 586.0, -30.0, BLADE_CCW_ON, BLADE_CCW_OFF, "EVENTS", -1.25, 6.5, 20.0, 0.75),
+    blade!(5, 919.0, 586.0, 30.0, BLADE_CW_ON, BLADE_CW_OFF, "LOCATIONS", -2.5, 6.08, 20.0, 0.5),
     // BRAINDANCE panel: tab, warning tape, outlined body, two
     // four-line paragraphs from source #49, wiped on from the
     // left once the fans have all but finished (`#panel-extrude`,
@@ -2678,13 +2786,15 @@ mod dashboard_feedback_tests {
 
     #[test]
     fn holding_a_blade_removes_only_its_trail_and_keeps_the_fan_clips() {
-        for (index, (begin, count)) in [(0, 6), (6, 7), (13, 6), (0, 6), (6, 5), (11, 6)].into_iter().enumerate() {
+        for (index, (begin, count)) in [(0, 7), (7, 7), (14, 7), (0, 7), (7, 5), (12, 7)].into_iter().enumerate() {
             let changed = if index < 3 { 1 } else { 2 };
             let source = if index < 3 { FAN_LEFT } else { FAN_RIGHT };
             let variant = DASHBOARD_HELD_BACKDROPS[index];
-            for slot in 0..3 {
+            assert_eq!(variant.len(), 4);
+            for slot in 0..4 {
                 if slot != changed { assert_eq!(variant[slot], DASHBOARD[slot]); }
             }
+            assert!(matches!(variant[3], Prim::Soft { prims } if prims.len() == 6));
             let Prim::Motion { motion, prims } = variant[changed] else { panic!("missing fan clip") };
             let Prim::Motion { motion: original, .. } = DASHBOARD[changed] else { unreachable!() };
             assert_eq!(motion, original);
@@ -2698,9 +2808,84 @@ mod dashboard_feedback_tests {
         }
     }
 
-    // SoftCache's cut key omits the underlying groups. Removal-only
-    // variants are safe because no right-fan pixel covers a left-fan
-    // pixel: changing the left trail cannot alter the right composite.
+    #[test]
+    fn fan_clips_cover_every_resting_ghost() {
+        let palette = crate::style::Era::Kitsch.style().palette;
+        for (slot, fan) in [(1, FAN_LEFT), (2, FAN_RIGHT)] {
+            let Prim::Motion { motion, .. } = DASHBOARD[slot] else { panic!("missing fan clip") };
+            let Change::Clip { x, y, w: (_, w), h: (_, h) } = motion.change else { panic!("fan must open with a clip") };
+            for scale in [1.0, 2.4] {
+                let width = (1600.0 * scale) as u32;
+                let height = (900.0 * scale) as u32;
+                let pixels = crate::screens::soft::touched(fan, &palette, width, height, scale);
+                let mut seen = false;
+                for (index, touched) in pixels.into_iter().enumerate() {
+                    if !touched { continue; }
+                    seen = true;
+                    let px = (index % width as usize) as f32 + 0.5;
+                    let py = (index / width as usize) as f32 + 0.5;
+                    assert!(px >= x * scale && px <= (x + w) * scale
+                        && py >= y * scale && py <= (y + h) * scale,
+                        "fan {slot} at {scale}: visible ghost pixel ({px}, {py}) outside rest clip");
+                }
+                assert!(seen, "fan must contain visible ghosts");
+            }
+        }
+    }
+
+    #[test]
+    fn idle_faces_are_under_unchanged_foreground_strokes_and_selected_fills() {
+        let Prim::Soft { prims: fields } = DASHBOARD[3] else { panic!("missing face field") };
+        assert_eq!(fields.len(), 6);
+        for (off, on) in [(BLADE_CW_OFF, BLADE_CW_ON), (BLADE_CCW_OFF, BLADE_CCW_ON), (BLADE_V_OFF, BLADE_V_ON)] {
+            let (Prim::Path { fill: off_fill, stroke: off_stroke, width: off_width, .. }
+                | Prim::Round { fill: off_fill, stroke: off_stroke, width: off_width, .. }) = off[0]
+            else { panic!("missing idle outline") };
+            let (Prim::Path { fill: on_fill, stroke: on_stroke, width: on_width, .. }
+                | Prim::Round { fill: on_fill, stroke: on_stroke, width: on_width, .. }) = on[0]
+            else { panic!("missing selected face") };
+            assert_eq!(off_fill, None);
+            assert_eq!(off_stroke, Some(Ink::Fixed(NAME_INK)));
+            assert_eq!(on_fill, Some(Ink::Fixed(HUB_YELLOW)));
+            assert_eq!(on_stroke, Some(Ink::Fixed(SELECT_EDGE)));
+            assert_eq!((off_width, on_width), (1.8, 1.8));
+        }
+    }
+
+    #[test]
+    fn blade_label_geometry_is_identical_across_selection_branches() {
+        fn label(prims: &[Prim]) -> Option<Prim> {
+            for prim in prims {
+                match *prim {
+                    Prim::Tracked { .. } => return Some(*prim),
+                    Prim::At { prims, .. } | Prim::Turn { prims, .. } => {
+                        if let Some(found) = label(prims) {
+                            return Some(found);
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            None
+        }
+        let mut checked = 0;
+        for prim in DASHBOARD {
+            let Prim::Plate { on, off, .. } = prim else { continue };
+            let mut selected = label(on).expect("selected blade label missing");
+            let idle = label(off).expect("idle blade label missing");
+            let Prim::Tracked { ink: selected_ink, .. } = &mut selected else { unreachable!() };
+            let Prim::Tracked { ink: idle_ink, .. } = idle else { unreachable!() };
+            assert_eq!(*selected_ink, Ink::Fixed(ON_HUB_YELLOW));
+            assert_eq!(idle_ink, Ink::Fixed(BLADE_LABEL));
+            *selected_ink = idle_ink;
+            assert_eq!(selected, idle, "selection must preserve each label's geometry");
+            checked += 1;
+        }
+        assert_eq!(checked, 6);
+    }
+
+    // The fan clips are separate groups. Their disjoint pixel coverage
+    // means removing a left trail cannot alter the right fan's image.
     #[test]
     fn fans_have_disjoint_pixel_coverage() {
         let palette = crate::style::Era::Kitsch.style().palette;

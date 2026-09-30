@@ -1754,16 +1754,17 @@ impl Sheet<'_> {
                     None,
                 );
             }
-            let role = if filled { Ink::OnSelect } else { b.label.ink };
+            let at_label = b.label_runs.get(i).copied().unwrap_or(b.label);
+            let role = if filled { Ink::OnSelect } else { at_label.ink };
             label(
                 frame,
                 scale,
                 s,
                 Run {
-                    x: at.x + b.label.x,
-                    y: at.y + b.label.y,
+                    x: at.x + at_label.x,
+                    y: at.y + at_label.y,
                     ink: role,
-                    ..b.label
+                    ..at_label
                 },
                 ink(s, role),
                 b.labels.get(i).copied().unwrap_or(""),

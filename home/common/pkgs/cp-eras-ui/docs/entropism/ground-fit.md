@@ -88,3 +88,7 @@ brighter selection role. The subsequent reference-only plate override now
 reproduces RGB138/172/140 in native Iced for both standalone and published
 source palettes. Regression coverage retains semantic Select for custom
 palettes. The ground geometry is independent of that surface correction.
+
+## Integrated validation — 2026-09-29
+
+The fitted broad grounds and reference login footer pass H/K1 native review and the integrated N repository check (all 22 checks, 27 exact visual matches). Fine grain and localized exposure remain outside the broad field model.

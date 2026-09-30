@@ -315,19 +315,19 @@
   <g id="content">
   <!-- ==== header ==== -->
   <g font-family="Rajdhani" fill="#bd8951">
-    <text x="120" y="42" font-size="15" letter-spacing="1.5">CUSTOMER #NC488402</text>
-    <text x="120" y="70" font-size="12" letter-spacing="2">LEVEL</text>
-    <text x="126" y="90" font-size="21" font-weight="600">T1</text>
+    <text x="118.3" y="42.2" font-size="13" font-weight="600" letter-spacing="0">CUSTOMER #NC488402</text>
+    <text transform="translate(119.2 70) scale(1.25 1)" x="0" y="0" font-size="12" letter-spacing="2">LEVEL</text>
+    <text transform="translate(131.5 92.5) scale(1.45 1)" x="0" y="0" font-size="21" font-weight="600">T1</text>
 
-    <text x="1131" y="68" font-size="12" letter-spacing="2">SECURITY</text>
-    <text x="1131" y="83" font-size="12" letter-spacing="2">LEVEL</text>
-    <g font-size="12" letter-spacing="1.5">
-      <text x="1229" y="63">LEVEL</text><text x="1354" y="63">LEVEL</text>
-      <text x="1417" y="63">LEVEL</text>
+    <text x="1137.7" y="72.2" font-size="12" letter-spacing="0.75">SECURITY</text>
+    <text x="1137.7" y="88" font-size="12" letter-spacing="0.75">LEVEL</text>
+    <g font-size="12" letter-spacing="0.75">
+      <text x="1232.75" y="69.2">LEVEL</text><text x="1354.8" y="70">LEVEL</text>
+      <text x="1415.75" y="70">LEVEL</text>
     </g>
     <g font-size="20" font-weight="600">
-      <text x="1236" y="86">T1</text><text x="1361" y="86">T3</text>
-      <text x="1424" y="86">T4</text>
+      <text transform="translate(1238.1 91.8) scale(1.45 1)" x="0" y="0">T1</text><text transform="translate(1356.8 91.8) scale(1.45 1)" x="0" y="0">T3</text>
+      <text transform="translate(1417.75 92.7) scale(1.45 1)" x="0" y="0">T4</text>
     </g>
     <!-- NK-03: native #69 shoulder, 1.23px descending fan; curved legs converge at the fixed bottom. -->
     <g id="t2-badge" fill="none" stroke="#e8c186">
@@ -346,8 +346,8 @@
       <path d="M 1284.9,41.7 L 1298.8,41.7 Q 1301.6,41.7,1304,40.1 L 1311.7,34.7 Q 1313.7,33.3,1316.3,33.3 L 1334.5,33.3 Q 1337.3,33.3,1337.3,36.1 C 1337.3,65,1337.3,96,1337.3,102.3 Q 1337.3,105.1,1334.5,105.1 L 1284.7,105.1 Q 1281.9,105.1,1281.9,102.3 C 1281.9,93,1281.9,72,1281.9,44.7 Q 1281.9,41.7,1284.9,41.7 Z" stroke-width="1.1" stroke-opacity="1"/>
       <path d="M 1293,105.1 Q 1294.2,105.1,1294.6,103.5 L 1295.1,101.3 Q 1295.2,100.6,1296,100.6 H 1324.7 Q 1325.5,100.6,1325.7,101.4 L 1326.2,103.5 Q 1326.7,105.1,1327.8,105.1 Z" fill="#f2b463" stroke="none"/>
     </g>
-    <text x="1295" y="71" font-size="12" letter-spacing="1.2" fill="#d9a877">LEVEL</text>
-    <text x="1296" y="95" font-size="21" font-weight="600" fill="#e8c186">T2</text>
+    <text x="1294.2" y="70.2" font-size="12.5" letter-spacing="0.3" fill="#d9a877">LEVEL</text>
+    <text transform="translate(1296 92.2) scale(1.45 1)" x="0" y="0" font-size="21" font-weight="600" fill="#e8c186">T2</text>
   </g>
 
   <!-- Header wire, remeasured at native resolution 2026-09-21 (NK-02).

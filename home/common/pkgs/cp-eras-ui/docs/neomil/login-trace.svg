@@ -25,7 +25,7 @@
          - margin markers: a small "1" chip at x 60..72 y 347..359 (left)
            and a "2" chip at x 1541..1553.5 (right), each with a dot and
            dashes to its left; rotated micro-text down both margins
-           ("00032 05 54 08 CP" left; a down-arrow, "JHN 102 CKC 151 CC10
+           ("00032 05 54 0B CP" left; a down-arrow, "JHN 102 CKC 151 CC10
            AS5" and "KIROSHI" right)
          - THREE USER CARDS in a row, 253..255 wide as drawn below (the
            photo reads 253.3 for all three), tops at y 313..315,
@@ -237,7 +237,7 @@
     <rect x="55.8" y="347.5" width="4.2" height="4.5" fill="#f63333"/>
     <use href="#chip" x="60" y="346" fill="#f63333"/>
     <text x="63" y="357" font-size="10" font-weight="700" fill="#420f10">1</text>
-    <text transform="translate(53,471.6) rotate(-90) scale(1.1 1)" font-size="10.5" letter-spacing="0" fill="#ae2729">00032 05 54 08 CP</text>
+    <text transform="translate(53,471.6) rotate(-90) scale(1.1 1)" font-size="10.5" letter-spacing="0" fill="#ae2729">00032 05 54 0B CP</text>
 
     <rect x="1530.8" y="347.5" width="5" height="4.5" fill="#f63333"/>
     <g fill="#ae2729">

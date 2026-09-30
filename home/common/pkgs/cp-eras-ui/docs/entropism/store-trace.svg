@@ -148,9 +148,9 @@
         <text x="164" y="196.7">ACC</text><text x="225" y="196.7">ROF</text>
       </g>
       <rect x="5" y="209" width="255" height="25" fill="#a8d4a2"/>
-      <g font-size="22" fill="#35462e" text-anchor="middle">
-        <text x="41" y="230">86</text><text x="102" y="230">30</text>
-        <text x="164" y="230">5</text><text x="225" y="230">5</text>
+      <g font-size="24.5" font-weight="600" fill="#35462e" text-anchor="middle">
+        <text x="41.4167" y="229.1667" transform="translate(41.4167 0) scale(0.97 1) translate(-41.4167 0)">86</text><text x="102" y="229.1667">30</text>
+        <text x="164" y="229.1667">5</text><text x="225" y="229.1667">5</text>
       </g>
       <!-- socket row y 237..286, dividers at 52 / 119 / 191 -->
       <rect x="0" y="237" width="265" height="49" fill="none" stroke="#93bd95" stroke-width="1.25"/>
@@ -327,9 +327,9 @@
       <text x="164" y="196.7">ACC</text><text x="225" y="196.7">ROF</text>
     </g>
     <path d="M 0,208 H 265" fill="none" stroke="#35462e" stroke-width="1.5"/>
-    <g font-size="22" fill="#35462e" text-anchor="middle">
-      <text x="41" y="230">86</text><text x="102" y="230">30</text>
-      <text x="164" y="230">5</text><text x="225" y="230">5</text>
+    <g font-size="24.5" font-weight="600" fill="#35462e" text-anchor="middle">
+      <text x="41.4167" y="229.1667" transform="translate(41.4167 0) scale(1.07 1) translate(-41.4167 0)">86</text><text x="102.4167" y="229.1667" transform="translate(102.4167 0) scale(1.07 1) translate(-102.4167 0)">30</text>
+      <text x="164" y="229.1667">5</text><text x="225" y="229.1667">5</text>
     </g>
     <!-- detail block, y 494..672 -->
     <g font-size="19.75" font-weight="500" fill="#a8d4a2">

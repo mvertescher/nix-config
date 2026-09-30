@@ -70,14 +70,21 @@ trace screen and are not backend defects.
   after the earlier six fixes. The correction includes the inward side
   step and measured primary stroke; [measurements](../docs/reference-svg-fixes.md#neomil)
   distinguish the thin lower contour from its thicker upper stem.
-- [ ] Refine the remaining upper panel contour against native source.
-  The existing upper chamfer remains approximate; source top-edge warping
-  and left-edge phase need their own local fit. The corrected lower corner
-  does not establish whole-contour or echo fidelity.
+- [x] Refine the remaining upper panel contour against native source.
+  The material and bright outline now share the measured warped top and
+  connected chamfer. Native source-edge IoU is .767 across the upper
+  contour and .848 in the clean corner. Fractional and 0.35-second opening
+  crops have no detached edge or fill seam. Fine echoes remain separate.
+  See the [ninth checkpoint](../docs/reference-svg-round9.md).
 - [ ] Reconstruct source-supported fine text/cartridge echoes and edge
   softness. The primary shapes and low-frequency fields are corrected;
   they do not establish pixel-perfect printing. The tiny cartridge
-  terminal strip is still schematic. Inspect native source crops before
+  normal terminal strips now use 20 slanted ribs at the measured cadence;
+  the selected strip retains its separate 22-rib art and corrected ink.
+  X fixes the sloped-top coordinate conversion, improving all four native
+  row comparisons. Fractional selection/press behavior is preserved.
+  Ordinary-terminal contrast, edge softness and faint copies remain.
+  Inspect native source crops before
   adding secondary art; do not invent glow/noise or weaken gate thresholds.
 - [ ] Recover the exact common background texture/authoring recipe if
   source material becomes available. Identical clear source patches show

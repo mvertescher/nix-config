@@ -701,6 +701,12 @@ pub const MAILBOX_MOTIONS: &[MailMotion] = &[
 // --- end motion ---
 
 static BUTTONS: [&str; 4] = ["REPLY", "FORWARD", "DELETE", "REPORT SPAM"];
+const MAILBOX_ACTION_LABELS: &[Run] = &[
+                Run::new(21.50000, 24.5, 23.5, Ink::Fg).medium().stretched(0.978500),
+                Run::new(20.55862, 24.5, 23.5, Ink::Fg).medium().stretched(1.043857),
+                Run::new(20.07832, 24.5, 23.5, Ink::Fg).medium().stretched(1.075346),
+                Run::new(20.19425, 24.5, 23.5, Ink::Fg).medium().stretched(1.013856),
+            ];
 /// The trace reads them T1 T3 over T2 T4, and T2 -- bottom left -- is
 /// the filled one.
 static LEVELS: [&str; 4] = ["T1", "T3", "T2", "T4"];
@@ -895,6 +901,7 @@ pub fn mailbox() -> Mailbox {
             stroke: Ink::Border,
             label: Run::new(21.0, 24.5, 23.5, Ink::Fg).medium().stretched(1.03),
             tab: None,
+            label_runs: MAILBOX_ACTION_LABELS,
             labels: &BUTTONS,
         },
         badges: MailBadges {
@@ -985,6 +992,14 @@ const fn store_mid(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -
         anchor: crate::style::Anchor::Middle, content }
 }
 
+/// Store values keep the fitted SVG baseline 229.1667. Native stretched
+/// runs land one pixel below the unstretched values, so lift only those.
+const fn store_value(x: f32, stretch: f32, ink: Ink, content: &'static str) -> Prim {
+    let y = if stretch == 1.0 { 228.3334 } else { 228.3334 - 0.416_667 };
+    Prim::Wide { x, y, size: 24.5, stretch, ink,
+        face: Face::SemiBold, anchor: crate::style::Anchor::Middle, content }
+}
+
 /// An unselected product card, at its own origin. 265 wide, outlined,
 /// with the socket row hung off its foot so the two frames share an
 /// edge -- which is why the extractor reads them as one component.
@@ -1003,10 +1018,10 @@ const CARD: &[Prim] = &[
     txt_mid(164.0, 196.7, 17.5, Ink::Select, "ACC"),
     txt_mid(225.0, 196.7, 17.5, Ink::Select, "ROF"),
     fill_rect(5.0, 209.0, 255.0, 25.0, Ink::Select),
-    txt_mid(41.0, 230.0, 22.0, Ink::OnSelect, "86"),
-    txt_mid(102.0, 230.0, 22.0, Ink::OnSelect, "30"),
-    txt_mid(164.0, 230.0, 22.0, Ink::OnSelect, "5"),
-    txt_mid(225.0, 230.0, 22.0, Ink::OnSelect, "5"),
+    store_value(41.4167, 0.97, Ink::OnSelect, "86"),
+    store_value(102.0, 1.0, Ink::OnSelect, "30"),
+    store_value(164.0, 1.0, Ink::OnSelect, "5"),
+    store_value(225.0, 1.0, Ink::OnSelect, "5"),
     // socket row y 237..286, dividers at 52 / 119 / 191
     line_rect(0.0, 237.0, 265.0, 49.0, Ink::Border, 2.0),
     vline(52.0, 237.0, 286.0, Ink::Border, 1.5),
@@ -1014,11 +1029,11 @@ const CARD: &[Prim] = &[
     vline(191.0, 237.0, 286.0, Ink::Border, 1.5),
     Prim::Dots { x: 10.5, y: 246.5, cell: 3.8, pitch: 3.5, ink: Ink::Select, rows: QR },
     store_mid(83.5, 259.5, 13.0, Ink::Select, "EMPTY"),
-    store_mid(83.5, 273.5, 13.0, Ink::Select, "SOCKET"),
+    store_mid(83.5, 273.0, 13.0, Ink::Select, "SOCKET"),
     store_mid(153.5, 259.5, 13.0, Ink::Select, "EMPTY"),
-    store_mid(153.5, 273.5, 13.0, Ink::Select, "SOCKET"),
+    store_mid(153.5, 273.0, 13.0, Ink::Select, "SOCKET"),
     store_mid(226.5, 259.5, 13.0, Ink::Select, "EMPTY"),
-    store_mid(226.5, 273.5, 13.0, Ink::Select, "SOCKET"),
+    store_mid(226.5, 273.0, 13.0, Ink::Select, "SOCKET"),
     store_text(5.0, 306.0, 8.5, 1.04, Ink::Fg, "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO"),
     store_text(5.0, 314.0, 8.5, 1.025, Ink::Fg, "MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
 ];
@@ -1044,10 +1059,10 @@ const GROWN: &[Prim] = &[
     txt_mid(164.0, 196.7, 17.5, Ink::OnSelect, "ACC"),
     txt_mid(225.0, 196.7, 17.5, Ink::OnSelect, "ROF"),
     fill_rect(0.0, 207.25, 265.0, 1.5, Ink::OnSelect),
-    txt_mid(41.0, 230.0, 22.0, Ink::OnSelect, "86"),
-    txt_mid(102.0, 230.0, 22.0, Ink::OnSelect, "30"),
-    txt_mid(164.0, 230.0, 22.0, Ink::OnSelect, "5"),
-    txt_mid(225.0, 230.0, 22.0, Ink::OnSelect, "5"),
+    store_value(41.4167, 1.07, Ink::OnSelect, "86"),
+    store_value(102.4167, 1.07, Ink::OnSelect, "30"),
+    store_value(164.0, 1.0, Ink::OnSelect, "5"),
+    store_value(225.0, 1.0, Ink::OnSelect, "5"),
     // detail block, y 494..672 on the page
     store_text(17.0, 270.0, 19.75, 1.01, Ink::Select, "20"),
     store_text(51.0, 270.0, 19.75, 1.01, Ink::Select, "Recoil"),
@@ -1064,11 +1079,11 @@ const GROWN: &[Prim] = &[
     vline(192.0, 412.0, 460.0, Ink::Border, 1.5),
     Prim::Dots { x: 10.5, y: 420.5, cell: 3.8, pitch: 3.5, ink: Ink::Select, rows: QR },
     store_mid(84.5, 434.5, 13.0, Ink::Select, "EMPTY"),
-    store_mid(84.5, 448.5, 13.0, Ink::Select, "SOCKET"),
+    store_mid(84.5, 448.0, 13.0, Ink::Select, "SOCKET"),
     store_mid(154.5, 434.5, 13.0, Ink::Select, "EMPTY"),
-    store_mid(154.5, 448.5, 13.0, Ink::Select, "SOCKET"),
+    store_mid(154.5, 448.0, 13.0, Ink::Select, "SOCKET"),
     store_mid(226.5, 434.5, 13.0, Ink::Select, "EMPTY"),
-    store_mid(226.5, 448.5, 13.0, Ink::Select, "SOCKET"),
+    store_mid(226.5, 448.0, 13.0, Ink::Select, "SOCKET"),
     store_text(5.0, 480.0, 8.5, 1.04, Ink::Fg, "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO"),
     store_text(5.0, 488.0, 8.5, 1.025, Ink::Fg, "MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
 ];
@@ -1229,7 +1244,8 @@ mod store_interaction_tests {
             }
         }
         assert!(matches!(CARD_CURSOR[2], Prim::Text { ink: Ink::OnSelect, .. }));
-        assert!(matches!(CARD_CURSOR[15], Prim::Text { ink: Ink::Select, .. }));
+        assert!(matches!(CARD_CURSOR[15],
+            Prim::Text { ink: Ink::Select, .. } | Prim::Wide { ink: Ink::Select, .. }));
     }
 }
 

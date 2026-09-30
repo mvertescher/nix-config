@@ -26,8 +26,32 @@ and Rust use the fitted fan. The outer contour paints after the echoes so
 their darker ink does not obscure the shared bright foot.
 
 The corrected taper, shoulder junction, contour count and high-edge
-spacing do not complete the card's material model. Echo ink remains too
-dark, and the innermost right turns remain tighter than the photograph.
-Those residuals need separate frame-material/corner fitting; preserve the
-corrected fan coordinates while measuring them. The final warm-mask IoU values above exclude the faintest stroke; native
-ridge profiles and final render review assess the complete common-foot fan.
+spacing preserve the common-foot fan. The final warm-mask IoU values above
+exclude the faintest stroke; native ridge profiles and final render review
+assess the complete fan. Frame echo ink was subsequently fitted to the
+photographed selected-card plateau (see `README.md`); the earlier statement
+that the echoes were too dark is stale.
+
+## NK-14: inner right turns
+
+The source's three innermost echoes bend before the prior trace and reach
+their vertical runs lower. Source scans of the selected card at native
+x=2170/2180/2190 have the inner ridge y triples
+`[583,590,600] / [584,593,605] / [587,599,615]`. The previous SVG has
+`[582,590,598] / [582,590,598] / [583,590,598]`; the fitted candidate
+has `[582,590,600] / [583,593,605] / [586,599,613]`. The plain card
+repeats this shape against its darker background. At native
+x=1435/1445/1455 its source y triples are
+`[779,787,795] / [780,789,800] / [783,795,812]`, within one native
+pixel of the selected readings translated to the plain card. The updated
+SVG reads `[779,786,796] / [779,789,801] / [783,795,810]` there.
+
+The fit replaces only echoes 3–5's inner right turns with cubic curves.
+Their plateau heights, common shoulder root, and bottom foot endpoints
+retain their former positions. The outer contour and first two echoes,
+six-stroke count, card plate and hit geometry, and selected-body clip are
+unchanged. The same local coordinates are used in `store-trace.svg`, both
+`components.svg` card specimens, and `src/eras/neokitsch.rs`. Source,
+previous SVG, candidate SVG and existing Iced corner crops are at
+`/tmp/nk-right-{plain,selected}-candidate-montage.png`. Native
+runtime verification remains to be done after the next build.

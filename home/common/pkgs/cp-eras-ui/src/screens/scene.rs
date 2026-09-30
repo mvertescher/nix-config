@@ -30,6 +30,8 @@ use iced::widget::canvas;
 use iced::mouse::Interaction;
 use iced::{mouse, Color, Point, Rectangle, Renderer, Size};
 
+mod resize;
+
 /// The frame every trace is measured in. The scene is painted at this
 /// size and scaled to the canvas, so the screen holds its proportions
 /// in a window that is not exactly 1600x900 -- the golden matrix and
@@ -152,6 +154,26 @@ impl<M: 'static> Scene<M> {
     ) -> Element<'static, M> {
         iced::widget::stack![
             canvas(Backdrop { style: self.style, prims: backdrop_prims, stretch: false, at: self.at })
+                .width(iced::Length::Fill).height(iced::Length::Fill),
+            canvas(FeedbackScene { scene: self, on_feedback })
+                .width(iced::Length::Fill).height(iced::Length::Fill),
+        ].into()
+    }
+
+    /// Opt-in temporary resize preview for a resting scene. The ordinary
+    /// backdrop and its exact draw path remain the default for every caller.
+    pub fn view_with_feedback_resize_preview(
+        self,
+        backdrop_prims: &'static [Prim],
+        on_feedback: fn(SceneFeedback) -> M,
+    ) -> Element<'static, M> {
+        iced::widget::stack![
+            canvas(resize::ResizeBackdrop::new(Backdrop {
+                style: self.style,
+                prims: backdrop_prims,
+                stretch: false,
+                at: self.at,
+            }))
                 .width(iced::Length::Fill).height(iced::Length::Fill),
             canvas(FeedbackScene { scene: self, on_feedback })
                 .width(iced::Length::Fill).height(iced::Length::Fill),
@@ -433,7 +455,7 @@ impl PrimKey {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 struct SoftKey {
     prims: PrimKey,
     size: (u32, u32),

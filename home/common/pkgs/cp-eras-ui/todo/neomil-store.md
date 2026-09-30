@@ -47,30 +47,92 @@ content is intentionally static; no network/payment backend is specified.
   preserve the source blue ground; selected upper/lower and navigation
   fields use measured two-dimensional sRGB ramps.135 held-out native
   patches have source RGB RMSE.52–.81, with SVG/native channel differences
-  at most one. All20 category/card combinations preserve hit geometry,
+  at most one. All 20 category/card combinations preserve hit geometry,
   opening and permanent card4 clipping; custom themes retain semantic
   fields. Native state review, both gates and the K1 full check pass.
   Fine scan modulation remains in its own task below. See
   [material measurements](../docs/neomil/store-material.md).
-- [ ] **Correct typography, footer fit and reference ink.** Source cap
-  heights are roughly12–23% taller than trace. Footer code crosses its
-  divider and caption spills past its cell. Match weight, glyph width,
-  tracking and baseline independently; a global size increase would
-  over-widen labels. Source bright bars are #fb3535 vs trace #df3131.
-  Preserve custom palettes while matching reference printing.
-- [ ] **Restore omitted SVG printing and weapon details in Iced.**
-  Rotated BETTERLIFE TEC/PETROCHEM and margin code/branding are absent;
-  the old no-transform justification is obsolete (`Prim::Turn` exists).
-  Port rifle rail/grid/screws/contour strokes in `#gundetail`, the Japanese
-  logo skew, and missing label tracking/regular socket-label weight.
-- [ ] **Reconstruct source branding, symbols and weapons.** MASURAO,
-  KIROSHI and repeated certification/chip marks remain schematic, as do
-  gun receiver/sight/barrel/trigger/grip/stock parts and fasteners.
-  Preserve measured object bounds and filled-vs-outline variants; do
-  not invent unreadable microprinting. Source artwork is available locally.
+- [x] **Fit primary store typography and footer.** P–T independently fit
+  ordinary/selected titles, subtitles, stats and values, with native baseline
+  calibration. Navigation and boxed/unboxed footer fits preserve custom
+  palette semantics; reference bright ink uses #fb3535. Source/SVG/native
+  and fractional held/custom/cropped review, both gates and the T full
+  check pass. Exact glyph contours and fine printing remain in their scoped
+  tasks below. See
+  [typography measurements](../docs/neomil/store-typography.md).
+- [x] **Restore omitted SVG printing and weapon details in Iced.** Rotated
+  BETTERLIFE TEC/PETROCHEM, margin runs, MASURAO contours, rifle rail/grid/
+  screws and other primary details are now present. Label tracking and
+  socket weight are restored. Native/state review and the N full check
+  pass; remaining source-shape/material refinements are scoped below.
+- [x] **Correct the small margin/footer code to `0B`.** The original store
+  margin and unboxed footer, and the login margin, say `0B CP`; all three
+  inherited `08 CP` in the trace and runtime. Source inspection confirms
+  the B's straight stem and two bowls. Rust/reference/component literals
+  are corrected. The locally fitted native store margin improves mask
+  overlap .176→.398, with bounds within one source pixel. Store/login
+  native review, relevant gates and the full T check pass.
+- [x] **Integrate the reviewed selected-frame/side-printing correction.**
+  U/V correct the selected top/chamfer, right edge/fan and PETROCHEM box
+  independently while preserving the aligned left edge and icons. The
+  native top now has one bright row, matching the source; three independent
+  top-strip errors fall from about 61.3 to 20.0–21.1 red levels. Native
+  rest, ordinary/selected/fourth-card press, custom-palette and opening
+  review preserve clipping and feedback. Local gates and the full Z
+  check pass: 275 Rust tests, 22 repository checks and 27 exact visual cases. See the
+  [measurements](../docs/neomil/store-selected-frame.md). Fine edge echoes
+  remain separate from this bounded geometry correction.
+- [x] **Replace the misplaced small MASURAO margin word and long rule.**
+  AB replaces the overlapping font with six compact source-derived stencil
+  glyphs and a short slash, preserving the accepted CJK. Native source RGB
+  error improves on each letter; CJK overlap improves .485→.950 because
+  the old overprinting is gone. All 3,054 changed 4K pixels lie in the
+  margin. Fractional selection/held/opening and custom inks pass review,
+  both gates pass, and the full check passes all 22 checks/27 exact cases.
+  This closes primary placement/contours, not the O/plaque material below.
+- [x] **Trim the margin plaque's unsupported rectangular extension.** AC
+  restores its source-supported slanted leading edge. All 126 changed 4K
+  pixels lie on that edge; leading RGB error falls 20.20→14.52 and bright
+  intrusions into dark source pixels fall 88→4. Ten native captures preserve
+  selection, feedback, opening, custom ink and clipping. Both gates, 286
+  Rust tests and all 22 repository checks pass, including 27 exact visual
+  cases. See [round fourteen](../docs/reference-svg-round14.md).
+- [ ] **Refine margin O/plaque ink and the second-A junction.** AB's
+  primary-word correction left approximate hatch material and a partly
+  merged A2/plaque junction. AC fixes only the leading boundary: native
+  plaque RGB error is now 23.09 and dark-gap intrusions 6, while the O
+  counter and A2 are unchanged. A wider clip and uniform letter dimming
+  fail local controls and remain unapplied. Preserve the accepted primary
+  glyphs, slash and CJK; further changes need source-supported local fits.
+- [ ] **Refine repeated/margin printing.** Primary MASURAO, KIROSHI,
+  certification marks and rifles are source-supported vectors. Remaining
+  dim repeated-mark fields and faint copies need local fitting. The
+  margin O/plaque residual is the separate correction above. T fits PETROCHEM tracking; a shared
+  BETTERLIFE shift/shear is not source-supported. V corrects selected side
+  placement as recorded above. Preserve the accepted primary paths
+  and their feedback colors; do not reconstruct the main artwork again.
+- [x] **Make margin CJK deterministic.** The source `益荒男` run is now a
+  measured vector rather than a fallback-font-dependent text run. The N
+  frozen and live store matrix cases both match their reviewed baseline
+  exactly, replacing K1's 170 differing fallback-glyph pixels.
+- [x] **Fit primary certification and KIROSHI symbols.** Source-supported
+  two-tone certification paths and KIROSHI contours retain feedback ink;
+  selected native mask IoU is .984/.990. Ordinary/repeated footer printing
+  fields and faint copies remain part of the open artwork/echo tasks.
 - [ ] **Fit remaining scan modulation and printing echoes.** Keep this
   separate from primary geometry/art corrections. Use actual source
   holdouts; do not add generic glow/noise or relax fidelity thresholds.
+- [x] **Restore directional socket printing echoes.** AA adds leftward
+  card-1, rightward card-3/4 and downward selected-card trails while
+  preserving all 25 bright primary cells. Native source RGB error on fixed
+  footprints falls 19.76→11.92, 26.46→11.95, 20.09→12.51 and 23.34→14.47.
+  Sixteen native captures cover opening, fractional feedback, every selected
+  slot, custom palettes and fourth-card clipping. All changed pixels stay
+  inside the clusters; source-only states share backdrop eligibility.
+  No idle image layer is added. Both gates, 285 Rust tests and the full AA
+  check pass: 22 checks, 27 exact visual cases. Exact irregular scan grain
+  remains in the separate task above. See
+  [round twelve](../docs/reference-svg-round12.md).
 - [x] **Correct socket-scatter occupancy and selected placement.** The
   all-reference recheck finds 25 source cells, not the 24 claimed by the
   trace: lattice column 2, row 6 is missing, local `(10.5,24.5)` in `#qr`.
@@ -128,7 +190,7 @@ selected lower corner matches the corrected SVG. The old0.13 painted
 ground-cover workaround is removed:0.14 clipping preserves these meshes.
 Actual rest/selected/held and fractional captures confirm this. The right
 margin has zero changed pixels between resting, fourth-selected and held
-states, including1537×947. Zero-time/mid-opening captures are reviewed.
+states, including 1537×947. Zero-time/mid-opening captures are reviewed.
 
 The batch passes all 249 Rust tests, including selected-bound/navigation,
 release cancellation, nested clipping and geometry regressions. Both store

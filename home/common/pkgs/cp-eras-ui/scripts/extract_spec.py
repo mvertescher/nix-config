@@ -46,10 +46,12 @@ Needs numpy + scipy + Pillow; `fidelity_check.sh` finds or nix-builds one.
 """
 
 import argparse
+import base64
 import json
 import math
 import os
 import sys
+import zlib
 
 import numpy as np
 from PIL import Image
@@ -374,14 +376,30 @@ def fit_shape(ink, cell, dist, canvas, raw=None, observed=None):
     w, h = x1 - x0, y1 - y0
     if best and best["class"] == "rect" and (w > 20 * max(h, 1) or h > 20 * max(w, 1)):
         best["class"] = "rule"
-    if best and best["iou"] < MIN_SHAPE_IOU:
-        best["class"] = "blob"
+    if best:
+        best["template_class"] = best["class"]
+        if best["iou"] < MIN_SHAPE_IOU:
+            best["class"] = "blob"
     return best
 
 
 # --------------------------------------------------------------------------
 # component extraction
 # --------------------------------------------------------------------------
+
+def observed_mask(cell):
+    """Lossless, cropped split-cell evidence for cross-render identity checks.
+
+    Rows are packed independently with little-endian bit order so a reader
+    can compare canvas-aligned pixels without relying on either fitted bbox.
+    """
+    ys, xs = np.where(cell)
+    x0, y0 = int(xs.min()), int(ys.min())
+    crop = cell[y0:int(ys.max()) + 1, x0:int(xs.max()) + 1]
+    packed = np.packbits(crop, axis=1, bitorder="little").tobytes()
+    return {"origin": [x0, y0], "size": [crop.shape[1], crop.shape[0]],
+            "encoding": "zlib-packbits-little-row",
+            "data": base64.b64encode(zlib.compress(packed, 9)).decode("ascii")}
 
 def split_blob(mask, dist, peak_floor_frac=0.55, win_frac=2.0):
     """Nearest-peak (Voronoi) split of a blob of overlapping convex shapes.
@@ -589,6 +607,7 @@ def components(raw, ink, canvas, family):
             if fit:
                 fit["ink"] = family
                 fit["area"] = int(cell.sum())
+                fit["observed_mask"] = observed_mask(cell)
                 x, y, w, _ = fit["bbox"]
                 # Keep this extraction-only evidence for distinguishing a
                 # partial border from a real panel docked to its parent.

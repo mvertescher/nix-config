@@ -34,8 +34,9 @@
        27px flag poking past the card's left edge and a 45 degree chamfer at
        its right end, not a 20px band with no flag. The dashboard menu is two
        three-blade fans of 162x50 r8 rounded cards, each trailing a stack of
-       same-size ghosts stepping (+20,-20) in SCREEN space, not tilted
-       extruded slabs. The orange DEVICE BEZEL, the numbered D1..D4 mail
+       same-size ghosts stepping about (+20,-20) in SCREEN space (the right
+       PRODUCTS and LOCATIONS stacks use +19.15,-19), not tilted extruded
+       slabs. The orange DEVICE BEZEL, the numbered D1..D4 mail
        list, the callout panel's folded corner and the "no chamfers" rule are
        gone: no trace shows any of them, and several traces contradict them.
        Added from the traces: the boxed letter unit, the stepped USER box,
@@ -122,6 +123,19 @@
     <!-- FAN CARD, dashboard-trace #card: 162x50 rx8, centred on its own
          origin, measured in each card's own rotated frame. -->
     <rect id="k-fancard" x="-81" y="-25" width="162" height="50" rx="8"/>
+    <linearGradient id="k-face-location" gradientUnits="userSpaceOnUse" x1="-81" y1="0" x2="81" y2="0">
+      <stop offset="0" stop-color="#0e858f"/>
+      <stop offset="0.1" stop-color="#0e858f"/>
+      <stop offset="0.2" stop-color="#0d858f"/>
+      <stop offset="0.3" stop-color="#0d858f"/>
+      <stop offset="0.4" stop-color="#0c858f"/>
+      <stop offset="0.5" stop-color="#0b858f"/>
+      <stop offset="0.6" stop-color="#0b858f"/>
+      <stop offset="0.7" stop-color="#0b858f"/>
+      <stop offset="0.8" stop-color="#0b858f"/>
+      <stop offset="0.9" stop-color="#0b858f"/>
+      <stop offset="1" stop-color="#0b858f"/>
+    </linearGradient>
     <!-- SOCKET / QR GLYPH, store-trace #qr: 9x9 scatter, 25 cells, first socket cell. -->
     <g id="k-qr">
       <rect x="0" y="0" width="3.8" height="3.8"/>
@@ -158,9 +172,10 @@
       <!-- Source-supported frame, RG5, SC disc, angular C and hollow warning mark. -->
       <path d="M-16.5 78.5H-5.7V89.5H-16.5Z M-15 80H-7.2V87.8H-15Z" fill="#5a3a08" fill-rule="evenodd"/>
       <text x="-14.5" y="83.8" font-family="Rajdhani" font-size="3.2" font-weight="700" fill="#5a3a08">RG5</text>
-      <path d="M-0.7 78.5H10.4V89.5H-0.7Z M8.85 84A4.05 4.05 0 1 1 0.75 84A4.05 4.05 0 1 1 8.85 84Z" fill="#5a3a08" fill-rule="evenodd"/>
+      <path d="M-0.7 78.5H10.4V89.5H-0.7Z M8.85 84A4.05 4.05 0 1 1 0.75 84A4.05 4.05 0 1 1 8.85 84Z M0.3 79.58L1.6 79.58L0.75 80.75Z M8.55 79.58L9.7 79.58L9.05 80.75Z M0.22 89.08L0.65 87.42L1.95 89.08Z M8.52 89.08L9.5 87.42L10.12 89.08Z" fill="#5a3a08" fill-rule="evenodd"/>
       <text x="2.35" y="85.6" font-family="Rajdhani" font-size="4.5" font-weight="700" fill="#5a3a08">SC</text>
-      <path d="M24.5 81.2L22.6 78.5H17.6L15.5 80.6V87.4L17.6 89.5H22.6L24.5 86.8 M22 82.4H19.5L18.5 83.4V84.5L19.5 85.5H22" fill="none" stroke="#5a3a08" stroke-width="1.3"/>
+      <path d="M24.5 81.2L22.6 78.5H17.6L15.5 80.6V87.4L17.6 89.5H22.6L24.5 86.8" fill="none" stroke="#5a3a08" stroke-width="1.3"/>
+      <path d="M23.5 81.8L21.75 80.5H17.25V88H21.75L23.5 86.8 M17.25 84.1H22.25" fill="none" stroke="#5a3a08" stroke-width="0.65"/>
       <rect x="28.5" y="74" width="64" height="18" rx="1.5" fill="none" stroke="#5a3a08" stroke-width="0.5"/>
       <path d="M30.3 90L36.5 77.6L42.7 90Z M33 88.7H40L36.5 81Z" fill="#5a3a08" fill-rule="evenodd"/>
       <path d="M36 82.8H37V86.7H36Z M36.5 87.45A0.55 0.55 0 1 1 36.5 88.55A0.55 0.55 0 1 1 36.5 87.45Z" fill="#5a3a08"/>
@@ -212,7 +227,7 @@
         <text x="224.5" y="295.5">EMPTY</text><text x="224.5" y="308.5">SOCKET</text>
       </g>
       <g font-family="Rajdhani" font-size="8" font-weight="700" letter-spacing="0.3" fill="#65e5c8">
-        <text x="4" y="341">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
+        <text x="4" y="341" letter-spacing="0.381967">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
         <text x="4" y="349">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
       </g>
     </g>
@@ -566,26 +581,31 @@
 
   <!-- FAN BLADE, IDLE, with its ghost stack. dashboard-trace.svg LOCATIONS:
        a 162x50 rx8 card (#card, measured in the card's OWN frame by rotating
-       the photo by -rot about the centre) at c(919,586) rot 30, fill #2c9798,
-       stroke #a9e6df 1.8, label Rajdhani 400 19 ls 2 #7cffe5 centred, baseline
-       +6.5. Behind it six GHOSTS: the SAME 162x50 card, not shrunk, each
-       stepping (+20,-20) in SCREEN space (the shared depth direction all six
-       blades use, not each card's own normal), fill #0f9f80 at opacity
-       0.58 / 0.48 / 0.40 / 0.30 / 0.21 / 0.12 with stroke #6cc4bd 1.2 at
-       0.80 / 0.68 / 0.56 / 0.45 / 0.34 / 0.24. -->
+       the photo by -rot about the centre) at c(919,586) rot 30, rose-field
+       face #0e858f..#0b858f (shared ground lobe; earlier flat #20858f),
+       stroke #a9e6df 1.8, label Rajdhani 500 20 ls .5 #7cffe5 at local
+       (-2.5,6.08). Behind it seven GHOSTS: the SAME 162x50 card, not shrunk,
+       stepping (+19.15,-19.0) in SCREEN space (the shared depth direction,
+       not each card's own normal). The farthest is stroke-only at .09;
+       nearer fills #0f9f80 at 0.06 / 0.105 / 0.15 / 0.20 / 0.24 / 0.29,
+       with #6cc4bd stroke 0.9 at .24 / .34 / .45 / .56 / .68 / .80. -->
   <g transform="translate(-82 -288)">
-    <g fill="#0f9f80" stroke="#6cc4bd" stroke-width="1.2">
-      <use href="#k-fancard" transform="translate(1039 466) rotate(30)" fill-opacity="0.12" stroke-opacity="0.24"/>
-      <use href="#k-fancard" transform="translate(1019 486) rotate(30)" fill-opacity="0.21" stroke-opacity="0.34"/>
-      <use href="#k-fancard" transform="translate(999 506) rotate(30)" fill-opacity="0.30" stroke-opacity="0.45"/>
-      <use href="#k-fancard" transform="translate(979 526) rotate(30)" fill-opacity="0.40" stroke-opacity="0.56"/>
-      <use href="#k-fancard" transform="translate(959 546) rotate(30)" fill-opacity="0.48" stroke-opacity="0.68"/>
-      <use href="#k-fancard" transform="translate(939 566) rotate(30)" fill-opacity="0.58" stroke-opacity="0.80"/>
+    <g fill="#0f9f80" stroke="#6cc4bd" stroke-width="0.9">
+      <use href="#k-fancard" transform="translate(1052.9 452.45) rotate(30)" fill="none" stroke-opacity="0.09"/>
+      <use href="#k-fancard" transform="translate(1033.75 471.45) rotate(30)" fill-opacity="0.06" stroke-opacity="0.24"/>
+      <use href="#k-fancard" transform="translate(1014.6 490.45) rotate(30)" fill-opacity="0.105" stroke-opacity="0.34"/>
+      <use href="#k-fancard" transform="translate(995.45 509.45) rotate(30)" fill-opacity="0.15" stroke-opacity="0.45"/>
+      <use href="#k-fancard" transform="translate(976.3 528.45) rotate(30)" fill-opacity="0.20" stroke-opacity="0.56"/>
+      <use href="#k-fancard" transform="translate(957.15 547.45) rotate(30)" fill-opacity="0.24" stroke-opacity="0.68"/>
+      <use href="#k-fancard" transform="translate(938 566.45) rotate(30)" fill-opacity="0.29" stroke-opacity="0.80"/>
     </g>
-    <g font-size="19" letter-spacing="2" text-anchor="middle">
+    <g transform="translate(919 586) rotate(30)">
+      <use href="#k-fancard" fill="url(#k-face-location)" stroke="none"/>
+    </g>
+    <g font-size="20" font-weight="500" letter-spacing="0.5" text-anchor="middle">
       <g transform="translate(919 586) rotate(30)">
-        <use href="#k-fancard" fill="#2c9798" stroke="#a9e6df" stroke-width="1.8"/>
-        <text y="6.5" fill="#7cffe5">LOCATIONS</text>
+        <use href="#k-fancard" fill="none" stroke="#a9e6df" stroke-width="1.8"/>
+        <text x="-2.5" y="6.08" fill="#7cffe5">LOCATIONS</text>
       </g>
     </g>
   </g>
@@ -596,20 +616,20 @@
        PRODUCTS card) uses the same teal #0f9f80 ramp as every other blade:
        the selection changes the solid card's fill only. -->
   <g transform="translate(411.6 -338)">
-    <g font-size="19" letter-spacing="2" text-anchor="middle">
+    <g font-size="20" font-weight="500" letter-spacing="0.75" text-anchor="middle">
       <g transform="translate(731 586) rotate(-30)">
         <use href="#k-fancard" fill="#f5cb23" stroke="#fce89a" stroke-width="1.8"/>
-        <text y="6.5" fill="#4a3a05">EVENTS</text>
+        <text x="-1.25" y="6.5" fill="#4a3a05">EVENTS</text>
       </g>
     </g>
   </g>
   <g font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">
-    <text x="754" y="378">FAN BLADE  162x50 rx8 . idle fill #2c9798 stroke #a9e6df 1.8 ink #7cffe5 . selected fill #f5cb23 stroke #fce89a ink #4a3a05</text>
-    <text x="754" y="389">label Rajdhani 400 19 ls 2, centred, baseline +6.5 . the blade rotates, the label rotates with it</text>
-    <text x="754" y="400">GHOSTS  the same 162x50, NOT scaled, stepping (+20,-20) in SCREEN space</text>
-    <text x="754" y="411">fill #0f9f80 at op .58 / .48 / .40 / .30 / .21 / .12, stroke #6cc4bd 1.2 at op .80 / .68 / .56 / .45 / .34 / .24</text>
+    <text x="754" y="378">FAN BLADE  162x50 rx8 . idle rose-red field / G133 B143, stroke #a9e6df 1.8 ink #7cffe5 . selected #f5cb23 / #fce89a</text>
+    <text x="754" y="389">labels Rajdhani 500 20..21, local ls 0..1 and measured offsets; blade and word rotate together</text>
+    <text x="754" y="400">GHOSTS same 162x50; right PRODUCT/LOCATION pitch (+19.15,-19) in SCREEN space</text>
+    <text x="754" y="411">fill #0f9f80 at op .29 / .24 / .20 / .15 / .105 / .06, stroke #6cc4bd 1.2 at op .80 / .68 / .56 / .45 / .34 / .24</text>
     <text x="754" y="422">two 3-blade fans: hub (455,470) VEHICLES rot30 c(364,413), WEAPONS rot-30 c(551,414), PRODUCTS rot90 c(458,575);</text>
-    <text x="754" y="433">hub (825,535) PRODUCTS rot90 c(825,424), EVENTS rot-30 c(731,586), LOCATIONS rot30 c(919,586) . ghost counts 6/7/6/6/5/6</text>
+    <text x="754" y="433">hub (825,535) PRODUCTS rot90 c(825,424), EVENTS rot-30 c(731,586), LOCATIONS rot30 c(919,586) . ghost counts 7/7/7/7/5/7</text>
   </g>
 
   <text x="754" y="446" font-size="11.5" font-weight="600" letter-spacing="2.5" fill="#82f0d3">5 . LIST ROW (mailbox-trace)</text>
@@ -708,8 +728,8 @@
       <text x="0" y="808">MAPS ARE PROVIDED BY SEOCHO.</text>
     </g>
     <text x="1180" y="808" font-size="8.5" fill="#7fd4cc">700 8 scale(1.3 1) notes</text>
-    <text x="1035" y="823" font-size="9" font-weight="700" letter-spacing="0.25" fill="#82f0d3">ARASAKA CONSUMER TECHNOLOGY</text>
-    <text x="1035" y="836" font-size="8.5" fill="#7fd4cc">700 9 ls .25 FOOT LINE x 503..1095 y 870 (+ CC35 run from x 641)</text>
+    <text x="1035" y="823" font-size="9" font-weight="700" letter-spacing="0.18" fill="#82f0d3">ARASAKA CONSUMER TECHNOLOGY</text>
+    <text x="1035" y="836" font-size="8.5" fill="#7fd4cc">700 9 ls .18/.24 FOOT LINE x 503..1095 y 870 (+ CC35 run from x 641)</text>
     <text x="1035" y="851" font-size="8.5" fill="#7fd4cc">also: 700 73 stretched 1.63/1.89/1.24 logotype . 600 23 badge digits . 600 20 tab</text>
     <text x="1035" y="862" font-size="8.5" fill="#7fd4cc">. 700 8 ls 0.3 card micro-text . 600 13 EMPTY SOCKET . 400 12 customer lines</text>
   </g>
@@ -818,7 +838,7 @@
       <text x="224.5" y="436.5">EMPTY</text><text x="224.5" y="450">SOCKET</text>
     </g>
     <g font-size="8" font-weight="700" letter-spacing="0.3" fill="#e9a50d">
-      <text x="4" y="483">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
+      <text x="4" y="483" letter-spacing="0.381967">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
       <text x="4" y="491">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
     </g>
   </g>
@@ -879,7 +899,7 @@
     <rect x="1540" y="1010" width="14" height="8" fill="#a9e6df"/><text x="1560" y="1017">pale #a9e6df</text>
     <rect x="1540" y="1022" width="14" height="8" fill="#8afada"/><text x="1560" y="1029">mint fill #8afada</text>
     <rect x="1660" y="1010" width="14" height="8" fill="#1bb6a3"/><text x="1680" y="1017">wave #1bb6a3</text>
-    <rect x="1660" y="1022" width="14" height="8" fill="#2c9798"/><text x="1680" y="1029">fan #2c9798</text>
+    <rect x="1660" y="1022" width="14" height="8" fill="#20858f"/><text x="1680" y="1029">fan base #20858f</text>
     <rect x="1780" y="1010" width="14" height="8" fill="#ffbe18"/><text x="1800" y="1017">select #ffbe18</text>
     <rect x="1780" y="1022" width="14" height="8" fill="#5a3a08"/><text x="1800" y="1029">on-select #5a3a08</text>
   </g>
