@@ -2,6 +2,33 @@
 to the crate root. Performance changes must preserve the accepted artwork,
 sRGB compositing, interaction states and opening clips.
 
+## Store title printing cost — AN
+
+- [x] **Reuse repeated title glyph outlines without changing pixels.**
+  The source-supported ordinary Neomil title impressions add 61 clipped
+  text runs. At 4K, a warmed 20-call `Scene.draw` comparison measures
+  median CPU paint/geometry time 20.734→26.280 ms in the final candidate
+  (20.669→25.315 ms before the clipping/order corrections). This excludes backdrop,
+  GPU and presentation work; it does not describe an ongoing frame loop.
+  Skipping unused width shaping for start-anchored text measures
+  20.631/25.357 ms and stays scratch-only because the change does not
+  materially reduce this cost. Iced's transformed text path creates a
+  paragraph, Swash cache and glyph outlines for each run. Investigate a
+  bounded cache of its own origin-relative glyph paths, keyed by exact
+  font, text and size, then reuse those paths under existing scan clips,
+  transforms and semantic ink. Keep the primary rendering unchanged until
+  parity is established. Require exact baseline/candidate pixel checks at
+  1600, 4K and fractional sizes, custom palettes, opening and hover/held
+  states, plus fresh CPU timing. Do not drop scan rows or approximate the
+  glyphs to improve the timing.
+  AO's per-draw four-entry outline cache passes local glyph regressions
+  and exact 4K/1600/fractional state comparisons. A new paired 20-call
+  4K median falls 25.674→22.823 ms (11.1%), recovering part of the cost.
+  Primary text, source artwork and goldens remain unchanged. All 290
+  Rust tests, 22 repository checks and 27 first-attempt visual cases pass;
+  the fresh packaged 4K image exactly matches. See
+  [round twenty-six](../docs/reference-svg-round26.md).
+
 ## Neomil cold-draw investigation (2026-09-21)
 
 Three optimized release trials per size measured the actual

@@ -246,6 +246,140 @@
       <stop offset="0.9" stop-color="#0e858f"/>
       <stop offset="1" stop-color="#0e858f"/>
     </linearGradient>
+    <!-- Nearest ghosts sample the existing rose red law at their world origins; one shared G/B and opacity. -->
+    <linearGradient id="cv-nearest-vehicles" gradientUnits="userSpaceOnUse" x1="-81" y1="0" x2="81" y2="0">
+      <stop offset="0" stop-color="#23685e"/>
+      <stop offset="0.1" stop-color="#1f685e"/>
+      <stop offset="0.2" stop-color="#1b685e"/>
+      <stop offset="0.3" stop-color="#17685e"/>
+      <stop offset="0.4" stop-color="#17685e"/>
+      <stop offset="0.5" stop-color="#17685e"/>
+      <stop offset="0.6" stop-color="#16685e"/>
+      <stop offset="0.7" stop-color="#16685e"/>
+      <stop offset="0.8" stop-color="#15685e"/>
+      <stop offset="0.9" stop-color="#15685e"/>
+      <stop offset="1" stop-color="#15685e"/>
+    </linearGradient>
+    <linearGradient id="cv-nearest-weapons" gradientUnits="userSpaceOnUse" x1="-81" y1="0" x2="81" y2="0">
+      <stop offset="0" stop-color="#15685e"/>
+      <stop offset="0.1" stop-color="#16685e"/>
+      <stop offset="0.2" stop-color="#16685e"/>
+      <stop offset="0.3" stop-color="#17685e"/>
+      <stop offset="0.4" stop-color="#19685e"/>
+      <stop offset="0.5" stop-color="#20685e"/>
+      <stop offset="0.6" stop-color="#27685e"/>
+      <stop offset="0.7" stop-color="#2e685e"/>
+      <stop offset="0.8" stop-color="#35685e"/>
+      <stop offset="0.9" stop-color="#3c685e"/>
+      <stop offset="1" stop-color="#43685e"/>
+    </linearGradient>
+    <linearGradient id="cv-nearest-left_products" gradientUnits="userSpaceOnUse" x1="-81" y1="0" x2="81" y2="0">
+      <stop offset="0" stop-color="#12685e"/>
+      <stop offset="0.1" stop-color="#11685e"/>
+      <stop offset="0.2" stop-color="#10685e"/>
+      <stop offset="0.3" stop-color="#0f685e"/>
+      <stop offset="0.4" stop-color="#0e685e"/>
+      <stop offset="0.5" stop-color="#0d685e"/>
+      <stop offset="0.6" stop-color="#0c685e"/>
+      <stop offset="0.7" stop-color="#0b685e"/>
+      <stop offset="0.8" stop-color="#0b685e"/>
+      <stop offset="0.9" stop-color="#0b685e"/>
+      <stop offset="1" stop-color="#0b685e"/>
+    </linearGradient>
+    <linearGradient id="cv-nearest-right_products" gradientUnits="userSpaceOnUse" x1="-81" y1="0" x2="81" y2="0">
+      <stop offset="0" stop-color="#5b685e"/>
+      <stop offset="0.1" stop-color="#4e685e"/>
+      <stop offset="0.2" stop-color="#42685e"/>
+      <stop offset="0.3" stop-color="#35685e"/>
+      <stop offset="0.4" stop-color="#28685e"/>
+      <stop offset="0.5" stop-color="#1c685e"/>
+      <stop offset="0.6" stop-color="#17685e"/>
+      <stop offset="0.7" stop-color="#16685e"/>
+      <stop offset="0.8" stop-color="#15685e"/>
+      <stop offset="0.9" stop-color="#13685e"/>
+      <stop offset="1" stop-color="#12685e"/>
+    </linearGradient>
+    <linearGradient id="cv-nearest-events" gradientUnits="userSpaceOnUse" x1="-81" y1="0" x2="81" y2="0">
+      <stop offset="0" stop-color="#0b685e"/>
+      <stop offset="0.1" stop-color="#0b685e"/>
+      <stop offset="0.2" stop-color="#0c685e"/>
+      <stop offset="0.3" stop-color="#0c685e"/>
+      <stop offset="0.4" stop-color="#0d685e"/>
+      <stop offset="0.5" stop-color="#0d685e"/>
+      <stop offset="0.6" stop-color="#0e685e"/>
+      <stop offset="0.7" stop-color="#0e685e"/>
+      <stop offset="0.8" stop-color="#0f685e"/>
+      <stop offset="0.9" stop-color="#0f685e"/>
+      <stop offset="1" stop-color="#10685e"/>
+    </linearGradient>
+    <linearGradient id="cv-nearest-locations" gradientUnits="userSpaceOnUse" x1="-81" y1="0" x2="81" y2="0">
+      <stop offset="0" stop-color="#10685e"/>
+      <stop offset="0.1" stop-color="#0f685e"/>
+      <stop offset="0.2" stop-color="#0e685e"/>
+      <stop offset="0.3" stop-color="#0e685e"/>
+      <stop offset="0.4" stop-color="#0d685e"/>
+      <stop offset="0.5" stop-color="#0d685e"/>
+      <stop offset="0.6" stop-color="#0c685e"/>
+      <stop offset="0.7" stop-color="#0b685e"/>
+      <stop offset="0.8" stop-color="#0b685e"/>
+      <stop offset="0.9" stop-color="#0b685e"/>
+      <stop offset="1" stop-color="#0b685e"/>
+    </linearGradient>
+    <!-- Reconstruction hypothesis: farther strokes disappear beneath nearer depth-2/3 card silhouettes. -->
+    <mask id="cy-occlude-vehicles-d3" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900" style="mask-type:luminance">
+      <rect x="0" y="0" width="1600" height="900" fill="#fff"/>
+      <use href="#card" transform="translate(404 373) rotate(30)" fill="#000" stroke="none"/>
+    </mask>
+    <mask id="cy-occlude-vehicles-d4plus" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900" style="mask-type:luminance">
+      <rect x="0" y="0" width="1600" height="900" fill="#fff"/>
+      <use href="#card" transform="translate(404 373) rotate(30)" fill="#000" stroke="none"/>
+      <use href="#card" transform="translate(424 353) rotate(30)" fill="#000" stroke="none"/>
+    </mask>
+    <mask id="cy-occlude-weapons-d3" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900" style="mask-type:luminance">
+      <rect x="0" y="0" width="1600" height="900" fill="#fff"/>
+      <use href="#card" transform="translate(591 374) rotate(-30)" fill="#000" stroke="none"/>
+    </mask>
+    <mask id="cy-occlude-weapons-d4plus" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900" style="mask-type:luminance">
+      <rect x="0" y="0" width="1600" height="900" fill="#fff"/>
+      <use href="#card" transform="translate(591 374) rotate(-30)" fill="#000" stroke="none"/>
+      <use href="#card" transform="translate(611 354) rotate(-30)" fill="#000" stroke="none"/>
+    </mask>
+    <mask id="cy-occlude-left_products-d3" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900" style="mask-type:luminance">
+      <rect x="0" y="0" width="1600" height="900" fill="#fff"/>
+      <use href="#card" transform="translate(498 535) rotate(90)" fill="#000" stroke="none"/>
+    </mask>
+    <mask id="cy-occlude-left_products-d4plus" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900" style="mask-type:luminance">
+      <rect x="0" y="0" width="1600" height="900" fill="#fff"/>
+      <use href="#card" transform="translate(498 535) rotate(90)" fill="#000" stroke="none"/>
+      <use href="#card" transform="translate(518 515) rotate(90)" fill="#000" stroke="none"/>
+    </mask>
+    <mask id="cy-occlude-right_products-d3" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900" style="mask-type:luminance">
+      <rect x="0" y="0" width="1600" height="900" fill="#fff"/>
+      <use href="#card" transform="translate(863.95 385.65) rotate(90)" fill="#000" stroke="none"/>
+    </mask>
+    <mask id="cy-occlude-right_products-d4plus" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900" style="mask-type:luminance">
+      <rect x="0" y="0" width="1600" height="900" fill="#fff"/>
+      <use href="#card" transform="translate(863.95 385.65) rotate(90)" fill="#000" stroke="none"/>
+      <use href="#card" transform="translate(883.1 366.65) rotate(90)" fill="#000" stroke="none"/>
+    </mask>
+    <mask id="cy-occlude-events-d3" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900" style="mask-type:luminance">
+      <rect x="0" y="0" width="1600" height="900" fill="#fff"/>
+      <use href="#card" transform="translate(771 546) rotate(-30)" fill="#000" stroke="none"/>
+    </mask>
+    <mask id="cy-occlude-events-d4plus" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900" style="mask-type:luminance">
+      <rect x="0" y="0" width="1600" height="900" fill="#fff"/>
+      <use href="#card" transform="translate(771 546) rotate(-30)" fill="#000" stroke="none"/>
+      <use href="#card" transform="translate(791 526) rotate(-30)" fill="#000" stroke="none"/>
+    </mask>
+    <mask id="cy-occlude-locations-d3" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900" style="mask-type:luminance">
+      <rect x="0" y="0" width="1600" height="900" fill="#fff"/>
+      <use href="#card" transform="translate(957.15 547.45) rotate(30)" fill="#000" stroke="none"/>
+    </mask>
+    <mask id="cy-occlude-locations-d4plus" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900" style="mask-type:luminance">
+      <rect x="0" y="0" width="1600" height="900" fill="#fff"/>
+      <use href="#card" transform="translate(957.15 547.45) rotate(30)" fill="#000" stroke="none"/>
+      <use href="#card" transform="translate(976.3 528.45) rotate(30)" fill="#000" stroke="none"/>
+    </mask>
   </defs>
 
   <rect width="1600" height="900" fill="#0c0c0b"/>
@@ -341,9 +475,10 @@
          - ghost fill sampled mid-strip over the black ground, G channel
            92 / 77 / 64 / 47 / 33 / 20 for ghosts 1..6 (LOCATIONS; VEHICLES
            93 / 78 / 67 / 59 / 47 / 39 on the bloom) with R~12, B~0.85 G —
-           i.e. a greener teal than the solid #3cbbb4. The fitted trace keeps
-           #0f9f80 but halves fill opacity to 0.29 / 0.24 / 0.20 / 0.15 /
-           0.105 / 0.06; existing edge opacities are retained. The seventh
+           i.e. a greener teal than the solid #3cbbb4. The earlier fit kept
+           #0f9f80 with opacity 0.29 / 0.24 / 0.20 / 0.15 / 0.105 / 0.06.
+           CW replaces only each nearest .29 fill with the shared rose-R,
+           G104/B94 material at .75147; existing edges stay unchanged. The seventh
            far right PRODUCTS ghost has .035 fill/.065 edge; LOCATIONS'
            seventh is stroke-only at .09. VEHICLES' seventh is also
            stroke-only at .09; left PRODUCTS' is .035 fill/.10 edge
@@ -353,54 +488,136 @@
   <!-- the left fan's ghosts, extruded under #fan-left-extrude (defs) -->
   <g fill="#0f9f80" stroke="#6cc4bd" stroke-width="0.9" clip-path="url(#fan-left-extrude-clip)">
     <!-- VEHICLES: c(364,413) rot 30, 7 ghosts -->
+    <g mask="url(#cy-occlude-vehicles-d4plus)">
     <use href="#card" transform="translate(504.7 274) rotate(30)" fill="none" stroke-opacity="0.09"/>
-    <use href="#card" transform="translate(484 293) rotate(30)" fill-opacity="0.06" stroke-opacity="0.24"/>
-    <use href="#card" transform="translate(464 313) rotate(30)" fill-opacity="0.105" stroke-opacity="0.34"/>
-    <use href="#card" transform="translate(444 333) rotate(30)" fill-opacity="0.15" stroke-opacity="0.45"/>
-    <use href="#card" transform="translate(424 353) rotate(30)" fill-opacity="0.20" stroke-opacity="0.56"/>
+    </g>
+    <use href="#card" transform="translate(484 293) rotate(30)" fill-opacity="0.06" stroke-opacity="0.24" stroke="none"/>
+    <g mask="url(#cy-occlude-vehicles-d4plus)">
+    <use href="#card" transform="translate(484 293) rotate(30)" fill-opacity="0.06" stroke-opacity="0.24" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(464 313) rotate(30)" fill-opacity="0.105" stroke-opacity="0.34" stroke="none"/>
+    <g mask="url(#cy-occlude-vehicles-d4plus)">
+    <use href="#card" transform="translate(464 313) rotate(30)" fill-opacity="0.105" stroke-opacity="0.34" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(444 333) rotate(30)" fill-opacity="0.15" stroke-opacity="0.45" stroke="none"/>
+    <g mask="url(#cy-occlude-vehicles-d4plus)">
+    <use href="#card" transform="translate(444 333) rotate(30)" fill-opacity="0.15" stroke-opacity="0.45" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(424 353) rotate(30)" fill-opacity="0.20" stroke-opacity="0.56" stroke="none"/>
+    <g mask="url(#cy-occlude-vehicles-d3)">
+    <use href="#card" transform="translate(424 353) rotate(30)" fill-opacity="0.20" stroke-opacity="0.56" fill="none"/>
+    </g>
     <use href="#card" transform="translate(404 373) rotate(30)" fill-opacity="0.24" stroke-opacity="0.68"/>
-    <use href="#card" transform="translate(384 393) rotate(30)" fill-opacity="0.29" stroke-opacity="0.80"/>
+    <use href="#card" transform="translate(384 393) rotate(30)" fill="url(#cv-nearest-vehicles)" fill-opacity=".75147" stroke-opacity="0.80"/>
     <!-- WEAPONS: c(551,414) rot -30, 7 ghosts -->
-    <use href="#card" transform="translate(691 274) rotate(-30)" fill-opacity="0.035" stroke-opacity="0.16"/>
-    <use href="#card" transform="translate(671 294) rotate(-30)" fill-opacity="0.06" stroke-opacity="0.24"/>
-    <use href="#card" transform="translate(651 314) rotate(-30)" fill-opacity="0.105" stroke-opacity="0.34"/>
-    <use href="#card" transform="translate(631 334) rotate(-30)" fill-opacity="0.15" stroke-opacity="0.45"/>
-    <use href="#card" transform="translate(611 354) rotate(-30)" fill-opacity="0.20" stroke-opacity="0.56"/>
+    <use href="#card" transform="translate(691 274) rotate(-30)" fill-opacity="0.035" stroke-opacity="0.16" stroke="none"/>
+    <g mask="url(#cy-occlude-weapons-d4plus)">
+    <use href="#card" transform="translate(691 274) rotate(-30)" fill-opacity="0.035" stroke-opacity="0.16" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(671 294) rotate(-30)" fill-opacity="0.06" stroke-opacity="0.24" stroke="none"/>
+    <g mask="url(#cy-occlude-weapons-d4plus)">
+    <use href="#card" transform="translate(671 294) rotate(-30)" fill-opacity="0.06" stroke-opacity="0.24" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(651 314) rotate(-30)" fill-opacity="0.105" stroke-opacity="0.34" stroke="none"/>
+    <g mask="url(#cy-occlude-weapons-d4plus)">
+    <use href="#card" transform="translate(651 314) rotate(-30)" fill-opacity="0.105" stroke-opacity="0.34" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(631 334) rotate(-30)" fill-opacity="0.15" stroke-opacity="0.45" stroke="none"/>
+    <g mask="url(#cy-occlude-weapons-d4plus)">
+    <use href="#card" transform="translate(631 334) rotate(-30)" fill-opacity="0.15" stroke-opacity="0.45" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(611 354) rotate(-30)" fill-opacity="0.20" stroke-opacity="0.56" stroke="none"/>
+    <g mask="url(#cy-occlude-weapons-d3)">
+    <use href="#card" transform="translate(611 354) rotate(-30)" fill-opacity="0.20" stroke-opacity="0.56" fill="none"/>
+    </g>
     <use href="#card" transform="translate(591 374) rotate(-30)" fill-opacity="0.24" stroke-opacity="0.68"/>
-    <use href="#card" transform="translate(571 394) rotate(-30)" fill-opacity="0.29" stroke-opacity="0.80"/>
+    <use href="#card" transform="translate(571 394) rotate(-30)" fill="url(#cv-nearest-weapons)" fill-opacity=".75147" stroke-opacity="0.80"/>
     <!-- left PRODUCTS: c(458,575) rot 90, 7 ghosts -->
-    <use href="#card" transform="translate(598 435) rotate(90)" fill-opacity="0.035" stroke-opacity="0.10"/>
-    <use href="#card" transform="translate(578 455) rotate(90)" fill-opacity="0.06" stroke-opacity="0.24"/>
-    <use href="#card" transform="translate(558 475) rotate(90)" fill-opacity="0.105" stroke-opacity="0.34"/>
-    <use href="#card" transform="translate(538 495) rotate(90)" fill-opacity="0.15" stroke-opacity="0.45"/>
-    <use href="#card" transform="translate(518 515) rotate(90)" fill-opacity="0.20" stroke-opacity="0.56"/>
+    <use href="#card" transform="translate(598 435) rotate(90)" fill-opacity="0.035" stroke-opacity="0.10" stroke="none"/>
+    <g mask="url(#cy-occlude-left_products-d4plus)">
+    <use href="#card" transform="translate(598 435) rotate(90)" fill-opacity="0.035" stroke-opacity="0.10" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(578 455) rotate(90)" fill-opacity="0.06" stroke-opacity="0.24" stroke="none"/>
+    <g mask="url(#cy-occlude-left_products-d4plus)">
+    <use href="#card" transform="translate(578 455) rotate(90)" fill-opacity="0.06" stroke-opacity="0.24" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(558 475) rotate(90)" fill-opacity="0.105" stroke-opacity="0.34" stroke="none"/>
+    <g mask="url(#cy-occlude-left_products-d4plus)">
+    <use href="#card" transform="translate(558 475) rotate(90)" fill-opacity="0.105" stroke-opacity="0.34" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(538 495) rotate(90)" fill-opacity="0.15" stroke-opacity="0.45" stroke="none"/>
+    <g mask="url(#cy-occlude-left_products-d4plus)">
+    <use href="#card" transform="translate(538 495) rotate(90)" fill-opacity="0.15" stroke-opacity="0.45" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(518 515) rotate(90)" fill-opacity="0.20" stroke-opacity="0.56" stroke="none"/>
+    <g mask="url(#cy-occlude-left_products-d3)">
+    <use href="#card" transform="translate(518 515) rotate(90)" fill-opacity="0.20" stroke-opacity="0.56" fill="none"/>
+    </g>
     <use href="#card" transform="translate(498 535) rotate(90)" fill-opacity="0.24" stroke-opacity="0.68"/>
-    <use href="#card" transform="translate(478 555) rotate(90)" fill-opacity="0.29" stroke-opacity="0.80"/>
+    <use href="#card" transform="translate(478 555) rotate(90)" fill="url(#cv-nearest-left_products)" fill-opacity=".75147" stroke-opacity="0.80"/>
   </g>
   <!-- the right fan's ghosts, extruded under #fan-right-extrude (defs) -->
   <g fill="#0f9f80" stroke="#6cc4bd" stroke-width="0.9" clip-path="url(#fan-right-extrude-clip)">
     <!-- right PRODUCTS: c(825,424) rot 90, 7 ghosts -->
-    <use href="#card" transform="translate(959.7 290.65) rotate(90)" fill-opacity="0.035" stroke-opacity="0.065"/>
-    <use href="#card" transform="translate(940.55 309.65) rotate(90)" fill-opacity="0.06" stroke-opacity="0.24"/>
-    <use href="#card" transform="translate(921.4 328.65) rotate(90)" fill-opacity="0.105" stroke-opacity="0.34"/>
-    <use href="#card" transform="translate(902.25 347.65) rotate(90)" fill-opacity="0.15" stroke-opacity="0.45"/>
-    <use href="#card" transform="translate(883.1 366.65) rotate(90)" fill-opacity="0.20" stroke-opacity="0.56"/>
+    <use href="#card" transform="translate(959.7 290.65) rotate(90)" fill-opacity="0.035" stroke-opacity="0.065" stroke="none"/>
+    <g mask="url(#cy-occlude-right_products-d4plus)">
+    <use href="#card" transform="translate(959.7 290.65) rotate(90)" fill-opacity="0.035" stroke-opacity="0.065" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(940.55 309.65) rotate(90)" fill-opacity="0.06" stroke-opacity="0.24" stroke="none"/>
+    <g mask="url(#cy-occlude-right_products-d4plus)">
+    <use href="#card" transform="translate(940.55 309.65) rotate(90)" fill-opacity="0.06" stroke-opacity="0.24" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(921.4 328.65) rotate(90)" fill-opacity="0.105" stroke-opacity="0.34" stroke="none"/>
+    <g mask="url(#cy-occlude-right_products-d4plus)">
+    <use href="#card" transform="translate(921.4 328.65) rotate(90)" fill-opacity="0.105" stroke-opacity="0.34" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(902.25 347.65) rotate(90)" fill-opacity="0.15" stroke-opacity="0.45" stroke="none"/>
+    <g mask="url(#cy-occlude-right_products-d4plus)">
+    <use href="#card" transform="translate(902.25 347.65) rotate(90)" fill-opacity="0.15" stroke-opacity="0.45" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(883.1 366.65) rotate(90)" fill-opacity="0.20" stroke-opacity="0.56" stroke="none"/>
+    <g mask="url(#cy-occlude-right_products-d3)">
+    <use href="#card" transform="translate(883.1 366.65) rotate(90)" fill-opacity="0.20" stroke-opacity="0.56" fill="none"/>
+    </g>
     <use href="#card" transform="translate(863.95 385.65) rotate(90)" fill-opacity="0.24" stroke-opacity="0.68"/>
-    <use href="#card" transform="translate(844.8 404.65) rotate(90)" fill-opacity="0.29" stroke-opacity="0.80"/>
+    <use href="#card" transform="translate(844.8 404.65) rotate(90)" fill="url(#cv-nearest-right_products)" fill-opacity=".75147" stroke-opacity="0.80"/>
     <!-- EVENTS (selection): c(731,586) rot -30, 5 ghosts -->
-    <use href="#card" transform="translate(831 486) rotate(-30)" fill-opacity="0.105" stroke-opacity="0.34"/>
-    <use href="#card" transform="translate(811 506) rotate(-30)" fill-opacity="0.15" stroke-opacity="0.45"/>
-    <use href="#card" transform="translate(791 526) rotate(-30)" fill-opacity="0.20" stroke-opacity="0.56"/>
+    <use href="#card" transform="translate(831 486) rotate(-30)" fill-opacity="0.105" stroke-opacity="0.34" stroke="none"/>
+    <g mask="url(#cy-occlude-events-d4plus)">
+    <use href="#card" transform="translate(831 486) rotate(-30)" fill-opacity="0.105" stroke-opacity="0.34" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(811 506) rotate(-30)" fill-opacity="0.15" stroke-opacity="0.45" stroke="none"/>
+    <g mask="url(#cy-occlude-events-d4plus)">
+    <use href="#card" transform="translate(811 506) rotate(-30)" fill-opacity="0.15" stroke-opacity="0.45" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(791 526) rotate(-30)" fill-opacity="0.20" stroke-opacity="0.56" stroke="none"/>
+    <g mask="url(#cy-occlude-events-d3)">
+    <use href="#card" transform="translate(791 526) rotate(-30)" fill-opacity="0.20" stroke-opacity="0.56" fill="none"/>
+    </g>
     <use href="#card" transform="translate(771 546) rotate(-30)" fill-opacity="0.24" stroke-opacity="0.68"/>
-    <use href="#card" transform="translate(751 566) rotate(-30)" fill-opacity="0.29" stroke-opacity="0.80"/>
+    <use href="#card" transform="translate(751 566) rotate(-30)" fill="url(#cv-nearest-events)" fill-opacity=".75147" stroke-opacity="0.80"/>
     <!-- LOCATIONS: c(919,586) rot 30, 7 ghosts; farthest has no fill -->
+    <g mask="url(#cy-occlude-locations-d4plus)">
     <use href="#card" transform="translate(1052.9 452.45) rotate(30)" fill="none" stroke-opacity="0.09"/>
-    <use href="#card" transform="translate(1033.75 471.45) rotate(30)" fill-opacity="0.06" stroke-opacity="0.24"/>
-    <use href="#card" transform="translate(1014.6 490.45) rotate(30)" fill-opacity="0.105" stroke-opacity="0.34"/>
-    <use href="#card" transform="translate(995.45 509.45) rotate(30)" fill-opacity="0.15" stroke-opacity="0.45"/>
-    <use href="#card" transform="translate(976.3 528.45) rotate(30)" fill-opacity="0.20" stroke-opacity="0.56"/>
+    </g>
+    <use href="#card" transform="translate(1033.75 471.45) rotate(30)" fill-opacity="0.06" stroke-opacity="0.24" stroke="none"/>
+    <g mask="url(#cy-occlude-locations-d4plus)">
+    <use href="#card" transform="translate(1033.75 471.45) rotate(30)" fill-opacity="0.06" stroke-opacity="0.24" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(1014.6 490.45) rotate(30)" fill-opacity="0.105" stroke-opacity="0.34" stroke="none"/>
+    <g mask="url(#cy-occlude-locations-d4plus)">
+    <use href="#card" transform="translate(1014.6 490.45) rotate(30)" fill-opacity="0.105" stroke-opacity="0.34" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(995.45 509.45) rotate(30)" fill-opacity="0.15" stroke-opacity="0.45" stroke="none"/>
+    <g mask="url(#cy-occlude-locations-d4plus)">
+    <use href="#card" transform="translate(995.45 509.45) rotate(30)" fill-opacity="0.15" stroke-opacity="0.45" fill="none"/>
+    </g>
+    <use href="#card" transform="translate(976.3 528.45) rotate(30)" fill-opacity="0.20" stroke-opacity="0.56" stroke="none"/>
+    <g mask="url(#cy-occlude-locations-d3)">
+    <use href="#card" transform="translate(976.3 528.45) rotate(30)" fill-opacity="0.20" stroke-opacity="0.56" fill="none"/>
+    </g>
     <use href="#card" transform="translate(957.15 547.45) rotate(30)" fill-opacity="0.24" stroke-opacity="0.68"/>
-    <use href="#card" transform="translate(938 566.45) rotate(30)" fill-opacity="0.29" stroke-opacity="0.80"/>
+    <use href="#card" transform="translate(938 566.45) rotate(30)" fill="url(#cv-nearest-locations)" fill-opacity=".75147" stroke-opacity="0.80"/>
   </g>
 
   <!-- idle blade fields: rose-correlated red under the existing outlines -->
@@ -416,19 +633,19 @@
        the same local run geometry is used for idle, selected and pressed states. -->
   <g font-family="Rajdhani" text-anchor="middle">
     <g transform="translate(364 413) rotate(30)">
-      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.8"/>
+      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.4"/>
       <text x="0.83" y="5.25" font-size="21" font-weight="500" letter-spacing="0" fill="#7cffe5">VEHICLES</text>
     </g>
     <g transform="translate(551 414) rotate(-30)">
-      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.8"/>
+      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.4"/>
       <text x="1.67" y="5.67" font-size="20" font-weight="500" letter-spacing="1" fill="#7cffe5">WEAPONS</text>
     </g>
     <g transform="translate(458 575) rotate(90)">
-      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.8"/>
+      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.4"/>
       <text x="-3.33" y="6.50" font-size="20" font-weight="500" letter-spacing="1" fill="#7cffe5">PRODUCTS</text>
     </g>
     <g transform="translate(825 424) rotate(90)">
-      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.8"/>
+      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.4"/>
       <text x="-4.17" y="8.58" font-size="20" font-weight="500" letter-spacing="1" fill="#7cffe5">PRODUCTS</text>
     </g>
     <!-- the selection -->
@@ -437,7 +654,7 @@
       <text x="-1.25" y="6.50" font-size="20" font-weight="500" letter-spacing="0.75" fill="#4a3a05">EVENTS</text>
     </g>
     <g transform="translate(919 586) rotate(30)">
-      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.8"/>
+      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.4"/>
       <text x="-2.50" y="6.08" font-size="20" font-weight="500" letter-spacing="0.5" fill="#7cffe5">LOCATIONS</text>
     </g>
   </g>

@@ -346,7 +346,7 @@ fn era_face(style: &Style, bold: bool) -> iced::Font {
 /// The loaded font file a [`Face`] names.
 fn font_of(face: Face) -> iced::Font {
     use crate::fonts::{
-        FONT_ORBITRON_BOLD, FONT_RAJDHANI_BOLD, FONT_RAJDHANI_MEDIUM, FONT_RAJDHANI_REGULAR,
+        FONT_CP_ERAS_KITSCH_SANS_BOLD, FONT_FREE_SANS_BOLD, FONT_ORBITRON_BOLD, FONT_RAJDHANI_BOLD, FONT_RAJDHANI_MEDIUM, FONT_RAJDHANI_REGULAR,
         FONT_RAJDHANI_SEMIBOLD,
     };
     match face {
@@ -357,6 +357,8 @@ fn font_of(face: Face) -> iced::Font {
         Face::SemiBold => FONT_RAJDHANI_SEMIBOLD,
         Face::Bold => FONT_RAJDHANI_BOLD,
         Face::OrbitronBold => FONT_ORBITRON_BOLD,
+        Face::FreeSansBold => FONT_FREE_SANS_BOLD,
+        Face::CpErasKitschSansBold => FONT_CP_ERAS_KITSCH_SANS_BOLD,
     }
 }
 

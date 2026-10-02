@@ -20,6 +20,7 @@
 , cmake
 , makeWrapper
 , fontconfig
+, freefont_ttf
 , vulkan-loader
 , libGL
 , libxkbcommon
@@ -32,10 +33,30 @@
 }:
 
 let
-  cleanSrc = craneLib.cleanCargoSource ./.;
+  # crane's Cargo filter excludes .wgsl files, which the patched iced_wgpu
+  # crate includes at compile time through include_str!.
+  cleanSrc = lib.cleanSourceWith {
+    src = lib.cleanSource ./.;
+    filter = path: type:
+      craneLib.filterCargoSources path type
+      || (toString path == "${toString ./scripts}")
+      || (toString path == "${toString ./scripts/make-kitsch-sans.py}")
+      || (toString path == "${toString ./scripts/KITSCH-SANS-NOTICE.md}")
+      || (lib.hasPrefix "${toString ./vendor/iced_wgpu/src/shader}/" (toString path)
+        && lib.hasSuffix ".wgsl" (toString path));
+  };
 
   cargoArtifacts = craneLib.buildDepsOnly {
     src = cleanSrc;
+    # Registry dependents need iced_wgpu's actual API. Crane replaces local
+    # crates with dummy targets; restore this patched dependency afterward.
+    # Reference only the vendor directory to retain the dependency cache
+    # when application sources change.
+    extraDummyScript = ''
+      rm -rf "$out/vendor/iced_wgpu"
+      cp -r ${./vendor/iced_wgpu} "$out/vendor/iced_wgpu"
+      chmod -R u+w "$out/vendor/iced_wgpu"
+    '';
     nativeBuildInputs = [ pkg-config cmake ];
     buildInputs = [
       fontconfig
@@ -56,7 +77,7 @@ let
   pname = "cp-eras-ui";
   version = "0.0.0";
 
-  nativeBuildInputs = [ pkg-config cmake makeWrapper ];
+  nativeBuildInputs = [ pkg-config cmake makeWrapper (python3.withPackages (ps: [ ps.fonttools ])) ];
   buildInputs = [
     fontconfig
     vulkan-loader
@@ -82,11 +103,18 @@ let
     fi
     cp ${rajdhani-fontshare}/share/fonts/truetype/*.ttf fonts/
     cp ${noto-cjk-subset}/share/fonts/opentype/*.otf fonts/
+    cp ${freefont_ttf}/share/fonts/truetype/FreeSansBold.ttf fonts/
+    python3 scripts/make-kitsch-sans.py fonts/FreeSansBold.ttf fonts/CP-Eras-Kitsch-Sans-Bold.ttf fonts/CP-Eras-Kitsch-Sans-Bold.audit.json
   '';
 
   postInstall = ''
     mkdir -p $out/share/fonts/truetype
+    cp fonts/CP-Eras-Kitsch-Sans-Bold.ttf $out/share/fonts/truetype/
     cp fonts/Orbitron-*.ttf $out/share/fonts/truetype/
+    # Preserve the bundled font license, embedding exception and credits.
+    mkdir -p $out/share/doc/cp-eras-ui/fonts/freefont
+    cp ${freefont_ttf.src}/{COPYING,README,CREDITS} $out/share/doc/cp-eras-ui/fonts/freefont/
+    cp scripts/KITSCH-SANS-NOTICE.md $out/share/doc/cp-eras-ui/fonts/freefont/
   '';
 
   postFixup = ''
@@ -119,7 +147,8 @@ let
 
     meta = with lib; {
       description = "A UI toolkit using Rust and Iced.";
-      license = licenses.mit;
+      # Application code is MIT; the embedded FreeSans face is GPL-3.0+.
+      license = [ licenses.mit licenses.gpl3Plus ];
       platforms = platforms.linux;
     };
   };

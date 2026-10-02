@@ -123,6 +123,20 @@
     <!-- FAN CARD, dashboard-trace #card: 162x50 rx8, centred on its own
          origin, measured in each card's own rotated frame. -->
     <rect id="k-fancard" x="-81" y="-25" width="162" height="50" rx="8"/>
+    <!-- Nearest LOCATIONS ghost: the dashboard rose law at its world origin. -->
+    <linearGradient id="k-nearest-location" gradientUnits="userSpaceOnUse" x1="-81" y1="0" x2="81" y2="0">
+      <stop offset="0" stop-color="#10685e"/>
+      <stop offset="0.1" stop-color="#0f685e"/>
+      <stop offset="0.2" stop-color="#0e685e"/>
+      <stop offset="0.3" stop-color="#0e685e"/>
+      <stop offset="0.4" stop-color="#0d685e"/>
+      <stop offset="0.5" stop-color="#0d685e"/>
+      <stop offset="0.6" stop-color="#0c685e"/>
+      <stop offset="0.7" stop-color="#0b685e"/>
+      <stop offset="0.8" stop-color="#0b685e"/>
+      <stop offset="0.9" stop-color="#0b685e"/>
+      <stop offset="1" stop-color="#0b685e"/>
+    </linearGradient>
     <linearGradient id="k-face-location" gradientUnits="userSpaceOnUse" x1="-81" y1="0" x2="81" y2="0">
       <stop offset="0" stop-color="#0e858f"/>
       <stop offset="0.1" stop-color="#0e858f"/>
@@ -170,14 +184,14 @@
          box holding a warning triangle and source-derived micro-print contours. -->
     <g id="k-bandglyphs">
       <!-- Source-supported frame, RG5, SC disc, angular C and hollow warning mark. -->
-      <path d="M-16.5 78.5H-5.7V89.5H-16.5Z M-15 80H-7.2V87.8H-15Z" fill="#5a3a08" fill-rule="evenodd"/>
-      <text x="-14.5" y="83.8" font-family="Rajdhani" font-size="3.2" font-weight="700" fill="#5a3a08">RG5</text>
+      <path d="M-16.5 78.5H-5.7V89.9H-16.5Z M-15 80H-7.2V87.3L-8.4 89H-13.7L-15 87.3Z" fill="#5a3a08" fill-rule="evenodd"/>
+      <text x="-14.5" y="83.05" font-family="Rajdhani" font-size="3.2" font-weight="700" letter-spacing="0.45" fill="#5a3a08" opacity="0.35">RG5</text><path d="M-14.3 86.4H-13.6 M-12.25 86.4H-8.6" fill="none" stroke="#5a3a08" stroke-width="0.4" opacity="0.2"/>
       <path d="M-0.7 78.5H10.4V89.5H-0.7Z M8.85 84A4.05 4.05 0 1 1 0.75 84A4.05 4.05 0 1 1 8.85 84Z M0.3 79.58L1.6 79.58L0.75 80.75Z M8.55 79.58L9.7 79.58L9.05 80.75Z M0.22 89.08L0.65 87.42L1.95 89.08Z M8.52 89.08L9.5 87.42L10.12 89.08Z" fill="#5a3a08" fill-rule="evenodd"/>
-      <text x="2.35" y="85.6" font-family="Rajdhani" font-size="4.5" font-weight="700" fill="#5a3a08">SC</text>
+      <text x="2.35" y="85.5" font-family="Rajdhani" font-size="4.3" font-weight="600" fill="#5a3a08">SC</text>
       <path d="M24.5 81.2L22.6 78.5H17.6L15.5 80.6V87.4L17.6 89.5H22.6L24.5 86.8" fill="none" stroke="#5a3a08" stroke-width="1.3"/>
       <path d="M23.5 81.8L21.75 80.5H17.25V88H21.75L23.5 86.8 M17.25 84.1H22.25" fill="none" stroke="#5a3a08" stroke-width="0.65"/>
       <rect x="28.5" y="74" width="64" height="18" rx="1.5" fill="none" stroke="#5a3a08" stroke-width="0.5"/>
-      <path d="M30.3 90L36.5 77.6L42.7 90Z M33 88.7H40L36.5 81Z" fill="#5a3a08" fill-rule="evenodd"/>
+      <path d="M30.3 89L36.5 78.2L42.7 89C42.7 89 42.4 89.0 42.1 89.0H39.9C39.55 89.0 39.45 88.8 39.35 88.6H33.65C33.55 88.8 33.45 89.0 33.1 89.0H30.9C30.6 89.0 30.3 89 30.3 89Z M33 87.8H40L36.5 81.2Z" fill="#5a3a08" fill-rule="evenodd"/>
       <path d="M36 82.8H37V86.7H36Z M36.5 87.45A0.55 0.55 0 1 1 36.5 88.55A0.55 0.55 0 1 1 36.5 87.45Z" fill="#5a3a08"/>
       <!-- Dark source pixels from the first card, grouped into 2-native-pixel row contours. -->
       <path d="M53.333 76.0H55.833V76.833H53.333Z M62.5 76.0H63.333V76.833H62.5Z M68.333 76.0H69.167V76.833H68.333Z M75.833 76.0H76.667V76.833H75.833Z M77.5 76.0H78.333V76.833H77.5Z M80.0 76.0H80.833V76.833H80.0Z M84.167 76.0H85.833V76.833H84.167Z M47.5 76.833H49.167V77.667H47.5Z M51.667 76.833H53.333V77.667H51.667Z M54.167 76.833H55.0V77.667H54.167Z M56.667 76.833H59.167V77.667H56.667Z M62.5 76.833H63.333V77.667H62.5Z M64.167 76.833H65.833V77.667H64.167Z M66.667 76.833H72.5V77.667H66.667Z M75.833 76.833H76.667V77.667H75.833Z M77.5 76.833H79.167V77.667H77.5Z M80.0 76.833H81.667V77.667H80.0Z M84.167 76.833H85.833V77.667H84.167Z M86.667 76.833H87.5V77.667H86.667Z M48.333 77.667H50.0V78.5H48.333Z M52.5 77.667H53.333V78.5H52.5Z M54.167 77.667H55.0V78.5H54.167Z M86.667 77.667H87.5V78.5H86.667Z M46.667 78.5H47.5V79.333H46.667Z M48.333 78.5H51.667V79.333H48.333Z M57.5 78.5H58.333V79.333H57.5Z M59.167 78.5H60.0V79.333H59.167Z M45.833 79.333H47.5V80.167H45.833Z M48.333 79.333H50.0V80.167H48.333Z M57.5 79.333H58.333V80.167H57.5Z M59.167 79.333H60.0V80.167H59.167Z M45.833 80.167H48.333V81.0H45.833Z M64.167 80.167H65.0V81.0H64.167Z M74.167 80.167H75.0V81.0H74.167Z M79.167 80.167H80.833V81.0H79.167Z M86.667 80.167H87.5V81.0H86.667Z M45.833 81.0H46.667V81.833H45.833Z M47.5 81.0H48.333V81.833H47.5Z M57.5 81.0H59.167V81.833H57.5Z M63.333 81.0H65.0V81.833H63.333Z M67.5 81.0H69.167V81.833H67.5Z M74.167 81.0H75.0V81.833H74.167Z M75.833 81.0H77.5V81.833H75.833Z M79.167 81.0H80.0V81.833H79.167Z M80.833 81.0H82.5V81.833H80.833Z M86.667 81.0H87.5V81.833H86.667Z M45.833 81.833H47.5V82.667H45.833Z M50.833 81.833H51.667V82.667H50.833Z M75.833 81.833H76.667V82.667H75.833Z M86.667 81.833H87.5V82.667H86.667Z M46.667 82.667H48.333V83.5H46.667Z M50.0 82.667H51.667V83.5H50.0Z M54.167 82.667H55.833V83.5H54.167Z M56.667 82.667H59.167V83.5H56.667Z M46.667 83.5H47.5V84.333H46.667Z M58.333 83.5H59.167V84.333H58.333Z M45.833 84.333H49.167V85.167H45.833Z M53.333 84.333H54.167V85.167H53.333Z M55.833 84.333H56.667V85.167H55.833Z M58.333 84.333H59.167V85.167H58.333Z M60.0 84.333H61.667V85.167H60.0Z M65.0 84.333H66.667V85.167H65.0Z M76.667 84.333H80.0V85.167H76.667Z M86.667 84.333H88.333V85.167H86.667Z M45.0 85.167H47.5V86.0H45.0Z M48.333 85.167H50.0V86.0H48.333Z M52.5 85.167H56.667V86.0H52.5Z M59.167 85.167H62.5V86.0H59.167Z M65.833 85.167H66.667V86.0H65.833Z M76.667 85.167H78.333V86.0H76.667Z M87.5 85.167H88.333V86.0H87.5Z M47.5 86.0H48.333V86.833H47.5Z M55.0 86.0H55.833V86.833H55.0Z M60.833 86.0H62.5V86.833H60.833Z M65.0 86.0H65.833V86.833H65.0Z M47.5 86.833H49.167V87.667H47.5Z M50.0 86.833H51.667V87.667H50.0Z M52.5 86.833H54.167V87.667H52.5Z M55.0 86.833H56.667V87.667H55.0Z M57.5 86.833H59.167V87.667H57.5Z M60.833 86.833H62.5V87.667H60.833Z M64.167 86.833H65.833V87.667H64.167Z M66.667 86.833H69.167V87.667H66.667Z M47.5 87.667H48.333V88.5H47.5Z M45.833 88.5H49.167V89.333H45.833Z M54.167 88.5H56.667V89.333H54.167Z M57.5 88.5H60.833V89.333H57.5Z M61.667 88.5H62.5V89.333H61.667Z M63.333 88.5H66.667V89.333H63.333Z M69.167 88.5H70.0V89.333H69.167Z M45.833 89.333H47.5V90.167H45.833Z M48.333 89.333H50.0V90.167H48.333Z M55.0 89.333H56.667V90.167H55.0Z M57.5 89.333H59.167V90.167H57.5Z M61.667 89.333H62.5V90.167H61.667Z M64.167 89.333H65.0V90.167H64.167Z M69.167 89.333H70.0V90.167H69.167Z" fill="#b38a39"/>
@@ -226,9 +240,9 @@
         <text x="153.5" y="295.5">EMPTY</text><text x="153.5" y="308.5">SOCKET</text>
         <text x="224.5" y="295.5">EMPTY</text><text x="224.5" y="308.5">SOCKET</text>
       </g>
-      <g font-family="Rajdhani" font-size="8" font-weight="700" letter-spacing="0.3" fill="#65e5c8">
-        <text x="4" y="341" letter-spacing="0.381967">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
-        <text x="4" y="349">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+      <g font-family="FreeSans" font-size="6.666666666667" font-weight="700" letter-spacing="0.002688446105" fill="#65e5c8">
+        <text x="4.412557704228" y="341.166666666667">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
+        <text x="3.971182942645" y="349.291666666667" letter-spacing="-0.041779341010" font-family="CP Eras Kitsch Sans" font-weight="600">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
       </g>
     </g>
 
@@ -259,6 +273,16 @@
         <text x="0" y="56.7">CUSTOMERS SINCE 2006.</text>
       </g>
     </g>
+    <!-- LOCATIONS specimen: the parent dashboard depth-2/3 stroke occlusion hypothesis. -->
+    <mask id="k-depth-location-d3" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900" style="mask-type:luminance">
+      <rect x="0" y="0" width="1600" height="900" fill="#fff"/>
+      <use href="#k-fancard" transform="translate(957.15 547.45) rotate(30)" fill="#000" stroke="none"/>
+    </mask>
+    <mask id="k-depth-location-d4plus" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900" style="mask-type:luminance">
+      <rect x="0" y="0" width="1600" height="900" fill="#fff"/>
+      <use href="#k-fancard" transform="translate(957.15 547.45) rotate(30)" fill="#000" stroke="none"/>
+      <use href="#k-fancard" transform="translate(976.3 528.45) rotate(30)" fill="#000" stroke="none"/>
+    </mask>
   </defs>
 
   <!-- ==================== GROUND ==================== -->
@@ -583,28 +607,45 @@
        a 162x50 rx8 card (#card, measured in the card's OWN frame by rotating
        the photo by -rot about the centre) at c(919,586) rot 30, rose-field
        face #0e858f..#0b858f (shared ground lobe; earlier flat #20858f),
-       stroke #a9e6df 1.8, label Rajdhani 500 20 ls .5 #7cffe5 at local
+       stroke #a9e6df 1.4, label Rajdhani 500 20 ls .5 #7cffe5 at local
        (-2.5,6.08). Behind it seven GHOSTS: the SAME 162x50 card, not shrunk,
        stepping (+19.15,-19.0) in SCREEN space (the shared depth direction,
        not each card's own normal). The farthest is stroke-only at .09;
-       nearer fills #0f9f80 at 0.06 / 0.105 / 0.15 / 0.20 / 0.24 / 0.29,
-       with #6cc4bd stroke 0.9 at .24 / .34 / .45 / .56 / .68 / .80. -->
+       farther fills #0f9f80 at 0.06 / 0.105 / 0.15 / 0.20 / 0.24;
+       nearest fill uses the dashboard's 11-stop rose R field, G104/B94,
+       at opacity .75147. All #6cc4bd strokes remain width 0.9 with
+       opacity .24 / .34 / .45 / .56 / .68 / .80. -->
   <g transform="translate(-82 -288)">
+    <!-- Only depth-3+ ghost strokes are hidden under the second/third card; fills, edge inks and exposed strokes retain the dashboard paint order. -->
     <g fill="#0f9f80" stroke="#6cc4bd" stroke-width="0.9">
-      <use href="#k-fancard" transform="translate(1052.9 452.45) rotate(30)" fill="none" stroke-opacity="0.09"/>
-      <use href="#k-fancard" transform="translate(1033.75 471.45) rotate(30)" fill-opacity="0.06" stroke-opacity="0.24"/>
-      <use href="#k-fancard" transform="translate(1014.6 490.45) rotate(30)" fill-opacity="0.105" stroke-opacity="0.34"/>
-      <use href="#k-fancard" transform="translate(995.45 509.45) rotate(30)" fill-opacity="0.15" stroke-opacity="0.45"/>
-      <use href="#k-fancard" transform="translate(976.3 528.45) rotate(30)" fill-opacity="0.20" stroke-opacity="0.56"/>
+        <g mask="url(#k-depth-location-d4plus)">
+    <use href="#k-fancard" transform="translate(1052.9 452.45) rotate(30)" fill="none" stroke-opacity="0.09"/>
+      </g>
+      <use href="#k-fancard" transform="translate(1033.75 471.45) rotate(30)" fill-opacity="0.06" stroke-opacity="0.24" stroke="none"/>
+      <g mask="url(#k-depth-location-d4plus)">
+    <use href="#k-fancard" transform="translate(1033.75 471.45) rotate(30)" fill-opacity="0.06" stroke-opacity="0.24" fill="none"/>
+      </g>
+      <use href="#k-fancard" transform="translate(1014.6 490.45) rotate(30)" fill-opacity="0.105" stroke-opacity="0.34" stroke="none"/>
+      <g mask="url(#k-depth-location-d4plus)">
+    <use href="#k-fancard" transform="translate(1014.6 490.45) rotate(30)" fill-opacity="0.105" stroke-opacity="0.34" fill="none"/>
+      </g>
+      <use href="#k-fancard" transform="translate(995.45 509.45) rotate(30)" fill-opacity="0.15" stroke-opacity="0.45" stroke="none"/>
+      <g mask="url(#k-depth-location-d4plus)">
+    <use href="#k-fancard" transform="translate(995.45 509.45) rotate(30)" fill-opacity="0.15" stroke-opacity="0.45" fill="none"/>
+      </g>
+      <use href="#k-fancard" transform="translate(976.3 528.45) rotate(30)" fill-opacity="0.20" stroke-opacity="0.56" stroke="none"/>
+      <g mask="url(#k-depth-location-d3)">
+    <use href="#k-fancard" transform="translate(976.3 528.45) rotate(30)" fill-opacity="0.20" stroke-opacity="0.56" fill="none"/>
+      </g>
       <use href="#k-fancard" transform="translate(957.15 547.45) rotate(30)" fill-opacity="0.24" stroke-opacity="0.68"/>
-      <use href="#k-fancard" transform="translate(938 566.45) rotate(30)" fill-opacity="0.29" stroke-opacity="0.80"/>
+      <use href="#k-fancard" transform="translate(938 566.45) rotate(30)" fill="url(#k-nearest-location)" fill-opacity=".75147" stroke-opacity="0.80"/>
     </g>
     <g transform="translate(919 586) rotate(30)">
       <use href="#k-fancard" fill="url(#k-face-location)" stroke="none"/>
     </g>
     <g font-size="20" font-weight="500" letter-spacing="0.5" text-anchor="middle">
       <g transform="translate(919 586) rotate(30)">
-        <use href="#k-fancard" fill="none" stroke="#a9e6df" stroke-width="1.8"/>
+        <use href="#k-fancard" fill="none" stroke="#a9e6df" stroke-width="1.4"/>
         <text x="-2.5" y="6.08" fill="#7cffe5">LOCATIONS</text>
       </g>
     </g>
@@ -613,8 +654,8 @@
   <!-- FAN BLADE, SELECTED. dashboard-trace.svg EVENTS at c(731,586) rot -30:
        identical 162x50 rx8 card, fill #f5cb23, stroke #fce89a 1.8, ink
        #4a3a05. Its own ghost stack (5, the rest run under the neighbouring
-       PRODUCTS card) uses the same teal #0f9f80 ramp as every other blade:
-       the selection changes the solid card's fill only. -->
+       PRODUCTS card) uses the shared depth ramp and rose-field nearest
+       material; the selection changes the solid card's fill only. -->
   <g transform="translate(411.6 -338)">
     <g font-size="20" font-weight="500" letter-spacing="0.75" text-anchor="middle">
       <g transform="translate(731 586) rotate(-30)">
@@ -624,10 +665,10 @@
     </g>
   </g>
   <g font-size="9.5" fill="#7fd4cc" fill-opacity="0.85">
-    <text x="754" y="378">FAN BLADE  162x50 rx8 . idle rose-red field / G133 B143, stroke #a9e6df 1.8 ink #7cffe5 . selected #f5cb23 / #fce89a</text>
+    <text x="754" y="378">FAN BLADE  162x50 rx8 . idle rose-red field / G133 B143, stroke #a9e6df 1.4 ink #7cffe5 . selected #f5cb23 / #fce89a</text>
     <text x="754" y="389">labels Rajdhani 500 20..21, local ls 0..1 and measured offsets; blade and word rotate together</text>
     <text x="754" y="400">GHOSTS same 162x50; right PRODUCT/LOCATION pitch (+19.15,-19) in SCREEN space</text>
-    <text x="754" y="411">fill #0f9f80 at op .29 / .24 / .20 / .15 / .105 / .06, stroke #6cc4bd 1.2 at op .80 / .68 / .56 / .45 / .34 / .24</text>
+    <text x="754" y="411">nearest rose-R/G104/B94 op .75147; farther #0f9f80 op .24/.20/.15/.105/.06; stroke #6cc4bd 0.9 op .80..24</text>
     <text x="754" y="422">two 3-blade fans: hub (455,470) VEHICLES rot30 c(364,413), WEAPONS rot-30 c(551,414), PRODUCTS rot90 c(458,575);</text>
     <text x="754" y="433">hub (825,535) PRODUCTS rot90 c(825,424), EVENTS rot-30 c(731,586), LOCATIONS rot30 c(919,586) . ghost counts 7/7/7/7/5/7</text>
   </g>
@@ -782,7 +823,7 @@
     <text x="1300" y="604">VALUES BAR  #81fee7, local x 4..258 y 232..262, LEFT 65px hanging to</text>
     <text x="1300" y="614">   270 over a diagonal at 65..72 . figures 400 20 #123c38</text>
     <text x="1300" y="624">SOCKET ROW  rule +274.5 edge to edge, cells +52.5/119.5/190.5, QR +9.6</text>
-    <text x="1300" y="634">MICRO-TEXT  700 8 ls .3 #65e5c8 at +4, 341/349, BELOW the outline</text>
+    <text x="1300" y="634">MICRO-TEXT  FreeSans 700 6.667 #65e5c8 at +4.413/+3.971, y 341.167/349.292</text>
     <text x="1300" y="648">SELECTED (right): same 261 width, GROWN . #ffc233 to a stepped bottom,</text>
     <text x="1300" y="658">   y 457 right / 472 under the first 64px, diagonal at +64..79</text>
     <text x="1300" y="668">the band is NOT refilled: a 1.1 #a4583a OUTLINE over the amber (top</text>
@@ -790,7 +831,7 @@
     <text x="1300" y="688">   of the card edge . ink #8a3f28 / #5a3a08 / #3a2408, art 14px higher</text>
     <text x="1300" y="698">below the step, #e2a408 1.25 curved feet to y 680: 20 Recoil / 22</text>
     <text x="1300" y="708">   Sperad / 12 Range, Bonus / +9 Reflexes / +2 Modules Slots (279..392),</text>
-    <text x="1300" y="718">   socket row 414..462, micro-text 481/489 . FILL above, OUTLINE below</text>
+    <text x="1300" y="718">   socket row 414..462, micro-text FreeSans 700 6.667 at 483.167/490.75 . FILL above, OUTLINE below</text>
   </g>
 
   <!-- PRODUCT CARD, SELECTED (grown): store-trace.svg card 2 at x0 = 804,
@@ -837,9 +878,9 @@
       <text x="153.5" y="436.5">EMPTY</text><text x="153.5" y="450">SOCKET</text>
       <text x="224.5" y="436.5">EMPTY</text><text x="224.5" y="450">SOCKET</text>
     </g>
-    <g font-size="8" font-weight="700" letter-spacing="0.3" fill="#e9a50d">
-      <text x="4" y="483" letter-spacing="0.381967">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
-      <text x="4" y="491">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+    <g font-family="FreeSans" font-size="6.666666666667" font-weight="700" letter-spacing="0.002688446105" fill="#e9a50d">
+      <text x="4.412557704228" y="483.166666666667">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
+      <text x="3.971182942645" y="490.750000000000" letter-spacing="-0.041779341010">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
     </g>
   </g>
   </g>
@@ -924,6 +965,12 @@
   </g>
 
   <!-- ==================== BAND E: INTERACTION STATES ==================== -->
+  <!-- HUB EXCEPTION (AT): the dashboard already has five/seven-step trails.
+       Its inferred unselected hover changes only the front outline from
+       #a9e6df/1.4 to existing label mint #7cffe5/1.8; selected hover stays
+       gold. No new ghost, label, movement or hit region. See
+       docs/kitsch/dashboard-hover.md. The generic control examples below
+       retain their own one-ghost rule; no pointer state is sourced. -->
   <!-- HOVER AND PRESS. Sibling groups, rest / hover / press, for the four
        pointer targets the era has: the ENTER bar (button), the input field,
        the nav chevron and the mailbox list row.

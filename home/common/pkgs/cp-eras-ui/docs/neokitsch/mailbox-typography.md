@@ -4,7 +4,7 @@ Source: `images/neokitsch-mail.png` (#71, 3840×2160). The measured Iced baselin
 
 The previous list-row pass kept each title at x 193 (row 2 at x 193.5), baseline offset 27.2, 18px Rajdhani 500 and horizontal scale 0.99 on a 60.2 row pitch. Sender lines used 13px Rajdhani 500 at offset 48.2 and scale 1.16. The selected title/sender/envelope inks are the separately measured #7b5438/#895f3b/#865c39. The veneer, tab, rule and envelope coordinates did not change.
 
-The plain message keeps the same title, `FROM: MOM`, and 2+5+3 paragraph lines. Its heading is now 17.5px Rajdhani 600, scale 1.01 at (736,276); the sender is 13px/500, scale 1.16 at (738,297); the body is 17px/500, scale 1.06 at x 736, first baseline 333. Paragraph baselines, line pitch and gaps remain fixed. The heading size follows the source cap height; a 15px heading matched width after stretching but was visibly too short.
+The plain message keeps the same title, `FROM: MOM`, and 2+5+3 paragraph lines. Its heading is now 17.5px Rajdhani 600, scale 1.01 at (736,276); the sender is 13px/500, scale 1.16 at (738,297); the body is 17px/500, scale 1.054 at x 735.2, first baseline 333 after the [AX horizontal fit](text-fit.md). Paragraph baselines, line pitch and gaps remain fixed. The heading size follows the source cap height; a 15px heading matched width after stretching but was visibly too short.
 
 At native resolution, a consistent gold-pixel mask (R > 145, R > 1.08G, G > 1.12B) on fixed text crops gives the following bounds. Counts include the source's photographic bloom, so they guide density rather than define an exact target for sharp Iced text.
 

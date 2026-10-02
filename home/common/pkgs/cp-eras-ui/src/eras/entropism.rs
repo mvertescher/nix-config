@@ -482,7 +482,7 @@ pub const ACCESS: Access = Access {
 // BOX stay `Ink::Mid`: they are the screen's faintest text, not frames.
 
 use crate::style::{
-    Change, Frame, Mail, MailBadges, MailButtons, MailList, MailMotion, MailPanel, MailPart, MailRowType,
+    Change, Frame, Mail, MailBadgeArt, MailBadges, MailButtons, MailList, MailMotion, MailPanel, MailPart, MailRowType,
     Mailbox, Motion, Note, Piece, RowDecor, Run, Trim, FromAt,
 };
 use iced::animation::Easing;
@@ -720,6 +720,157 @@ const MAILBOX_BADGE_LABELS: &[Run] = &[
     Run::new(35.5, 43.5, 27.0, Ink::Fg).bold().centered().stretched(1.42),
 ];
 
+// Source T silhouettes and all four digits; see docs/entropism/mailbox-badges.md.
+const MAILBOX_BADGE_ART: &[MailBadgeArt] = &[
+    MailBadgeArt { text: "T1", replace_prefix: 2, pieces: &[
+        Piece::Poly { points: &[
+            (-14.500000, -16.333000),
+            (3.417000, -16.333000),
+            (3.417000, -13.833000),
+            (-4.083000, -13.833000),
+            (-4.083000, 0.333000),
+            (-7.000000, 0.333000),
+            (-7.000000, -13.833000),
+            (-14.500000, -13.833000),
+        ], fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
+        Piece::Poly { points: &[
+            (10.500000, -17.167000),
+            (12.167000, -17.167000),
+            (12.167000, 0.333000),
+            (9.667000, 0.333000),
+            (9.667000, -12.583000),
+            (5.917000, -12.583000),
+            (5.917000, -14.667000),
+            (8.417000, -15.083000),
+            (9.250000, -15.917000),
+        ], fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
+    ] },
+    MailBadgeArt { text: "T3", replace_prefix: 2, pieces: &[
+        Piece::Poly { points: &[
+            (-18.583333, -17.583000),
+            (-0.666333, -17.583000),
+            (-0.666333, -15.083000),
+            (-8.166333, -15.083000),
+            (-8.166333, -0.917000),
+            (-11.083333, -0.917000),
+            (-11.083333, -15.083000),
+            (-18.583333, -15.083000),
+        ], fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
+        Piece::Poly { points: &[
+            (7.250000, -18.000000),
+            (13.083333, -17.583333),
+            (14.750000, -16.750000),
+            (16.833333, -14.250000),
+            (16.416667, -11.333333),
+            (15.166667, -10.083333),
+            (13.500000, -9.666667),
+            (13.500000, -8.833333),
+            (15.166667, -8.416667),
+            (16.416667, -7.166667),
+            (16.833333, -4.250000),
+            (14.333333, -1.333333),
+            (12.666667, -0.500000),
+            (8.083333, -0.083333),
+            (1.416667, -2.166667),
+            (2.250000, -4.666667),
+            (7.666667, -3.000000),
+            (11.833333, -3.416667),
+            (13.500000, -4.666667),
+            (13.500000, -6.333333),
+            (12.666667, -7.166667),
+            (10.583333, -8.000000),
+            (6.833333, -8.000000),
+            (6.833333, -10.500000),
+            (11.833333, -10.500000),
+            (13.083333, -11.333333),
+            (13.500000, -13.833333),
+            (12.666667, -14.666667),
+            (6.833333, -15.083333),
+            (3.083333, -13.833333),
+            (2.250000, -15.083333),
+            (2.250000, -16.333333),
+        ], fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
+    ] },
+    MailBadgeArt { text: "T2", replace_prefix: 2, pieces: &[
+        Piece::Poly { points: &[
+            (-18.250000, -16.208000),
+            (-0.333000, -16.208000),
+            (-0.333000, -13.708000),
+            (-8.250000, -13.708000),
+            (-8.250000, 0.458000),
+            (-11.583000, 0.458000),
+            (-11.583000, -13.708000),
+            (-18.250000, -13.708000),
+        ], fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
+        // Source contour; the foot keeps medium coverage at the lower edge.
+        Piece::Poly { points: &[
+            (6.750000, -16.416667),
+            (12.166667, -16.416667),
+            (13.000000, -15.583333),
+            (14.250000, -15.583333),
+            (16.333333, -13.083333),
+            (16.333333, -10.166667),
+            (14.666667, -8.500000),
+            (11.333333, -6.833333),
+            (5.916667, -5.166667),
+            (4.666667, -3.916667),
+            (4.250000, -2.458333),
+            (16.750000, -2.458333),
+            (16.750000, 0.187500),
+            (1.750000, 0.187500),
+            (1.750000, -3.083333),
+            (3.416667, -6.000000),
+            (6.750000, -8.083333),
+            (11.750000, -9.333333),
+            (13.416667, -10.583333),
+            (13.416667, -12.666667),
+            (12.166667, -13.916667),
+            (10.500000, -14.333333),
+            (7.583333, -14.333333),
+            (2.583333, -12.666667),
+            (2.583333, -13.500000),
+            (1.750000, -13.916667),
+            (2.166667, -14.750000),
+        ], fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
+    ] },
+    MailBadgeArt { text: "T4", replace_prefix: 2, pieces: &[
+        Piece::Poly { points: &[
+            (-18.500000, -17.249667),
+            (-0.583000, -17.249667),
+            (-0.583000, -14.749667),
+            (-8.083000, -14.749667),
+            (-8.083000, -0.583667),
+            (-11.000000, -0.583667),
+            (-11.000000, -14.749667),
+            (-18.500000, -14.749667),
+        ], fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
+        // One fill with a reversed counter keeps the ink continuous without
+        // compositing overlapping diagonal, stem and crossbar polygons.
+        Piece::Curve {
+            start: (11.500000, -17.250000),
+            steps: &[
+                Seg::Line(14.416667, -17.250000),
+                Seg::Line(14.416667, -7.666667),
+                Seg::Line(17.750000, -7.666667),
+                Seg::Line(17.750000, -5.166667),
+                Seg::Line(14.416667, -5.166667),
+                Seg::Line(14.416667, -0.583333),
+                Seg::Line(11.083333, -0.583333),
+                Seg::Line(11.083333, -5.166667),
+                Seg::Line(1.500000, -5.166667),
+                Seg::Line(1.500000, -7.666667),
+                Seg::Line(11.083333, -16.833333),
+                Seg::Line(11.500000, -17.250000),
+                Seg::Move(5.666667, -7.666667),
+                Seg::Line(11.083333, -7.666667),
+                Seg::Line(11.083333, -14.166667),
+                Seg::Line(5.666667, -7.666667),
+            ],
+            fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true,
+        },
+    ] },
+];
+
 /// The seven rows, trace lines 188-207 (text) and 186 / 210-216 (the
 /// envelopes: only row 2's is `#env-open`). The trace sets them in
 /// capitals; `title_upper` / `from_upper` do that here.
@@ -918,6 +1069,7 @@ pub fn mailbox() -> Mailbox {
             stroke: Ink::Border,
             label: Run::new(35.0, 43.5, 27.0, Ink::Fg).bold().centered().stretched(1.42),
             label_runs: MAILBOX_BADGE_LABELS,
+            label_art: MAILBOX_BADGE_ART,
             caption: None,
             caption_text: "",
             labels: &LEVELS,
@@ -1000,17 +1152,61 @@ const fn store_value(x: f32, stretch: f32, ink: Ink, content: &'static str) -> P
         face: Face::SemiBold, anchor: crate::style::Anchor::Middle, content }
 }
 
+/// Selected-card manufacturer printing follows the measured source glyph spans.
+/// Stretched native glyphs need a one-physical-pixel lift at 4K versus SVG.
+/// The ordinary copies retain their current type pending independent gap fitting.
+const BETTERLIFE_TEC_GLYPHS: &[Prim] = &[
+    store_text(185.875004, 71.383333, 9.5, 1.250000, Ink::Fixed(STORE_ON_BAND), "B"),
+    store_text(191.500000, 71.383333, 9.5, 1.500000, Ink::Fixed(STORE_ON_BAND), "E"),
+    store_text(197.571348, 71.383333, 9.5, 1.428571, Ink::Fixed(STORE_ON_BAND), "T"),
+    store_text(202.988003, 71.383333, 9.5, 1.428571, Ink::Fixed(STORE_ON_BAND), "T"),
+    store_text(208.722147, 71.383333, 9.5, 1.333333, Ink::Fixed(STORE_ON_BAND), "E"),
+    store_text(214.208333, 71.383333, 9.5, 1.250000, Ink::Fixed(STORE_ON_BAND), "R"),
+    store_text(220.388816, 71.383333, 9.5, 1.333333, Ink::Fixed(STORE_ON_BAND), "L"),
+    store_text(226.083337, 71.8, 9.5, 1.000000, Ink::Fixed(STORE_ON_BAND), "I"),
+    store_text(228.305484, 71.383333, 9.5, 1.333333, Ink::Fixed(STORE_ON_BAND), "F"),
+    store_text(233.305482, 71.383333, 9.5, 1.333333, Ink::Fixed(STORE_ON_BAND), "E"),
+    store_text(241.321329, 71.383333, 9.5, 1.428571, Ink::Fixed(STORE_ON_BAND), "T"),
+    store_text(247.055478, 71.383333, 9.5, 1.333333, Ink::Fixed(STORE_ON_BAND), "E"),
+    store_text(252.125004, 71.383333, 9.5, 1.250000, Ink::Fixed(STORE_ON_BAND), "C"),
+];
+const BETTERLIFE_TEC: Prim = Prim::At {
+    x: 0.0, y: 0.0, prims: BETTERLIFE_TEC_GLYPHS,
+};
+
+/// Ordinary-card manufacturer printing uses one shared fit to both
+/// photographed ordinary copies. Stretched native glyphs lift one 4K pixel.
+/// Keep these Fixed inks through cursor inversions.
+const ORDINARY_BETTERLIFE_TEC_GLYPHS: &[Prim] = &[
+    store_text(185.486111, 71.383333, 9.5, 1.122222, Ink::Fixed(STORE_ON_BAND), "B"),
+    store_text(191.714286, 71.383333, 9.5, 1.157143, Ink::Fixed(STORE_ON_BAND), "E"),
+    store_text(197.174479, 71.383333, 9.5, 1.262500, Ink::Fixed(STORE_ON_BAND), "T"),
+    store_text(203.450521, 71.383333, 9.5, 1.137500, Ink::Fixed(STORE_ON_BAND), "T"),
+    store_text(208.886905, 71.383333, 9.5, 1.014286, Ink::Fixed(STORE_ON_BAND), "E"),
+    store_text(214.305556, 71.383333, 9.5, 1.011111, Ink::Fixed(STORE_ON_BAND), "R"),
+    store_text(220.553571, 71.383333, 9.5, 1.014286, Ink::Fixed(STORE_ON_BAND), "L"),
+    store_text(226.158333, 71.383333, 9.5, 0.560000, Ink::Fixed(STORE_ON_BAND), "I"),
+    store_text(227.964286, 71.383333, 9.5, 1.157143, Ink::Fixed(STORE_ON_BAND), "F"),
+    store_text(233.380952, 71.383333, 9.5, 1.157143, Ink::Fixed(STORE_ON_BAND), "E"),
+    store_text(241.361979, 71.383333, 9.5, 1.162500, Ink::Fixed(STORE_ON_BAND), "T"),
+    store_text(246.714286, 71.383333, 9.5, 1.157143, Ink::Fixed(STORE_ON_BAND), "E"),
+    store_text(252.152778, 71.383333, 9.5, 1.122222, Ink::Fixed(STORE_ON_BAND), "C"),
+];
+const ORDINARY_BETTERLIFE_TEC: Prim = Prim::At {
+    x: 0.0, y: 0.0, prims: ORDINARY_BETTERLIFE_TEC_GLYPHS,
+};
+
 /// An unselected product card, at its own origin. 265 wide, outlined,
 /// with the socket row hung off its foot so the two frames share an
 /// edge -- which is why the extractor reads them as one component.
 const CARD: &[Prim] = &[
     line_rect(0.0, 0.0, 265.0, 237.0, Ink::Border, 2.0),
-    txt(12.0, 26.0, 24.0, Ink::Select, "MAGNUM 650"),
-    txt(12.0, 45.0, 20.0, Ink::Select, "HAND GUN"),
+    txt(12.0, 24.5, 24.0, Ink::Select, "MAGNUM 650"),
+    txt(12.0, 43.5, 20.0, Ink::Select, "HAND GUN"),
     fill_rect(3.0, 55.0, 259.0, 20.0, Ink::Fixed(STORE_BAND)),
     fill_rect(3.0, 62.0, 58.0, 11.0, Ink::Fixed(STORE_ON_BAND)),
     txt(6.0, 71.0, 9.5, Ink::Fixed(STORE_BAND), "PETROCHEM"),
-    txt_end(259.0, 71.0, 9.5, Ink::Fixed(STORE_ON_BAND), "BETTERLIFE TEC"),
+    ORDINARY_BETTERLIFE_TEC,
     RIFLE_PLAIN,
     RIFLE_PLAIN_DETAIL,
     txt_mid(41.0, 196.7, 17.5, Ink::Select, "DPS"),
@@ -1038,20 +1234,73 @@ const CARD: &[Prim] = &[
     store_text(5.0, 314.0, 8.5, 1.025, Ink::Fg, "MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
 ];
 
+// A clipped canvas draft is pasted below direct frame meshes. Keep the
+// selected fill in the same draft as its title text, before the text.
+// The two drafts meet in the empty M-A gap at card-local x29.
+// Exact point-for-point transcription of the selected parent/component
+// SVG first-M approximation. Native text suffix remains the full run.
+const SELECTED_M: &[Seg] = &[
+    Seg::Line(27.17912000, 10.56800000),
+    Seg::Quad { cx: 27.44792000, cy: 10.56800000, x: 27.44792000, y: 10.85600000 },
+    Seg::Line(27.55544000, 17.60000000),
+    Seg::Line(27.87800000, 22.88000000),
+    Seg::Line(27.87800000, 24.36800000),
+    Seg::Quad { cx: 27.87800000, cy: 24.65600000, x: 27.60920000, y: 24.65600000 },
+    Seg::Line(26.69528000, 24.65600000),
+    Seg::Quad { cx: 26.42648000, cy: 24.65600000, x: 26.42648000, y: 24.36800000 },
+    Seg::Line(26.42648000, 22.88000000),
+    Seg::Line(26.07704000, 17.60000000),
+    Seg::Line(26.07704000, 12.41600000),
+    Seg::Line(25.96952000, 12.41600000),
+    Seg::Line(21.96440000, 22.37600000),
+    Seg::Quad { cx: 21.80312000, cy: 22.64000000, x: 21.56120000, y: 22.64000000 },
+    Seg::Line(20.67416000, 22.64000000),
+    Seg::Quad { cx: 20.40536000, cy: 22.64000000, x: 20.29784000, y: 22.37600000 },
+    Seg::Line(15.13688000, 12.39200000),
+    Seg::Line(15.02936000, 12.39200000),
+    Seg::Line(14.94872000, 17.60000000),
+    Seg::Line(14.57240000, 22.88000000),
+    Seg::Line(14.57240000, 24.32000000),
+    Seg::Quad { cx: 14.57240000, cy: 24.60800000, x: 14.30360000, y: 24.60800000 },
+    Seg::Line(13.41656000, 24.60800000),
+    Seg::Quad { cx: 13.14776000, cy: 24.60800000, x: 13.14776000, y: 24.32000000 },
+    Seg::Line(13.14776000, 22.88000000),
+    Seg::Line(13.52408000, 17.60000000),
+    Seg::Line(13.57784000, 10.85600000),
+    Seg::Quad { cx: 13.57784000, cy: 10.56800000, x: 13.84664000, y: 10.56800000 },
+    Seg::Line(15.40568000, 10.56800000),
+    Seg::Quad { cx: 15.59384000, cy: 10.56800000, x: 15.64760000, y: 10.71200000 },
+    Seg::Line(21.05048000, 21.24800000),
+    Seg::Line(21.15800000, 21.24800000),
+    Seg::Line(25.53944000, 10.71200000),
+    Seg::Quad { cx: 25.59320000, cy: 10.56800000, x: 25.78136000, y: 10.56800000 },
+];
+
+const GROWN_TITLE_ON_LEFT: &[Prim] = &[
+    Prim::Motion { motion: SELECT_LIT, prims: &[fill_rect(0.0, 0.0, 265.0, 234.0, Ink::Select)] },
+    fill_path(25.78136000, 10.56800000, SELECTED_M, Ink::OnSelect),
+];
+const GROWN_TITLE_ON_RIGHT: &[Prim] = &[
+    Prim::Motion { motion: SELECT_LIT, prims: &[fill_rect(0.0, 0.0, 265.0, 234.0, Ink::Select)] },
+    txt(13.0, 24.5, 24.0, Ink::OnSelect, "MAGNUM 650"),
+];
+const GROWN_TITLE_OFF_LEFT: &[Prim] = &[fill_path(25.78136000, 10.56800000, SELECTED_M, Ink::Select)];
+const GROWN_TITLE_OFF_RIGHT: &[Prim] = &[txt(13.0, 24.5, 24.0, Ink::Select, "MAGNUM 650")];
+
 /// The grown card: the header block down through the values row is one
 /// solid, the outline runs 412 tall, and the detail block takes the
 /// room the unselected card spends on its compliance notice.
 const GROWN: &[Prim] = &[
     // the header fill lights with the SMG row (`#select-lit`, :285);
     // the dark ink on it below stands from frame 0
-    Prim::Motion { motion: SELECT_LIT, prims: &[fill_rect(0.0, 0.0, 265.0, 234.0, Ink::Select)] },
     line_rect(0.0, 0.0, 265.0, 412.0, Ink::Border, 2.0),
-    txt(13.0, 26.0, 24.0, Ink::OnSelect, "MAGNUM 650"),
-    txt(13.0, 45.0, 20.0, Ink::OnSelect, "HAND GUN"),
+    Prim::Viewport { x: 0.0, y: 0.0, w: 29.0, h: 412.0, prims: GROWN_TITLE_ON_LEFT },
+    Prim::Viewport { x: 29.0, y: 0.0, w: 236.0, h: 412.0, prims: GROWN_TITLE_ON_RIGHT },
+    txt(13.0, 43.5, 20.0, Ink::OnSelect, "HAND GUN"),
     fill_rect(3.0, 55.0, 259.0, 20.0, Ink::Fixed(STORE_BAND)),
     fill_rect(3.0, 62.0, 58.0, 11.0, Ink::Fixed(STORE_ON_BAND)),
     txt(6.0, 71.0, 9.5, Ink::Fixed(STORE_BAND), "PETROCHEM"),
-    txt_end(259.0, 71.0, 9.5, Ink::Fixed(STORE_ON_BAND), "BETTERLIFE TEC"),
+    BETTERLIFE_TEC,
     RIFLE_INVERSE,
     RIFLE_INVERSE_DETAIL,
     txt_mid(41.0, 196.7, 17.5, Ink::OnSelect, "DPS"),
@@ -1128,16 +1377,21 @@ const fn compact_cursor() -> [Prim; CARD.len() + 1] {
 const CARD_CURSOR: &[Prim] = &compact_cursor();
 
 // Remove only the grown header fill, then restore sage printing on the
-// exposed ground. Everything below the header stays unchanged.
-const fn grown_outline() -> [Prim; GROWN.len() - 1] {
-    let mut out = [GROWN[1]; GROWN.len() - 1];
-    let mut i = 1;
+// exposed ground. The fill lives inside each selected-title viewport,
+// so the away/pressed version swaps its nested subscene to text-only.
+const fn grown_outline() -> [Prim; GROWN.len()] {
+    let mut out = [GROWN[0]; GROWN.len()];
+    let mut i = 0;
     while i < GROWN.len() {
         let mut prim = GROWN[i];
         match &mut prim {
             Prim::Text { y, ink, .. } | Prim::Wide { y, ink, .. } if *y <= 234.0 => {
                 if let Ink::OnSelect = *ink { *ink = Ink::Select; }
             }
+            // These are the only top-level viewports in GROWN. Their
+            // selected fill must disappear and nested text must invert.
+            Prim::Viewport { x, prims, .. } if *x == 0.0 => *prims = GROWN_TITLE_OFF_LEFT,
+            Prim::Viewport { x, prims, .. } if *x == 29.0 => *prims = GROWN_TITLE_OFF_RIGHT,
             Prim::Rect { y, fill, stroke, .. } if *y >= 102.0 && *y < 157.0 => {
                 *fill = Some(Ink::Fg);
                 *stroke = Some(Ink::Select);
@@ -1152,7 +1406,7 @@ const fn grown_outline() -> [Prim; GROWN.len() - 1] {
             Prim::Rect { y, fill, .. } if *y == 207.25 => *fill = Some(Ink::Select),
             _ => {}
         }
-        out[i - 1] = prim;
+        out[i] = prim;
         i += 1;
     }
     out
@@ -1208,6 +1462,9 @@ mod store_interaction_tests {
                 *stroke = None;
             }
             Prim::Text { ink, .. } | Prim::Wide { ink, .. } => *ink = Ink::Fg,
+            // Compare viewport placement independently of title ink/fill.
+            Prim::Viewport { x, prims, .. } if *x == 0.0 => *prims = GROWN_TITLE_OFF_LEFT,
+            Prim::Viewport { x, prims, .. } if *x == 29.0 => *prims = GROWN_TITLE_OFF_RIGHT,
             _ => {}
         }
         prim
@@ -1217,11 +1474,11 @@ mod store_interaction_tests {
     fn cursor_keeps_compact_and_grown_geometry_content_and_socket_rows() {
         let geometry = |prims: &[Prim]| prims.iter().copied().map(without_ink).collect::<Vec<_>>();
         assert_eq!(geometry(&CARD_CURSOR[1..]), geometry(CARD));
-        assert_eq!(geometry(GROWN_OUTLINE), geometry(&GROWN[1..]));
+        assert_eq!(geometry(GROWN_OUTLINE), geometry(GROWN));
         // Details, sockets, QR and compliance are outside the header;
         // none follow hover or press, including their original inks.
         assert_eq!(&CARD_CURSOR[19..], &CARD[18..]);
-        assert_eq!(&GROWN_OUTLINE[18..], &GROWN[19..]);
+        assert_eq!(&GROWN_OUTLINE[19..], &GROWN[19..]);
         for (index, states) in STORE_STATES.iter().enumerate() {
             assert_eq!((states.group, states.index), (Group::Card, index));
             assert_eq!(states.hover, CARD_CURSOR);
@@ -1236,9 +1493,19 @@ mod store_interaction_tests {
     fn reverse_video_changes_only_header_material_and_keeps_brand_inks() {
         assert_eq!(CARD_CURSOR[0], fill_rect(0.0, 0.0, 265.0, 234.0, Ink::Select));
         assert_eq!(&CARD_CURSOR[4..8], &CARD[3..7]);
-        assert_eq!(&GROWN_OUTLINE[3..7], &GROWN[4..8]);
+        assert_eq!(&GROWN_OUTLINE[4..8], &GROWN[4..8]);
+
         for prim in GROWN_OUTLINE {
             assert!(!matches!(prim, Prim::Motion { .. }));
+            if let Prim::Viewport { prims, .. } = prim {
+                assert!(!prims.iter().any(|nested| matches!(nested, Prim::Motion { .. })),
+                    "away/pressed title must have no selected fill");
+                assert!(prims.iter().all(|nested| match nested {
+                    Prim::Text { ink: Ink::Select, .. } => true,
+                    Prim::Path { fill: Some(Ink::Select), .. } => true,
+                    _ => false,
+                }), "away/pressed nested title must use selected ink");
+            }
             if let Prim::Text { y, ink, .. } | Prim::Wide { y, ink, .. } = prim {
                 if *y <= 234.0 { assert_ne!(*ink, Ink::OnSelect); }
             }

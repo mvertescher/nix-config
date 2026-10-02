@@ -56,6 +56,7 @@
        y 1080 moved. The 2026-09-27 upper-field fit supersedes that
        inherited sheet background; see ground-fit.md. -->
   <defs>
+    <clipPath id="store-selected-title-suffix-clip" clipPathUnits="userSpaceOnUse"><rect x="29" y="0" width="236" height="412"/></clipPath>
     <radialGradient id="lift" gradientUnits="userSpaceOnUse" cx="1122" cy="8" r="1132"
                     gradientTransform="translate(0 8) scale(1 0.577150) translate(0 -8)">
       <stop offset="0"    stop-color="#1f1e15"/>
@@ -111,12 +112,28 @@
          the two nested native weapon masks. -->
     <g id="card" font-family="Rajdhani">
       <rect x="0" y="0" width="265" height="237" fill="none" stroke="#93bd95" stroke-width="1.25"/>
-      <text x="12" y="26" font-size="24" fill="#a8d4a2" letter-spacing="1">MAGNUM 650</text>
-      <text x="12" y="45" font-size="20" fill="#a8d4a2" letter-spacing="1">HAND GUN</text>
+      <text transform="translate(-2.69,0) scale(1.12,1)" x="12" y="26" font-size="24" fill="#a8d4a2" letter-spacing="-1">MAGNUM</text>
+      <text x="106.5" y="26" font-size="24" fill="#a8d4a2" letter-spacing="-0.5">650</text>
+      <text x="12" y="44.5" font-size="20" fill="#a8d4a2" letter-spacing="1">HAND GUN</text>
       <rect x="3" y="55" width="259" height="20" fill="#eebf09"/>
       <rect x="3" y="62" width="58" height="11" fill="#35462e"/>
       <text x="6" y="71" font-size="9.5" fill="#eebf09">PETROCHEM</text>
-      <text x="259" y="71" font-size="9.5" fill="#35462e" text-anchor="end">BETTERLIFE TEC</text>
+      <!-- Ordinary BETTERLIFE TEC: one shared fit to card-2/card-3 source support; selected printing unchanged. -->
+    <g role="img" aria-label="BETTERLIFE TEC">
+      <text x="0" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.122222 0 0 1 185.486111 0)">B</text>
+      <text x="0" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.157143 0 0 1 191.714286 0)">E</text>
+      <text x="0" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.262500 0 0 1 197.174479 0)">T</text>
+      <text x="0" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.137500 0 0 1 203.450521 0)">T</text>
+      <text x="0" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.014286 0 0 1 208.886905 0)">E</text>
+      <text x="0" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.011111 0 0 1 214.305556 0)">R</text>
+      <text x="0" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.014286 0 0 1 220.553571 0)">L</text>
+      <text x="0" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(0.560000 0 0 1 226.158333 0)">I</text>
+      <text x="0" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.157143 0 0 1 227.964286 0)">F</text>
+      <text x="0" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.157143 0 0 1 233.380952 0)">E</text>
+      <text x="0" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.162500 0 0 1 241.361979 0)">T</text>
+      <text x="0" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.157143 0 0 1 246.714286 0)">E</text>
+      <text x="0" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.122222 0 0 1 252.152778 0)">C</text>
+    </g>
       <use href="#rifle" fill="#779375"/><use href="#rifle-detail" fill="#b3ddb1"/>
       <g font-size="17.5" fill="#a8d4a2" text-anchor="middle" letter-spacing="1">
         <text x="41" y="196.7">DPS</text><text x="102" y="196.7">PNT</text>
@@ -386,7 +403,7 @@
   <use href="#card" x="879" y="114"/>
   <g font-family="Rajdhani" font-size="9" font-weight="500" fill="#88a789">
     <text x="879" y="442">card 265x237 stroke 1.25 #93bd95; socket row 265x49 on its foot</text>
-    <text x="879" y="453">title 24 ls 1 at x+12 baseline 26; HAND GUN 20 ls 1 baseline 45</text>
+    <text x="879" y="453">title 24 ls 1 at x+12 baseline 26; HAND GUN 20 ls 1 baseline 44.5</text>
     <text x="879" y="464">band 259x20 #eebf09 at +3,55, with a 58x11 #35462e tag at +3,62</text>
     <text x="879" y="475">PETROCHEM 9.5 #eebf09; BETTERLIFE TEC 9.5 #35462e, end at +259</text>
     <text x="879" y="486">the only non-sage ink in the whole entropism run</text>
@@ -579,12 +596,32 @@
   <g transform="translate(1625,114)" font-family="Rajdhani">
     <rect x="0" y="0" width="265" height="234" fill="#a8d4a2"/>
     <rect x="0" y="0" width="265" height="412" fill="none" stroke="#93bd95" stroke-width="1.25"/>
-    <text x="13" y="26" font-size="24" fill="#35462e" letter-spacing="1">MAGNUM 650</text>
-    <text x="13" y="45" font-size="20" fill="#35462e" letter-spacing="1">HAND GUN</text>
+    <!-- First M: one source-calibrated outline approximation from 4K stem and foot profiles.
+         The photographed edge texture and original font remain unidentified.
+         Keep the original full shaped run beyond x29, inside the empty M-A gap. -->
+    <path d="M522 643H574Q584 643 584 631L588 350L600 130V68Q600 56 590 56H556Q546 56 546 68V130L533 350V566H529L380 151Q374 140 365 140H332Q322 140 318 151L126 567H122L119 350L105 130V70Q105 58 95 58H62Q52 58 52 70V130L66 350L68 631Q68 643 78 643H136Q143 643 145 637L346 198H350L513 637Q515 643 522 643Z" transform="translate(-2.81,0) scale(1.12,1) translate(13,26) scale(0.024,-0.024)" fill="#35462e"/>
+    <g clip-path="url(#store-selected-title-suffix-clip)"><text transform="translate(-2.81,0) scale(1.12,1)" x="13" y="26" font-size="24" fill="#35462e" letter-spacing="-1">MAGNUM</text></g>
+    <text x="106.5" y="26" font-size="24" fill="#35462e" letter-spacing="-0.5">650</text>
+    <text x="13" y="44.5" font-size="20" fill="#35462e" letter-spacing="1">HAND GUN</text>
     <rect x="3" y="55" width="259" height="20" fill="#eebf09"/>
     <rect x="3" y="62" width="58" height="11" fill="#35462e"/>
     <text x="6" y="71" font-size="9.5" fill="#eebf09">PETROCHEM</text>
-    <text x="259" y="71" font-size="9.5" fill="#35462e" text-anchor="end">BETTERLIFE TEC</text>
+    <!-- Selected BETTERLIFE TEC: source-fitted Medium glyph placements; exact photographed contours remain unresolved. -->
+    <g role="img" aria-label="BETTERLIFE TEC">
+      <text x="186.91667" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.250000 0 0 1 -47.770833 0)">B</text>
+      <text x="192.75000" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.500000 0 0 1 -97.625000 0)">E</text>
+      <text x="198.16667" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.428571 0 0 1 -85.523810 0)">T</text>
+      <text x="203.58333" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.428571 0 0 1 -87.845238 0)">T</text>
+      <text x="209.83333" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.333333 0 0 1 -71.055556 0)">E</text>
+      <text x="215.25000" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.250000 0 0 1 -54.854167 0)">R</text>
+      <text x="221.50000" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.333333 0 0 1 -74.944444 0)">L</text>
+      <text x="226.91667" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.000000 0 0 1 -0.833333 0)">I</text>
+      <text x="229.41667" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.333333 0 0 1 -77.583333 0)">F</text>
+      <text x="234.41667" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.333333 0 0 1 -79.250000 0)">E</text>
+      <text x="241.91667" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.428571 0 0 1 -104.273810 0)">T</text>
+      <text x="248.16667" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.333333 0 0 1 -83.833333 0)">E</text>
+      <text x="253.16667" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.250000 0 0 1 -64.333333 0)">C</text>
+    </g>
     <use href="#rifle-selected" fill="#35462e"/><use href="#rifle-selected-core" fill="#1f2a1c"/>
     <g font-size="17.5" fill="#35462e" text-anchor="middle" letter-spacing="1">
       <text x="41" y="196.7">DPS</text><text x="102" y="196.7">PNT</text>
@@ -629,21 +666,32 @@
        boxes on a 77 x 78 grid at x 1341 / 1418, y 227 / 305, read
        T1 T3 over T2 T4 with T2 (bottom left) filled solid #a6d2a8; the
        glyphs are a bold EXTENDED face, cap 18, runs 27 / 35 / 35 / 37
-       wide, drawn as Rajdhani bold 27 stretched 1.42..1.48 and centred
-       on the measured run. dashboard-trace.svg stacks the same badge as
+       wide. Source contours replace all T glyphs and digits; the original words
+       remain nonpainting, centred on their measured runs. dashboard-trace.svg stacks the same badge as
        a COLUMN of four 68x68 at x 1380, y 214 / 304 / 393 / 482 (a ~89
        pitch) with T2 filled and stretches 1.37..1.5. Only the 2px
-       design stroke is drawn. Translated by (284,465). -->
+       design stroke is drawn. Translated by (284,478). -->
   <text x="1625" y="697" font-family="Rajdhani" font-size="11" font-weight="600"
         letter-spacing="1" fill="#8fba97">SECURITY LEVEL BADGE &#183; T2 SELECTED</text>
   <g font-family="Rajdhani" font-size="27" font-weight="bold" text-anchor="middle">
     <path d="M 1625,705 h 69 v 69 h -69 Z M 1702,705 h 69 v 69 h -69 Z M 1702,783 h 69 v 69 h -69 Z"
           fill="none" stroke="#709174" stroke-width="2"/>
-    <text transform="translate(1661,749) scale(1.44,1)" fill="#a6d2a8">T1</text>
-    <text transform="translate(1738,749) scale(1.48,1)" fill="#a6d2a8">T3</text>
+    <!-- Source-fitted T and separately source-replaced digit 1; original T1 text is nonpainting. -->
+    <text transform="translate(1661,749) scale(1.44,1)" fill="none">T1</text>
+    <path d="M1387.5 253.333 H1389.167 V270.833 H1386.667 V257.917 H1382.917 V255.833 L1385.417 255.417 L1386.25 254.583 Z" transform="translate(284 478)" fill="#a6d2a8"/>
+    <path d="M1362.5 254.167 H1380.417 V256.667 H1372.917 V270.833 H1370 V256.667 H1362.5 Z" transform="translate(284 478)" fill="#a6d2a8"/>
+    <!-- Source-core T3 digit 3, parent geometry translated (+284,+478). -->
+    <text transform="translate(1738,749) scale(1.48,1)" fill="none">T3</text>
+    <path d="M1461.250000 252.500000 L1467.083333 252.916667 L1468.750000 253.750000 L1470.833333 256.250000 L1470.416667 259.166667 L1469.166667 260.416667 L1467.500000 260.833333 L1467.500000 261.666667 L1469.166667 262.083333 L1470.416667 263.333333 L1470.833333 266.250000 L1468.333333 269.166667 L1466.666667 270.000000 L1462.083333 270.416667 L1455.416667 268.333333 L1456.250000 265.833333 L1461.666667 267.500000 L1465.833333 267.083333 L1467.500000 265.833333 L1467.500000 264.166667 L1466.666667 263.333333 L1464.583333 262.500000 L1460.833333 262.500000 L1460.833333 260.000000 L1465.833333 260.000000 L1467.083333 259.166667 L1467.500000 256.666667 L1466.666667 255.833333 L1460.833333 255.416667 L1457.083333 256.666667 L1456.250000 255.416667 L1456.250000 254.166667 Z" transform="translate(284 478)" fill="#a6d2a8"/>
+    <path d="M1362.5 254.167 H1380.417 V256.667 H1372.917 V270.833 H1370 V256.667 H1362.5 Z" transform="translate(356.916667 476.75)" fill="#a6d2a8"/>
     <rect x="1625" y="783" width="69" height="69" fill="#a6d2a8"/>
-    <text transform="translate(1661,826) scale(1.47,1)" fill="#25281d">T2</text>
-    <text transform="translate(1737.5,826) scale(1.42,1)" fill="#a6d2a8">T4</text>
+    <text transform="translate(1661,826) scale(1.47,1)" fill="none">T2</text>
+    <!-- Source-fitted digit 2, including the medium-coverage foot edge. -->
+    <path d="M1383.750000 332.083333 L1389.166667 332.083333 L1390.000000 332.916667 L1391.250000 332.916667 L1393.333333 335.416667 L1393.333333 338.333333 L1391.666667 340.000000 L1388.333333 341.666667 L1382.916667 343.333333 L1381.666667 344.583333 L1381.250000 346.041667 L1393.750000 346.041667 L1393.750000 348.687500 L1378.750000 348.687500 L1378.750000 345.416667 L1380.416667 342.500000 L1383.750000 340.416667 L1388.750000 339.166667 L1390.416667 337.916667 L1390.416667 335.833333 L1389.166667 334.583333 L1387.500000 334.166667 L1384.583333 334.166667 L1379.583333 335.833333 L1379.583333 335.000000 L1378.750000 334.583333 L1379.166667 333.750000 Z" transform="translate(284 478)" fill="#25281d"/>
+    <path d="M1358.75 332.292 H1376.667 V334.792 H1368.75 V348.958 H1365.417 V334.792 H1358.75 Z" transform="translate(284 478)" fill="#25281d"/>
+    <text transform="translate(1737.5,826) scale(1.42,1)" fill="none">T4</text>
+    <path d="M1465.000000 331.250000 L1467.916667 331.250000 L1467.916667 340.833333 L1471.250000 340.833333 L1471.250000 343.333333 L1467.916667 343.333333 L1467.916667 347.916667 L1464.583333 347.916667 L1464.583333 343.333333 L1455.000000 343.333333 L1455.000000 340.833333 L1464.583333 331.666667 Z M1459.166667 340.833333 L1464.583333 340.833333 L1464.583333 334.333333 Z" fill-rule="evenodd" transform="translate(284 478)" fill="#a6d2a8"/>
+    <path d="M1362.5 254.167 H1380.417 V256.667 H1372.917 V270.833 H1370 V256.667 H1362.5 Z" transform="translate(356.5 555.083333)" fill="#a6d2a8"/>
   </g>
   <g font-family="Rajdhani" font-size="9" font-weight="500" fill="#88a789">
     <text x="1625" y="869">69x69 on a 77 x 78 grid, stroke 2 #709174; read T1 T3 / T2 T4</text>

@@ -158,10 +158,11 @@ the motion wrappers sit outside those cached groups.
 Dashboard interaction audit (2026-09-14): holding a blade can remove
 its own ghost trail and use its existing yellow face. That needs
 pointer feedback shared with the backdrop, while keeping the scene's
-hit-test identity stable. The hub's hover destination remains undefined:
+hit-test identity stable. At that audit, hub hover remained undefined:
 each blade already has five to seven ghosts at rest, whereas the
 component rule below adds one to an unextruded control. Neither reducing
 the trail to one nor adding another layer follows an annotated hub state.
+AT subsequently defines a stationary [front-outline hover](dashboard-hover.md).
 
 ## Hover and press
 
@@ -388,7 +389,8 @@ yellow selected face, including dark label ink. Other trails retain their
 order and original extrusion clips; the ground and bloom stay unchanged.
 Selection and routing still commit only on release over the original
 blade. Exit, focus loss, keyboard input and route changes restore the
-resting backdrop. Hover is unchanged pending a hub-specific design rule.
+resting backdrop. The subsequent [hub hover rule](dashboard-hover.md)
+brightens only an unselected front outline; the fan stays stationary.
 The two fans have disjoint pixel coverage, so removing a left-fan trail
 cannot change the right fan's cached composite. This adds no animation
 or revised trace/golden artwork; live desktop interaction remains pending.

@@ -72,8 +72,9 @@ contours use a 0.35 runtime outline and a
 0.15 SVG outline; the SVG then has 84 bright pixels versus the
 source's 85. The different tier widths compensate for the two stroke
 rasterizers while keeping one measured path. The primary top runs
-match their source horizontal bounds. The source's secondary print
-copies remain unresolved. Five clear badge-field medians support local
+match their source horizontal bounds. The three top-caption copies are
+measured separately below; other secondary printing remains unresolved.
+Five clear badge-field medians support local
 reference fills `#422e34`, `#2f224a`, `#722942`, `#2c2448` and
 `#2b2546` from customer through T4. On seven held-out clean patches
 per badge, channel MAE falls from roughly 18–57 RGB levels under the
@@ -281,3 +282,339 @@ The preview evidence is in
 regression set passed 257 tests before the later source-detail work;
 final repository gates and source comparisons belong to the integrated
 review after that work.
+
+
+## Top-caption secondary copies — AG, 2026-09-30
+
+The login photograph has two faint copies above CUSTOMER, #NC488402 and
+SECURITY LEVEL. They were missing from both the trace and native drawing.
+The dashboard's analogous copies are not interchangeable: same-position
+login/dashboard crops differ by 7.6–10.0 RGB levels on average. This fit
+uses the login's Regular Rajdhani outlines and source image independently.
+The primary captions, badge artwork, ground coefficients and other printing
+are preserved.
+
+Each caption has two translated copies, with rounded stroke profiles at
+1.4, .7, .25 and 0 design pixels. A profile receives opacity once over its
+fill/stroke union. The shared 1.984934px scan period has an independently
+fitted phase and strength per caption. Nine-stop ramps over an opaque gray
+floor preserve fractional pitch without tiled seams. The copies share the
+existing reference ground's first Soft preparation; they add no full-screen
+pass and custom palettes retain the existing semantic backdrop.
+
+| Caption | First-copy dx/dy, design pixels | Native held-out middle RGB RMS | Native held-out last RGB RMS |
+| --- | --- | --- | --- |
+| CUSTOMER | −4.1173 / −3.6830 | 13.83 → 6.09 | 11.06 → 5.93 |
+| #NC488402 | −3.5767 / −3.6281 | 14.85 → 6.75 | 10.99 → 7.53 |
+| SECURITY LEVEL | +2.1264 / −3.6159 | 14.09 → 6.51 | 11.97 → 6.09 |
+
+Only each crop's first horizontal third was used for fitting. Before any
+trial, the primary strokes were excluded using source/trace red thresholds
+and a one-pixel dilation. Middle/last thirds, native rendering, echo masks
+and bright primary masks were then independent checks. Across red-minus-
+green thresholds 8/15/25, native held-out echo F1 rises from zero to
+.675–.809. SVG holdouts improve independently as well. Native bright masks
+at red 180 and 210 are exactly unchanged for all three captions. The 1,212
+strong primary pixels above red 235 are byte-identical. At the looser 150
+threshold, SECURITY gains two unsupported fringe pixels and F1 slips
+.80843→.80762; CUSTOMER and the code improve. This small fringe tradeoff
+is retained explicitly, not hidden by the average error.
+
+The native 3840×2160 change affects 12,782 pixels, all within the three
+caption crops, bounding x277..2939/y175..208. All 5,016 blank control pixels
+above/below the copies are unchanged. SVG compaction to reusable outline
+definitions renders byte-identically to the measured trial. The component
+sheet's header specimen is explicitly the dashboard header, so it retains
+its dashboard-specific copies; the login card excerpt is unaffected.
+
+Scratch evidence: `/tmp/cp-eras-next/ag/neomil/`, including the frozen
+pretrial masks, fit parameters, actual SVG measurements, native comparison
+and threshold results. The 1600×900 capture changes 2,532 caption pixels.
+At 1537×947, matched rest/hover/held/disabled/80-mask/hidden-caret captures
+each change the same 2,817 caption pixels, with every other pixel identical.
+The matched custom-palette capture is byte-identical. State-to-rest checks
+confine all interactive differences to the password/action region in both
+revisions. The [AG checkpoint](../reference-svg-round18.md) records all six
+affected gates, 286 Rust tests, 22 repository checks and 27 exact visual
+matches.
+These three copies are a bounded correction; exact
+photographic texture, other login echoes and softened edges remain open.
+
+## Inactive card notices — AH, 2026-09-30
+
+The notices on cards two and three sat about ten native pixels below the
+source photograph in both the SVG and the Iced capture. This is distinct
+from the active card notice, whose position remains unchanged. Card two
+and three now place the first line at design baseline 584.2 (formerly
+588.4), and the second at 592.8 (formerly 597.4). The two-line separation
+was adjusted by 0.4 design pixels to fit the SVG's second line independently.
+
+At 3840×2160, the source's strong red primary ink occupies y1389..1400
+on line one and y1410..1421 on line two. The adjusted SVG occupies
+y1389..1401 and y1410..1422. This holds for the first, middle and last
+70-pixel-wide sampled spans on each inactive card. Before adjustment,
+the first line began at y1399 and the second at y1420 in both the SVG
+and Iced capture. The source mask uses R>180 and R−G>110; card two's SVG
+uses the same cut, while card three's dimmer SVG requires R>105 and
+R−G>60. Comparing the adjusted SVG with the frozen previous rendering,
+changed pixels lie only within native x1679..2955/y1389..1435;
+blank controls above and below those notices are unchanged.
+
+Color and glyph material remain separate from this placement correction.
+For strong notice pixels, the source's median RGB is approximately
+(229,48,48) on card two and (227,48,48) on card three. The previous
+native capture measures (202,43,44) and (155,32,36), respectively;
+card three uses semantic `Ink::Dim`; its reference-only ink correction is
+recorded below. The source's softened glyph edges and small secondary
+ink also differ from the current sharp Rajdhani rendering. Evidence is
+in `/tmp/cp-eras-next/ah/neomil/login-trace-adjusted.png` and the
+frozen source/current images cited above.
+
+Astra's fresh Iced capture confirms the placement improvement. At a common
+red threshold of 130, occupied native rows are 1389–1401 and 1409–1421,
+versus source 1389–1400 and 1410–1421: the first line retains one extra
+lower row and the second starts one row high. Across five thresholds and
+first/middle/last notice crops, 24 of 30 native comparisons improve and
+six are unchanged; SVG has the same count. The unchanged cases are high
+thresholds at which card three's dim ink has no bright core. No segment
+regresses. This validates placement, not exact letter contours or color.
+
+Only 16,262 native 4K pixels and 4,619 pixels at 1600×900 change, all in
+the two inactive notices. Blank bands and the active card are unchanged.
+Seven matched fractional rest/hover/held/disabled/long-input/dark-caret/
+custom comparisons each change the same 4,910 notice pixels. The rest
+preview matches production exactly, and interactive differences stay in
+the password/action region. Evidence is in `root-whole.json`,
+`root-notice-montage.png` and `../state-review.json` under the AH directory.
+
+Fractional review also exposes an existing width issue: at 1537×947,
+the last notice letters extend approximately 5.3 and 5.7 pixels beyond
+the two inactive card edges, identically before and after this change.
+Login anchors/cards scale per axis, while text size uses the mean of
+those scales. The comparison mask must account for that actual glyph
+extent; assuming all text scales with x alone excludes 52 notice pixels.
+`fractional-overhang.json` records the unchanged overhang. Containing those
+runs without losing text is separate follow-up work.
+
+## Locked notice reference ink — AI, 2026-09-30
+
+The source's two inactive notices have effectively the same red print:
+foreground medians over their two lines are RGB (229,48,48) on card two
+and (227,48,48) on card three. Card three's former dim role produced
+about (155,32,36) in the AH native capture and no pixels above R180 in
+the SVG notice. Its two `Legend`s now retain semantic `Ink::Dim` and use
+the existing `NOTICE` (#e63132) only for the source reference palette.
+The trace uses that same fill, matching card two. Custom palettes retain
+their dim role; the shared reference-ink resolution is checked in the
+integrated review.
+
+With the AH placement fixed, six source-aligned spans sample the first,
+middle and last runs of both lines. At R>180 and R−G>85, SVG mask F1
+against the source changes from zero to .390/.370/.089 on line one and
+.339/.254/.096 on line two. In co-located bright cores, mean absolute
+red-channel error falls from 88/75/85 to 47/31/44 levels on line one,
+and from 76/97/82 to 42/59/42 on line two. At R>150, all six spans
+also improve. The last spans remain weak because the source glyphs are
+wider and softer than the current thin Rajdhani outlines. Trial fills
+#f63333 and #ff3333 improve co-located bright cores further, but also
+brighten unmatched SVG contours; a local color fit cannot resolve the
+font-shape mismatch. `NOTICE` preserves the measured match between the
+two cards and leaves that contour work explicit.
+
+The final source comparison uses fixed first/middle/last spans and red
+thresholds 105,130,155,180,210. All 30 comparisons improve in each renderer.
+The SVG changes 5,114 pixels and the native 4K image changes 4,529, all
+inside the locked notice. On source/old-SVG bright-core intersections
+chosen independently of the new ink, native red-channel error drops
+80.9→17.5, 80.3→16.2 and 80.6→18.0 on the first line, and 86.7→24.1,
+98.1→43.5 and 87.7→29.5 on the second. These are small samples of
+67/92/65 and 32/15/11 pixels; they support ink correction, not exact
+font recovery. Evidence: `/tmp/cp-eras-next/ai/neomil/root-ink-results.json`.
+
+## Narrow-window notice containment — AI
+
+All three cards can overflow at narrower aspect ratios because anchors
+use separate x/y scales while font size uses their mean. The renderer
+measures complete note runs against each card interior, then uses the
+smallest required font-size factor for the whole notice block. Tracking
+scales proportionally; text, anchors, baselines, stretch and inks are
+preserved. Reference 16:9 geometry returns unchanged. Notes without card
+bodies and rotated margin legends are not fitted.
+
+A horizontal-compression trial passes width tests but visibly breaks tiny
+strokes when Iced switches from hinted glyphs to outline meshes. It is
+rejected. Uniform size keeps the hinted path; using one block scale also
+avoids different sizes for lines of the same notice. Font shaping is
+measured again after shrinking to account for rounding. Seven layout
+sizes, custom role/override resolution and interaction-coat precedence
+have Rust coverage. Final native/state and repository verification are
+recorded in [round twenty](../reference-svg-round20.md).
+
+Final native review finds zero notice ink beyond all three card edges at
+1537×947, 1200×900 and 900×1200, compared with 15/18/15, 84/76/82 and
+326/80/326 pixels before the fit. Probes exclude card borders and nearby
+cards. All six reference fractional state pairs change the same 5,489
+notice pixels, while custom colors change 5,466; all other regions are
+unchanged. A Dim-only custom palette at 1600×900 is byte-identical before
+and after, and both canonical sizes preserve their original geometry.
+`/tmp/cp-eras-next/ai/native-review.json` records the bounds, pixel-region
+and state checks. The complete notice becomes smaller in a narrow window;
+this fit does not recover the remaining source glyph/softness details.
+
+## Active-notice echo investigation — AJ
+
+A scratch trial places an active-notice copy 2.5 design pixels left and
+down, using .7 stroke width, .45 Gaussian blur and .30 opacity. It retains
+the primary text definitions. A small twelve-candidate grid uses the first
+echo-only span of each line for fitting and middle/last spans as holdouts.
+The chosen trial improves RGB RMS on both fitting spans and all four
+holdouts, while three blank controls remain identical. It also brightens
+some primary antialiased fringes: source-bright samples improve, but
+already-mismatched glyph edges become slightly worse.
+
+Corrected alpha diagnostics use the actual #e63132 fill and each
+pixel's background; the four exact-fill pixels in the full primary window
+remain unchanged. High-alpha samples have small losses, while fixed
+source-bright samples improve. Astra's independent complete-notice spans
+improve RGB RMS in all six regions and 40 of 42 threshold comparisons,
+with one tie and one small F1 loss (.00168 at R180 on line two's middle).
+That fringe tradeoff remains explicit.
+
+The accepted lower copy keeps the primary renderer unchanged and applies
+the same notice-block fitting to the secondary copy. Era-owned parameters
+select a local glyph tile in a separate canvas below the primary artwork.
+The cache follows bounds, palette and static slot data; custom palettes
+omit the source-only copy. It does not add a full-screen raster layer.
+Opacity is an approximation to SVG's sRGB compositing against the local
+background, so native source measurements are separate.
+
+A disabled 4K preview exactly matches AI. The enabled preview changes
+14,311 pixels only inside the active notice and improves whole-region RGB
+RMS in all six spans. Echo-only RMS changes 23.67→10.92, 22.71→15.14,
+26.06→13.43, 13.51→9.07, 14.11→8.75 and 13.36→8.33; all eighteen
+echo-only F1 comparisons improve. Complete-region masks retain some small
+losses, up to .0017 F1. The final production 4K image matches that preview
+exactly. A 900×1200 preview stays attached to the fitted primary and
+changes 1,088 notice pixels. Fine scan repetitions and exact glyph forms
+remain open. State/cache and integrated checks are recorded in
+[round twenty-one](../reference-svg-round21.md).
+
+Reproducible source scripts, twelve trials and primary/echo measurements
+are under `/tmp/cp-eras-next/aj-login-echoes/` (`fit_softness.py` and
+`diagnose_primary.py`). Native captures and review scripts are under
+`/tmp/cp-eras-next/aj/`.
+
+The final state review changes only the notice: 2,319 pixels in each of
+six fractional reference states, while both custom-palette controls are
+byte-identical to AI. The echo remains inside the active card at 1537×947,
+1200×900 and 900×1200. The 4K cache audit exercises 86 draws and prepares
+three 602×66 tiles only for initial and changed/restored slot data. Hover
+and input changes reuse the cache; custom colors draw no echo. Local tile
+creation takes 5.24–6.00 ms, with 158,928 retained RGBA bytes. This does not
+measure total frame time or live hardware presentation.
+
+
+## BG inactive-notice weight audit
+
+The two inactive notice lines have fewer red-threshold pixels than the
+photo. At R>155 in the 4K first line, source/current SVG/frozen AJ native
+areas are 2472/1433/1838 on card 2 and 2306/1292/1792 on card 3. These are
+ink-area differences, not proof that font weight is the cause. Contours,
+hinting, phase and ink can all contribute; the source font remains unknown.
+
+One scratch SVG changes only the two notice groups from Regular to Medium.
+All fixed line-mask comparisons improve, but card 2 line-one RGB MAE worsens
+17.249821→18.599176 at 4K, 13.753388→13.843722 at 1600 and
+16.782153→17.097828 at 1537. The held-out card 3 line two also worsens at
+all three sizes: 18.923392→20.352698, 15.379232→16.055896 and
+17.719745→18.293465. The first-O control on card 2 has a small 4K RGB loss;
+card 3 gains six false R>130 pixels inside a fixed source-dark counter mask.
+The weight-only proposal is rejected before native work.
+
+The trial changes 12739/3607/3311 full-RGBA pixels only inside the two
+notice envelopes, with zero alpha, frame, interline-gap or exterior changes.
+Astra independently reproduces every regional SVG RGB and threshold result
+and verifies the only XML changes are two font-weight attributes. Original
+4K pixels, full-photo Lanczos at 1600 and uniform top-left inverse-affine
+Bicubic at 1537 support these SVG comparisons. The Login runtime's responsive
+anchors and mean font scale do not follow that fractional projection;
+unregistered fractional native scores are excluded. The AJ native evidence
+at 4K/1600 is frozen historical output, not a fresh production trial.
+
+Fixed pretrial controls, source/native provenance, renders and all changed
+line-pixel RGB losses are in `/tmp/cp-eras-next/bg-neomil-login/`. This audit
+supports examining glyph/counter shape before another weight or opacity
+fit; it does not close exact printing or change the accepted AI/AJ artwork.
+
+An isolated O/C/M study then compares cap-normalized Rajdhani Regular with
+the already-bundled FreeSans Bold. One training occurrence per letter on
+card 2 and four held-out repeats/card-3 glyphs use 12-row source caps at
+R>155. With independent top-left glyph registration, FreeSans improves
+every held-out threshold mask; average F1 at R>130/155/180/210 changes
+.439/.364/.210/.020→.851/.819/.820/.606. Astra reproduces all 56 glyph/font/
+threshold comparisons and verifies the actual resolved font bytes.
+
+This supports one full-notice fit experiment, not font identification.
+The FreeSans O hole has 41 pixels versus source 48/51, painting 7/10
+source-dark counter pixels; C/M are one pixel wider than their source
+glyphs. Sentence spacing, common baseline phase, native shaping and
+responsive behavior remain untested. The study uses native-size 16px
+FreeSans as a cap-derived starting point, with no horizontal stretching.
+Evidence is in `bg-neomil-login/font-shape/` beside the preceding audit.
+
+## BH–BJ full-notice geometry and local losses
+
+BH's shared-tracking FreeSans trial fails three whole-line RGB holdouts.
+Independent source-to-source registration then finds a +694-native-pixel
+copy displacement, and both source second lines have a 380-pixel ink span.
+BJ transfers that copy geometry and fits line two separately using actual
+plain renders. All twelve whole-line RGB comparisons improve against the
+original SVG, but 40/29/37 regional RGB losses remain at 4K/1600/1537.
+Card 3's first-word MAE worsens 22.651→34.127; its first O paints 17/51
+source-hole pixels, versus the original 5/51.
+
+Severity review retains those scores while distinguishing contour/phase
+losses from erased separators. All 30 word gaps remain open at four
+thresholds and three sizes; both 4K initial O glyphs retain one counter.
+The card-3 R>155 counter is smaller than source, 42 versus 51 pixels, and
+small-size gaps can be only one pixel wide. This supports a bounded native
+trial, not exact typography closure. Login's measurement and drawing need
+the same per-legend face and metrics; FreeSans's .1-em hhea line gap makes
+its centered baseline offset .95 for a 1.2-em line. Active AJ artwork and
+responsive containment must be independently preserved. See
+[round forty-two](../reference-svg-round42.md) for the full evidence and
+the source/SVG/native registration limits.
+
+BK's actual Login trial preserves production exactly in baseline mode at
+all three sizes. With the new face, the first-line native glyph baseline
+lands one row above the source at 4K/1600; three 1600 whole-line RGB controls
+regress. The four inactive runs alone change, with active AJ artwork and
+alpha preserved. A separate BL trial applies independently rounded baseline
+placement only for the new unrotated, unstretched FreeSans glyph path.
+Source geometry, font size, tracking and ink stay frozen. Fractional native
+source scoring remains excluded until registered. Changed R>130 pixels have
+only .51/.13 output pixel of right clearance; that difference mask excludes
+unchanged pixels and does not prove full notice containment. Responsive
+checks must measure the complete new notice before production acceptance.
+
+BL's rounding aligns the first-line ink rows and improves all four 4K
+whole-line RGB comparisons, but three 1600 lines still regress against
+original production (13.030→13.186, 13.835→14.431 and 12.417→15.609 MAE).
+Whole-line R>155 F1 improves for all eight measured lines. Fixed regional
+losses remain 41/46 MAE and 98/75 threshold-F1 at 4K/1600; the initial O
+still paints 18/48 and 19/51 source-hole pixels versus production 8/48 and
+5/51. Astra reproduces all 1944 regional metrics. BL and BK are identical
+at 1537×947. The candidate is not accepted for production; spacing, glyph
+contours and full responsive bounds remain the next diagnostic tasks.
+
+BM confirms that all 35 fixed gap control boxes retain a clear column at
+four thresholds in both canonical sizes. The full R>155 notice masks at
+1537×947 also remain within their card interiors, independently of changed
+pixels; subthreshold and all-layout/state containment is still unverified.
+BN's CLASS/TO profiles retain repeated contour and antialias losses. CLASS
+loses internal clear-column runs, while the terminal O retains a smaller
+counter when its shifted right edge is included in the existing source-line
+fringe. This is diagnostic evidence, not permission to retune weight or ink
+from thresholded area. Astra reproduces the gap, whole-word profile and
+counter findings; all canonical losses remain recorded. Evidence is under
+`bm-login-diagnosis/` and `bn-login-glyph-plan/` in the round's scratch root.

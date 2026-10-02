@@ -123,10 +123,11 @@ impl Ink {
 /// table entry and not a constant -- "a 1.25px line next to 400-weight
 /// Rajdhani reads heavier than the text", so the era compensates.
 ///
-/// One exception, and it is a logotype rather than chrome: neomil's
-/// `next` (`dashboard-trace.svg:165`) is Orbitron 700, the only
-/// Orbitron in any trace, and `OrbitronBold` names it. The bytes are
-/// in every era binary already (`shell::faces`).
+/// Neomil's `next` logotype uses Orbitron 700; `OrbitronBold` names it.
+/// The bytes are in every era binary (`shell::faces`). Kitsch compliance
+/// and Neo-kitsch Store metadata use FreeSans Bold as a source-fitted
+/// approximation, with separate font metrics. The original source faces
+/// have not been identified.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Face {
     Regular,
@@ -134,6 +135,8 @@ pub enum Face {
     SemiBold,
     Bold,
     OrbitronBold,
+    FreeSansBold,
+    CpErasKitschSansBold,
 }
 
 /// How one class of bar module is dressed: its silhouette and its inks.
@@ -1436,6 +1439,9 @@ pub struct Legend {
     pub size: f32,
     pub weight: iced::font::Weight,
     pub ink: Ink,
+    /// Source-measured ink for the access screen's reference palette.
+    /// Custom palettes continue to resolve `ink` by its semantic role.
+    pub reference_ink: Option<Color>,
     /// `x` is the run's centre rather than its left edge -- the traces'
     /// `text-anchor="middle"`.
     pub centred: bool,
@@ -1468,6 +1474,7 @@ impl Legend {
             size,
             weight: iced::font::Weight::Normal,
             ink,
+            reference_ink: None,
             centred: false,
             turned: false,
             stretch: 1.0,
@@ -1507,6 +1514,11 @@ impl Legend {
 
     pub const fn tracked(mut self, tracking: f32) -> Legend {
         self.tracking = tracking;
+        self
+    }
+
+    pub const fn reference_ink(mut self, color: Color) -> Legend {
+        self.reference_ink = Some(color);
         self
     }
 }
@@ -1653,8 +1665,26 @@ pub struct Slot {
     pub action_marks: &'static [Plate],
     /// The boxed footnote letter and its micro-text.
     pub badge: Option<Plate>,
+    /// Measured artwork in absolute design coordinates. A nonempty
+    /// list replaces the built-in outline of the footnote badge.
+    pub badge_art: &'static [Plate],
     pub badge_letter: Option<Legend>,
     pub notes: &'static [Legend],
+    /// A photographed duplicate behind plain, untracked, equally sized
+    /// notes, only in the reference palette. It follows their fitted size.
+    pub reference_note_echo: Option<NoteEcho>,
+}
+
+/// Source-space printing duplicated behind a slot's notes. Distances are
+/// measured at `reference_size` and scale with each fitted note's font.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct NoteEcho {
+    pub reference_size: f32,
+    pub offset: (f32, f32),
+    pub stroke: f32,
+    pub blur: f32,
+    pub opacity: f32,
+    pub ink: Color,
 }
 
 impl Slot {
@@ -1677,8 +1707,10 @@ impl Slot {
         action_label: None,
         action_marks: &[],
         badge: None,
+        badge_art: &[],
         badge_letter: None,
         notes: &[],
+        reference_note_echo: None,
     };
 }
 
@@ -1996,12 +2028,13 @@ pub struct Note {
 
 /// One drawn element of an era's mailbox chrome.
 ///
-/// Three kinds cover all four traces. `Box` is every framed or filled
-/// rectangle; `Poly` is the era's line art -- kitsch's bracket and its
+/// `Box` is every framed or filled rectangle; `Poly` is the era's line
+/// art -- kitsch's bracket and its
 /// wave, neokitsch's wire band and folder badge, neomil's code tape --
 /// as a polyline in design coordinates, which is the one escape hatch
 /// that keeps a bespoke ornament out of `screens/`; `Label` is a fixed
-/// string.
+/// string. `Curve` carries curved outlines, and `LabelArt` preserves
+/// text scaling for source-specific letter contours.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Piece {
     Box {
@@ -2027,6 +2060,14 @@ pub enum Piece {
         close: bool,
     },
     Label(Note),
+    /// Monochrome letter contours in design pixels relative to `note.at`.
+    /// The anchor follows both window axes; contours scale uniformly like
+    /// text. The note supplies content, ink and an empty-art text fallback.
+    /// Contours already include their designed size, alignment and stretch.
+    LabelArt {
+        note: Note,
+        pieces: &'static [Piece],
+    },
 }
 
 /// What an era puts behind an *unselected* list row.
@@ -2399,6 +2440,19 @@ pub struct MailButtons {
     pub labels: &'static [&'static str],
 }
 
+/// Source-fitted outlines replacing an ASCII prefix of one badge label.
+/// The exact text guards against applying artwork to changed wording. The
+/// remaining glyphs retain the original full label's shaping and placement.
+/// Pieces are relative to its Run anchor, use the text's uniform window scale,
+/// and inherit the label's current palette role and opening opacity.
+/// Unsupported shaping or an unstretched text run falls back to normal text.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct MailBadgeArt {
+    pub text: &'static str,
+    pub replace_prefix: usize,
+    pub pieces: &'static [Piece],
+}
+
 /// Region D: the clearance badges.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MailBadges {
@@ -2417,6 +2471,8 @@ pub struct MailBadges {
     /// Optional label geometry for each badge, relative to its top-left.
     /// Missing entries use `label`; the words still come from `labels`.
     pub label_runs: &'static [Run],
+    /// Optional source-fitted outlines at each badge index.
+    pub label_art: &'static [MailBadgeArt],
     /// Neomil heads each badge with a LEVEL caption.
     pub caption: Option<Run>,
     pub caption_text: &'static str,
@@ -2736,6 +2792,18 @@ pub enum Prim {
         anchor: Anchor,
         content: &'static str,
     },
+    /// A `Wide` run whose unchanged glyph outlines may be reused within
+    /// one scene draw. Only the Neomil store's clipped title echoes opt in.
+    ReusableWide {
+        x: f32,
+        y: f32,
+        size: f32,
+        stretch: f32,
+        ink: Ink,
+        face: Face,
+        anchor: Anchor,
+        content: &'static str,
+    },
     /// A run of text painted as an outline -- SVG's `fill="none"
     /// stroke=".." stroke-width=".."` on a `<text>` -- with `ink` the
     /// stroke and `width` its width in design units. iced's canvas
@@ -2781,6 +2849,20 @@ pub enum Prim {
         face: Face,
         anchor: Anchor,
         tracking: f32,
+        content: &'static str,
+    },
+    /// A full literal string with common letter tracking and an additional
+    /// advance after each U+0020. Its words are painted through `Tracked`;
+    /// the intact content remains available to callers and future semantics.
+    TrackedWords {
+        x: f32,
+        y: f32,
+        size: f32,
+        ink: Ink,
+        face: Face,
+        anchor: Anchor,
+        tracking: f32,
+        extra_space: f32,
         content: &'static str,
     },
     /// Wood-veneer grain over a fill: hairlines on a `pitch`, clipped

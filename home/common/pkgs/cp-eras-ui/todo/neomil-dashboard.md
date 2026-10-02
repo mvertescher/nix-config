@@ -41,12 +41,20 @@ Use source crops and measured contours, not gate score alone, for review.
   and badge fills. Replace the wide empty margin boxes with measured 1/2
   chips and adjacent fragments; check DESCRIPTION's invented left chamfer.
   Replace vertical margin bars with their actual text and symbols.
+- [x] **Native footer caption cap heights:** AD matches the source's
+  vertical boxes using native sizes/baselines, retaining nominal widths,
+  foreground roles and echo offsets. Whole-line RGB/core overlap improves;
+  the final COLONIZATION section retains a small core-overlap regression.
+  Code, divider and frame are unchanged. Native states, both gates, 286
+  Rust tests and the full 22-check/27-exact-case run pass. See
+  [round fifteen](../docs/reference-svg-round15.md). Exact glyphs and
+  photographic printing remain in pass 4 below.
 - [ ] **Pass 4: finish surface/typography fidelity.** Measure remaining
   scanlines, noise, glow and offset echoes. Explicitly distinguish design
   material from presentation residue before marking anything `photo`.
   Refine text widths/weights and localized fills against source crops;
   preserve the correctly sampled main red and broad layout.
-- [ ] **Validate each pass end to end.** Review fresh source→SVG crops,
+- **Standing validation for each pass.** Review fresh source→SVG crops,
   update the matching `components.svg` excerpts and source documentation,
   transcribe into `src/eras/neomil.rs`, and inspect SVG→iced captures,
   including hover/held states and the panel's boot clip where affected.
@@ -189,6 +197,65 @@ The next pass-4 batch is integrated (2026-09-14):
   The frame/divider/code are preserved; copies follow the foreground role
   for custom palettes and add no software-rendered cache layer. See the
   [footer measurements](../docs/neomil/dashboard-footer.md).
+  AY rejects additive and replacement horizontal profiles: 4K gains do
+  not transfer to the 1600px bottom/text controls. Removing secondary
+  ink also exposes primary-edge misregistration; isolate that geometry
+  before another secondary-ink fit. No trial artwork is integrated. See
+  [the audit](../docs/neomil/dashboard-footer.md#ay-secondary-frame-audit-2026-09-30).
+  AZ adds source-supported primary bottom coverage, improving all changed
+  source/native pixels at three sizes while keeping top/text controls exact.
+  Nine paired state/fallback checks pass. The old lower bright overshoot,
+  stronger upper core, top width and fine printing remain unresolved;
+  clipping alternatives fail fractional controls. See
+  [the bounded correction](../docs/neomil/dashboard-footer.md#az-bottom-edge-coverage-2026-09-30)
+  and [round thirty-seven](../docs/reference-svg-round37.md). Three-size
+  production/fallback and packaged parity, both gates, 292 Rust tests and
+  the full 22-check/27-case run pass. A subsequent height-only SVG trial
+  also fails all fractional bottom controls; no native trial is accepted.
+  NM1 stays open.
+
+  BA's source-derived one-row top band and inner-rim join improve the SVG at 4K,
+  1600 and fractional size, but the guarded native candidate is rejected. At
+  1600 it paints row865 to R≈180 where the source is ≈154, creating false R>170
+  core coverage; all three straight-edge train/holdout F1 controls fall
+  1.000→.667 despite lower RGB MAE. No top band, component caption, golden or
+  production geometry changes. BB's read-only side audit finds a left-specific
+  4K core phase difference (source x2902–2904, native x2901–2903) and aligned
+  right core; widening both sides is unsupported. AZ's accepted bottom remains,
+  including its unresolved lower-row overshoot and strict upper-core excess.
+  Fine secondary striations and live desktop behavior remain open. See [the
+  footer
+  record](../docs/neomil/dashboard-footer.md#ba-top-edge-and-side-audits).
+
+
+  BF resolves BA's native top-band threshold failure with a separately
+  calibrated .80 foreground-role band. All fixed three-size RGB/F1 controls
+  improve or tie; one fractional corner-pixel loss remains. The source SVG
+  and component use their measured full-alpha band. Nine paired state/fallback
+  cases, production/packaged parity, both gates, 293 Rust tests and all
+  22 checks/27 first-attempt visual cases pass. Only the two dashboard
+  goldens change, by 142 pixels each. The old lower overshoot, side phase,
+  exact lettering and secondary striations remain open. See
+  [the bounded top correction](../docs/neomil/dashboard-footer.md#bf-calibrated-top-edge-coverage-2026-09-30)
+  and [round forty-one](../docs/reference-svg-round41.md).
+
+  BT integrates the missing inner-left coverage as a separately calibrated
+  .88 foreground-role strip. All fixed three-size regional RGB/F1 controls
+  improve or tie; the full-opacity trial is rejected for its 1600 false core.
+  Eight state/fallback pairs preserve locality; selection/held fixtures
+  have no distinct visible feedback. Exact outer-left/core/striations remain
+  open. Production/package parity, both gates, 294 Rust tests and all
+  22 checks / 27 first-attempt visual cases pass. The two dashboard
+  goldens change by 23 pixels each. Combined verification is recorded in
+  [round forty-three](../docs/reference-svg-round43.md).
+
+  CF narrows only the straight native outer-left primary rim, improving
+  38 4K pixels while both smaller frames remain exact. Three-size source
+  controls and six actual-Dashboard pairs pass. Production/package parity,
+  both Dashboard gates, 294 local/Nix tests and full 22-check/27-case
+  verification pass. Preserved joins, remaining shoulder error and faint
+  striations keep NM1 open. See
+  [round forty-five](../docs/reference-svg-round45.md).
 
 The [printing follow-up audit](../docs/neomil/dashboard-printing.md) records
 the 2026-09-21 proposals, masks, actual-render measurements and limitations.

@@ -92,8 +92,8 @@ find_rsvg() {
 scratch=$(mktemp -d "${TMPDIR:-/tmp}/fid.XXXXXX")
 trap 'rm -rf "$scratch"' EXIT
 
-# Pin the fonts. The traces set Rajdhani / Orbitron by name and the crate
-# ships both in fonts/; without this, a rsvg-convert from `nix shell` on a
+# Pin the fonts. The traces set Rajdhani / Orbitron / FreeSans by name and
+# the crate stages these faces in fonts/; without this, a rsvg-convert from `nix shell` on a
 # box that lacks them silently falls back and text widths drift 3-5px,
 # which the gates then report as trace error. A private fontconfig that
 # includes the system config and adds fonts/ makes the render the same
@@ -209,7 +209,7 @@ for era in "${selected_eras[@]}"; do
       $rsvg_bin -w "$w" -h "$h" "$g2i_svg" -o "$design" 2>/dev/null || {
         echo "FAIL $era/$screen: rsvg-convert errored"; overall_fail=1; continue; }
       # `env -u FONTCONFIG_FILE`: the pinned fontconfig above exists so
-      # rsvg-convert finds Rajdhani/Orbitron the same way everywhere. The
+      # rsvg-convert finds the staged fonts the same way everywhere. The
       # app is a different font stack (it embeds its own faces) and the
       # goldens were captured with no FONTCONFIG_FILE at all, so leaving
       # ours set would make this capture answer a different question than

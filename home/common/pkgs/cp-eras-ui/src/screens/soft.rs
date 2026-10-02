@@ -529,9 +529,11 @@ pub fn supported(prim: &Prim) -> bool {
         Prim::Motion { .. } | Prim::Pick { .. } | Prim::Viewport { .. } => false,
         Prim::Text { .. }
         | Prim::Wide { .. }
+        | Prim::ReusableWide { .. }
         | Prim::Outlined { .. }
         | Prim::Spaced { .. }
         | Prim::Tracked { .. }
+        | Prim::TrackedWords { .. }
         | Prim::Grain { .. }
         | Prim::Dots { .. }
         | Prim::Plate { .. } => false,
@@ -926,9 +928,11 @@ fn walk_inner<const BOUNDED: bool>(buf: &mut Buf, prims: &[Prim], palette: &Pale
             Prim::Soft { prims } => walk_inner::<BOUNDED>(buf, prims, palette, xf),
             Prim::Text { .. }
             | Prim::Wide { .. }
+            | Prim::ReusableWide { .. }
             | Prim::Outlined { .. }
             | Prim::Spaced { .. }
             | Prim::Tracked { .. }
+            | Prim::TrackedWords { .. }
             | Prim::Grain { .. }
             | Prim::Dots { .. }
             | Prim::Motion { .. }

@@ -59,6 +59,28 @@
        comment says what was looked at and how the inference was built. -->
 
   <defs>
+    <!-- Ordinary store title impressions; scan rows match the trace. -->
+<clipPath id="store-title-scan-row-443-443"><rect x="0" y="184.583333" width="1600" height="0.416667"/></clipPath>
+<clipPath id="store-title-scan-row-444-444"><rect x="0" y="185.000000" width="1600" height="0.416667"/></clipPath>
+<clipPath id="store-title-scan-row-447-447"><rect x="0" y="186.250000" width="1600" height="0.416667"/></clipPath>
+<clipPath id="store-title-scan-row-448-448"><rect x="0" y="186.666667" width="1600" height="0.416667"/></clipPath>
+<clipPath id="store-title-scan-row-449-449"><rect x="0" y="187.083333" width="1600" height="0.416667"/></clipPath>
+<clipPath id="store-title-scan-row-451-451"><rect x="0" y="187.916667" width="1600" height="0.416667"/></clipPath>
+<clipPath id="store-title-scan-row-452-453"><rect x="0" y="188.333333" width="1600" height="0.833333"/></clipPath>
+<clipPath id="store-title-scan-row-454-454"><rect x="0" y="189.166667" width="1600" height="0.416667"/></clipPath>
+<clipPath id="store-title-scan-row-456-456"><rect x="0" y="190.000000" width="1600" height="0.416667"/></clipPath>
+<clipPath id="store-title-scan-row-457-458"><rect x="0" y="190.416667" width="1600" height="0.833333"/></clipPath>
+<clipPath id="store-title-scan-row-459-460"><rect x="0" y="191.250000" width="1600" height="0.833333"/></clipPath>
+<clipPath id="store-title-scan-row-461-463"><rect x="0" y="192.083333" width="1600" height="1.250000"/></clipPath>
+<clipPath id="store-title-scan-row-464-465"><rect x="0" y="193.333333" width="1600" height="0.833333"/></clipPath>
+<clipPath id="store-title-scan-row-466-468"><rect x="0" y="194.166667" width="1600" height="1.250000"/></clipPath>
+<clipPath id="store-title-scan-row-469-470"><rect x="0" y="195.416667" width="1600" height="0.833333"/></clipPath>
+<clipPath id="store-title-scan-row-471-473"><rect x="0" y="196.250000" width="1600" height="1.250000"/></clipPath>
+<clipPath id="store-title-scan-row-474-474"><rect x="0" y="197.500000" width="1600" height="0.416667"/></clipPath>
+<clipPath id="store-title-scan-row-475-477"><rect x="0" y="197.916667" width="1600" height="1.250000"/></clipPath>
+<clipPath id="store-title-scan-row-478-479"><rect x="0" y="199.166667" width="1600" height="0.833333"/></clipPath>
+<clipPath id="store-title-scan-row-480-482"><rect x="0" y="200.000000" width="1600" height="1.250000"/></clipPath>
+<clipPath id="store-title-scan-row-483-484"><rect x="0" y="201.250000" width="1600" height="0.833333"/></clipPath>
 <g id="login_badge_level"><path d="M 0,0 V 6.9 H 6.3 M 7.9,0 V 6.9 H 14.6 M 7.9,0 H 14.6 M 7.9,3.5 H 14.3 M 16.2,0 L 20.8,6.9 L 25.1,0 M 26.7,0 V 6.9 H 33.6 M 26.7,0 H 33.6 M 26.7,3.5 H 33.1 M 35.9,0 V 6.9 H 42.1" fill="none" fill-rule="evenodd" stroke="#f63333" stroke-width="0.625"/></g>
 <g id="login_badge_tier1"><path d="M 0,0.8333 H 12.9167 V 2.5 H 7.5 V 12.9167 H 5.4167 V 2.5 H 0 Z M 15,2.0833 H 16.6667 L 18.3333,0 H 19.5833 V 12.9167 H 17.9167 V 3.3333 H 15 Z" fill="#f63333" fill-rule="evenodd" stroke="#f63333" stroke-width="0.15"/></g>
 <g id="login_badge_tier2"><path d="M 0,0.4167 H 12.9167 V 2.0833 H 7.5 V 12.5 H 5.4167 V 2.0833 H 0 Z M 15.3,1.4 C 18.2,-0.4 21.3,-0.2 23.4,0.3 C 26.7,1.5 27,4.3 25.6,6.1 C 24.4,7.4 21.8,8 20.3,8.7 C 18.6,9.6 18,10.5 18,10.8 H 26.5 V 12.5 H 15.3 V 10.4 C 15.3,8 17.3,6.9 20.8,5.8 C 24.2,4.7 25,4 24.1,2.8 C 22.8,1.3 19.6,1.7 16,3 Z" fill="#f63333" fill-rule="evenodd" stroke="#f63333" stroke-width="0.15"/></g>
@@ -1621,15 +1643,15 @@
     <!-- Native-source pill centreline and geometric NEW, shared with NEW_PILL. -->
     <g id="mailbox-component-pill-art"><path d="M3,0 H72.4167 Q75.4167,0 75.4167,3 V7.8333 Q75.4167,10.8333 72.4167,10.8333 H3 Q0,10.8333 0,7.8333 V3 Q0,0 3,0 Z" fill="none" stroke="currentColor" stroke-width="1"/><path d="M24.5833,2.7083 L26.2500,2.7083 L30.8333,6.8750 L30.8333,2.7083 L32.0833,2.7083 L32.0833,8.5417 L30.4167,8.5417 L25.8333,4.3750 L25.8333,8.5417 L24.5833,8.5417 L24.5833,2.7083 M33.7500,2.7083 L40.0000,2.7083 L40.0000,3.5417 L35.0000,3.5417 L35.0000,5.2083 L39.5833,5.2083 L39.5833,6.0417 L35.0000,6.0417 L35.0000,7.7083 L40.0000,7.7083 L40.0000,8.5417 L33.7500,8.5417 L33.7500,2.7083 M41.2500,2.7083 L42.5000,2.7083 L45.0000,7.2917 L46.6667,2.7083 L48.3333,2.7083 L50.4167,7.2917 L51.6667,2.7083 L52.9167,2.7083 L50.8333,8.5417 L49.1667,8.5417 L47.5000,4.3750 L45.8333,8.5417 L44.1667,8.5417 L41.2500,2.7083" fill="currentColor"/></g>
     <!-- Source #61: stepped casing, inset tile and C-shaped disc. -->
-    <g id="mailbox-component-cart-normal"><path d="M0.0,0.0 L27.0833,9.1667 Q30.4167,10.0 30.4167,11.25 L30.4167,12.9167 L28.3333,14.5833 L30.4167,15.4167 L30.4167,17.0833 L20.8333,24.1667 L19.1667,24.1667 L19.1667,25.8333 L16.25,27.9167 L16.25,29.5833 L-15.0,53.75 Q-16.6667,55.0 -18.3333,54.1667 L-48.3333,43.75 Q-50.4167,42.9167 -50.4167,41.6667 L-50.4167,39.5833 L-10.4167,8.75 L-8.75,8.75 L-8.75,7.0833 L0.0,0.0 L0.0,0.0" fill="none" stroke="#9a2326" stroke-width="0.65"/>
-<path d="M-7.9167,7.9167 L-0.4167,2.0833 L27.9167,11.6667 L27.9167,12.9167 L18.75,19.5833 L18.75,21.6667 L13.75,25.4167 L13.75,27.0833 L-15.0,49.5833 Q-16.6667,50.8333 -18.3333,50.0 L-45.8333,40.8333 Q-47.0833,40.4167 -46.25,39.5833 L-7.9167,7.9167 L-7.9167,7.9167" fill="none" stroke="#9a2326" stroke-width="0.58"/>
+    <g id="mailbox-component-cart-normal"><path d="M-7.9167,7.9167 L-4.0000,3.0210 L26.5000,13.3449 L18.75,19.5833 L18.75,21.6667 L13.75,25.4167 L13.75,27.0833 L-15.0,49.5833 Q-16.6667,50.8333 -18.3333,50.0 L-45.8333,40.8333 Q-47.0833,40.4167 -46.25,39.5833 L-7.9167,7.9167 L-7.9167,7.9167" fill="#9a2326" opacity="0.200"/><path id="mailbox-component-cart-normal-terminal-bed" d="M0,0 L27.0833,9.1667 Q30.4167,10 30.4167,11.25 L30.4167,12.9167 L28.3333,14.5833 L26.5000,13.3449 L-4.0000,3.0210 Z" fill="#9a2326" opacity="0.150"/><path d="M0.0,0.0 L27.0833,9.1667 Q30.4167,10.0 30.4167,11.25 L30.4167,12.9167 L28.3333,14.5833 L30.4167,15.4167 L30.4167,17.0833 L20.8333,24.1667 L19.1667,24.1667 L19.1667,25.8333 L16.25,27.9167 L16.25,29.5833 L-15.0,53.75 Q-16.6667,55.0 -18.3333,54.1667 L-48.3333,43.75 Q-50.4167,42.9167 -50.4167,41.6667 L-50.4167,39.5833 L-10.4167,8.75 L-8.75,8.75 L-8.75,7.0833 L0.0,0.0 L0.0,0.0" fill="none" stroke="#9a2326" stroke-width="0.65"/>
+<path d="M-7.9167,7.9167 L-4.0000,3.0210 L26.5000,13.3449 L18.75,19.5833 L18.75,21.6667 L13.75,25.4167 L13.75,27.0833 L-15.0,49.5833 Q-16.6667,50.8333 -18.3333,50.0 L-45.8333,40.8333 Q-47.0833,40.4167 -46.25,39.5833 L-7.9167,7.9167 L-7.9167,7.9167" fill="none" stroke="#9a2326" stroke-width="0.58"/>
 <path d="M-31.6667,27.9167 L-17.0833,32.9167 Q-16.25,33.3333 -14.5833,32.0833 L-9.5833,27.9167 L2.0833,32.0833 Q2.9167,32.5 2.9167,33.75 L-15.8333,48.75 Q-17.0833,49.5833 -18.3333,49.1667 L-45.0,40.0 Q-45.8333,39.5833 -45.0,38.75 L-31.6667,27.9167 L-31.6667,27.9167" fill="#fb3535" stroke="#5d1519" stroke-width="0.6"/>
 <path d="M-17.0833,30.8333 C-23.3333,29.5833 -25.4167,25.8333 -24.1667,20.8333 C-22.5,15.0 -13.75,10.0 -4.1667,9.1667 C5.4167,8.3333 12.9167,12.0833 13.75,17.5 C14.5833,22.9167 8.75,28.75 1.6667,30.8333 L-7.9167,27.5 Q-9.1667,27.0833 -10.4167,27.9167 L-15.4167,31.6667 Q-16.25,32.0833 -17.0833,30.8333 L-17.0833,30.8333" fill="#fb3535" stroke="#59171b" stroke-width="0.55"/>
 <path d="M-13.3333,14.5833 C-5.8333,9.1667 7.9167,12.5 8.3333,18.3333 Q8.3333,20.8333 6.6667,21.6667 L4.5833,21.6667 Q4.1667,21.25 4.5833,19.5833 C5.8333,13.75 -5.0,12.0833 -11.25,16.25" fill="none" stroke="#59171b" stroke-width="0.6"/>
 <path d="M-11.6667,16.6667 C-7.5,14.1667 -0.8333,14.5833 1.6667,17.9167 C3.75,20.4167 0.4167,23.75 -4.1667,24.5833 C-9.1667,25.8333 -13.75,24.1667 -13.75,21.25 C-13.75,19.5833 -13.3333,17.9167 -11.6667,16.6667 L-11.6667,16.6667" fill="#59171b"/>
 <path d="M-9.1667,18.75 C-6.6667,17.0833 -2.5,17.0833 -0.8333,18.75 C0.8333,20.4167 -1.6667,22.5 -4.1667,22.9167 C-7.0833,23.75 -10.0,22.9167 -10.4167,21.25 C-10.8333,20.0 -10.4167,19.5833 -9.1667,18.75 L-9.1667,18.75" fill="#fb3535"/>
 <path d="M-6.6667,20.0 C-5.4167,19.1667 -3.75,19.1667 -3.3333,20.0 C-2.5,20.8333 -4.1667,21.6667 -5.4167,21.6667 C-6.6667,21.6667 -7.5,20.8333 -6.6667,20.0 L-6.6667,20.0" fill="#59171b"/>
-<path d="M-2.9167,2.0833 L27.0833,12.0833" fill="none" stroke="#9a2326" stroke-width="0.4"/><path d="M0.4755,0.1609 L-2.0045,2.2382 M1.8571,0.6285 L-0.6229,2.7058 M3.2388,1.0962 L0.7588,3.1735 M4.6205,1.5638 L2.1405,3.6411 M6.0021,2.0314 L3.5221,4.1087 M7.3838,2.4991 L4.9038,4.5764 M8.7655,2.9667 L6.2855,5.0440 M10.1471,3.4344 L7.6671,5.5117 M11.5288,3.9020 L9.0488,5.9793 M12.9105,4.3696 L10.4305,6.4469 M14.2922,4.8373 L11.8122,6.9146 M15.6738,5.3049 L13.1938,7.3822 M17.0555,5.7726 L14.5755,7.8499 M18.4371,6.2402 L15.9571,8.3175 M19.8188,6.7078 L17.3388,8.7851 M21.2005,7.1755 L18.7205,9.2528 M22.5821,7.6431 L20.1021,9.7204 M23.9638,8.1108 L21.4838,10.1881 M25.3455,8.5784 L22.8655,10.6557 M26.7271,9.0460 L24.2471,11.1233" fill="none" stroke="#9a2326" stroke-width="0.4"/></g>
+<path d="M0.4755,0.1609 L-2.5359,2.6833 M1.8571,0.6285 L-1.1543,3.1509 M3.2388,1.0962 L0.2274,3.6186 M4.6205,1.5638 L1.6091,4.0862 M6.0021,2.0314 L2.9907,4.5538 M7.3838,2.4991 L4.3724,5.0215 M8.7655,2.9667 L5.7541,5.4891 M10.1471,3.4344 L7.1357,5.9568 M11.5288,3.9020 L8.5174,6.4244 M12.9105,4.3696 L9.8991,6.8920 M14.2922,4.8373 L11.2808,7.3597 M15.6738,5.3049 L12.6624,7.8273 M17.0555,5.7726 L14.0441,8.2950 M18.4371,6.2402 L15.4257,8.7626 M19.8188,6.7078 L16.8074,9.2302 M21.2005,7.1755 L18.1891,9.6979 M22.5821,7.6431 L19.5707,10.1655 M23.9638,8.1108 L20.9524,10.6332 M25.3455,8.5784 L22.3341,11.1008 M26.7271,9.0460 L23.7157,11.5684 M28.1075,9.5129 L25.8055,11.4419 M29.4891,10.0500 L28.2491,11.0887" opacity="1.000" fill="none" stroke="#9a2326" stroke-width="0.4"/></g>
     <g id="mailbox-component-cart-selected"><path d="M-15.8333,0.0 L11.25,9.1667 Q14.5834,10.0 14.5834,11.25 L14.5834,12.9167 L12.5,14.5833 L14.5834,15.4167 L14.5834,17.0833 L5.0,24.1667 L3.3334,24.1667 L3.3334,25.8333 L0.4167,27.9167 L0.4167,29.5833 L-30.8333,53.75 Q-32.5,55.0 -34.1666,54.1667 L-64.1666,43.75 Q-66.25,42.9167 -66.25,41.6667 L-66.25,39.5833 L-26.25,8.75 L-24.5833,8.75 L-24.5833,7.0833 L-15.8333,0.0 L-15.8333,0.0" fill="#fb3535"/>
 <path d="M-23.75,7.9167 L-16.25,2.0833 L12.0834,11.6667 L12.0834,12.9167 L2.9167,19.5833 L2.9167,21.6667 L-2.0833,25.4167 L-2.0833,27.0833 L-30.8333,49.5833 Q-32.5,50.8333 -34.1666,50.0 L-61.6666,40.8333 Q-62.9166,40.4167 -62.0833,39.5833 L-23.75,7.9167 L-23.75,7.9167" fill="none" stroke="#59171b" stroke-width="0.58"/>
 <path d="M-47.5,27.9167 L-32.9166,32.9167 Q-32.0833,33.3333 -30.4166,32.0833 L-25.4166,27.9167 L-13.75,32.0833 Q-12.9166,32.5 -12.9166,33.75 L-31.6666,48.75 Q-32.9166,49.5833 -34.1666,49.1667 L-60.8333,40.0 Q-61.6666,39.5833 -60.8333,38.75 L-47.5,27.9167 L-47.5,27.9167" fill="#59171b" stroke="#fb3535" stroke-width="0.6"/>
@@ -1933,6 +1955,22 @@
 <mask xmlns="http://www.w3.org/2000/svg" id="store-ground-m10" maskUnits="userSpaceOnUse" x="0" y="0" width="1600" height="900"><rect y="0" width="1600" height="900" fill="url(#store-ground-y10)" /></mask>
 
 
+<!-- Ground group copied from store-trace.svg; its 12 ramp gradients and
+     11 transition masks above are already source-identical in this sheet. -->
+<g id="store-ground">
+<rect width="1600" height="900" fill="url(#store-ground-r0)" />
+<rect width="1600" height="900" fill="url(#store-ground-r1)" mask="url(#store-ground-m0)" />
+<rect width="1600" height="900" fill="url(#store-ground-r2)" mask="url(#store-ground-m1)" />
+<rect width="1600" height="900" fill="url(#store-ground-r3)" mask="url(#store-ground-m2)" />
+<rect width="1600" height="900" fill="url(#store-ground-r4)" mask="url(#store-ground-m3)" />
+<rect width="1600" height="900" fill="url(#store-ground-r5)" mask="url(#store-ground-m4)" />
+<rect width="1600" height="900" fill="url(#store-ground-r6)" mask="url(#store-ground-m5)" />
+<rect width="1600" height="900" fill="url(#store-ground-r7)" mask="url(#store-ground-m6)" />
+<rect width="1600" height="900" fill="url(#store-ground-r8)" mask="url(#store-ground-m7)" />
+<rect width="1600" height="900" fill="url(#store-ground-r9)" mask="url(#store-ground-m8)" />
+<rect width="1600" height="900" fill="url(#store-ground-r10)" mask="url(#store-ground-m9)" />
+<rect width="1600" height="900" fill="url(#store-ground-r11)" mask="url(#store-ground-m10)" />
+  </g>
 <!-- Source-fitted store fields; see store-material.md. Rounded sRGB stops. -->
 <pattern id="c1fill" patternUnits="userSpaceOnUse" width="1600" height="900"><use href="#store-ground"/><rect width="1600" height="900" fill="#ff3c3e" fill-opacity=".040"/></pattern>
 <pattern id="c3fill" patternUnits="userSpaceOnUse" width="1600" height="900"><use href="#store-ground"/><rect width="1600" height="900" fill="#ff312f" fill-opacity=".043"/></pattern>
@@ -2216,7 +2254,7 @@
 <path d="M1430.0,338.7 L1436.25,338.7 L1436.25,383.8 L1430.0,383.8 L1430.0,338.7 L1430.0,338.7" fill="none" stroke="#d22e31" stroke-width="0.65"/></g>
     <!-- body copy: ten source lines at 17.5 on a 21px pitch;
          paragraph gaps are one additional line -->
-    <g font-family="Rajdhani" font-size="17.5" fill="#fb3535">
+    <g font-family="Rajdhani" font-size="17.5" fill="#fb3535" transform="translate(0 -0.4166666666666667)">
       <text x="750" y="347.5">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt</text>
       <text x="750" y="368.5">ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation</text>
       <text x="750" y="389.5">ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehen-</text>
@@ -2482,8 +2520,11 @@
   </g>
   <!-- FOOTER TAPE, DASHBOARD. dashboard-trace.svg x 1209..1354
        y 864..888: the store footer's two-cell box in dashboard dress, a
-       144x24 #ef3333 1px frame, NOT filled, divided at x 1270 by a
-       1.2px rule; 68SD1D1100D1S at x 1215 and two captions at x 1277.
+       144x24 #ef3333 unfilled frame with 1px top/sides, source-bound
+       stronger top across x 1210..1353/y 865..865.4167 and bottom
+       across x 1210.5..1352.5/y 887.0833..888.75;
+       divided at x 1270 by a 1.2px rule. Code starts at x 1215,
+       two captions at x 1277.
        Tall, narrow primary type and two soft local copies match the trace.
        (Re-read 2026-09-03: the earlier three filled cells 48/38/59 were
        the extractor's blobs, not the picture.) Translated by
@@ -2495,6 +2536,12 @@
     </g>
     <rect x="1209.5" y="864.5" width="144" height="24" fill="none"
           stroke="#ef3333" stroke-width="1"/>
+    <!-- Source-bound dashboard top primary band; same as dashboard trace. -->
+    <rect x="1210" y="865.000000000" width="143.0" height="0.416666667" fill="#ef3333"/>
+    <!-- Inner-left primary side, matching dashboard trace. -->
+    <rect id="footer-left-inner-coverage" x="1210" y="865.416666667" width="0.416666667" height="22.500000000" fill="#ef3333"/>
+    <!-- Source-bound dashboard bottom primary band; same as dashboard trace. -->
+    <rect x="1210.5" y="887.083333333" width="142" height="1.666666667" fill="#ef3333"/>
     <rect x="1270" y="864.5" width="1.2" height="24" fill="#ef3333"/>
     <g font-family="Rajdhani" fill="#ef3333" opacity=".23" transform="translate(.8,1)">
       <text x="0" y="0" transform="translate(1214.2,875.1) scale(.844,1)" font-size="9.8" font-weight="700">68SD1D1100D1S</text>
@@ -2550,7 +2597,7 @@
     <text x="30" y="300">FOOTER, store . 144x22 two cell box, #60181a on #df3131,</text>
     <text x="30" y="309">divider at +62, 147x1 underline 5 below the box</text>
     <text x="330" y="300">FOOTER TAPE, dashboard</text>
-    <text x="330" y="309">144x24 1px frame, unfilled, divider at +61, soft copies</text>
+    <text x="330" y="309">144x24 unfilled; .417 top / 1.667 bottom; +61</text>
     <text x="500" y="300">FOOTER, mailbox</text>
     <text x="500" y="309">code 9 ls 0.8 + left arrow 26x10</text>
     <text x="662" y="300">LETTER CHIP</text>
@@ -2807,8 +2854,8 @@
           text-anchor="middle" fill="#f63333">USER 01</text>
     <rect x="692" y="568.5" width="255" height="1" fill="#ae2729"/>
     <g font-family="Rajdhani" font-size="8.43" fill="#e63132">
-      <text x="699" y="588.4">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
-      <text x="699" y="597.4">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+      <text x="699" y="584.2">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO</text>
+      <text x="699" y="592.8">MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
     </g>
   </g>
   <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.2" fill="#96282d">
@@ -2845,6 +2892,27 @@
     <g transform="translate(437,0)">
       <use href="#icons" y="163" stroke="#fb3535"/>
       <use href="#icons" y="584" stroke="#fb3535"/>
+      <g clip-path="url(#store-title-scan-row-443-443)" opacity="0.04"><g transform="translate(-2.500000,-5.000000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-444-444)" opacity="0.09"><g transform="translate(-2.500000,-5.000000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-447-447)" opacity="0.05"><g transform="translate(-2.500000,-5.000000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-448-448)" opacity="0.1"><g transform="translate(-2.500000,-5.000000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-449-449)" opacity="0.15"><g transform="translate(-2.500000,-5.000000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-451-451)" opacity="0.18"><g transform="translate(-1.250000,-2.500000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-452-453)" opacity="0.35"><g transform="translate(-1.250000,-2.500000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-454-454)" opacity="0.23"><g transform="translate(-1.250000,-2.500000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-456-456)" opacity="0.25"><g transform="translate(-1.250000,-2.500000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-457-458)" opacity="0.35"><g transform="translate(-1.250000,-2.500000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-459-460)" opacity="0.07"><g transform="translate(-1.250000,-2.500000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-461-463)" opacity="0.35"><g transform="translate(-1.250000,-2.500000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-464-465)" opacity="0.07"><g transform="translate(-1.250000,-2.500000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-466-468)" opacity="0.35"><g transform="translate(-1.250000,-2.500000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-469-470)" opacity="0.07"><g transform="translate(-1.250000,-2.500000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-471-473)" opacity="0.35"><g transform="translate(-1.250000,-2.500000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-474-474)" opacity="0.1"><g transform="translate(-1.250000,-2.500000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-475-477)" opacity="0.35"><g transform="translate(-1.250000,-2.500000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-478-479)" opacity="0.07"><g transform="translate(-1.250000,-2.500000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-480-482)" opacity="0.3"><g transform="translate(-1.250000,-2.500000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
+      <g clip-path="url(#store-title-scan-row-483-484)" opacity="0.07"><g transform="translate(-1.250000,-2.500000)"><text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text></g></g>
       <text x="0" y="0" transform="translate(10.2,204.5) scale(.98,1)" font-size="22.5" font-weight="700">MAGNUM 650</text>
       <text x="0" y="0" transform="translate(10.7,223.4) scale(.99,1)" font-size="19" font-weight="500">HAND GUN</text>
       <g font-size="7.5" letter-spacing="0.5" fill="#fb3535">
@@ -3130,11 +3198,15 @@
         <path data-letter="S" d="M 64.833,-2.208 L 59.625,-2.417 L 58.167,-0.542 L 58.167,0.708 L 61.292,0.917 L 61.500,1.542 L 57.542,1.333 L 56.917,2.792 L 57.542,3.417 L 60.875,3.417 L 57.958,3.000 L 57.333,2.375 L 61.917,1.958 L 62.125,0.500 L 58.583,0.292 L 59.208,-1.167 L 59.625,0.083 L 63.167,0.292 L 62.750,1.958 L 61.500,2.792 L 62.542,3.000 L 63.583,1.542 L 63.583,-0.125 L 59.833,-0.542 L 60.458,-1.167 L 64.625,-0.750 Z M 60.250,-1.792 L 64.417,-1.375 L 64.208,-2.000 Z"/>
         <path data-letter="U" d="M 73.792,0.500 L 72.750,2.375 L 72.958,3.417 L 74.000,2.792 Z M 68.583,2.375 L 70.458,3.000 L 72.750,-0.542 L 71.917,-1.375 L 73.583,-2.208 L 72.125,-2.417 L 71.083,-0.958 L 71.917,-0.542 L 71.500,0.708 L 70.667,1.125 L 70.875,-0.333 Z M 68.792,-2.417 L 66.917,-1.792 L 66.083,-0.125 L 66.917,0.292 L 66.292,2.167 L 68.167,1.958 L 66.917,1.542 Z M 65.875,0.500 L 64.833,2.792 L 66.708,3.417 L 65.250,2.375 Z"/>
         <path data-letter="R" d="M 81.708,0.917 L 80.667,2.792 L 81.292,3.417 L 81.917,2.792 Z M 81.083,-2.208 L 75.458,-2.417 L 72.750,3.208 L 74.208,3.000 L 75.458,1.333 L 76.917,1.958 L 76.708,0.917 L 74.000,1.542 L 75.042,-0.333 L 75.458,0.500 L 79.000,0.708 L 77.958,0.917 L 78.167,2.375 L 76.917,2.792 L 77.958,3.417 L 78.583,2.792 L 78.167,1.542 L 80.667,-0.125 Z M 75.667,-1.792 L 75.875,-1.167 L 79.625,-1.583 L 79.625,0.083 L 80.667,-1.375 L 80.458,-2.000 Z M 79.000,-0.958 L 76.708,-1.167 L 76.083,-0.125 L 78.375,0.083 Z"/>
-        <path data-letter="A2" d="M 88.792,-4.917 L 87.125,-2.417 L 84.208,-2.417 L 82.750,-0.958 L 80.667,2.792 L 81.292,3.417 L 83.375,1.333 L 85.875,1.333 L 85.458,3.417 L 89.000,3.208 L 88.792,-1.167 L 86.292,3.000 L 86.292,0.917 L 82.750,0.708 L 83.375,-0.750 L 83.792,0.500 L 87.125,0.500 L 87.750,-0.542 L 87.333,-1.792 L 88.375,-2.833 L 89.000,-2.625 Z M 86.500,-0.958 L 84.625,-1.167 L 84.000,-0.125 L 85.875,0.083 Z"/></g>
-      <clipPath id="margin-o-plaque"><path d="M 103.583333,4.6 L 85,4.6 L 85,-5 L 106.5,-5 Z"/></clipPath><path clip-path="url(#margin-o-plaque)" d="M 84,-5 L 94,5 M 85.5,-5 L 95.5,5 M 87,-5 L 97,5 M 88.5,-5 L 98.5,5 M 90,-5 L 100,5 M 91.5,-5 L 101.5,5 M 93,-5 L 103,5 M 94.5,-5 L 104.5,5 M 96,-5 L 106,5 M 97.5,-5 L 107.5,5 M 99,-5 L 109,5 M 100.5,-5 L 110.5,5 M 102,-5 L 112,5 M 103.5,-5 L 113.5,5 M 105,-5 L 115,5 M 106.5,-5 L 116.5,5" fill="none" stroke="#fb3535" stroke-width="0.45" stroke-opacity="0.67"/>
+        <path data-letter="A2" d="M 88.792,-4.917 L 87.125,-2.417 L 84.208,-2.417 L 82.750,-0.958 L 80.667,2.792 L 81.292,3.417 L 83.375,1.333 L 85.875,1.333 L 85.458,3.417 L 89.000,3.208 L 88.792,-1.167 L 86.292,3.000 L 86.292,0.917 L 82.750,0.708 L 83.375,-0.750 L 83.792,0.500 L 87.125,0.500 L 87.750,-0.542 L 87.333,-1.792 L 88.375,-2.833 L 89.000,-2.625 Z M 86.500,-0.958 L 84.625,-1.167 L 84.000,-0.125 L 85.875,0.083 Z"/>
+      <!-- Source-dark continuation of the second A counter. -->
+      <path d="M 84.6,0.75 L 82.8,0.75" fill="none" stroke="#1a0709" stroke-width="0.25" stroke-linecap="butt"/>
+      <!-- Source-dark split between the lower second-A strokes. -->
+      <path id="margin-a2-lower-gap" d="M 82.625,0.708 L 82.1875,1.542 M 81.875,1.917 L 81.792,2.333" fill="none" stroke="#1a0709" stroke-width="0.5" stroke-linecap="butt"/></g>
+      <clipPath id="margin-o-plaque"><path d="M 103.583333,4.6 L 85,4.6 L 85,-5 L 106.5,-5 Z"/></clipPath><g clip-path="url(#margin-o-plaque)"><path d="M 84.000000,-5.000000 L 89.000000,0.000000" fill="none" stroke="#fb3535" stroke-width="0.45" stroke-opacity="0.67"/><path d="M 89.000000,0.000000 L 94.000000,5.000000" fill="none" stroke="#fb3535" stroke-width="0.60" stroke-opacity="0.67"/><path d="M 85.500000,-5.000000 L 89.000000,-1.500000" fill="none" stroke="#fb3535" stroke-width="0.45" stroke-opacity="0.67"/><path d="M 89.000000,-1.500000 L 95.500000,5.000000" fill="none" stroke="#fb3535" stroke-width="0.60" stroke-opacity="0.67"/><path d="M 87.000000,-5.000000 L 89.000000,-3.000000" fill="none" stroke="#fb3535" stroke-width="0.45" stroke-opacity="0.67"/><path d="M 89.000000,-3.000000 L 97.000000,5.000000" fill="none" stroke="#fb3535" stroke-width="0.60" stroke-opacity="0.67"/><path d="M 88.500000,-5.000000 L 89.000000,-4.500000" fill="none" stroke="#fb3535" stroke-width="0.45" stroke-opacity="0.67"/><path d="M 89.000000,-4.500000 L 98.500000,5.000000" fill="none" stroke="#fb3535" stroke-width="0.60" stroke-opacity="0.67"/><path d="M 90.000000,-5.000000 L 99.000000,4.000000" fill="none" stroke="#fb3535" stroke-width="0.60" stroke-opacity="0.67"/><path d="M 99.000000,4.000000 L 100.000000,5.000000" fill="none" stroke="#fb3535" stroke-width="0.45" stroke-opacity="0.67"/><path d="M 91.500000,-5.000000 L 99.000000,2.500000" fill="none" stroke="#fb3535" stroke-width="0.60" stroke-opacity="0.67"/><path d="M 99.000000,2.500000 L 101.500000,5.000000" fill="none" stroke="#fb3535" stroke-width="0.45" stroke-opacity="0.67"/><path d="M 93.000000,-5.000000 L 99.000000,1.000000" fill="none" stroke="#fb3535" stroke-width="0.60" stroke-opacity="0.67"/><path d="M 99.000000,1.000000 L 103.000000,5.000000" fill="none" stroke="#fb3535" stroke-width="0.45" stroke-opacity="0.67"/><path d="M 94.500000,-5.000000 L 99.000000,-0.500000" fill="none" stroke="#fb3535" stroke-width="0.60" stroke-opacity="0.67"/><path d="M 99.000000,-0.500000 L 104.500000,5.000000" fill="none" stroke="#fb3535" stroke-width="0.45" stroke-opacity="0.67"/><path d="M 96.000000,-5.000000 L 99.000000,-2.000000" fill="none" stroke="#fb3535" stroke-width="0.60" stroke-opacity="0.67"/><path d="M 99.000000,-2.000000 L 106.000000,5.000000" fill="none" stroke="#fb3535" stroke-width="0.45" stroke-opacity="0.67"/><path d="M 97.500000,-5.000000 L 99.000000,-3.500000" fill="none" stroke="#fb3535" stroke-width="0.60" stroke-opacity="0.67"/><path d="M 99.000000,-3.500000 L 107.500000,5.000000" fill="none" stroke="#fb3535" stroke-width="0.45" stroke-opacity="0.67"/><path d="M 99.000000,-5.000000 L 109.000000,5.000000" fill="none" stroke="#fb3535" stroke-width="0.45" stroke-opacity="0.67"/><path d="M 100.500000,-5.000000 L 110.500000,5.000000" fill="none" stroke="#fb3535" stroke-width="0.45" stroke-opacity="0.67"/><path d="M 102.000000,-5.000000 L 112.000000,5.000000" fill="none" stroke="#fb3535" stroke-width="0.45" stroke-opacity="0.67"/><path d="M 103.500000,-5.000000 L 113.500000,5.000000" fill="none" stroke="#fb3535" stroke-width="0.45" stroke-opacity="0.67"/><path d="M 105.000000,-5.000000 L 115.000000,5.000000" fill="none" stroke="#fb3535" stroke-width="0.45" stroke-opacity="0.67"/><path d="M 106.500000,-5.000000 L 116.500000,5.000000" fill="none" stroke="#fb3535" stroke-width="0.45" stroke-opacity="0.67"/></g>
 
 
-      <path id="margin-o-ring" d="M 96.5,.9 L 95.25,2.58 L 90.25,3 L 89.42,1.75 L 92.33,-2 L 94.42,-2.42 Z M 95.25,.9 L 93.67,1.75 L 90.83,1.75 L 90.83,.1 L 92.33,-1.17 L 94.42,-1.17 Z" fill="#1a0709" fill-rule="evenodd"/>
+      <path id="margin-o-ring" d="M 96.5,.9 L 95.25,2.58 L 90.25,3 L 89.42,1.75 L 92.33,-2 L 94.42,-2.42 Z M 95.25,.9 L 93.67,1.75 L 93.5,2.02 L 92.75,2.02 L 92.55,1.75 L 90.83,1.75 L 90.83,.1 L 92.33,-1.17 L 94.42,-1.17 Z" fill="#1a0709" fill-rule="evenodd"/>
       <use href="#neomil_source_margin_kanji" fill="#fb3535"/>
     </g>
       <text transform="translate(56.4,469) rotate(-90)" font-size="10.5" letter-spacing="0.4" fill="#fb3535">00032 05 54 0B CP</text>

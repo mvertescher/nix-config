@@ -53,6 +53,7 @@ use crate::widgets::ground;
 use crate::Element;
 use iced::keyboard::{self, key::Named, Key};
 use iced::widget::{canvas, stack};
+mod echo;
 use iced::{mouse, Color, Length, Point, Rectangle, Renderer, Size, Subscription, Task, Vector};
 use std::time::Instant;
 
@@ -255,7 +256,7 @@ impl Login {
     }
 
     pub fn view(&self) -> Element<'_, Message> {
-        // Three layers, and the backdrop has to be its own: `iced_wgpu`
+        // The backdrop and note echoes need separate canvases: `iced_wgpu`
         // buckets a canvas's geometry into meshes, images and text and
         // draws the buckets in that order, so an image is painted over
         // every shape in the same canvas no matter when it was asked
@@ -273,6 +274,9 @@ impl Login {
             })
             .width(Length::Fill)
             .height(Length::Fill),
+            canvas(echo::NoticeEcho { style: self.style })
+                .width(Length::Fill)
+                .height(Length::Fill),
             canvas(Art {
                 style: self.style,
                 input_epoch: self.input_epoch,
@@ -494,7 +498,7 @@ fn plate_contains(plate: &Plate, at: Point) -> bool {
 /// measures zero -- the shaper trims it -- and because a difference the
 /// shaper makes between neighbours belongs to the pair, not to either
 /// glyph.
-use super::scene::advances;
+use super::scene::{advances, run_width};
 
 /// The face a legend is set in.
 fn font_of(legend: &Legend) -> iced::Font {
@@ -517,6 +521,14 @@ fn run_extent(g: Grid, legend: &Legend, content: &str) -> f32 {
     let window = advances.iter().sum::<f32>()
         + g.span(legend.tracking) * (advances.len().max(1) - 1) as f32;
     window * legend.stretch / g.sx
+}
+
+fn note_extent(grid: Grid, note: &Legend) -> f32 {
+    if note.tracking == 0.0 {
+        run_width(note.text, grid.span(note.size), font_of(note)) * note.stretch / grid.sx
+    } else {
+        run_extent(grid, note, note.text)
+    }
 }
 
 fn field_interior(field: &Plate) -> Plot {
@@ -565,6 +577,15 @@ fn access_ink(style: &Style, ink: Ink) -> Color {
         }
     }
     ink.of(&style.palette)
+}
+
+fn legend_ink(style: &Style, legend: &Legend) -> Color {
+    if style.access_reference_palette() {
+        if let Some(reference) = legend.reference_ink {
+            return reference;
+        }
+    }
+    access_ink(style, legend.ink)
 }
 
 fn plate_fill(style: &Style, plate: &Plate) -> Option<Color> {
@@ -664,7 +685,7 @@ impl Pen<'_> {
     fn legend_text(&mut self, legend: &Legend, content: &str) {
         let g = self.grid;
         let size = g.span(legend.size);
-        let color = self.ink(legend.ink);
+        let color = legend_ink(self.style, legend);
         let font = font_of(legend);
         let text = canvas::Text {
             content: content.to_string(),
@@ -941,6 +962,51 @@ fn slot_body<'a>(style: &Style, slot: &'a Slot) -> Option<&'a Plate> {
     }
 }
 
+/// Keep a slot's complete footnote inside its card as the text size grows
+/// faster than horizontal coordinates in a tall window. Shrink the font
+/// uniformly when necessary: a new horizontal stretch would take tiny
+/// letters off Iced's hinted glyph pipeline. Notes elsewhere, including
+/// rotated margin legends, retain their transcribed geometry.
+fn bounded_note(grid: Grid, style: &Style, slot: &Slot, note: Legend) -> Legend {
+    let Some(body) = slot_body(style, slot) else { return note };
+    if note.turned { return note; }
+    let interior = field_interior(body);
+    let left = interior.x;
+    let right = left + interior.w;
+    let available = if note.centred {
+        2.0 * (note.x - left).min(right - note.x)
+    } else {
+        right - note.x
+    };
+    if available <= 0.0 { return note; }
+    let width = note_extent(grid, &note);
+    if width <= available { return note; }
+    let mut scale = available / width;
+    let mut fitted = note;
+    for _ in 0..4 {
+        fitted.size = note.size * scale;
+        fitted.tracking = note.tracking * scale;
+        let measured = note_extent(grid, &fitted);
+        if measured <= available { break; }
+        // Font shaping can round a scaled run slightly differently from
+        // the original. Re-measure before accepting the fit.
+        scale *= available / measured * 0.999;
+    }
+    fitted
+}
+
+/// Treat a notice's lines as one typographic block, preserving their
+/// relative sizes and tracking when any line needs a narrower fit.
+fn bounded_notes<'a>(grid: Grid, style: &Style, slot: &'a Slot) -> impl Iterator<Item = Legend> + 'a {
+    let scale = slot.notes.iter().filter(|note| note.size > 0.0 && !note.turned)
+        .map(|&note| bounded_note(grid, style, slot, note).size / note.size)
+        .fold(1.0_f32, f32::min);
+    slot.notes.iter().copied().map(move |note| {
+        if note.turned || scale == 1.0 { return note; }
+        Legend { size: note.size * scale, tracking: note.tracking * scale, ..note }
+    })
+}
+
 fn draw_slot(pen: &mut Pen, slot: &Slot, shown: Option<&Shown>, coat: Option<Coat>) {
     if let Some(body) = slot_body(pen.style, slot) {
         pen.plate(body);
@@ -992,10 +1058,7 @@ fn draw_slot(pen: &mut Pen, slot: &Slot, shown: Option<&Shown>, coat: Option<Coa
     if let Some(action) = &slot.action {
         pen.plate(&coated_action(*action, coat));
     }
-    let label = slot.action_label.map(|mut label| {
-        if let Some(coat) = coat { label.ink = coat.ink; }
-        label
-    });
+    let label = slot.action_label.map(|label| coated_label(label, coat));
     match (&label, word, slot.prompt.is_some()) {
         (Some(label), Some(word), false) => pen.legend_text(label, word),
         (Some(label), _, _) => pen.legend(label),
@@ -1005,12 +1068,20 @@ fn draw_slot(pen: &mut Pen, slot: &Slot, shown: Option<&Shown>, coat: Option<Coa
         pen.plate(mark);
     }
     if let Some(badge) = &slot.badge {
-        badge_plate(pen, badge);
+        if slot.badge_art.is_empty() {
+            badge_plate(pen, badge);
+        } else {
+            for plate in slot.badge_art {
+                pen.plate(plate);
+            }
+        }
     }
     if let Some(letter) = &slot.badge_letter {
         pen.legend(letter);
     }
-    pen.legends(slot.notes);
+    for note in bounded_notes(pen.grid, pen.style, slot) {
+        pen.legend(&note);
+    }
 }
 
 fn coated_action(mut action: Plate, coat: Option<Coat>) -> Plate {
@@ -1023,6 +1094,14 @@ fn coated_action(mut action: Plate, coat: Option<Coat>) -> Plate {
         action.weight = coat.weight;
     }
     action
+}
+
+fn coated_label(mut label: Legend, coat: Option<Coat>) -> Legend {
+    if let Some(coat) = coat {
+        label.ink = coat.ink;
+        label.reference_ink = None;
+    }
+    label
 }
 
 fn draw_entry(pen: &mut Pen, slot: &Slot, shown: Option<&Shown>) {
@@ -1582,6 +1661,92 @@ mod tests {
         custom.palette.panel = rgb(0x183638);
         assert_eq!(access_ink(&custom, Ink::Fg), custom.palette.fg);
         assert_eq!(plate_fill(&custom, &plate), Some(custom.palette.fg));
+    }
+
+    #[test]
+    fn source_legend_ink_respects_custom_roles_and_interaction_coats() {
+        use crate::palette::rgb;
+        let style = Era::Neomil.style();
+        let dim = Legend::new("notice", 0.0, 0.0, 8.0, Ink::Dim)
+            .reference_ink(rgb(0x9c2527));
+        assert_eq!(legend_ink(&style, &dim), rgb(0x9c2527));
+        assert_eq!(legend_ink(&style, &Legend { reference_ink: None, ..dim }), style.palette.dim);
+
+        let mut custom = style;
+        custom.palette.panel = rgb(0x183638);
+        assert_eq!(custom.palette.fg, style.palette.fg);
+        assert_eq!(legend_ink(&custom, &dim), custom.palette.dim);
+        custom = style;
+        custom.palette.dim = rgb(0x37c8a0);
+        assert_eq!(legend_ink(&custom, &dim), custom.palette.dim);
+
+        let label = Legend::new("Login", 0.0, 0.0, 17.0, Ink::Fg)
+            .reference_ink(rgb(0x9c2527));
+        let held = coated_label(label, Some(Coat::filled(Ink::Select, Ink::OnSelect)));
+        assert_eq!(held.reference_ink, None);
+        assert_eq!(legend_ink(&style, &held), style.palette.on_select);
+        assert_eq!(coated_label(label, None), label);
+    }
+
+    #[test]
+    fn card_notes_fit_tall_windows_without_changing_reference_runs() {
+        let style = Era::Neomil.style();
+        let sizes = [
+            Size::new(1600.0, 900.0),
+            Size::new(3840.0, 2160.0),
+            Size::new(1537.0, 947.0),
+            Size::new(1200.0, 900.0),
+            Size::new(1200.0, 1000.0),
+            Size::new(900.0, 900.0),
+            Size::new(900.0, 1200.0),
+        ];
+        for size in sizes {
+            let grid = Grid::new(size);
+            let mut narrowed = [false; 3];
+            for (index, slot) in style.access.slots.iter().enumerate() {
+                let interior = field_interior(slot_body(&style, slot).expect("card body"));
+                let right = interior.x + interior.w;
+                let mut scale = None;
+                for (&note, fit) in slot.notes.iter().zip(bounded_notes(grid, &style, slot)) {
+                    let line_scale = fit.size / note.size;
+                    if let Some(previous) = scale { assert_eq!(line_scale, previous); }
+                    scale = Some(line_scale);
+                    assert_eq!(fit.text, note.text);
+                    assert_eq!(fit.x, note.x);
+                    assert_eq!(fit.baseline, note.baseline);
+                    assert_eq!(fit.ink, note.ink);
+                    assert_eq!(fit.reference_ink, note.reference_ink);
+                    assert_eq!(fit.stretch, note.stretch);
+                    assert_eq!(fit.tracking, note.tracking);
+                    if size == sizes[0] || size == sizes[1] {
+                        assert_eq!(fit, note, "reference layout changed for card {index}");
+                    }
+                    narrowed[index] |= fit.size < note.size;
+                    let width = note_extent(grid, &fit);
+                    assert!(fit.x + width <= right + 0.001,
+                        "card {index}, {size:?}: right {} > {right}", fit.x + width);
+                }
+            }
+            if size == Size::new(1537.0, 947.0) {
+                assert!(narrowed[1] && narrowed[2], "both inactive cards must fit their notes");
+            }
+        }
+
+        let grid = Grid::new(Size::new(900.0, 900.0));
+        let slot = &style.access.slots[1];
+        let note = slot.notes[0];
+        assert_eq!(bounded_note(grid, &style, slot, Legend { turned: true, ..note }),
+            Legend { turned: true, ..note });
+        let no_body = Slot { body: None, reference_body: None, ..*slot };
+        assert_eq!(bounded_note(grid, &style, &no_body, note), note);
+        let tracked = Legend { tracking: 0.5, ..note };
+        let fitted = bounded_note(grid, &style, slot, tracked);
+        let interior = field_interior(slot_body(&style, slot).unwrap());
+        let right = interior.x + interior.w;
+        assert_eq!(fitted.stretch, tracked.stretch);
+        assert!(fitted.size < tracked.size);
+        assert!((fitted.tracking / fitted.size - tracked.tracking / tracked.size).abs() < 0.0001);
+        assert!(fitted.x + run_extent(grid, &fitted, fitted.text) <= right + 0.001);
     }
 
     #[test]

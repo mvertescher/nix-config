@@ -102,6 +102,10 @@
                      1.44..1.48, centred on the measured runs (1377/1454,
                      1377/1453.5), baselines 271 / 348.
 
+       2026-09-30  Source-fitted T contours and digit 1 preserve the T1 gap.
+                   Digits 2/3/4 retain their original text geometry.
+                   See mailbox-badges.md for calibration and limits.
+
        Palette sampled by k-means over the photo (extract_spec.py):
          ink    #a6d2a8 (5.8%, the solid fills)  #8aaf8d (bright text)
                 #709174 (outlines)  #577057  #3d4b38  #25281d (dark text
@@ -369,18 +373,31 @@
 
   <!-- ==== C: ENCRIPTION LEVEL 2x2 badges, 69x69, T2 filled ==== -->
   <!-- glyphs: bold extended, cap 18 (y 253..270 / 331..347), runs T1 27,
-       T2 35, T3 35, T4 37 wide — Rajdhani Bold 27 stretched 1.42..1.48 -->
+       T2 35, T3 35, T4 37 wide. Source contours replace the T glyphs
+       and all four digits; the original words remain as nonpainting text. -->
   <g font-family="Rajdhani" font-size="27" font-weight="bold" text-anchor="middle">
     <g fill="none">
       <use href="#c-chrome" stroke="#25281d" stroke-width="7" class="photo"/>
       <use href="#c-chrome" stroke="#0a0a02" stroke-width="4" class="photo"/>
       <use href="#c-chrome" stroke="#709174" stroke-width="2"/>
     </g>
-    <text transform="translate(1377,271) scale(1.44,1)" fill="#a6d2a8">T1</text>
-    <text transform="translate(1454,271) scale(1.48,1)" fill="#a6d2a8">T3</text>
+    <text transform="translate(1377,271) scale(1.44,1)" fill="none">T1</text>
+    <!-- Source digit 1: narrow vertical with a single angled shoulder; T crossbar remains frozen. -->
+    <path d="M1387.5 253.333 H1389.167 V270.833 H1386.667 V257.917 H1382.917 V255.833 L1385.417 255.417 L1386.25 254.583 Z" fill="#a6d2a8"/>
+    <!-- Source-fitted T1 badge T: straight bar and slim stem; digit 1 is separately source-replaced. -->
+    <path d="M1362.5 254.167 H1380.417 V256.667 H1372.917 V270.833 H1370 V256.667 H1362.5 Z" fill="#a6d2a8"/>
+    <!-- Source-core T3 digit 3; original word remains as nonpainting accessible text. -->
+    <text transform="translate(1454,271) scale(1.48,1)" fill="none">T3</text>
+    <path d="M1461.250000 252.500000 L1467.083333 252.916667 L1468.750000 253.750000 L1470.833333 256.250000 L1470.416667 259.166667 L1469.166667 260.416667 L1467.500000 260.833333 L1467.500000 261.666667 L1469.166667 262.083333 L1470.416667 263.333333 L1470.833333 266.250000 L1468.333333 269.166667 L1466.666667 270.000000 L1462.083333 270.416667 L1455.416667 268.333333 L1456.250000 265.833333 L1461.666667 267.500000 L1465.833333 267.083333 L1467.500000 265.833333 L1467.500000 264.166667 L1466.666667 263.333333 L1464.583333 262.500000 L1460.833333 262.500000 L1460.833333 260.000000 L1465.833333 260.000000 L1467.083333 259.166667 L1467.500000 256.666667 L1466.666667 255.833333 L1460.833333 255.416667 L1457.083333 256.666667 L1456.250000 255.416667 L1456.250000 254.166667 Z" fill="#a6d2a8"/>
+    <path d="M1362.5 254.167 H1380.417 V256.667 H1372.917 V270.833 H1370 V256.667 H1362.5 Z" transform="translate(72.916667,-1.25)" fill="#a6d2a8"/>
     <!-- T2's solid fill is in #select-lit above -->
-    <text transform="translate(1377,348) scale(1.47,1)" fill="#25281d">T2</text>
-    <text transform="translate(1453.5,348) scale(1.42,1)" fill="#a6d2a8">T4</text>
+    <text transform="translate(1377,348) scale(1.47,1)" fill="none">T2</text>
+    <!-- Source-fitted digit 2, including the medium-coverage foot edge. -->
+    <path d="M1383.750000 332.083333 L1389.166667 332.083333 L1390.000000 332.916667 L1391.250000 332.916667 L1393.333333 335.416667 L1393.333333 338.333333 L1391.666667 340.000000 L1388.333333 341.666667 L1382.916667 343.333333 L1381.666667 344.583333 L1381.250000 346.041667 L1393.750000 346.041667 L1393.750000 348.687500 L1378.750000 348.687500 L1378.750000 345.416667 L1380.416667 342.500000 L1383.750000 340.416667 L1388.750000 339.166667 L1390.416667 337.916667 L1390.416667 335.833333 L1389.166667 334.583333 L1387.500000 334.166667 L1384.583333 334.166667 L1379.583333 335.833333 L1379.583333 335.000000 L1378.750000 334.583333 L1379.166667 333.750000 Z" fill="#25281d"/>
+    <path d="M1358.75 332.292 H1376.667 V334.792 H1368.75 V348.958 H1365.417 V334.792 H1358.75 Z" fill="#25281d"/>
+    <text transform="translate(1453.5,348) scale(1.42,1)" fill="none">T4</text>
+    <path d="M1465.000000 331.250000 L1467.916667 331.250000 L1467.916667 340.833333 L1471.250000 340.833333 L1471.250000 343.333333 L1467.916667 343.333333 L1467.916667 347.916667 L1464.583333 347.916667 L1464.583333 343.333333 L1455.000000 343.333333 L1455.000000 340.833333 L1464.583333 331.666667 Z M1459.166667 340.833333 L1464.583333 340.833333 L1464.583333 334.333333 Z" fill-rule="evenodd" fill="#a6d2a8"/>
+    <path d="M1362.5 254.167 H1380.417 V256.667 H1372.917 V270.833 H1370 V256.667 H1362.5 Z" transform="translate(72.5,77.083333)" fill="#a6d2a8"/>
   </g>
 
   </g>

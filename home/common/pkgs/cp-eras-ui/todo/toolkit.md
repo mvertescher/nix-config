@@ -130,7 +130,7 @@ when that screen assembles from library widgets. Priority order:
     (see "Motion"). Neomil and entropism built-in button/field coats
     are wired as of 2026-09-13. Kitsch/Neokitsch custom native-control
     wrappers and working mail faces are wired as of 2026-09-14 (below);
-    Kitsch hub hover still needs a specific interpretation.
+    Kitsch hub hover now has the inferred front-outline rule below.
     *override-hatch*: no era sheet has a
     hatched button; iced has no pattern fill either. *Icon buttons*:
     nothing to style beyond `bare`; blocked on "Icon set". *Slider
@@ -322,7 +322,8 @@ when that screen assembles from library widgets. Priority order:
     Kitsch/Neokitsch use custom native-control backdrops for ghosts,
     echoes and veneer; their material is not a color-only catalog
     approximation. Working mail faces are also wired (below). Kitsch
-    hub hover remains undefined; its pressed destination is implemented.
+    hub hover subsequently gains the inferred front-outline rule below;
+    its pressed destination is implemented.
     These are instantaneous states; animated transitions remain open.
     Desktop interaction verification remains open.
     - **Hub cursor, 2026-09-14:** the shared scene's
@@ -465,7 +466,8 @@ when that screen assembles from library widgets. Priority order:
       hit-test identity, and target-only static backdrop variants. Hover
       needs a hub-specific rule: its five-to-seven resting ghosts do not
       map directly to the component sheet's one-ghost lift. Keep that
-      choice open; do not invent an additional layer or reduce the stack.
+      choice open at that audit; AT subsequently chooses the stationary
+      front-outline rule below, preserving the stack.
     - **Kitsch row and dashboard follow-up, 2026-09-14 (working
       tree):** trace mailbox rows now draw filled ghosts behind their
       two-piece teal hover faces, then flat yellow while held. The
@@ -726,3 +728,18 @@ when that screen assembles from library widgets. Priority order:
       fixtures change only Neokitsch veneer: 22 and 48 respectively have
       identical segmentation. Do not compensate for extractor faults in
       the UI or trace.
+
+
+## AT Kitsch hub hover
+
+The existing six-blade caller gains an inferred stationary hover: its
+unselected front edge uses label mint at 1.8px, with labels, face fields,
+trails and hit geometry preserved. Selected hover and held/release/cancel
+behavior keep their existing drawings and logic. See the
+[design and checks](../docs/kitsch/dashboard-hover.md). Nineteen paired
+native cases, all-six structural/pointer-event tests, 292 Rust tests,
+22 repository checks and 27 first-attempt visual cases pass. Integrated
+production frames match the reviewed candidates. The resting trace and
+dashboard golden are unchanged. Form-control and Motion umbrellas remain open
+for their other requirements; this does not establish interaction timing
+or complete a live desktop check.

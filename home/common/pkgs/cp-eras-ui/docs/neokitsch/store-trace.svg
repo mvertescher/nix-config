@@ -43,9 +43,12 @@
            that bridges x 349..1230; both ends curl down ~10px at x=35 /
            x=1562. Flanking the bridge on the low runs: letter box A at
            (360,143) with SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO. /
-           SERVING CUSTOMERS SINCE 2006. to its right (6.5px, x 401,
-           baselines 148 / 155, runs to 556.7 / 500.8); box C at
-           (1178,143) with the same two lines to its LEFT (x 1012)
+           SERVING CUSTOMERS SINCE 2006. to its right (FreeSans Bold
+           approximation, 5.9583px, x 400.5833, baselines 148 / 155);
+           box C at (1178,143) with the same lines to its LEFT (x 1011.1667).
+           Literal spaces and tspan dx preserve a common word-space fit;
+           the dx compensates librsvg's negative-tracking boundary advance
+           and differs from the native extra space. See text-fit.md.
          - left nav column: CUSTOMER ... #NC488402 (cap 243..252, right
            edge 289), LOYALTY DISCOUNT ... 10% (275..283), LAST UPDATE ...
            10/05/2077 (291..299); then five outlined buttons x 93..293.5,
@@ -343,8 +346,8 @@
   </g>
   <!-- letter boxes A / C on the low runs and their annotations -->
   <g stroke="#e0b67a" fill="none">
-    <use href="#letterbox" x="360" y="143"/>
-    <use href="#letterbox" x="1178" y="143"/>
+    <path id="store-A-frame" d="M 362.0833,143.9583 L 384.5834,143.9583 Q 385.8334,143.9583 385.8334,145.4167 L 385.8334,162.0833 L 379.1667,168.5417 Q 378.3333,168.9583 377.0833,168.9583 L 362.0833,168.9583 Q 360.8333,168.9583 360.8333,167.0833 L 360.8333,145.4167 Q 360.8333,143.9583 362.0833,143.9583 Z" stroke-width="1.0"/><path id="store-A-tab" d="M 365,165.8333 L 375.8333,165.8333 L 376.25,167.5 L 378.75,169.0833 L 362.0833,169.0833 L 364.1667,167.5 Z" fill="#fed08d" stroke="none"/>
+    <path id="store-C-frame" d="M 1180.4167,143.9583 L 1202.9167,143.9583 Q 1204.1667,143.9583 1204.1667,145.4167 L 1204.1667,162.0833 L 1197.5,168.5417 Q 1196.6667,168.9583 1195.4167,168.9583 L 1180.4167,168.9583 Q 1179.1667,168.9583 1179.1667,167.0833 L 1179.1667,145.4167 Q 1179.1667,143.9583 1180.4167,143.9583 Z" stroke-width="1.0"/><path id="store-C-tab" d="M 1183.3333,165.8333 L 1193.3333,165.8333 L 1194.5833,167.5 L 1197.0833,169.0833 L 1179.5833,169.0833 L 1182.5,167.5 Z" fill="#fed08d" stroke="none"/>
   </g>
   <g font-family="Rajdhani" font-size="6.5" fill="#d9a877">
   </g>
@@ -684,7 +687,7 @@
   </g><!-- /body-fade -->
   <!-- ==== foot ==== -->
   <g stroke="#e0b67a" fill="none">
-    <use href="#letterbox" x="675" y="775"/>
+    <path id="store-B-frame" d="M 676.6667,776.25 L 698.75,776.25 Q 700,776.25 700,777.9167 L 700,795 L 693.3333,801.0417 Q 692.5,801.4583 691.25,801.4583 L 676.6667,801.4583 Q 675.4167,801.4583 675.4167,799.5833 L 675.4167,777.9167 Q 675.4167,776.25 676.6667,776.25 Z" stroke-width="1.0"/><path id="store-B-tab" d="M 679.1667,798.75 L 690,798.75 L 690.4167,800.4167 L 693.3333,801.5833 L 675.8333,801.5833 L 677.9167,800.4167 Z" fill="#fed08d" stroke="none"/>
   </g>
   <g font-family="Rajdhani" font-size="6.5" fill="#d9a877">
   </g>
@@ -700,12 +703,12 @@
          librsvg ignores, and overran the plate) -->
     <text font-family="Rajdhani" font-size="5" font-weight="600" fill="#5a3418" x="1304.4" y="72.8" letter-spacing="0.78">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE</text>
     <text font-family="Rajdhani" font-size="5" font-weight="600" fill="#5a3418" x="1304.4" y="78.4" letter-spacing="0.82">ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
-    <text fill="#e0b67a" stroke="none" x="368" y="163" font-family="Rajdhani" font-size="17" font-weight="600">A</text>
-    <text fill="#e0b67a" stroke="none" x="1186" y="163" font-family="Rajdhani" font-size="17" font-weight="600">C</text>
-    <text font-family="Rajdhani" font-size="6.5" fill="#d9a877" x="401" y="148" letter-spacing="0.55">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
-    <text font-family="Rajdhani" font-size="6.5" fill="#d9a877" x="401" y="155" letter-spacing="0.55">SERVING CUSTOMERS SINCE 2006.</text>
-    <text font-family="Rajdhani" font-size="6.5" fill="#d9a877" x="1012" y="148" letter-spacing="0.55">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
-    <text font-family="Rajdhani" font-size="6.5" fill="#d9a877" x="1012" y="155" letter-spacing="0.55">SERVING CUSTOMERS SINCE 2006.</text>
+    <path id="store-A-glyph" d="M 370.8333,148.3333 L 372.9167,148.3333 Q 373.75,148.3333 374.1667,149.5833 L 379.5833,159.5833 L 377.0833,159.5833 L 375.8333,157.0833 L 367.5,157.0833 L 366.6667,159.5833 L 364.5833,159.5833 M 371.6667,150 L 374.5833,155.4167 L 369.1667,155.4167 Z" fill="#f5c689" fill-rule="evenodd"/>
+    <path id="store-C-glyph" d="M 1185.8333,147.9167 L 1195.8333,147.9167 Q 1197.5,147.9167 1197.5,149.5833 L 1197.5,152.9167 L 1195.8333,152.9167 L 1195.8333,150 L 1186.25,150 L 1186.25,160 L 1195.8333,160 L 1195.8333,156.6667 L 1197.5,156.6667 L 1197.5,160 Q 1197.5,162.0833 1195.4167,162.0833 L 1186.25,162.0833 Q 1183.75,162.0833 1183.75,160 L 1183.75,150 Q 1183.75,147.9167 1185.8333,147.9167 Z" fill="#f5c689" fill-rule="evenodd"/>
+    <text font-family="FreeSans" font-weight="700" font-size="5.95833333" fill="#d9a877" x="400.58333333" y="148" letter-spacing="-0.25854214">SPARE <tspan dx="0.31151059929626912">TIME</tspan> <tspan dx="0.31151059929626912">MANAGER</tspan> <tspan dx="0.31151059929626912">WAS</tspan> <tspan dx="0.31151059929626912">DEVELOPED</tspan> <tspan dx="0.31151059929626912">BY</tspan> <tspan dx="0.31151059929626912">SEOCHO.</tspan></text>
+    <text font-family="FreeSans" font-weight="700" font-size="5.95833333" fill="#d9a877" x="400.58333333" y="155" letter-spacing="-0.25854214">SERVING <tspan dx="0.31151059929626912">CUSTOMERS</tspan> <tspan dx="0.31151059929626912">SINCE</tspan> <tspan dx="0.31151059929626912">2006.</tspan></text>
+    <text font-family="FreeSans" font-weight="700" font-size="5.95833333" fill="#d9a877" x="1011.16666667" y="148" letter-spacing="-0.25854214">SPARE <tspan dx="0.31151059929626912">TIME</tspan> <tspan dx="0.31151059929626912">MANAGER</tspan> <tspan dx="0.31151059929626912">WAS</tspan> <tspan dx="0.31151059929626912">DEVELOPED</tspan> <tspan dx="0.31151059929626912">BY</tspan> <tspan dx="0.31151059929626912">SEOCHO.</tspan></text>
+    <text font-family="FreeSans" font-weight="700" font-size="5.95833333" fill="#d9a877" x="1011.16666667" y="155" letter-spacing="-0.25854214">SERVING <tspan dx="0.31151059929626912">CUSTOMERS</tspan> <tspan dx="0.31151059929626912">SINCE</tspan> <tspan dx="0.31151059929626912">2006.</tspan></text>
     <text font-family="Rajdhani" font-size="11.5" fill="#e9bd7a" x="96" y="252">CUSTOMER</text>
     <text font-family="Rajdhani" font-size="11.5" fill="#e9bd7a" x="289" y="252" text-anchor="end">#NC488402</text>
     <text font-family="Rajdhani" font-size="11.5" fill="#e9bd7a" x="96" y="283">LOYALTY DISCOUNT</text>
@@ -810,9 +813,9 @@
     <text font-family="Rajdhani" font-size="13" fill="#3a2010" text-anchor="middle" x="893.4" y="626.3" font-weight="500">EMPTY</text>
     <text font-family="Rajdhani" font-size="13" fill="#3a2010" text-anchor="middle" x="893.4" y="639.8" font-weight="500">SOCKET</text>
     </g><!-- /body-fade-text -->
-    <text fill="#e0b67a" stroke="none" x="683" y="795" font-family="Rajdhani" font-size="17" font-weight="600">B</text>
-    <text font-family="Rajdhani" font-size="6.5" fill="#d9a877" x="715" y="780.5" letter-spacing="0.55">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
-    <text font-family="Rajdhani" font-size="6.5" fill="#d9a877" x="715" y="787" letter-spacing="0.55">SERVING CUSTOMERS SINCE 2006.</text>
+    <path id="store-B-glyph" d="M 679.5833,779.5833 L 690.4167,779.5833 Q 693.75,779.5833 693.75,782.5 L 693.75,784.1667 Q 693.75,786.25 692.0833,786.6667 Q 693.75,787.5 693.75,789.5833 L 693.75,790.8333 Q 693.75,793.3333 691.25,793.3333 L 679.5833,793.3333 M 682.0833,781.6667 L 690.4167,781.6667 Q 691.6667,781.6667 691.6667,783.3333 Q 691.6667,785.4167 690.4167,785.4167 L 682.0833,785.4167 M 682.0833,787.0833 L 690.4167,787.0833 Q 691.6667,787.0833 691.6667,788.75 L 691.6667,790 Q 691.6667,791.6667 690.4167,791.6667 L 682.0833,791.6667 Z" fill="#f5c689" fill-rule="evenodd"/>
+    <text font-family="FreeSans" font-weight="700" font-size="5.95833333" fill="#d9a877" x="715.00000000" y="780.5" letter-spacing="-0.25854214">SPARE <tspan dx="0.31151059929626912">TIME</tspan> <tspan dx="0.31151059929626912">MANAGER</tspan> <tspan dx="0.31151059929626912">WAS</tspan> <tspan dx="0.31151059929626912">DEVELOPED</tspan> <tspan dx="0.31151059929626912">BY</tspan> <tspan dx="0.31151059929626912">SEOCHO.</tspan></text>
+    <text font-family="FreeSans" font-weight="700" font-size="5.95833333" fill="#d9a877" x="715.00000000" y="787" letter-spacing="-0.25854214">SERVING <tspan dx="0.31151059929626912">CUSTOMERS</tspan> <tspan dx="0.31151059929626912">SINCE</tspan> <tspan dx="0.31151059929626912">2006.</tspan></text>
   </g>
 </g>
 </svg>

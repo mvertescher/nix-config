@@ -2,10 +2,12 @@
 
 The idle fan faces in `dashboard-trace.svg` and `src/eras/kitsch.rs` now
 use a red field tied to the dashboard's shared rose lobe, with green and
-blue held at the accepted `#20858f` baseline. The ghost fill remains
-`#0f9f80`, with its seven fill opacities
-halved to 0.035 / 0.06 / 0.105 / 0.15 / 0.20 / 0.24 / 0.29, farthest to
-nearest. The `#6cc4bd` stroke retains its original 0.16 / 0.24 / 0.34 /
+blue held at the accepted `#20858f` baseline. CW gives the nearest ghost
+in each stack the same rose-field red law, G104/B94 and opacity .75147.
+Farther fills keep the earlier `#0f9f80` depth ramp and fitted far-card
+exceptions. The measurements below preserve the history of the earlier
+uniform fill before CW's bounded nearest-card correction. The `#6cc4bd`
+stroke retains its original 0.16 / 0.24 / 0.34 /
 0.45 / 0.56 / 0.68 / 0.80 ramp. The selected EVENTS face, labels, card
 geometry, ghost spacing and motion are unchanged.
 
@@ -210,3 +212,134 @@ antialiasing. W still makes some occluded middle strokes more visible than
 the source, and its exposed edge amplitudes differ at several depths.
 The correction improves measurable core width and registration without
 reproducing the source's photographic softness or all overlap material.
+
+
+## AJ front-outline and overlap review
+
+Reversing the right LOCATIONS/EVENTS ghost-stack order changes no rendered
+pixels. Reversing left PRODUCTS/WEAPONS changes 2,278 pixels, but its mean
+RGB error barely changes (15.971 to 15.922), upper/right controls worsen,
+and red-channel error rises from 16.854 to 17.587. The reorder is rejected.
+The source and unchanged renders are retained under
+`/tmp/cp-eras-next/aj-kitsch-fan/`.
+
+The separate opaque front outlines still use 1.8 design pixels, producing
+roughly four-native-pixel cores. A 1.4 trial reduces most cores toward the
+source's 2.25–3.0 pixels. With source registration determined once from the
+old trace, it improves eight of ten idle long-edge profiles, nine of ten
+end middles, and nineteen of twenty whole-corner profiles. Sub-arcs do not
+all agree. Right PRODUCTS' opposite side and LOCATIONS' upper side retain
+systematic whole-profile losses, so these counts alone do not establish a
+complete correction. Selected EVENTS and the already fitted 0.9 ghost
+outlines are separate controls.
+
+An independent core audit uses raw G+B profiles with a local sideband
+baseline and 25/50/75% crossings. It corrects the earlier peak-only claim
+that the LOCATIONS upper side has a one-pixel center offset: its half-max
+center is already aligned, and wider shoulders/material intensity explain
+that profile loss. Right PRODUCTS has independent half-max center offsets
+of about 0.5–0.75 native pixel on its two sides. LOCATIONS' opposite side
+has about 1.3 pixels of offset. Core width, position and photographic
+material need separate review; no front-outline change is accepted yet.
+Evidence and scripts: `/tmp/cp-eras-next/aj-kitsch-front/`.
+
+The final idle-only trial preserves EVENTS at 1.8. All 16,932 changed
+pixels fall within 1.2 design pixels of one of the five idle outlines;
+none falls inside the selected face. Across five strips on each of ten
+idle sides, mean half-max width and 50% excess-area error improve on every
+side. Of 300 per-strip width/area comparisons at 25/50/75%, five worsen:
+four low-threshold LOCATIONS upper widths and one high-threshold left
+PRODUCTS far-strip area. Astra rechecks the scope and residual inventory.
+This supports a separate native/state trial of the bright-core width;
+the explicit whole-profile/corner losses and position/material work remain.
+
+## AK current-native outline review
+
+The frozen native image initially supplied for AK is stale. A fresh
+production 4K capture differs in 4,042,814 pixels; the isolated preview
+with its trial disabled matches that production image exactly. Recomputed
+native measurements use this verified baseline and retain the original
+image/reference profiles separately. The candidate remains 1.4; it was
+not retuned after correcting the baseline. AJ's SVG measurements above
+remain valid, but old native-image measurements are superseded here.
+
+Across five independent strips per side, mean half-max width and excess
+area errors improve on all ten idle sides. Four of 300 raw 25/50/75%
+width/area comparisons worsen: two high-threshold right-PRODUCTS area
+measurements and two low-threshold upper-LOCATIONS widths. Complete
+center-profile error improves on seven sides and worsens on right
+PRODUCTS' opposite side and both LOCATIONS sides. These wider profile
+losses remain material/position follow-ups; they are not evidence against
+the measured reduction in excessive bright-core width.
+
+All fifty half-max widths and all fifty half-max excess-area comparisons
+improve individually. Complete profile MAE worsens in thirteen of fifty
+strips: two WEAPONS opposite strips, four right-PRODUCTS opposite strips,
+four upper-LOCATIONS strips and three opposite-LOCATIONS strips. These
+losses are retained alongside the core measurements.
+
+Exactly 12,142 native pixels change at 4K, all within 1.081 design pixels
+of an idle front outline. Selected EVENTS changes no pixels. Selected
+and pressed strokes retain 1.8, ghost strokes retain .9, and all paths,
+fills and labels are preserved. Eight paired state captures pass the
+outline scope check. Rest changes 2,957 pixels at 1600×900 and 2,181 at
+1537×947; every fractional delta remains within 1.342 design pixels of an
+idle outline. Held VEHICLES/PRODUCTS remove the target outline delta;
+alternate selected WEAPONS retains its complete face and edge while EVENTS
+takes the idle width. The early-opening image differs from rest in 28,601
+pixels, so it exercises actual motion. Hover and the panel-only custom
+probe render identically to rest before and after; they are scope checks,
+not evidence of visible custom-color or hover feedback. All six affected gates, 288 Rust tests and 22 repository checks pass;
+all 27 visual cases pass first attempt.
+Evidence: `/tmp/cp-eras-next/ak-kitsch-front/` and
+[round twenty-two](../reference-svg-round22.md).
+
+## BW–BY nearest right PRODUCTS edge
+
+Current source/SVG/native profiles distinguish the nearly aligned overlap
+edge from an exposed opposite edge displaced about .69 physical pixel at
+4K. They do not support more blur or a uniform opacity change. One trial
+widens only that ghost's left side by .29 design pixel, preserving its
+right edge, radius, paint and every other card. Both renderers improve the
+4K position and all three upper-left corner mean RGB controls, but the
+1600 and fractional straight-edge RGB profiles worsen. Native 1600 peak
+error grows 2.55→33.472 levels; 4K core width/area also worsen. Reject the
+exact widening; these are not resolved by changed-pixel aggregate gains.
+
+Astra reproduces 45 profile sets and 18 corner/control box scores per
+renderer and verifies full RGBA locality and alpha at three sizes. Native
+baselines exactly match current production; selected, front, other-fan,
+other-depth and registered opposite-edge controls stay unchanged. No
+production artwork changes. Corrected fractional comparisons use explicit
+1537×947 top-left uniform SVG and inverse-affine Bicubic source; the older
+1537×865 stretched SVG backend scores are superseded. See
+[round forty-four](../reference-svg-round44.md) for results and evidence.
+
+## CW nearest-card coverage — 2026-10-01
+
+The shared rose-field material corrects excess deeper-edge visibility on
+all six nearest ghosts in SVG, native and the LOCATIONS component. Native
+changed-region RGB MAE at 4K falls from 15.59 to 9.42 averaged over three
+channels; all six whole-card means improve at all three sizes. Local red,
+green and blue losses remain, so this is a bounded improvement rather than
+complete material recovery. Seventeen paired synthetic states preserve
+selection, pointer feedback, foreground interiors and clipping. See
+[round forty-eight](../reference-svg-round48.md) for the fixed fit, channel
+tradeoffs, CPU comparison and repository validation.
+
+## CZ deeper-stroke coverage — 2026-10-01
+
+Farther strokes now disappear beneath their own depth-two/three card
+silhouettes in the SVG, native fan and LOCATIONS specimen. Fills, geometry,
+edge inks, paint order and held-trail slicing retain the CW definition.
+Changed-region native mean RGB error falls 26.50→10.90 at 4K; all six
+stack means improve at 4K, 1600 and the uniform fractional size. WEAPONS
+and right PRODUCTS retain red-channel losses, so deeper-fill fitting and
+photographic softness remain open.
+
+Seventeen paired synthetic states preserve interaction and foreground
+interiors. A white-mask control isolates the existing one-level f32 mask
+rounding floor at the smaller sizes. The bounded mask work raises measured
+4K cold CPU preparation 63.75→70.23 ms; warm cache lookup and retained
+bytes are unchanged. See [round forty-nine](../reference-svg-round49.md)
+for source controls, native/component checks and the timing scope.

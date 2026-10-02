@@ -59,7 +59,7 @@ pub const ON_MINT: iced::Color = rgb(0x0b3b31);
 /// traces; `dashboard-trace.svg` has 162x50 r8 cards with ghost fills
 /// fading 0.29 to 0.06 on the visible trails, not extruded slabs). The
 /// idle cards carry a rose-correlated red field around the accepted
-/// `#20858f` flat baseline under a 1.8px `#a9e6df` stroke;
+/// `#20858f` flat baseline under a 1.4px `#a9e6df` stroke;
 /// `SLAB` stays `#2bc4ac` because its only reader is `relief` -> `Palette::relief()`,
 /// consumed by bar / menu / chrome widgets, and in every gated render
 /// `home/themes/kitsch/palettes.nix` overrides `bevel`/`shade` anyway.
@@ -1266,6 +1266,7 @@ pub fn mailbox() -> Mailbox {
             stroke: Ink::Fg,
             label: Run::new(27.5, 24.5, 23.0, Ink::Fg).bold().centered(),
             label_runs: &[],
+            label_art: &[],
             caption: None,
             caption_text: "",
             labels: &LEVELS,
@@ -1563,15 +1564,36 @@ const fn card_stat(x: f32, y: f32, size: f32, ink: Ink, content: &'static str) -
     Prim::Text { x, y, size, ink, face: Face::Medium, anchor: Anchor::Middle, content }
 }
 
-/// Four certification marks, measured from the band at native 2.4x.
+// Faint certification printing retains the mark's ink in each state.
+// Native alpha compensates for canvas rebasing against the dark ground:
+// .66531/.48855 are calibrated against SVG .35/.20 on the yellow band.
+const fn rg5_opacity(id: &'static str, alpha: f32) -> Motion {
+    Motion { id, begin: 0, dur: 0, ease: Easing::Linear,
+        change: Change::Opacity { alpha: (alpha, alpha) } }
+}
+/// Four certification marks measured from the source band.
 /// The warning block contains a source-thresholded micro contour.
 macro_rules! band_marks {
     ($ink:expr, $knock:expr) => {
         &[
             // Framed RG5 certification, then the filled square/disc SC mark.
-            fill_rect(-16.5, 78.5, 10.8, 11.0, $ink),
-            fill_rect(-15.0, 80.0, 7.8, 7.8, $knock),
-            txt_bold(-14.5, 83.8, 3.2, $ink, "RG5"),
+            fill_rect(-16.5, 78.5, 10.8, 11.4, $ink),
+            fill_path(-15.0, 80.0, &[
+                Seg::Line(-7.2, 80.0), Seg::Line(-7.2, 87.3),
+                Seg::Line(-8.4, 89.0), Seg::Line(-13.7, 89.0),
+                Seg::Line(-15.0, 87.3),
+            ], $knock),
+            Prim::Motion { motion: rg5_opacity("kitsch-rg5-type", 0.66531), prims: &[
+                Prim::Tracked { x: -14.5, y: 83.05, size: 3.2,
+                    tracking: 0.45, ink: $ink, face: Face::Bold,
+                    anchor: Anchor::Start, content: "RG5" },
+            ] },
+            Prim::Motion { motion: rg5_opacity("kitsch-rg5-rule", 0.48855), prims: &[
+                line_path(-14.3, 86.4, &[
+                    Seg::Line(-13.6, 86.4), Seg::Move(-12.25, 86.4),
+                    Seg::Line(-8.6, 86.4),
+                ], $ink, 0.4),
+            ] },
             fill_rect(-0.7, 78.5, 11.1, 11.0, $ink),
             Prim::Circle { x: 4.8, y: 84.0, r: 4.05, fill: Some($knock), stroke: None, width: 0.0 },
             // Four photographed corner apertures reveal the same band ink as the disc.
@@ -1581,7 +1603,9 @@ macro_rules! band_marks {
                 Seg::Move(0.22, 89.08), Seg::Line(0.65, 87.42), Seg::Line(1.95, 89.08),
                 Seg::Move(8.52, 89.08), Seg::Line(9.5, 87.42), Seg::Line(10.12, 89.08),
             ], $knock),
-            txt_bold(2.35, 85.6, 4.5, $ink, "SC"),
+            // The photographed core is shorter and lighter in coverage than bold 4.5.
+            Prim::Text { x: 2.35, y: 85.5, size: 4.3, ink: $ink,
+                face: Face::SemiBold, anchor: Anchor::Start, content: "SC" },
             // Angular outer contour with the source's three-bar inset mark.
             line_path(24.5, 81.2, &[
                 Seg::Line(22.6, 78.5), Seg::Line(17.6, 78.5), Seg::Line(15.5, 80.6),
@@ -1595,9 +1619,18 @@ macro_rules! band_marks {
             ], $ink, 0.65),
             Prim::Round { x: 28.5, y: 74.0, w: 64.0, h: 18.0, r: 1.5, fill: None, stroke: Some($ink), width: 0.5 },
             // Hollow warning triangle and positive exclamation on amber.
-            fill_path(30.3, 90.0, &[
-                Seg::Line(36.5, 77.6), Seg::Line(42.7, 90.0),
-                Seg::Move(33.0, 88.7), Seg::Line(40.0, 88.7), Seg::Line(36.5, 81.0),
+            // Native bridge y88.8 preserves small-size coverage; SVG uses y88.6.
+            // See docs/kitsch/store-art.md for source and renderer calibration.
+            fill_path(30.3, 89.0, &[
+                Seg::Line(36.5, 78.2), Seg::Line(42.7, 89.0),
+                Seg::Cubic { c1x: 42.7, c1y: 89.0, c2x: 42.4, c2y: 89.0, x: 42.1, y: 89.0 },
+                Seg::Line(39.9, 89.0),
+                Seg::Cubic { c1x: 39.55, c1y: 89.0, c2x: 39.45, c2y: 88.9, x: 39.35, y: 88.8 },
+                Seg::Line(33.65, 88.8),
+                Seg::Cubic { c1x: 33.55, c1y: 88.9, c2x: 33.45, c2y: 89.0, x: 33.1, y: 89.0 },
+                Seg::Line(30.9, 89.0),
+                Seg::Cubic { c1x: 30.6, c1y: 89.0, c2x: 30.3, c2y: 89.0, x: 30.3, y: 89.0 },
+                Seg::Move(33.0, 87.8), Seg::Line(40.0, 87.8), Seg::Line(36.5, 81.2),
             ], $ink),
             fill_rect(36.0, 82.8, 1.0, 3.9, $ink),
             Prim::Circle { x: 36.5, y: 88.0, r: 0.55, fill: Some($ink), stroke: None, width: 0.0 },
@@ -1640,9 +1673,34 @@ const CARD: &[Prim] = &[
     socket_label(153.5, 308.5, Ink::Fg, "SOCKET"),
     socket_label(224.5, 295.5, Ink::Fg, "EMPTY"),
     socket_label(224.5, 308.5, Ink::Fg, "SOCKET"),
-    Prim::Tracked { x: 4.0, y: 341.0, size: 8.0, tracking: 0.381967, ink: Ink::Fixed(CARD_COMPLIANCE), face: Face::Bold, anchor: Anchor::Start, content: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO" },
-    Prim::Tracked { x: 4.0, y: 349.0, size: 8.0, tracking: 0.3, ink: Ink::Fixed(CARD_COMPLIANCE), face: Face::Bold, anchor: Anchor::Start, content: "MANIPULATE, ACCESS OR DISABLE THIS DEVICE." },
+    Prim::Tracked { x: 4.412557704, y: 341.166666667, size: 6.666666667, tracking: 0.002688446, ink: Ink::Fixed(CARD_COMPLIANCE), face: Face::FreeSansBold, anchor: Anchor::Start, content: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO" },
+    Prim::Tracked { x: 3.971182943, y: 349.291666667, size: 6.666666667, tracking: -0.041779341, ink: Ink::Fixed(CARD_COMPLIANCE), face: Face::CpErasKitschSansBold, anchor: Anchor::Start, content: "MANIPULATE, ACCESS OR DISABLE THIS DEVICE." },
 ];
+
+// Source-measured residuals apply to the ordinary compliance lines only.
+// Keep the art, hover/press materials, and selected GROWN geometry shared.
+const CARD_3_OFFSET: (f32, f32) = (0.621228604, 0.385855901);
+const CARD_4_OFFSET: (f32, f32) = (0.777558727, 0.481019430);
+
+const fn shifted_compliance(source: &[Prim], dx: f32, dy: f32) -> [Prim; CARD.len()] {
+    let mut face = [CARD[0]; CARD.len()];
+    let mut i = 0;
+    while i < CARD.len() {
+        face[i] = source[i];
+        i += 1;
+    }
+    i = CARD.len() - 2;
+    while i < CARD.len() {
+        if let Prim::Tracked { x, y, .. } = &mut face[i] {
+            *x += dx;
+            *y += dy;
+        }
+        i += 1;
+    }
+    face
+}
+const CARD_3: &[Prim] = &shifted_compliance(CARD, CARD_3_OFFSET.0, CARD_3_OFFSET.1);
+const CARD_4_BODY: &[Prim] = &shifted_compliance(CARD, CARD_4_OFFSET.0, CARD_4_OFFSET.1);
 
 /// The selection: the same layout filled amber to a stepped bottom,
 /// with an amber-outlined lower body under it carrying the detail
@@ -1715,8 +1773,8 @@ const GROWN: &[Prim] = &[
     socket_label(153.5, 450.0, Ink::Fixed(GROWN_DETAIL), "SOCKET"),
     socket_label(224.5, 436.5, Ink::Fixed(GROWN_DETAIL), "EMPTY"),
     socket_label(224.5, 450.0, Ink::Fixed(GROWN_DETAIL), "SOCKET"),
-    Prim::Tracked { x: 4.0, y: 483.0, size: 8.0, tracking: 0.381967, ink: Ink::Fixed(GROWN_COMPLIANCE), face: Face::Bold, anchor: Anchor::Start, content: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO" },
-    Prim::Tracked { x: 4.0, y: 491.0, size: 8.0, tracking: 0.3, ink: Ink::Fixed(GROWN_COMPLIANCE), face: Face::Bold, anchor: Anchor::Start, content: "MANIPULATE, ACCESS OR DISABLE THIS DEVICE." },
+    Prim::Tracked { x: 4.412557704, y: 483.166666667, size: 6.666666667, tracking: 0.002688446, ink: Ink::Fixed(GROWN_COMPLIANCE), face: Face::FreeSansBold, anchor: Anchor::Start, content: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO" },
+    Prim::Tracked { x: 3.971182943, y: 490.75, size: 6.666666667, tracking: -0.041779341, ink: Ink::Fixed(GROWN_COMPLIANCE), face: Face::FreeSansBold, anchor: Anchor::Start, content: "MANIPULATE, ACCESS OR DISABLE THIS DEVICE." },
 ];
 
 
@@ -1817,6 +1875,16 @@ const CARD_LIFT: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: &card_face(false) },
 ];
 const CARD_FLAT: &[Prim] = &card_face(true);
+const CARD_LIFT_3: &[Prim] = &[
+    Prim::At { x: 20.0, y: -20.0, prims: &[card_ghost(CARD_EDGE)] },
+    Prim::At { x: 0.0, y: 0.0, prims: &shifted_compliance(&card_face(false), CARD_3_OFFSET.0, CARD_3_OFFSET.1) },
+];
+const CARD_FLAT_3: &[Prim] = &shifted_compliance(&card_face(true), CARD_3_OFFSET.0, CARD_3_OFFSET.1);
+const CARD_LIFT_4_BODY: &[Prim] = &[
+    Prim::At { x: 20.0, y: -20.0, prims: &[card_ghost(CARD_EDGE)] },
+    Prim::At { x: 0.0, y: 0.0, prims: &shifted_compliance(&card_face(false), CARD_4_OFFSET.0, CARD_4_OFFSET.1) },
+];
+const CARD_FLAT_4_BODY: &[Prim] = &shifted_compliance(&card_face(true), CARD_4_OFFSET.0, CARD_4_OFFSET.1);
 // The selected card already has a solid upper slab; lift that slab's
 // ghost only, keeping the outlined detail body and all selected art.
 const GROWN_LIFT: &[Prim] = &[
@@ -1853,10 +1921,10 @@ macro_rules! fourth_strip {
         }
     };
 }
-const CARD_4: &[Prim] = fourth_face!(CARD);
+const CARD_4: &[Prim] = fourth_face!(CARD_4_BODY);
 const GROWN_4: &[Prim] = fourth_face!(GROWN);
-const CARD_LIFT_4: &[Prim] = fourth_face!(CARD_LIFT);
-const CARD_FLAT_4: &[Prim] = fourth_face!(CARD_FLAT);
+const CARD_LIFT_4: &[Prim] = fourth_face!(CARD_LIFT_4_BODY);
+const CARD_FLAT_4: &[Prim] = fourth_face!(CARD_FLAT_4_BODY);
 const GROWN_LIFT_4: &[Prim] = fourth_face!(GROWN_LIFT);
 macro_rules! card_states {
     ($index:expr) => {
@@ -1883,7 +1951,12 @@ pub(crate) const STORE_STATES: &[PlateStates] = &[
     nav_states!(4, 537.0, 567.0, "PISTOL", NAV_ON_4),
     card_states!(0),
     card_states!(1),
-    card_states!(2),
+    PlateStates {
+        group: Group::Card, index: 2,
+        hover: CARD_LIFT_3, pressed: CARD_FLAT_3,
+        preserve_selected_hover: true, selected_away: None,
+        selected_hover: Some(GROWN_LIFT), selected_pressed: Some(GROWN),
+    },
     PlateStates {
         group: Group::Card, index: 3,
         hover: CARD_LIFT_4, pressed: CARD_FLAT_4,
@@ -1912,7 +1985,20 @@ macro_rules! shelf {
 }
 const SHELF_0: &[Prim] = shelf!(0);
 const SHELF_1: &[Prim] = shelf!(1);
-const SHELF_2: &[Prim] = shelf!(2);
+const SHELF_2: &[Prim] = &[Prim::Pick {
+    group: Group::Card,
+    index: 2,
+    on: &[Prim::Plate {
+        group: Group::Card, index: 2,
+        x: 0.0, y: 0.0, w: 261.0, h: 500.0,
+        on: GROWN, off: CARD_3,
+    }],
+    off: &[Prim::Plate {
+        group: Group::Card, index: 2,
+        x: 0.0, y: 0.0, w: 261.0, h: 320.0,
+        on: GROWN, off: CARD_3,
+    }],
+}];
 const SHELF_3: &[Prim] = &[Prim::Viewport {
     x: -32.0, y: -24.0, w: 139.0, h: 538.0,
     prims: &[Prim::Pick {
@@ -2044,10 +2130,10 @@ mod store_interaction_tests {
         for (index, state) in states.into_iter().enumerate() {
             assert_eq!(state.index, index);
             if index == 3 {
-                fourth_face_keeps_content(CARD_4, CARD);
+                fourth_face_keeps_content(CARD_4, CARD_4_BODY);
                 fourth_face_keeps_content(GROWN_4, GROWN);
-                fourth_face_keeps_content(state.hover, CARD_LIFT);
-                fourth_face_keeps_content(state.pressed, CARD_FLAT);
+                fourth_face_keeps_content(state.hover, CARD_LIFT_4_BODY);
+                fourth_face_keeps_content(state.pressed, CARD_FLAT_4_BODY);
                 fourth_face_keeps_content(state.selected_hover.unwrap(), GROWN_LIFT);
                 fourth_face_keeps_content(state.selected_pressed.unwrap(), GROWN);
                 assert_eq!(SHELF_3.len(), 1);
@@ -2065,10 +2151,11 @@ mod store_interaction_tests {
             }
             let Prim::At { x, y, prims: hover } = state.hover[1] else { panic!("lifted face") };
             assert_eq!((x, y), (0.0, 0.0));
+            let ordinary = if index == 2 { CARD_3 } else { CARD };
             for face in [hover, state.pressed] {
                 assert_eq!(face.len(), CARD.len());
                 assert_eq!(face.iter().copied().map(geometry).collect::<Vec<_>>(),
-                    CARD.iter().copied().map(geometry).collect::<Vec<_>>());
+                    ordinary.iter().copied().map(geometry).collect::<Vec<_>>());
             }
             assert_eq!(state.selected_pressed, Some(GROWN));
             let Prim::At { x, y, prims } = state.selected_hover.unwrap()[1] else { panic!("selected face") };
@@ -2342,14 +2429,20 @@ const GHOST_CW_SEVENTH: &[Prim] = &[Prim::Path {
 }];
 
 /// The solid blades at their own origin: idle face fields are in the
-/// leading software layer below, with these unchanged 1.8px outlines
-/// above them. Selected/pressed gold stays an opaque foreground fill.
-const BLADE_CW_OFF: &[Prim] = &[shut_path(CARD_CW_X, CARD_CW_Y, CARD_CW, Ink::Fixed(NAME_INK), 1.8)];
+/// leading software layer below, with 1.4px idle outlines above them.
+/// Selected/pressed gold retains its opaque fill and 1.8px outline.
+const BLADE_CW_OFF: &[Prim] = &[shut_path(CARD_CW_X, CARD_CW_Y, CARD_CW, Ink::Fixed(NAME_INK), 1.4)];
 const BLADE_CW_ON: &[Prim] = &[shut_and_fill(CARD_CW_X, CARD_CW_Y, CARD_CW, Ink::Fixed(HUB_YELLOW), Ink::Fixed(SELECT_EDGE))];
-const BLADE_CCW_OFF: &[Prim] = &[shut_path(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, Ink::Fixed(NAME_INK), 1.8)];
+const BLADE_CCW_OFF: &[Prim] = &[shut_path(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, Ink::Fixed(NAME_INK), 1.4)];
 const BLADE_CCW_ON: &[Prim] = &[shut_and_fill(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, Ink::Fixed(HUB_YELLOW), Ink::Fixed(SELECT_EDGE))];
-const BLADE_V_OFF: &[Prim] = &[Prim::Round { x: -25.0, y: -81.0, w: 50.0, h: 162.0, r: 8.0, fill: None, stroke: Some(Ink::Fixed(NAME_INK)), width: 1.8 }];
+const BLADE_V_OFF: &[Prim] = &[Prim::Round { x: -25.0, y: -81.0, w: 50.0, h: 162.0, r: 8.0, fill: None, stroke: Some(Ink::Fixed(NAME_INK)), width: 1.4 }];
 const BLADE_V_ON: &[Prim] = &[Prim::Round { x: -25.0, y: -81.0, w: 50.0, h: 162.0, r: 8.0, fill: Some(Ink::Fixed(HUB_YELLOW)), stroke: Some(Ink::Fixed(SELECT_EDGE)), width: 1.8 }];
+
+// Inferred hub hover: brighten only the idle front edge. The SVG/photo
+// establish the rest and selected drawings, not an interaction frame.
+const BLADE_CW_HOVER: &[Prim] = &[shut_path(CARD_CW_X, CARD_CW_Y, CARD_CW, Ink::Fixed(BLADE_LABEL), 1.8)];
+const BLADE_CCW_HOVER: &[Prim] = &[shut_path(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, Ink::Fixed(BLADE_LABEL), 1.8)];
+const BLADE_V_HOVER: &[Prim] = &[Prim::Round { x: -25.0, y: -81.0, w: 50.0, h: 162.0, r: 8.0, fill: None, stroke: Some(Ink::Fixed(BLADE_LABEL)), width: 1.8 }];
 
 const fn shut_and_fill(x: f32, y: f32, segs: &'static [Seg], fill: Ink, stroke: Ink) -> Prim {
     Prim::Path { x, y, segs, close: true, fill: Some(fill), stroke: Some(stroke), width: 1.8 }
@@ -2560,58 +2653,180 @@ const HUB_BACK: &[Prim] = &[
 // was (`scene::Backdrop`), so at rest the pixels are the old group's.
 // The order across the two is the old group's, left then right.
 
+// The six nearest ghosts reuse the accepted foreground rose law at their
+// own world positions. A shared translucent G/B and stronger coverage hide
+// farther strokes; the photo's local glow and red residual remain approximate.
+// These fills paint before the unchanged 0.9-wide, 0.80-alpha ghost edges.
+const fn nearest_stops(red: [u8; 11]) -> [(f32, iced::Color); 11] {
+    let mut stops = [(0.0, faded(rgb(0x00685e), 0.75147)); 11];
+    let mut i = 0;
+    while i < 11 {
+        stops[i] = (i as f32 / 10.0, faded(rgb(((red[i] as u32) << 16) | 0x685e), 0.75147));
+        i += 1;
+    }
+    stops
+}
+const NEAREST_VEHICLES_STOPS: [(f32, iced::Color); 11] = nearest_stops([35, 31, 27, 23, 23, 23, 22, 22, 21, 21, 21]);
+const NEAREST_WEAPONS_STOPS: [(f32, iced::Color); 11] = nearest_stops([21, 22, 22, 23, 25, 32, 39, 46, 53, 60, 67]);
+const NEAREST_PRODUCTS_L_STOPS: [(f32, iced::Color); 11] = nearest_stops([18, 17, 16, 15, 14, 13, 12, 11, 11, 11, 11]);
+const NEAREST_PRODUCTS_R_STOPS: [(f32, iced::Color); 11] = nearest_stops([91, 78, 66, 53, 40, 28, 23, 22, 21, 19, 18]);
+const NEAREST_EVENTS_STOPS: [(f32, iced::Color); 11] = nearest_stops([11, 11, 12, 12, 13, 13, 14, 14, 15, 15, 16]);
+const NEAREST_LOCATIONS_STOPS: [(f32, iced::Color); 11] = nearest_stops([16, 15, 14, 14, 13, 13, 12, 11, 11, 11, 11]);
+
+// These stroke primitives retain the exact original nearest-ghost geometry,
+// color, width and alpha; only their former flat fill has moved to a ramp.
+const NEAREST_EDGE_CW: Prim = Prim::Path {
+    x: CARD_CW_X, y: CARD_CW_Y, segs: CARD_CW, close: true,
+    fill: None, stroke: Some(Ink::Fixed(faded(GHOST_EDGE, 0.80))), width: 0.9,
+};
+const NEAREST_EDGE_CCW: Prim = Prim::Path {
+    x: CARD_CCW_X, y: CARD_CCW_Y, segs: CARD_CCW, close: true,
+    fill: None, stroke: Some(Ink::Fixed(faded(GHOST_EDGE, 0.80))), width: 0.9,
+};
+const NEAREST_EDGE_V: Prim = Prim::Round {
+    x: -25.0, y: -81.0, w: 50.0, h: 162.0, r: 8.0,
+    fill: None, stroke: Some(Ink::Fixed(faded(GHOST_EDGE, 0.80))), width: 0.9,
+};
+const NEAREST_VEHICLES: &[Prim] = &[
+    face_slant!(0.0, 0.0, FACE_CW_MASK, NEAREST_VEHICLES_STOPS, CW_FROM, CW_TO),
+    NEAREST_EDGE_CW,
+];
+
+const NEAREST_WEAPONS: &[Prim] = &[
+    face_slant!(0.0, 0.0, FACE_CCW_MASK, NEAREST_WEAPONS_STOPS, CCW_FROM, CCW_TO),
+    NEAREST_EDGE_CCW,
+];
+
+const NEAREST_PRODUCTS_L: &[Prim] = &[
+    face_vertical!(0.0, 0.0, NEAREST_PRODUCTS_L_STOPS),
+    NEAREST_EDGE_V,
+];
+
+const NEAREST_PRODUCTS_R: &[Prim] = &[
+    face_vertical!(0.0, 0.0, NEAREST_PRODUCTS_R_STOPS),
+    NEAREST_EDGE_V,
+];
+
+const NEAREST_EVENTS: &[Prim] = &[
+    face_slant!(0.0, 0.0, FACE_CCW_MASK, NEAREST_EVENTS_STOPS, CCW_FROM, CCW_TO),
+    NEAREST_EDGE_CCW,
+];
+
+const NEAREST_LOCATIONS: &[Prim] = &[
+    face_slant!(0.0, 0.0, FACE_CW_MASK, NEAREST_LOCATIONS_STOPS, CW_FROM, CW_TO),
+    NEAREST_EDGE_CW,
+];
+
+// Source-photo reconstruction: depth-2/3 silhouettes hide the farther ghost
+// strokes behind them. This is kept in the era table; the scene renderer is
+// unchanged. Each Masked content is one world-positioned stroke. The bounded
+// soft compositor intersects its scratch region with that stroke's own area.
+const fn ghost_fill_only(p: Prim) -> Prim {
+    match p {
+        Prim::Path { x, y, segs, close, fill, width, .. } =>
+            Prim::Path { x, y, segs, close, fill, stroke: None, width },
+        Prim::Round { x, y, w, h, r, fill, width, .. } =>
+            Prim::Round { x, y, w, h, r, fill, stroke: None, width },
+        _ => panic!("ghost must be a Path or Round"),
+    }
+}
+const fn ghost_stroke_only(p: Prim) -> Prim {
+    match p {
+        Prim::Path { x, y, segs, close, stroke, width, .. } =>
+            Prim::Path { x, y, segs, close, fill: None, stroke, width },
+        Prim::Round { x, y, w, h, r, stroke, width, .. } =>
+            Prim::Round { x, y, w, h, r, fill: None, stroke, width },
+        _ => panic!("ghost must be a Path or Round"),
+    }
+}
+const fn dark_silhouette(p: Prim) -> Prim {
+    match p {
+        Prim::Path { x, y, segs, close, width, .. } =>
+            Prim::Path { x, y, segs, close, fill: Some(Ink::Fixed(rgb(0x000000))), stroke: None, width },
+        Prim::Round { x, y, w, h, r, width, .. } =>
+            Prim::Round { x, y, w, h, r, fill: Some(Ink::Fixed(rgb(0x000000))), stroke: None, width },
+        _ => panic!("card silhouette must be a Path or Round"),
+    }
+}
+const fn white_mask_bounds(x: f32, y: f32, w: f32, h: f32) -> Prim {
+    Prim::Rect { x, y, w, h, fill: Some(Ink::Fixed(rgb(0xffffff))), stroke: None, width: 0.0 }
+}
+macro_rules! depth_stroke_split {
+    ($x:expr, $y:expr, $original:expr, $mask:expr) => {
+        Prim::At { x: 0.0, y: 0.0, prims: &[
+            Prim::At { x: $x, y: $y, prims: &[ghost_fill_only(($original)[0])] },
+            Prim::Masked {
+                prims: &[Prim::At { x: $x, y: $y, prims: &[ghost_stroke_only(($original)[0])] }],
+                mask: $mask,
+            },
+        ] }
+    };
+}
+const DEPTH_VEHICLES_D3: &[Prim] = &[white_mask_bounds(338.000, 208.000, 252.700, 211.000), Prim::At { x: 404.000, y: 373.000, prims: &[dark_silhouette(FACE_CW_MASK[0])] }];
+const DEPTH_VEHICLES_D4_PLUS: &[Prim] = &[white_mask_bounds(338.000, 208.000, 252.700, 211.000), Prim::At { x: 404.000, y: 373.000, prims: &[dark_silhouette(FACE_CW_MASK[0])] }, Prim::At { x: 424.000, y: 353.000, prims: &[dark_silhouette(FACE_CW_MASK[0])] }];
+const DEPTH_WEAPONS_D3: &[Prim] = &[white_mask_bounds(525.000, 208.000, 252.000, 212.000), Prim::At { x: 591.000, y: 374.000, prims: &[dark_silhouette(FACE_CCW_MASK[0])] }];
+const DEPTH_WEAPONS_D4_PLUS: &[Prim] = &[white_mask_bounds(525.000, 208.000, 252.000, 212.000), Prim::At { x: 591.000, y: 374.000, prims: &[dark_silhouette(FACE_CCW_MASK[0])] }, Prim::At { x: 611.000, y: 354.000, prims: &[dark_silhouette(FACE_CCW_MASK[0])] }];
+const DEPTH_LEFT_PRODUCTS_D3: &[Prim] = &[white_mask_bounds(490.000, 351.000, 136.000, 248.000), Prim::At { x: 498.000, y: 535.000, prims: &[dark_silhouette(FACE_V_MASK[0])] }];
+const DEPTH_LEFT_PRODUCTS_D4_PLUS: &[Prim] = &[white_mask_bounds(490.000, 351.000, 136.000, 248.000), Prim::At { x: 498.000, y: 535.000, prims: &[dark_silhouette(FACE_V_MASK[0])] }, Prim::At { x: 518.000, y: 515.000, prims: &[dark_silhouette(FACE_V_MASK[0])] }];
+const DEPTH_RIGHT_PRODUCTS_D3: &[Prim] = &[white_mask_bounds(855.100, 206.650, 132.600, 244.000), Prim::At { x: 863.950, y: 385.650, prims: &[dark_silhouette(FACE_V_MASK[0])] }];
+const DEPTH_RIGHT_PRODUCTS_D4_PLUS: &[Prim] = &[white_mask_bounds(855.100, 206.650, 132.600, 244.000), Prim::At { x: 863.950, y: 385.650, prims: &[dark_silhouette(FACE_V_MASK[0])] }, Prim::At { x: 883.100, y: 366.650, prims: &[dark_silhouette(FACE_V_MASK[0])] }];
+const DEPTH_EVENTS_D3: &[Prim] = &[white_mask_bounds(705.000, 420.000, 212.000, 172.000), Prim::At { x: 771.000, y: 546.000, prims: &[dark_silhouette(FACE_CCW_MASK[0])] }];
+const DEPTH_EVENTS_D4_PLUS: &[Prim] = &[white_mask_bounds(705.000, 420.000, 212.000, 172.000), Prim::At { x: 771.000, y: 546.000, prims: &[dark_silhouette(FACE_CCW_MASK[0])] }, Prim::At { x: 791.000, y: 526.000, prims: &[dark_silhouette(FACE_CCW_MASK[0])] }];
+const DEPTH_LOCATIONS_D3: &[Prim] = &[white_mask_bounds(890.300, 386.450, 248.600, 208.000), Prim::At { x: 957.150, y: 547.450, prims: &[dark_silhouette(FACE_CW_MASK[0])] }];
+const DEPTH_LOCATIONS_D4_PLUS: &[Prim] = &[white_mask_bounds(890.300, 386.450, 248.600, 208.000), Prim::At { x: 957.150, y: 547.450, prims: &[dark_silhouette(FACE_CW_MASK[0])] }, Prim::At { x: 976.300, y: 528.450, prims: &[dark_silhouette(FACE_CW_MASK[0])] }];
+
 /// The left fan's ghosts: VEHICLES, WEAPONS, the left PRODUCTS.
 const FAN_LEFT: &[Prim] = &[
     // VEHICLES c(364,413) rot 30, 7 ghosts
-    Prim::At { x: 504.7, y: 274.0, prims: GHOST_CW_SEVENTH },
-    Prim::At { x: 484.0, y: 293.0, prims: GHOST_CW[1] },
-    Prim::At { x: 464.0, y: 313.0, prims: GHOST_CW[2] },
-    Prim::At { x: 444.0, y: 333.0, prims: GHOST_CW[3] },
-    Prim::At { x: 424.0, y: 353.0, prims: GHOST_CW[4] },
+    depth_stroke_split!(504.7, 274.0, GHOST_CW_SEVENTH, DEPTH_VEHICLES_D4_PLUS),
+    depth_stroke_split!(484.0, 293.0, GHOST_CW[1], DEPTH_VEHICLES_D4_PLUS),
+    depth_stroke_split!(464.0, 313.0, GHOST_CW[2], DEPTH_VEHICLES_D4_PLUS),
+    depth_stroke_split!(444.0, 333.0, GHOST_CW[3], DEPTH_VEHICLES_D4_PLUS),
+    depth_stroke_split!(424.0, 353.0, GHOST_CW[4], DEPTH_VEHICLES_D3),
     Prim::At { x: 404.0, y: 373.0, prims: GHOST_CW[5] },
-    Prim::At { x: 384.0, y: 393.0, prims: GHOST_CW[6] },
+    Prim::At { x: 384.0, y: 393.0, prims: NEAREST_VEHICLES },
     // WEAPONS c(551,414) rot -30, 7 ghosts (lines 205-211)
-    Prim::At { x: 691.0, y: 274.0, prims: GHOST_CCW[0] },
-    Prim::At { x: 671.0, y: 294.0, prims: GHOST_CCW[1] },
-    Prim::At { x: 651.0, y: 314.0, prims: GHOST_CCW[2] },
-    Prim::At { x: 631.0, y: 334.0, prims: GHOST_CCW[3] },
-    Prim::At { x: 611.0, y: 354.0, prims: GHOST_CCW[4] },
+    depth_stroke_split!(691.0, 274.0, GHOST_CCW[0], DEPTH_WEAPONS_D4_PLUS),
+    depth_stroke_split!(671.0, 294.0, GHOST_CCW[1], DEPTH_WEAPONS_D4_PLUS),
+    depth_stroke_split!(651.0, 314.0, GHOST_CCW[2], DEPTH_WEAPONS_D4_PLUS),
+    depth_stroke_split!(631.0, 334.0, GHOST_CCW[3], DEPTH_WEAPONS_D4_PLUS),
+    depth_stroke_split!(611.0, 354.0, GHOST_CCW[4], DEPTH_WEAPONS_D3),
     Prim::At { x: 591.0, y: 374.0, prims: GHOST_CCW[5] },
-    Prim::At { x: 571.0, y: 394.0, prims: GHOST_CCW[6] },
+    Prim::At { x: 571.0, y: 394.0, prims: NEAREST_WEAPONS },
     // left PRODUCTS c(458,575) rot 90, 7 ghosts
-    Prim::At { x: 598.0, y: 435.0, prims: GHOST_V_LEFT_SEVENTH },
-    Prim::At { x: 578.0, y: 455.0, prims: GHOST_V[1] },
-    Prim::At { x: 558.0, y: 475.0, prims: GHOST_V[2] },
-    Prim::At { x: 538.0, y: 495.0, prims: GHOST_V[3] },
-    Prim::At { x: 518.0, y: 515.0, prims: GHOST_V[4] },
+    depth_stroke_split!(598.0, 435.0, GHOST_V_LEFT_SEVENTH, DEPTH_LEFT_PRODUCTS_D4_PLUS),
+    depth_stroke_split!(578.0, 455.0, GHOST_V[1], DEPTH_LEFT_PRODUCTS_D4_PLUS),
+    depth_stroke_split!(558.0, 475.0, GHOST_V[2], DEPTH_LEFT_PRODUCTS_D4_PLUS),
+    depth_stroke_split!(538.0, 495.0, GHOST_V[3], DEPTH_LEFT_PRODUCTS_D4_PLUS),
+    depth_stroke_split!(518.0, 515.0, GHOST_V[4], DEPTH_LEFT_PRODUCTS_D3),
     Prim::At { x: 498.0, y: 535.0, prims: GHOST_V[5] },
-    Prim::At { x: 478.0, y: 555.0, prims: GHOST_V[6] },
+    Prim::At { x: 478.0, y: 555.0, prims: NEAREST_PRODUCTS_L },
 ];
 
 /// The right fan's ghosts: the right PRODUCTS, EVENTS, LOCATIONS.
 const FAN_RIGHT: &[Prim] = &[
     // right PRODUCTS c(825,424) rot 90, 7 ghosts
-    Prim::At { x: 959.7, y: 290.65, prims: GHOST_V_SEVENTH },
-    Prim::At { x: 940.55, y: 309.65, prims: GHOST_V[1] },
-    Prim::At { x: 921.4, y: 328.65, prims: GHOST_V[2] },
-    Prim::At { x: 902.25, y: 347.65, prims: GHOST_V[3] },
-    Prim::At { x: 883.1, y: 366.65, prims: GHOST_V[4] },
+    depth_stroke_split!(959.7, 290.65, GHOST_V_SEVENTH, DEPTH_RIGHT_PRODUCTS_D4_PLUS),
+    depth_stroke_split!(940.55, 309.65, GHOST_V[1], DEPTH_RIGHT_PRODUCTS_D4_PLUS),
+    depth_stroke_split!(921.4, 328.65, GHOST_V[2], DEPTH_RIGHT_PRODUCTS_D4_PLUS),
+    depth_stroke_split!(902.25, 347.65, GHOST_V[3], DEPTH_RIGHT_PRODUCTS_D4_PLUS),
+    depth_stroke_split!(883.1, 366.65, GHOST_V[4], DEPTH_RIGHT_PRODUCTS_D3),
     Prim::At { x: 863.95, y: 385.65, prims: GHOST_V[5] },
-    Prim::At { x: 844.8, y: 404.65, prims: GHOST_V[6] },
+    Prim::At { x: 844.8, y: 404.65, prims: NEAREST_PRODUCTS_R },
     // EVENTS c(731,586) rot -30, 5 ghosts (lines 227-231)
-    Prim::At { x: 831.0, y: 486.0, prims: GHOST_CCW[2] },
-    Prim::At { x: 811.0, y: 506.0, prims: GHOST_CCW[3] },
-    Prim::At { x: 791.0, y: 526.0, prims: GHOST_CCW[4] },
+    depth_stroke_split!(831.0, 486.0, GHOST_CCW[2], DEPTH_EVENTS_D4_PLUS),
+    depth_stroke_split!(811.0, 506.0, GHOST_CCW[3], DEPTH_EVENTS_D4_PLUS),
+    depth_stroke_split!(791.0, 526.0, GHOST_CCW[4], DEPTH_EVENTS_D3),
     Prim::At { x: 771.0, y: 546.0, prims: GHOST_CCW[5] },
-    Prim::At { x: 751.0, y: 566.0, prims: GHOST_CCW[6] },
+    Prim::At { x: 751.0, y: 566.0, prims: NEAREST_EVENTS },
     // LOCATIONS c(919,586) rot 30, 7 ghosts
-    Prim::At { x: 1052.9, y: 452.45, prims: GHOST_CW_SEVENTH },
-    Prim::At { x: 1033.75, y: 471.45, prims: GHOST_CW[1] },
-    Prim::At { x: 1014.6, y: 490.45, prims: GHOST_CW[2] },
-    Prim::At { x: 995.45, y: 509.45, prims: GHOST_CW[3] },
-    Prim::At { x: 976.3, y: 528.45, prims: GHOST_CW[4] },
+    depth_stroke_split!(1052.9, 452.45, GHOST_CW_SEVENTH, DEPTH_LOCATIONS_D4_PLUS),
+    depth_stroke_split!(1033.75, 471.45, GHOST_CW[1], DEPTH_LOCATIONS_D4_PLUS),
+    depth_stroke_split!(1014.6, 490.45, GHOST_CW[2], DEPTH_LOCATIONS_D4_PLUS),
+    depth_stroke_split!(995.45, 509.45, GHOST_CW[3], DEPTH_LOCATIONS_D4_PLUS),
+    depth_stroke_split!(976.3, 528.45, GHOST_CW[4], DEPTH_LOCATIONS_D3),
     Prim::At { x: 957.15, y: 547.45, prims: GHOST_CW[5] },
-    Prim::At { x: 938.0, y: 566.45, prims: GHOST_CW[6] },
+    Prim::At { x: 938.0, y: 566.45, prims: NEAREST_LOCATIONS },
 ];
 
 // Held feedback removes only the target trail. Keeping all remaining
@@ -2647,12 +2862,60 @@ const DASHBOARD_HELD_BACKDROPS: &[&[Prim]] = &[
     &held_backdrop(2, &[Prim::Soft { prims: RIGHT_HELD[1] }]),
     &held_backdrop(2, &[Prim::Soft { prims: RIGHT_HELD[2] }]),
 ];
+// Reuse each idle label primitive, including its measured tracking and
+// rotation. Only the outline entry is substituted in the hover branch.
+const fn diagonal_hover(index: usize, edge: &'static [Prim]) -> [Prim; 2] {
+    let mut i = 0;
+    while i < DASHBOARD.len() {
+        if let Prim::Plate { index: target, off, .. } = DASHBOARD[i] {
+            if target == index {
+                if let Prim::At { x, y, .. } = off[0] {
+                    return [Prim::At { x, y, prims: edge }, off[1]];
+                }
+            }
+        }
+        i += 1;
+    }
+    panic!("missing diagonal dashboard blade")
+}
+const fn vertical_hover(index: usize, face: &'static [Prim]) -> [Prim; 1] {
+    let mut i = 0;
+    while i < DASHBOARD.len() {
+        if let Prim::Plate { index: target, off, .. } = DASHBOARD[i] {
+            if target == index {
+                if let Prim::At { x, y, .. } = off[0] {
+                    return [Prim::At { x, y, prims: face }];
+                }
+            }
+        }
+        i += 1;
+    }
+    panic!("missing vertical dashboard blade")
+}
+const PRODUCTS_L_HOVER: &[Prim] = &[
+    Prim::At { x: 0.0, y: 0.0, prims: BLADE_V_HOVER },
+    PRODUCTS_L_OFF[1],
+];
+const PRODUCTS_R_HOVER: &[Prim] = &[
+    Prim::At { x: 0.0, y: 0.0, prims: BLADE_V_HOVER },
+    PRODUCTS_R_OFF[1],
+];
+const HOVER_0: [Prim; 2] = diagonal_hover(0, BLADE_CW_HOVER);
+const HOVER_1: [Prim; 2] = diagonal_hover(1, BLADE_CCW_HOVER);
+const HOVER_2: [Prim; 1] = vertical_hover(2, PRODUCTS_L_HOVER);
+const HOVER_3: [Prim; 1] = vertical_hover(3, PRODUCTS_R_HOVER);
+const HOVER_4: [Prim; 2] = diagonal_hover(4, BLADE_CCW_HOVER);
+const HOVER_5: [Prim; 2] = diagonal_hover(5, BLADE_CW_HOVER);
+const DASHBOARD_HOVER: &[&[Prim]] = &[
+    &HOVER_0, &HOVER_1, &HOVER_2, &HOVER_3, &HOVER_4, &HOVER_5,
+];
+
 const fn blade_states(index: usize) -> PlateStates {
     let mut i = 0;
     while i < DASHBOARD.len() {
-        if let Prim::Plate { index: target, on, off, .. } = DASHBOARD[i] {
+        if let Prim::Plate { index: target, on, .. } = DASHBOARD[i] {
             if target == index {
-                return PlateStates { group: Group::Module, index, hover: off, pressed: on,
+                return PlateStates { group: Group::Module, index, hover: DASHBOARD_HOVER[index], pressed: on,
                     selected_hover: None, selected_pressed: Some(on), selected_away: None,
                     preserve_selected_hover: true };
             }
@@ -2802,8 +3065,10 @@ mod dashboard_feedback_tests {
             let expected: Vec<_> = source.iter().enumerate().filter(|(i, _)| *i < begin || *i >= begin + count).map(|(_, p)| *p).collect();
             assert_eq!(*trail, expected);
             let Prim::Plate { on, off, .. } = DASHBOARD.iter().find(|p| matches!(p, Prim::Plate { index: i, .. } if *i == index)).unwrap() else { unreachable!() };
-            assert_eq!(DASHBOARD_STATES[index].hover, *off);
+            assert_ne!(DASHBOARD_STATES[index].hover, *off);
             assert_eq!(DASHBOARD_STATES[index].pressed, *on);
+            assert_eq!(DASHBOARD_STATES[index].selected_hover, None);
+            assert_eq!(DASHBOARD_STATES[index].selected_pressed, Some(*on));
             assert!(DASHBOARD_STATES[index].preserve_selected_hover);
         }
     }
@@ -2848,8 +3113,59 @@ mod dashboard_feedback_tests {
             assert_eq!(off_stroke, Some(Ink::Fixed(NAME_INK)));
             assert_eq!(on_fill, Some(Ink::Fixed(HUB_YELLOW)));
             assert_eq!(on_stroke, Some(Ink::Fixed(SELECT_EDGE)));
-            assert_eq!((off_width, on_width), (1.8, 1.8));
+            assert_eq!((off_width, on_width), (1.4, 1.8));
         }
+    }
+
+    #[test]
+    fn inferred_hover_changes_exactly_one_front_outline_on_each_blade() {
+        fn same_except_edge(idle: &[Prim], hover: &[Prim], changed: &mut usize) {
+            assert_eq!(idle.len(), hover.len());
+            for (&a, &b) in idle.iter().zip(hover) {
+                match (a, b) {
+                    (Prim::At { x: ax, y: ay, prims: ap }, Prim::At { x: bx, y: by, prims: bp }) => {
+                        assert_eq!((ax, ay), (bx, by));
+                        same_except_edge(ap, bp, changed);
+                    }
+                    (Prim::Turn { x: ax, y: ay, angle: aa, prims: ap },
+                     Prim::Turn { x: bx, y: by, angle: ba, prims: bp }) => {
+                        assert_eq!((ax, ay, aa), (bx, by, ba));
+                        same_except_edge(ap, bp, changed);
+                    }
+                    (Prim::Path { x: ax, y: ay, segs: asg, close: ac, fill: af, stroke: ast, width: aw },
+                     Prim::Path { x: bx, y: by, segs: bsg, close: bc, fill: bf, stroke: bst, width: bw })
+                        if ast == Some(Ink::Fixed(NAME_INK)) && aw == 1.4 => {
+                        assert_eq!((ax, ay, asg, ac, af), (bx, by, bsg, bc, bf));
+                        assert_eq!((bst, bw), (Some(Ink::Fixed(BLADE_LABEL)), 1.8));
+                        *changed += 1;
+                    }
+                    (Prim::Round { x: ax, y: ay, w: aw, h: ah, r: ar, fill: af, stroke: ast, width: ath },
+                     Prim::Round { x: bx, y: by, w: bw, h: bh, r: br, fill: bf, stroke: bst, width: bth })
+                        if ast == Some(Ink::Fixed(NAME_INK)) && ath == 1.4 => {
+                        assert_eq!((ax, ay, aw, ah, ar, af), (bx, by, bw, bh, br, bf));
+                        assert_eq!((bst, bth), (Some(Ink::Fixed(BLADE_LABEL)), 1.8));
+                        *changed += 1;
+                    }
+                    _ => assert_eq!(a, b, "a non-outline primitive changed"),
+                }
+            }
+        }
+        let mut count = 0;
+        for prim in DASHBOARD {
+            let Prim::Plate { group: Group::Module, index, on, off, .. } = prim else { continue };
+            let state = DASHBOARD_STATES[*index];
+            assert_eq!((state.group, state.index), (Group::Module, *index));
+            let mut changed = 0;
+            same_except_edge(off, state.hover, &mut changed);
+            assert_eq!(changed, 1, "blade {index}");
+            assert_eq!(state.pressed, *on);
+            assert_eq!(state.selected_hover, None);
+            assert_eq!(state.selected_pressed, Some(*on));
+            assert_eq!(state.selected_away, None);
+            assert!(state.preserve_selected_hover);
+            count += 1;
+        }
+        assert_eq!(count, 6);
     }
 
     #[test]

@@ -28,7 +28,9 @@
            T1/T2/T3/T4 at the right with T2 as the ringed folder badge,
            and the eleven-strand wire band converging to y~87 with the A
            and B letter boxes and their SPARE TIME MANAGER annotations.
-           That block is carried over from dashboard-trace.svg verbatim
+           The shared header layout descends from dashboard-trace.svg;
+           its A/B badge contours and four badge frames are fitted to
+           this mailbox source, so that block is no longer verbatim
          - left: a SEVEN-ROW MESSAGE LIST on a 60.2 pitch from y 309.
            Each row: a title (x 193, 18px), a FROM: line beneath, an
            envelope glyph at x 429..445 (open-flap on rows 1, 3, 7;
@@ -86,14 +88,16 @@
            and each is haloed with its own filter — #halo for the
            rules, the tighter #halotext (stdDeviation 1.0 x 1.6) for
            the glyphs — which brings that count to 5648
-         - the source's letterforms are a wider face than Rajdhani.
-           The font is not changed; where a run's width matters its
-           letter-spacing (or, for the single A/B/C/D letters, an x
-           scale) is set so the run's extent matches the photo, and
-           each such run carries its measured extent in a comment
+         - the source's boxed A/B/C/D glyphs use measured vector
+           contours; other text remains Rajdhani, with letter-spacing
+           where a run's width matters. The glyph contours are separate
+           from the badge frames and retain their measured anchors
          - no cascade cards, no detail panel, no footer line
 
        Passes:
+         2026-09-30  A/B/C/D source contours, external chamfers and lower
+                     tabs; brighter outlines rejected by local controls.
+                     See mailbox-badges.md for measurements and limits.
          2026-09-03  veneer grain recoloured #e6ae6b -> #cf975c (measured
                      cores); halo split into #lines/#text with the
                      tighter #halotext for glyphs (gold-family IoU
@@ -115,8 +119,8 @@
                      URGENT INFORMATION (!) 0.5 -> 1.15 (908, was 897);
                      "Urgent information (!)" -0.22; CUSTOMER #NC488402
                      15px ls 1.5 -> 13px 500 ls -0.05 (118..240, was
-                     121..286); A/B/C/D letters 19.5px 700 scaled 1.6 /
-                     1.75 in x (A 242..257 on cap 103..115.5); the four
+                     121..286); historical A/B/C/D font stretches were
+                     replaced by mailbox-source contours; the four
                      SPARE TIME / MAPS micro-text blocks 8px -> 6.2px
                      ls 0.7 on their measured baselines, the right
                      header block left-aligned at x 843.3 (it was
@@ -176,13 +180,6 @@
       <stop offset="0.45" stop-color="#7a598a" stop-opacity="0.55"/>
       <stop offset="1" stop-color="#7a598a" stop-opacity="0"/>
     </radialGradient>
-    <!-- boxed section letter: 26x26 rounded plate, folded bottom-right
-         corner (the era's mini-SIM motif) -->
-    <g id="letterbox" fill="none" stroke-width="1.4">
-      <path d="M 3,0 H 23 Q 26,0 26,3 V 17 L 19,24 Q 17,26 14,26 H 3
-               Q 0,26 0,23 V 3 Q 0,0 3,0 Z"/>
-      <path d="M 26,17 H 21 Q 19,17 19,19 V 24" stroke-width="1"/>
-    </g>
     <!-- the selection bar silhouette, used to clip its veneer grain -->
     <clipPath id="selclip">
       <path d="M 35,315 H 490 L 512,337 V 366 Q 512,370 508,370 H 35 Z"/>
@@ -308,8 +305,10 @@
       <rect x="1011" y="98" width="26" height="26" rx="3"/>
     </g>
     <g stroke="#bd8951">
-      <use href="#letterbox" x="238" y="98"/>
-      <use href="#letterbox" x="1011" y="98"/>
+      <path d="M 142.5,777.5 H 161.5 Q 164.25,777.5 164.25,780.5 V 795.5 L 157.5,802.5 H 142.5 Q 139.5,802.5 139.5,799.5 V 780.5 Q 139.5,777.5 142.5,777.5 Z" transform="translate(99 -679)" fill="none" stroke-width="1.4"/>
+      <path d="M 142.5,802.7 L 143.3,800.5 Q 143.5,800 144,800 H 154 Q 154.5,800 154.7,800.5 L 155.5,802.7 Z" transform="translate(99 -679)" fill="#e7c686" stroke="none"/>
+      <path d="M 142.5,777.5 H 161.5 Q 164.25,777.5 164.25,780.5 V 795.5 L 157.5,802.5 H 142.5 Q 139.5,802.5 139.5,799.5 V 780.5 Q 139.5,777.5 142.5,777.5 Z" transform="translate(872 -679)" fill="none" stroke-width="1.4"/>
+      <path d="M 142.5,802.7 L 143.3,800.5 Q 143.5,800 144,800 H 154 Q 154.5,800 154.7,800.5 L 155.5,802.7 Z" transform="translate(872 -679)" fill="#e7c686" stroke="none"/>
     </g>
   </g>
 
@@ -464,11 +463,11 @@
   </g><!-- /buttons-open -->
 
   <!-- ==== foot: C and D letter boxes with their annotations ==== -->
-  <g>
-    <g stroke="#bd8951">
-      <use href="#letterbox" x="139" y="777"/>
-      <use href="#letterbox" x="735" y="777"/>
-    </g>
+  <g stroke="#bd8951">
+    <path d="M 142.5,777.5 H 162 Q 165,777.5 165,780.5 V 794 L 157.5,802.5 H 142.5 Q 139.5,802.5 139.5,799.5 V 780.5 Q 139.5,777.5 142.5,777.5 Z" fill="none" stroke-width="1.4"/>
+    <path d="M 142.5,802.7 L 143.3,800.5 Q 143.5,800 144,800 H 154 Q 154.5,800 154.7,800.5 L 155.5,802.7 Z" fill="#e7c686" stroke="none"/>
+    <path d="M 142.5,777.5 H 162 Q 165,777.5 165,780.5 V 794 L 157.5,802.5 H 142.5 Q 139.5,802.5 139.5,799.5 V 780.5 Q 139.5,777.5 142.5,777.5 Z" transform="translate(596 0)" fill="none" stroke-width="1.4"/>
+    <path d="M 142.5,802.7 L 143.3,800.5 Q 143.5,800 144,800 H 154 Q 154.5,800 154.7,800.5 L 155.5,802.7 Z" transform="translate(596 0)" fill="#e7c686" stroke="none"/>
   </g>
   </g>
 
@@ -500,12 +499,11 @@
     <text x="1296" y="95" font-size="21" font-weight="600" fill="#e8c186">T2</text>
   </g>
   <g font-size="15">
-    <!-- the letters are a wide geometric face: A 15.0 x 12.5 (x 242.2..257.2,
-         cap 103..115.5), B 14.2 wide at x 1015.4..1029.6; Rajdhani at 19.5
-         is 9.4 / 7.8 wide, so each glyph is scaled 1.6 in x (2026-09-03) -->
+    <!-- Mailbox-source A/B contours at the original 249.7 / 1022.5 anchors;
+         measured independently of the dashboard header and its font stretch. -->
     <g fill="#d9a877" text-anchor="middle" font-size="19.5" font-weight="700">
-      <text transform="translate(249.7 115.5) scale(1.6 1)">A</text>
-      <text transform="translate(1022.5 115.5) scale(1.75 1)">B</text>
+      <path transform="translate(249.7 115.5)" fill-rule="evenodd" d="M -1.36667,-12.58333 L 0.71667,-12.58333 L 7.38333,-0.91667 L 4.88333,-0.91667 L 3.21667,-3.83333 L -3.45000,-3.83333 L -5.11667,-0.91667 L -7.61667,-0.91667 Z M -0.11667,-10.08333 L -2.61667,-5.50000 L 2.38333,-5.50000 Z"/>
+      <path transform="translate(1022.5 115.5)" fill-rule="evenodd" d="M -7.08333,-12.58333 L 3.33333,-12.58333 C 6.25000,-12.58333 7.50000,-11.33333 7.50000,-9.25000 C 7.50000,-7.58333 6.25000,-6.75000 4.58333,-6.33333 C 7.08333,-5.50000 7.50000,-4.25000 7.50000,-2.58333 C 7.50000,-0.08333 6.25000,1.16667 3.33333,1.16667 L -7.08333,1.16667 Z M -4.16667,-10.50000 L -4.16667,-7.16667 L 2.91667,-7.16667 C 4.58333,-7.16667 4.58333,-7.58333 4.58333,-8.83333 C 4.58333,-10.08333 4.58333,-10.50000 2.91667,-10.50000 Z M -4.16667,-5.08333 L -4.16667,-0.50000 L 2.91667,-0.50000 C 4.58333,-0.50000 5.00000,-1.33333 5.00000,-2.58333 C 5.00000,-4.25000 4.58333,-5.08333 2.50000,-5.08333 Z"/>
     </g>
     <!-- micro text: cap 4.2 (rows 99.2..103.3 / 105.4..110.0); both
          blocks are left-aligned, the right one at x 843.3 (the trace had it
@@ -555,17 +553,17 @@
   <g font-family="Rajdhani" fill="#f8c884">
     <text x="736" y="276" font-size="17.5" font-weight="600" letter-spacing="0" transform="translate(736 0) scale(1.01 1) translate(-736 0)">URGENT INFORMATION (!)</text>
     <text x="738" y="297" font-size="13" letter-spacing="0" font-weight="500" transform="translate(738 0) scale(1.16 1) translate(-738 0)" fill="#f3c583">FROM: MOM</text>
-    <g font-size="17" font-weight="500" fill="#f3c583" letter-spacing="0" transform="translate(736 0) scale(1.06 1) translate(-736 0)">
-      <text x="736" y="333">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod</text>
-      <text x="736" y="354">tempor incididunt ut labore et dolore magna aliqua.</text>
-      <text x="736" y="397">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut</text>
-      <text x="736" y="418.5">aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in vo-</text>
-      <text x="736" y="440">luptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat</text>
-      <text x="736" y="461.5">cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est la-</text>
-      <text x="736" y="483">borum.</text>
-      <text x="736" y="525">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium do-</text>
-      <text x="736" y="546.5">loremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore</text>
-      <text x="736" y="568">veritatis et quasi architecto beatae vitae dicta sunt explicabo.</text>
+    <g font-size="17" font-weight="500" fill="#f3c583" letter-spacing="0" transform="translate(735.2 0) scale(1.054 1) translate(-735.2 0)">
+      <text x="735.2" y="333">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod</text>
+      <text x="735.2" y="354">tempor incididunt ut labore et dolore magna aliqua.</text>
+      <text x="735.2" y="397">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut</text>
+      <text x="735.2" y="418.5">aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in vo-</text>
+      <text x="735.2" y="440">luptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat</text>
+      <text x="735.2" y="461.5">cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est la-</text>
+      <text x="735.2" y="483">borum.</text>
+      <text x="735.2" y="525">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium do-</text>
+      <text x="735.2" y="546.5">loremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore</text>
+      <text x="735.2" y="568">veritatis et quasi architecto beatae vitae dicta sunt explicabo.</text>
     </g>
   </g>
 
@@ -582,11 +580,11 @@
 
   <!-- foot annotations -->
   <g>
-    <!-- C 14.2 wide at x 144.2..158.4, D 21.2 wide at 740.1..761.3; same
-         face and x-scale as A/B (2026-09-03) -->
+    <!-- Mailbox-source C/D contours; the former font-stretched labels
+         have been replaced; the frame paths are measured separately. -->
     <g font-size="19.5" font-weight="700" fill="#d9a877" text-anchor="middle">
-      <text transform="translate(151.3 796) scale(1.6 1)">C</text>
-      <text transform="translate(750.7 796) scale(1.75 1)">D</text>
+      <path d="M 145.4167 781.6667 H 156.6667 Q 158.3333 781.6667 158.3333 783.3333 V 786.2500 H 156.2500 V 783.3333 H 146.6667 V 793.3333 H 156.2500 V 790.4167 H 158.3333 V 793.7500 Q 158.3333 795.4167 156.6667 795.4167 H 145.8333 Q 144.1667 795.4167 144.1667 793.7500 V 783.3333 Q 144.1667 781.6667 145.4167 781.6667 Z"/>
+      <path transform="translate(750.7 796)" fill-rule="evenodd" d="M -10.70000,-14.33333 L -1.11667,-14.33333 C 2.63333,-14.33333 5.13333,-11.83333 5.13333,-7.66667 C 5.13333,-3.50000 2.63333,-0.58333 -1.11667,-0.58333 L -10.70000,-0.58333 Z M -8.20000,-12.66667 L -8.20000,-2.66667 L -1.11667,-2.66667 C 1.38333,-2.66667 3.05000,-4.75000 3.05000,-7.66667 C 3.05000,-10.58333 1.38333,-12.66667 -1.11667,-12.66667 L -8.20000,-12.66667 Z"/>
     </g>
     <!-- micro text: cap 4.2, baselines 782.8 / 789.8; runs 183.3..337.9 /
          ..283.3 and 771.7..930.0 / ..806.2 (2026-09-03) -->

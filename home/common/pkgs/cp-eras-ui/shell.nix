@@ -14,7 +14,7 @@
 { pkgs ? import <nixpkgs> { overlays = [ (import ../../../../lib/in-tree.nix) ]; } }:
 
 let
-  inherit (pkgs) rajdhani-fontshare noto-cjk-subset;
+  inherit (pkgs) freefont_ttf noto-cjk-subset rajdhani-fontshare;
   orbitron = pkgs.orbitron-vf;
 
   # Where `fonts/` goes: this directory, not the cwd. Entering the
@@ -29,6 +29,7 @@ pkgs.mkShell {
   nativeBuildInputs = with pkgs; [
     cargo
     rustc
+    (python3.withPackages (ps: [ ps.fonttools ]))
     pkg-config
     cmake
     weston
@@ -37,6 +38,7 @@ pkgs.mkShell {
 
   buildInputs = with pkgs; [
     fontconfig
+    freefont_ttf
     vulkan-loader
     libGL
     libxkbcommon
@@ -62,6 +64,8 @@ pkgs.mkShell {
     cp -f ${orbitron}/share/fonts/truetype/*.ttf "${crate}/fonts/"
     cp -f ${rajdhani-fontshare}/share/fonts/truetype/*.ttf "${crate}/fonts/"
     cp -f ${noto-cjk-subset}/share/fonts/opentype/*.otf "${crate}/fonts/"
+    cp -f ${freefont_ttf}/share/fonts/truetype/FreeSansBold.ttf "${crate}/fonts/"
+    python3 "${crate}/scripts/make-kitsch-sans.py" "${crate}/fonts/FreeSansBold.ttf" "${crate}/fonts/CP-Eras-Kitsch-Sans-Bold.ttf" "${crate}/fonts/CP-Eras-Kitsch-Sans-Bold.audit.json"
     chmod +w "${crate}"/fonts/*.ttf "${crate}"/fonts/*.otf
 
     # If running in headless/software-force mode, configure the drivers

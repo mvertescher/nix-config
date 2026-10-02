@@ -815,7 +815,7 @@ gap must be exact.
   at (163, 72.8, 58x8), PETROCHEM/BETTERLIFE scale(1.3, 1). Left: card
   4's right-edge vignette and the fan-card strokes are unmeasured;
   weights are by eye.
-- [ ] Kitsch mailbox yellow family sits at 0.46 IoU because the
+- Kitsch mailbox yellow family sits at 0.46 IoU because the
   extractor hole-fills the photo's closed panel outline into a solid
   block while the render's antialiased rounded corners break the ring;
   not a trace fault, do not square the corners. Verified again in the

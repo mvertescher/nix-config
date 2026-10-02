@@ -216,6 +216,23 @@ const A2_SEGS: &[Seg] = &[
 const A2: Prim = Prim::Path { x: 88.792, y: -4.917,
     segs: A2_SEGS, close: true, fill: Some(Ink::Fg), stroke: None, width: 0.0 };
 
+// A narrow source-dark continuation of the A2 counter. Use semantic ground
+// ink so custom palettes keep the knockout in the same role as the O ring.
+const A2_COUNTER_GAP_SEGS: &[Seg] = &[Seg::Line(82.8, 0.75)];
+const A2_COUNTER_GAP: Prim = Prim::Path { x: 84.6, y: 0.75,
+    segs: A2_COUNTER_GAP_SEGS, close: false, fill: None, stroke: Some(Ink::Bg), width: 0.25 };
+
+// The photographed lower A2 strokes have two short dark gaps between them.
+// Preserve their bright crossing and use the existing ground role.
+const A2_LOWER_GAP_SEGS: &[Seg] = &[
+    Seg::Line(82.1875, 1.542),
+    Seg::Move(81.875, 1.917),
+    Seg::Line(81.792, 2.333),
+];
+const A2_LOWER_GAP: Prim = Prim::Path { x: 82.625, y: 0.708,
+    segs: A2_LOWER_GAP_SEGS, close: false, fill: None,
+    stroke: Some(Ink::Bg), width: 0.5 };
+
 const O_RING_SEGS: &[Seg] = &[
     Seg::Line(95.250, 2.580),
     Seg::Line(90.250, 3.000),
@@ -224,6 +241,9 @@ const O_RING_SEGS: &[Seg] = &[
     Seg::Line(94.420, -2.420),
     Seg::Move(95.250, 0.900),
     Seg::Line(93.670, 1.750),
+    Seg::Line(93.500, 2.020),
+    Seg::Line(92.750, 2.020),
+    Seg::Line(92.550, 1.750),
     Seg::Line(90.830, 1.750),
     Seg::Line(90.830, 0.100),
     Seg::Line(92.330, -1.170),
@@ -232,52 +252,83 @@ const O_RING_SEGS: &[Seg] = &[
 const O_RING: Prim = Prim::Path { x: 96.5, y: 0.9, segs: O_RING_SEGS,
     close: true, fill: Some(Ink::Bg), stroke: None, width: 0.0 };
 
-// Source leading edge slopes from local (106.5, -5) to (103.583333, 4.6).
-// Trim only hatch tails at this edge; primary letters, ring and cadence stay fixed.
-const HATCH_0_SEGS: &[Seg] = &[Seg::Line(93.600, 4.600)];
-const HATCH_0: Prim = Prim::Path { x: 85.000, y: -4.000, segs: HATCH_0_SEGS,
+// The source plaque has broader ink across its central stripe field.
+// Keep the accepted leading slant and A2 junction at the original width.
+// Split each diagonal only where its width changes (local x=89 and x=99).
+const HATCH_0_A_SEGS: &[Seg] = &[Seg::Line(89.000000, 0.000000)];
+const HATCH_0_A: Prim = Prim::Path { x: 85.000000, y: -4.000000, segs: HATCH_0_A_SEGS,
     close: false, fill: None, stroke: Some(Ink::Fg), width: 0.45 };
-const HATCH_1_SEGS: &[Seg] = &[Seg::Line(95.100, 4.600)];
-const HATCH_1: Prim = Prim::Path { x: 85.500, y: -5.000, segs: HATCH_1_SEGS,
+const HATCH_0_B_SEGS: &[Seg] = &[Seg::Line(93.600000, 4.600000)];
+const HATCH_0_B: Prim = Prim::Path { x: 89.000000, y: 0.000000, segs: HATCH_0_B_SEGS,
+    close: false, fill: None, stroke: Some(Ink::Fg), width: 0.60 };
+const HATCH_1_A_SEGS: &[Seg] = &[Seg::Line(89.000000, -1.500000)];
+const HATCH_1_A: Prim = Prim::Path { x: 85.500000, y: -5.000000, segs: HATCH_1_A_SEGS,
     close: false, fill: None, stroke: Some(Ink::Fg), width: 0.45 };
-const HATCH_2_SEGS: &[Seg] = &[Seg::Line(96.600, 4.600)];
-const HATCH_2: Prim = Prim::Path { x: 87.000, y: -5.000, segs: HATCH_2_SEGS,
+const HATCH_1_B_SEGS: &[Seg] = &[Seg::Line(95.100000, 4.600000)];
+const HATCH_1_B: Prim = Prim::Path { x: 89.000000, y: -1.500000, segs: HATCH_1_B_SEGS,
+    close: false, fill: None, stroke: Some(Ink::Fg), width: 0.60 };
+const HATCH_2_A_SEGS: &[Seg] = &[Seg::Line(89.000000, -3.000000)];
+const HATCH_2_A: Prim = Prim::Path { x: 87.000000, y: -5.000000, segs: HATCH_2_A_SEGS,
     close: false, fill: None, stroke: Some(Ink::Fg), width: 0.45 };
-const HATCH_3_SEGS: &[Seg] = &[Seg::Line(98.100, 4.600)];
-const HATCH_3: Prim = Prim::Path { x: 88.500, y: -5.000, segs: HATCH_3_SEGS,
+const HATCH_2_B_SEGS: &[Seg] = &[Seg::Line(96.600000, 4.600000)];
+const HATCH_2_B: Prim = Prim::Path { x: 89.000000, y: -3.000000, segs: HATCH_2_B_SEGS,
+    close: false, fill: None, stroke: Some(Ink::Fg), width: 0.60 };
+const HATCH_3_A_SEGS: &[Seg] = &[Seg::Line(89.000000, -4.500000)];
+const HATCH_3_A: Prim = Prim::Path { x: 88.500000, y: -5.000000, segs: HATCH_3_A_SEGS,
     close: false, fill: None, stroke: Some(Ink::Fg), width: 0.45 };
-const HATCH_4_SEGS: &[Seg] = &[Seg::Line(99.600, 4.600)];
-const HATCH_4: Prim = Prim::Path { x: 90.000, y: -5.000, segs: HATCH_4_SEGS,
+const HATCH_3_B_SEGS: &[Seg] = &[Seg::Line(98.100000, 4.600000)];
+const HATCH_3_B: Prim = Prim::Path { x: 89.000000, y: -4.500000, segs: HATCH_3_B_SEGS,
+    close: false, fill: None, stroke: Some(Ink::Fg), width: 0.60 };
+const HATCH_4_A_SEGS: &[Seg] = &[Seg::Line(99.000000, 4.000000)];
+const HATCH_4_A: Prim = Prim::Path { x: 90.000000, y: -5.000000, segs: HATCH_4_A_SEGS,
+    close: false, fill: None, stroke: Some(Ink::Fg), width: 0.60 };
+const HATCH_4_B_SEGS: &[Seg] = &[Seg::Line(99.600000, 4.600000)];
+const HATCH_4_B: Prim = Prim::Path { x: 99.000000, y: 4.000000, segs: HATCH_4_B_SEGS,
     close: false, fill: None, stroke: Some(Ink::Fg), width: 0.45 };
-const HATCH_5_SEGS: &[Seg] = &[Seg::Line(101.100, 4.600)];
-const HATCH_5: Prim = Prim::Path { x: 91.500, y: -5.000, segs: HATCH_5_SEGS,
+const HATCH_5_A_SEGS: &[Seg] = &[Seg::Line(99.000000, 2.500000)];
+const HATCH_5_A: Prim = Prim::Path { x: 91.500000, y: -5.000000, segs: HATCH_5_A_SEGS,
+    close: false, fill: None, stroke: Some(Ink::Fg), width: 0.60 };
+const HATCH_5_B_SEGS: &[Seg] = &[Seg::Line(101.100000, 4.600000)];
+const HATCH_5_B: Prim = Prim::Path { x: 99.000000, y: 2.500000, segs: HATCH_5_B_SEGS,
     close: false, fill: None, stroke: Some(Ink::Fg), width: 0.45 };
-const HATCH_6_SEGS: &[Seg] = &[Seg::Line(102.600, 4.600)];
-const HATCH_6: Prim = Prim::Path { x: 93.000, y: -5.000, segs: HATCH_6_SEGS,
+const HATCH_6_A_SEGS: &[Seg] = &[Seg::Line(99.000000, 1.000000)];
+const HATCH_6_A: Prim = Prim::Path { x: 93.000000, y: -5.000000, segs: HATCH_6_A_SEGS,
+    close: false, fill: None, stroke: Some(Ink::Fg), width: 0.60 };
+const HATCH_6_B_SEGS: &[Seg] = &[Seg::Line(102.600000, 4.600000)];
+const HATCH_6_B: Prim = Prim::Path { x: 99.000000, y: 1.000000, segs: HATCH_6_B_SEGS,
     close: false, fill: None, stroke: Some(Ink::Fg), width: 0.45 };
-const HATCH_7_SEGS: &[Seg] = &[Seg::Line(103.703728, 4.203728)];
-const HATCH_7: Prim = Prim::Path { x: 94.500, y: -5.000, segs: HATCH_7_SEGS,
+const HATCH_7_A_SEGS: &[Seg] = &[Seg::Line(99.000000, -0.500000)];
+const HATCH_7_A: Prim = Prim::Path { x: 94.500000, y: -5.000000, segs: HATCH_7_A_SEGS,
+    close: false, fill: None, stroke: Some(Ink::Fg), width: 0.60 };
+const HATCH_7_B_SEGS: &[Seg] = &[Seg::Line(103.703728, 4.203728)];
+const HATCH_7_B: Prim = Prim::Path { x: 99.000000, y: -0.500000, segs: HATCH_7_B_SEGS,
     close: false, fill: None, stroke: Some(Ink::Fg), width: 0.45 };
-const HATCH_8_SEGS: &[Seg] = &[Seg::Line(104.053262, 3.053262)];
-const HATCH_8: Prim = Prim::Path { x: 96.000, y: -5.000, segs: HATCH_8_SEGS,
+const HATCH_8_A_SEGS: &[Seg] = &[Seg::Line(99.000000, -2.000000)];
+const HATCH_8_A: Prim = Prim::Path { x: 96.000000, y: -5.000000, segs: HATCH_8_A_SEGS,
+    close: false, fill: None, stroke: Some(Ink::Fg), width: 0.60 };
+const HATCH_8_B_SEGS: &[Seg] = &[Seg::Line(104.053262, 3.053262)];
+const HATCH_8_B: Prim = Prim::Path { x: 99.000000, y: -2.000000, segs: HATCH_8_B_SEGS,
     close: false, fill: None, stroke: Some(Ink::Fg), width: 0.45 };
-const HATCH_9_SEGS: &[Seg] = &[Seg::Line(104.402796, 1.902796)];
-const HATCH_9: Prim = Prim::Path { x: 97.500, y: -5.000, segs: HATCH_9_SEGS,
+const HATCH_9_A_SEGS: &[Seg] = &[Seg::Line(99.000000, -3.500000)];
+const HATCH_9_A: Prim = Prim::Path { x: 97.500000, y: -5.000000, segs: HATCH_9_A_SEGS,
+    close: false, fill: None, stroke: Some(Ink::Fg), width: 0.60 };
+const HATCH_9_B_SEGS: &[Seg] = &[Seg::Line(104.402796, 1.902796)];
+const HATCH_9_B: Prim = Prim::Path { x: 99.000000, y: -3.500000, segs: HATCH_9_B_SEGS,
     close: false, fill: None, stroke: Some(Ink::Fg), width: 0.45 };
-const HATCH_10_SEGS: &[Seg] = &[Seg::Line(104.752330, 0.752330)];
-const HATCH_10: Prim = Prim::Path { x: 99.000, y: -5.000, segs: HATCH_10_SEGS,
+const HATCH_10_A_SEGS: &[Seg] = &[Seg::Line(104.752330, 0.752330)];
+const HATCH_10_A: Prim = Prim::Path { x: 99.000000, y: -5.000000, segs: HATCH_10_A_SEGS,
     close: false, fill: None, stroke: Some(Ink::Fg), width: 0.45 };
-const HATCH_11_SEGS: &[Seg] = &[Seg::Line(105.101864, -0.398136)];
-const HATCH_11: Prim = Prim::Path { x: 100.500, y: -5.000, segs: HATCH_11_SEGS,
+const HATCH_11_A_SEGS: &[Seg] = &[Seg::Line(105.101864, -0.398136)];
+const HATCH_11_A: Prim = Prim::Path { x: 100.500000, y: -5.000000, segs: HATCH_11_A_SEGS,
     close: false, fill: None, stroke: Some(Ink::Fg), width: 0.45 };
-const HATCH_12_SEGS: &[Seg] = &[Seg::Line(105.451398, -1.548602)];
-const HATCH_12: Prim = Prim::Path { x: 102.000, y: -5.000, segs: HATCH_12_SEGS,
+const HATCH_12_A_SEGS: &[Seg] = &[Seg::Line(105.451398, -1.548602)];
+const HATCH_12_A: Prim = Prim::Path { x: 102.000000, y: -5.000000, segs: HATCH_12_A_SEGS,
     close: false, fill: None, stroke: Some(Ink::Fg), width: 0.45 };
-const HATCH_13_SEGS: &[Seg] = &[Seg::Line(105.800932, -2.699068)];
-const HATCH_13: Prim = Prim::Path { x: 103.500, y: -5.000, segs: HATCH_13_SEGS,
+const HATCH_13_A_SEGS: &[Seg] = &[Seg::Line(105.800932, -2.699068)];
+const HATCH_13_A: Prim = Prim::Path { x: 103.500000, y: -5.000000, segs: HATCH_13_A_SEGS,
     close: false, fill: None, stroke: Some(Ink::Fg), width: 0.45 };
-const HATCH_14_SEGS: &[Seg] = &[Seg::Line(106.150466, -3.849534)];
-const HATCH_14: Prim = Prim::Path { x: 105.000, y: -5.000, segs: HATCH_14_SEGS,
+const HATCH_14_A_SEGS: &[Seg] = &[Seg::Line(106.150466, -3.849534)];
+const HATCH_14_A: Prim = Prim::Path { x: 105.000000, y: -5.000000, segs: HATCH_14_A_SEGS,
     close: false, fill: None, stroke: Some(Ink::Fg), width: 0.45 };
 
 const SLASH_SEGS: &[Seg] = &[Seg::Line(3.0, 5.06)];
@@ -292,24 +343,36 @@ pub(super) const PRIMARY: &[Prim] = &[
     U,
     R,
     A2,
+    A2_COUNTER_GAP,
+    A2_LOWER_GAP,
 ];
 
 pub(super) const HATCH: &[Prim] = &[
-    HATCH_0,
-    HATCH_1,
-    HATCH_2,
-    HATCH_3,
-    HATCH_4,
-    HATCH_5,
-    HATCH_6,
-    HATCH_7,
-    HATCH_8,
-    HATCH_9,
-    HATCH_10,
-    HATCH_11,
-    HATCH_12,
-    HATCH_13,
-    HATCH_14,
+    HATCH_0_A,
+    HATCH_0_B,
+    HATCH_1_A,
+    HATCH_1_B,
+    HATCH_2_A,
+    HATCH_2_B,
+    HATCH_3_A,
+    HATCH_3_B,
+    HATCH_4_A,
+    HATCH_4_B,
+    HATCH_5_A,
+    HATCH_5_B,
+    HATCH_6_A,
+    HATCH_6_B,
+    HATCH_7_A,
+    HATCH_7_B,
+    HATCH_8_A,
+    HATCH_8_B,
+    HATCH_9_A,
+    HATCH_9_B,
+    HATCH_10_A,
+    HATCH_11_A,
+    HATCH_12_A,
+    HATCH_13_A,
+    HATCH_14_A,
 ];
 
 pub(super) const RING: &[Prim] = &[O_RING];

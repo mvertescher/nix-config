@@ -461,7 +461,12 @@ mod interaction_tests {
         for (era, first, second, third) in [
             (crate::style::Era::Kitsch, 411.0, 525.0, 582.0),
             (crate::style::Era::Neokitsch, 333.0, 397.5, 526.5),
-            (crate::style::Era::Neomil, 347.5, 452.5, 557.5),
+            (
+                crate::style::Era::Neomil,
+                347.5 - 1.0 / 2.4,
+                452.5 - 1.0 / 2.4,
+                557.5 - 1.0 / 2.4,
+            ),
         ] {
             let other = era.style().mailbox.panel;
             assert!(other.paragraph_baselines.is_empty(), "{era:?}");
@@ -1113,8 +1118,16 @@ fn curve_at(
 
 /// One run of text, positioned by the baseline the trace gives.
 fn label(frame: &mut canvas::Frame, scale: Scale, s: Paint, at: Run, color: Color, content: &str) {
+    let _ = label_keep(frame, scale, s, at, color, content, 0);
+}
+
+// Retain original shaping and advances after an era-provided outline prefix.
+fn label_keep(
+    frame: &mut canvas::Frame, scale: Scale, s: Paint, at: Run,
+    color: Color, content: &str, skip_prefix: usize,
+) -> bool {
     if content.is_empty() || at.size <= 0.0 {
-        return;
+        return false;
     }
     let size = scale.len(at.size);
     let text = canvas::Text {
@@ -1140,7 +1153,28 @@ fn label(frame: &mut canvas::Frame, scale: Scale, s: Paint, at: Run, color: Colo
         },
         ..Default::default()
     };
-    if (at.stretch - 1.0).abs() <= 1e-4 {
+    if skip_prefix > 0 {
+        // Stretched labels already use Iced's outline branch. Keep their
+        // original shaping, phase and per-glyph paths.
+        // Unexpected shaping or the cached uniform-scale path falls back.
+        if !content.is_ascii() || (at.stretch - 1.0).abs() <= 1e-4 {
+            return false;
+        }
+        let origin = text.position;
+        let mut glyphs = Vec::new();
+        canvas::Text { position: Point::ORIGIN, ..text }
+            .draw_with(|path, color| glyphs.push((path, color)));
+        if glyphs.len() != content.len() || skip_prefix > glyphs.len() {
+            return false;
+        }
+        frame.with_save(|f| {
+            f.translate(Vector::new(origin.x, origin.y));
+            f.scale_nonuniform(Vector::new(at.stretch, 1.0));
+            for (path, color) in glyphs.into_iter().skip(skip_prefix) {
+                f.fill(&path, color);
+            }
+        });
+    } else if (at.stretch - 1.0).abs() <= 1e-4 {
         frame.fill_text(text);
     } else {
         // Scale glyphs about the positioned anchor, not the canvas
@@ -1152,6 +1186,7 @@ fn label(frame: &mut canvas::Frame, scale: Scale, s: Paint, at: Run, color: Colo
             frame.fill_text(canvas::Text { position: Point::ORIGIN, ..text });
         });
     }
+    true
 }
 
 /// The envelope beside a row, drawn rather than set -- Rajdhani has no
@@ -1845,19 +1880,29 @@ impl Sheet<'_> {
             }
             let at_label = b.label_runs.get(i).copied().unwrap_or(b.label);
             let role = if selected { Ink::OnSelect } else { at_label.ink };
-            label(
-                frame,
-                scale,
-                s,
-                Run {
-                    x: at.x + at_label.x,
-                    y: at.y + at_label.y,
-                    ink: role,
-                    ..at_label
-                },
-                ink(s, role),
-                b.labels.get(i).copied().unwrap_or(""),
-            );
+            let content = b.labels.get(i).copied().unwrap_or("");
+            let full_run = Run {
+                x: at.x + at_label.x,
+                y: at.y + at_label.y,
+                ink: role,
+                ..at_label
+            };
+            if let Some(art) = b.label_art.get(i).filter(|art|
+                art.text == content && art.replace_prefix > 0 && !art.pieces.is_empty()
+            ) {
+                if label_keep(frame, scale, s, full_run, ink(s, role), content, art.replace_prefix) {
+                    // Match text sizing: uniform glyph scale about the label's
+                    // responsive anchor, including in non-16:9 windows.
+                    let k = scale.sx.min(scale.sy);
+                    frame.with_save(|f| {
+                        f.translate(Vector::new(full_run.x * scale.sx, full_run.y * scale.sy));
+                        pieces(f, Scale { sx: k, sy: k },
+                            Paint { ink_override: Some(role), ..s }, art.pieces);
+                    });
+                    continue;
+                }
+            }
+            label(frame, scale, s, full_run, ink(s, role), content);
         }
     }
 }
@@ -1949,8 +1994,8 @@ impl canvas::Program<Message, Style> for Sheet<'_> {
 
 /// Draw an era's free-standing pieces -- [`Mailbox::chrome`] under the
 /// four regions, [`Mailbox::overlay`] over them.
-fn pieces(frame: &mut canvas::Frame, scale: Scale, s: Paint, pieces: &[Piece]) {
-    for piece in pieces {
+fn pieces(frame: &mut canvas::Frame, scale: Scale, s: Paint, artwork: &[Piece]) {
+    for piece in artwork {
         match piece {
             Piece::Box {
                 at,
@@ -1997,6 +2042,20 @@ fn pieces(frame: &mut canvas::Frame, scale: Scale, s: Paint, pieces: &[Piece]) {
                 stroke.map(|r| (ink(s, r), *width)),
             ),
             Piece::Label(note) => label(frame, scale, s, note.at, ink(s, note.at.ink), note.text),
+            Piece::LabelArt { note, pieces: art } => {
+                if art.is_empty() {
+                    label(frame, scale, s, note.at, ink(s, note.at.ink), note.text);
+                } else if !note.text.is_empty() && note.at.size > 0.0 {
+                    let k = scale.sx.min(scale.sy);
+                    frame.with_save(|f| {
+                        f.translate(Vector::new(note.at.x * scale.sx, note.at.y * scale.sy));
+                        pieces(f, Scale { sx: k, sy: k }, Paint {
+                            ink_override: Some(s.ink_override.unwrap_or(note.at.ink)),
+                            ..s
+                        }, art);
+                    });
+                }
+            },
         }
     }
 }

@@ -79,13 +79,56 @@ trace screen and are not backend defects.
 - [ ] Reconstruct source-supported fine text/cartridge echoes and edge
   softness. The primary shapes and low-frequency fields are corrected;
   they do not establish pixel-perfect printing. The tiny cartridge
-  normal terminal strips now use 20 slanted ribs at the measured cadence;
-  the selected strip retains its separate 22-rib art and corrected ink.
+  normal terminal strips use 20 full ribs at the measured cadence, with
+  two shorter cap strokes added in AM; the selected strip retains its separate 22-rib art and corrected ink.
   X fixes the sloped-top coordinate conversion, improving all four native
   row comparisons. Fractional selection/press behavior is preserved.
   Ordinary-terminal contrast, edge softness and faint copies remain.
+  AF's width-only trial fails independent four-row controls; widening and
+  narrowing trade errors between rows, and neither resolves the native
+  dark-gap variation. No width or ink change is adopted. See the
+  [width holdout](../docs/neomil/mailbox-fidelity.md#ordinary-terminal-width-holdout).
+  AL's inner-bed/opacity trial also fails separate core/gap controls even
+  though full-strip error improves in four rows. Clear ground already
+  matches closely; a shared background adjustment is unsupported. See the
+  [material controls](../docs/neomil/mailbox-fidelity.md#al-inner-terminal-material-controls).
   Inspect native source crops before
   adding secondary art; do not invent glow/noise or weaken gate thresholds.
+  AZ's fixed body-phrase audit identifies primary registration before
+  echoes; no separate contour is accepted. The 4K image-space shift and
+  1600px shift represent different design displacements, so the latter
+  does not reject a shared −1/2.4 design-pixel baseline trial. That separate
+  task needs SVG and native primary/core/counter/gap/blank controls,
+  including responsive placement. See the
+  [body-text audit](../docs/neomil/mailbox-fidelity.md#az-body-text-registration-and-faint-ink).
+  BA moves only the ten body text baselines up `1/2.4` design pixel. The 4K
+  actual Mailbox preview improves whole-body RGB MAE 8.742→7.014 and all fixed
+  phrase/line red-MAE and four-threshold F1 checks. Six frozen old-mask
+  counter errors worsen; a later source-defined diagnostic improves all 28
+  region/threshold comparisons but is not a frozen acceptance control. The
+  1600 native pair is pixel-identical, while fractional
+  rest/selection/held/custom changes stay within the body. Opening at 0.12s
+  remains hidden; a supplemental 0.20s pair changes 4,018 pixels inside the
+  partial reveal. The component excerpt follows the same group translation.
+  Three-size production and fresh packaged 4K parity, both gates, 292 Rust
+  tests and the full 22-check/27-case run pass without golden changes; faint
+  echoes, exact counters, responsive source fit and live desktop work remain
+  open. See [the BA
+  review](../docs/neomil/mailbox-fidelity.md#ba-body-baseline-source-and-native-review)
+  and [round thirty-eight](../docs/reference-svg-round38.md).
+- [x] **Correct ordinary cartridge terminal depth and inner-edge joins.**
+  AL found the source lower ridge about 10–11 native pixels below the
+  upper edge; the old SVG/Iced had a prominent inner edge near 5 and a
+  separate rule near 7. Its two trials were rejected for a doubled ladder,
+  a crossing right join and overly dark gaps. See the
+  [depth audit](../docs/neomil/mailbox-fidelity.md#al-terminal-depth-and-inner-boundary).
+  AM corrects the deeper boundary, joins and two bounded material fills.
+  Native bright/dark controls improve in all seven ordinary rows; SVG row 4
+  retains a small bright-mask loss. Twelve paired state checks preserve
+  selected artwork, feedback, custom roles and reveal clipping. Both gates,
+  288 Rust tests, all 22 repository checks and 27 first-attempt visual cases
+  pass. This bounded item closes; exact phase/softness/echoes stay open. See the
+  [AM correction](../docs/neomil/mailbox-fidelity.md#am-deeper-terminals-and-bounded-interior-material).
 - [ ] Recover the exact common background texture/authoring recipe if
   source material becomes available. Identical clear source patches show
   fixed shared texture, not independent procedural noise. The original

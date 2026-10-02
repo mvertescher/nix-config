@@ -2,6 +2,26 @@
 records are relative to the crate root. Dated notes retain their original
 reasoning; later completion entries supersede earlier open-item lists.
 
+## Concurrent font initialization — AN
+
+- [x] **Initialize test fonts before measuring text.** AN's first Nix
+  package build failed the trailing-caret and Unicode display-capacity
+  tests; its identical retry passed. The tall-card-note test loads
+  Rajdhani Regular into Iced's global font system while other tests call
+  `run_width`, so successive measurements can observe different fonts.
+  Move test registration to one shared initialization before any font
+  measurement, preserve all assertions, and verify in an isolated font
+  environment plus the Nix package. Do not treat the successful retry
+  as resolution. AO owns this follow-up.
+  AO replaces the ad hoc load with a test-only once initialization of
+  all ten application faces before `run_width`. The original assertions
+  remain unchanged. A fresh-process diagnostic demonstrates the metric
+  change after late registration; the corrected 245 library tests pass
+  with eight threads and empty fontconfig. All 290 local and Nix tests
+  pass, with the Nix package and all 27 visual cases succeeding on their
+  first attempt. All 22 repository checks pass; see
+  [round twenty-six](../docs/reference-svg-round26.md).
+
 ## Headless check: feasibility settled (2026-08-22)
 
 Both unknowns blocking "visual regression as a nix checkPhase" were

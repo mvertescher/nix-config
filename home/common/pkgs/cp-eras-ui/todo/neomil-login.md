@@ -65,13 +65,128 @@ account cards are source artwork, not an account-management backend.
   replace hardcoded renderer dimensions. The existing trace and component
   excerpt already held these targets. See the
   [drift record](../docs/neomil/login-rendering-drift.md).
+- [x] **Restore the three top-caption secondary copies.** AG independently
+  fits the two source-visible copies of CUSTOMER, #NC488402 and SECURITY
+  LEVEL, with held-out segments, echo/bright-core masks and blank controls.
+  Reference fractional states change only caption pixels; custom output
+  is byte-identical. A two-pixel loose SECURITY fringe loss remains explicit.
+  All six affected gates, 286 Rust tests, 22 repository checks and 27 exact
+  visual matches pass. See [round eighteen](../docs/reference-svg-round18.md).
+- [x] **Correct inactive-card notice placement.** AH corrects both notice
+  baselines on cards 2/3 with source/SVG/native masks and seven fractional
+  states. The active card and blank controls are unchanged. One-pixel
+  edge differences remain explicit. All 286 Rust tests, four affected
+  gates, 22 repository checks and 27 exact visual cases pass. See
+  [round nineteen](../docs/reference-svg-round19.md).
+- [x] **Fit the locked-card notice ink.** AI uses the source notice red
+  only for the reference palette while preserving custom Dim semantics.
+  All 30 fixed source comparisons improve in both SVG and native output;
+  all changed 4K pixels lie in the locked notice. Dim-only custom output
+  is byte-identical. Exact contours and softness remain separate. Both
+  gates, 288 Rust tests, all 22 repository checks and 27 exact visual
+  cases pass. See [round twenty](../docs/reference-svg-round20.md).
+- [x] **Fit the active-notice lower printing copy.** AJ adds the measured
+  offset/stroke/blur/opacity behind the primary text, through era-owned data
+  and a cached local tile that follows the notice-block fit. Source and
+  native holdouts improve; fractional/reference/custom states preserve
+  controls and containment. Cache reuse/invalidation, all 288 tests, four
+  gates, 22 repository checks and 27 visual cases pass in
+  [round twenty-one](../docs/reference-svg-round21.md).
 - [ ] **Fit remaining scan modulation, printing echoes and edge softness.** Do primary
   shape/type/material corrections first; validate any secondary copies
   on held-out source crops. Do not add global glow/noise or weaken gates.
+  AJ's active-notice lower copy passes local source/native/state review,
+  including fitted narrow layouts and unchanged custom palettes. Small
+  primary fringe losses remain documented. Other repetitions, exact
+  glyphs and scan material stay open. See
+  [the measurements](../docs/neomil/login-primary.md#active-notice-echo-investigation--aj).
+  BG's inactive-notice audit rejects a Regular→Medium SVG trial: bright
+  overlap improves, but two whole-line RGB controls worsen at every size
+  and one O counter gains false ink. A smaller thresholded ink area does
+  not establish the weight as the cause; glyph shape, phase and hinting
+  need separate evidence. No native change is proposed. See
+  [the rejected trial](../docs/neomil/login-primary.md#bg-inactive-notice-weight-audit).
+  A subsequent cap-normalized O/C/M study supports one FreeSans Bold
+  full-notice experiment with held-out words and counter controls; its
+  isolated O counter is too small, so no font or sentence fit is accepted.
+  BH–BJ's full-notice studies improve all whole-line SVG RGB comparisons
+  after independent source-copy registration and a separate line-two fit.
+  Fixed glyph/word losses remain, but severity review preserves all word
+  separators and both 4K O counters. Prepare the actual Login native trial
+  with consistent face/measurement/baseline handling and unchanged active
+  AJ artwork; no native acceptance yet. See
+  [round forty-two](../docs/reference-svg-round42.md).
+  BK's actual baseline replay passes at three sizes, but the new native
+  first line lands one row high and regresses canonical RGB controls.
+  BL's FreeSans-only glyph-baseline rounding aligns the first-line rows
+  and improves all four 4K whole-line RGB controls, but three 1600 lines
+  still regress. The candidate remains unaccepted. Source fit parameters
+  and active AJ artwork stay frozen; native glyph/spacing diagnosis,
+  complete responsive bounds and state review precede integration.
+  BM/BN retain clear word gaps and thresholded rest containment, but find
+  repeated CLASS contour/raster losses and a smaller terminal O counter.
+  No new candidate or production change follows; lower-threshold ink and
+  all-layout/state containment remain unverified.
+  CT replays BJ's exact font geometry as unhinted SVG outlines. The text
+  control and exterior are exact, but both first lines and repeated CLASS
+  crops worsen, and O false ink remains. Astra reproduces the regional
+  RGB results; no native vector port is justified. Complete-line native
+  contour/placement/coverage diagnosis continues in
+  [round forty-eight](../docs/reference-svg-round48.md).
+  CV/CW separate coverage from placement: fixed linear blending predicts
+  most of BL's small-size threshold-area inflation, but native coverage
+  redistribution and CLASS/O/gap errors remain after sRGB recomposition.
+  Astra reproduces those controls. Neither a global blend change nor a
+  local native font/path port is accepted from this diagnosis alone.
+  CX compares every inactive line against current native printing and
+  retains real CLASS/O/gap losses. CY's exact Regular face is too narrow;
+  CZ's one shared spacing correction still fails the held-out 1600 first
+  line. Both remain unapplied. DA's common opacity improves aggregate
+  error but erases the source's bright letter cores; it is rejected.
+  DB's shared contour thinning also loses bright cores and retains local
+  glyph/gap losses despite lower whole-line error. Neither justifies new
+  local printing machinery; see
+  [round forty-nine](../docs/reference-svg-round49.md).
+  DF's common `a^gamma` coverage response preserves opaque pixels but
+  worsens every 1600 line and loses source-core detail; Astra reproduces
+  the error/coverage controls and rejects it. DG identifies repeated
+  internal CLASS spacing differences separately from stroke coverage.
+  DH's zero-offset glyph-span split changes following words and fails
+  the no-op gate; no origins are fitted. An exact shaping/coverage/suffix
+  replay must precede any card-2-only origin fit, with card 3, 1600,
+  neighboring gaps and source cores held out.
+  No new font or renderer is accepted. See
+  [round fifty](../docs/reference-svg-round50.md).
+  DI identifies the per-span layout and single-value `dx` mechanism.
+  DJ/DK now replay the full editable glyph run with exact first-line alpha
+  at both canonical sizes. The absolute-onset CLASS trial crowds the
+  following gap and is rejected. Separately frozen C-relative offsets
+  improve both cards/sizes without any fixed-region RGB loss against BJ;
+  adjacent text and gaps stay exact. A/S still touch, C registration is
+  wrong and CLASS remains worse than current native printing. Preserve
+  this diagnostic; investigate remaining contour/width and registration
+  before a native port. No new font or renderer is accepted. See
+  [round fifty-one](../docs/reference-svg-round51.md).
+  DM's isolated CLASS audit separates the early C and touching A/S from
+  cap height. Regular outlines at exactly the original Bold advances
+  still lose source bright strokes and worsen both first-line overlaps;
+  reject the substitution despite its small aggregate RGB gain.
+  No Neomil original contains a font record; shared document-font records
+  in other eras do not identify these notices. Preserve the exact replay
+  and fixed controls in [round fifty-two](../docs/reference-svg-round52.md).
+- [x] **Contain card notices at narrower aspect ratios.** AI fits each
+  complete notice block with a common font-size/tracking factor, retaining
+  its hinted glyphs, anchors, baselines, stretch and text. All three cards
+  can overflow under the old mean text scale; native edge probes now find
+  zero overflow at 1537×947, 1200×900 and 900×1200. Seven layout sizes have
+  Rust coverage, both canonical sizes retain their geometry, and seven
+  fractional states preserve other artwork and input feedback. Custom
+  palettes pass. The full repository check and all 27 exact visual cases
+  pass; see [measurements](../docs/neomil/login-primary.md).
 
 ## Acceptance and preserved findings
 
-- [ ] Inspect original→SVG→Iced at rest, with long input and pointer
+- Inspect original→SVG→Iced at rest, with long input and pointer
   states, and at fractional resolution. Keep component excerpts and
   source docs consistent; refresh only intentional reviewed goldens.
   Run relevant Rust regressions, fidelity gates and full repository checks.

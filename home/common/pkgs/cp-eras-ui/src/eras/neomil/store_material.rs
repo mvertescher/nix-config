@@ -14,18 +14,21 @@ const fn clear_fill(mut p: Prim) -> Prim {
     }
     p
 }
-const fn bare_card<const N: usize>(source: &[Prim], grown: bool) -> [Prim; N] {
+const fn bare_card<const N: usize>(source: &[Prim], grown: bool, bare_face: &'static [Prim]) -> [Prim; N] {
     assert!(source.len() == N);
     let mut out = [source[0]; N]; let mut i = 0;
     while i < N { out[i] = source[i]; i += 1; }
-    out[0] = clear_fill(out[0]);
+    out[0] = if grown { clear_fill(source[0]) } else { card_underlay(bare_face) };
     if grown { out[1] = Prim::At { x: 0.0, y: 0.0, prims: &[] }; }
     out
 }
-const C1: &[Prim] = &bare_card::<{ CARD1.len() }>(CARD1, false);
-const C3: &[Prim] = &bare_card::<{ CARD3.len() }>(CARD3, false);
-const C4: &[Prim] = &bare_card::<{ CARD4.len() }>(CARD4, false);
-const CG: &[Prim] = &bare_card::<{ GROWN.len() }>(GROWN, true);
+const C1_FACE: &[Prim] = &[clear_fill(frame_leaf(CARD1[0]))];
+const C1: &[Prim] = &bare_card::<{ CARD1.len() }>(CARD1, false, C1_FACE);
+const C3_FACE: &[Prim] = &[clear_fill(frame_leaf(CARD3[0]))];
+const C3: &[Prim] = &bare_card::<{ CARD3.len() }>(CARD3, false, C3_FACE);
+const C4_FACE: &[Prim] = &[clear_fill(frame_leaf(CARD4[0]))];
+const C4: &[Prim] = &bare_card::<{ CARD4.len() }>(CARD4, false, C4_FACE);
+const CG: &[Prim] = &bare_card::<{ GROWN.len() }>(GROWN, true, &[]);
 const fn unwrap_view(source: &'static [Prim]) -> &'static [Prim] {
     match source[0] { Prim::Viewport { prims, .. } => prims, _ => source }
 }
@@ -387,14 +390,14 @@ const fn with_echo<const N: usize, const M: usize>(source: &[Prim], at: usize,
     }
     out
 }
-const H1: &[Prim] = &with_echo::<{CARD1.len()}, {CARD1.len()+1}>(STORE_STATES[5].hover, 10, store_echo::ACTIVE_LEFT1_HOVER);
-const P1: &[Prim] = &with_echo::<{CARD1.len()}, {CARD1.len()+1}>(STORE_STATES[5].pressed, 10, store_echo::ACTIVE_LEFT1_HELD);
-const H3: &[Prim] = &with_echo::<{CARD3.len()}, {CARD3.len()+1}>(STORE_STATES[7].hover, 10, store_echo::ACTIVE_RIGHT3_HOVER);
-const P3: &[Prim] = &with_echo::<{CARD3.len()}, {CARD3.len()+1}>(STORE_STATES[7].pressed, 10, store_echo::ACTIVE_RIGHT3_HELD);
+const H1: &[Prim] = &with_echo::<{CARD1.len()}, {CARD1.len()+1}>(STORE_STATES[5].hover, 11, store_echo::ACTIVE_LEFT1_HOVER);
+const P1: &[Prim] = &with_echo::<{CARD1.len()}, {CARD1.len()+1}>(STORE_STATES[5].pressed, 11, store_echo::ACTIVE_LEFT1_HELD);
+const H3: &[Prim] = &with_echo::<{CARD3.len()}, {CARD3.len()+1}>(STORE_STATES[7].hover, 11, store_echo::ACTIVE_RIGHT3_HOVER);
+const P3: &[Prim] = &with_echo::<{CARD3.len()}, {CARD3.len()+1}>(STORE_STATES[7].pressed, 11, store_echo::ACTIVE_RIGHT3_HELD);
 // The cutoff card keeps its three outer leaves; its Dots are inside the
 // recolored CARD_CUT at outer slot 1. Insert there, before the Dots.
-const H4_CUT: &[Prim] = &with_echo::<{CARD_CUT.len()}, {CARD_CUT.len()+1}>(card_hover::CUT, 12, store_echo::ACTIVE_RIGHT4_HOVER);
-const P4_CUT: &[Prim] = &with_echo::<{CARD_CUT.len()}, {CARD_CUT.len()+1}>(card_held::CUT, 12, store_echo::ACTIVE_RIGHT4_HELD);
+const H4_CUT: &[Prim] = &with_echo::<{CARD_CUT.len()}, {CARD_CUT.len()+1}>(card_hover::CUT, 13, store_echo::ACTIVE_RIGHT4_HOVER);
+const P4_CUT: &[Prim] = &with_echo::<{CARD_CUT.len()}, {CARD_CUT.len()+1}>(card_held::CUT, 13, store_echo::ACTIVE_RIGHT4_HELD);
 const fn cut_state(source: &[Prim], cut: &'static [Prim]) -> [Prim; 3] {
     assert!(source.len() == 3);
     let mut out = [source[0], source[1], source[2]];
@@ -432,7 +435,7 @@ mod echo_tests {
     fn reference_echoes_precede_unchanged_cells_in_every_feedback_state() {
         assert_eq!(REFERENCE_STATES.len(), STORE_STATES.len());
         assert_eq!(&REFERENCE_STATES[..5], &STORE_STATES[..5]);
-        for (card, dot) in [(0, 10), (1, 10), (2, 10)] {
+        for (card, dot) in [(0, 11), (1, 11), (2, 11)] {
             let ordinary = STORE_STATES[5 + card];
             let reference = REFERENCE_STATES[5 + card];
             for (base, with_echo) in [(ordinary.hover, reference.hover),
@@ -455,9 +458,9 @@ mod echo_tests {
             let Prim::At { x: bx, y: by, prims: inner } = base[1] else { panic!("cut content") };
             let Prim::At { x: ax, y: ay, prims: echoed } = with_echo[1] else { panic!("echoed cut content") };
             assert_eq!((ax, ay), (bx, by));
-            assert_eq!(&echoed[..12], &inner[..12]);
-            assert!(matches!(echoed[12], Prim::At { prims, .. } if prims.len() == 25));
-            assert_eq!(&echoed[13..], &inner[12..]);
+            assert_eq!(&echoed[..13], &inner[..13]);
+            assert!(matches!(echoed[13], Prim::At { prims, .. } if prims.len() == 25));
+            assert_eq!(&echoed[14..], &inner[13..]);
         }
         for card in 0..4 {
             let ordinary = STORE_STATES[5 + card];

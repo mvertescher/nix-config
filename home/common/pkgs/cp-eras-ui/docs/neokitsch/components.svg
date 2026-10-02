@@ -110,6 +110,15 @@
                Q 0,26 0,23 V 3 Q 0,0 3,0 Z"/>
       <path d="M 26,17 H 21 Q 19,17 19,19 V 24" stroke-width="1"/>
     </g>
+    <!-- Mailbox-specific frame: source A/B/C/D have an external chamfer and a lower filled tab. -->
+    <g id="mailbox-letterbox" fill="none" stroke-width="1.4">
+      <path d="M 3.5,.5 H 22.5 Q 25.25,.5 25.25,3.5 V 18.5 L 18.5,25.5 H 3.5 Q .5,25.5 .5,22.5 V 3.5 Q .5,.5 3.5,.5 Z"/>
+      <path d="M 3.5,25.7 L 4.3,23.5 Q 4.5,23 5,23 H 15 Q 15.5,23 15.7,23.5 L 16.5,25.7 Z" fill="#e7c686" stroke="none"/>
+    </g>
+    <g id="login-letterbox" stroke="#c8914d">
+      <path d="M 4,1 H 22 Q 25,1 25,4 V 17.5 L 17.5,25.5 H 4 Q 1,25.5 1,22.5 V 4 Q 1,1 4,1 Z" fill="none" stroke-width="1.4"/>
+      <path d="M 3.4,25.8 5.2,23 Q 5.6,22.5 7,22.5 H 13.9 Q 15.4,22.5 15.8,23 L 17.5,25.8 Z" fill="#c8914d" stroke="none"/>
+    </g>
     <!-- cascade card, copied from dashboard-trace.svg (re-measured there
          2026-09-03): 90.5x327 stroke-centre silhouette, r6.5 top left,
          45 degree chamfer (48,0) to (90.5,42.5), r4 fillet into the
@@ -159,7 +168,7 @@
       <rect x="417" y="361" width="345" height="42" fill="#3c1c11"/>
       <!-- gold bar, bottom-left chamfer 16x13 -->
       <path d="M 417,414 H 761 V 441 H 433 L 417,428 Z" fill="#fbc171"/>
-      <use href="#letterbox" x="416" y="465" stroke="#c8914d"/>
+      <use href="#login-letterbox" x="416" y="465"/>
     </g>
     <g id="entrytext" font-family="Rajdhani">
       <text x="428.5" y="350" font-size="19.5" font-weight="500" letter-spacing="0.15" fill="#f5bf75">PRASE_6054012</text>
@@ -394,22 +403,22 @@
   <text x="1133" y="254.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">2.1 pitch, seam #b47a4a 0.9 at x 1374 · QR 9x9 pitch 2.71</text>
   <text x="1133" y="262.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">squares 2.3</text>
   <text x="1352" y="138" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">BOXED LETTER + ANNOTATION</text>
-  <!-- BOXED LETTER. all four traces share <g id="letterbox">: a 26x26 rounded plate, stroke 1.4, with a FOLDED bottom right corner (the mini SIM motif) drawn as a second 1.0 stroke M 26,17 H 21 Q 19,17 19,19 V 24. Where it sits on the wire band the interior is filled #4c3f5f so the strands do not read through (dashboard, mailbox). Letter 19.5px 700 x scaled 1.6 (A/C) or 1.75 (B/D), centred on the plate. Annotation 6.2px 500 ls 0.7 #d9a877, two lines 6.7 apart, at x +40.3. Placed at (1352,150): translate(1114 52) -->
+  <!-- BOXED LETTER. This specimen is mailbox header A at (238,98), translated (1114,52): a 26x26 rounded plate with an external lower-right chamfer, stroke 1.4, and a bright #e7c686 lower tab; no interior fold. The violet #4c3f5f backing masks wire strands at this header position. A is the source-fitted even-odd vector at translate(249.7,115.5), contour x242.08..257.08/y102.92..114.58; annotation remains 6.2px 500 ls 0.7 #d9a877, two lines 6.7 apart at x+40.3. Dashboard and store header copies are independently source-audited in the wire-band specimens below. -->
   <g transform="translate(1114 52)">
   <g fill="#4c3f5f"><rect x="238" y="98" width="26" height="26" rx="3"/></g>
-  <g stroke="#bd8951"><use href="#letterbox" x="238" y="98"/></g>
-  <g font-family="Rajdhani" fill="#d9a877" text-anchor="middle" font-size="19.5" font-weight="700">
-    <text transform="translate(249.7 115.5) scale(1.6 1)">A</text>
+  <g stroke="#bd8951"><use href="#mailbox-letterbox" x="238" y="98"/></g>
+  <g fill="#d9a877">
+    <path transform="translate(249.7 115.5)" fill-rule="evenodd" d="M -1.36667,-12.58333 L 0.71667,-12.58333 L 7.38333,-0.91667 L 4.88333,-0.91667 L 3.21667,-3.83333 L -3.45000,-3.83333 L -5.11667,-0.91667 L -7.61667,-0.91667 Z M -0.11667,-10.08333 L -2.61667,-5.50000 L 2.38333,-5.50000 Z"/>
   </g>
   <g font-family="Rajdhani" font-size="6.2" font-weight="500" fill="#d9a877" letter-spacing="0.7">
     <text x="278.3" y="103.3">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
     <text x="278.3" y="110">SERVING CUSTOMERS SINCE 2006.</text>
   </g>
   </g>
-  <text x="1352" y="238.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">26x26 r3 stroke 1.4 · folded corner 7x7 stroke 1.0 · letter</text>
-  <text x="1352" y="246.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">19.5px 700, x scale 1.6 (A, C) / 1.75 (B, D) · annotation</text>
-  <text x="1352" y="254.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">6.2px 500 ls 0.7 at +40.3 · interior #4c3f5f only where it</text>
-  <text x="1352" y="262.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">sits on the band</text>
+  <text x="1352" y="238.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">26x26 r3 stroke 1.4 · outer chamfer 6.75x7 · lower tab · letter</text>
+  <text x="1352" y="246.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">A vector x242.08..257.08 y102.92..114.58, even-odd counter</text>
+  <text x="1352" y="254.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">annotation 6.2px 500 ls 0.7 at +40.3 · interior #4c3f5f</text>
+  <text x="1352" y="262.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">only where it sits on the band</text>
 
   <!-- ============================ ROW 2: CARDS, PANELS, CONTROLS ============================ -->
   <text x="56" y="300" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">2  MODULE MENU UNIT: CASCADE CARD</text>
@@ -939,8 +948,8 @@
   <g transform="translate(773 -6)">
   <use href="#entrylines"/>
   <use href="#entrytext"/>
-  <g font-family="Rajdhani" font-size="15" fill="#d9a877" text-anchor="middle">
-    <text x="429" y="483">A</text>
+  <g font-family="Rajdhani" font-size="20" font-weight="600" fill="#d9a877" text-anchor="middle">
+    <path d="M 420.0000,482.9167 L 426.6667,470.0000 L 427.9167,468.7500 L 429.5833,468.7500 L 430.8333,470.0000 L 437.5000,482.9167 L 435.0000,482.9167 L 433.3333,479.5833 L 423.7500,479.5833 L 422.0833,482.9167 Z M 428.3333,471.2500 L 429.1667,471.2500 L 432.0833,477.5000 L 425.0000,477.5000 Z" fill="#d9a877" fill-rule="evenodd"/>
   </g>
   </g>
   <text x="1189" y="496.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">label 19.5px 500 ls 0.15 #f5bf75 · field 345x42 #3c1c11, NO outline, no caret, no inner rule · CTA bar</text>
@@ -950,22 +959,22 @@
   <!-- MESSAGE BODY. mailbox-trace.svg: the message is drawn with NO panel, no
        outline and no fill; only type on the ground. URGENT INFORMATION (!) at
        (736,276) 17.5px 600 scale 1.01 #f8c884 (source run ~737..908); FROM: MOM (738,297)
-       13px 500 scale 1.16 #f3c583; three lorem paragraphs at (736, 333) 17px 500
-       scale 1.06 #f3c583 on a 21.5 line pitch, 2 / 5 / 3 lines, widest run ~600 to
-       x 1338. Shown here at full size with the lines cut to the column width.
+       13px 500 scale 1.16 #f3c583; three lorem paragraphs at (735.2, 333) 17px 500
+       scale 1.054 #f3c583 on a 21.5 line pitch, 2 / 5 / 3 lines.
+       Shown here at full size with the lines cut to the column width.
        Placed at (1189,546): translate(452 269) -->
   <g font-family="Rajdhani" fill="#f8c884">
     <text x="736" y="276" font-size="17.5" font-weight="600" letter-spacing="0" transform="translate(736 0) scale(1.01 1) translate(-736 0)">URGENT INFORMATION (!)</text>
     <text x="738" y="297" font-size="13" letter-spacing="0" font-weight="500" transform="translate(738 0) scale(1.16 1) translate(-738 0)" fill="#f3c583">FROM: MOM</text>
-    <g font-size="17" font-weight="500" fill="#f3c583" letter-spacing="0" transform="translate(736 0) scale(1.06 1) translate(-736 0)">
-      <text x="736" y="333">Lorem ipsum dolor sit amet, consec</text>
-      <text x="736" y="354">tempor incididunt ut labore et dolo</text>
-      <text x="736" y="397">Ut enim ad minim veniam, quis nost</text>
+    <g font-size="17" font-weight="500" fill="#f3c583" letter-spacing="0" transform="translate(735.2 0) scale(1.054 1) translate(-735.2 0)">
+      <text x="735.2" y="333">Lorem ipsum dolor sit amet, consec</text>
+      <text x="735.2" y="354">tempor incididunt ut labore et dolo</text>
+      <text x="735.2" y="397">Ut enim ad minim veniam, quis nost</text>
     </g>
   </g>
   </g>
   <text x="1189" y="680.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">no panel, no outline, no fill · heading 17.5px 600 x1.01 #f8c884 · FROM: 13px 500 scale 1.16 #f3c583 · body</text>
-  <text x="1189" y="688.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">17px 400 x1.06 on a 21.5 line pitch, x 736, widest run 600, paragraph gaps 43 / 42</text>
+  <text x="1189" y="688.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">17px 500 x1.054, x 735.2; line pitch 21.5, paragraph gaps 43 / 42</text>
   <text x="1189" y="706" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">6  OUTLINED BUTTON, MAILBOX</text>
   <!-- OUTLINED BUTTON. mailbox-trace.svg: four RIFLES buttons 184x39 at y 684..723, left edges x 735, 929, 1120, 1310 (~192 pitch). r5 corners with the bottom LEFT cut by a 13x10 chamfer, outline #ecbe82 1.25, a filled trapezoid tab #fdcf8c (37 base / 29 top / 7 tall) sitting INSIDE the outline on the bottom edge at x 866..903, and a left aligned label at x+22, 16px 500 ls 1, #f9cb8a. Placed at (1189,718): translate(454 34) -->
   <g transform="translate(454 34)">
@@ -1011,11 +1020,10 @@
     <path d="M 35,192.8 Q 35,182.8 45,182.8 H 290 C 322,182.8 316,124.2 349,124.2 H 1230 C 1264,124.2 1258,182.8 1290,182.8 H 1552 Q 1562,182.8 1562,192.8" stroke-opacity="1.00"/>
   </g>
   <g stroke="#e0b67a" fill="none">
-    <use href="#letterbox" x="360" y="143"/>
-    <use href="#letterbox" x="1178" y="143"/>
+    <path id="store-A-frame" d="M 362.0833,143.9583 L 384.5834,143.9583 Q 385.8334,143.9583 385.8334,145.4167 L 385.8334,162.0833 L 379.1667,168.5417 Q 378.3333,168.9583 377.0833,168.9583 L 362.0833,168.9583 Q 360.8333,168.9583 360.8333,167.0833 L 360.8333,145.4167 Q 360.8333,143.9583 362.0833,143.9583 Z" stroke-width="1.0"/><path id="store-A-tab" d="M 365,165.8333 L 375.8333,165.8333 L 376.25,167.5 L 378.75,169.0833 L 362.0833,169.0833 L 364.1667,167.5 Z" fill="#fed08d" stroke="none"/>
   </g>
   <g font-family="Rajdhani">
-      <text fill="#e0b67a" stroke="none" x="368" y="163" font-family="Rajdhani" font-size="17" font-weight="600">A</text>
+      <path id="store-A-glyph" d="M 370.8333,148.3333 L 372.9167,148.3333 Q 373.75,148.3333 374.1667,149.5833 L 379.5833,159.5833 L 377.0833,159.5833 L 375.8333,157.0833 L 367.5,157.0833 L 366.6667,159.5833 L 364.5833,159.5833 M 371.6667,150 L 374.5833,155.4167 L 369.1667,155.4167 Z" fill="#f5c689" fill-rule="evenodd"/>
   </g>
   </g>
   </g>
@@ -1040,10 +1048,11 @@
     <path d="M 35.5,161.71 V 161.71 C 35.5,152.87 42.66,145.71 51.5,145.71 H 149.2 C 187.3,145.71 195.05,86.8 226,86.8 H 1056 C 1078.5,86.8 1097.2,145.71 1125.5,145.71 H 1549 C 1557.84,145.71 1565,152.87 1565,161.71 V 161.71" stroke-opacity="0.30"/>
     <path d="M 35.5,164.89 V 164.89 C 35.5,156.05 42.66,148.89 51.5,148.89 H 147.6 C 186.6,148.89 195.05,86.8 226,86.8 H 1056 C 1078.5,86.8 1097.9,148.89 1127.1,148.89 H 1549 C 1557.84,148.89 1565,156.05 1565,164.89 V 164.89" stroke-opacity="0.20"/>
   </g>
+  <!-- Dashboard header A at (238,98); frame, tab and glyph are dashboard-sourced. -->
   <g fill="#4c3f5f"><rect x="238" y="98" width="26" height="26" rx="3"/></g>
-  <g stroke="#bd8951"><use href="#letterbox" x="238" y="98"/></g>
-  <g font-family="Rajdhani" font-size="15">
-    <g fill="#d9a877" text-anchor="middle"><text x="250" y="117">A</text></g>
+  <g stroke="#bd8951"><path d="M 3.5,0.9 H 22.5 Q 25.25,0.9 25.25,3.9 V 18.5 L 18.5,25.91667 H 3.5 Q 0.5,25.91667 0.5,22.91667 V 3.9 Q 0.5,0.9 3.5,0.9 Z" transform="translate(238.75 98)" fill="none" stroke="#d9a877" stroke-width="1.0"/><path d="M 3.5,25.7 L 4.3,23.5 Q 4.5,23 5,23 H 15 Q 15.5,23 15.7,23.5 L 16.5,25.7 Z" transform="translate(238.75 98)" fill="#fcbe6d" stroke="none"/></g>
+  <g fill="#d9a877">
+    <path transform="translate(250.45 115.5)" fill-rule="evenodd" d="M -1.36667,-12.58333 L 0.71667,-12.58333 L 7.38333,-0.91667 L 4.88333,-0.91667 L 3.21667,-3.83333 L -3.45000,-3.83333 L -5.11667,-0.91667 L -7.61667,-0.91667 Z M -0.11667,-10.08333 L -2.61667,-5.50000 L 2.38333,-5.50000 Z"/>
   </g>
   </g>
   </g>
@@ -1304,7 +1313,7 @@
   <text x="1563" y="527.1" font-size="28" font-weight="500" letter-spacing="1" fill="#e7c686">10:10 PM</text>
   <text x="1563" y="534.6" font-size="6.6" fill="#a97c48">500 28 ls 1  clock. Also 600 27 (620), 600 21 and 20 (T marks, 30 / 5), 600 24 ls 3 (panel name)</text>
   <text x="1563" y="558.9" font-size="18" font-weight="500" transform="translate(1563 0) scale(0.975 1) translate(-1563 0)" fill="#e7c686">You'll regret that</text>
-  <text x="1563" y="566.4" font-size="6.6" fill="#a97c48">500 18 x0.975 mail title. 600 19 / 400 19 card name. 600 17.5 x1.01 message heading. 500 17 x1.06</text>
+  <text x="1563" y="566.4" font-size="6.6" fill="#a97c48">500 18 x0.975 mail title. 600 19 / 400 19 card name. 600 17.5 x1.01 message heading. 500 17 x1.054</text>
   <text x="1563" y="574.0" font-size="6.6" fill="#a97c48">body, 17 ls 1 store nav, 17 ls 1.5 hub labels, 16.5 stat labels. 700 19.5 x scale 1.6 / 1.75 boxed</text>
   <text x="1563" y="581.6" font-size="6.6" fill="#a97c48">letters</text>
   <text x="1563" y="602.9" font-size="14" font-weight="300" letter-spacing="4.1" fill="#e7c686">ENTER / LOGIN</text>

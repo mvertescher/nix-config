@@ -41,9 +41,9 @@
            ~16x13 chamfer cut off its bottom-LEFT corner only, carrying
            ENTER / LOGIN in a wide light face in dark brown (x
            532.9..645.4: 14px 300 letter-spacing 4.1 centred on 582.5);
-           a 26x26
-           letter box A (416,465) / B (836,465) with the era's folded
-           corner, and the SPARE TIME MANAGER micro-text beside it
+           a 26x26 letter box A (416,465) / B (836,465) with one external
+           lower-right chamfer and a solid tab rising from its bottom
+           edge, and the SPARE TIME MANAGER micro-text beside it
          - across the foot: the stacked-hairline WIRE BAND as a wide
            trapezoid — 22 strands. On the outer plateaus (x 35..~350 and
            ~1265..1564) they run y 727..809, spaced 3.9; each strand
@@ -143,12 +143,11 @@
       <stop offset="0.45" stop-color="#7a598a" stop-opacity="0.55"/>
       <stop offset="1" stop-color="#7a598a" stop-opacity="0"/>
     </radialGradient>
-    <!-- boxed section letter: 26x26 rounded plate, folded bottom-right
-         corner (the era's mini-SIM motif; same as dashboard-trace) -->
-    <g id="letterbox" fill="none" stroke-width="1.4">
-      <path d="M 3,0 H 23 Q 26,0 26,3 V 17 L 19,24 Q 17,26 14,26 H 3
-               Q 0,26 0,23 V 3 Q 0,0 3,0 Z"/>
-      <path d="M 26,17 H 21 Q 19,17 19,19 V 24" stroke-width="1"/>
+    <!-- The login badge is distinct from the dashboard's folded mini-SIM:
+         its lower corner is one external chamfer and it has a solid tab. -->
+    <g id="letterbox" stroke="#c8914d">
+      <path d="M 4,1 H 22 Q 25,1 25,4 V 17.5 L 17.5,25.5 H 4 Q 1,25.5 1,22.5 V 4 Q 1,1 4,1 Z" fill="none" stroke-width="1.4"/>
+      <path d="M 3.4,25.8 5.2,23 Q 5.6,22.5 7,22.5 H 13.9 Q 15.4,22.5 15.8,23 L 17.5,25.8 Z" fill="#c8914d" stroke="none"/>
     </g>
     <!-- one entry group at its measured origin (left group; the right
          group is the same at +420), split into its plates and its
@@ -157,7 +156,7 @@
       <rect x="417" y="361" width="345" height="42" fill="#3c1c11"/>
       <!-- gold bar, bottom-left chamfer 16x13 -->
       <path d="M 417,414 H 761 V 441 H 433 L 417,428 Z" fill="#fbc171"/>
-      <use href="#letterbox" x="416" y="465" stroke="#c8914d"/>
+      <use href="#letterbox" x="416" y="465"/>
     </g>
     <g id="entrytext" font-family="Rajdhani">
       <text x="428.5" y="350" font-size="19.5" font-weight="500" letter-spacing="0.15" fill="#f5bf75">PRASE_6054012</text>
@@ -277,9 +276,9 @@
   <!-- ==== the two entry groups' glyphs; the letters are A and B ==== -->
   <use href="#entrytext"/>
   <use href="#entrytext" x="420"/>
-  <g font-size="15" fill="#d9a877" text-anchor="middle">
-    <text x="429" y="483">A</text>
-    <text x="849" y="483">B</text>
+  <g font-size="20" font-weight="600" fill="#d9a877" text-anchor="middle">
+    <path d="M 420.0000,482.9167 L 426.6667,470.0000 L 427.9167,468.7500 L 429.5833,468.7500 L 430.8333,470.0000 L 437.5000,482.9167 L 435.0000,482.9167 L 433.3333,479.5833 L 423.7500,479.5833 L 422.0833,482.9167 Z M 428.3333,471.2500 L 429.1667,471.2500 L 432.0833,477.5000 L 425.0000,477.5000 Z" fill="#d9a877" fill-rule="evenodd"/>
+    <path d="M 842.9167,468.9167 L 851.6667,468.9167 Q 855.4167,468.9167 855.4167,472.5000 Q 855.4167,474.5833 852.9167,475.4167 Q 855.8333,476.2500 855.8333,479.1667 Q 855.8333,482.9167 851.6667,482.9167 L 842.5000,482.9167 Q 841.2500,482.9167 841.2500,481.6667 L 841.2500,470.0000 Q 841.2500,468.9167 842.9167,468.9167 Z M 844.1667,470.8333 L 852.0833,470.8333 Q 853.7500,470.8333 853.7500,472.5000 Q 853.7500,474.5833 852.0833,474.5833 L 844.1667,474.5833 Z M 843.9583,476.4583 L 852.5000,476.4583 Q 853.7500,476.4583 853.7500,478.7500 Q 853.7500,481.0417 852.5000,481.0417 L 843.9583,481.0417 Z" fill="#d9a877" fill-rule="evenodd"/>
   </g>
 
   <!-- ==== footer ==== -->

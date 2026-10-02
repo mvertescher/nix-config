@@ -1707,8 +1707,10 @@
 
 
   <!-- ==== footer tape, x 1209..1354, y 864..888: two outlined cells ====
-       Frame and divider are the bright ink at ~1px (photo 1209.2, 1270.0..
-       1271.2, 1353.8; 863.8..865.0 and 887.1..888.3); the cells are NOT
+       The top/sides and divider retain their narrow bright ink. The
+       top adds coverage at x 1210..1353/y 865..865.416667; the bottom
+       covers source 4K rows 2129..2132 between x 1210.5..1352.5.
+       The original rim remains. The cells are NOT
        filled. Left cell: one code line, cap-height ~6 at y 869..875,
        x 1215..1264. Right cell: two lines of micro-text, y 869..874 and
        877..882, x 1277..1345. Local frame and lettering copies extend
@@ -1720,6 +1722,9 @@
     </g>
     <rect x="1209.5" y="864.5" width="144" height="24" fill="none"
           stroke="#ef3333" stroke-width="1"/>
+    <rect x="1210" y="865.000000000" width="143.0" height="0.416666667" fill="#ef3333"/>
+    <rect id="footer-left-inner-coverage" x="1210" y="865.416666667" width="0.416666667" height="22.500000000" fill="#ef3333"/>
+    <rect x="1210.5" y="887.083333333" width="142" height="1.666666667" fill="#ef3333"/>
     <rect x="1270" y="864.5" width="1.2" height="24" fill="#ef3333"/>
     <g font-family="Rajdhani" fill="#ef3333" opacity=".23" transform="translate(.8,1)">
       <text x="0" y="0" transform="translate(1214.2,875.1) scale(.844,1)" font-size="9.8" font-weight="700">68SD1D1100D1S</text>

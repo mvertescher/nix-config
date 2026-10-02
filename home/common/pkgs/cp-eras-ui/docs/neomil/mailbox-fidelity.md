@@ -83,8 +83,9 @@ at about x122 is fully visible. It retains the original 440ms timing.
 
 The normal terminal's ribs follow a separate source measurement. Row 2
 gives a 3.316-native-pixel rib pitch; six independent rows give 3.311–3.320.
-The old 22-rib template had a 2.999-pixel pitch, so the normal template
-uses 20 ribs. W's first 20-rib correction improved its native changed-footprint
+The old 22-rib template had a 2.999-pixel pitch, so W used 20 full ribs.
+AM later adds two partial end strokes at the corrected pitch; it does not
+restore the old evenly spaced template. W's first correction improved its native changed-footprint
 RGB error from 26.73 to 22.64, and full-strip error on held-out rows 3, 5,
 and 7 from 24.65/27.96/29.54 to 21.76/25.72/24.06. It retained a visible
 angle residual: its native phase slope was about −0.612, while source rows
@@ -195,3 +196,242 @@ The source's ridge-to-gap modulation varies substantially by row. This
 image-space probe preserves geometry but cannot separate local background,
 registration and adjacent edge printing well enough to justify an actual
 renderer change. No blur or anisotropic fit is adopted.
+
+### Ordinary-terminal width holdout
+
+The next native source review tested only the 20 ordinary rib strokes' width.
+The source, current 3840×2160 SVG, and X Iced capture were compared at the
+normal row origins (452,948), (452,1112), (452,1439), and (452,1780). Each
+full-strip sample is 73×30 native pixels. Color `#9a2326`, the terminal rule,
+all rib coordinates, casing, selected 22-rib icon, and surrounding material
+were fixed. The SVG width was changed from 0.40 design pixels in scratch
+renders; no change was ported to the trace or renderer.
+
+| Ordinary row | 0.30 width | 0.35 width | Current 0.40 | 0.45 width | 0.50 width |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 2, fitted | 14.732 | 14.695 | 14.654 | 14.637 | 14.617 |
+| 3, holdout | 14.510 | 14.422 | 14.382 | 14.375 | 14.403 |
+| 5, holdout | 15.932 | 15.929 | 15.949 | 15.981 | 16.016 |
+| 7, holdout | 15.221 | 15.184 | 15.165 | 15.215 | 15.284 |
+
+Values are native-pixel, full-strip RGB MAE against source. Narrowing is
+not a consistent improvement; widening for the fitted row reverses the
+direction in rows 5 and 7. Width alone cannot explain the apparent fine
+source lines. To isolate the residual, samples at the center 20–80% of each
+rib were classified by distance from its fitted centerline: core <0.35,
+edge 0.35–0.85, and adjacent gap 1.4–2.1 native pixels. The native X Iced
+red means for rows 2/3/5/7 are 143/143/143/143 in the core versus source
+113/123/106/113; 112/111/111/110 at the edge versus source 100/89/84/80;
+and 74/73/71/69 in the gaps versus source 65/59/48/34. Width changes leave
+those gap samples unchanged in the SVG. The gap sample is small (21 pixels
+per row) and does not establish an echo contour; it is a separate control
+showing why a width fit cannot solve the observed source variation. No new
+secondary art or opacity was adopted from this diagnostic.
+
+### AL: inner terminal material controls
+
+A fresh 4K capture from the verified AK package confirms that the clear
+ground above ordinary terminals already matches the source closely: RGB
+MAE is 1.10–1.27 across rows 2/3/5/7. A common background adjustment is
+unsupported. At fixed registration, native rib-core red means are
+140.4/140.4/140.3/139.8 against source 118.5/127.4/112.8/115.9. Gap means
+are 59.3/57.7/55.4/52.8 against 68.8/60.2/51.2/36.0: the required gap
+correction reverses direction between the upper and lower rows.
+
+A scratch SVG adds a bounded .12-opacity inner fill and lowers rib opacity
+to .80. Full-strip RGB MAE improves in all four inspected rows, from
+13.671/13.445/14.802/14.213 to 13.366/13.225/14.526/14.007. Separate
+controls reject it: row 3 positive-core error rises 12.70→13.04, and row 7
+gap red rises 46.9→59.2 away from source 36.0. The latter's pixelwise RGB
+error nevertheless improves, illustrating why one average is insufficient.
+The small masks sample the central 22–78% of ribs 2–17: 58 core pixels,
+75 edge pixels and 37 gap pixels per row. These masks differ from AF's;
+their values are not evidence of a runtime change since AF.
+
+All 3,626 changed SVG pixels stay within the seven ordinary terminal boxes.
+Selected art, disc cores and lower-shell controls are identical. The fill
+is a diagnostic hypothesis, not a source-traced polygon; no native
+candidate was built and no trace or Rust correction is accepted. A retry
+needs source-supported terminal boundaries/material and separate core,
+gap, shell and selected controls. Scratch evidence and reproducible scripts:
+`/tmp/cp-eras-next/al-mail-terminals/`; Astra's independent containment and
+full-strip check: `/tmp/cp-eras-next/al/mail-root-review.json`.
+
+### AL: terminal depth and inner boundary
+
+The follow-up geometry audit finds a source-supported depth discrepancy.
+At fixed ordinary-icon origins, sample along the upper edge with slope
+.33846 and let `q` be the vertical offset below that line, in native pixels.
+The source has a coherent lower ridge near q10.25–11 across rows 2/3/5/7,
+including separate left/right strip halves. SVG and native instead have a
+strong inner edge near q5; the standalone lower rule lies near q7.37.
+Rib modulation in the source persists farther down the strip. Exact rib
+endpoints remain softened, but the repeated lower boundary is distinct
+from a single photographed echo. See `depth.py` in the AL scratch record.
+
+The q5 edge is the normal cartridge's second path, through
+`(-0.4167,2.0833)` and `(27.9167,11.6667)` in design coordinates.
+Extending the ribs from vector `(-2.48,2.0773)` to `(-3.72,3.11595)` and
+moving only the standalone rule improves four strip averages but leaves
+that inner edge intact, producing a doubled ladder. A second scratch
+trial moves the inner edge down and removes the redundant rule. Its
+center has the deeper source silhouette, but the right endpoint crosses
+the outer notch, which the source does not do. The new gaps also become
+too dark: row 2 mean red changes 54.2→26.3 against source 68.8. Lower
+rib modulation becomes too strong, and portions of the lower-shell control
+change. Both geometry trials are rejected; no native candidate is built.
+
+This is now a concrete geometry/material follow-up, separate from the
+rejected width and opacity fits. Reconstruct the deeper strip together
+with its inner-edge joins and gap material. Preserve or independently
+verify the upper pitch/phase, outer casing, disc and selected icon; inspect
+both end connections and the full icon, not just the central strip. The
+current rightmost rib coverage is also a residual requiring source review,
+not a reason to change the count without evidence. Evidence includes
+`depth-q10.5.svg`, `depth-coherent.svg` and the left/right four-way crop
+comparisons in `/tmp/cp-eras-next/al-mail-terminals/`.
+
+### AM: deeper terminals and bounded interior material
+
+AM corrects the ordinary cartridge's inner terminal boundary rather than
+changing rib width or dimming all strokes. The lower rim moves from the
+unsupported q≈5 edge to q≈10.25, against source q10.25–11. The redundant
+q≈7 rule is removed. The rim joins the left casing at design (−4,3.021)
+and ends at (26.5,13.3449), before the right notch, without a crossing.
+The twenty established rib starts/pitch stay fixed; endpoints extend to
+q≈8.5, leaving the source-supported fade before the lower rim. Two shorter
+end strokes cover faint marks within the curved cap. Their exact ink remains
+approximate; they are not evidence of recovered authoring geometry.
+
+An independent blank interior patch shows missing case material: at
+x486..495, q18..23, source red is 49–55 versus the old 14–23. Two closed
+fills follow the corrected case and terminal boundaries, beneath the existing
+strokes/disc. The SVG uses #9a2326 at .20 and .15 opacity; ribs retain
+full ink and .4 width. The stronger .30 terminal fill is rejected for
+brightening lower-row gaps; a depth fade adds complexity without improving
+the endpoint controls. A single shared cartridge is retained for every row.
+
+Iced blends these translucent vector fills in linear color space. Using
+SVG alpha directly would therefore be incorrect. A row-2 ground sample
+(23.4,11.6,14.4) predicts case #85282c/.10 and bed #702226/.10; a fresh native
+capture confirms the case patch at (49.0,16.3,19.0), close to the SVG target
+(49.5,16.3,19.1). No shared renderer, palette role or background changes.
+The other six rows validate the same parameters without per-row adjustments.
+
+Source-defined bright/dark masks sample x464..511 at .5 native-pixel steps
+and q2..7 at .5 steps. Each q uses the source's upper/lower red quartiles;
+registration and masks are fixed before evaluating the candidate. Native
+RGB MAE against the original improves for both masks in every ordinary row:
+
+| Row | Dark gaps, before→after | Bright ribs, before→after |
+| --- | ---: | ---: |
+| 2 | 21.190→7.330 | 10.227→8.719 |
+| 3 | 22.096→6.310 | 10.135→7.053 |
+| 4 | 24.465→11.232 | 14.010→12.829 |
+| 5 | 24.744→8.099 | 12.561→9.383 |
+| 6 | 26.152→6.135 | 12.549→8.031 |
+| 7 | 28.732→7.107 | 12.736→8.402 |
+| 8 | 30.184→11.646 | 14.972→11.080 |
+
+Whole-icon, terminal and both endpoint crops also improve in all seven
+native rows. The SVG dark masks improve in all seven; bright masks improve
+in six, with row 4 retaining a small loss, 14.160→14.559. Full-period
+profiles still expose excess upper-row modulation and missing photographed
+softness. This closes neither exact contrast/phase nor fine printing.
+
+There are 21,920 changed SVG pixels and 19,362 changed native 4K pixels,
+all inside ordinary icons. The selected icon, surrounding ground, and opaque
+disc/lower-shell cores are identical. Case fill intentionally changes its
+bounded interior and antialiased fringes. Source/SVG/native endpoint and
+whole-icon crops support the correction independently of average error.
+
+The first scratch geometry file was mistakenly revised during compilation.
+That capture is excluded from acceptance. Root-owned immutable SVG/Rust
+copies were compiled again; all reported native evidence uses those copies.
+The final last-rib revision is an inside-cap correction, not an untouched
+blind holdout. Evidence and reproducible measurements are under
+`/tmp/cp-eras-next/am/`, `am-mail-geometry/` and `am-mail-material/`.
+State/gate/full-check results are recorded in
+[round twenty-four](../reference-svg-round24.md).
+
+### AZ body-text registration and faint ink
+
+A fixed-phrase source/SVG audit does not isolate a separate body-text echo
+contour. At 4K, an image-space comparison one native pixel higher improves
+primary overlap for “Lorem ipsum” and the independent “ut labore et”,
+“Excepteur sint” and “Nemo enim” controls. Training union-mask red MAE
+falls 83.16→42.97 and F1 rises .743→.886; the three held-out errors fall
+93.13→47.28, 86.61→42.51 and 62.70→23.74. Bright masks at four thresholds
+support a primary-registration difference. Astra independently reproduces
+the four fixed comparisons and reviews the source/SVG crops.
+
+Core, counter, near/far-gap and blank controls find narrow residual softness
+around the primary strokes, without a consistent separate displaced shape.
+Horizontal image-phase preferences differ between phrases. At 1600px, an
+independent one-pixel upward image shift helps some lines but worsens the
+last control, 39.49→46.55. This is a different design displacement from
+one pixel at 4K; it does not reject a shared design-space baseline change.
+The diagnostic does not justify adding another text copy or changing ink.
+
+No mailbox artwork changes in AZ. A separate SVG trial can translate only
+the ten body text nodes by −1/2.4 design pixel; native acceptance would
+still require same-size source/Iced controls. Mailbox responsive sx/sy
+placement differs from uniform scene scaling, so image offsets alone do
+not establish fractional native geometry. Exact printing remains open.
+Frozen controls, source hashes and reproducible measurements are in
+`/tmp/cp-eras-next/az-mailbox-printing/`; Astra's fixed comparison is
+`/tmp/cp-eras-next/az/mailbox-root-review.json`.
+
+### BA body baseline: source and native review
+
+AZ's phrase audit found a primary vertical registration difference before any
+stable secondary printing contour. BA tests one shared design-space
+displacement: translate only the group of ten mailbox body lines by `−1/2.4`
+design pixel. The source/SVG controls were frozen before that single
+candidate; no x, font, text, spacing, ink, panel geometry, echo or shared
+renderer changes. At 4K and 1600, all ten SVG whole-line red errors and F1 at
+thresholds 100/150/200/230 improve. The SVG still has local losses at 1600:
+the training phrase's union-mask blue MAE rises 1.320→1.536, “Nemo enim”
+F1@200 falls .34646→.33333, and the five changed line-1/line-2 gap pixels
+raise blue MAE .723→.728 while red and green improve. Those controls prevent
+calling the SVG a complete text fit.
+
+The guarded actual Mailbox native preview changes 67,488 pixels at 3840×2160,
+all inside the body, with unchanged alpha. Against the source photo, the exact
+full-body RGB MAE falls 8.742→7.014; fixed-union red MAE falls 109.705→79.502.
+The body-core F1 rises .587→.720 at threshold 100 and .513→.637 at 150. All
+four fixed phrases and all ten whole lines improve red MAE and F1 at
+100/150/200/230. The full body nevertheless has 49,880 RGB-L1-gaining and
+17,506 losing pixels, so the improvement is regional rather than pixelwise
+uniform. The **frozen baseline-defined counter mask loses in six controls**:
+“ut labore et” and lines 2, 3, 6, 7 and 10. It follows the old glyph holes,
+whose masks have only about .65–.66 IoU with corresponding source-defined
+holes in those six controls. A **post-capture diagnostic**, explicitly not a
+frozen acceptance holdout, defines holes from the source and finds red-MAE
+gains in all 28 region/threshold comparisons (four phrases plus ten lines, at
+150 and 200). Individual source-hole pixels still lose, especially around line
+7. Both counter results remain in the record; neither justifies claiming exact
+glyph contours or adding a copy.
+
+At 1600×900 the native baseline and candidate are byte-identical. The
+design-space displacement is subpixel there, and this raster phase produces no
+image change; the 1600 SVG improvement must not be described as a native one.
+At 1537×947, Mailbox places text anchors with `sx=width/1600`, `sy=height/900`
+and glyphs with `min(sx,sy)`, so a uniformly scaled photo is not a valid
+source-fit reference. Rest, first/last selection, held-first/held-last and
+five-role custom captures each change 9,194 body pixels without alpha or
+outside-body changes. At 0.12s opening and time zero, the body remains hidden
+and the pairs are identical. A supplemental 0.20s capture reveals part of the
+body: 4,018 pixels change within the clip, with no alpha or outside-clip
+changes. These are headless drawing-state results, not live desktop or pointer
+verification.
+
+The component sheet companion changes only the existing body-text group's
+transform. Its two visible specimens change 9,644 and 3,892 RGBA pixels at
+full/half sheet size, entirely within the mailbox excerpts; all other content
+and alpha remain identical. The proposed correction is bounded to body
+baseline registration. Ordinary-terminal phase/softness, faint text printing,
+exact glyph counters, the original shared texture recipe and live desktop
+behavior remain open. Evidence: `/tmp/cp-eras-next/ba-mailbox-baseline/`,
+`ba-mailbox-native/`, `ba-mailbox-review/`, `ba-mailbox-components/`, and
+`ba/mailbox-opening200-review.json`.

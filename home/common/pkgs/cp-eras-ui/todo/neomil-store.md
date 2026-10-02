@@ -104,6 +104,32 @@ content is intentionally static; no network/payment backend is specified.
   counter and A2 are unchanged. A wider clip and uniform letter dimming
   fail local controls and remain unapplied. Preserve the accepted primary
   glyphs, slash and CJK; further changes need source-supported local fits.
+  AD's accepted central hatch-width correction improves native plaque RGB
+  error 23.09→22.00 and source-core matches 275→312. A2 is unchanged;
+  one additional dark-gap intrusion (6→7) remains explicit. Ten native
+  captures, both gates, 286 Rust tests and the full 22-check/27-exact-case
+  run pass. See [round fifteen](../docs/reference-svg-round15.md).
+  This bounded ink improvement does not close the full residual.
+  AE adds a narrow semantic-background counter gap: five native 4K
+  pixels change, all in a source-dark column, reducing A2 intrusions
+  15→11 while preserving all 65 bright-core matches. The broad junction,
+  O ring and plaque remain unchanged. See
+  [round sixteen](../docs/reference-svg-round16.md) for integration.
+  AK widens a short inner-O opening: three native 4K pixels improve,
+  the 1600 golden stays identical, and five fractional states alter only
+  one O pixel while preserving custom ink and feedback. Both gates and
+  full checks pass. This has limited source evidence and no independently
+  changed native holdout; the broader O/plaque/A2 task remains open.
+  Uniform shifts/ink and upper gradients are rejected after dark-core
+  losses. See [round twenty-two](../docs/reference-svg-round22.md).
+  CJ adds the source-supported lower A2 split, preserving the bright
+  crossing. Every changed native pixel improves at three sizes and six
+  fractional state pairs pass. SVG/component geometry is synchronized;
+  small SVG soft-edge tradeoffs remain explicit. Production/package, both
+  gates, 295 Rust tests and full repository checks pass; the broader ink
+  task stays open. See
+  [round forty-six](../docs/reference-svg-round46.md).
+
 - [ ] **Refine repeated/margin printing.** Primary MASURAO, KIROSHI,
   certification marks and rifles are source-supported vectors. Remaining
   dim repeated-mark fields and faint copies need local fitting. The
@@ -111,6 +137,27 @@ content is intentionally static; no network/payment backend is specified.
   BETTERLIFE shift/shear is not source-supported. V corrects selected side
   placement as recorded above. Preserve the accepted primary paths
   and their feedback colors; do not reconstruct the main artwork again.
+  AL confirms missing repeated `MAGNUM 650` printing on ordinary cards
+  1/3/4. A full shifted copy harms counters; a three-row upper-band copy
+  adds unsupported ink in dark gaps. Both are rejected. Fit the repeated
+  glyph contours and interrupted rows, freeze before testing other cards,
+  and retain counter/gap controls alongside RGB error. See the
+  [title-printing audit](../docs/neomil/store-printing.md#al-missing-ordinary-title-printing).
+  AM's coherent two-impression model preserves all solid title pixels and
+  recovers much of the missing printing. Remaining losses are antialiased
+  fringes, a few faint counter pixels and early-row gaps. AN integrates its
+  native calibration; retain the full impression and these controls,
+  without a counter knockout that would erase real source echo ink. See the
+  [AM study](../docs/neomil/store-printing.md#am-interrupted-title-impressions).
+  AN's fixed 4K native title errors improve 13.876→12.124,
+  12.074→10.076 and 12.932→10.135 on cards 1/3/4. All 11,353 changed
+  pixels stay inside ordinary titles, with solid primary and selected
+  titles unchanged. Sixteen paired drawing states, both gates and the
+  integrated matrix pass. The 43/47/185 worsened true-gap pixels and
+  smaller fringe/counter losses remain explicit. Exact phase, softness,
+  lower repetitions and other margin printing keep this item open. See
+  [round twenty-five](../docs/reference-svg-round25.md), including the
+  clipped-mesh correction and separate glyph-reuse performance task.
 - [x] **Make margin CJK deterministic.** The source `益荒男` run is now a
   measured vector rather than a fallback-font-dependent text run. The N
   frozen and live store matrix cases both match their reviewed baseline
@@ -122,6 +169,16 @@ content is intentionally static; no network/payment backend is specified.
 - [ ] **Fit remaining scan modulation and printing echoes.** Keep this
   separate from primary geometry/art corrections. Use actual source
   holdouts; do not add generic glow/noise or relax fidelity thresholds.
+  DS–DV confirm a missing ordinary `HAND GUN` impression, distinct from
+  the accepted title. Common-shift and upper-only trials fail transfer
+  or truncate the contour. A complete per-card copy improves averages
+  but retains material local dark/bright losses in SVG and actual Iced
+  at all three sizes. All opaque primary and selected pixels remain exact.
+  A card-1-trained five-phase opacity fit worsens card-3 dark controls;
+  none is accepted. The next source-supported task must explain local
+  registration/contour and interrupted ink, preserving true gaps rather
+  than masking individual failed pixels. See
+  [round fifty-four](../docs/reference-svg-round54.md).
 - [x] **Restore directional socket printing echoes.** AA adds leftward
   card-1, rightward card-3/4 and downward selected-card trails while
   preserving all 25 bright primary cells. Native source RGB error on fixed
@@ -153,7 +210,7 @@ content is intentionally static; no network/payment backend is specified.
 
 ## Acceptance and preserved findings
 
-- [ ] Inspect source→SVG→Iced at rest, early opening, all card selections,
+- Inspect source→SVG→Iced at rest, early opening, all card selections,
   lower-detail pointer states, fourth-card clipping and fractional scale.
   Keep component excerpts/source docs consistent. Add meaningful runtime
   regression coverage and a live startup case; refresh only reviewed

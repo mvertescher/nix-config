@@ -370,31 +370,33 @@
   </g>
   <!-- boxed letters: A/B hang under the tight line (boxes 26x26 at y98,
        interiors masking the strands); C/D sit in the foot at the measured
-       y~799 with their annotation lines at y~823/834 -->
+       y~822 with annotation baselines retained at y826/837 -->
   <g font-family="Rajdhani" font-size="15">
     <g fill="#4c3f5f">
       <rect x="238" y="98" width="26" height="26" rx="3"/>
       <rect x="1011" y="98" width="26" height="26" rx="3"/>
     </g>
     <g stroke="#bd8951">
-      <use href="#letterbox" x="238" y="98"/>
-      <use href="#letterbox" x="1011" y="98"/>
-      <use href="#letterbox" x="585" y="799"/>
-      <use href="#letterbox" x="1172" y="799"/>
+      <path d="M 3.5,0.9 H 22.5 Q 25.25,0.9 25.25,3.9 V 18.5 L 18.5,25.91667 H 3.5 Q 0.5,25.91667 0.5,22.91667 V 3.9 Q 0.5,0.9 3.5,0.9 Z" transform="translate(238.75 98)" fill="none" stroke="#d9a877" stroke-width="1.0"/>
+      <path d="M 3.5,25.7 L 4.3,23.5 Q 4.5,23 5,23 H 15 Q 15.5,23 15.7,23.5 L 16.5,25.7 Z" transform="translate(238.75 98)" fill="#fcbe6d" stroke="none"/>
+      <path d="M 3.5,0.9 H 22.16667 Q 24.91667,0.9 24.91667,3.9 V 18.5 L 17.75,25.91667 H 3.5 Q 0.5,25.91667 0.5,22.91667 V 3.9 Q 0.5,0.9 3.5,0.9 Z" transform="translate(1011.75 98)" fill="none" stroke="#d9a877" stroke-width="1.0"/>
+      <path d="M 3.5,25.7 L 4.3,23.5 Q 4.5,23 5,23 H 15 Q 15.5,23 15.7,23.5 L 16.5,25.7 Z" transform="translate(1011.75 98)" fill="#fcbe6d" stroke="none"/>
+      <g stroke="#bd8951"><path d="M 577.50000 822.08333 H 596.66667 Q 600.00000 822.08333 600.00000 825.41667 V 839.58333 L 592.91667 847.08333 H 577.50000 Q 575.00000 847.08333 575.00000 844.16667 V 825.41667 Q 575.00000 822.08333 577.50000 822.08333 Z" fill="none" stroke-width="0.95"/><path d="M 578.75000 847.08333 L 579.58333 844.58333 Q 580.00000 844.16667 580.83333 844.16667 H 591.25000 Q 592.08333 844.16667 592.50000 845.41667 L 593.33333 847.08333 Z" fill="#fcbe6d" stroke="none"/></g>
+      <g stroke="#bd8951"><path d="M 1173.33333 822.08333 H 1192.91667 Q 1196.25000 822.08333 1196.25000 825.41667 V 839.58333 L 1189.16667 847.50000 H 1173.33333 Q 1170.83333 847.50000 1170.83333 844.58333 V 825.41667 Q 1170.83333 822.08333 1173.33333 822.08333 Z" fill="none" stroke-width="0.95"/><path d="M 1174.58333 847.50000 L 1175.41667 844.58333 Q 1175.83333 844.16667 1176.66667 844.16667 H 1187.08333 Q 1187.91667 844.16667 1188.33333 845.41667 L 1189.16667 847.50000 Z" fill="#fcbe6d" stroke="none"/></g>
     </g>
     <g fill="#d9a877" text-anchor="middle">
-      <text x="250" y="117">A</text><text x="1023" y="117">B</text>
-      <text x="597" y="818">C</text><text x="1184" y="818">D</text>
+      <path transform="translate(250.45 115.5)" fill-rule="evenodd" d="M -1.36667,-12.58333 L 0.71667,-12.58333 L 7.38333,-0.91667 L 4.88333,-0.91667 L 3.21667,-3.83333 L -3.45000,-3.83333 L -5.11667,-0.91667 L -7.61667,-0.91667 Z M -0.11667,-10.08333 L -2.61667,-5.50000 L 2.38333,-5.50000 Z"/><path transform="translate(1023.25 115.5)" fill-rule="evenodd" d="M -7.08333,-12.58333 L 3.33333,-12.58333 C 6.25000,-12.58333 7.50000,-11.33333 7.50000,-9.25000 C 7.50000,-7.58333 6.25000,-6.75000 4.58333,-6.33333 C 7.08333,-5.50000 7.50000,-4.25000 7.50000,-2.58333 C 7.50000,-0.08333 6.25000,1.16667 3.33333,1.16667 L -7.08333,1.16667 Z M -4.16667,-10.50000 L -4.16667,-7.16667 L 2.91667,-7.16667 C 4.58333,-7.16667 4.58333,-7.58333 4.58333,-8.83333 C 4.58333,-10.08333 4.58333,-10.50000 2.91667,-10.50000 Z M -4.16667,-5.08333 L -4.16667,-0.50000 L 2.91667,-0.50000 C 4.58333,-0.50000 5.00000,-1.33333 5.00000,-2.58333 C 5.00000,-4.25000 4.58333,-5.08333 2.50000,-5.08333 Z"/>
+      <path d="M 583.75000 825.83333 H 590.41667 Q 594.16667 825.83333 594.16667 829.16667 V 830.83333 H 591.66667 V 829.16667 Q 591.66667 827.91667 590.41667 827.91667 H 583.75000 Q 582.08333 827.91667 582.08333 829.58333 V 836.25000 Q 582.08333 837.91667 583.75000 837.91667 H 590.41667 Q 591.66667 837.91667 591.66667 836.25000 V 834.58333 H 594.16667 V 836.66667 Q 594.16667 840.00000 590.41667 840.00000 H 583.75000 Q 579.58333 840.00000 579.58333 836.25000 V 829.58333 Q 579.58333 825.83333 583.75000 825.83333 Z" fill-rule="evenodd"/><path d="M 1175.00000 825.83333 H 1182.08333 C 1187.91667 825.83333 1190.83333 828.75000 1190.83333 832.50000 C 1190.83333 836.66667 1187.91667 840.00000 1182.08333 840.00000 H 1175.00000 Z M 1177.50000 827.91667 V 837.50000 H 1182.08333 C 1185.83333 837.50000 1187.91667 835.41667 1187.91667 832.50000 C 1187.91667 829.58333 1185.83333 827.91667 1182.08333 827.91667 Z" fill-rule="evenodd"/>
     </g>
     <g font-size="8" fill="#a97c48" letter-spacing="0.4">
       <text x="288" y="106">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
       <text x="288" y="116">SERVING CUSTOMERS SINCE 2006.</text>
       <text x="1000" y="106" text-anchor="end">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
       <text x="1000" y="116" text-anchor="end">SERVING CUSTOMERS SINCE 2006.</text>
-      <text x="620" y="826">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
-      <text x="620" y="837">SERVING CUSTOMERS SINCE 2006.</text>
-      <text x="1208" y="826">MAPS ARE PROVIDED BY SEOCHO. SATELITE SERVICES</text>
-      <text x="1208" y="837">SINCE 2006.</text>
+      <text x="618" y="827.6" font-size="7.5" letter-spacing="0">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
+      <text x="618" y="834" font-size="7.5" letter-spacing="0">SERVING CUSTOMERS SINCE 2006.</text>
+      <text x="1205.8" y="827.6" font-size="7.5" letter-spacing="0">MAPS ARE PROVIDED BY SEOCHO. SATELITE SERVICES</text>
+      <text x="1205.8" y="834" font-size="7.5" letter-spacing="0">SINCE 2006.</text>
     </g>
   </g>
 

@@ -10,7 +10,8 @@ layout are outside this fit.
 
 ## Source relationship and model
 
-Dashboard, mail, and store share one photographic ground. Their native
+Dashboard, mail, and store share photographic ground in clear control
+regions. Their native
 patch at design (400,20)..(700,80) has the same 168.9/75.4/95.7 mean;
 the lower clear patch at (800,770)..(1100,820) has the same
 11.8/11.6/11.0 mean. On a 20px lattice of 10×10 design-pixel patches,
@@ -20,6 +21,55 @@ left margin where its foreground and echoes intrude, but its clear
 upper and lower patches agree. Login's upper patch is
 158.5/75.1/93.4 and its lower clean pixel field falls near 5/5/4, so
 it has separate stop colors and a separate edge wash.
+
+The [round-fifty donor audit](../reference-svg-round50.md) confirms exact
+footer pixels and strongly correlated central grain at the same original
+coordinates. It also finds screen-dependent left-wash/body differences
+and foreground halos outside some modeled SVG support. Shared clear
+patches do not establish that every hidden background pixel is identical;
+donors need local ownership checks before informing fan material fits.
+
+The [round-fifty-one grid](../reference-svg-round51.md) retains 438
+cross-photo agreement patches after stricter modeled-foreground guards.
+Its checkerboard split and source means/medians are independently checked.
+The frozen ellipse-only follow-up improves fitted-domain heldout RGB MAE
+3.357→3.073 but worsens green, left, upper and Store controls. It remains
+unapplied. Shared-ground and card-fill errors require separate local
+evidence; a lower average alone does not establish either correction.
+
+The [round-fifty-two joint fit](../reference-svg-round52.md) improves
+rose-only controls and separately tests the existing wash. Frozen DM+DN
+definitions improve all three complete scenes at 4K, 1600 and correctly
+clipped fractional size. The 438-patch RGB MAE falls 2.5621→1.8067, but
+left green rises 5.7417→6.6399 and Vehicles/Locations depth-2 interiors
+worsen. These remain scratch candidates; the production values below
+are unchanged. Preserve nearest-card material while resolving the local
+ground/composition losses. The annotated source #46 is a scaled re-export
+and supplies no independent material view.
+
+The [round-fifty-three coupled fit](../reference-svg-round53.md) uses all
+220 training positions and reduces the 1,149-observation ground mean to
+1.4412, against current 2.5621 and sequential 1.8067. The reused reserved
+controls improve on average but retain local/channel losses. All nine
+complete scenes beat current averages yet lose to the sequential trial.
+Vehicles depth-3 interior error rises 5.33734→7.90625; its depth-2 error
+also rises. Reject a native port of this exact candidate. Neither exposed
+ground nor an aggregate scene score establishes hidden ground or a new
+card material recipe. The production values below remain unchanged.
+Fixed black/white-ground endpoint renders reproduce the Vehicles shift
+through the unchanged SVG overlay within about .4 RGB levels per channel
+on average. This attributes the rendered loss to modeled ground red
+brightening; it does not measure hidden photographic ground or alpha.
+
+The [round-fifty-four donor audit](../reference-svg-round54.md) samples
+original Mail/Store pixels at the frozen Vehicles coordinates after
+8/16/24-design-pixel model-foreground guards. Donor-minus-current mean
+red remains negative at both depths for all guards; DP moves much farther
+from those samples. At guard 16, depth-3 residuals are −6.205/−8.422
+against current, versus −19.952/−19.951 against DP. Source context still
+contains possible shading and unmodeled UI, and the common depth-3 set
+shrinks from 944 pixels at guard 16 to 47 at guard 24. These signs constrain
+another ground proposal without establishing hidden ground or card alpha.
 
 All four use a top rose ellipse centred at (750,-331) with radii
 (1600,929). The first two rose stops are the same color because the

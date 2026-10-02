@@ -143,6 +143,32 @@ src/
   panels/         mail — the interactive counterpart to screens::mail
 ```
 
+## Fonts
+
+The app embeds its font files at compile time through `src/fonts.rs`, so a
+local build needs the staged files in `fonts/`. `shell.nix` stages the same
+font inputs used by `default.nix`; use that shell for a direct Cargo build.
+Kitsch store compliance printing uses `FreeSansBold.ttf` from nixpkgs
+`freefont_ttf` (the tested file's SHA-256 is
+`982534a3731416a15e2756601721f26053f68bf4239011550f3dd23ce6308215`).
+The build copies that file before compiling, so rendering does not depend
+on which FreeSans version the host has installed.
+The three ordinary Kitsch Store second compliance lines use the named
+`CP Eras Kitsch Sans Bold` derivative instead. `scripts/make-kitsch-sans.py`
+rebuilds it deterministically from that same pinned FreeSans file and checks
+its output SHA-256 `14d51cf24626c4c3103843d71d63b7a432cdc9945693397d193eeaf06827550c`.
+The selected card and all other FreeSans text keep the upstream face.
+The Store reference SVG and its component sample use the same derivative.
+The package installs it under `share/fonts/truetype/` for external viewers;
+their Fontconfig setup must include that directory. Repository fidelity
+checks already add the generated `fonts/` directory automatically.
+
+The package also ships upstream FreeFont `COPYING`, `README` and `CREDITS`
+at `share/doc/cp-eras-ui/fonts/freefont/`, alongside `KITSCH-SANS-NOTICE.md`
+for the derivative. Both font files retain the upstream embedded copyright
+and license metadata. These files describe the font
+dependency separately from the crate's application code.
+
 ## The bar
 
 `cp-eras-ui-bar` is a wlr-layer-shell status bar built on

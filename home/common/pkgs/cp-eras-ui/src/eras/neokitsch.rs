@@ -659,6 +659,99 @@ const LOGIN_LOGO: &[Plate] = &[Plate::filled(
     Ink::Fg,
 ).outlined_path((102.5, 63.33), LOGIN_LOGO_PATH)];
 
+// The photographed login badges have an external chamfer and a solid
+// bottom tab. The shared mini-SIM badge adds an internal fold instead.
+const LOGIN_BADGE_A_OUTLINE: &[Seg] = &[
+    Seg::Line(438.0, 466.0),
+    Seg::Quad { cx: 441.0, cy: 466.0, x: 441.0, y: 469.0 },
+    Seg::Line(441.0, 482.5),
+    Seg::Line(433.5, 490.5),
+    Seg::Line(420.0, 490.5),
+    Seg::Quad { cx: 417.0, cy: 490.5, x: 417.0, y: 487.5 },
+    Seg::Line(417.0, 469.0),
+    Seg::Quad { cx: 417.0, cy: 466.0, x: 420.0, y: 466.0 },
+];
+const LOGIN_BADGE_A_TAB: &[Seg] = &[
+    Seg::Line(421.2, 488.0),
+    Seg::Quad { cx: 421.6, cy: 487.5, x: 423.0, y: 487.5 },
+    Seg::Line(429.9, 487.5),
+    Seg::Quad { cx: 431.4, cy: 487.5, x: 431.8, y: 488.0 },
+    Seg::Line(433.5, 490.8),
+];
+// The source A has a narrow apex, slim legs and an open triangular counter.
+// The inner contour winds opposite the outer one so the fill leaves its hole.
+const LOGIN_BADGE_A_GLYPH: &[Seg] = &[
+    Seg::Line(426.6667, 470.0),
+    Seg::Line(427.9167, 468.75),
+    Seg::Line(429.5833, 468.75),
+    Seg::Line(430.8333, 470.0),
+    Seg::Line(437.5, 482.9167),
+    Seg::Line(435.0, 482.9167),
+    Seg::Line(433.3333, 479.5833),
+    Seg::Line(423.75, 479.5833),
+    Seg::Line(422.0833, 482.9167),
+    Seg::Move(425.0, 477.5),
+    Seg::Line(432.0833, 477.5),
+    Seg::Line(429.1667, 471.25),
+    Seg::Line(428.3333, 471.25),
+];
+const LOGIN_BADGE_B_OUTLINE: &[Seg] = &[
+    Seg::Line(858.0, 466.0),
+    Seg::Quad { cx: 861.0, cy: 466.0, x: 861.0, y: 469.0 },
+    Seg::Line(861.0, 482.5),
+    Seg::Line(853.5, 490.5),
+    Seg::Line(840.0, 490.5),
+    Seg::Quad { cx: 837.0, cy: 490.5, x: 837.0, y: 487.5 },
+    Seg::Line(837.0, 469.0),
+    Seg::Quad { cx: 837.0, cy: 466.0, x: 840.0, y: 466.0 },
+];
+const LOGIN_BADGE_B_TAB: &[Seg] = &[
+    Seg::Line(841.2, 488.0),
+    Seg::Quad { cx: 841.6, cy: 487.5, x: 843.0, y: 487.5 },
+    Seg::Line(849.9, 487.5),
+    Seg::Quad { cx: 851.4, cy: 487.5, x: 851.8, y: 488.0 },
+    Seg::Line(853.5, 490.8),
+];
+const LOGIN_BADGE_A_ART: &[Plate] = &[
+    Plate::outlined(Plot::new(416.0, 465.0, 26.0, 26.0), Ink::Fixed(HAIRLINE), 1.4)
+        .outlined_path((420.0, 466.0), LOGIN_BADGE_A_OUTLINE),
+    Plate::filled(Plot::new(416.0, 465.0, 26.0, 26.0), Ink::Fixed(HAIRLINE))
+        .outlined_path((419.4, 490.8), LOGIN_BADGE_A_TAB),
+    Plate::filled(Plot::new(416.0, 465.0, 26.0, 26.0), Ink::Fixed(CAPTION))
+        .outlined_path((420.0, 482.9167), LOGIN_BADGE_A_GLYPH),
+];
+// The source B has a narrow spine and broad, flat counters. Both inner
+// contours wind opposite the outer path to leave their openings clear.
+const LOGIN_BADGE_B_GLYPH: &[Seg] = &[
+    Seg::Line(851.6667, 468.9167),
+    Seg::Quad { cx: 855.4167, cy: 468.9167, x: 855.4167, y: 472.5 },
+    Seg::Quad { cx: 855.4167, cy: 474.5833, x: 852.9167, y: 475.4167 },
+    Seg::Quad { cx: 855.8333, cy: 476.25, x: 855.8333, y: 479.1667 },
+    Seg::Quad { cx: 855.8333, cy: 482.9167, x: 851.6667, y: 482.9167 },
+    Seg::Line(842.5, 482.9167),
+    Seg::Quad { cx: 841.25, cy: 482.9167, x: 841.25, y: 481.6667 },
+    Seg::Line(841.25, 470.0),
+    Seg::Quad { cx: 841.25, cy: 468.9167, x: 842.9167, y: 468.9167 },
+    Seg::Move(844.1667, 470.8333),
+    Seg::Line(844.1667, 474.5833),
+    Seg::Line(852.0833, 474.5833),
+    Seg::Quad { cx: 853.75, cy: 474.5833, x: 853.75, y: 472.5 },
+    Seg::Quad { cx: 853.75, cy: 470.8333, x: 852.0833, y: 470.8333 },
+    Seg::Move(843.9583, 476.4583),
+    Seg::Line(843.9583, 481.0417),
+    Seg::Line(852.5, 481.0417),
+    Seg::Quad { cx: 853.75, cy: 481.0417, x: 853.75, y: 478.75 },
+    Seg::Quad { cx: 853.75, cy: 476.4583, x: 852.5, y: 476.4583 },
+];
+const LOGIN_BADGE_B_ART: &[Plate] = &[
+    Plate::outlined(Plot::new(836.0, 465.0, 26.0, 26.0), Ink::Fixed(HAIRLINE), 1.4)
+        .outlined_path((840.0, 466.0), LOGIN_BADGE_B_OUTLINE),
+    Plate::filled(Plot::new(836.0, 465.0, 26.0, 26.0), Ink::Fixed(HAIRLINE))
+        .outlined_path((839.4, 490.8), LOGIN_BADGE_B_TAB),
+    Plate::filled(Plot::new(836.0, 465.0, 26.0, 26.0), Ink::Fixed(CAPTION))
+        .outlined_path((842.9167, 468.9167), LOGIN_BADGE_B_GLYPH),
+];
+
 pub const ACCESS: Access = Access {
     reference_fg: None,
     reference_backdrop: None,
@@ -745,9 +838,8 @@ pub const ACCESS: Access = Access {
                 Ink::Fixed(HAIRLINE),
                 1.4,
             )),
-            badge_letter: Some(
-                Legend::new("A", 429.0, 483.0, 15.0, Ink::Fixed(CAPTION)).centred(),
-            ),
+            badge_art: LOGIN_BADGE_A_ART,
+            badge_letter: None,
             notes: &[
                 Legend::new(NOTE_1, 454.0, 471.0, 7.0, Ink::Fixed(MICRO)),
                 Legend::new(NOTE_2, 454.0, 479.0, 7.0, Ink::Fixed(MICRO)),
@@ -788,9 +880,8 @@ pub const ACCESS: Access = Access {
                 Ink::Fixed(HAIRLINE),
                 1.4,
             )),
-            badge_letter: Some(
-                Legend::new("B", 849.0, 483.0, 15.0, Ink::Fixed(CAPTION)).centred(),
-            ),
+            badge_art: LOGIN_BADGE_B_ART,
+            badge_letter: None,
             notes: &[
                 Legend::new(NOTE_1, 874.0, 471.0, 7.0, Ink::Fixed(MICRO)),
                 Legend::new(NOTE_2, 874.0, 479.0, 7.0, Ink::Fixed(MICRO)),
@@ -866,99 +957,10 @@ const fn strong(x: f32, y: f32, size: f32, s: &'static str) -> Piece {
     })
 }
 
-// The section-letter plates: a 26x26 rounded plate whose bottom-right
-// corner is *cut*, with the fold line drawn inside it -- the era's
-// mini-SIM motif. `Trim` carries one kind for all four corners, so a
-// plate that rounds three and chamfers the fourth is line art rather
-// than a box.
-static PLATE_A: [(f32, f32); 13] = [
-    (241.0, 98.0),
-    (261.0, 98.0),
-    (263.1, 98.6),
-    (264.0, 101.0),
-    (264.0, 115.0),
-    (257.0, 122.0),
-    (255.4, 123.6),
-    (252.0, 124.0),
-    (241.0, 124.0),
-    (238.9, 123.4),
-    (238.0, 121.0),
-    (238.0, 101.0),
-    (238.6, 98.9),
-];
-static FOLD_A: [(f32, f32); 5] = [
-    (264.0, 115.0),
-    (259.0, 115.0),
-    (257.6, 115.6),
-    (257.0, 117.0),
-    (257.0, 122.0),
-];
-static PLATE_B: [(f32, f32); 13] = [
-    (1014.0, 98.0),
-    (1034.0, 98.0),
-    (1036.1, 98.6),
-    (1037.0, 101.0),
-    (1037.0, 115.0),
-    (1030.0, 122.0),
-    (1028.4, 123.6),
-    (1025.0, 124.0),
-    (1014.0, 124.0),
-    (1011.9, 123.4),
-    (1011.0, 121.0),
-    (1011.0, 101.0),
-    (1011.6, 98.9),
-];
-static FOLD_B: [(f32, f32); 5] = [
-    (1037.0, 115.0),
-    (1032.0, 115.0),
-    (1030.6, 115.6),
-    (1030.0, 117.0),
-    (1030.0, 122.0),
-];
-static PLATE_C: [(f32, f32); 13] = [
-    (142.0, 777.0),
-    (162.0, 777.0),
-    (164.1, 777.6),
-    (165.0, 780.0),
-    (165.0, 794.0),
-    (158.0, 801.0),
-    (156.4, 802.6),
-    (153.0, 803.0),
-    (142.0, 803.0),
-    (139.9, 802.4),
-    (139.0, 800.0),
-    (139.0, 780.0),
-    (139.6, 777.9),
-];
-static FOLD_C: [(f32, f32); 5] = [
-    (165.0, 794.0),
-    (160.0, 794.0),
-    (158.6, 794.6),
-    (158.0, 796.0),
-    (158.0, 801.0),
-];
-static PLATE_D: [(f32, f32); 13] = [
-    (738.0, 777.0),
-    (758.0, 777.0),
-    (760.1, 777.6),
-    (761.0, 780.0),
-    (761.0, 794.0),
-    (754.0, 801.0),
-    (752.4, 802.6),
-    (749.0, 803.0),
-    (738.0, 803.0),
-    (735.9, 802.4),
-    (735.0, 800.0),
-    (735.0, 780.0),
-    (735.6, 777.9),
-];
-static FOLD_D: [(f32, f32); 5] = [
-    (761.0, 794.0),
-    (756.0, 794.0),
-    (754.6, 794.6),
-    (754.0, 796.0),
-    (754.0, 801.0),
-];
+// Source-specific mailbox frames and letters; other screens retain their
+// independently fitted badge artwork.
+#[path = "neokitsch_mailbox_badges.rs"]
+mod mailbox_badges;
 
 /// The in-fiction micro-print. Both header blocks are left-aligned --
 /// the re-cut trace found the right one flush at x 843.3, where an
@@ -971,11 +973,11 @@ const fn micro(x: f32, y: f32, s: &'static str) -> Piece {
     })
 }
 
-const fn letter(x: f32, y: f32, s: &'static str) -> Piece {
-    Piece::Label(Note {
-        at: Run::new(x, y, 19.5, Ink::Fg).bold().centered(),
-        text: s,
-    })
+const fn letter(x: f32, y: f32, s: &'static str, art: &'static [Piece]) -> Piece {
+    Piece::LabelArt {
+        note: Note { at: Run::new(x, y, 19.5, Ink::Fg).bold().centered(), text: s },
+        pieces: art,
+    }
 }
 
 // Header wire geometry measured separately from source #69 and #71 (NK-02).
@@ -1056,70 +1058,22 @@ static CHROME: [Piece; 33] = [
     strong(1424.0, 86.0, 20.0, "T4"),
     text(1295.0, 71.0, 12.0, Ink::Fg, "LEVEL"),
     strong(1296.0, 95.0, 21.0, "T2"),
-    Piece::Poly {
-        points: &PLATE_A,
-        fill: None,
-        stroke: Some(Ink::Dim),
-        width: 1.4,
-        close: true,
-    },
-    Piece::Poly {
-        points: &FOLD_A,
-        fill: None,
-        stroke: Some(Ink::Dim),
-        width: 1.0,
-        close: false,
-    },
-    Piece::Poly {
-        points: &PLATE_B,
-        fill: None,
-        stroke: Some(Ink::Dim),
-        width: 1.4,
-        close: true,
-    },
-    Piece::Poly {
-        points: &FOLD_B,
-        fill: None,
-        stroke: Some(Ink::Dim),
-        width: 1.0,
-        close: false,
-    },
-    letter(249.7, 115.5, "A"),
-    letter(1022.5, 115.5, "B"),
+    mailbox_badges::MAIL_A_FRAME[0],
+    mailbox_badges::MAIL_A_FRAME[1],
+    mailbox_badges::MAIL_B_FRAME[0],
+    mailbox_badges::MAIL_B_FRAME[1],
+    letter(249.7, 115.5, "A", mailbox_badges::MAIL_A_CONTOUR),
+    letter(1022.5, 115.5, "B", mailbox_badges::MAIL_B_CONTOUR),
     micro(278.3, 103.3, "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO."),
     micro(278.3, 110.0, "SERVING CUSTOMERS SINCE 2006."),
     micro(843.3, 103.3, "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO."),
     micro(843.3, 110.0, "SERVING CUSTOMERS SINCE 2006."),
-    Piece::Poly {
-        points: &PLATE_C,
-        fill: None,
-        stroke: Some(Ink::Dim),
-        width: 1.4,
-        close: true,
-    },
-    Piece::Poly {
-        points: &FOLD_C,
-        fill: None,
-        stroke: Some(Ink::Dim),
-        width: 1.0,
-        close: false,
-    },
-    Piece::Poly {
-        points: &PLATE_D,
-        fill: None,
-        stroke: Some(Ink::Dim),
-        width: 1.4,
-        close: true,
-    },
-    Piece::Poly {
-        points: &FOLD_D,
-        fill: None,
-        stroke: Some(Ink::Dim),
-        width: 1.0,
-        close: false,
-    },
-    letter(151.3, 796.0, "C"),
-    letter(750.7, 796.0, "D"),
+    mailbox_badges::MAIL_C_FRAME[0],
+    mailbox_badges::MAIL_C_FRAME[1],
+    mailbox_badges::MAIL_D_FRAME[0],
+    mailbox_badges::MAIL_D_FRAME[1],
+    letter(151.3, 796.0, "C", mailbox_badges::MAIL_C_CONTOUR),
+    letter(750.7, 796.0, "D", mailbox_badges::MAIL_D_CONTOUR),
     micro(183.3, 782.8, "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO."),
     micro(183.3, 789.8, "SERVING CUSTOMERS SINCE 2006."),
     micro(771.7, 782.8, "MAPS ARE PROVIDED BY SEOCHO. SATELITE SERVICES"),
@@ -1334,7 +1288,7 @@ pub fn mailbox() -> Mailbox {
             sender: None,
             // Source body is a light, wide face; the photo's glow is
             // excluded from the font weight fit.
-            body: Run::new(736.0, 333.0, 17.0, Ink::Fg).medium().stretched(1.06),
+            body: Run::new(735.2, 333.0, 17.0, Ink::Fg).medium().stretched(1.054),
             line: 21.5,
             para: 43.0,
             paragraph_baselines: &[],
@@ -1379,6 +1333,7 @@ pub fn mailbox() -> Mailbox {
             stroke: Ink::Fg,
             label: Run::new(0.0, 0.0, 0.0, Ink::Fg),
             label_runs: &[],
+            label_art: &[],
             caption: None,
             caption_text: "",
             labels: &LEVELS,
@@ -1643,37 +1598,8 @@ macro_rules! qr {
 const QR_LIGHT: &[Prim] = qr!(Ink::Fixed(LABEL));
 const QR_DARK: &[Prim] = qr!(Ink::Fixed(ON_GOLD));
 
-/// The boxed section letter: a 26x26 rounded plate with a folded
-/// bottom-right corner -- the era's mini-SIM motif.
-const LETTERBOX: &[Seg] = &[
-    Seg::Line(23.0, 0.0),
-    Seg::Quad { cx: 26.0, cy: 0.0, x: 26.0, y: 3.0 },
-    Seg::Line(26.0, 17.0),
-    Seg::Line(19.0, 24.0),
-    Seg::Quad { cx: 17.0, cy: 26.0, x: 14.0, y: 26.0 },
-    Seg::Line(3.0, 26.0),
-    Seg::Quad { cx: 0.0, cy: 26.0, x: 0.0, y: 23.0 },
-    Seg::Line(0.0, 3.0),
-    Seg::Quad { cx: 0.0, cy: 0.0, x: 3.0, y: 0.0 },
-];
-const LETTERBOX_FOLD: &[Seg] = &[
-    Seg::Line(21.0, 17.0),
-    Seg::Quad { cx: 19.0, cy: 17.0, x: 19.0, y: 19.0 },
-    Seg::Line(19.0, 24.0),
-];
-macro_rules! letterbox {
-    ($x:expr, $y:expr, $letter:expr) => {
-        Prim::At {
-            x: $x,
-            y: $y,
-            prims: &[
-                shut_path(3.0, 0.0, LETTERBOX, Ink::Fixed(STORE_WIRE), 1.4),
-                line_path(26.0, 17.0, LETTERBOX_FOLD, Ink::Fixed(STORE_WIRE), 1.0),
-                Prim::Text { x: 8.0, y: 20.0, size: 17.0, ink: Ink::Fixed(STORE_WIRE), face: Face::Bold, anchor: Anchor::Start, content: $letter },
-            ],
-        }
-    };
-}
+#[path = "neokitsch_store_badges.rs"]
+mod store_badges;
 
 /// One strand of the header wire band: out of the end curl, along the
 /// low run, through an S-bend onto the bridge at y 124.2, and mirrored
@@ -1876,6 +1802,24 @@ const fn store_socket(x: f32, y: f32, ink: Ink, content: &'static str) -> Prim {
     Prim::Text { x, y, size: 13.0, ink, face: Face::Medium, anchor: Anchor::Middle, content }
 }
 
+// Six repeated Store metadata lines share one native word-spacing model.
+// The upper origins follow one copy-level calibration; B keeps its source origin.
+const fn store_metadata(x: f32, y: f32, upper: bool, second: bool, content: &'static str) -> Prim {
+    Prim::TrackedWords {
+        x: if upper { x - 1.0 / 2.4 } else { x },
+        y: if upper && second { y - 0.25 } else { y },
+        size: 5.958333333333333,
+        ink: Ink::Fixed(STORE_MICRO),
+        face: Face::FreeSansBold,
+        anchor: Anchor::Start,
+        tracking: -0.25854214123006725,
+        extra_space: 0.7602336207831586,
+        content,
+    }
+}
+const STORE_METADATA_FIRST: &str = "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.";
+const STORE_METADATA_SECOND: &str = "SERVING CUSTOMERS SINCE 2006.";
+
 const CARD: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: ECHOES },
     shut_path(0.0, 618.0, CARD_EDGE, Ink::Fixed(OUTLINE), 1.3),
@@ -1944,7 +1888,23 @@ const GROWN_TAB: &[Seg] = &[
 const GROWN: &[Prim] = &[
     grown_echo!(1.0, Ink::Fixed(FRAME_ECHO1)),
     grown_echo!(2.0, Ink::Fixed(FRAME_ECHO2)),
-    grown_echo!(3.0, Ink::Fixed(FRAME_ECHO3)),
+    // The source's third flat is lower while its right bend is already aligned.
+    // Preserve that bend; the short tail keeps native coverage at all three sizes.
+    // SVG has a different phase and remains under separate material review.
+    line_path(136.2, 263.3, &[
+        store_shoulder(263.3, 236.6 + 3.2 * 2.0, 2),
+        Seg::Line(store_corner_start(2), 236.6 + 3.2 * 2.0),
+        store_corner_turn(236.6 + 3.2 * 2.0, 2),
+        Seg::Line(store_corner_x(2), 660.0),
+        store_echo_transition(2, true),
+        store_echo_bend(2, true),
+        Seg::Cubic {
+            c1x: 249.9, c1y: store_echo_bottom(2, true),
+            c2x: 248.5, c2y: store_echo_bottom(2, true) + 1.0,
+            x: 247.5, y: store_echo_bottom(2, true) + 1.0,
+        },
+        Seg::Line(16.6 - 2.6 * 2.0, store_echo_bottom(2, true) + 1.0),
+    ], Ink::Fixed(FRAME_ECHO3), 1.0),
     grown_echo!(4.0, Ink::Fixed(FRAME_ECHO4)),
     line_path(136.2, 263.3, &[
         store_shoulder(263.3, 249.4, 4),
@@ -2359,12 +2319,12 @@ const CONTENT: &[Prim] = &[
     strand!(176.4, Ink::Fixed(STRAND)),
     strand!(179.6, Ink::Fixed(STORE_WIRE)),
     strand!(182.8, Ink::Fixed(STORE_WIRE)),
-    letterbox!(360.0, 143.0, "A"),
-    letterbox!(1178.0, 143.0, "C"),
-    txt(401.0, 148.0, 6.5, Ink::Fixed(STORE_MICRO), "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO."),
-    txt(401.0, 155.0, 6.5, Ink::Fixed(STORE_MICRO), "SERVING CUSTOMERS SINCE 2006."),
-    txt(1012.0, 148.0, 6.5, Ink::Fixed(STORE_MICRO), "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO."),
-    txt(1012.0, 155.0, 6.5, Ink::Fixed(STORE_MICRO), "SERVING CUSTOMERS SINCE 2006."),
+    Prim::At { x: 360.0, y: 143.0, prims: &store_badges::STORE_A_BADGE },
+    Prim::At { x: 1178.0, y: 143.0, prims: &store_badges::STORE_C_BADGE },
+    store_metadata(401.0, 148.0, true, false, STORE_METADATA_FIRST),
+    store_metadata(401.0, 155.0, true, true, STORE_METADATA_SECOND),
+    store_metadata(1012.0, 148.0, true, false, STORE_METADATA_FIRST),
+    store_metadata(1012.0, 155.0, true, true, STORE_METADATA_SECOND),
     // nav column
     txt(96.0, 252.0, 11.5, Ink::Fixed(LABEL), "CUSTOMER"),
     txt_end(289.0, 252.0, 11.5, Ink::Fixed(LABEL), "#NC488402"),
@@ -2397,9 +2357,9 @@ const CONTENT: &[Prim] = &[
         prims: SHELF,
     },
     // foot
-    letterbox!(675.0, 775.0, "B"),
-    txt(715.0, 780.5, 6.5, Ink::Fixed(STORE_MICRO), "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO."),
-    txt(715.0, 787.0, 6.5, Ink::Fixed(STORE_MICRO), "SERVING CUSTOMERS SINCE 2006."),
+    Prim::At { x: 675.0, y: 775.0, prims: &store_badges::STORE_B_BADGE },
+    store_metadata(715.0, 780.5, false, false, STORE_METADATA_FIRST),
+    store_metadata(715.0, 787.0, false, true, STORE_METADATA_SECOND),
 ];
 // --- end store -----------------------------------------------------------
 // --- dashboard -----------------------------------------------------------
@@ -2416,11 +2376,10 @@ const CONTENT: &[Prim] = &[
 //   * the halo (:269, `<use href="#content" filter="url(#halo)"
 //     class="photo">`): the photograph's glow, hidden by G2i and never
 //     drawn by any screen here (docs/PIPELINE.md).
-//   * `letter-spacing` on every text (1.5 on the header, 2 on LEVEL,
-//     0.4 on the annotations): not yet transcribed. `Prim::Tracked`
-//     exists since 2026-09-04 (kitsch's blades, neomil's module labels
-//     use it); this block and the store still set plain `Prim::Text`,
-//     and only `S T O R E` earned `Spaced`.
+//   * some `letter-spacing` on text (2 on LEVEL, 0.4 on annotations)
+//     remains approximate. Corrected labels use `Prim::Tracked`; the
+//     Store metadata uses `TrackedWords` for its additional word spacing,
+//     while `S T O R E` uses `Spaced`.
 //   * stroke opacity. The onion rings are one hex (`#bd8951` on the
 //     cards and panel, `#a97c48` on the T2 badge) at a per-ring
 //     `stroke-opacity`, and iced's canvas stroke has none, so each ring
@@ -2868,22 +2827,8 @@ const MAIL_HEADER_GROUND: &[Prim] = &[
 ];
 const MAIL_HEADER_BACKDROP: &[Prim] = &[Prim::Soft { prims: MAIL_HEADER_GROUND }];
 
-/// A boxed section letter on this screen (:325-352): the store's
-/// `LETTERBOX` silhouette in `HUB_MID`, the 15px letter in `CAPTION`
-/// centred on the plate at (+12, +19).
-macro_rules! hub_box {
-    ($x:expr, $y:expr, $letter:expr) => {
-        Prim::At {
-            x: $x,
-            y: $y,
-            prims: &[
-                shut_path(3.0, 0.0, LETTERBOX, Ink::Fixed(HUB_MID), 1.4),
-                line_path(26.0, 17.0, LETTERBOX_FOLD, Ink::Fixed(HUB_MID), 1.0),
-                txt_mid(12.0, 19.0, 15.0, Ink::Fixed(CAPTION), $letter),
-            ],
-        }
-    };
-}
+#[path = "neokitsch_dashboard_badges.rs"]
+mod dashboard_badges;
 
 /// The six cascade cards, their labels and captions (:356-432): its own
 /// table because `DASHBOARD` wipes it on under `#cards-open`.
@@ -2998,21 +2943,22 @@ pub const DASHBOARD: &[Prim] = &[
     Prim::Wide { x: 1356.8, y: 90.9, size: 20.0, stretch: 1.45, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T3" },
     Prim::Wide { x: 1417.75, y: 91.8, size: 20.0, stretch: 1.45, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T4" },
     Prim::At { x: 0.0, y: 0.0, prims: T2_BADGE },
-    // boxed letters (:325-352): A/B mask the strands with an r3 interior
+    // Source-fitted section badges. A/B retain their existing wire masks;
+    // backing color/profile and photographic softness remain separate work.
     Prim::Round { x: 238.0, y: 98.0, w: 26.0, h: 26.0, r: 3.0, fill: Some(Ink::Fixed(BOX_FILL)), stroke: None, width: 0.0 },
     Prim::Round { x: 1011.0, y: 98.0, w: 26.0, h: 26.0, r: 3.0, fill: Some(Ink::Fixed(BOX_FILL)), stroke: None, width: 0.0 },
-    hub_box!(238.0, 98.0, "A"),
-    hub_box!(1011.0, 98.0, "B"),
-    hub_box!(585.0, 799.0, "C"),
-    hub_box!(1172.0, 799.0, "D"),
+    Prim::At { x: 0.0, y: 0.0, prims: dashboard_badges::DASH_HEADER_A },
+    Prim::At { x: 0.0, y: 0.0, prims: dashboard_badges::DASH_HEADER_B },
+    Prim::At { x: 574.58333, y: 821.66667, prims: dashboard_badges::HUB_FOOT_C_ART },
+    Prim::At { x: 1170.41667, y: 821.66667, prims: dashboard_badges::HUB_FOOT_D_ART },
     txt(288.0, 106.0, 8.0, Ink::Fixed(MICRO), "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO."),
     txt(288.0, 116.0, 8.0, Ink::Fixed(MICRO), "SERVING CUSTOMERS SINCE 2006."),
     txt_end(1000.0, 106.0, 8.0, Ink::Fixed(MICRO), "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO."),
     txt_end(1000.0, 116.0, 8.0, Ink::Fixed(MICRO), "SERVING CUSTOMERS SINCE 2006."),
-    txt(620.0, 826.0, 8.0, Ink::Fixed(MICRO), "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO."),
-    txt(620.0, 837.0, 8.0, Ink::Fixed(MICRO), "SERVING CUSTOMERS SINCE 2006."),
-    txt(1208.0, 826.0, 8.0, Ink::Fixed(MICRO), "MAPS ARE PROVIDED BY SEOCHO. SATELITE SERVICES"),
-    txt(1208.0, 837.0, 8.0, Ink::Fixed(MICRO), "SINCE 2006."),
+    txt(618.0, 827.6, 7.5, Ink::Fixed(MICRO), "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO."),
+    txt(618.0, 834.0, 7.5, Ink::Fixed(MICRO), "SERVING CUSTOMERS SINCE 2006."),
+    txt(1205.5, 827.6, 7.5, Ink::Fixed(MICRO), "MAPS ARE PROVIDED BY SEOCHO. SATELITE SERVICES"),
+    txt(1205.5, 834.0, 7.5, Ink::Fixed(MICRO), "SINCE 2006."),
     // the six cascade cards, wiped on from the left at boot: `#cards-open`
     // (:256-262) grows the block's clip from no width to 760 over 0.5 s
     // from 0, `keySplines="0.33 1 0.68 1"` = EaseOutCubic, and freezes;

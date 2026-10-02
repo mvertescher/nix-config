@@ -51,11 +51,70 @@ const BASELINE: f32 = 0.84;
 /// `BASELINE` the neomil `next` sat 6px under the trace's, at this it
 /// lands on it.
 const ORBITRON_BASELINE: f32 = 0.984;
+// FreeSans Bold hhea ascender 900, descender -200, units/em 1000.
+// The canvas's centred 1.2 line gives 0.6 + (0.9 - 0.2)/2.
+const FREE_SANS_BASELINE: f32 = 0.95;
+
+/// Only marked `ReusableWide` runs use this small, one-draw cache. Keeping
+/// paths for just this draw avoids making assumptions about font registration.
+const OUTLINE_CACHE_LIMIT: usize = 4;
+const OUTLINE_CONTENT_LIMIT: usize = 64;
+const OUTLINE_SENTINEL: Color = Color {
+    r: 0.123456,
+    g: 0.234567,
+    b: 0.345678,
+    a: 0.456789,
+};
+
+struct OutlineEntry {
+    content: &'static str,
+    font: iced::Font,
+    size_bits: u32,
+    /// None records a raster fallback so it is not extracted again this draw.
+    paths: Option<Vec<canvas::Path>>,
+}
+
+#[derive(Default)]
+struct OutlineCache {
+    entries: Vec<OutlineEntry>,
+}
+
+impl OutlineCache {
+    fn paths(&mut self, content: &'static str, font: iced::Font, size: f32, text: &canvas::Text) -> Option<&[canvas::Path]> {
+        if content.is_empty() || content.len() > OUTLINE_CONTENT_LIMIT
+            || !size.is_finite() || size <= 0.0 || size > 256.0
+        {
+            return None;
+        }
+        let size_bits = size.to_bits();
+        if let Some(index) = self.entries.iter().position(|entry|
+            entry.content == content && entry.font == font && entry.size_bits == size_bits
+        ) {
+            return self.entries[index].paths.as_deref();
+        }
+
+        let mut paths = Vec::new();
+        let mut outlines_only = true;
+        text.draw_with(|path, color| {
+            if color != OUTLINE_SENTINEL {
+                outlines_only = false;
+            }
+            paths.push(path);
+        });
+        let paths = if outlines_only && !paths.is_empty() { Some(paths) } else { None };
+        if self.entries.len() == OUTLINE_CACHE_LIMIT {
+            self.entries.remove(0);
+        }
+        self.entries.push(OutlineEntry { content, font, size_bits, paths });
+        self.entries.last().and_then(|entry| entry.paths.as_deref())
+    }
+}
 
 /// The baseline fraction of a face.
 fn baseline(face: Face) -> f32 {
     match face {
         Face::OrbitronBold => ORBITRON_BASELINE,
+        Face::FreeSansBold | Face::CpErasKitschSansBold => FREE_SANS_BASELINE,
         _ => BASELINE,
     }
 }
@@ -828,6 +887,8 @@ impl<M> Scene<M> {
             Face::SemiBold => crate::fonts::FONT_RAJDHANI_SEMIBOLD,
             Face::Bold => crate::fonts::FONT_RAJDHANI_BOLD,
             Face::OrbitronBold => crate::fonts::FONT_ORBITRON_BOLD,
+            Face::FreeSansBold => crate::fonts::FONT_FREE_SANS_BOLD,
+            Face::CpErasKitschSansBold => crate::fonts::FONT_CP_ERAS_KITSCH_SANS_BOLD,
         }
     }
 
@@ -846,6 +907,7 @@ impl<M> Scene<M> {
     fn paint(
         &self,
         frame: &mut canvas::Frame,
+        outlines: &mut OutlineCache,
         prims: &[Prim],
         ox: f32,
         oy: f32,
@@ -911,7 +973,8 @@ impl<M> Scene<M> {
                         .with_width(width * k);
                     text.draw_with(|path, _| frame.stroke(&path, stroke));
                 }
-                Prim::Wide { x, y, size, stretch, ink, face, anchor, content } => {
+                Prim::Wide { x, y, size, stretch, ink, face, anchor, content }
+                | Prim::ReusableWide { x, y, size, stretch, ink, face, anchor, content } => {
                     // A non-uniform transform makes iced convert the run
                     // to filled glyph outlines, which is exactly what
                     // `lengthAdjust="spacingAndGlyphs"` asks for. The
@@ -923,10 +986,20 @@ impl<M> Scene<M> {
                     let run = run_width(content, size, font) * stretch;
                     let px = anchored((ox + x) * k, anchor, run);
                     let py = (oy + y) * k - size * baseline(face);
+                    let reusable = matches!(prim, Prim::ReusableWide { .. })
+                        && anchor == Anchor::Start
+                        && face == Face::Bold
+                        && !content.is_empty()
+                        && content.len() <= OUTLINE_CONTENT_LIMIT
+                        && size.is_finite() && size > 0.0 && size <= 256.0
+                        && stretch.is_finite() && stretch > 0.0 && stretch <= 16.0
+                        // The wgpu canvas sends uniform transforms through
+                        // its cached raster text path, not glyph outlines.
+                        && stretch != 1.0;
                     frame.with_save(|f| {
                         f.translate(iced::Vector::new(px, py));
                         f.scale_nonuniform(iced::Vector::new(stretch, 1.0));
-                        f.fill_text(canvas::Text {
+                        let text = canvas::Text {
                             content: content.to_string(),
                             position: Point::ORIGIN,
                             color,
@@ -935,7 +1008,19 @@ impl<M> Scene<M> {
                             align_x: iced::advanced::text::Alignment::Left,
                             align_y: iced::alignment::Vertical::Top,
                             ..Default::default()
-                        });
+                        };
+                        if reusable {
+                            let probe = canvas::Text { color: OUTLINE_SENTINEL, ..text.clone() };
+                            if let Some(paths) = outlines.paths(content, font, size, &probe) {
+                                for path in paths {
+                                    f.fill(path, color);
+                                }
+                            } else {
+                                f.fill_text(text);
+                            }
+                        } else {
+                            f.fill_text(text);
+                        }
                     });
                 }
                 Prim::Tracked { x, y, size, ink, face, anchor, tracking, content } => {
@@ -958,6 +1043,20 @@ impl<M> Scene<M> {
                             alpha,
                         );
                         gx += advance + tracking;
+                    }
+                }
+                Prim::TrackedWords { x, y, size, ink, face, anchor, tracking, extra_space, content } => {
+                    // Measure the intact line once at the current scale, then use
+                    // the same Tracked painter as every other letter-spaced run.
+                    for (word, offset_px) in tracked_word_layout(
+                        content, size * k, Self::font(face), tracking * k,
+                        extra_space * k, anchor,
+                    ) {
+                        let run = [Prim::Tracked {
+                            x: x + offset_px / k, y, size, ink, face,
+                            anchor: Anchor::Start, tracking, content: word,
+                        }];
+                        self.paint(frame, outlines, &run, ox, oy, k, alpha, interaction, clip);
                     }
                 }
                 Prim::Spaced { x, y, size, ink, face, pitch, content } => {
@@ -1061,19 +1160,19 @@ impl<M> Scene<M> {
                 }
                 Prim::Plate { group, index, on, off, .. } => {
                     let prims = self.plate_prims(group, index, interaction, on, off);
-                    self.paint(frame, prims, ox, oy, k, alpha, interaction, clip);
+                    self.paint(frame, outlines, prims, ox, oy, k, alpha, interaction, clip);
                 }
                 Prim::Pick { group, index, on, off } => {
                     let prims = if self.picked.get(group) == index { on } else { off };
-                    self.paint(frame, prims, ox, oy, k, alpha, interaction, clip);
+                    self.paint(frame, outlines, prims, ox, oy, k, alpha, interaction, clip);
                 }
                 Prim::Viewport { x, y, w, h, prims } => {
                     let region = Rectangle { x: (ox + x) * k, y: (oy + y) * k, width: w * k, height: h * k };
                     if let Some(region) = clip_region(clip, region) {
-                        frame.with_clip(region, |f| self.paint(f, prims, ox, oy, k, alpha, interaction, Some(region)));
+                        frame.with_clip(region, |f| self.paint(f, outlines, prims, ox, oy, k, alpha, interaction, Some(region)));
                     }
                 }
-                Prim::At { x, y, prims } => self.paint(frame, prims, ox + x, oy + y, k, alpha, interaction, clip),
+                Prim::At { x, y, prims } => self.paint(frame, outlines, prims, ox + x, oy + y, k, alpha, interaction, clip),
                 Prim::Motion { motion, prims } => {
                     let t = motion::progress(&motion, self.at);
                     match motion.change {
@@ -1103,7 +1202,7 @@ impl<M> Scene<M> {
                                 height: Change::lerp(h, t) * k,
                             };
                             if let Some(region) = clip_region(clip, region) {
-                                frame.with_clip(region, |f| self.paint(f, prims, ox, oy, k, alpha, interaction, Some(region)));
+                                frame.with_clip(region, |f| self.paint(f, outlines, prims, ox, oy, k, alpha, interaction, Some(region)));
                             }
                         }
                         Change::Opacity { alpha: fade } => {
@@ -1118,7 +1217,7 @@ impl<M> Scene<M> {
                             // rest. Nothing is painted at 0.
                             let a = alpha * Change::lerp(fade, t);
                             if a > 0.0 {
-                                self.paint(frame, prims, ox, oy, k, a, interaction, clip);
+                                self.paint(frame, outlines, prims, ox, oy, k, a, interaction, clip);
                             }
                         }
                     }
@@ -1134,7 +1233,7 @@ impl<M> Scene<M> {
                     frame.with_save(|f| {
                         f.translate(iced::Vector::new((ox + x) * k, (oy + y) * k));
                         f.rotate(iced::Radians(angle.to_radians()));
-                        self.paint(f, prims, 0.0, 0.0, k, alpha, interaction, clip);
+                        self.paint(f, outlines, prims, 0.0, 0.0, k, alpha, interaction, clip);
                     });
                 }
                 // Painted by the `Backdrop` canvas underneath; see
@@ -1197,7 +1296,13 @@ impl<M> Scene<M> {
         anchor: Anchor,
         alpha: f32,
     ) {
-        frame.fill_text(Self::text(content, x, baseline, size, self.ink(ink, alpha), face, anchor));
+        let mut text = Self::text(content, x, baseline, size, self.ink(ink, alpha), face, anchor);
+        if matches!(face, Face::FreeSansBold | Face::CpErasKitschSansBold) {
+            // cryoglyph rounds line_y and truncates text.position.y separately.
+            // Round both terms so their sum lands on the requested baseline.
+            text.position.y = baseline.round() - (size * self::baseline(face)).round();
+        }
+        frame.fill_text(text);
     }
 
     /// A run on its SVG baseline, as the canvas lays it out: what
@@ -1253,7 +1358,48 @@ pub(crate) fn advances(content: &str, size: f32, font: iced::Font) -> Vec<f32> {
     out
 }
 
-fn run_width(content: &str, size: f32, font: iced::Font) -> f32 {
+/// Word origins in output pixels relative to the anchored x coordinate.
+/// Splitting on literal U+0020 retains empty words and therefore the exact
+/// advance of leading, repeated, and trailing spaces. Empty words draw nothing.
+fn tracked_word_layout(
+    content: &'static str,
+    size: f32,
+    font: iced::Font,
+    tracking: f32,
+    extra_space: f32,
+    anchor: Anchor,
+) -> Vec<(&'static str, f32)> {
+    let shaped = advances(content, size, font);
+    let spaces = content.chars().filter(|&c| c == ' ').count();
+    let total = shaped.iter().sum::<f32>()
+        + tracking * shaped.len().saturating_sub(1) as f32
+        + extra_space * spaces as f32;
+    let start = anchored(0.0, anchor, total);
+    let mut character = 0usize;
+    let mut pen_px = 0.0f32;
+    let mut words = Vec::new();
+    let mut parts = content.split(' ').peekable();
+    while let Some(word) = parts.next() {
+        if !word.is_empty() {
+            words.push((word, start + pen_px));
+        }
+        for _ in word.chars() {
+            pen_px += shaped[character] + tracking;
+            character += 1;
+        }
+        if parts.peek().is_some() {
+            pen_px += shaped[character] + tracking + extra_space;
+            character += 1;
+        }
+    }
+    debug_assert_eq!(character, shaped.len());
+    words
+}
+
+pub(crate) fn run_width(content: &str, size: f32, font: iced::Font) -> f32 {
+    #[cfg(test)]
+    crate::fonts::ensure_test_fonts();
+
     use iced::advanced::text::Paragraph as _;
 
     iced::advanced::graphics::text::Paragraph::with_text(iced::advanced::text::Text {
@@ -1516,7 +1662,8 @@ impl<M> canvas::Program<M, Style> for Scene<M> {
                 at: self.at,
                 on_select: self.on_select,
             };
-            scene.paint(&mut frame, self.prims, 0.0, 0.0, k, 1.0, state.interaction(self.prims), None);
+            let mut outlines = OutlineCache::default();
+            scene.paint(&mut frame, &mut outlines, self.prims, 0.0, 0.0, k, 1.0, state.interaction(self.prims), None);
         }
         vec![frame.into_geometry()]
     }
@@ -1524,6 +1671,42 @@ impl<M> canvas::Program<M, Style> for Scene<M> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn outline_probe_color_cannot_survive_raster_quantization() {
+        let [r, g, b, a] = OUTLINE_SENTINEL.into_rgba8();
+        let raster_color = Color::from_rgba8(r, g, b, a as f32 / 255.0);
+        assert_ne!(raster_color, OUTLINE_SENTINEL);
+    }
+
+    #[test]
+    fn repeated_title_outlines_match_fresh_glyphs_at_each_size() {
+        crate::fonts::ensure_test_fonts();
+        let font = crate::fonts::FONT_RAJDHANI_BOLD;
+        let mut cache = OutlineCache::default();
+        for size in [22.5, 54.0, 22.5] {
+            let text = canvas::Text {
+                content: "MAGNUM 650".into(),
+                color: OUTLINE_SENTINEL,
+                size: size.into(),
+                font,
+                align_x: iced::advanced::text::Alignment::Left,
+                ..Default::default()
+            };
+            let mut fresh = Vec::new();
+            text.draw_with(|path, color| {
+                assert_eq!(color, OUTLINE_SENTINEL);
+                fresh.push(path.raw().iter().collect::<Vec<_>>());
+            });
+            assert!(!fresh.is_empty(), "the bundled font must yield outlines");
+            let cached = cache.paths("MAGNUM 650", font, size, &text).unwrap();
+            let reused = cached.as_ptr();
+            assert_eq!(cached.iter().map(|p| p.raw().iter().collect::<Vec<_>>())
+                .collect::<Vec<_>>(), fresh);
+            assert_eq!(cache.paths("MAGNUM 650", font, size, &text).unwrap().as_ptr(), reused);
+        }
+        assert_eq!(cache.entries.len(), 2);
+    }
+
     fn material_scenes(style: Style) -> Vec<(&'static [Prim], &'static str)> {
         let mut scenes = vec![
             (style.dashboard, "dashboard"), (style.store, "store"),
@@ -1860,6 +2043,59 @@ mod tests {
 
     fn move_pointer() -> iced::Event {
         iced::Event::Mouse(mouse::Event::CursorMoved { position: Point::ORIGIN })
+    }
+
+    #[test]
+    fn kitsch_all_six_blades_keep_selection_through_hover_press_release_and_cancel() {
+        let style = crate::style::Era::Kitsch.style();
+        for index in 0..6 {
+            let target = Some((Group::Module, index));
+            let (on, off) = style.dashboard.iter().find_map(|p| match p {
+                Prim::Plate { group: Group::Module, index: i, on, off, .. } if *i == index => Some((*on, *off)),
+                _ => None,
+            }).expect("blade plate");
+            let mut scene: Scene<()> = Scene {
+                style, prims: style.dashboard,
+                picked: Picked { module: (index + 1) % 6, ..Picked::default() },
+                cursor_group: None, states: style.dashboard_states,
+                at: motion::REST, on_select: |_, _| (),
+            };
+            let state = style.dashboard_states[index];
+            let mut pointer = Pointer::default();
+            pointer.sync(scene.prims);
+            let draw = |scene: &Scene<()>, p: &Pointer| {
+                scene.plate_prims(Group::Module, index, p.interaction(scene.prims), on, off)
+            };
+            assert_eq!(draw(&scene, &pointer), off);
+            pointer.event(&move_pointer(), target);
+            assert_eq!(draw(&scene, &pointer), state.hover);
+            let (_, feedback) = pointer.feedback_event(scene.prims, &press(), target);
+            assert_eq!(feedback.unwrap().held, target);
+            assert_eq!(draw(&scene, &pointer), state.pressed);
+            pointer.event(&move_pointer(), None);
+            assert_eq!(pointer.event(&release(), None), PointerAction::Capture);
+            assert_eq!(draw(&scene, &pointer), off);
+            assert_eq!(scene.picked.module, (index + 1) % 6);
+            pointer.event(&move_pointer(), target);
+            pointer.event(&press(), target);
+            let (action, feedback) = pointer.feedback_event(scene.prims, &release(), target);
+            assert_eq!(action, PointerAction::Activate(target.unwrap()));
+            assert_eq!(feedback.unwrap().activated, target);
+            scene.picked.module = index;
+            assert_eq!(draw(&scene, &pointer), on);
+            pointer.event(&press(), target);
+            assert_eq!(draw(&scene, &pointer), state.selected_pressed.unwrap_or(state.pressed));
+            pointer.event(&release(), target);
+            pointer.event(&move_pointer(), None);
+            assert_eq!(draw(&scene, &pointer), on);
+            // A press cancelled outside the target cannot alter selection.
+            pointer.event(&move_pointer(), target);
+            pointer.event(&press(), target);
+            pointer.event(&move_pointer(), None);
+            assert_eq!(pointer.event(&release(), None), PointerAction::Capture);
+            assert_eq!(scene.picked.module, index);
+            assert_eq!(draw(&scene, &pointer), on);
+        }
     }
 
     #[test]
@@ -2510,6 +2746,36 @@ mod tests {
         // advance centres a narrower run about the same point.
         let plain = anchored(cx, Anchor::Middle, advance);
         assert!(plain > start && (plain + advance) < start + run);
+    }
+
+    #[test]
+    fn tracked_words_preserve_literal_space_advance_and_whole_line_anchor() {
+        crate::fonts::ensure_test_fonts();
+        let font = crate::fonts::FONT_FREE_SANS_BOLD;
+        let (size, tracking, extra) = (12.0, -0.2, 0.7);
+        let single = tracked_word_layout("A B", size, font, tracking, extra, Anchor::Start);
+        let doubled = tracked_word_layout("A  B", size, font, tracking, extra, Anchor::Start);
+        assert_eq!(doubled.iter().map(|(word, _)| *word).collect::<Vec<_>>(), ["A", "B"]);
+        assert_eq!(single.len(), 2);
+        // The empty word draws nothing, but its literal second space still
+        // advances the following painted word by one shaped space plus the
+        // same tracking and extra-space terms as every other boundary.
+        let second_space = advances("A  B", size, font)[2];
+        assert!(((doubled[1].1 - single[1].1) -
+            (second_space + tracking + extra)).abs() < 0.01);
+        let middle = tracked_word_layout("A  B", size, font, tracking, extra, Anchor::Middle);
+        let ended = tracked_word_layout("A  B", size, font, tracking, extra, Anchor::End);
+        let expected_width = advances("A  B", size, font).iter().sum::<f32>()
+            + tracking * 3.0 + extra * 2.0;
+        for ((start, mid), end) in doubled.iter().zip(middle.iter()).zip(ended.iter()) {
+            assert_eq!(start.0, end.0);
+            assert!((mid.1 - start.1 + expected_width / 2.0).abs() < 0.01);
+            assert!((end.1 - start.1 + expected_width).abs() < 0.01);
+        }
+        let leading = tracked_word_layout(" A", size, font, tracking, extra, Anchor::Start);
+        assert_eq!(leading.len(), 1);
+        assert_eq!(leading[0].0, "A");
+        assert!(leading[0].1 > 0.0);
     }
 
     /// A tall plate standing 60 right of a `Turn` pivot, turned +30: its

@@ -99,6 +99,11 @@ futures-lite = "2"
 png = "0.17"
 resvg = { version = "0.46", default-features = false }
 
+[patch.crates-io]
+# Keep later canvas meshes intact when a fractional clip snaps empty.
+# Provenance and removal condition: vendor/iced_wgpu/PATCHES.md.
+iced_wgpu = { path = "vendor/iced_wgpu" }
+
 [[bin]]
 name = "cp-eras-ui-bar"
 path = "examples/cp-eras-ui-bar.rs"
