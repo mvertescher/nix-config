@@ -2,8 +2,9 @@
 # can provision a machine booted from it with zero console interaction.
 #
 # Build:  nix build .#installer-iso
-# Used by scripts/provision-server.sh, which uploads it to Vultr once and
-# attaches it to instances via the API.
+# Used by a wrapper flake's provisioning tool (nix-config-private's
+# ./provision), which builds it, has Vultr fetch it over plain HTTP once,
+# and boots new or reinstalled instances from it via the API.
 
 { modulesPath, ... }:
 

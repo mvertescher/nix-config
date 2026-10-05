@@ -48,7 +48,7 @@
 # bumps.
 #
 # The ISO is **not** uploaded as an artefact. It has no consumer there:
-# a wrapper's provision-server.sh builds the image itself and serves it
+# a wrapper's provisioning tool builds the image itself and serves it
 # over plain HTTP from a throwaway box, because Vultr silently refuses to
 # fetch an ISO from a GitHub URL. Uploading 1.38 GiB per run to be
 # downloaded by nobody is pure cost. This job answers "does it still

@@ -101,7 +101,7 @@
       };
 
       # Installer ISO with SSH keys baked in, for unattended provisioning
-      # via scripts/provision-server.sh. Plain nixpkgs, no overlays needed.
+      # by a wrapper's provisioning tool. Plain nixpkgs, no overlays needed.
       packages.${system}.installer-iso =
         (nixpkgs.lib.nixosSystem {
           inherit system;

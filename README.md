@@ -82,7 +82,7 @@ Notes:
   module's plain definition overrides without `mkForce`.
 - **Host layout convention**: keep each host under
   `hosts/<name>/` with its `hardware-configuration.nix` — that's where
-  `scripts/provision-server.sh` writes the generated one.
+  a wrapper's provisioning tool writes the generated one.
 - Shared modules are importable from the wrapper by path, e.g.
   `public/system/wm/hyprland.nix` or `public/home/common/cli`, from a
   host's own modules.
