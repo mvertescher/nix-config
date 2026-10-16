@@ -211,28 +211,41 @@ mod tests {
     }
 }
 
-const ORDINARY1: &[Prim] = &[fill_path(0.0, 151.0, FRAME_STD, alpha(rgb(0xff3c3e), 0.040)),
+include!("store_frame_echo.rs");
+
+const ORDINARY1: &[Prim] = &[fill_path(3.0, 154.5, FRAME_C1, alpha(rgb(0xff3c3e), 0.040)),
+    Prim::At { x: 0.0, y: 0.0, prims: FRAME_ECHO_FAR_C1 },
+    Prim::At { x: 0.0, y: 0.0, prims: FRAME_ECHO_NEAR_C1 },
     Prim::At { x: 0.0, y: 0.0, prims: store_echo::IDLE_LEFT1 }];
 
-const ORDINARY3: &[Prim] = &[fill_path(0.0, 151.0, FRAME_STD, alpha(rgb(0xff312f), 0.043)),
+const ORDINARY2: &[Prim] = &[fill_path(3.0, 154.5, FRAME_C1, alpha(rgb(0xff3c3e), 0.040)),
+    Prim::At { x: 0.0, y: 0.0, prims: FRAME_ECHO_FAR_C2 },
+    Prim::At { x: 0.0, y: 0.0, prims: FRAME_ECHO_NEAR_C2 },
+    Prim::At { x: 0.0, y: 0.0, prims: store_echo::IDLE_LEFT1 }];
+
+const ORDINARY3: &[Prim] = &[fill_path(1.1, 154.5, FRAME_C3, alpha(rgb(0xff312f), 0.043)),
+    Prim::At { x: 0.0, y: 0.0, prims: FRAME_ECHO_FAR_C3 },
+    Prim::At { x: 0.0, y: 0.0, prims: FRAME_ECHO_NEAR_C3 },
     Prim::At { x: 0.0, y: 0.0, prims: store_echo::IDLE_RIGHT3 }];
 
-const ORDINARY4: &[Prim] = &[fill_rect(0.0, 151.0, 132.0, 462.0, alpha(rgb(0xff312e), 0.041)),
+const ORDINARY4: &[Prim] = &[fill_rect(0.4, 154.5, 132.9, 457.4, alpha(rgb(0xff312e), 0.041)),
+    Prim::At { x: 0.0, y: 0.0, prims: FRAME_ECHO_FAR_C4 },
+    Prim::At { x: 0.0, y: 0.0, prims: FRAME_ECHO_NEAR_C4 },
     Prim::At { x: 0.0, y: 0.0, prims: store_echo::IDLE_RIGHT4 }];
 
-const CUT_MASK: &[Prim] = &[fill_rect(0.0, 151.0, 132.0, 646.1, WHITE)];
+const CUT_MASK: &[Prim] = &[fill_rect(0.0, 151.0, 133.3, 646.1, WHITE)];
 
 const GROWN_WITH_ECHO: &[Prim] = &[Prim::At { x: 0.0, y: 0.0, prims: GROWN_SURFACE },
     Prim::At { x: 0.0, y: 0.0, prims: store_echo::IDLE_DOWN }];
 const GROWN_CUT: &[Prim] = &[Prim::Masked { prims: GROWN_WITH_ECHO, mask: CUT_MASK }];
 
-const CARDS0: &[Prim] = &[Prim::At { x: 437.0, y: 0.0, prims: GROWN_WITH_ECHO },Prim::At { x: 769.0, y: 0.0, prims: ORDINARY1 },Prim::At { x: 1096.0, y: 0.0, prims: ORDINARY3 },Prim::At { x: 1425.0, y: 0.0, prims: ORDINARY4 }];
+const CARDS0: &[Prim] = &[Prim::At { x: 437.0, y: 0.0, prims: GROWN_WITH_ECHO },Prim::At { x: 769.0, y: 0.0, prims: ORDINARY2 },Prim::At { x: 1096.0, y: 0.0, prims: ORDINARY3 },Prim::At { x: 1425.0, y: 0.0, prims: ORDINARY4 }];
 
 const CARDS1: &[Prim] = &[Prim::At { x: 437.0, y: 0.0, prims: ORDINARY1 },Prim::At { x: 769.0, y: 0.0, prims: GROWN_WITH_ECHO },Prim::At { x: 1096.0, y: 0.0, prims: ORDINARY3 },Prim::At { x: 1425.0, y: 0.0, prims: ORDINARY4 }];
 
-const CARDS2: &[Prim] = &[Prim::At { x: 437.0, y: 0.0, prims: ORDINARY1 },Prim::At { x: 769.0, y: 0.0, prims: ORDINARY1 },Prim::At { x: 1096.0, y: 0.0, prims: GROWN_WITH_ECHO },Prim::At { x: 1425.0, y: 0.0, prims: ORDINARY4 }];
+const CARDS2: &[Prim] = &[Prim::At { x: 437.0, y: 0.0, prims: ORDINARY1 },Prim::At { x: 769.0, y: 0.0, prims: ORDINARY2 },Prim::At { x: 1096.0, y: 0.0, prims: GROWN_WITH_ECHO },Prim::At { x: 1425.0, y: 0.0, prims: ORDINARY4 }];
 
-const CARDS3: &[Prim] = &[Prim::At { x: 437.0, y: 0.0, prims: ORDINARY1 },Prim::At { x: 769.0, y: 0.0, prims: ORDINARY1 },Prim::At { x: 1096.0, y: 0.0, prims: ORDINARY3 },Prim::At { x: 1425.0, y: 0.0, prims: GROWN_CUT }];
+const CARDS3: &[Prim] = &[Prim::At { x: 437.0, y: 0.0, prims: ORDINARY1 },Prim::At { x: 769.0, y: 0.0, prims: ORDINARY2 },Prim::At { x: 1096.0, y: 0.0, prims: ORDINARY3 },Prim::At { x: 1425.0, y: 0.0, prims: GROWN_CUT }];
 
 const OFF_MASK0: &[Prim] = &[fill_path(0.0, 0.0, NAV62, WHITE)];
 

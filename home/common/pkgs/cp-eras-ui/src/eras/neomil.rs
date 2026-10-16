@@ -1590,6 +1590,17 @@ const CARD_EDGE_PRINT: &[Prim] = &[
     Prim::Turn { x: 262.5, y: 183.0, angle: 90.0, prims: PETROCHEM_PRINT },
     Prim::Turn { x: 272.0, y: 182.5, angle: 90.0, prims: BETTERLIFE_PRINT },
 ];
+// Ordinary PETROCHEM uses the measured box position; its +0.39 text x compensates
+// Rajdhani outline baseline (0.892 - scene 0.84) * size 7.5 after clockwise rotation.
+const CARD1_EDGE_PRINT: &[Prim] = &[
+    Prim::Turn { x: 262.14, y: 183.0, angle: 90.0, prims: PETROCHEM_PRINT },
+    Prim::Turn { x: 272.0, y: 182.5, angle: 90.0, prims: BETTERLIFE_PRINT },
+];
+// The third ordinary column's complete source word is 1.9 design units left.
+const CARD3_EDGE_PRINT: &[Prim] = &[
+    Prim::Turn { x: 260.2233333333333, y: 183.0, angle: 90.0, prims: PETROCHEM_PRINT },
+    Prim::Turn { x: 270.1, y: 182.5, angle: 90.0, prims: BETTERLIFE_PRINT },
+];
 
 /// Ordinary cards share the content below their stats while retaining
 /// the small source-measured type shifts of each card column.
@@ -1599,8 +1610,8 @@ macro_rules! plain_stats {
     card_stat_label($card, 2), card_stat_label($card, 3),
     card_stat_value($card, 0), card_stat_value($card, 1),
     card_stat_value($card, 2), card_stat_value($card, 3),
-    txt(11.0, 492.0, 8.0, Ink::Dim, "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED"),
-    txt(11.0, 500.0, 8.0, Ink::Dim, "TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
+    txt(11.0, 494.5, 8.0, Ink::Dim, "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED"),
+    txt(11.0, 502.5, 8.0, Ink::Dim, "TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
     store_track_mid(90.0, 534.0, 12.0, Ink::Fg, "EMPTY"),
     store_track_mid(90.0, 547.5, 12.0, Ink::Fg, "SOCKET"),
     store_track_mid(165.0, 534.0, 12.0, Ink::Fg, "EMPTY"),
@@ -1612,22 +1623,90 @@ macro_rules! plain_stats {
 const STATS_1: &[Prim] = plain_stats!(1);
 const STATS_3: &[Prim] = plain_stats!(3);
 
-/// A standard card's frame: a 13px top-right chamfer, the right edge
-/// stepping 12px inward below the bright bar's foot at y 416.
-const FRAME_STD: &[Seg] = &[
-    Seg::Line(271.0, 151.0),
-    Seg::Line(284.0, 164.0),
-    Seg::Line(284.0, 270.0),
-    Seg::Line(272.0, 282.0),
-    Seg::Line(272.0, 613.0),
-    Seg::Line(0.0, 613.0),
+/// The ordinary Store frames follow their separate source-print origins.
+/// Their contents keep the existing shelf positions and local coordinates.
+const FRAME_C1: &[Seg] = &[
+    Seg::Line(270.7, 154.5),
+    Seg::Line(282.4, 166.4),
+    Seg::Line(282.4, 263.4),
+    Seg::Line(273.2, 271.4),
+    Seg::Line(273.2, 611.9),
+    Seg::Line(3.0, 611.9),
 ];
-/// The bright bar on the right edge, y 266..416, chamfered at both ends.
-const EDGE_BAR_PATH: &[Seg] = &[
-    Seg::Line(284.0, 404.0),
-    Seg::Line(272.0, 416.0),
-    Seg::Line(272.0, 278.0),
+const FRAME_C3: &[Seg] = &[
+    Seg::Line(268.8, 154.5),
+    Seg::Line(280.5, 166.4),
+    Seg::Line(280.5, 263.4),
+    Seg::Line(271.3, 271.4),
+    Seg::Line(271.3, 611.9),
+    Seg::Line(1.1, 611.9),
 ];
+/// The bright side bars share each frame's upper and lower joins.
+const EDGE_BAR_C1: &[Seg] = &[
+    Seg::Line(282.4, 404.6),
+    Seg::Line(272.6, 413.9739130),
+    Seg::Line(272.6, 271.9217391),
+];
+const EDGE_BAR_C3: &[Seg] = &[
+    Seg::Line(280.5, 404.6),
+    Seg::Line(270.7, 413.9739130),
+    Seg::Line(270.7, 271.9217391),
+];
+
+// The ordinary border is one continuous mitered annulus. Keep its
+// two rings in one path so adjacent sides meet without caps. Top, left
+// and lower-right stem are 0.6; upper-right/chamfer remain 1.2.
+// The bottom uses the frozen source-conditioned KM box-coverage geometry.
+const FRAME_RING_C1: &[Seg] = &[
+    Seg::Line(271.2464699, 154.2000000),
+    Seg::Line(283.0000000, 166.1544452),
+    Seg::Line(283.0000000, 263.6733783),
+    Seg::Line(273.5000000, 271.9342479),
+    Seg::Line(273.5000000, 612.2412530),
+    Seg::Line(2.7000000, 612.2412530),
+    Seg::Move(3.3000000, 611.4526956),
+    Seg::Line(272.9000000, 611.4526956),
+    Seg::Line(272.9000000, 270.8657521),
+    Seg::Line(281.8000000, 263.1266217),
+    Seg::Line(281.8000000, 166.6455548),
+    Seg::Line(270.1535301, 154.8000000),
+    Seg::Line(3.3000000, 154.8000000),
+];
+const FRAME_RING_C3: &[Seg] = &[
+    Seg::Line(269.3464699, 154.2000000),
+    Seg::Line(281.1000000, 166.1544452),
+    Seg::Line(281.1000000, 263.6733783),
+    Seg::Line(271.6000000, 271.9342479),
+    Seg::Line(271.6000000, 612.2412530),
+    Seg::Line(0.8000000, 612.2412530),
+    Seg::Move(1.4000000, 611.4526956),
+    Seg::Line(271.0000000, 611.4526956),
+    Seg::Line(271.0000000, 270.8657521),
+    Seg::Line(279.9000000, 263.1266217),
+    Seg::Line(279.9000000, 166.6455548),
+    Seg::Line(268.2535301, 154.8000000),
+    Seg::Line(1.4000000, 154.8000000),
+];
+const EDGE_C1: &[Prim] = &[
+    fill_path(2.7000000, 154.2000000, FRAME_RING_C1, Ink::Fg),
+    fill_path(282.4, 263.4, EDGE_BAR_C1, Ink::Fg),
+];
+const EDGE_C3: &[Prim] = &[
+    fill_path(0.8000000, 154.2000000, FRAME_RING_C3, Ink::Fg),
+    fill_path(280.5, 263.4, EDGE_BAR_C3, Ink::Fg),
+];
+const EDGE_C1_HELD: &[Prim] = &[
+    Prim::Path { x: 2.7000000, y: 154.2000000, segs: FRAME_RING_C1,
+        close: true, fill: None, stroke: None, width: 0.0 },
+    EDGE_C1[1],
+];
+const EDGE_C3_HELD: &[Prim] = &[
+    Prim::Path { x: 0.8000000, y: 154.2000000, segs: FRAME_RING_C3,
+        close: true, fill: None, stroke: None, width: 0.0 },
+    EDGE_C3[1],
+];
+const EDGE_C1_HELD_AT: Prim = Prim::At { x: 0.0, y: 0.0, prims: EDGE_C1_HELD };
+const EDGE_C3_HELD_AT: Prim = Prim::At { x: 0.0, y: 0.0, prims: EDGE_C3_HELD };
 
 // Emit an ordinary card's opaque face into its own draft before title scan
 // drafts. The deliberately broad region inherits the shelf's existing clip,
@@ -1647,17 +1726,18 @@ const fn frame_leaf(p: Prim) -> Prim {
 }
 
 macro_rules! card {
-    ($card:expr, $fill:expr, $scatter_x:expr, $stats:ident, $echo:ident) => {
+    ($card:expr, $fill:expr, $scatter_x:expr, $stats:ident, $echo:ident,
+     $frame_x:expr, $frame:ident, $edge:ident, $print:ident, $box_x:expr) => {
         &[
-            card_underlay(&[Prim::Path { x: 0.0, y: 151.0, segs: FRAME_STD, close: true, fill: Some(Ink::Fixed($fill)), stroke: Some(Ink::Fg), width: 1.2 }]),
-            fill_path(284.0, 266.0, EDGE_BAR_PATH, Ink::Fg),
+            card_underlay(&[Prim::Path { x: $frame_x, y: 154.5, segs: $frame, close: true, fill: Some(Ink::Fixed($fill)), stroke: None, width: 1.2 }]),
+            Prim::At { x: 0.0, y: 0.0, prims: $edge },
             Prim::At { x: 0.0, y: 0.0, prims: ICONS_HEAD },
             Prim::At { x: 0.0, y: 0.0, prims: ICONS_FOOT },
             Prim::At { x: 0.0, y: 0.0, prims: store_title_echo::$echo },
             card_title($card, false, Ink::Fg),
             card_subtitle($card, false, Ink::Fg),
-            line_rect(261.4, 182.9, 7.2, 48.4, Ink::Dim, 0.8),
-            Prim::At { x: 0.0, y: 0.0, prims: CARD_EDGE_PRINT },
+            line_rect($box_x, 182.9, 7.2, 48.4, Ink::Dim, 0.8),
+            Prim::At { x: 0.0, y: 0.0, prims: $print },
             Prim::At { x: 0.0, y: 0.0, prims: GUN_OUTLINED },
             Prim::At { x: 0.0, y: 0.0, prims: $stats },
             Prim::Dots { x: $scatter_x, y: 520.5833, cell: 3.0, pitch: 3.6667, ink: Ink::Fg, rows: QR },
@@ -1665,8 +1745,8 @@ macro_rules! card {
     };
 }
 
-const CARD1: &[Prim] = card!(1, CARD1_FILL, 14.375, STATS_1, CARD1);
-const CARD3: &[Prim] = card!(3, CARD3_FILL, 12.4583, STATS_3, CARD3);
+const CARD1: &[Prim] = card!(1, CARD1_FILL, 14.375, STATS_1, CARD1, 3.0, FRAME_C1, EDGE_C1, CARD1_EDGE_PRINT, 260.65);
+const CARD3: &[Prim] = card!(3, CARD3_FILL, 12.4583, STATS_3, CARD3, 1.1, FRAME_C3, EDGE_C3, CARD3_EDGE_PRINT, 258.7333333);
 
 /// The selected card: the same drawing grown to y797.1, its upper two
 /// thirds washed, its gun solid and 14px further left, and the detail
@@ -1795,7 +1875,7 @@ const GROWN: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: FRAME_SEL_OVER_WASH },
 ];
 
-/// Card 4 is the same drawing cut off by the frame edge at x=1557: no
+/// Card 4 is the same drawing cut off by the frame edge at x=1558.3: no
 /// chamfer, no right edge line, no bright bar, and its content clipped
 /// at the cut.
 const CARD_CUT: &[Prim] = &[
@@ -1813,26 +1893,30 @@ const CARD_CUT: &[Prim] = &[
     // its text above all of its geometry, whatever order it was drawn
     // in, so a shape can never hide a glyph. These are the two lines as
     // far as the design shows them.
-    txt(11.0, 492.0, 8.0, Ink::Dim, "ONLY CC35 CERTIFIED AND DHSF 5TH"),
-    txt(11.0, 500.0, 8.0, Ink::Dim, "TO MANIPULATE, ACCESS OR DISABLE"),
+    txt(11.0, 494.5, 8.0, Ink::Dim, "ONLY CC35 CERTIFIED AND DHSF 5TH"),
+    txt(11.0, 502.5, 8.0, Ink::Dim, "TO MANIPULATE, ACCESS OR DISABLE"),
     Prim::Dots { x: 11.7917, y: 520.5833, cell: 3.0, pitch: 3.6667, ink: Ink::Fg, rows: QR },
     store_track_mid(90.0, 534.0, 12.0, Ink::Fg, "EMPTY"),
     store_track_mid(90.0, 547.5, 12.0, Ink::Fg, "SOCKET"),
 ];
-/// Card 4's frame is an open path: its top and bottom edges run to the
-/// cut and there is no right edge line at all.
-const CARD4_EDGE: &[Seg] = &[
-    Seg::Line(0.0, 151.0),
-    Seg::Line(0.0, 613.0),
-    Seg::Line(132.0, 613.0),
+/// Filled open border: two exact butt caps at the permanent right cut;
+/// offset-line intersections keep the two left corners continuously mitered.
+const CARD4_RIBBON: &[Seg] = &[
+    Seg::Line(0.1, 154.2),
+    Seg::Line(0.1, 612.2412530),
+    Seg::Line(133.3, 612.2412530),
+    Seg::Line(133.3, 611.4526956),
+    Seg::Line(0.7, 611.4526956),
+    Seg::Line(0.7, 154.8),
+    Seg::Line(133.3, 154.8),
 ];
 /// The permanent viewport enclosing the plate clips every state,
 /// including selected text. No painted-over approximation of the ground
 /// is necessary with iced0.14's mesh scissors.
 const CARD4: &[Prim] = &[
-    card_underlay(&[fill_rect(0.0, 151.0, 132.0, 462.0, Ink::Fixed(CARD4_FILL))]),
+    card_underlay(&[fill_rect(0.4, 154.5, 132.9, 457.4, Ink::Fixed(CARD4_FILL))]),
     Prim::At { x: 0.0, y: 0.0, prims: CARD_CUT },
-    line_path(132.0, 151.0, CARD4_EDGE, Ink::Fg, 1.2),
+    fill_path(133.3, 154.2, CARD4_RIBBON, Ink::Fg),
 ];
 
 // § 9 explicitly extends the inferred nav coats to product cards.
@@ -1891,6 +1975,14 @@ macro_rules! card_content_states {
                 Prim::Turn { x: 262.5, y: 183.0, angle: 90.0, prims: PETRO },
                 Prim::Turn { x: 272.0, y: 182.5, angle: 90.0, prims: BETTER },
             ];
+            pub(super) const EDGE_C1: &[Prim] = &[
+                Prim::Turn { x: 262.14, y: 183.0, angle: 90.0, prims: PETRO },
+                Prim::Turn { x: 272.0, y: 182.5, angle: 90.0, prims: BETTER },
+            ];
+            pub(super) const EDGE_C3: &[Prim] = &[
+                Prim::Turn { x: 260.2233333333333, y: 183.0, angle: 90.0, prims: PETRO },
+                Prim::Turn { x: 270.1, y: 182.5, angle: 90.0, prims: BETTER },
+            ];
             pub(super) const GUN: &[Prim] = &card_leaf_inks::<{ GUN_OUTLINED.len() }>(GUN_OUTLINED, $held);
             pub(super) const GUN_SEL: &[Prim] = &card_leaf_inks::<{ GUN_SOLID.len() }>(GUN_SOLID, $held);
             pub(super) const SPECS_1: &[Prim] = &card_leaf_inks::<{ STATS_1.len() }>(STATS_1, $held);
@@ -1927,7 +2019,7 @@ const fn card_coat(source: Prim, held: bool, selected: bool, rest: iced::Color) 
     let mut face = frame_leaf(source);
     let coat = Ink::Fixed(if held { rgb(0xa52223) } else { card_wash(rest) });
     match &mut face {
-        Prim::Path { fill, stroke, .. } => { *fill = Some(coat); *stroke = if held || selected { None } else { Some(Ink::Fg) }; }
+        Prim::Path { fill, stroke, .. } => { *fill = Some(coat); if held || selected { *stroke = None; } }
         Prim::Rect { fill, .. } => *fill = Some(coat),
         _ => panic!("card must begin with its frame"),
     }
@@ -1935,7 +2027,8 @@ const fn card_coat(source: Prim, held: bool, selected: bool, rest: iced::Color) 
 }
 
 const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bool,
-    cut: bool, coat: &'static [Prim], specs: &'static [Prim], echoes: &'static [Prim]) -> [Prim; N] {
+    third: bool, cut: bool, coat: &'static [Prim], specs: &'static [Prim], echoes: &'static [Prim],
+    held_edge: Option<Prim>) -> [Prim; N] {
     let mut out = card_leaf_inks::<N>(source, held);
     out[0] = if selected { coat[0] } else { card_underlay(coat) };
     let (head, foot, edge, gun, cut_content) = if held {
@@ -1945,6 +2038,11 @@ const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bo
         (card_hover::HEAD, if selected { card_hover::FOOT_SEL } else { card_hover::FOOT },
          card_hover::EDGE, if selected { card_hover::GUN_SEL } else { card_hover::GUN }, card_hover::CUT)
     };
+    let edge = if !selected && !cut && !third {
+        if held { card_held::EDGE_C1 } else { card_hover::EDGE_C1 }
+    } else if !selected && third {
+        if held { card_held::EDGE_C3 } else { card_hover::EDGE_C3 }
+    } else { edge };
     if cut {
         out[1] = Prim::At { x: 0.0, y: 0.0, prims: cut_content };
         // The cut has no right-hand spine; keep its open edge bright.
@@ -1952,7 +2050,9 @@ const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bo
     } else {
         let offset = if selected { 1 } else { 0 };
         let echo_offset = if selected { 0 } else { 1 };
-        out[1 + offset] = source[1 + offset]; // the bright spine
+        out[1 + offset] = if held && !selected {
+            match held_edge { Some(edge) => edge, None => source[1 + offset] }
+        } else { source[1 + offset] }; // the ordinary ring and bright spine
         out[2 + offset] = Prim::At { x: 0.0, y: 0.0, prims: head };
         out[3 + offset] = Prim::At { x: 0.0, y: 0.0, prims: foot };
         if !selected { out[4] = Prim::At { x: 0.0, y: 0.0, prims: echoes }; }
@@ -1973,20 +2073,20 @@ const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bo
 }
 
 const CARD_GROWN_HOVER_COAT: &[Prim] = &card_coat(GROWN[0], false, true, CARD2_FILL);
-const CARD_GROWN_HOVER: &[Prim] = &card_feedback::<{ GROWN.len() }>(GROWN, false, true, false, CARD_GROWN_HOVER_COAT, &[], &[]);
+const CARD_GROWN_HOVER: &[Prim] = &card_feedback::<{ GROWN.len() }>(GROWN, false, true, false, false, CARD_GROWN_HOVER_COAT, &[], &[], None);
 const CARD_GROWN_HELD_COAT: &[Prim] = &card_coat(GROWN[0], true, true, CARD2_FILL);
-const CARD_GROWN_HELD: &[Prim] = &card_feedback::<{ GROWN.len() }>(GROWN, true, true, false, CARD_GROWN_HELD_COAT, &[], &[]);
+const CARD_GROWN_HELD: &[Prim] = &card_feedback::<{ GROWN.len() }>(GROWN, true, true, false, false, CARD_GROWN_HELD_COAT, &[], &[], None);
 
 macro_rules! product_states {
-    ($index:expr, $off:ident, $fill:expr, $cut:expr, $specs:ident, $echo:ident, $echo_held:ident) => {{
+    ($index:expr, $off:ident, $fill:expr, $cut:expr, $specs:ident, $echo:ident, $echo_held:ident, $held_edge:expr) => {{
         const HOVER_COAT: &[Prim] = &card_coat($off[0], false, false, $fill);
         const HELD_COAT: &[Prim] = &card_coat($off[0], true, false, $fill);
         crate::style::PlateStates {
             group: Group::Card, index: $index,
-            hover: &card_feedback::<{ $off.len() }>($off, false, false, $cut, HOVER_COAT,
-                card_hover::$specs, store_title_echo::$echo),
-            pressed: &card_feedback::<{ $off.len() }>($off, true, false, $cut, HELD_COAT,
-                card_held::$specs, store_title_echo::$echo_held),
+            hover: &card_feedback::<{ $off.len() }>($off, false, false, $index == 2, $cut, HOVER_COAT,
+                card_hover::$specs, store_title_echo::$echo, None),
+            pressed: &card_feedback::<{ $off.len() }>($off, true, false, $index == 2, $cut, HELD_COAT,
+                card_held::$specs, store_title_echo::$echo_held, $held_edge),
             selected_hover: Some(CARD_GROWN_HOVER),
             selected_pressed: Some(CARD_GROWN_HELD),
             selected_away: None,
@@ -2053,8 +2153,8 @@ const SHELF_0: &[Prim] = shelf!(0, CARD1);
 const SHELF_1: &[Prim] = shelf!(1, CARD1);
 const SHELF_2: &[Prim] = shelf!(2, CARD3);
 const SHELF_3: &[Prim] = &[Prim::Viewport {
-    // Include the left frame stroke; end exactly at x1425+132=1557.
-    x: -1.0, y: 150.0, w: 133.0, h: 648.0, prims: shelf!(3, CARD4),
+    // Include the left frame stroke; end exactly at x1425+133.3=1558.3.
+    x: -1.0, y: 150.0, w: 134.3, h: 648.0, prims: shelf!(3, CARD4),
 }];
 
 /// A nav row, at its own origin: 208 wide with a 16px bottom-left
@@ -2132,10 +2232,10 @@ pub(crate) const STORE_STATES: &[crate::style::PlateStates] = &[
     nav_states!(2, 385.0),
     nav_states!(3, 452.0),
     nav_states!(4, 519.0),
-    product_states!(0, CARD1, CARD1_FILL, false, SPECS_1, CARD1, CARD1_HELD),
-    product_states!(1, CARD1, CARD1_FILL, false, SPECS_1, CARD1, CARD1_HELD),
-    product_states!(2, CARD3, CARD3_FILL, false, SPECS_3, CARD3, CARD3_HELD),
-    product_states!(3, CARD4, CARD4_FILL, true, SPECS_1, CARD4, CARD4_HELD),
+    product_states!(0, CARD1, CARD1_FILL, false, SPECS_1, CARD1, CARD1_HELD, Some(EDGE_C1_HELD_AT)),
+    product_states!(1, CARD1, CARD1_FILL, false, SPECS_1, CARD1, CARD1_HELD, Some(EDGE_C1_HELD_AT)),
+    product_states!(2, CARD3, CARD3_FILL, false, SPECS_3, CARD3, CARD3_HELD, Some(EDGE_C3_HELD_AT)),
+    product_states!(3, CARD4, CARD4_FILL, true, SPECS_1, CARD4, CARD4_HELD, None),
 ];
 
 /// The left-margin chip: two ticks, a block and the numbered 12.5
@@ -2225,7 +2325,7 @@ pub const STORE: &[Prim] = &[
     // the logotype, the customer block and the footer are chrome and
     // stay, as the dashboard's diamonds do under `#panel-open`. The
     // trace's outer wipe stops at x1570; the permanent fourth-card
-    // viewport keeps all drawings and interaction inside x1557.
+    // viewport keeps all drawings and interaction inside x1558.3.
     Prim::Motion {
         motion: Motion {
             id: "shelf-open",
@@ -2708,11 +2808,25 @@ mod store_interaction_tests {
     #[test]
     fn fourth_card_cut_is_permanent_and_its_border_stays_open() {
         let Prim::Viewport { x, w, prims, .. } = SHELF_3[0] else { panic!("missing persistent viewport") };
-        assert_eq!(1425.0 + x + w, 1557.0);
+        assert!((1425.0 + x + w - 1558.3).abs() < 0.001);
         assert!(matches!(prims[0], Prim::Pick { group: Group::Card, index: 3, .. }));
+        let palette = Era::Neomil.style().palette;
         for drawing in [CARD4, STORE_STATES.iter().find(|s| s.group == Group::Card && s.index == 3).unwrap().hover,
             STORE_STATES.iter().find(|s| s.group == Group::Card && s.index == 3).unwrap().pressed] {
-            assert!(matches!(drawing.last(), Some(Prim::Path { close: false, segs, .. }) if *segs == CARD4_EDGE));
+            let edge = std::slice::from_ref(drawing.last().expect("fourth outline"));
+            let pixels = crate::screens::soft::composite(edge, &palette, 135, 614, 1.0);
+            let alpha = |x: usize, y: usize| pixels[(y * 135 + x) * 4 + 3];
+            for (x, y) in [(132, 154), (132, 611), (0, 300)] {
+                assert!(alpha(x, y) > 0, "fourth outline missing at ({x},{y})");
+            }
+            for y in 160..=604 {
+                for x in 130..=133 {
+                    assert_eq!(alpha(x, y), 0, "right-middle cut painted at ({x},{y})");
+                }
+            }
+            for y in 0..614 {
+                assert_eq!(alpha(134, y), 0, "outside permanent cut at (134,{y})");
+            }
         }
     }
 
@@ -2859,15 +2973,23 @@ pub const DASHBOARD: &[Prim] = &[
         prims: DASHBOARD_FOOTER_TEXT_ECHO_2,
     },
     // Footer tape: narrow/tall primary lettering over soft local copies.
-    // Narrow the straight outer-left rim; keep its inner edge and joins.
+    // Keep the accepted outer-left trim and inner opening. The source's
+    // primary bottom band fades only below design y888.75.
     fill_path(1209.0, 864.0, &[
-        Seg::Line(1354.0, 864.0), Seg::Line(1354.0, 889.0),
-        Seg::Line(1209.0, 889.0), Seg::Line(1209.0, 884.5),
+        Seg::Line(1354.0, 864.0), Seg::Line(1354.0, 888.75),
+        Seg::Line(1209.0, 888.75), Seg::Line(1209.0, 884.5),
         Seg::Line(1209.1, 884.5), Seg::Line(1209.1, 868.5),
         Seg::Line(1209.0, 868.5),
         Seg::Move(1210.0, 865.0), Seg::Line(1210.0, 888.0),
         Seg::Line(1353.0, 888.0), Seg::Line(1353.0, 865.0),
     ], Ink::Fg),
+    // Same solid rectangle as the verified native split. A constant fade
+    // retains the live foreground role and the enclosing scene alpha.
+    Prim::Motion {
+        motion: Motion { id: "footer-rim-lower", begin: 0, dur: 1,
+            ease: Easing::Linear, change: Change::Opacity { alpha: (0.15, 0.15) } },
+        prims: &[fill_rect(1209.0, 888.75, 145.0, 0.25, Ink::Fg)],
+    },
     // The source's bright top row crosses both inner frame joins. Fade only
     // this added coverage; the frame and lower band keep their own ink.
     Prim::Motion {
@@ -2885,9 +3007,9 @@ pub const DASHBOARD: &[Prim] = &[
     // existing rim and add its missing upper coverage between the sides.
     fill_rect(1210.5, 2129.0 / 2.4, 142.0, (2133.0 - 2129.0) / 2.4, Ink::Fg),
     fill_rect(1270.0, 864.5, 1.2, 24.0, Ink::Fg),
-    Prim::Wide { x: 1214.2, y: 875.1 + DASHBOARD_FOOTER_CODE_BASELINE_DY, size: DASHBOARD_FOOTER_CODE_SIZE, stretch: DASHBOARD_FOOTER_CODE_STRETCH, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
-    Prim::Wide { x: 1276.2, y: 874.6 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_COMBAT_SIZE, stretch: DASHBOARD_FOOTER_COMBAT_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
-    Prim::Wide { x: 1276.6, y: 883.0 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_DEFENCE_SIZE, stretch: DASHBOARD_FOOTER_DEFENCE_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
+    Prim::ReusableWide { x: 1214.2, y: 875.1 + DASHBOARD_FOOTER_CODE_BASELINE_DY, size: DASHBOARD_FOOTER_CODE_SIZE, stretch: DASHBOARD_FOOTER_CODE_STRETCH, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
+    Prim::ReusableWide { x: 1276.2, y: 874.6 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_COMBAT_SIZE, stretch: DASHBOARD_FOOTER_COMBAT_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
+    Prim::ReusableWide { x: 1276.6, y: 883.0 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_DEFENCE_SIZE, stretch: DASHBOARD_FOOTER_DEFENCE_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
 ];
 const DASHBOARD_FOOTER_FRAME_ECHO_1: &[Prim] = &[
     line_rect(1211.5, 866.5, 144.0, 24.0, Ink::Fg, 2.5),
@@ -2896,13 +3018,13 @@ const DASHBOARD_FOOTER_FRAME_ECHO_2: &[Prim] = &[
     line_rect(1212.5, 867.5, 144.0, 24.0, Ink::Fg, 2.5),
 ];
 const DASHBOARD_FOOTER_TEXT_ECHO_1: &[Prim] = &[
-    Prim::Wide { x: 1215.0, y: 876.1 + DASHBOARD_FOOTER_CODE_BASELINE_DY, size: DASHBOARD_FOOTER_CODE_SIZE, stretch: DASHBOARD_FOOTER_CODE_STRETCH, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
-    Prim::Wide { x: 1277.0, y: 875.6 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_COMBAT_SIZE, stretch: DASHBOARD_FOOTER_COMBAT_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
-    Prim::Wide { x: 1277.4, y: 884.0 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_DEFENCE_SIZE, stretch: DASHBOARD_FOOTER_DEFENCE_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
+    Prim::ReusableWide { x: 1215.0, y: 876.1 + DASHBOARD_FOOTER_CODE_BASELINE_DY, size: DASHBOARD_FOOTER_CODE_SIZE, stretch: DASHBOARD_FOOTER_CODE_STRETCH, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
+    Prim::ReusableWide { x: 1277.0, y: 875.6 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_COMBAT_SIZE, stretch: DASHBOARD_FOOTER_COMBAT_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
+    Prim::ReusableWide { x: 1277.4, y: 884.0 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_DEFENCE_SIZE, stretch: DASHBOARD_FOOTER_DEFENCE_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
 ];
 const DASHBOARD_FOOTER_TEXT_ECHO_2: &[Prim] = &[
-    Prim::Wide { x: 1216.0, y: 877.1 + DASHBOARD_FOOTER_CODE_BASELINE_DY, size: DASHBOARD_FOOTER_CODE_SIZE, stretch: DASHBOARD_FOOTER_CODE_STRETCH, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
-    Prim::Wide { x: 1278.0, y: 876.6 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_COMBAT_SIZE, stretch: DASHBOARD_FOOTER_COMBAT_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
-    Prim::Wide { x: 1278.4, y: 885.0 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_DEFENCE_SIZE, stretch: DASHBOARD_FOOTER_DEFENCE_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
+    Prim::ReusableWide { x: 1216.0, y: 877.1 + DASHBOARD_FOOTER_CODE_BASELINE_DY, size: DASHBOARD_FOOTER_CODE_SIZE, stretch: DASHBOARD_FOOTER_CODE_STRETCH, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
+    Prim::ReusableWide { x: 1278.0, y: 876.6 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_COMBAT_SIZE, stretch: DASHBOARD_FOOTER_COMBAT_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
+    Prim::ReusableWide { x: 1278.4, y: 885.0 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_DEFENCE_SIZE, stretch: DASHBOARD_FOOTER_DEFENCE_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
 ];
 // --- end dashboard -------------------------------------------------------

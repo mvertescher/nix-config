@@ -386,6 +386,7 @@ fn actions<'a, Message: 'static + Clone>(
     // feedback are shared with the era's live rows; no extra action is
     // invented for the three display-only labels beside it.
     let rest = Surface::filled(s, s.palette.alert).no_stroke();
+    let rest_printing = s.mail_delete_ink();
     let states = s.mailbox.list.feedback;
     let faces = [0, 1, 2].map(|state| {
         let coat = match state {
@@ -394,7 +395,7 @@ fn actions<'a, Message: 'static + Clone>(
             _ => None,
         };
         let mut material = SurfaceFace::resting(rest);
-        let mut printing = s.palette.on_select;
+        let mut printing = rest_printing;
         if let Some(coat) = coat {
             material.echo = coat.echo;
         }

@@ -39,6 +39,12 @@ the rendered SVG and the Iced result in the affected region and relevant
 states. Broad shape gates and matching goldens alone do not establish
 source fidelity. Run the relevant checks required by the repository.
 
+For new viewport-size source studies, use `scripts/sample_source.py` and
+retain its metadata. See [source sampling](docs/PIPELINE.md#sampling-originals-at-a-viewport-size)
+for uniform scale, top-left alignment, unknown padding and filter-edge
+limits. Verify a historical native baseline against its accepted capture
+or golden; a scratch filename alone does not establish provenance.
+
 Model choice aims to reduce total work and cost. Keep handoffs compact
 and avoid repeated investigation; a smaller model does not guarantee
 fewer tokens or fewer repair rounds. Revisit the allocation using observed

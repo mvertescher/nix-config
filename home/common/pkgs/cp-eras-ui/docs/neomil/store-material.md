@@ -75,7 +75,9 @@ fields to detect this failure.
 category combinations. Every backdrop has the unchanged ground, one
 coverage-composited card layer inside the original shelf opening clip,
 and one navigation layer. The fourth card's material is permanently
-masked at x1557. All rendering uses the existing software sRGB compositor
+masked at x1558.3 after the coordinated face/content/material correction in
+[round seventy-three](../reference-svg-round73.md); K1 originally used x1557.
+All rendering uses the existing software sRGB compositor
 and bounded image cache; this adds no new compositing primitive.
 
 One derived foreground scene retains the original Plates/Picks, labels,

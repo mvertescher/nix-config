@@ -12,6 +12,10 @@ The [September 21 correction batch](reference-svg-fixes.md) records
 source-measured masks, text, wires, panel contours and socket/envelope art
 across ten traces, with their synchronized component and Iced copies. The
 [second batch](reference-svg-round2.md) continues the measured corrections.
+The [footer coverage follow-up](reference-svg-round59.md) records the
+source's faint lower primary rim, exact unchanged-opacity replays and
+separate SVG/native sampling behavior. Its native correction uses existing
+solid primitives and preserves the accepted lettering and echoes.
 
 ## Embedded document metadata
 
@@ -51,6 +55,19 @@ public asset URL is supplied. Kitsch's annotated #46 image registers to
 #49 as a scaled re-export and provides no independent material sample.
 These findings preserve the distinction between source evidence and
 the reconstructed SVG/font/material approximations below.
+
+## Process-image access follow-up
+
+On 2026-10-03, indexed text from the author's
+[Part-1 gallery](https://www.behance.net/gallery/118663901/Cyberpunk-2077User-Interface-%28Part-1%29?locale=en_US)
+identifies a process-snapshot section after the era examples, but exposes
+no image IDs or font/material assignments. Direct gallery and project
+requests return HTTP 403. A bounded local cache search finds the era
+thumbnails, but no inventory of those subsequent process images. No new
+snapshot, layered file, original font or Neomil background asset is
+recovered. This is an access limitation, not evidence that the missing
+images contain no useful information. Scratch request bodies and the
+search scope are in `/tmp/cp-eras-next/eb-source-provenance/`.
 
 ## Run recovery, canonical positions
 

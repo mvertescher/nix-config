@@ -2,6 +2,98 @@
 to the crate root. Performance changes must preserve the accepted artwork,
 sRGB compositing, interaction states and opening clips.
 
+## Entropism captions and Neomil primary titles — LT/LV
+
+- [x] **Reuse repeated Entropism Dashboard captions.**
+  Three caption declarations opt into the existing per-draw cache:
+  eighteen direct runs become three misses and fifteen hits. Fonts and
+  drawing parameters stay unchanged. Warm 4K rest foreground CPU
+  construction improves 11.912→6.930 ms (41.8%). Twenty-one pixel pairs,
+  exact state/backend/counter pixels, three packaged sizes, all 312 packaged
+  tests, 22 checks and 28 first-attempt matrix cases pass. See
+  [round eighty-four](../docs/reference-svg-round84.md) for evidence and limits.
+
+- [x] **Evaluate Neomil primary-title reuse.** The frozen LV trial preserves
+  pixels and eliminates four extractions, but shows no convincing 4K
+  gain: rest improves 0.6%, hover regresses 0.5%, and process ranges overlap.
+  Smaller-size gains are 3.0–3.6%. The helper change and its test-only
+  correction remain unaccepted in scratch; no timing retry or retuning.
+  See [round eighty-four](../docs/reference-svg-round84.md).
+
+## Kitsch Dashboard header outlining — LN
+
+- [x] **Share the three repeated header-note outlines within a draw.**
+  Six tags use the existing bounded route: three successful extractions,
+  three hits and three retained entries. One fixed four-process comparison
+  improves warm foreground CPU construction 16.072→14.275 ms at 4K rest
+  (11.2%), 10.9% hover and 12.2–12.3% at 1600. All seventeen image pairs,
+  both counter sizes, three packaged sizes, 312 packaged tests, 22 checks
+  and 28 first-attempt matrix cases pass. GPU presentation, startup and
+  backdrop preparation remain outside this measurement. See
+  [round eighty-three](../docs/reference-svg-round83.md) for controls and limits.
+
+## Kitsch Store band outlining — LG
+
+- [x] **Share repeated band-label outlines within a draw.**
+  Four tags opt into the existing bounded route. Resting and selected
+  traversal counters fall from eighteen extractions to two, with sixteen
+  successful hits and two retained entries. A single fixed four-process
+  warm comparison improves foreground CPU construction 20.377→16.554 ms
+  at 4K rest (18.8%), 18.9% on hover and 20.5% at 1600. All eighteen image
+  pairs, five counter pairs, three packaged sizes, 312 packaged tests,
+  22 checks and 28 first-attempt matrix cases pass. GPU presentation,
+  startup and backdrop preparation are outside this measurement. See
+  [round eighty-two](../docs/reference-svg-round82.md) for controls and limits.
+
+## Dashboard footer-caption outlining — LC
+
+- [x] **Share the repeated SemiBold caption outlines within a draw.**
+  Six runs opt into the existing bounded route, whose eligibility now
+  includes SemiBold. Counters verify three successful extractions and six
+  hits, retaining three entries within the unchanged four-entry bound.
+  The single predeclared warm comparison against LA improves foreground
+  CPU construction 3.835→2.312 ms at 4K rest (39.7%), 3.934→2.414 ms
+  on hover (38.6%), and 38.0–39.2% at 1600. State/backend/counter/package
+  parity passes with unchanged pixels. A font-weight separation regression,
+  312 packaged tests, 22 checks and 28 first-attempt matrix cases pass.
+  No paint pass, persistent cache, font or geometry change. GPU presentation,
+  startup and background preparation remain outside this measurement.
+  See [round eighty-one](../docs/reference-svg-round81.md).
+
+## Dashboard footer-code outlining — LA
+
+- [x] **Reuse identical local Bold code paths within a draw.** The primary
+  footer code and its two echoes now use the existing four-entry outline
+  cache, retaining all geometry, font bytes and palette semantics. Actual
+  counters at both sizes record one thirteen-path extraction and two hits.
+  The fixed longer-warmup comparison reduces 4K foreground CPU construction
+  4.410→3.828 ms at rest and 4.525→3.928 ms on hover (13.2%). At 1600,
+  rest/hover improve 12.8%/12.5%. Initial short-warmup drift and mixed
+  smaller-size measurements remain explicit. Pixel/state/package parity,
+  311 packaged tests, 22 checks and 28 first-attempt matrix cases pass.
+  This adds no paint pass and does not measure GPU presentation or startup.
+  See [round eighty](../docs/reference-svg-round80.md).
+
+## Store frame-band preparation — IQ
+
+- [x] **Share distance work for consecutive contour bands.** IQ identified
+  repeated path flattening and distance work in the frame masks. IR shares
+  center/subpixel distances only for identical fixed-white paths with finite
+  descending widths and matching ordered row-active segment lists. Each band
+  keeps its original coverage, span eligibility and float paint order;
+  other inputs use the literal path. Metadata is reused across rows without
+  a retained distance image or new primitive/cache API.
+  [Round seventy-five](../docs/reference-svg-round75.md) passes float-bit and
+  RGBA regressions, three-size package parity, fourteen state/custom/opening
+  pairs, four shelf hashes and the twenty-selection cache state sequence.
+  Twelve fresh paired processes reduce initial 4K preparation
+  626.703→462.161 ms (26.3%), and the subsequent twenty
+  selections 3217.582→2456.071 ms (23.7%). Smaller sizes improve 52–53%.
+  Retained cache payload is unchanged. This measures CPU preparation only;
+  it does not establish a warm foreground, GPU or startup speedup.
+  All 310 packaged tests, 22 repository checks and 28 first-attempt matrix
+  cases pass. Source artwork, fonts and text caches are unchanged.
+
 ## Store title printing cost — AN
 
 - [x] **Reuse repeated title glyph outlines without changing pixels.**

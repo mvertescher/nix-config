@@ -306,3 +306,28 @@ sizes and a fresh packaged 4K frame match the reviewed native calibration.
 Both fidelity gates, 292 Rust tests, all 22 repository checks and 27
 first-attempt visual cases pass. Only the Kitsch store golden changes,
 by 24 pixels. See [round thirty-six](../reference-svg-round36.md).
+
+
+## EV/EW warning hollow and ordinary placement
+
+Complete corresponding source profiles support a thinner warning side,
+but the first enlarged-hollow port worsens the fourth ordinary mark. Two
+independent card-1 placement controls then fix one ordinary warning offset
+of +0.454039972301 design x; selected x stays unchanged. Moving triangle,
+stem and dot together with the frozen enlarged hollow improves all twelve
+whole-mark source comparisons in both SVG and native at 4K, 1600×900 and
+1537×947. The native bridge retains y88.8 and SVG y88.6. Frame, neighboring
+certifications, microprint, ink and font implementation stay unchanged.
+
+Native fourth-card left-side RGB L1 now improves at every size. Local losses
+remain: its 4K narrow left-foot patch rises 78 L1 while the complete foot
+improves; fractional card 1's complete exclamation-plus-dot rises 14 L1
+(1.0%) and its left foot rises 73 L1 from one pixel. This accepts a coherent
+warning improvement without claiming exact outer feet, softness or ink.
+The source controls do not establish a global asset transform.
+
+The native warning stays nested inside `band_marks!`, preserving top-level
+card indices used by hover and pressed feedback. Three-size structural
+no-ops are exact; twelve paired states retain all pixels outside warning
+regions. The component copies are synchronized. Full measurements and
+integration status are in [round sixty-seven](../reference-svg-round67.md).

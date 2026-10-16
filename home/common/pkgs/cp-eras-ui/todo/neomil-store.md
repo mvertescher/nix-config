@@ -36,6 +36,62 @@ content is intentionally static; no network/payment backend is specified.
   and Iced end at square(1039,800). Update trace and implementation
   together, retaining the tall selected card and all details inside it.
 
+- [x] **Correct ordinary primary frame geometry before fitting echoes.**
+  FH separates ordinary card contours from their calibrated contents and
+  corrects top/bottom, per-card sides and fan joins, including the previous
+  card-3 SVG/native discrepancy. SVG/component/native fill boundaries agree;
+  selected geometry and the fourth cut stay fixed. Source comparisons improve
+  coherently at all three sizes; the fourth-left 1600 L1 loss remains explicit.
+  Sixteen state pairs, both Store gates, 305 packaged tests and full 22-check/
+  28-case verification pass. Fresh package pixels match at all three sizes.
+  See [round sixty-nine](../docs/reference-svg-round69.md).
+- [x] **Refine remaining ordinary primary frame coverage.** Geometry,
+  ordinary tops and left edges are verified, including inferred ordinary
+  second-card geometry. Continuous outlines preserve semantic inks, material
+  origins, selected art, held suppression and the fourth card's distinct
+  bright held border and cut. Round seventy-two passes all ninety three-size
+  source comparisons in each renderer, seven state pairs, three custom cases,
+  both Store gates, 305 packaged tests, full checks and fresh package parity.
+  Round seventy-nine completes bottom coverage below. Earlier combined
+  bottom thinning is rejected for repeated smaller-size losses. The isolated
+  lower-vertical thinning trial also failed
+  because the frame contributes to the visible bar-side edge. The later
+  coupled stem/bar correction, accepted with the frame impressions in
+  [round seventy-four](../docs/reference-svg-round74.md), resolves that fan
+  regression with supporting-line geometry; four tiny junction-row losses
+  remain explicit. Do not fit an arbitrary cutoff, cap or taper.
+  Source blur, color space and ground separation prevent unique physical
+  width inference. IM rejects a Dashboard bottom donor; IN validates two
+  predeclared Login exterior patches. IO's two fixed 4K profiles show repeated
+  overbright primary shoulders and mixed echo residuals. IP re-evaluates the
+  frozen 0.6 bottom with accepted impressions: whole bottoms improve at all
+  three sizes, but C1/C3 upper-shoulder losses repeat at 1600 and 4K, with a
+  small 1600 cut-exterior loss. The candidate is rejected; no native port or
+  new width/phase sweep follows. KI verifies four clear exterior donor strips
+  and nearby unchanged face-tint predictions, retaining the contaminated
+  fourth-card control and localized printing residual. The hidden shoulder
+  backing remains a model assumption. A further change needs supported
+  coverage, registration or paint evidence with explicit uncertainty and
+  separate controls. KL supplies a conditional three-channel coverage model
+  consistent across four clean strips. One C1-derived SVG box approximation
+  then passes all 106 KM regions at three sizes, retaining twelve isolated
+  corner/cap pixel losses. KN's native transfer improves every changed
+  pixel at all three sizes without region losses. [Round seventy-nine](../docs/reference-svg-round79.md)
+  integrates it after sixteen state cases, component review, three-size
+  package parity, both Store gates, 311 packaged tests and all 22 checks/28
+  first-attempt matrix cases. It adds no primitive, text work or effect pass.
+  GO's historical rejection remains valid; this correction uses the new
+  conditional coverage evidence rather than another width sweep.
+  [Round seventy-three](../docs/reference-svg-round73.md)
+  corrects the fourth permanent cut from x1557 to x1558.3 after independent
+  top/bottom source controls. The coordinated face/content/material/hit-cut
+  transfer passes native state/custom controls, both gates, 305 packaged
+  tests, full checks and three-size package parity. Whole-card comparisons
+  improve at every size; fractional bottom-endpoint L1 +1.50% / RMS +1.25%
+  remains an explicit local residual. Remaining fine printing stays separate. See
+  [round seventy-two](../docs/reference-svg-round72.md) and the
+  [source plan](../docs/neomil/store-ordinary-frame.md).
+
 ## Source fidelity
 
 - [x] **Restore the shared ground.** Clear source patches are identical
@@ -130,13 +186,123 @@ content is intentionally static; no network/payment backend is specified.
   task stays open. See
   [round forty-six](../docs/reference-svg-round46.md).
 
+  ED measures a coherent upper-plaque source grating with unequal local
+  pitches 1.288/1.762 instead of the current 1.5/1.5. Six adjacent blank
+  Login/Store rectangles are exact. One source-phase, original-width SVG
+  trial improves broad plaque error at 4K/direct1600/fractional size, but
+  loses leading-edge and A2 dark detail; it remains unapplied. Preserve
+  the measured grating and distinguish its upper phase from junction
+  coverage before another complete hatch. Earlier swept controls are not
+  independent holdouts. See
+  [round fifty-seven](../docs/reference-svg-round57.md#neomil-margin-plaque-grating).
+  EE attributes eight lost dark matches to the lower junction; four are
+  clip-edge pixels and none lies inside opaque A2. The upper fitted phase
+  is weak in the lower source windows, without proving a physical cutoff.
+  Opaque A2 brightening is SVG-specific: its A2 and hatch colors differ,
+  while native uses `Ink::Fg` for both. This does not rescue the rejected
+  candidate or establish native loss. A source-supported lower boundary
+  or primary/material layer is needed before porting the grating. See
+  [round fifty-eight](../docs/reference-svg-round58.md#neomil-plaque-junction).
+  EF's source-only row/window probe confirms that the frozen upper phase
+  varies across the lower junction, where letters and printing overlap.
+  It does not identify a physical cutoff. Do not repeat an arbitrary
+  lower crop or dark-pixel knockout; obtain a continuous visible stencil
+  or separate layer/exposure constraint before porting the grating. See
+  [round fifty-nine](../docs/reference-svg-round59.md#neomil-plaque-lower-boundary).
+
 - [ ] **Refine repeated/margin printing.** Primary MASURAO, KIROSHI,
   certification marks and rifles are source-supported vectors. Remaining
   dim repeated-mark fields and faint copies need local fitting. The
-  margin O/plaque residual is the separate correction above. T fits PETROCHEM tracking; a shared
+  ordinary CC35 compliance lines also retain a primary typography mismatch:
+  fresh source/SVG/package contacts show shorter, dimmer rendered runs
+  with narrower glyphs and repeated placement differences on cards 1/3/4.
+  Both lines are implemented. JV verifies the two source lines are about
+  6–7 physical pixels lower at 4K; complete source widths are 608/442
+  versus native 527/386 on cards 1/3. JW's +2.5-design-y SVG correction
+  improves all 54 complete-line all/bright/dark comparisons at three
+  sizes; 67 local band/gap exceptions remain recorded. Alpha/exterior
+  pixels are exact. JX's same native coordinates improve all 54 complete-line
+  comparisons, retaining 93 local exceptions. [Round seventy-eight](../docs/reference-svg-round78.md)
+  integrates this vertical correction after sixteen state cases, three-size
+  package parity, both Store gates, 311 packaged tests and all 22 checks/28
+  first-attempt matrix cases. Fonts, ink, horizontal layout, drawing routes
+  and primitive counts stay fixed. Width, contours and horizontal placement
+  remain open; no new text effect is added. KB's exact-string probe verifies
+  24 cases/1,008 glyphs with correct bundled bytes; Auto/Basic agree and
+  Advanced differs below 0.0001 pixel. Matched word/O controls expose
+  contour differences, so the aggregate width ratio does not justify a
+  blanket stretch. KC's isolated third-card x11→9.1 SVG trial preserves
+  fonts/ink, but fails three complete-line bright/dark controls at smaller
+  sizes despite broad gains. Astra verifies all 972 records and retains
+  79 local exceptions. Reject the standalone shift; no native port or
+  retuning follows, and the full caption font/layout discrepancy stays open.
+  KD–KF verify the pinned generic FreeSans Regular's metrics and actual
+  glyph selection, but its unfitted face/cap swap fails 20/54 full-line
+  controls and first/third O counters. Reject that swap. A shared source
+  word-origin/tracking model reduces held-out edge RMS to 2.024 pixels
+  at 4K, retaining up to 4.066 pixels of error. KG's complete SVG trial
+  improves 44/54 full-line controls but fails ten dark subsets and the first
+  O hole. Reject the transfer; all source/context losses remain recorded.
+  Explain the remaining word/contour and printing differences before
+  another fit. Any later tracked native transfer also needs shaping and
+  cost evidence. Font identity remains unknown; the cached text route stays intact.
+  See the
+  [compliance study](../docs/neomil/store-typography.md#ordinary-compliance-lines--jv).
+  The margin O/plaque residual is the separate correction above. T fits PETROCHEM tracking; a shared
   BETTERLIFE shift/shear is not source-supported. V corrects selected side
   placement as recorded above. Preserve the accepted primary paths
   and their feedback colors; do not reconstruct the main artwork again.
+  IW's fixed source/SVG/current-package crops expose a separate third-card
+  side-label registration question: the first/third content origins differ
+  by 659 design units, while their corrected frame origins differ by 657.1.
+  IX/IY independently measure the source box edges and boundary-clean
+  BETTERLIFE at the same 1577-pixel repeat. IX's initial word window included
+  neighboring frame ink and is superseded. JA's frozen −1.9 design-unit
+  whole-label trial improves BETTERLIFE at three sizes but worsens the box
+  and PETROCHEM at 4K; do not port it. JB/JC correct only BETTERLIFE after
+  three-size source checks and ten native state/custom controls. Whole-word
+  and all eight bands containing ink improve; the ninth stays exact.
+  Box/PETROCHEM, first/selected printing, fonts, advances and frame geometry
+  remain unchanged. Local pixel losses and overlapping control boundaries
+  are retained in [round seventy-six](../docs/reference-svg-round76.md).
+  Packaged source/state parity, both Store gates, 310 Rust tests and all
+  22 checks/28 matrix cases pass. Broader photographic printing remains open.
+  See the
+  [side-label plan](../docs/neomil/store-printing.md#third-card-side-label-registration--iw).
+  IZ's independent ordinary-box `Ink::Dim`→`Ink::Fg` trial at unchanged
+  geometry worsens all 24 edge/cap regions across three sizes, despite
+  brighter source cores. Retain Dim; physical ink/coverage remains separate
+  from registration. V's accepted selected-box ink stays unchanged.
+  JF/JG/JH isolate complete source/rendered PETROCHEM support and confirm
+  an absolute placement discrepancy; the earlier truncated windows do not
+  establish a source blocker. JI's single rail-midpoint box/word correction
+  improves both whole contexts and all full bands at three SVG sizes.
+  Its fractional card-3 lower glyph aperture loses 211 RGB L1, and the 4K
+  left-rail dark subset loses 2,746; retain these and smaller subset losses
+  in the identical native trial. JK reproduces current packaged baselines
+  and passes 265 tests, but both 4K glyph apertures lose (card 1 +12,763 and
+  card 3 +3,635 RGB L1), despite whole-context gains. The direct transfer
+  is rejected. JM removes boxes and
+  BETTERLIFE and confirms that isolated native card 1 still loses 18,616
+  RGB L1; this is not solely box overlap. JN confirms actual Iced paragraph
+  and outline baseline 0.892 × size with byte-exact bundled Rajdhani under
+  all three shaping modes. The scene's 0.84 subtraction puts this rotated
+  word 0.936 pixel left at 4K. JO's local +0.39-design-x compensation
+  relative to JI reverses both 4K glyph losses and improves both glyph
+  apertures at all three sizes. [Round seventy-seven](../docs/reference-svg-round77.md)
+  integrates the corrected boxes/text and a permanent baseline regression.
+  Thirteen targeted states, three-size packaged parity, both Store gates,
+  311 packaged tests and all 22 checks/28 matrix cases pass. Local subset
+  losses remain recorded. Shared baseline, accepted BETTERLIFE, fonts, ink
+  and cached outlines stay intact; broader photographic printing remains open.
+  JT rejects Dim→Fg at the accepted registration as well: 4K whole L1
+  gains conceal RMS and dark rail/cap losses, while both cards' whole
+  contexts and all rails/caps lose at 1600 and fractional sizes. All 306
+  declared subsets and six source contacts are reviewed; 196 nonempty L1
+  or RMS exceptions remain recorded. Alpha/exterior pixels are exact and
+  266 library tests pass. Retain Dim; no state or production change follows.
+  This does not alter the accepted font-baseline correction.
+  See [aperture evidence](../docs/neomil/store-printing.md#ordinary-petrochem-aperture).
   AL confirms missing repeated `MAGNUM 650` printing on ordinary cards
   1/3/4. A full shifted copy harms counters; a three-row upper-band copy
   adds unsupported ink in dark gaps. Both are rejected. Fit the repeated
@@ -169,6 +335,44 @@ content is intentionally static; no network/payment backend is specified.
 - [ ] **Fit remaining scan modulation and printing echoes.** Keep this
   separate from primary geometry/art corrections. Use actual source
   holdouts; do not add generic glow/noise or relax fidelity thresholds.
+  GZ/HA identify omitted frame copies after the accepted primary correction.
+  Two fixed affine maps survive separate side/corner continuity checks;
+  uniform 1%/2% screen-centered copies fail. HC rejects bright-primary echo
+  ink on green-channel direction; HD's darker shared-ink inference depends
+  on uncertain background endpoints, including contaminated controls.
+  HE validates the same-coordinate original Login donor on first/fourth
+  clear top controls; the third-card donor fails. HF yields feasible darker
+  effective top ink and improves both withheld columns, but retains a
+  repeated waveform error. HJ's fixed source-centroid substitution improves
+  ten full top profiles, with small local losses retained. Round seventy-three
+  completes the independently supported fourth primary-cut correction.
+  HP's fixed complete-contour SVG trial improves all nine whole-frame
+  comparisons, but worsens smaller-size first-card lower-stem and third-card
+  left regions. HQ distinguishes peak-calibrated maps from vector axes;
+  HR's single composed-x trial is mixed and does not remove those losses.
+  Neither echo trial is accepted. HS/HV isolate combined primary/echo
+  coverage; HW's supporting-line bar union repairs the large fan regression
+  with local junction tradeoffs retained. HY validates 513 exterior ground
+  pixels against Dashboard. HZ finds narrower literal SVG profiles and a
+  conditional constant-ink contradiction across rows. IA confirms actual
+  small-size filter collapse; IB's fixed nested profile improves transparent
+  alpha, but IC loses intensity on opaque artwork and is rejected. ID verifies
+  single-mask color transfer within one RGB count over 105 fixed cases.
+  IE's complete candidate improves or preserves all 150 regional checks
+  against production, with smaller-size losses against HW retained. IF's
+  native rest transfer also passes all 150 regional checks against its own
+  packaged baseline, retaining four small raw-row losses. IG verifies stable
+  cache reuse and bytes but roughly doubles 4K cold preparation. IH's verified
+  byte-equivalent bounded walk reduces that prototype cost 21% at 4K.
+  [Round seventy-four](../docs/reference-svg-round74.md) integrates the
+  accepted masks and coupled lower-stem/bar geometry after fourteen
+  state/custom/control cases and four warm-draw processes pass. All 307
+  packaged tests, 22 checks, 28 matrix cases, both Store gates and three-size
+  actual-package parity pass. Warm drawing is similar; the added artwork
+  retains a cold-preparation cost. This completes the bounded ordinary-frame
+  impressions, while remaining scan and glyph printing below stays open.
+  Geometry alone does not identify the original ink/softness recipe. See the
+  [frame-echo plan](../docs/neomil/store-frame-echo.md).
   DS–DV confirm a missing ordinary `HAND GUN` impression, distinct from
   the accepted title. Common-shift and upper-only trials fail transfer
   or truncate the contour. A complete per-card copy improves averages
@@ -179,6 +383,20 @@ content is intentionally static; no network/payment backend is specified.
   registration/contour and interrupted ink, preserving true gaps rather
   than masking individual failed pixels. See
   [round fifty-four](../docs/reference-svg-round54.md).
+  EB rejects removing the two apparently blank card-3 echo rows: their
+  source red contrast is low because of the blue photographic ground,
+  while removing ink worsens RGB and gap controls at both sizes. The clip
+  wrapper itself is RGBA-exact. A next model must validate its local
+  ground estimate outside the glyphs before using it to infer missing ink.
+  See [round fifty-five](../docs/reference-svg-round55.md#neomil-subtitle-rows-and-photographic-ground).
+  EC validates Login-photo ground plus one per-card RGB offset against
+  six independent clean rectangles. It supports broader faint ink, not
+  a row knockout. Both an additive halo and a softened complete replacement
+  improve broad scores but fail local or direct-1600 blank controls;
+  neither is accepted. Preserve the donor method and require a new
+  source-supported explanation of those local losses before another
+  blur/opacity fit. This does not recover the original background asset.
+  See [round fifty-six](../docs/reference-svg-round56.md#neomil-subtitle-ground-and-impression).
 - [x] **Restore directional socket printing echoes.** AA adds leftward
   card-1, rightward card-3/4 and downward selected-card trails while
   preserving all 25 bright primary cells. Native source RGB error on fixed
@@ -224,7 +442,7 @@ extracted-shape area is not a complete visual correctness score.
 
 Preserve VIDEO/AUDIO/GAMEPLAY/CYBERWARE/CONTROLLER, `SPERAD`,
 `+2 MODULES SLOTS`, MAGNUM650/HAND GUN, initially selected card2,
-its solid gun shifted14px left, and the fourth-card cut at x1557.
+its solid gun shifted14px left, and the corrected fourth-card cut at x1558.3.
 The socket glyph is scattered cells, not a QR payload. Shared exact
 background texture/authoring remains a separate source-material follow-up.
 

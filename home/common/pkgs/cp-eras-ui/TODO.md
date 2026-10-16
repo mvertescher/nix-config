@@ -1,4 +1,293 @@
-## Current remaining work (2026-10-01)
+## Current remaining work (2026-10-04)
+
+The requested [font and text-effect audit](todo/font-rendering.md) and its
+Neomil painting follow-up are complete. Actual bundled Latin font bytes and
+weights pass; layout semantics and earlier corrections have been audited.
+Earlier font/advance and rotated-path caches preserve accepted pixels
+while reducing measured CPU work; their full evidence remains in the
+[audit](docs/font-rendering-audit.md). Later bounded follow-ups are listed
+below. Source-font identity and live GPU performance remain separate.
+
+The current [group-opacity audit](docs/group-opacity-audit.md) verifies an
+actionable rendering defect: Neo-kitsch panel text becomes too bright
+during its existing fade because overlapping shapes fade individually.
+The fresh package replays the rest golden, but 2,529 mid-fade pixels
+exceed both endpoint colors. The scoped GPU fixture now passes exact
+endpoint and intermediate-color checks with native Rajdhani text and
+reused textures. Compatible texture views also remove shader color
+conversions. The Motion scope owns actual screen integration, cache
+invalidation, backend coverage and cost checks; no runtime change from
+this study is accepted yet. The real-panel layer split now passes six
+exact packaged comparisons, including 4K and fractional size, with
+draw-site activation verified. The native parent-renderer bridge now
+passes RGBA/BGRA endpoint, intermediate-color, layer-order and reuse
+checks in scratch. Preserving native MSAA layer batches now resolves
+the scoped candidate's 91-pixel fractional-scale mismatch with unchanged
+direct controls. All 104 normalized fixture frames pass, including
+cached input and isolated transform/content invalidation; optional-feature
+compilation is repaired too. NT/NV now connects the actual Dashboard:
+the 2,529 over-bright pixels become zero, while hidden/rest endpoints
+and 4K/fractional rest stay exact. The scratch package passes 312 tests.
+Thirteen same-process cache controls now pass, and the larger-size fade
+checks remove 21,898 over-bright pixels at 4K and 4,785 at fractional size.
+Other backends and cost still precede production integration. OB/OE now
+preserves all nine endpoint/midpoint captures while
+releasing group textures at exact hidden/rest endpoints. OD/OF's 23-step
+test verifies release and re-entry, including 99,532,800→0→99,532,800
+nominal group pixel bytes at 4K. Intermediate full-viewport storage remains
+experimental. OG/OI's 112 state frames preserve endpoints and warm replay,
+with midpoint error below half a channel level. Its small palette change
+does not meaningfully alter the fixed opaque backing; broader palette
+exposure is not claimed. OL/OM completes 1,664 fixed cost samples: the
+exact 4K portion shows the prototype is slower, so it remains unaccepted.
+The full pixel gate catches two original-route grain pixels after a 4K→1600
+resize; OQ/OS isolates the effect to retained Engine state without relaxing
+the gate. OU removes the separate mix submission and preserves all state
+and renderer-fixture pixels. Its paired 4K warm submission time improves
+67–72% against the previous prototype; cold and total completion costs
+remain unresolved. PD/PE attributes the large software cold spans to
+endpoint creation/submission rather than pipeline setup. PH's offscreen
+RTX 4070 comparison instead finds endpoint preparation dominates roughly
+72 ms cold frames; both variants produce identical hardware pixels.
+PI now reuses one child across the two endpoint draws. It preserves all
+112 state and 104 renderer-fixture images. In 832 paired cost samples,
+RTX 4070 cold frames including completion improve 71→43–44 ms (38–39%);
+software timings remain mixed. PR/PS verifies all eleven panel text runs
+against bundled font bytes and native ink bounds at three sizes on both
+drivers. PT/PU's GPU crop preserves all 106 native fixture images per
+driver, with expected retained-memory changes for partial clips. PW/PX then
+preserves all 112 Dashboard state frames and paired 4K frames per driver,
+reducing nominal retained fade storage from 99.5 to 22.0 MB (77.85%). The
+font/size/transform guard falls back outside measured cases and reuses font
+checks on warm frames. PZ's 832 fixed samples preserve pixels and counters;
+hardware passes the 15% cost guard, but cold completion stays 44–45 ms and
+the separate warm-speed gate fails. Software remains mixed. QD/QF now
+verifies early fade pixels and reduces cropped GPU misses from nine to one
+across the sampled 401–500 ms times, preserving all CPU endpoint revisions
+and full-render fallback. Native endpoint draws fall from 18 to two;
+elapsed early-frame cost is not yet measured. QH's corrected clip control
+checks selection, palette, font-version and animated-backing invalidation
+in one process. Integration and broader backend coverage remain open;
+no production or desktop-latency claim.
+
+There are 29 open source, toolkit, asset and live scopes. The latest
+[runtime checkpoint](docs/reference-svg-round85.md) corrects weak resting
+DELETE text in Entropism's working mail client. It uses existing darker
+ink only for the reference palettes, preserving the font, shaping,
+effects, other states and custom palettes. Seventeen paired captures,
+312 packaged tests, 22 checks and 28 first-attempt matrix cases pass.
+Only 136 glyph pixels change in its 1600 golden; the packaged result
+exactly matches the reviewed candidate. The broader Data display scope
+still needs callers for its remaining toolkit work.
+
+The preceding [runtime checkpoint](docs/reference-svg-round84.md) shares Entropism
+Dashboard caption outlines, reducing eighteen extractions to three.
+Warm 4K rest foreground CPU construction improves 11.912→6.930 ms (41.8%), preserving
+fonts, layout, effects, state behavior and pixels. Three fresh packaged
+captures, 312 packaged
+tests, 22 checks and 28 first-attempt matrix cases pass. Goldens and SVGs
+stay unchanged; GPU and startup performance remain outside these timings.
+The Neomil primary-title trial preserves pixels and removes extractions,
+but its mixed 4K timing does not justify integration; it stays in scratch.
+
+The preceding [runtime checkpoint](docs/reference-svg-round83.md) reuses three repeated
+Kitsch Dashboard header-note outlines. Six extractions become three,
+with exact pixels and unchanged fonts, renderer and cache bounds.
+Warm foreground CPU construction improves 16.072→14.275 ms at 4K rest
+(11.2%), 10.9% hover and 12.2–12.3% at 1600. Seventeen image pairs, both
+counter sizes, three fresh packaged sizes, 312 packaged tests, 22 checks
+and 28 first-attempt matrix cases pass. Goldens and SVGs stay unchanged.
+
+The [Neo-kitsch frame study](docs/neokitsch/store-frame.md#lolp-background-intervals-for-lower-frame-profiles-2026-10-04)
+rejects exact donor-background identity and validates a bounded interval
+on 3,200 new clear pixels. Its conditional excess profiles keep background
+uncertainty separate from stroke/halo inference; NK-14 remains open.
+The subsequent [whole-scene tests](docs/neokitsch/store-frame.md#lzma-complete-photographic-svg-check-2026-10-04)
+pin all five font faces and verify pixel-exact ground injection. The
+existing line-glow pass adds too much surrounding ink, but removing it
+leaves missing printing and narrow peaks. Text glow has no effect in the
+measured strips. All three pass-omission variants fail the fixed source
+checks; no new material or native effect is adopted.
+The proposed isolated top controls also fail their fixed ground-donor
+check in two lower bands; target-profile measurements stop before fitting.
+See the [top-control result](docs/neokitsch/store-frame.md#mo-outer-top-donor-check).
+The [straight-side study](docs/neokitsch/store-frame.md#msmt-straight-side-registration)
+also rejects a shared fifth-strand shift: three cards have asymmetric
+flanks, while the third card's isolated pass disagrees with its neighboring
+lines. Astra reproduces every pixel and edge measurement against fresh
+packaged captures and the pinned SVG. No geometry or material is changed.
+The independent [opposite-side control](docs/neokitsch/store-frame.md#mvmx-opposite-side-control)
+then rejects the third card's proposed one-pixel whole-card shift in all
+48 fixed comparisons. That hypothesis stops before an artwork trial.
+
+The preceding [Store checkpoint](docs/reference-svg-round82.md) reuses repeated Kitsch
+Store band-label outlines. Four tags reduce eighteen extractions to two
+per resting draw, with unchanged pixels. Warm foreground CPU construction
+improves 20.377→16.554 ms at 4K rest (18.8%), 18.9% hover and 20.5% at
+1600. Eighteen image pairs, five counter pairs, three fresh packaged sizes,
+312 packaged tests, 22 checks and 28 first-attempt matrix cases pass.
+Fonts, shared renderer, cache bounds, goldens and SVGs are unchanged.
+
+The [footer source study](docs/neomil/dashboard-footer.md#lhli-source-text-displacement-2026-10-04)
+finds repeated text displacements, but the position-only transfer loses
+bright glyph edges and local controls despite aggregate gains at all
+three sizes. That trial stays out of production and NM1 remains open.
+
+The preceding [Dashboard checkpoint](docs/reference-svg-round81.md) shares the repeated
+SemiBold Dashboard footer-caption outlines. Against the preceding Bold-code
+optimization, warm foreground CPU construction improves 4K rest
+3.835→2.312 ms (39.7%), with 38.6% hover and 38.0–39.2% smaller-size gains.
+Ten Wgpu pairs, tiny-skia, both counter sizes and three fresh packaged
+captures preserve pixels. All 312 packaged tests, 22 checks and 28
+first-attempt matrix cases pass, including a font-weight separation
+regression. Goldens and SVGs are unchanged. The cache still lasts one draw
+and retains at most four entries; no effect pass or font change is added.
+The preceding [Bold-code checkpoint](docs/reference-svg-round80.md)'s mixed
+initial timing and confirmed gain remain recorded separately.
+
+The preceding [frame checkpoint](docs/reference-svg-round79.md) closes
+ordinary Neomil Store primary frame coverage. One bottom correction derived from measured
+source coverage improves all changed native pixels at three sizes. Sixteen
+state cases preserve feedback, selection, custom colors and opening clips.
+All 311 packaged Rust tests, 22 repository checks and 28 first-attempt matrix
+cases pass, along with both Store gates and three-size package parity.
+Twenty-six of 27 visual images are exact; the existing Neo-kitsch bar
+residual remains one pixel at one channel level. The change adds no
+primitive, text work or effect pass. Its conditional backing model and
+isolated SVG corner/cap losses remain explicit in the
+[primary-frame study](docs/neomil/store-ordinary-frame.md).
+
+The preceding [preparation optimization](docs/reference-svg-round75.md)
+shares repeated contour-distance calculations. Fresh paired measurements
+reduce initial 4K Store preparation from 627 to 462 ms (26.3%); smaller
+sizes improve 52–53%. Retained payload, shelf hashes and the twenty-selection
+cache state sequence match. These are CPU preparation measurements, not
+warm drawing, GPU or startup timings. The optimization preserves artwork,
+fonts and text caches. The [frame-echo study](docs/neomil/store-frame-echo.md)
+retains the accepted round-74 artwork and its source limitations. Future
+glyph fitting must start with the [font audit](docs/font-rendering-audit.md)'s
+font, layout and no-op replay checks.
+
+Rounds through 54 are committed in `70b0ed6`; their dated staged-state notes
+below are historical. The later audit and follow-ups remain staged and uncommitted.
+
+The [cached rifle follow-up](docs/reference-svg-round64.md) ports the
+accepted stock details through existing encoded-RGB composition and corrects
+the cropped fourth rifle's placement. Source fit improves at all three sizes;
+selection, opening and seven feedback pairs pass. Final production timing
+improves warm 4K foreground CPU drawing 16.54→13.15 ms (20.5%), while
+reusing its images across all twenty selections. All 305 local/packaged Rust
+tests, 22 repository checks and 28 first-attempt matrix cases pass. Fresh
+packaged 4K pixels exactly match the reviewed candidate. Fonts and shared
+color rendering remain intact. All 29 broader scopes remain open.
+
+The [maker scan and title audit](docs/reference-svg-round68.md) confirms
+that Entropism's SVG title calibration does not require a native port.
+A fresh Neomil packaged 4K capture and the current 1600 matrix frame
+reproduce the accepted baseline. An
+independently measured scan phase warrants one fixed material test, but
+its actual SVG transfer fails word/size controls after six exact rendering
+no-ops. No font, runtime or artwork change follows. All 29 broader scopes
+remain open; the audit record stays staged and uncommitted.
+
+The [warning placement follow-up](docs/reference-svg-round67.md) combines
+that frozen hollow with one independently derived ordinary x offset.
+Whole-mark source comparisons improve on all four cards at all three sizes
+in SVG and native; the fourth-card side loss is resolved. Small fractional
+foot/exclamation losses remain explicit. Structural no-ops and twelve paired
+states pass, and component/native copies are synchronized. Both Store gates,
+305 packaged Rust tests, 22 repository checks and 28 first-attempt matrix
+cases pass. Fresh packaged 4K pixels match exactly. All 29 broader scopes
+remain open; changes stay staged and uncommitted.
+
+The [complete-profile follow-up](docs/reference-svg-round66.md) confirms
+narrower warning contrast in the source than in both SVG and packaged Iced.
+One hollow-only correction improves all whole-mark comparisons, but native
+fourth-card left-side error rises 14–22% and its foot also loses detail. The
+trial stays out of production. Independent frame/stem controls then confirm
+rightward ordinary-card contrast offsets and near-zero selected placement.
+That checkpoint preserved production geometry; round sixty-seven evaluates
+the bounded placement follow-up. All 29 broader scopes remain open.
+
+The [warning-edge review](docs/reference-svg-round65.md) preserves the
+current artwork. Fixed side controls do not isolate a new foot contour:
+opaque-ink inference fails, and truncated SVG profiles invalidate the pooled
+width comparison. Independent review corrects the measurements and confirms
+the warning's actual SVG ancestry. Any next contour trial needs complete,
+corresponding edge profiles; no font or shared renderer change follows.
+
+The [native rifle review](docs/reference-svg-round63.md) rejects the joint
+bright-ink/seam/band port: 4K improves, but smaller rail and receiver
+crops lose detail. Fixed-mask diagnosis points to edge coverage; preserve
+native art while testing that rendering difference. A controlled edge probe
+confirms the intentional linear-native versus encoded-SVG blend difference;
+future glyph fits must account for it before changing font weights. Fonts
+and caches stay unchanged, and all 29 broader scopes remain open.
+
+The [stock-band follow-up](docs/reference-svg-round62.md) adds the lower
+segmented band to the Entropism source SVG and component. A corrected
+junction improves every fixed segment comparison at three sizes while
+preserving the slot and upper seam. Native ink remains under review;
+all 29 broader scopes stay open. Both fidelity gates and the full check
+pass (22 checks, 28 cached matrix cases; runtime package unchanged).
+
+The [tiny-print/seam round](docs/reference-svg-round61.md) adds a missing
+ordinary Entropism rifle seam to the SVG and matching component. Its
+native trial loses source detail and stays out of Rust. Kitsch placement
+and Neomil scan-modulation trials also fail transfer; the intended fonts
+and accepted caches remain intact. Local native ink and exact printing
+stay open, alongside all 29 broader scopes. Both Store fidelity gates,
+24 SVG structure checks and the fresh full 22-check/28-case run pass;
+the package and cached visual outputs are unchanged.
+
+The [text/echo recheck](docs/reference-svg-round60.md) verifies current
+Neo-kitsch packaged captures and corrects a historical fractional text
+measurement. The intended bundled font is selected correctly; remaining
+printing differences do not justify a shared baseline or weight change.
+Neomil's frozen secondary profile still loses small-size/text detail after
+the rim correction, and the veneer bridge remains unconfirmed in original
+RGB. Only documentation changes; EF remains the verified runtime checkpoint.
+
+The [footer coverage round](docs/reference-svg-round59.md) corrects excess
+ink along the Neomil Dashboard's bottom rim using existing solid drawing
+primitives. Every changed native pixel improves source RGB at three sizes;
+seven state pairs and production/package parity pass. All 303 local and
+packaged Rust tests, 22 repository checks and 28 matrix cases pass. The
+trace, component and two Dashboard goldens are synchronized. Plaque/fan source diagnostics retain
+their unresolved boundaries; all 29 broader scopes remain open.
+
+The [sampling/junction round](docs/reference-svg-round58.md) adds a tested
+uniform source sampler to prevent fractional geometry errors. All sixteen
+canonical source samples are exact; nine tests and all 22 repository
+checks pass, with 27 visual cases plus the new sampler case. The runtime
+package is unchanged. Entropism's historical gap-loss count falls from
+15 to 12 after accounting for the already accepted M; the Neomil grating
+still lacks a supported lower junction. All 29 broader scopes remain open.
+
+The [plaque/feet round](docs/reference-svg-round57.md) establishes Neomil's
+unequal source hatch pitch and a coherent local phase. Its baked-centerline
+trial improves the plaque at three sizes but loses leading/A2 detail.
+Kitsch foot rounding still loses selected-card detail after correcting
+inadvertent long-side movement. Fractional-comparison and scratch native
+provenance errors are corrected before review. No artwork is integrated;
+all 29 broader scopes remain open and the staged runtime stays at DZ.
+
+The [ground/paint round](docs/reference-svg-round56.md) validates a local
+Login-photo background estimate for Store subtitles. Both complete-echo
+trials still fail local or small-size controls. Entropism's exterior font
+pixels are narrowed to a whole-run painting interaction, while mailbox
+phase and automatic veneer tracing provide no accepted geometry change.
+These diagnostics preserve the completed font/performance audit and all
+29 broader open scopes; no production artwork changes in this round.
+
+The [font-replay/printing round](docs/reference-svg-round55.md) establishes
+an exact complete-run Entropism SVG font replay, but rejects its contour
+trial for shape and exterior-pixel losses. A Neomil subtitle row knockout
+also worsens both sizes: low red contrast does not establish missing ink
+over blue photographic bands. Neo-kitsch's lower grain needs a bounded
+fan family with supported exits, rather than one truncated ridge. These
+verified diagnostics add no artwork changes or task closures. All 29
+broader scopes remain open; DZ is the latest verified runtime change.
 
 The [donor/silhouette/subtitle round](docs/reference-svg-round54.md)
 checks Kitsch Vehicles against guarded Mail/Store donor pixels, reproduces
@@ -6,8 +295,7 @@ the Neo-kitsch isolated-letter diagnostic, and confirms missing Neomil
 ordinary subtitle impressions. The full subtitle copy fails local dark-ink
 controls in SVG and actual native captures; a five-row opacity fit also
 fails transfer. These trials remain in scratch. All 29 broader scopes stay
-open; changes remain staged and uncommitted, with CZ the latest tested
-implementation.
+open at that checkpoint, when CZ was the latest tested implementation.
 
 The [coupled-ground/font round](docs/reference-svg-round53.md) verifies
 the Kitsch candidate through nine complete scene renders. Exposed-ground
@@ -17,7 +305,7 @@ substitution loses bright lettering at 1600 and is rejected. The font's
 document record does not establish label identity. The queue audit confirms
 17 source-fidelity scopes, six caller/design prerequisites, two asset
 scopes and four live checks. All 29 remain open; changes stay staged and
-uncommitted, with CZ the latest tested implementation.
+uncommitted at that checkpoint, when CZ was the latest tested implementation.
 
 The [completion campaign](todo/completion.md) tracks the active lanes and
 integrated verification for the request to work through all open items.

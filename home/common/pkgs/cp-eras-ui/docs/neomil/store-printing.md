@@ -8,7 +8,7 @@ The left source margin code has bright native bounds x50.83..56.25/y382.08..468.
 
 The corrected STORE margin run uses Rajdhani Regular 10.5, tracking 0.4, turned at (56.4,469). At native resolution, a common strong-red mask (R>180, R>2.2G, R>2B) puts the source at x120..134/y917..1123 and the updated SVG at x119..134/y918..1123. Its whole-run IoU rises from 0.043 with the old geometry and corrected B to 0.241. Independent vertical holdouts also improve: `CP/0B` y917..985 from 0.032 to 0.210, middle `54/05` y985..1060 from 0.039 to 0.105, and trailing digits y1060..1125 from 0.061 to 0.490. Source scan echoes and distressed glyph edges remain outside this primary-run fit. Native Iced baseline and width need review; login and footer geometry were retained.
 
-The initial J pass ported the old SVG's `#gundetail` template to Iced. That schematic was then superseded by source-traced five-tone rifle contours for the ordinary and selected cards. The [primary-art record](store-primary-art.md) gives the native mask measurements and held-out threshold comparison. The art remains in the existing `GUN_OUTLINED`/`GUN_SOLID` state derivation, including card 4's permanent x1557 viewport.
+The initial J pass ported the old SVG's `#gundetail` template to Iced. That schematic was then superseded by source-traced five-tone rifle contours for the ordinary and selected cards. The [primary-art record](store-primary-art.md) gives the native mask measurements and held-out threshold comparison. The art remains in the existing `GUN_OUTLINED`/`GUN_SOLID` state derivation, including card 4's permanent viewport, corrected to x1558.3 in [round seventy-three](../reference-svg-round73.md).
 
 The STORE source and SVG use 1 design unit of tracking on nav, title, stat and socket captions. Iced now matches that local tracking. EMPTY/SOCKET is Regular in the SVG and source appearance; its earlier Rust Bold run has been changed to Regular. The source cap heights, footer overflow and some primary label widths still need native fitting after this material/printing checkpoint. The STORE card/nav material proposal remains separate in `/tmp/cp-eras-completion/neomil-store-material-proposal.md`; no STORE material recipe was applied in this printing pass.
 
@@ -417,3 +417,181 @@ rejected. Do not carve out individual failed source pixels. Existing
 inspected cards are transfer controls, not blind holdouts. See
 [round fifty-four](../reference-svg-round54.md) for the exact review boundary,
 scripts, manifests and source/SVG/native evidence.
+
+## Third-card side-label registration — IW
+
+Fixed 4K source/SVG/current-package crops suggest a horizontal registration
+error in the third card's PETROCHEM box and rotated labels. The first card
+is closer to its source. First/third content origins remain x437/x1096,
+659 units apart; their corrected frame origins are x440/x1097.1, 657.1 units
+apart. Content was deliberately preserved during that frame correction, so
+the differing offsets alone do not establish an error. T's rejection of a
+common BETTERLIFE shift remains
+valid, and V's accepted selected-only displacement stays unchanged.
+
+Before testing a correction, measure the two source box edges and top/bottom
+caps, compare first/third copies, and separately inspect both whole words
+and their gaps. Freeze the input crops and controls before measuring. Only
+a coherent third-card registration discrepancy can support a local common
+translation of its box and labels. Keep font faces, advances, text effects,
+first/selected printing and frame geometry fixed. Require three-size source
+comparisons, exact exterior controls, native state/custom/opening checks and
+full package verification before integration. No candidate is accepted yet.
+
+The ordinary native box also uses `Ink::Dim`, while its SVG uses foreground
+ink. V corrected the selected box only and did not establish ordinary box
+ink. Preserve raw source/SVG/native core and shoulder RGB in the registration
+study, then assess this mapping separately. A source-bright ordinary box,
+not the selected example alone, is required before a native ink correction.
+
+The initial unresized crops and input hashes are in
+`/tmp/cp-eras-next/iw-store-side-printing/`. This is part of the existing
+repeated/margin-printing task; it adds no new open scope.
+
+IX measures both ordinary source box edges at a first-to-third displacement
+of 1577 physical pixels. Its first BETTERLIFE comparison was invalid: the
+third-card window included 150 pixels of neighboring frame. IY retains that
+failed measurement and uses paired supports with no strong-red pixels on
+their boundaries. The complete source word repeats at 1577.27/1577.03/1576.99
+pixels at the three declared thresholds; SVG repeats at 1581.40/1581.31/
+1581.27, and native at 1581.07/1581.07/1581.11. Upper/lower halves agree.
+The rail-free PETROCHEM interior nearly repeats at 1577 pixels, but its
+narrow support does not establish the full glyph extent. These observations
+support one third-card-only whole-label translation trial: −1.9 design
+units, the difference between authored 659 and observed 657.1 spacing.
+Keep the box with its lettering; do not infer a font or ink correction from
+registration evidence. JA freezes this trial before three-size rendering.
+
+JA's three SVG baselines exactly replay the accepted artwork. The trial
+improves the whole context and BETTERLIFE at every size, but at 4K its
+PETROCHEM box error rises by 7,474 RGB L1 and the glyph/interior region by
+10,102. Both word halves worsen; bright and dark subsets also lose. Those
+local failures reject a common whole-label port. First/selected printing,
+neighboring frame, exterior and alpha remain exact. JB next isolates the
+independently measured BETTERLIFE displacement, with nine equal 20-pixel
+vertical bands over y430–610 to expose local losses. The box and PETROCHEM
+stay fixed; the shift is unchanged and no alternate displacement is tried.
+
+JB/JC accept that isolated BETTERLIFE placement after three-size SVG/native
+source checks. Every fixed band containing ink improves, including bright
+and dark subsets. Native whole-word RGB L1 improves 341,758→268,415 at 4K,
+58,697→44,632 at 1600, and 55,635→43,070 at fractional size. Ten targeted
+native state/custom controls pass; selecting the third card preserves its
+original printing exactly. The existing glyph-outline cache key, fonts,
+tracking and active primitive count remain unchanged. Local pixel losses
+and overlap with the fixed PETRO control rectangle remain explicit in
+[round seventy-six](../reference-svg-round76.md). All 310 packaged tests, 22 repository checks, 28 first-attempt matrix
+cases, both Store gates and three-size actual-package parity pass.
+
+IZ separately tests ordinary native `Ink::Dim`→`Ink::Fg` at unchanged
+geometry. It fails all 24 declared edge/cap comparisons across three sizes.
+Whole-context RGB L1 rises 593,762→633,551 and 667,342→700,403 for cards
+1/3 at 4K; both smaller sizes worsen too. Selected printing, exterior and
+alpha remain exact. The brighter source core does not justify brightening
+the current displaced raster footprint. Retain Dim; this rejection does
+not settle physical ink or coverage after a geometry correction. No color,
+opacity or width sweep follows. Frozen source records and rejected native
+captures remain in `/tmp/cp-eras-next/ix-side-label-registration/`,
+`iy-side-word-support/` and `iz-ordinary-box-ink/` under the same parent.
+
+## Ordinary PETROCHEM aperture
+
+JF confirms persistent source box rails at x1674.5/1691.5 for card 1 and
+x3251.5/3268.5 for card 3 across 100 straight rows and three thresholds.
+Their absolute offsets differ from the authored boxes; a relative frame
+translation alone leaves the first card's error. Raster peak centers are
+not uniquely the original vector axes, and brighter ink remains rejected.
+
+JF's initial glyph windows were interior diagnostics: they truncated the
+first P and terminal M and overlapped different source/rendered rails.
+That does not establish a source blocker. JG's complete original-only
+apertures, [1676,440,1690,551] and [3253,440,3267,551], have clear outer
+boundaries at thresholds 160/180/200 and include rows 441–549. Full and
+upper/lower red support repeat at +1577 pixels. Raw RGB still differs with
+local ground; this is no opacity or font fit.
+
+JH isolates the existing rendered glyphs by removing only ordinary boxes
+and BETTERLIFE in a scratch SVG. Its baseline exactly replays round 76.
+Complete isolated red support at threshold 180 is x1679–1689 for card 1
+and x3261–3271 for card 3, with clean wide-window boundaries; the smaller
+source apertures clip the rendered glyphs and cannot locate their full
+extent. The source printing is heavier and more continuous, so photographic
+red centroids and transparent glyph-alpha centroids are not interchangeable.
+This confirms a placement discrepancy without identifying a font change.
+
+JI freezes one coupled box-plus-PETROCHEM translation from the independent
+rail midpoints: −0.75 design x on card 1 and −8/3 on card 3. It preserves
+BETTERLIFE, box width/ink and all font properties. Three-size fresh SVG
+baselines exactly replay round 76. Whole-context RGB L1 improves
+434,870→277,850 / 394,321→257,606 at 4K, 66,753→45,440 / 62,323→38,504
+at 1600, and 50,917→42,652 / 47,855→40,872 at fractional size (cards 1/3).
+All nine full context bands improve. Local regressions remain: fractional
+card 3's lower glyph aperture loses 211 RGB L1 across 138 pixels, and the
+4K left-rail dark subset loses 2,746; smaller bright/dark subset losses are
+retained in the trial report. Alpha and all exterior pixels are exact.
+
+JK tests the identical fixed correction in the actual Iced Store example.
+Its fresh baselines exactly match the round-76 package at all three sizes,
+and all 265 existing library tests pass. Whole contexts improve, but the
+4K glyph apertures worsen: card 1 RGB L1 153,944→166,707 and RMS
+59.112→64.263; card 3 L1 148,242→151,877 and RMS 63.122→66.752.
+Both upper/lower glyph regions lose, predominantly on source-bright pixels.
+This prevents accepting the direct native transfer from aggregate gains.
+No state extension, component/golden update or production integration ran.
+The initial unbuilt feedback draft omitted the inferred ordinary card-2
+offset; that was repaired before compilation without changing the trial.
+
+JM removes the boxes and BETTERLIFE at both frozen positions, retaining the
+same glyph and drawing route. Isolated native card 1 still loses 18,616 RGB
+L1 (12,007 on bright source pixels), while the isolated SVG improves 21,423.
+Native card 3 improves only 519 overall, with bright gain 5,116 opposed by
+dark loss 4,624; SVG improves 32,061. This distinguishes the first-card
+glyph loss from box overlap. Full native strong-red supports sit roughly
+one pixel left of SVG supports at the same authored positions.
+
+JN confirms the actual Iced outline baseline at 0.892 × size. Paragraph
+line_y, PETROCHEM outlines and a baseline H control agree under Auto,
+Basic and Advanced at sizes 7.5/18; the resolved face bytes exactly match
+bundled Rajdhani Regular. Its ascent/descent 930/−346 and centered 1.2-line
+formula independently give the same factor. The scene subtracts 0.84,
+leaving +0.39 design y; clockwise rotation maps this to −0.936 physical x
+at 4K. Root replayed all three CPU probes exactly and checked the font
+headers. This establishes a coordinate offset, not a complete source fit.
+
+JO's local +0.39-design-x native glyph compensation relative to JI passes
+source review and thirteen targeted native states, keeping the corrected
+boxes fixed. At 4K glyph-aperture RGB L1 improves 153,944→144,061 and
+148,242→125,353 for cards 1/3; both apertures and their halves improve in
+all-pixel L1/RMS at all three sizes. Local bright/dark and RMS-only losses
+remain explicit in [round seventy-seven](../reference-svg-round77.md).
+The shared baseline, child outline cache keys and accepted BETTERLIFE
+remain intact. JR adds a permanent CPU outline-baseline regression; no
+per-frame measurement or effect is added. All 311 packaged tests, 22 checks,
+28 first-attempt matrix cases, both Store gates and three-size package
+parity pass. Existing calibrated artwork prevents a blanket baseline change.
+Photographic weight, softness and repeated printing remain open. Evidence is retained in
+`/tmp/cp-eras-next/jf-petrochem-primary-profile/` and
+`jg-petrochem-source-aperture/`, `jh-petrochem-glyph-isolation/`,
+`ji-petrochem-midpoint/`, `jk-petrochem-native/v2/`,
+`jm-petrochem-native-isolation/`, `jn-rajdhani-baseline/`,
+`jo-petrochem-baseline-compensation/`, `jp-petrochem-states/`,
+`jr-baseline-regression/`, `jq-petrochem-integration/` and `ht-echo-review/`
+under the same parent. The native trial preserves all font bytes, text
+properties, cached child outlines and active primitive counts; no new
+rendering effect or performance claim is introduced.
+
+JT rejects the isolated ordinary-box Dim→Fg change at the accepted
+registration too. Against the verified round-77 package, whole-context RGB
+L1 improves by 12,048/8,667 at 4K for cards 1/3, but RMS worsens by
+0.467/0.858 and dark-source rails/caps lose. At 1600, whole L1 worsens by
+3,657/6,320; at fractional size it worsens by 2,705/6,459, with RMS losses
+for both cards. All rails/caps lose at both smaller sizes. Box antialiasing
+also changes some fixed glyph-aperture pixels despite unchanged glyphs.
+Astra independently checks all 306 declared subsets and the six contacts;
+196 nonempty L1 or RMS exceptions remain enumerated. Alpha and exterior
+pixels are exact, and all 266 library tests pass. Retain Dim. No state,
+golden or production change follows this rejected trial; font bytes,
+baseline compensation, geometry and cached outlines remain intact. The
+earlier IZ rejection at the displaced footprint remains distinct. Frozen
+evidence is in `/tmp/cp-eras-next/jt-registered-box-ink/`; the root decision
+and recomputed scores are in `ht-echo-review/` under the same parent.

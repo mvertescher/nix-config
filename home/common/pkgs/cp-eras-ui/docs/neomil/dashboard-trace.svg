@@ -1720,8 +1720,9 @@
       <rect x="1211.5" y="866.5" width="144" height="24" stroke-width="2.5" opacity=".25"/>
       <rect x="1212.5" y="867.5" width="144" height="24" stroke-width="2.5" opacity=".13"/>
     </g>
+    <defs><linearGradient id="footer-primary-vertical" gradientUnits="userSpaceOnUse" x1="0" y1="864" x2="0" y2="889"><stop offset="0" stop-color="#ef3333"/><stop offset=".99" stop-color="#ef3333"/><stop offset=".99" stop-color="#ef3333" stop-opacity=".15"/><stop offset="1" stop-color="#ef3333" stop-opacity=".15"/></linearGradient></defs>
     <rect x="1209.5" y="864.5" width="144" height="24" fill="none"
-          stroke="#ef3333" stroke-width="1"/>
+          stroke="url(#footer-primary-vertical)" stroke-width="1"/>
     <rect x="1210" y="865.000000000" width="143.0" height="0.416666667" fill="#ef3333"/>
     <rect id="footer-left-inner-coverage" x="1210" y="865.416666667" width="0.416666667" height="22.500000000" fill="#ef3333"/>
     <rect x="1210.5" y="887.083333333" width="142" height="1.666666667" fill="#ef3333"/>

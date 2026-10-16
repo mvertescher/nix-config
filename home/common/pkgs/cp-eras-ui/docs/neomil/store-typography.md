@@ -131,3 +131,180 @@ semantic scene keeps Dim. Eligibility still uses the complete reference
 palette and variant; custom/variant routing is unchanged. The component
 footer excerpt uses the same #fb3535 as its parent trace. Native reference
 and custom captures are required before accepting the color correction.
+
+## Ordinary compliance lines — JV
+
+A fresh 4K original/SVG/current-package comparison exposes a primary
+typography mismatch in the two ordinary CC35 lines. Both lines are
+implemented, but the source runs are visibly wider and brighter, with
+rounder glyphs than the current Rajdhani approximation. Card 3 repeats
+the discrepancy; the fourth card also starts farther right in the render
+and reaches its cut with different letters. This is separate from the
+accepted title and side-label printing, and from faint secondary copies.
+
+JV retains full RGB contexts and five-threshold row/column profiles.
+At R>120 with red-dominance controls, the first source line spans 608
+physical pixels on both cards 1/3, versus 527 native; the second spans
+442 versus 386. Source first-line tops are y1175 versus native y1168,
+and second-line tops are y1194 versus y1187. Lower-threshold profiles
+corroborate a six-to-seven-pixel vertical difference. The fourth card's
+left/cap support repeats it, while its right ends are clipped. These
+different inks make threshold widths descriptive, not exact font metrics
+or evidence for changing weight. Astra independently verifies all 90
+threshold groups and nine raw contexts.
+
+JW's one +2.5-design-y translation improves both complete SVG lines on all
+three cards at three sizes. All 54 complete-line all/bright/dark RGB L1
+and RMS comparisons improve; alpha and exterior pixels remain exact.
+Astra independently recomputes 972 subset records and reviews nine
+contacts. The 67 local exceptions remain explicit: card 3's 4K second-line
+dark band 5 loses 9,008 L1, and card 1's second-line profile gap at
+x1398–1405 loses 141 all-pixel L1. The profile gaps are source-empty
+strong-red columns, not assumed semantic word boundaries; overlapping
+line unions are not summed as disjoint data. An initial fractional
+viewport-alignment error is preserved separately; the accepted comparison
+uses direct top-left renders matching canonical source sampling.
+
+JX's identical native coordinate correction improves all 54 complete-line
+comparisons; Astra recomputes all 972 records and retains 93 local losses.
+Sixteen headless state cases pass, including custom colors, selected-card
+controls, the clipped fourth card and two partial caption reveals. The
+disabled wrapper reproduces actual Store frames. [Round seventy-eight](../reference-svg-round78.md)
+integrates the correction after three-size package parity, both Store
+gates, 311 packaged tests, 22 checks and 28 first-attempt matrix cases.
+Font, ink, width, x properties, drawing routes and primitive counts stay
+fixed. This addresses only vertical registration; the wider source glyphs
+and different horizontal positions remain open. Font byte selection,
+source-font identity, layout and ink remain separate questions. No
+replacement font or new text effect is accepted.
+
+KA audits the current caption implementation before further width fitting.
+Each line is one `Prim::Text` using bundled Rajdhani Regular, with no
+per-character splitting, explicit width measurement or outline-cache entry.
+The existing font regression checks actual selected bytes; no new fallback
+defect is demonstrated. The pinned Wgpu backend sends uniform text to its
+cached-text route. Layout keys include content, font, size, line height,
+bounds dimensions, shaping and alignment, excluding position, color and
+clip. Moving these baselines therefore introduces no new layout-cache key.
+This code-path review does not measure GPU time or runtime cache-hit rates.
+The source's roughly 15% wider threshold support
+does not measure shaped advances, especially with different ink strengths.
+The source also repeats at +1,577 physical pixels versus roughly +1,581
+native, exposing a separate card-origin discrepancy. Compare exact-run
+glyph origins and contours before choosing a width correction.
+
+`Prim::Wide` would switch these ordinary runs to filled outlines. Its
+current reusable optimization is restricted to marked Bold title runs,
+so Regular captions would not receive that optimization automatically.
+Measure any resulting cost; a stretch is not a free correction or evidence
+of source-font identity. The accepted vertical move retains the simple
+text route and introduces no new effect. KA's pinned evidence is in
+`/tmp/cp-eras-next/ka-compliance-font-audit/`.
+
+KB then probes the exact two complete and two truncated caption strings at
+sizes 8 and 19.2. All 24 cases and 1,008 glyph records select the bundled
+Regular bytes with nonzero glyph IDs. Auto and Basic geometry agree exactly;
+Advanced differs by at most 0.00007 physical pixel in glyph x and 0.000062
+in outline bounds. The complete runs advance 529.959/387.802 pixels at 4K.
+These are shaped advances, distinct from the photographed ink widths.
+
+Matched words confirm a contour/layout discrepancy. At the declared R>120
+red-dominance threshold, their half-open pixel-index widths are:
+
+| Token | Source, both complete cards | Native card 1 | Native card 3 |
+| --- | ---: | ---: | ---: |
+| ONLY | 45 | 37 | 38 |
+| ALLOWED | 86 | 72 | 71 |
+| TO | 22 | 16 | 17 |
+| DEVICE. | 65 | 55 | 54 |
+
+Native windows come from actual whole-run glyph clusters, including the
+terminal period, and exclude the other caption line. A descriptive connected
+component check separates the source's rounder O at R>120: 12 pixels wide,
+versus 7/8 native. Lower-threshold source fringes merge letters, while
+higher-threshold native ink fragments or vanishes; neither gives a complete
+comparable glyph. Differing ink and rasterization remain confounders, so
+these bounds do not establish a safe 1.15× stretch or the source typeface.
+Astra verifies the probe, all 60 source/native word-mask records, twelve
+component controls and both raw contact sheets. The initial scratch probe's
+space-callback assumption and the terminal-token window correction remain
+recorded in `/tmp/cp-eras-next/kb-compliance-layout/`; they were diagnostic
+harness repairs, with no production font change.
+
+The source repeat of +1,577 pixels versus authored +1,581.6 remains a
+separate position question. KC tests only the third ordinary caption pair
+at x9.1 instead of x11, preserving the accepted baselines, fonts and ink.
+Fresh baselines exactly match the accepted SVG at all three sizes. Whole
+contexts and all-pixel line unions improve, but three of eighteen complete
+line/subset comparisons fail: 1600 second-line bright loses 178 RGB L1,
+fractional first-line dark loses 425, and fractional second-line bright
+loses 184; RMS also worsens in each. All 79 local exceptions among 972
+records are retained, including the 4K first-line gap loss of 1,243.
+Astra recomputes the complete inventory and reviews three source contacts.
+Alpha and every pixel outside the third caption context remain exact.
+The standalone shift is rejected under the frozen gate; no native trial,
+retune or production change follows. This preserves the evidence for a
+repeat-position discrepancy while leaving complete font/layout fidelity
+unresolved. Evidence is in `/tmp/cp-eras-next/kc-compliance-repeat/`.
+
+JV's initial baseline is the verified round-77 package; its SVG is freshly rendered
+with the pinned font environment. Original-resolution contacts and input
+hashes are in `/tmp/cp-eras-next/jv-compliance-source/`; the bounded trials
+are in `jw-compliance-registration/` and `jx-compliance-native/` under
+the same parent.
+
+KD independently checks the exact Rajdhani, FreeSans Regular and Exo2 Light
+font tables. None is identified as the Neomil source face. FreeSans Regular
+is a plausible generic shape comparison: at the same nominal cap height,
+its O outline is roughly 11.92 physical pixels wide versus Rajdhani's 7.74.
+This compares font outlines, not photographed threshold bounds. Earlier
+FreeSans Login and Exo2 Neo-kitsch rejections do not answer the Store question.
+
+KE tests only FreeSans Regular at the predeclared cap-normalized size
+`8 × 643 / 729`, preserving current placement, ink and clipping. Merely
+making the exact font file available leaves the accepted round-78 SVG
+byte-exact at all three sizes. The six ordinary text-node changes preserve
+alpha and every exterior/selected pixel, but fail 20 of 54 complete-line
+checks. All eighteen dark subsets worsen both L1 and RMS; card 3's 4K first
+line also loses 20,222 all-pixel RGB L1. The first/third source O-hole errors
+increase 3,081→3,856 and 3,433→4,123. Astra verifies all 1,071 regional records,
+the enclosed source holes and nine contacts; 394 local exceptions remain.
+Reject this unfitted face/cap swap. It is not evidence against a separately
+justified complete-layout model. Source-only diagnostic window repairs are
+retained; word/O contexts are not isolated glyph scores, and overlapping
+profile-gap unions do not identify every increased red pixel as false ink.
+
+KF checks the same four complete/truncated strings with actual Iced:
+24 cases and 1,008 glyphs select the exact FreeSans Regular bytes. Auto/Basic
+agree; Advanced differs below 0.00005 pixel. Its actual baseline is 0.95 ×
+size, and its cap-normalized full-line advances are 584.155/430.843 pixels.
+A separate shared origin/tracking fit uses only ten first-line source
+word-lefts. Held-out word edges have 2.024-pixel RMS and 4.066-pixel maximum
+error at 4K, versus 3.194/7.885 for Rajdhani under the same fitting rule.
+Repeated cards are correlated observations. These remaining errors prevent
+claiming an exact layout or source-font identity. A tracked native transfer
+would also need full-run/split-painter and cost checks; it would add work
+to the current six complete text runs. Frozen evidence is in
+`/tmp/cp-eras-next/kd-caption-font-evidence/`, `ke-compliance-face/` and
+`kf-caption-shaping/` under the same parent.
+
+KG tests that frozen two-parameter model on the six ordinary SVG nodes.
+Both the accepted baseline and a zero-letter-spacing identity replay are
+byte-exact at all three sizes before the fitted render. All 36 all-pixel
+and bright complete-line comparisons improve against the accepted SVG,
+but ten dark comparisons fail: seven worsen both metrics and three gain
+L1 while losing RMS. In total, 44/54 improve both. The first O-hole L1
+still increases 3,081→3,272; third/fourth holes improve. A hole score alone
+does not separate the outline from faint printing or the underlying field.
+All 54 line comparisons improve against the rejected KE swap, which is
+useful layout evidence but does not replace the accepted baseline.
+
+Astra verifies 1,071 records against each baseline and all nine source
+contacts. The 185 local L1/RMS exceptions against production remain in
+`/tmp/cp-eras-next/kg-compliance-layout/`, including second-line dark losses
+at every size and a 4K third-card DEVICE. context loss. Alpha, selected
+captions and exterior pixels remain exact. Reject the transfer under the
+frozen gate; there is no native font, tracked painter or performance change.
+The current six cached text runs stay intact. Further work needs an
+explanation of the remaining word/contour and printing differences before
+another parameter fit, rather than moving individual failed glyphs.

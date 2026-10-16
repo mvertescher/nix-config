@@ -224,6 +224,18 @@ in
 package.overrideAttrs (old: {
   passthru = (old.passthru or { }) // {
     tests = {
+      # Source comparisons must use the Scene's uniform scale at fractional
+      # viewport sizes. Keep this helper checked by the existing matrix.
+      sourceSampling = runCommand "cp-eras-ui-source-sampling" {
+        nativeBuildInputs = [ (python3.withPackages (ps: [ ps.pillow ])) ];
+      } ''
+        mkdir scripts
+        cp ${./scripts/sample_source.py} scripts/sample_source.py
+        cp ${./scripts/test_sample_source.py} scripts/test_sample_source.py
+        python3 scripts/test_sample_source.py
+        touch "$out"
+      '';
+
       # The original case: no published theme, so this is the crate's
       # compiled fallback rendering the neomil dashboard.
       visual = import ./tests/visual.nix {

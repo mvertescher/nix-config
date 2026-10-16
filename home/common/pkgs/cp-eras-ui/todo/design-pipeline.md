@@ -2,6 +2,18 @@
 records are relative to the crate root. Dated notes retain their original
 reasoning; later completion entries supersede earlier open-item lists.
 
+- [x] **Centralize viewport source sampling (EE).** Two fractional studies
+  stretched the original or rounded its content height before filtering.
+  `scripts/sample_source.py` now preserves exact uniform scale and top-left
+  alignment, records fractional bounds/hashes, and marks unknown padding
+  with alpha. Content-tile filtering bounds intermediate allocation.
+  Nine regression tests cover canonical pixels, coordinate invariance,
+  fractional coverage, extreme aspect ratios and CLI input preservation;
+  `sourceSampling` joins the existing Nix test matrix. All sixteen original
+  images retain their exact canonical RGB Lanczos samples. See
+  [sampling guidance](../docs/PIPELINE.md#sampling-originals-at-a-viewport-size)
+  and [round fifty-eight](../docs/reference-svg-round58.md).
+
 ## Design pipeline: the traces were invented (2026-09-01)
 
 > **Standing rule (2026-09-01): SVG edits require a vision-capable

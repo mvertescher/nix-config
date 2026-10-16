@@ -16,34 +16,376 @@ Matrix similarity scores are rounded. AJ adds direct pixel comparisons
 and identifies a one-level bar pixel already present in AI; a reported
 100.000% does not alone establish pixel equality.
 
+Round 75 closes the bounded IQ preparation task with identical pixels and
+a measured 26.3% reduction in initial 4K preparation. The current queue has
+29 unchecked scopes. Round 85 corrects weak resting DELETE text in
+Entropism's working mail client using existing darker ink for its reference
+palettes. Fonts, shaping and effects are unchanged; all seventeen paired
+captures and full repository/package checks pass.
+Round 84 shares Entropism Dashboard captions,
+reducing warm 4K rest foreground CPU work by 41.8% with exact pixels
+and full checks. The Neomil primary-title trial remains scratch-only
+because its fixed timing does not establish a useful 4K benefit.
+Round 83 reuses Kitsch Dashboard header-note outlines,
+preserving pixels with 11.2% less warm 4K rest foreground CPU construction.
+Round 82 reuses Kitsch Store band-label outlines,
+preserving pixels with 18.8% less warm 4K rest foreground CPU construction.
+Round 81 additionally shares the two repeated
+SemiBold footer captions, with exact pixels and 39.7% less warm 4K rest
+foreground CPU construction against the preceding optimized baseline.
+Round 80 reuses the three Bold Dashboard footer-code
+outlines with unchanged pixels and a confirmed 13.2% warm 4K foreground
+CPU improvement. Source fidelity and live GPU limits remain separate.
+Round 79 closes ordinary primary frame coverage with
+one independently constrained bottom correction; the earlier uniform 0.6
+trial remains rejected.
+Round 76 corrects the third ordinary Store card's BETTERLIFE placement while
+preserving fonts and cached outlines; its broader printing task stays open.
+Round 77 corrects ordinary PETROCHEM registration and guards the measured
+Rajdhani outline baseline without changing the shared calibration.
+Round 78 corrects the ordinary CC35 captions' vertical registration using
+the same fonts and drawing paths; their width and contour mismatch remains.
+
 ## Current lanes
 
 | Lane | Scope | Owner record |
 | --- | --- | --- |
+| Group fade correctness | PI reduces RTX 4070 cold completion 38–39%; PW/PX reduces nominal retained fade storage 99.5→22.0 MB while preserving pixels and font/projection fallbacks. PZ's hardware cost guard passes, but cold completion stays 44–45 ms and software remains mixed. QD/QF preserves early pixels while reducing sampled GPU misses 9→1 and endpoint draws 18→2. QH v3 checks actual key invalidation and a visibly changing backing clip. Early-frame timing, broader backend coverage, production integration and desktop latency remain. OQ/OS separately isolates resize-history drift to Engine state | [Group-opacity audit](../docs/group-opacity-audit.md) |
+| Working-mail DELETE contrast | Reference Entropism rest ink corrected; seventeen pairs preserve other states, palettes and eras, and packaged pixels match the reviewed candidate | [Round eighty-five](../docs/reference-svg-round85.md) |
+| Font implementation and text cost | Font/advance audit and bounded text reuse verified; LT adds 41.8% Entropism Dashboard warm 4K rest CPU reduction with exact pixels and full checks; LV Neomil primary-title trial stays unaccepted | [Font audit](../docs/font-rendering-audit.md), [Round eighty-four](../docs/reference-svg-round84.md) |
+| Store frame-band preparation | IR distance reuse passes float/pixel/state/package checks; paired initial 4K preparation improves 26.3%, retained payload unchanged | [Round seventy-five](../docs/reference-svg-round75.md) |
+| Store printing | BETTERLIFE, PETROCHEM and ordinary CC35 vertical registration pass source/state/package checks; the PETROCHEM baseline compensation has a permanent regression; caption widths and photographic printing remain open | [Round seventy-eight](../docs/reference-svg-round78.md), [PETROCHEM evidence](../docs/neomil/store-printing.md#ordinary-petrochem-aperture) |
+| Source sampling | EE uniform top-left sampler and nine regressions pass; all sixteen canonical originals match; added to Nix matrix | [Round fifty-eight](../docs/reference-svg-round58.md) |
+| Entropism mailbox printing | Exact replay passes; EC narrows exterior pixels to whole-run paint interaction; contour still rejected | [Round fifty-six](../docs/reference-svg-round56.md) |
 | Entropism mailbox badges | BT T2 contour passes nine state pairs, production/package parity and full checks; fine printing remains | [Round forty-three](../docs/reference-svg-round43.md) |
-| Entropism Store M | CQ selected M passes source/state, production/package and full checks; regional losses and broad E4 remain open | [Round forty-seven](../docs/reference-svg-round47.md) |
+| Entropism rifle details | EM encoded composition and EN fourth-rifle placement pass source/state, packaged and full checks; final production 4K foreground CPU improves 20.5% | [Round sixty-four](../docs/reference-svg-round64.md) |
+| Kitsch tiny print | EH verifies intended font but rejects upper-print translation; photographed RG5 reading remains unconfirmed | [Round sixty-one](../docs/reference-svg-round61.md) |
+| Neomil maker scan | FB confirms a bounded phase cue; FD direct-paint no-ops pass, but the fixed neighboring material fails word/size transfer | [Round sixty-eight](../docs/reference-svg-round68.md) |
+| Entropism Store title | CQ selected M remains accepted; EE replays 96 gap cases and updates historical losses from fifteen to twelve; no global spacing correction justified | [Round fifty-eight](../docs/reference-svg-round58.md) |
 | Neo-kitsch mailbox badges | AV A/B/C/D contours, tab/frame geometry and helper verified; fine printing remains | [Reference typography](reference-svg.md) |
 | Neo-kitsch dashboard badges | AW badge geometry/ink verified; fine printing remains | [Reference typography](reference-svg.md) |
 | Neo-kitsch store badges | AW all three badges verified; fine printing remains | [Reference typography](reference-svg.md) |
 | Neomil component ground | AX restores the missing parent definition; two-size and reference checks pass | [Round thirty-five](../docs/reference-svg-round35.md) |
-| Neo-kitsch small text | BM metadata correction passes source/state, production/package and full checks; exact font and local printing remain | [Text fit](../docs/neokitsch/text-fit.md) |
+| Neo-kitsch small text | EG current-package recheck corrects fractional footer measurement; bundled font is correct, exact source face/printing remain | [Text fit](../docs/neokitsch/text-fit.md) |
 | Kitsch hub hover | Inferred stationary front-outline feedback verified headlessly | [Hub states](../docs/kitsch/dashboard-hover.md) |
 | Kitsch compliance | CM shared named-font SVG/component route passes CQ package/full checks; nine M/notch RGB gains retain 1600 gap/bright residuals under K5 | [Round forty-seven](../docs/reference-svg-round47.md) |
 | Kitsch fan material | CZ remains accepted; guarded Mail/Store donor signs also oppose the rejected Vehicles red brightening | [Round fifty-four](../docs/reference-svg-round54.md) |
-| Neo-kitsch frames | CC native tail passes source/state, production/package and full checks; separate SVG trial rejected; material work remains | [Frame ink](../docs/neokitsch/store-frame.md) |
-| Neo-kitsch veneer | CU corrects border contamination and supports local lower-ridge continuation; full geometry remains unresolved | [Round forty-eight](../docs/reference-svg-round48.md) |
-| Kitsch warning feet | AY calibrated bridge passes source/native/state, component, production/package and full checks; local feet/ink residuals remain | [Certification](../docs/kitsch/store-art.md) |
-| Neomil footer ink | CF native outer-left correction passes source/state, production/package and full checks; remaining printing stays open | [Round forty-five](../docs/reference-svg-round45.md) |
-| Neomil mailbox body | BA baseline passes source/native/state, production/package and full checks; exact printing remains | [Mailbox fidelity](../docs/neomil/mailbox-fidelity.md) |
+| Neo-kitsch frames | CC native tail remains accepted; whole-stack/pass-omission and top-donor checks fail; straight-side edges reject a shared fifth shift, and independent left-side controls reject card 3's proposed one-pixel whole-card shift | [Frame study](../docs/neokitsch/store-frame.md#mvmx-opposite-side-control) |
+| Neo-kitsch veneer | EG confirms RGB contrast loss is not green normalization; bridge identity and complete family remain unresolved | [Round sixty](../docs/reference-svg-round60.md) |
+| Kitsch warning sides and feet | EV/EW hollow plus ordinary placement passes source/no-op, twelve paired states, packaged parity and full checks; local residuals retained | [Round sixty-seven](../docs/reference-svg-round67.md) |
+| Neomil footer ink | EF lower rim remains verified; LH/LI constrain text displacement, but LJ's frozen position-only trial loses bright edges/local controls and stays rejected | [Footer study](../docs/neomil/dashboard-footer.md#lhli-source-text-displacement-2026-10-04) |
+| Neomil mailbox printing | BA body baseline and AM terminals remain accepted; EC phase fit fails row transfer and is confounded by photographic edge registration | [Round fifty-six](../docs/reference-svg-round56.md) |
 | Neomil login notices | Exact full-run replay separates outlines from advances; Regular outlines lose bright cores and are rejected; contour/registration remains unresolved | [Round fifty-two](../docs/reference-svg-round52.md) |
 | Source font provenance | Distinctive-letter diagnostic independently reproduced; weight, registration and glow still confound font identity; no replacement accepted | [Round fifty-four](../docs/reference-svg-round54.md) |
-| Neomil Store subtitles | Missing displaced printing confirmed; full-copy SVG/native and five-phase opacity trials retain local losses and remain in scratch | [Round fifty-four](../docs/reference-svg-round54.md) |
+| Neomil ordinary Store frames | Geometry, top/left/bottom coverage, fourth cut and coupled lower-stem/bar correction verified; bottom adds no primitive or effect pass | [Round seventy-nine](../docs/reference-svg-round79.md), [source plan](../docs/neomil/store-ordinary-frame.md) |
+| Neomil Store frame echoes | Bounded impressions integrated; source/state/custom/package checks pass; prototype preparation reduced 21%, warm draw similar, added cold cost retained | [Round seventy-four](../docs/reference-svg-round74.md), [frame-echo study](../docs/neomil/store-frame-echo.md) |
+| Neomil Store subtitles | EC validates local Login donor ground; additive halo and softened replacement still fail local/small-size controls | [Round fifty-six](../docs/reference-svg-round56.md) |
+| Neomil margin plaque | EF lower-window phase changes do not establish a physical cutoff; grating still lacks a supported lower junction | [Round fifty-nine](../docs/reference-svg-round59.md) |
 | Prerequisites | Original assets, transition design, callers and live desktop checks | External prerequisites below |
 
 Sol workers at medium reasoning own scoped implementation and scratch
 studies; Astra owns architecture, source/native acceptance and integration.
 Builds, native captures and golden updates remain serialized. No task
-closes on worker claims alone. All changes remain staged and uncommitted.
+closes on worker claims alone. Rounds through 54 are committed in
+`70b0ed6`; the later font/performance audit and follow-ups remain staged
+and uncommitted.
+
+[Round eighty-five](../docs/reference-svg-round85.md) is the latest runtime
+checkpoint. The working Entropism mail DELETE label uses existing darker
+ink at rest for the reference palettes. Its fourteen-pixel Rajdhani
+Regular face and all drawing work stay unchanged. Seventeen paired captures
+verify the intended local change and preserve other states/palettes/eras.
+All 312 packaged tests, 22 checks and 28 first-attempt matrix cases pass;
+packaged pixels match the reviewed candidate exactly. The broader Data
+display scope retains its caller-dependent remainder, leaving 29 scopes open.
+
+[Round eighty-four](../docs/reference-svg-round84.md) is the preceding runtime
+checkpoint. Three Entropism caption declarations reuse existing outlines
+without changing fonts, artwork, effects or cache bounds. One fixed warm
+foreground CPU comparison improves 4K rest by 41.8%. Twenty-one
+pixel pairs, state/backend/counter parity, three fresh packaged sizes,
+312 packaged tests, 22 checks and 28 first-attempt matrix cases pass.
+LV's Neomil title trial remains in scratch because its mixed 4K timing
+does not establish a useful gain. The 29 broader scopes remain open.
+
+[Round eighty-three](../docs/reference-svg-round83.md) is the preceding runtime
+checkpoint. Six Kitsch Dashboard header-note tags reuse the existing
+per-draw outline route. Seventeen image pairs, both counter sizes, three
+packaged sizes, 312 packaged tests, 22 checks and 28 first-attempt matrix
+cases pass. Warm foreground CPU construction improves 4K rest 11.2%, with
+unchanged fonts, renderer, artwork and goldens. The source-only LO/LP
+frame studies add conditional background constraints without a material
+change; the 29 broader scopes remain open.
+
+[Round eighty-two](../docs/reference-svg-round82.md) is the preceding runtime
+checkpoint. Four Kitsch Store band-label tags reuse the existing per-draw
+outline route. Eighteen image pairs, five counter pairs, three packaged
+sizes, 312 packaged tests, 22 checks and 28 first-attempt matrix cases
+pass. Warm foreground CPU construction improves 4K rest 18.8%, with
+unchanged fonts, renderer, artwork and goldens. The source-only LH/LI
+footer diagnostics and rejected LJ transfer are recorded separately;
+the 29 broader scopes remain open.
+
+[Round eighty-one](../docs/reference-svg-round81.md) is the preceding runtime
+checkpoint. Six SemiBold caption runs join the existing per-draw outline
+route. Three successful entries serve nine footer runs; the cache bounds
+and font-aware key remain unchanged. Ten Wgpu pairs, tiny-skia, both counter
+sizes, three packaged sizes, 312 packaged tests, 22 checks and 28
+first-attempt matrix cases pass. Warm foreground CPU construction improves
+4K rest 39.7% against LA, with no source-art, font, effect-pass or golden
+change. A permanent regression guards weight separation; the 29 broader
+scopes remain open.
+
+[Round eighty](../docs/reference-svg-round80.md) is the preceding runtime
+checkpoint. Three Bold code runs share the existing per-draw outline cache.
+Ten Wgpu pairs, one tiny-skia pair, three packaged sizes, 311 packaged tests,
+22 checks and 28 first-attempt matrix cases pass. The fixed confirmation
+reduces warm foreground CPU construction by 13.2% at 4K; the initial mixed
+smaller-size timing remains recorded. No source art, font, effect pass,
+golden or shared renderer changes. The 29 broader scopes remain open.
+
+[Round seventy-nine](../docs/reference-svg-round79.md) is the preceding runtime
+checkpoint. The source-conditioned bottom geometry improves every changed
+native pixel at three sizes. Sixteen targeted states, three-size package
+parity, both Store gates, 311 packaged tests, 22 checks and 28 first-attempt
+matrix cases pass. Fonts, text routes, caches, semantic inks and primitive
+counts stay unchanged. The conditional backing assumption and isolated SVG
+corner/cap losses remain explicit. Ordinary primary coverage closes; the
+29 broader source, toolkit, asset and live scopes remain open.
+
+[Round seventy-eight](../docs/reference-svg-round78.md) is the preceding runtime
+checkpoint. The ordinary CC35 baselines move down 2.5 design units in SVG
+and Iced. Three-size source comparisons improve for every complete line,
+while 67 SVG and 93 native local exceptions remain explicit. Sixteen
+targeted states, three-size actual-package parity, both Store gates,
+311 packaged tests, 22 checks and 28 first-attempt matrix cases pass.
+Selected captions, fonts, ink, horizontal layout, caches and primitive
+counts stay unchanged. Width, glyph contours and broader printing remain
+open; all 30 broader scopes remain unchecked.
+
+[Round seventy-seven](../docs/reference-svg-round77.md) is the preceding runtime
+checkpoint. Ordinary PETROCHEM boxes/text use source-supported positions,
+with a local native compensation for the measured 0.892 versus retained
+0.84 baseline. Glyph apertures improve at three sizes while local pixel
+losses remain recorded. Thirteen targeted states, three-size actual-package
+parity, both Store gates, 311 packaged tests, 22 checks and 28 first-attempt
+matrix cases pass. A permanent CPU baseline test protects the calibration.
+Fonts, shared baseline and cached child outlines stay unchanged.
+
+[Round seventy-six](../docs/reference-svg-round76.md) is the preceding word
+registration checkpoint. The third ordinary BETTERLIFE word moves 1.9 design units left
+without changing its font, tracking, effects or outline cache key. Three-size
+SVG/native source checks, ten targeted native states, both Store gates,
+310 packaged tests, all 22 checks and 28 first-attempt matrix cases pass.
+Fresh package captures exactly match the reviewed candidate at all three
+sizes. The whole-label and brighter-box trials are rejected; local pixel
+losses remain recorded. Prior staged work is preserved, and no broader
+printing or live-session task closes.
+
+JH separately isolates ordinary PETROCHEM glyphs from their boxes. JI tests
+one correction derived from independent rail midpoints, preserving fonts,
+ink and BETTERLIFE. Both complete regions improve at three SVG sizes;
+fractional lower-glyph and dark-rail losses remain explicit. JK's identical
+native trial passes 265 tests and three packaged-baseline checks, but both
+4K glyph regions worsen. JM isolates the first-card glyph loss from its box.
+JN confirms the actual Rajdhani outline baseline at 0.892 × size, versus
+the scene's 0.84 subtraction; this explains a −0.936-pixel rotated x offset
+at 4K. JO's measured local compensation reverses those glyph losses and
+passes source/state/package review in round 77. The shared baseline and
+cached outlines remain preserved; JR guards the physical outline baseline
+in a permanent test. The broader printing task stays open.
+
+[Round seventy-five](../docs/reference-svg-round75.md) is the preceding
+preparation checkpoint. It shares contour-distance work without changing artwork, fonts,
+text caches or retained image payload. Fresh paired initial 4K preparation
+falls 626.703→462.161 ms; fourteen state/custom pairs and three packaged
+captures are byte-exact. All 310 packaged tests, 22 repository checks and
+28 first-attempt matrix cases pass. The IQ performance task closes; thirty
+broader scopes remain. No warm foreground or GPU speedup is claimed.
+
+[Round seventy-four](../docs/reference-svg-round74.md) is the preceding artwork
+checkpoint. Ordinary frame impressions and the coupled lower-stem/bar geometry
+pass 150 fixed source-region comparisons per renderer, fourteen state/custom/
+control cases and four warm-draw processes. A byte-equivalent software-stroke
+optimization reduces the literal prototype's initial 4K preparation 804→635 ms;
+added artwork still costs more than the old version's earlier ~400 ms result.
+All 307 packaged tests, 22 repository checks, 28 first-attempt matrix cases,
+both Store gates and three-size actual-package parity pass. Four tiny native
+junction-row losses remain explicit. Fonts/text caches/originals are intact.
+All 30 broader scopes remain open; this completes their bounded frame-echo
+and coupled lower-stem portions.
+
+[Round seventy-three](../docs/reference-svg-round73.md) corrects the fourth
+primary cut from x1557 to x1558.3 across face, caps, content, materials and
+drawing/hit viewport. Source whole-card comparisons improve at three sizes;
+one fractional bottom-endpoint loss remains explicit. Seven native state
+pairs, three custom pairs, disabled-reference replay, both Store gates,
+305 packaged tests, full 22-check/28-case verification and fresh three-size
+package parity pass. A stale navigation-center test expectation was corrected
+before the successful full check. At that checkpoint, fonts, caches and
+original images were unchanged, and no effect pass was added. Echo trials
+were still in scratch; their subsequent integration is recorded above.
+
+[Round seventy-two](../docs/reference-svg-round72.md) completes ordinary
+left-edge coverage with continuous joins. All ninety fixed source comparisons
+in each renderer improve or remain exact at three sizes. Seven state pairs,
+three custom-palette cases, both gates, 305 packaged tests, full 22-check/
+28-case verification and fresh three-size package parity pass. The component's ignored duplicate raw
+attribute line is removed with exact cleanup renders. At that checkpoint,
+bottom and isolated complete lower-stem thinning were rejected; the later
+coupled correction is recorded above.
+
+[Round seventy-one](../docs/reference-svg-round71.md) completes the fourth
+ordinary top without changing its cut or bright held border. Original-width
+rest/state/custom replay is exact; all three-size source comparisons improve
+or remain exact. Both gates, 305 packaged tests, full 22-check/28-case
+verification and fresh three-size package parity pass. That checkpoint
+rejects the combined left/bottom trial for smaller-size bottom losses;
+left-only SVG passes, with its completed native review recorded above.
+All 30 scopes remain open, with fonts, text caches and original images intact.
+
+[Round seventy](../docs/reference-svg-round70.md) corrects first/third
+ordinary top coverage with continuous joins, including inferred ordinary
+second-card geometry. Three-size source comparisons improve coherently;
+small SVG side losses remain explicit. Resting, state and custom controls,
+both gates, 305 packaged tests and full 22-check/28-case verification pass.
+Fresh packaged captures match at three sizes. That checkpoint left 30 scopes, including the fourth top and other
+primary coverage; the fourth-top follow-up is recorded above. No new font, shared-renderer, effect-layer or cache change.
+
+[Round sixty-nine](../docs/reference-svg-round69.md) corrects ordinary Neomil
+Store contours and fan joins without moving calibrated contents. Separate
+card paths resolve the old card-3 SVG/native disagreement; selected art and
+the fourth cut remain exact. Source comparisons improve at all three sizes,
+with the fourth-left 1600 L1 tradeoff retained. Sixteen state pairs, both
+Store gates, 305 packaged tests and all 22 checks/28 first-attempt matrix
+cases pass. Fresh package captures match at three sizes. This establishes
+the geometry checkpoint; later coverage work is recorded above.
+
+[Round sixty-eight](../docs/reference-svg-round68.md) confirms current
+Neomil packaged baseline parity and preserves Entropism's separate native
+title calibration. The white-mask rendering route fails exact replay;
+direct solid and constant-gradient routes pass all six no-op images.
+The single fixed neighboring scan material still loses lower-line 4K and
+fractional controls and is rejected. Only documentation changes; the
+round-sixty-seven runtime verification remains current and all 29 broader
+scopes stay open.
+
+EM's cached rifle correction was the round-sixty-four runtime checkpoint.
+All 305 local/packaged Rust tests, 22 repository checks and 28 matrix cases
+pass first attempt. Direct comparison finds 26 of 27 visual cases exact,
+with the existing one-level Neo-kitsch bar pixel unchanged; the remaining
+case checks source sampling. All 346 frozen files match the tested source,
+and fresh packaged 4K pixels exactly match the reviewed candidate. Final
+production paired foreground CPU medians improve 16.54→13.15 ms (20.5%).
+This preserves EF's lower rim and the bounded advance/rotated-path caches
+verified by the DZ audit, including its 23 exact native comparisons.
+See [the audit](../docs/font-rendering-audit.md). Earlier CZ
+"latest implementation" notes below describe their dated checkpoints.
+
+[Round sixty-seven](../docs/reference-svg-round67.md) accepts one ordinary
+warning offset with the frozen thinner hollow. All twelve whole source
+comparisons improve in SVG/native, with small local losses retained. Native
+and SVG structural no-ops are exact, and twelve state pairs preserve all
+non-warning pixels. Both Store gates, 305 packaged Rust tests, 22 repository
+checks and 28 first-attempt matrix cases pass. Fresh packaged 4K pixels match
+exactly; EV/EW is the latest verified runtime checkpoint. No broader scope
+closes, and fonts/cache behavior remain intact.
+
+[Round sixty-six](../docs/reference-svg-round66.md) supplies complete paired
+warning profiles and verifies the current packaged baseline. A frozen
+hollow-only trial improves all whole marks in SVG and native, but its
+fourth-card native left side and foot worsen across sizes. Independent
+replays, 336 fixed-region scores and native profile checks support rejecting
+that direct port. EU then verifies independent frame/stem offsets, supporting
+one bounded ordinary-placement hypothesis with selected x retained. Only
+prose is integrated; EM and all 29 broader scopes remain unchanged.
+
+[Round sixty-five](../docs/reference-svg-round65.md) reviews three remaining
+areas and tests warning-side registration without fitting foot geometry.
+Astra reproduces the raw profiles, rejects the opaque-core predicate and
+pooled width inference, and corrects an erroneous SVG ancestry claim.
+The fixed windows do not establish a shared foot contour. Only prose changes;
+EM's verified runtime and all 29 broader open scopes remain intact.
+
+[Round sixty-three](../docs/reference-svg-round63.md) rejects the joint
+native rifle color and detail port. Packaged baseline replay and negative
+controls pass, but smaller rail/receiver regions worsen despite stock
+gains. Fixed-mask diagnosis implicates coverage rather than a uniform
+solid-ink failure. EK then confirms the intentional native linear-light
+versus SVG encoded-RGB blending difference with a controlled vector probe.
+Only documentation changes; native art, font caches and
+the 29 broader open scopes remain unchanged.
+
+[Round sixty-two](../docs/reference-svg-round62.md) adds the ordinary SVG
+stock band. Correcting the source-read junction resolves the first
+trial's left-entry loss; all 24 segment comparisons improve, with
+unchanged slot, neighbors and upper-seam controls. Runtime stays at EF;
+coordinated native ink review remains open. Production renders match the
+reviewed candidate; component and both fidelity gates pass. The full
+check passes 22 checks and 28 cached matrix cases against the unchanged
+runtime package. All 29 broader scopes remain open.
+
+[Round sixty-one](../docs/reference-svg-round61.md) integrates one ordinary
+Entropism SVG/component stock seam after three-size source review. The
+fresh-current native replay passes, but its seam ink trial loses both
+stock crops at every size and is rejected. Kitsch tiny-print placement
+and Neomil scan modulation also fail transfer; no font or renderer
+changes follow. Both Store fidelity gates, 24 SVG structure checks and a
+fresh full 22-check/28-case run pass. The package and cached matrix
+outputs remain unchanged, including the existing one-level bar pixel;
+342 frozen files match the tested Nix source. All 29 broader scopes
+remain open and EF remains the runtime checkpoint.
+
+[Round sixty](../docs/reference-svg-round60.md) checks fresh Neo-kitsch
+packaged frames and corrects the fractional first-line discrepancy from
+two rows to one. The intended bundled face resolves correctly. Nine
+Neomil echo candidate/control renders reproduce; the frozen profile
+still fails small-size interior and text controls after EF's rim fix.
+Original RGB does not establish the ambiguous veneer bridge. Astra
+independently verifies projections, regional measurements and provenance.
+Only prose changes; all 29 broader scopes remain open and EF's runtime
+verification is unchanged.
+
+[Round fifty-nine](../docs/reference-svg-round59.md) passes exact native
+replay before selecting two complementary solid paths. Every changed native
+pixel improves source RGB distance at three sizes; 240 regional checks, seven state pairs,
+303 local/packaged Rust tests and production/package parity pass.
+SVG/component and the two Dashboard goldens are updated. All 22 repository
+checks and 28 matrix cases pass first attempt; 26 of 27 visual cases are
+RGBA-exact and the existing one-level Neo-kitsch bar pixel is unchanged.
+Broader printing, fan correspondence and plaque-boundary scopes remain open.
+
+[Round fifty-eight](../docs/reference-svg-round58.md) integrates the shared
+source sampler, nine regression tests and Nix matrix coverage. All sixteen
+canonical source samples are exact. Astra reproduces both gap/junction
+studies and corrects stale native-capture provenance before acceptance.
+All 22 repository checks pass with 27 existing visual cases and the new
+sampler case; the package remains DZ. No artwork changes and no broad
+fidelity closure; all 29 existing scopes stay open.
+
+[Round fifty-seven](../docs/reference-svg-round57.md) validates exact local
+plaque donor controls and a source-only two-dimensional grating. The
+baked original-width trial still loses junction detail. Kitsch foot
+rounding remains rejected after correcting its side equations; scratch
+native provenance and fractional source mapping are repaired before
+review. Astra reproduces final renders, checks regional scores and verifies
+accepted warning crops against the current golden. No production artwork
+changes; all 29 broad scopes remain open.
+
+[Round fifty-six](../docs/reference-svg-round56.md) validates six donor
+ground holdouts, rejects two complete subtitle impressions, narrows the
+font paint interaction and corrects a variable-support mailbox phase
+comparison. The veneer family trace cannot establish distinct exits.
+Astra reproduces the studies and independently checks donor pixels,
+subtitle scores, font coordinates and family boundary counts. Only prose
+changes; all 29 broad scopes remain open and DZ runtime inputs are intact.
+
+[Round fifty-five](../docs/reference-svg-round55.md) completes the EB
+diagnostic review: exact Entropism SVG font replay, a rejected local
+contour, rejected Neomil row removal and a measured Neo-kitsch local fan
+deficit. No artwork is integrated. The source-gallery access attempt
+recovers no new process or font/material evidence. Root verifies the
+runtime inputs remain unchanged; all 29 broad scopes stay open.
 
 The [next material/notice round](../docs/reference-svg-round48.md) dispatches
 broader Kitsch fan, Neomil notice and visible Neo-kitsch grain work. Its

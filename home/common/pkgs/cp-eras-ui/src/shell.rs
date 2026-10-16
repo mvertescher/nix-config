@@ -301,6 +301,89 @@ tape = "#dedede"
         assert_eq!(style.store_layers(0, 1), (style.store, style.store));
     }
 
+    const ENTROPISM_NEXUS: &str = r##"
+era = "entropism"
+variant = "nexus"
+polarity = "dark"
+[font]
+ui = "Rajdhani"
+[colors]
+bg = "#110c07"
+panel = "#181109"
+border = "#8fba97"
+dim = "#3d4d38"
+fg = "#94bb94"
+alert = "#728f76"
+tape = "#728f76"
+"##;
+
+    #[test]
+    fn entropism_store_material_requires_source_palette_and_named_variant() {
+        let source = crate::theme::Theme::parse(ENTROPISM_NEXUS).unwrap();
+        let active = |style: Style| {
+            let reference = style.store_reference.expect("source route present");
+            assert!(std::ptr::eq(style.store_layers(0, 0).0, reference.scene));
+            assert!(std::ptr::eq(style.store_states_for(0, 0), reference.states.unwrap()));
+            assert_eq!(style.store_style().palette, style.palette);
+        };
+        let fallback = |style: Style| {
+            assert!(std::ptr::eq(style.store_layers(0, 0).0, style.store));
+            assert!(std::ptr::eq(style.store_layers(0, 0).1, style.store));
+            assert!(std::ptr::eq(style.store_states_for(0, 0), style.store_states));
+        };
+        active(Era::Entropism.style());
+        for forced in [None, Some(Era::Entropism)] {
+            active(style_with_theme(forced, &source));
+        }
+        // The toolkit's canonical source marker remains an opt-in;
+        // nexus is Entropism's published name for the same material.
+        let mut canonical = source.clone();
+        canonical.variant = "reference".into();
+        active(style_with_theme(None, &canonical));
+        let other = crate::theme::Theme::parse(NEOMIL_REFERENCE).unwrap();
+        active(style_with_theme(Some(Era::Entropism), &other));
+        for variant in ["custom", "burn-in", "", "NEXUS"] {
+            let mut theme = source.clone();
+            theme.variant = variant.into();
+            let style = style_with_theme(None, &theme);
+            assert!(style.store_reference.is_none());
+            fallback(style);
+        }
+        let mut unknown = source.clone();
+        unknown.era = "custom-entropism".into();
+        fallback(style_with_theme(None, &unknown));
+        // Every published role, plus an added ornament, disables the
+        // source-only material without rewriting the user's colors.
+        for role in 0..8 {
+            let mut theme = source.clone();
+            let custom = crate::theme::Rgb::parse("#112233").unwrap();
+            match role {
+                0 => theme.colors.bg = custom,
+                1 => theme.colors.panel = custom,
+                2 => theme.colors.border = custom,
+                3 => theme.colors.dim = custom,
+                4 => theme.colors.fg = custom,
+                5 => theme.colors.alert = custom,
+                6 => theme.colors.tape = custom,
+                _ => theme.colors.extra.ornament = Some(custom),
+            }
+            fallback(style_with_theme(None, &theme));
+        }
+        for role in 0..3 {
+            let mut style = style_with_theme(None, &source);
+            let original = style.palette;
+            let custom = crate::palette::rgb(0x112233);
+            match role {
+                0 => style.palette.panel = custom,
+                1 => style.palette.select = custom,
+                _ => style.palette.border = custom,
+            }
+            fallback(style);
+            style.palette = original;
+            active(style);
+        }
+    }
+
     #[test]
     fn era_flag_in_both_spellings() {
         assert_eq!(era_from(["--era", "kitsch"]), Some(Era::Kitsch));

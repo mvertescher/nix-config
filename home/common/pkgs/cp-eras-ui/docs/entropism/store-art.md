@@ -49,3 +49,61 @@ low at the baseline. The local size, baseline, weight and two-digit width fit is
 [store typography](store-typography.md), with selected and ordinary holdouts.
 This does not revise the art or claim exact photographed printing. Compliance
 font/material and fine glyph edges remain open.
+
+## EH ordinary stock seam — 2026-10-03
+
+The earlier broad crop now has a concrete follow-up: ordinary cards 2 and 3
+repeat a diagonal stock seam with an upper return and lower join. The
+source trace and component add one 78-vertex filled polygon intersected
+offline with the accepted bright mask. Whole-stock RGB error improves at
+4K, 1600 and fractional size; the fractional card-3 upper join retains a
+small local loss. The selected inverse drawing and all exterior controls
+remain intact. The lower segmented band is a separate unresolved detail.
+
+The native port is rejected: a semantic Mid path at provisional opacity
+.065 worsens both complete stock crops at all three sizes. Native bright
+ink already differs from the SVG field. Preserve the current Rust art
+until a coordinated local ink fit passes source and state controls; do
+not compensate with another isolated alpha sweep. Full measurements and
+verification are in [round sixty-one](../reference-svg-round61.md).
+
+## EI lower segmented band — 2026-10-03
+
+The SVG and component now include the repeated band below EH's diagonal.
+One connected sweep and two returns use a shared source-sampled ink and
+an offline intersection with the accepted bright mask. A corrected left
+junction improves all fixed entry/return/sweep regions at three sizes;
+slot cores, neighboring controls and the upper diagonal remain exact.
+Fine edge/ink residuals remain, especially the nearly neutral 4K right
+return. See [round sixty-two](../reference-svg-round62.md).
+
+Both new details remain absent from native art pending a coordinated
+review of its bright field and detail inks. EH's isolated semantic-alpha
+trial remains rejected; the SVG gains do not establish native parity.
+
+The coordinated EJ native trial is also rejected: using the SVG bright
+ink with both details improves all stock crops and the complete 4K rifles,
+but smaller rail and receiver regions regress. Fixed solid-ink masks
+locate most loss in partial coverage. Investigate source/SVG/native edge
+rendering before another ink or contour correction; see
+[round sixty-three](../reference-svg-round63.md).
+
+
+## EM/EN native composition and fourth rifle — 2026-10-03
+
+The accepted native material uses existing `Prim::Soft` composition for
+body, bright mask, EH seam and EI lower band. It matches the SVG's encoded
+RGB edges without changing shared native text/glow rendering. Source fit
+improves at three sizes. The fourth ordinary rifle alone moves two design
+units left; its frame, text, selected art, hit geometry and persistent cut
+keep their existing positions. Custom variants retain semantic materials.
+
+Four static, disjoint rifle layers reuse five cache entries including the
+ground across all twenty selections. Selected and hover inverse drawings
+remain native; held ordinary cards expose the cached rifle. Source, state,
+cache and CPU results, including cold cost and local limits, are in
+[round sixty-four](../reference-svg-round64.md). All 305 local/packaged Rust
+tests, 22 repository checks and 28 first-attempt matrix cases pass; fresh
+packaged 4K pixels exactly match the reviewed candidate. Final production
+foreground CPU drawing improves 20.5% at 4K. Broad fine-printing fidelity
+remains open.

@@ -339,6 +339,21 @@ impl Buf {
         // it; a rounded card is a few dozen chords and most of them are
         // on the far side.
         let mut active: Vec<((f32, f32), (f32, f32))> = Vec::new();
+        let mut spans: Vec<(usize, usize)> = Vec::new();
+        // Unusual input keeps the original full-column traversal. Finite
+        // endpoint bounds are conservative for every point on a segment.
+        let bounded = width.is_finite()
+            && width >= 0.0
+            && pad.is_finite()
+            // At much larger coordinates the legacy f32 segment-distance
+            // reconstruction can cancel near an endpoint. Fall back rather
+            // than assuming the geometric endpoint interval still contains it.
+            && width <= 65_536.0
+            && segs.iter().all(|&(a, b)| {
+                [a.0, a.1, b.0, b.1]
+                    .into_iter()
+                    .all(|v| v.is_finite() && v.abs() <= 65_536.0)
+            });
         for row in row0..row1 {
             let (top, bottom) = (row as f32 - pad, row as f32 + 1.0 + pad);
             active.clear();
@@ -355,31 +370,233 @@ impl Buf {
                     .map(|&(a, b)| seg_distance(px, py, a, b))
                     .fold(f32::INFINITY, f32::min)
             };
-            for col in col0..col1 {
-                let (px, py) = (col as f32 + 0.5, row as f32 + 0.5);
-                let d = dist(px, py);
-                // Half the pixel's diagonal is as far as any point in it
-                // is from the centre.
-                let cov = if d > hw + 0.71 {
-                    continue;
-                } else if d < hw - 0.71 {
-                    1.0
-                } else {
-                    let mut inside = 0;
-                    for sy in 0..SUB {
-                        for sx in 0..SUB {
-                            let qx = col as f32 + (sx as f32 + 0.5) / SUB as f32;
-                            let qy = row as f32 + (sy as f32 + 0.5) / SUB as f32;
-                            if dist(qx, qy) <= hw {
-                                inside += 1;
+            spans.clear();
+            if bounded {
+                for &(a, b) in &active {
+                    let (left, right) = self.cols(a.0.min(b.0) - pad, a.0.max(b.0) + pad);
+                    let (left, right) = (left.max(col0), right.min(col1));
+                    if left < right {
+                        spans.push((left, right));
+                    }
+                }
+                spans.sort_unstable_by_key(|&(left, _)| left);
+                let mut merged = 0;
+                for i in 0..spans.len() {
+                    let (left, right) = spans[i];
+                    if merged > 0 && left <= spans[merged - 1].1 {
+                        spans[merged - 1].1 = spans[merged - 1].1.max(right);
+                    } else {
+                        spans[merged] = (left, right);
+                        merged += 1;
+                    }
+                }
+                spans.truncate(merged);
+            } else {
+                spans.push((col0, col1));
+            }
+            for &(left, right) in &spans {
+                for col in left..right {
+                    let (px, py) = (col as f32 + 0.5, row as f32 + 0.5);
+                    let d = dist(px, py);
+                    // Half the pixel's diagonal is as far as any point in it
+                    // is from the centre.
+                    let cov = if d > hw + 0.71 {
+                        continue;
+                    } else if d < hw - 0.71 {
+                        1.0
+                    } else {
+                        let mut inside = 0;
+                        for sy in 0..SUB {
+                            for sx in 0..SUB {
+                                let qx = col as f32 + (sx as f32 + 0.5) / SUB as f32;
+                                let qy = row as f32 + (sy as f32 + 0.5) / SUB as f32;
+                                if dist(qx, qy) <= hw {
+                                    inside += 1;
+                                }
                             }
                         }
-                    }
-                    inside as f32 / (SUB * SUB) as f32
-                };
-                self.lay(col, row, cov, c);
+                        inside as f32 / (SUB * SUB) as f32
+                    };
+                    self.lay(col, row, cov, c);
+                }
             }
         }
+    }
+
+    /// Stream consecutive identical white paths. The literal `stroke` above
+    /// remains the reference and handles every ineligible input unchanged.
+    fn stroke_run<const BOUNDED: bool>(&mut self, prims: &[Prim], palette: &Palette, xf: Xf) -> bool {
+        type Edge = ((f32, f32), (f32, f32));
+        struct Band {
+            hw: f32, pad: f32, color: Color,
+            col0: usize, col1: usize, row0: usize, row1: usize,
+        }
+        struct RowBand {
+            band: usize,
+            active: Vec<usize>,
+            spans: Vec<(usize, usize)>,
+        }
+        let Prim::Path { x, y, segs, close, .. } = prims[0] else { return false };
+        let rings: Vec<_> = path_rings(x, y, segs).into_iter()
+            .map(|ring| ring.into_iter().map(|(x, y)| xf.at(x, y)).collect::<Vec<_>>())
+            .collect();
+        let mut edges: Vec<Edge> = Vec::new();
+        for ring in &rings {
+            let n = ring.len();
+            let last = if close { n } else { n.saturating_sub(1) };
+            for i in 0..last {
+                edges.push((ring[i], ring[(i + 1) % n]));
+            }
+        }
+        if edges.is_empty() || edges.iter().any(|&(a, b)| {
+            [a.0, a.1, b.0, b.1].into_iter()
+                .any(|v| !v.is_finite() || v.abs() > 65_536.0)
+        }) {
+            return false;
+        }
+        let Some((x0, x1, y0, y1)) = bbox(rings.iter().flatten().copied()) else {
+            return false;
+        };
+        let mut bands = Vec::with_capacity(prims.len());
+        for prim in prims {
+            let Prim::Path { stroke: Some(ink), width, .. } = *prim else { return false };
+            if BOUNDED && prim_area(prim, xf, self.area()).empty() { continue; }
+            let pixel_width = width * xf.k;
+            let hw = pixel_width / 2.0;
+            let pad = hw + 1.0;
+            if !pad.is_finite() || pixel_width <= 0.0 || pixel_width > 65_536.0 {
+                return false;
+            }
+            let (col0, col1) = self.cols(x0 - pad, x1 + pad);
+            let (row0, row1) = self.rows(y0 - pad, y1 + pad);
+            if col0 < col1 && row0 < row1 {
+                bands.push(Band { hw, pad, color: ink.of(palette), col0, col1, row0, row1 });
+            }
+        }
+        if bands.is_empty() { return true; }
+        let first_row = bands.iter().map(|b| b.row0).min().unwrap();
+        let last_row = bands.iter().map(|b| b.row1).max().unwrap();
+        // Keep per-band row workspaces alive across all rows. These long
+        // contours would otherwise allocate active/spans vectors 123 times
+        // per row even though their segment counts never grow.
+        let mut row_bands: Vec<RowBand> = (0..bands.len()).map(|band| RowBand {
+            band,
+            active: Vec::with_capacity(edges.len()),
+            spans: Vec::with_capacity(edges.len()),
+        }).collect();
+        let mut row_indices = Vec::with_capacity(bands.len());
+        let mut union = Vec::with_capacity(bands.len() * edges.len());
+        for row in first_row..last_row {
+            row_indices.clear();
+            for (index, band) in bands.iter().enumerate() {
+                if row < band.row0 || row >= band.row1 { continue; }
+                let (top, bottom) = (row as f32 - band.pad, row as f32 + 1.0 + band.pad);
+                let slot = &mut row_bands[index];
+                slot.active.clear();
+                slot.active.extend(edges.iter().enumerate().filter_map(|(i, &(a, b))| {
+                    (a.1.min(b.1) <= bottom && a.1.max(b.1) >= top).then_some(i)
+                }));
+                if slot.active.is_empty() { continue; }
+                slot.spans.clear();
+                for &i in &slot.active {
+                    let (a, b) = edges[i];
+                    let (left, right) = self.cols(a.0.min(b.0) - band.pad, a.0.max(b.0) + band.pad);
+                    let (left, right) = (left.max(band.col0), right.min(band.col1));
+                    if left < right { slot.spans.push((left, right)); }
+                }
+                slot.spans.sort_unstable_by_key(|&(left, _)| left);
+                let mut merged = 0;
+                for i in 0..slot.spans.len() {
+                    let (left, right) = slot.spans[i];
+                    if merged > 0 && left <= slot.spans[merged - 1].1 {
+                        slot.spans[merged - 1].1 = slot.spans[merged - 1].1.max(right);
+                    } else {
+                        slot.spans[merged] = (left, right);
+                        merged += 1;
+                    }
+                }
+                slot.spans.truncate(merged);
+                row_indices.push(index);
+            }
+            if row_indices.is_empty() { continue; }
+            if row_indices.iter().any(|&i| row_bands[i].active != row_bands[row_indices[0]].active) {
+                // At joins, width-dependent row membership can change the
+                // distance minimum. Execute those rows band-first, literally.
+                for &index in &row_indices {
+                    let r = &row_bands[index];
+                    let band = &bands[r.band];
+                    let dist = |px: f32, py: f32| r.active.iter()
+                        .map(|&i| seg_distance(px, py, edges[i].0, edges[i].1))
+                        .fold(f32::INFINITY, f32::min);
+                    for &(left, right) in &r.spans {
+                        for col in left..right {
+                            let (px, py) = (col as f32 + 0.5, row as f32 + 0.5);
+                            let d = dist(px, py);
+                            let cov = if d > band.hw + 0.71 { continue; }
+                                else if d < band.hw - 0.71 { 1.0 }
+                                else {
+                                    let mut inside = 0;
+                                    for sy in 0..SUB { for sx in 0..SUB {
+                                        let qx = col as f32 + (sx as f32 + 0.5) / SUB as f32;
+                                        let qy = row as f32 + (sy as f32 + 0.5) / SUB as f32;
+                                        if dist(qx, qy) <= band.hw { inside += 1; }
+                                    }}
+                                    inside as f32 / (SUB * SUB) as f32
+                                };
+                            self.lay(col, row, cov, band.color);
+                        }
+                    }
+                }
+                continue;
+            }
+            let active = &row_bands[row_indices[0]].active;
+            let dist = |px: f32, py: f32| active.iter()
+                .map(|&i| seg_distance(px, py, edges[i].0, edges[i].1))
+                .fold(f32::INFINITY, f32::min);
+            union.clear();
+            for &index in &row_indices { union.extend_from_slice(&row_bands[index].spans); }
+            union.sort_unstable_by_key(|&(left, _)| left);
+            let mut merged = 0;
+            for i in 0..union.len() {
+                let (left, right) = union[i];
+                if merged > 0 && left <= union[merged - 1].1 {
+                    union[merged - 1].1 = union[merged - 1].1.max(right);
+                } else {
+                    union[merged] = (left, right);
+                    merged += 1;
+                }
+            }
+            union.truncate(merged);
+            for &(left, right) in &union {
+                for col in left..right {
+                    let (px, py) = (col as f32 + 0.5, row as f32 + 0.5);
+                    let d = dist(px, py);
+                    let mut samples = [0.0f32; SUB * SUB];
+                    let mut sampled = false;
+                    for &index in &row_indices {
+                        let r = &row_bands[index];
+                        if !r.spans.iter().any(|&(a, b)| a <= col && col < b) { continue; }
+                        let band = &bands[r.band];
+                        let cov = if d > band.hw + 0.71 { continue; }
+                            else if d < band.hw - 0.71 { 1.0 }
+                            else {
+                                if !sampled {
+                                    for sy in 0..SUB { for sx in 0..SUB {
+                                        let qx = col as f32 + (sx as f32 + 0.5) / SUB as f32;
+                                        let qy = row as f32 + (sy as f32 + 0.5) / SUB as f32;
+                                        samples[sy * SUB + sx] = dist(qx, qy);
+                                    }}
+                                    sampled = true;
+                                }
+                                let inside = samples.iter().filter(|&&sample| sample <= band.hw).count();
+                                inside as f32 / (SUB * SUB) as f32
+                            };
+                        self.lay(col, row, cov, band.color);
+                    }
+                }
+            }
+        }
+        true
     }
 }
 
@@ -821,11 +1038,56 @@ fn walk(buf: &mut Buf, prims: &[Prim], palette: &Palette, xf: Xf) {
 /// The uncropped specialization is used only by equivalence tests: it
 /// follows the original full-band mask path with the same rasterizer.
 fn walk_inner<const BOUNDED: bool>(buf: &mut Buf, prims: &[Prim], palette: &Palette, xf: Xf) {
+    walk_engine::<BOUNDED, true>(buf, prims, palette, xf);
+}
+
+/// Only adjacent, identical fixed-white paths can share distances. Every
+/// other primitive follows the literal walker, including semantic inks.
+fn white_stroke_run(prims: &[Prim], xf: Xf) -> usize {
+    let Some(Prim::Path { x, y, segs, close, fill: None,
+        stroke: Some(crate::style::Ink::Fixed(first)), width }) = prims.first() else {
+        return 0;
+    };
+    let white = |c: &Color| c.r.to_bits() == 1.0f32.to_bits()
+        && c.g.to_bits() == 1.0f32.to_bits()
+        && c.b.to_bits() == 1.0f32.to_bits() && c.a.is_finite();
+    let mut prev = *width * xf.k;
+    if !white(first) || !prev.is_finite() || prev <= 0.0 || prev > 65_536.0
+        || !x.is_finite() || !y.is_finite() {
+        return 0;
+    }
+    let mut n = 1;
+    for prim in &prims[1..] {
+        let Prim::Path { x: xx, y: yy, segs: ss, close: cc, fill: None,
+            stroke: Some(crate::style::Ink::Fixed(color)), width: ww } = prim else { break };
+        let pixel_width = *ww * xf.k;
+        if xx.to_bits() != x.to_bits() || yy.to_bits() != y.to_bits()
+            || cc != close || !std::ptr::eq(*ss, *segs) || !white(color)
+            || !pixel_width.is_finite() || pixel_width <= 0.0
+            || pixel_width >= prev || pixel_width > 65_536.0 { break }
+        prev = pixel_width;
+        n += 1;
+    }
+    n
+}
+
+fn walk_engine<const BOUNDED: bool, const BATCH: bool>(
+    buf: &mut Buf, prims: &[Prim], palette: &Palette, xf: Xf,
+) {
     let map = |pts: Vec<(f32, f32)>| -> Vec<(f32, f32)> {
         pts.into_iter().map(|(x, y)| xf.at(x, y)).collect()
     };
     let flat = |c: Color| move |_: f32, _: f32| c;
-    for prim in prims {
+    let mut rest = prims;
+    while let Some((prim, tail)) = rest.split_first() {
+        if BATCH {
+            let count = white_stroke_run(rest, xf);
+            if count >= 2 && buf.stroke_run::<BOUNDED>(&rest[..count], palette, xf) {
+                rest = &rest[count..];
+                continue;
+            }
+        }
+        rest = tail;
         // Wrappers recurse naturally. Reject leaves before allocating
         // flattened geometry, and masks before allocating either side.
         let wrapper = matches!(prim, Prim::At { .. } | Prim::Turn { .. } | Prim::Soft { .. });
@@ -915,17 +1177,17 @@ fn walk_inner<const BOUNDED: bool>(buf: &mut Buf, prims: &[Prim], palette: &Pale
                 // Keep the absolute origin, sample locations and draw
                 // order: only temporary allocation and loops shrink.
                 let mut layer = Buf::region(area);
-                walk_inner::<BOUNDED>(&mut layer, prims, palette, xf);
+                walk_engine::<BOUNDED, BATCH>(&mut layer, prims, palette, xf);
                 let mut lum = Buf::region(area);
-                walk_inner::<BOUNDED>(&mut lum, mask, palette, xf);
+                walk_engine::<BOUNDED, BATCH>(&mut lum, mask, palette, xf);
                 layer.mask(&lum);
                 buf.over(&layer);
             }
-            Prim::At { x, y, prims } => walk_inner::<BOUNDED>(buf, prims, palette, xf.moved(x, y)),
+            Prim::At { x, y, prims } => walk_engine::<BOUNDED, BATCH>(buf, prims, palette, xf.moved(x, y)),
             Prim::Turn { x, y, angle, prims } => {
-                walk_inner::<BOUNDED>(buf, prims, palette, xf.turned(x, y, angle))
+                walk_engine::<BOUNDED, BATCH>(buf, prims, palette, xf.turned(x, y, angle))
             }
-            Prim::Soft { prims } => walk_inner::<BOUNDED>(buf, prims, palette, xf),
+            Prim::Soft { prims } => walk_engine::<BOUNDED, BATCH>(buf, prims, palette, xf),
             Prim::Text { .. }
             | Prim::Wide { .. }
             | Prim::ReusableWide { .. }
@@ -1490,5 +1752,253 @@ mod tests {
             }
         }
         assert_eq!(composite_over(under, prims, &style.palette, w, h, k), all.bytes());
+    }
+}
+
+#[cfg(test)]
+mod bounded_stroke_reference_tests {
+    use super::*;
+
+    fn stroke_reference(buf: &mut Buf, rings: &[Vec<(f32, f32)>], closed: bool, width: f32, c: Color) {
+        let mut segs: Vec<((f32, f32), (f32, f32))> = Vec::new();
+        for ring in rings {
+            let n = ring.len();
+            let last = if closed { n } else { n.saturating_sub(1) };
+            for i in 0..last {
+                segs.push((ring[i], ring[(i + 1) % n]));
+            }
+        }
+        let hw = width / 2.0;
+        let Some((x0, x1, y0, y1)) = bbox(rings.iter().flatten().copied()) else {
+            return;
+        };
+        let pad = hw + 1.0;
+        let (col0, col1) = buf.cols(x0 - pad, x1 + pad);
+        let (row0, row1) = buf.rows(y0 - pad, y1 + pad);
+        // Only the segments within reach of a row are measured against
+        // it; a rounded card is a few dozen chords and most of them are
+        // on the far side.
+        let mut active: Vec<((f32, f32), (f32, f32))> = Vec::new();
+        for row in row0..row1 {
+            let (top, bottom) = (row as f32 - pad, row as f32 + 1.0 + pad);
+            active.clear();
+            active.extend(
+                segs.iter()
+                    .filter(|&&(a, b)| a.1.min(b.1) <= bottom && a.1.max(b.1) >= top),
+            );
+            if active.is_empty() {
+                continue;
+            }
+            let dist = |px: f32, py: f32| {
+                active
+                    .iter()
+                    .map(|&(a, b)| seg_distance(px, py, a, b))
+                    .fold(f32::INFINITY, f32::min)
+            };
+            for col in col0..col1 {
+                let (px, py) = (col as f32 + 0.5, row as f32 + 0.5);
+                let d = dist(px, py);
+                // Half the pixel's diagonal is as far as any point in it
+                // is from the centre.
+                let cov = if d > hw + 0.71 {
+                    continue;
+                } else if d < hw - 0.71 {
+                    1.0
+                } else {
+                    let mut inside = 0;
+                    for sy in 0..SUB {
+                        for sx in 0..SUB {
+                            let qx = col as f32 + (sx as f32 + 0.5) / SUB as f32;
+                            let qy = row as f32 + (sy as f32 + 0.5) / SUB as f32;
+                            if dist(qx, qy) <= hw {
+                                inside += 1;
+                            }
+                        }
+                    }
+                    inside as f32 / (SUB * SUB) as f32
+                };
+                buf.lay(col, row, cov, c);
+            }
+        }
+    }
+
+    fn check(name: &str, rings: Vec<Vec<(f32, f32)>>, closed: bool, widths: &[f32], area: Area) {
+        let colors = [
+            Color { r: 0.92, g: 0.18, b: 0.3, a: 1.0 },
+            Color { r: 0.12, g: 0.68, b: 0.86, a: 0.37 },
+        ];
+        for &width in widths {
+            let mut expected = Buf::region(area);
+            let mut actual = Buf::region(area);
+            for color in colors {
+                stroke_reference(&mut expected, &rings, closed, width, color);
+                actual.stroke(&rings, closed, width, color);
+            }
+            assert_eq!(actual.bytes(), expected.bytes(), "{name}, width {width}");
+            assert_eq!(actual.px, expected.px, "float buffer: {name}, width {width}");
+        }
+    }
+
+    #[test]
+    fn bounded_columns_match_full_columns_for_separated_joined_and_clipped_paths() {
+        let whole = Area { x0: 0, y0: 0, x1: 120, y1: 100 };
+        let clip = Area { x0: 18, y0: 7, x1: 76, y1: 72 };
+        check("disjoint long sides", vec![vec![(10.2, 2.3), (11.3, 95.7), (108.4, 95.7), (109.7, 2.3)]], false, &[0.4, 1.0, 3.6, 18.0], whole);
+        check("crossing and overlapping diagonals", vec![vec![(2.7, 4.1), (105.3, 90.6)], vec![(107.4, 3.3), (2.1, 92.1)], vec![(20.1, 30.6), (90.2, 55.4)]], false, &[0.35, 1.7, 9.5], whole);
+        check("closed joins", vec![vec![(14.1, 10.4), (93.7, 12.2), (108.2, 59.8), (88.2, 86.4), (11.4, 78.8)]], true, &[0.6, 2.3, 12.2], whole);
+        check("clipped paths", vec![vec![(-15.3, 10.2), (50.4, 3.2), (130.7, 40.1), (13.3, 91.2)]], true, &[0.3, 2.5, 16.0], clip);
+        check("short and zero length", vec![vec![(20.2, 30.7), (20.2, 30.7), (21.1, 31.4)], vec![(22.2, 31.1), (22.2, 31.1)]], false, &[0.4, 1.2, 6.0], whole);
+    }
+
+    #[test]
+    fn bounded_columns_match_full_columns_for_transforms_and_fallbacks() {
+        let original = vec![(2.2, 3.8), (35.1, 4.7), (36.5, 22.1), (3.3, 23.9)];
+        let angle = 0.4f32;
+        let ring: Vec<_> = original.into_iter().map(|(x, y)| {
+            let (x, y) = (x * 1.37 - 12.6, y * 0.83 + 19.1);
+            (x * angle.cos() - y * angle.sin() + 44.0, x * angle.sin() + y * angle.cos() - 10.0)
+        }).collect();
+        check("affine rotation and shift", vec![ring], true, &[0.6, 2.1, 8.2], Area { x0: 0, y0: 0, x1: 100, y1: 90 });
+        check("negative width fallback", vec![vec![(12.2, 12.1), (41.2, 54.4)]], false, &[-0.5], Area { x0: 0, y0: 0, x1: 80, y1: 80 });
+        check("nonfinite width fallback", vec![vec![(12.2, 12.1), (41.2, 54.4)]], false, &[f32::NAN], Area { x0: 0, y0: 0, x1: 80, y1: 80 });
+        check("nonfinite endpoint fallback", vec![vec![(f32::NAN, 12.1), (41.2, 54.4)]], false, &[2.0], Area { x0: 0, y0: 0, x1: 80, y1: 80 });
+        check("infinite width fallback", vec![vec![(12.2, 12.1), (41.2, 54.4)]], false, &[f32::INFINITY], Area { x0: 0, y0: 0, x1: 80, y1: 80 });
+        check("huge finite endpoint cancellation", vec![vec![(100_000_000.0, 50.0), (4.0, 50.0)], vec![(0.0, 90.0), (0.0, 90.0)]], false, &[0.4], Area { x0: 0, y0: 0, x1: 120, y1: 100 });
+    }
+}
+
+#[cfg(test)]
+mod stroke_run_reference_tests {
+    use super::*;
+    use crate::style::{fill_rect, Ink};
+
+    const CLOSED: &[Seg] = &[
+        Seg::Line(83.4, 9.2), Seg::Line(85.1, 24.3), Seg::Line(80.2, 29.7),
+        Seg::Line(79.3, 88.1), Seg::Line(8.6, 88.1),
+    ];
+    const OPEN: &[Seg] = &[
+        Seg::Line(17.2, 88.4), Seg::Line(99.8, 88.4),
+    ];
+    const OTHER: &[Seg] = &[Seg::Line(20.2, 88.4), Seg::Line(98.1, 88.4)];
+    const WHITE: Color = Color { r: 1.0, g: 1.0, b: 1.0, a: 0.0042 };
+    const STOPS: &[(f32, Color)] = &[
+        (0.0, Color { r: 1.0, g: 1.0, b: 1.0, a: 1.0 }),
+        (1.0, Color { r: 1.0, g: 1.0, b: 1.0, a: 0.0 }),
+    ];
+    const OPEN_BANDS: &[Prim] = &[
+        Prim::Path { x: 99.8, y: 9.2, segs: OPEN, close: false, fill: None,
+            stroke: Some(Ink::Fixed(WHITE)), width: 3.18 },
+        Prim::Path { x: 99.8, y: 9.2, segs: OPEN, close: false, fill: None,
+            stroke: Some(Ink::Fixed(Color { a: 0.0045, ..WHITE })), width: 1.54 },
+        Prim::Path { x: 99.8, y: 9.2, segs: OPEN, close: false, fill: None,
+            stroke: Some(Ink::Fixed(Color { a: 0.0048, ..WHITE })), width: 0.17 },
+    ];
+    const C4_MASKED: &[Prim] = &[Prim::Masked {
+        prims: &[Prim::Masked {
+            prims: &[fill_rect(6.0, 7.0, 97.0, 85.0, Ink::Fixed(Color { r: 0.74, g: 0.13, b: 0.12, a: 1.0 }))],
+            mask: OPEN_BANDS,
+        }],
+        mask: &[Prim::Ramp { x: 6.0, y: 7.0, w: 97.0, h: 85.0,
+            from: (0.8, 0.0), to: (1.0, 0.0), stops: STOPS }],
+    }];
+
+    fn path(segs: &'static [Seg], closed: bool, width: f32, color: Color) -> Prim {
+        Prim::Path { x: if closed { 8.6 } else { 99.8 }, y: 9.2, segs,
+            close: closed, fill: None, stroke: Some(Ink::Fixed(color)), width }
+    }
+
+    fn equal(prims: &[Prim], area: Area, xf: Xf) {
+        let palette = crate::style::Era::Neomil.style().palette;
+        let mut literal = Buf::region(area);
+        let mut batched = Buf::region(area);
+        walk_engine::<true, false>(&mut literal, prims, &palette, xf);
+        walk_engine::<true, true>(&mut batched, prims, &palette, xf);
+        assert_eq!(literal.px.iter().flat_map(|rgba| rgba.iter().map(|v| v.to_bits())).collect::<Vec<_>>(),
+            batched.px.iter().flat_map(|rgba| rgba.iter().map(|v| v.to_bits())).collect::<Vec<_>>(), "float buffer bits");
+        assert_eq!(literal.bytes(), batched.bytes(), "RGBA bytes");
+    }
+
+    #[test]
+    fn closed_joins_and_open_caps_match_at_fractional_rotated_and_clipped_origins() {
+        let mut closed = Vec::new();
+        for (i, width) in [3.18, 2.75, 1.9, 1.1, 0.45, 0.17].into_iter().enumerate() {
+            closed.push(path(CLOSED, true, width, Color { a: 0.0039 + i as f32 * 0.00013, ..WHITE }));
+        }
+        let clipped = Area { x0: 7, y0: 13, x1: 99, y1: 91 };
+        for xf in [Xf::scaled(1.0), Xf::scaled(0.41666666).moved(14.2, -3.7),
+            Xf::scaled(0.9).turned(12.3, 11.7, 17.5)] {
+            assert_eq!(white_stroke_run(&closed, xf), closed.len(), "normal band run is eligible");
+            equal(&closed, Area { x0: 0, y0: 0, x1: 120, y1: 110 }, xf);
+            equal(&closed, clipped, xf);
+            equal(C4_MASKED, Area { x0: 3, y0: 0, x1: 112, y1: 104 }, xf);
+        }
+    }
+
+    #[test]
+    fn interruptions_and_ineligible_strokes_keep_literal_semantics() {
+        let white = path(OPEN, false, 3.18, WHITE);
+        let thin = path(OPEN, false, 0.17, Color { a: 0.0048, ..WHITE });
+        let variants = [
+            vec![white, path(OTHER, false, 1.0, WHITE), thin],
+            vec![white, path(OPEN, false, 1.0, Color { r: 0.9, ..WHITE }), thin],
+            vec![white, path(OPEN, false, 0.0, WHITE), thin],
+            vec![white, path(OPEN, false, -0.4, WHITE), thin],
+            vec![white, path(OPEN, false, f32::INFINITY, WHITE), thin],
+            vec![white, path(OPEN, false, f32::NAN, WHITE), thin],
+            vec![white, path(OPEN, false, 100_000.0, WHITE), thin],
+        ];
+        let area = Area { x0: 0, y0: 0, x1: 120, y1: 110 };
+        for seq in variants { equal(&seq, area, Xf::scaled(1.0)); }
+        let huge = path(OPEN, false, 3.0, WHITE);
+        assert_eq!(white_stroke_run(&[huge, thin], Xf::scaled(100_000.0)), 0);
+        assert_eq!(white_stroke_run(&[white, thin], Xf::scaled(f32::INFINITY)), 0);
+        assert_eq!(white_stroke_run(&[white, thin], Xf::scaled(f32::NAN)), 0);
+    }
+
+    #[test]
+    fn active_rows_spans_and_unsafe_coordinates_match_literal_strokes() {
+        const ROWS: &[Seg] = &[
+            Seg::Line(100.0, 12.5), Seg::Move(8.0, 16.25), Seg::Line(100.0, 16.25),
+        ];
+        const APART: &[Seg] = &[
+            Seg::Line(24.0, 12.5), Seg::Move(82.0, 16.25), Seg::Line(102.0, 16.25),
+        ];
+        let area = Area { x0: 0, y0: 0, x1: 120, y1: 100 };
+        for segs in [ROWS, APART] {
+            let bands = [6.0, 2.5, 0.8].map(|width| Prim::Path {
+                x: 8.0, y: 0.0, segs, close: false, fill: None,
+                stroke: Some(Ink::Fixed(WHITE)), width,
+            });
+            assert_eq!(white_stroke_run(&bands, Xf::scaled(1.0)), 3);
+            equal(&bands, area, Xf::scaled(1.0));
+            equal(&bands, Area { x0: 13, y0: 8, x1: 91, y1: 24 }, Xf::scaled(1.0));
+        }
+
+        // This finite cancellation witness has eligible widths but an
+        // unsafe transformed endpoint. The batch must take the literal
+        // traversal: f32 endpoint reconstruction can reach column zero.
+        const HUGE: &[Seg] = &[
+            Seg::Line(4.0, 50.0), Seg::Move(0.0, 90.0), Seg::Line(0.0, 90.0),
+        ];
+        let pair = [0.4, 0.2].map(|width| Prim::Path {
+            x: 100_000_000.0, y: 50.0, segs: HUGE, close: false, fill: None,
+            stroke: Some(Ink::Fixed(WHITE)), width,
+        });
+        assert_eq!(white_stroke_run(&pair, Xf::scaled(1.0)), 2);
+        let palette = crate::style::Era::Neomil.style().palette;
+        let mut literal = Buf::region(area);
+        walk_engine::<true, false>(&mut literal, &pair, &palette, Xf::scaled(1.0));
+        assert!(literal.px.iter().any(|rgba| rgba.iter().any(|&v| v != 0.0)), "literal witness has coverage");
+        equal(&pair, area, Xf::scaled(1.0));
+
+        for bad in [f32::NAN, f32::INFINITY] {
+            let segs: &'static [Seg] = Box::leak(vec![Seg::Line(bad, 50.0)].into_boxed_slice());
+            let pair = [0.4, 0.2].map(|width| Prim::Path {
+                x: 4.0, y: 50.0, segs, close: false, fill: None,
+                stroke: Some(Ink::Fixed(WHITE)), width,
+            });
+            assert_eq!(white_stroke_run(&pair, Xf::scaled(1.0)), 2);
+            equal(&pair, area, Xf::scaled(1.0));
+        }
     }
 }

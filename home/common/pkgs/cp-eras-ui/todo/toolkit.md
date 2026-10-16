@@ -175,11 +175,16 @@ when that screen assembles from library widgets. Priority order:
   - `tests.mail.<era>` added 2026-09-05: the working mail client now
     has four goldens of its own, so the list rows with selection, the
     focus fade, the rail and the `catalog::button::bare` DELETE are
-    held still. The matrix is 25 cases. Seen in the takes and left as
-    is: entropism's DELETE plate (`alert` fill under `on_select` ink)
-    is low-contrast (a `panels::mail` choice, not a catalog one; the
-    trace-backed reference for the screen is the display-only
-    `mailbox` golden). The kitsch and neokitsch top bars carrying no
+    held still. The matrix then had 25 cases. Entropism's weak resting
+    DELETE ink is corrected in [round eighty-five](../docs/reference-svg-round85.md)
+    (2026-10-04): the compiled and published nexus palettes use the existing
+    darker background ink over the unchanged alert plate. Seventeen paired
+    captures preserve hover/held behavior, custom palettes and other eras;
+    only 136 glyph pixels change in the 1600 working-mail golden. Fonts,
+    shaping and effect work are unchanged. All 312 packaged tests, 22 checks
+    and 28 first-attempt matrix cases pass. This is `cp-eras-ui-mail`;
+    the display-only photographed `mailbox` has a separate implementation.
+    The kitsch and neokitsch top bars carrying no
     MAIL BOX segment is `widgets::chrome::top_bar`'s Caption and
     DeviceFrame arms doing what their table says, not a gap.
   - The rest, re-read 2026-09-05: *list rows with selection* is
@@ -266,6 +271,83 @@ when that screen assembles from library widgets. Priority order:
 - [ ] **Motion**: hover flicker + panel boot-in as canned animations
   (the Cache-invalidation pattern the deleted diamond_menu used is the
   plumbing; see git history).
+  - **Actionable renderer follow-up (2026-10-04): correct group fading.**
+    MZ rechecks the current Neo-kitsch Dashboard: 2,529 mid-fade pixels
+    are brighter than both hidden/rest endpoints, by up to 55 channel
+    levels. Rest exactly replays the golden. Per-primitive ink alpha
+    exposes the gold body through dark text; the adopted SVG fades the
+    assembled group. Preserve native font rendering and cache the group
+    rather than rebuilding glyphs each animation frame. NB/ND verifies
+    cached GPU endpoint composition in a native-text fixture: exact
+    endpoints, intermediate errors within 8-bit rounding, and five
+    mix passes without additional native draws or retained-resource
+    creation. Compatible Unorm views remove shader color conversions.
+    NG/NI also verifies the real-panel layer split in six exact packaged
+    comparisons, including 4K and fractional size; its original per-ink
+    fade remains unchanged. NJ/NM's parent-renderer bridge passes RGBA
+    and BGRA endpoint/intermediate checks with native text, surrounding
+    content, later foreground and six draws reusing two native endpoint
+    renders. Its full-viewport texture allocation remains experimental.
+    NO V3/V4 preserves native MSAA batches and resolves the 91-pixel
+    viewport-scale-0.8 failure without changing direct controls or
+    tolerance. Astra verifies 104 normalized fixture frames, cached
+    fractional input, fixed-clip transform/content invalidation and
+    zero-work clipping. V4 also repairs the optional-geometry build.
+    NT/NV now connects actual Dashboard backing and resolved pointer
+    state in scratch. The canonical mid-fade has zero of the original
+    2,529 over-bright pixels and no changes outside the panel. Hidden,
+    rest, 4K rest and fractional rest remain exact; 312 package tests pass.
+    NW/NY's thirteen same-process controls verify alpha-only reuse and
+    tested clock, pointer, selection, palette, size and font invalidation.
+    OA's 4K/fractional fade captures remove 21,898/4,785 over-bright pixels,
+    preserving endpoints and everything outside the panel. OB/OE preserves
+    all nine canonical/4K/fractional endpoint and midpoint images while
+    releasing textures at exact hidden/rest endpoints. OD/OF's 23-step
+    test confirms release, warm reuse and fade re-entry; nominal retained
+    group bytes at 4K go 99,532,800→0→99,532,800. This excludes in-flight
+    and internal GPU storage, and intermediate fades still use full textures.
+    OG/OI's 112 actual-state frames now preserve endpoints and warm replay,
+    with zero changes outside the panel and maximum midpoint error 0.499.
+    Its small palette change leaves the opaque fixed backing effectively
+    unchanged; it does not prove visibly different palette backing.
+    OL/OM's 1,664 fixed samples reject the current cost profile: warm 4K
+    CPU medians are 8.50–11.62 ms versus 2.16–3.26 ms originally, and cold
+    preparation has no measured CPU payback. The full app-anchor gate also
+    finds two original-route grain pixels after 4K→1600. OQ/OS restores
+    exact pixels with a new Engine on the same Device; the retained native
+    MSAA surface is a source hypothesis, not a verified fix. No tolerance
+    changes. OU removes one mix submission per fade frame, preserving all
+    112 state images and 104 renderer-fixture images. Its 832-sample paired
+    comparison reduces warm 4K calling-thread time 67–72% versus OB. Cold
+    calling-thread time rises and completion time remains mixed. PD/PE finds
+    large software spans in endpoint creation/submission, with pipeline
+    setup only about 1 ms. PH's offscreen RTX 4070 run preserves exact pixels
+    between variants and finds child preparation dominates cold time.
+    PI reuses one child across the endpoints, preserving 112 state and
+    104 native fixture images. PN's 832 fixed samples improve RTX 4070 cold
+    completion from about 71 to 43–44 ms (38–39%); software remains mixed.
+    PR/PS verifies all eleven panel text runs' exact bundled faces and
+    native alpha support at three sizes on both drivers. PT/PU preserves
+    all 106 renderer-fixture images per backend while cropping retained
+    textures for partial clips. PW/PX's guarded Dashboard crop preserves
+    all 112 state frames and paired 4K frames per driver, reducing nominal
+    retained fade storage 99.5→22.0 MB (77.85%). Font substitution and
+    projection fallbacks pass; warm/re-entry frames reuse font verification.
+    PZ's 832 fixed samples preserve all phase pixels/counters and pass the
+    hardware 15% cost guard; cold completion remains 44–45 ms, the 10% warm
+    speedup gate fails, and software is mixed. QD/QF verifies adjacent
+    early frames on both drivers. A guarded crop-content revision keeps
+    the ordinary CPU key but reduces nine GPU misses to one, endpoint
+    renders 18→2 and created textures 45→5, with exact full/cropped pixels.
+    QH v3 verifies actual selection/palette/font-version invalidation and
+    a supported animated backing clip; false static proofs follow time.
+    Font guards are reused until the font version changes. Next measure
+    early-frame CPU/completion costs with the fixed QI/QJ schedule.
+    Broader backing cases, general sizes, other
+    backends and acceptable cost still precede production integration.
+    This has existing
+    callers and does not depend on a new motion-design decision. See the
+    [group-opacity audit](../docs/group-opacity-audit.md).
   - [x] **Phase 1 (2026-09-06): the traces are no longer stills.**
     Motion is written on the trace as SMIL (`docs/PIPELINE.md`
     "Motion"): `<animate id=..>` on the element it moves, the element

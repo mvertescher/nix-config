@@ -209,3 +209,259 @@ fractional width. It is rejected. The trace/component stay unchanged;
 their different raster phase and filtered halo still need source review.
 See [the measured result](../reference-svg-round44.md#cacb-frame-coverage-and-native-candidate)
 and `/tmp/cp-eras-next/cc-validation-plan/` for integrated verification.
+
+## LO/LP background intervals for lower-frame profiles (2026-10-04)
+
+LO compares native-resolution source pixels at the same coordinates in
+all four screens. Login/Mail are visually clear across the ordinary lower
+frame; Login/Dashboard are clear across the selected lower frame. The
+respective donor pairs differ by at most one level in each RGB channel
+over both complete contexts (55,775 pixels). Four separate Store clear
+controls also differ from either donor by at most one level. Exact equality
+nevertheless fails: only 8,509/28,175 ordinary-context and 8,276/27,600
+selected-context donor pixels match in all channels. LO's predeclared
+exact-backing gate stays failed. No fitted mean correction removes these
+differences, and no exact hidden background is inferred.
+
+LP asks a different, bounded question using eight new clear controls,
+disjoint from every LO measurement window. Its fixed interval is the
+pointwise minimum of the two donor RGB values minus one, through their
+maximum plus one. The one-level padding comes from LO; no color offset
+or further tolerance is fitted to LP. All 3,200 new clear pixels lie
+inside that interval in all channels, and the donors remain within one
+level throughout the new controls and four profile strips.
+
+Conditional on that interval continuing beneath the foreground, LP
+reports total source red excess at two ordinary and two selected stations.
+This does not isolate one stroke, prove its hidden backing, or identify a
+unique point-spread function. At ordinary x1350, the old adjacent-gap row
+y1505 still has mean red excess 3.43–5.90; at selected x2100/y1675 it is
+4.86–7.24. Twelve rows below the outer ridge, ordinary y1550 retains
+7.81–9.90 and selected y1721 retains 9.10–11.43. The second stations at
+x1320/x2060 show the same positive residuals. These measurements support
+keeping the observed gap floor separate from a clear-background estimate;
+they do not assign all residual ink to the frame rather than nearby
+printing or overlapping effects.
+
+Astra verifies LO's 59,475 raw records and 90 statistic vectors, then
+LP's 8,870 records, control disjointness and all 1,350 row-statistic vectors
+across 270 rows. Both studies use original 3840×2160 RGB pixels without
+resampling. The four-screen context contact is reviewed. Plans, source
+hashes, raw records and independent `verify.py`/`VERIFIED.json` pairs are
+in `/tmp/cp-eras-next/lo-neokitsch-frame-ground/` and
+`lp-neokitsch-frame-interval/` under the same scratch root.
+
+These intervals are a prerequisite for separating total printing from
+background uncertainty. They do not supply an isolated core/halo model
+or resolve ED's width ambiguity. Keep the existing neighbor-gap, turn,
+other-ridge and smaller-size controls in any new fit. No SVG, component,
+Rust, font, material or golden change follows; NK-14 remains open.
+
+## LZ/MA complete photographic SVG check (2026-10-04)
+
+LZ establishes a way to test the existing foreground over LP's conditional
+ground bounds. It replaces only the four ground rectangles with their
+own opaque 4K raster, embedded at the original design extent. Definitions,
+the full sharp foreground, both global photographic passes and paint
+order remain byte-identical. The replay and original render have identical
+PNG bytes and RGBA pixels. All five actual font resolutions are pinned:
+Rajdhani Regular, Medium, SemiBold and Bold, plus FreeSans Bold. This
+validates ground injection, not isolation of a frame or its glow.
+
+MA substitutes LP's lower and upper donor bounds only in the eight clear
+controls and four profile strips, then renders the complete unchanged SVG
+twice. The endpoints are opaque and monotonic, and every pixel outside
+the twelve ground patches remains identical to LZ. All 3,200 clear-control
+source pixels lie inside the rendered interval. In the eight fixed core
+and gap apertures, however, 755 of 756 pixels fall outside it in at least
+one RGB channel. Both previously exposed repeat stations fail the frozen
+coherence rule: at least 16 of 21 pixels in the same channel and direction
+on each of two consecutive rows. All 26 triggered row-pair/channel checks
+put the source below the rendered lower bound.
+
+This is not a uniform brightness error. At ordinary x1320/y1501 the mean
+source red is 53.62 against the rendered interval 42.76–44.95; at selected
+x2060/y1671 it is 83.52 against 41.19–43.52. The current stack spreads too
+much light across surrounding rows while underrepresenting these narrow
+source peaks. A backing adjustment alone cannot explain that pattern
+under the fixed donor bounds. The result does not identify which stroke,
+global glow or neighboring printing causes it, nor determine a unique
+width, opacity or native material correction.
+
+Astra independently reproduces all 8,870 raw records, 270 row profiles,
+the eight aperture summaries and coherence decisions, and verifies the
+embedded ground pixels and unchanged foreground bytes. These are native
+3840×2160 observations without resampling; the repeat regions were already
+visible in LP and are not independent holdouts. Plans, frozen scripts,
+raw records and root verification are retained under
+`/tmp/cp-eras-next/lz-neokitsch-ground-replay/` and
+`/tmp/cp-eras-next/ma-neokitsch-stack-interval/`.
+
+MC performs the planned whole-pass omissions below. No SVG, Rust, font
+or golden changes follow from LZ/MA, and NK-14 remains open.
+
+## MC line and text glow omissions (2026-10-04)
+
+Six complete 4K renders remove only the existing line-glow use, text-glow
+use, or both uses, separately over MA's two ground bounds. Every remaining
+foreground byte, filter definition, embedded ground and paint order is
+preserved. The three pairs remain opaque and monotonic, and all 3,200
+clear-control pixels pass in each pair. All three variants nevertheless
+fail the unchanged fixed-repeat coherence rule:
+
+| Omitted pass | Core/gap pixels outside interval | Coherent row-pair/channel failures | Failure direction |
+| --- | ---: | ---: | --- |
+| Lines | 730/756 | 18 | Source above rendered upper bound |
+| Text | 755/756 | 26 | Source below rendered lower bound |
+| Both | 730/756 | 18 | Source above rendered upper bound |
+
+The text-glow omission changes none of the 8,870 measured pixels, although
+it changes other parts of the complete screen. The line-glow omission
+changes 5,502 of the 5,670 profile pixels; omitting both passes gives the
+same local pixels as omitting lines. This is observed in the directly
+rendered both-off scene, not inferred by adding isolated effects.
+
+For example, ordinary x1320/y1505 has mean source red 17.05. Removing line
+glow lowers the rendered interval from 31.62–34.00 to 11.57–14.00; the
+remaining gap printing is now insufficient. At the adjacent narrow peak
+y1501, source red 53.62 already exceeds the original interval 42.76–44.95,
+and removal lowers that interval further to 28.76–31.19. The selected
+station shows the same combination. Simply removing the current glow
+does not recover the photographed distribution. These measurements locate
+the current pass's contribution; they do not separate the source into
+authored core and halo layers or determine a replacement material.
+
+Astra verifies the exact declared use-line deletions, all 26,610 raw
+records, 810 row profiles, aperture/coherence summaries and full-scene
+responses against MA. Frozen inputs include the same five actual font
+resolutions. Evidence is in
+`/tmp/cp-eras-next/mc-neokitsch-photo-pass-ablation/`, including
+`ROOT-VERIFIED.json`. Every omission remains diagnostic and unaccepted.
+Do not repeat a global pass deletion or infer a native halo port from
+these results; any new core or material hypothesis must explain both
+concentrated peaks and surrounding printing, retaining side/turn,
+other-ridge and smaller-size controls. NK-14 stays open.
+
+## MK/ML: independent spread controls
+
+The existing global line filter has vertical sigma 10.8 physical pixels
+at 4K, spanning several lower ridges at roughly 7–8 pixel spacing. MA/MC's
+overlapping profiles therefore do not identify a narrower blur, even
+though their narrow peaks and broad surrounding ink suggest investigating
+spatial spread. Signed distances to the conditional interval are not an
+isolated source halo or a linear response model.
+
+The outer cards' straight tops offer a geometry-based control proposal,
+separate from AU's raised-shoulder windows. They use `#dab176` at width
+1.3, whereas the echoes use `#ebb57f` at width 1 with varying opacity.
+A top measurement could constrain a global-filter hypothesis conditional
+on that primary stroke; it cannot establish the fifth echo's material
+without independently validating their relation. Login is an unvalidated
+ground-donor candidate. Pixel isolation, donor validity and transfer have
+not been measured, so no replacement filter or native effect follows.
+This does not establish that all remaining frame work is blocked.
+
+Pinned preflights and Astra reviews are in
+`/tmp/cp-eras-next/mk-frame-response-preflight/` and
+`/tmp/cp-eras-next/ml-isolated-frame-preflight/`. No source fit or render
+was run for either preflight; NK-14 remains open.
+
+## MO: outer-top donor check
+
+The fixed Login RGB ±1 interval fails the proposed presumed-clear
+controls: 629 of 3,480 pixels are outside it. Ordinary card 4's lower
+band accounts for 135/588 failures (maximum RGB differences 4/3/4), and
+the selected lower band for 494/576 (4/5/12). Both card 1 bands and the
+other two upper bands pass. Card 3 was excluded before sampling because
+its proposed lower Login control overlaps an input field.
+
+The exact control rectangles contain no visually resolved foreground,
+but nearby rifles appear in their padded contexts; the current SVG blur
+support also reaches the lower bands. Those observations do not identify
+the photograph's hidden layers. Differences in the failing bands include
+both signs, and a near-zero average does not restore the pointwise gate.
+The failure may involve backing or nearby printing; it is not a blur-width
+measurement. The frozen batch stops before all three target profiles,
+without moving boxes or widening its bound. A single passing card does
+not validate the prescribed ordinary/selected transfer.
+
+Astra reproduces all raw pixels and flags from the original rasters.
+The plan, source/script hashes, control previews, `CLEAR.csv`, results
+and `ROOT-VERIFIED.json` are in `/tmp/cp-eras-next/mo-top-primary-source/`.
+No SVG/native render, fit or artwork change follows. Another top-control
+study needs an independently supported ground/printing separation;
+do not use these failed controls to assign a global or fifth-echo kernel.
+
+## MS/MT: straight-side registration
+
+The fifth echo's lower cubic has equal start, control and endpoint x
+coordinates; it remains vertical until the following quadratic turn.
+Earlier AF side rows sit at that turn and cannot establish a straight-stem
+translation. MS instead compares fixed straight spans at original 4K
+resolution: ordinary y1437–1452 and selected y1607–1622, split into two
+eight-row bands. The selected span is in the dark title band below its
+gold face. Rounded nominal axes locate windows only.
+
+Both flanks are measured at one-quarter, one-half and three-quarters of
+each profile's central maximum, after either a chord or constant-minimum
+endpoint reference. Those references describe observed profiles; they
+are not estimates of clear backing or a separated halo. Red and green
+must both show same-sign shifts of at least 0.25 physical pixel, with
+left/right shifts agreeing within 0.25 pixel, in every fixed entry.
+
+| Fifth stem | Mean source-minus-native left/right shift at 4K | Entries passing the flank criterion |
+| --- | ---: | ---: |
+| Card 1 | +1.296 / +0.032 px | 0/24 |
+| Card 3 | +1.027 / +0.979 px | 24/24 |
+| Card 4 | +1.001 / +0.575 px | 0/24 |
+| Selected | +1.289 / +0.688 px | 0/24 |
+
+Every ordinary and selected source/native red/green pair is separable,
+but the required repeated-card translation screen fails. Card 1, card 4
+and selected have asymmetric flanks and narrower apparent source widths.
+Card 3's outer neighbor also differs, with mean left/right shifts
++2.189/+1.326 px; its fourth echo gives +0.881/+0.281 px. These are not a
+common rigid displacement. Its fifth-only pass therefore establishes
+neither a fifth-path correction nor whole-card registration. Source/SVG
+results retain nonseparable fifth entries instead of changing the windows
+or thresholds. No opacity, width, halo or geometry trial follows.
+
+A fresh packaged 1600 capture exactly reproduces the current golden;
+its fresh 4K companion and the pinned, exact-replayed full SVG supply the
+comparators. MS retains all 10,368 RGB pixels, 24 full band profiles,
+1,296 edge attempts and 864 source/comparator differences. Astra's MT
+review independently reproduces these with rational arithmetic, including
+invalid reasons and every translation decision. Frozen inputs and raw
+results are in `/tmp/cp-eras-next/ms-straight-frame-edges/`; the independent
+review is `/tmp/cp-eras-next/mt-straight-edge-review/VERIFIED.json`, and
+package provenance is `/tmp/cp-eras-next/mr-current-neokitsch-baseline/`.
+NK-14 remains open; runtime, fonts, SVG and goldens are unchanged.
+
+## MV/MX: opposite-side control
+
+The independent left edge does not support promoting card 3's fifth-ridge
+result into a whole-card shift. MU verifies that the ordinary SVG/native
+cards share local frame geometry at design origins 360.8, 978.8 and
+1288.8. This describes the reconstruction, not the source's authored
+coordinates. MV then freezes four sixteen-row bands along each ordinary
+left stem, using original 4K pixels, nineteen-sample windows, the same two
+observed-profile references and three relative levels.
+
+Card 3's source-minus-native left flank spans +1.876 to +2.146 px, and
+its right flank +1.287 to +2.227 px. All 48 red/green pairs are separable,
+but none meets the independently declared near-+1-pixel requirement:
+both flanks in [0.75, 1.25] px and agreeing within 0.25 px. Cards 1 and 4
+also have mean left-flank residuals near +1.8 px, so the discrepancy is
+not exclusive to card 3. Their opposite flanks and widths differ too.
+This rejects a uniform near-+1-pixel translation as an explanation of
+MS's fifth-ridge result. It does not recover authored axes or exclude
+mixed geometry/material differences. Do not fit a replacement displacement
+from these failed controls or treat their endpoint references as ground.
+
+Astra independently reproduces all 10,944 raw RGB records, 36 band
+profiles, 648 edge attempts and 432 differences, including all 48 screen
+decisions, using rational arithmetic. Frozen inputs and results are in
+`/tmp/cp-eras-next/mv-left-frame-control/`; independent verification is
+`/tmp/cp-eras-next/mx-left-frame-review/VERIFIED.json`. No top/content
+follow-up, candidate, render or artwork change follows this failed
+requirement. The remaining frame material and fine geometry stay open.

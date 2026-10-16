@@ -54,6 +54,18 @@ Use source crops and measured contours, not gate score alone, for review.
   material from presentation residue before marking anything `photo`.
   Refine text widths/weights and localized fills against source crops;
   preserve the correctly sampled main red and broad layout.
+  EH confirms correlated maker-text row structure but rejects one frozen
+  cosine modulation: held-out primary text and fractional first-line
+  boxes worsen. Geometric labels and text caches remain unchanged; an
+  independently supported waveform/ground is needed before another fit.
+  See [round sixty-one](../docs/reference-svg-round61.md#neomil-maker-text-scan-modulation).
+  FA verifies current packaged baseline parity. FB finds a bounded phase
+  cue in the neighboring M/dot cycles, but FD's fixed bright-M material
+  worsens ten of twelve whole-word L1 comparisons and fails lower-line
+  4K/fractional RMS controls. Direct-paint and constant-gradient no-ops
+  are exact at three sizes; no font, cache, SVG or Rust change follows.
+  See [round sixty-eight](../docs/reference-svg-round68.md).
+
 - **Standing validation for each pass.** Review fresh source→SVG crops,
   update the matching `components.svg` excerpts and source documentation,
   transcribe into `src/eras/neomil.rs`, and inspect SVG→iced captures,
@@ -256,6 +268,80 @@ The next pass-4 batch is integrated (2026-09-14):
   verification pass. Preserved joins, remaining shoulder error and faint
   striations keep NM1 open. See
   [round forty-five](../docs/reference-svg-round45.md).
+
+  EF attenuates only the remaining primary rim below y888.75, preserving
+  the bright AZ band, accepted left trim, lettering and echoes. A native
+  gradient fails unchanged-opacity replay; complementary solid paths pass
+  exactly at all three sizes. Every one of 349/145/140 changed native
+  pixels improves source RGB, and all regional threshold controls pass.
+  Seven actual-Dashboard pairs preserve custom ink, opening and locality;
+  production parity passes. SVG/component and the two 1600 goldens are
+  synchronized. Packaged 4K parity, both gates, 303 local/packaged Rust
+  tests and all 22 repository checks/28 matrix cases pass. Faint printing
+  and glyph residuals keep NM1 open. See
+  [round fifty-nine](../docs/reference-svg-round59.md#neomil-footer-lower-coverage).
+  EG transfers AY's frozen secondary profile onto that corrected primary
+  rim without refitting. Explicit clip-seam controls do not explain the
+  remaining small-size interior bottom/text losses; the transfer is
+  rejected against both actual SVG and split control. Native source
+  profiles also rule out raising both broad-copy opacities. Preserve EF
+  and require a different source-supported profile before another trial;
+  see [round sixty](../docs/reference-svg-round60.md#neomil-secondary-echoes).
+
+  KS finds the remaining straight outer-left shoulder is already the
+  one-sample level of native four-sample MSAA. Another opaque inward move
+  would jump toward the backing and worsen the source mismatch. Independent
+  review reproduces 494 RGB records and the fixed backing controls; their
+  uncertainty does not identify the complete rim. Source cores also exceed
+  the current local ink. Keep accepted geometry and investigate that color
+  distinction separately before any paint proposal. Fonts, effects and
+  caches remain unchanged; see the [coverage limit](../docs/neomil/dashboard-footer.md#ks-outer-left-coverage-limit-2026-10-04).
+  KT independently verifies the brighter local primary core across both
+  top spans, both straight sides and both top joins. Bottom/divider and
+  glyph controls remain mixed. KU rejects the single SVG frame/divider
+  color trial: whole-footer L1 gains at 4K conceal losses at 1600 and
+  fractional sizes, especially bottom/divider coverage. All 45 fixed
+  regions per size and 101 L1/RMS exceptions are independently reviewed.
+  Native transfer would also worsen the existing outer shoulder. Retain
+  production paint and require independent backing/boundary evidence
+  before a joint color/coverage proposal; see the [ink evidence](../docs/neomil/dashboard-footer.md#kt-local-primary-ink-2026-10-04)
+  and [transfer limit](../docs/neomil/dashboard-footer.md#ku-color-transfer-limit-2026-10-04).
+  KW's fixed primary-free backing fails the two upper right holdouts in
+  222/235 and 228/235 pixels, while lower holdouts pass. Independent review
+  checks every raw record and retains the separate divider/joins. No
+  coverage or boundary is inferred. A new independently supported backing
+  constraint is needed; do not widen the envelope from these failed
+  holdouts. See the [backing prerequisite](../docs/neomil/dashboard-footer.md#kw-bottom-backing-prerequisite-2026-10-04).
+  KY supplies independent ground controls: Login and Store match over
+  60,000 footer-context pixels; Dashboard matches both in 16,115 clear
+  pixels. The occupied Mail control retains its differences. This enables
+  a caption-isolation diagnostic, not a primary-coverage inference or
+  font replacement. KW's failures remain; see the
+  [shared source ground](../docs/neomil/dashboard-footer.md#ky-shared-source-ground-2026-10-04).
+  KX isolates the second caption: its current three text nodes end at
+  source row 2123, while covered/terminal controls retain much stronger
+  source printing below that footprint and neighboring clear controls
+  approach the verified ground. Investigate the localized caption tail
+  separately from AY/EG's failed frame profile. This establishes neither
+  a new font nor a fitted effect; preserve existing paint until a candidate
+  passes source, smaller-size and native controls. See the
+  [caption isolation](../docs/neomil/dashboard-footer.md#kx-second-caption-isolation-2026-10-04).
+  KZ confirms the localized source tail at three fixed red-excess levels,
+  with zero clear-control hits. Its existing-caption column mask covers
+  143/145 columns and every threshold component touches the context
+  boundary, so it cannot identify the effect or support a paint trial.
+  Keep the tail open; see the
+  [support limit](../docs/neomil/dashboard-footer.md#kz-caption-tail-support-limit-2026-10-04).
+  LH/LI supply independent two-dimensional displacement constraints:
+  (5,5) physical pixels repeats across code halves and the Combat tail;
+  the deeper Defence tail instead associates with the exploratory (10,8)
+  offset. Neither identifies a complete effect. LJ tests those positions
+  once with existing fonts/opacity: aggregate error improves at all three
+  sizes, but bright glyph edges and local controls regress. Keep the
+  rejected position-only trial out of production; retain both near-edge
+  and trailing printing requirements. See the
+  [source displacement](../docs/neomil/dashboard-footer.md#lhli-source-text-displacement-2026-10-04)
+  and [transfer limit](../docs/neomil/dashboard-footer.md#lj-position-only-transfer-limit-2026-10-04).
 
 The [printing follow-up audit](../docs/neomil/dashboard-printing.md) records
 the 2026-09-21 proposals, masks, actual-render measurements and limitations.

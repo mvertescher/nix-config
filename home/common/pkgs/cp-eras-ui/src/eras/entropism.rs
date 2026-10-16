@@ -90,7 +90,7 @@ pub fn palette() -> Palette {
 
 /// The published reference palette differs from the standalone palette
 /// only in its derived panel role (`home/themes/entropism/palettes.nix`).
-/// Exact matching confines photographed access inks to those two palettes.
+/// Exact matching confines photographed source inks to those two palettes.
 pub fn access_reference_palette(actual: &Palette) -> bool {
     let built_in = palette();
     let mut published = built_in;
@@ -305,7 +305,7 @@ pub fn style() -> Style {
         dashboard: DASHBOARD,
         dashboard_reference_fg: None,
         store_reference_fg: None,
-        store_reference: None,
+        store_reference: Some(store_material::REFERENCE),
         // BRAINDANCE, row 1 tile 3: the one tile dashboard-trace.svg
         // fills solid (`<rect x="716" y="227" ... fill="#a6d3a7"/>`
         // under "the selection: solid sage fill, dark caption box and
@@ -1114,6 +1114,9 @@ const QR: &[&str] = &[
 #[path = "entropism_store_art.rs"]
 mod store_art;
 
+#[path = "entropism_store_material.rs"]
+mod store_material;
+
 /// Source-native nested tone contours for the repeated MAGNUM weapon.
 /// The two thresholds retain rail holes, receiver fasteners and grip folds
 /// without strokes that can escape the weapon body (store-art.md).
@@ -1692,8 +1695,9 @@ const STORE_BODY: &[Prim] = &[
     fill_rect(112.0, 481.25, 218.0, 1.5, Ink::Border),
     fill_rect(112.0, 543.25, 218.0, 1.5, Ink::Border),
     fill_rect(112.0, 605.25, 218.0, 1.5, Ink::Border),
-    // B: 265-wide cards on a 322 pitch; the fourth's primary ink
-    // has a persistent open cut at x1564.6, before the screen edge.
+    // B: 265-wide cards. The first three share a 322 pitch; the fourth
+    // frame is two units farther right, with an open cut at x1564.6.
+    // Its reference-only ordinary rifle keeps the regular pitch.
     Prim::At { x: 461.0, y: 260.0, prims: SHELF_0 },
     Prim::At { x: 783.0, y: 260.0, prims: SHELF_1 },
     Prim::At { x: 1105.0, y: 260.0, prims: SHELF_2 },
@@ -1794,9 +1798,9 @@ macro_rules! caption {
         &[
             hline(0.0, -28.0, 194.0, $rule_ink, 1.7),
             vline(96.0, -28.0, 0.0, $rule_ink, 1.7),
-            wide(6.0, -15.0, 12.0, 0.78, $text_ink, Face::SemiBold, "85SD4F3Q5S41"),
-            wide(103.0, -15.0, 12.0, 0.685, $text_ink, Face::SemiBold, "COMBAT COLONIZATION"),
-            wide(103.0, -6.0, 10.5, 0.82, $text_ink, Face::SemiBold, "DEFENCE PROGRAM"),
+            Prim::ReusableWide { x: 6.0, y: -15.0, size: 12.0, stretch: 0.78, ink: $text_ink, face: Face::SemiBold, anchor: Anchor::Start, content: "85SD4F3Q5S41" },
+            Prim::ReusableWide { x: 103.0, y: -15.0, size: 12.0, stretch: 0.685, ink: $text_ink, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
+            Prim::ReusableWide { x: 103.0, y: -6.0, size: 10.5, stretch: 0.82, ink: $text_ink, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
         ]
     };
 }

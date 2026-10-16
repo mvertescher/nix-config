@@ -46,10 +46,12 @@ breaks, fixed MICRO ink and the recently corrected badges stay intact.
 Native 4K right-tail excess shrinks from 31/25/33/11 pixels to 1/4/1/0
 for C1/C2/D1/D2. Every whole-line R>100 overlap improves at all three
 sizes; all twelve fixed first/middle/last spans improve at 4K and 1600.
-The fractional D1 first span worsens .236→.159. First lines sit one pixel
-below the photograph at 4K, align at 1600, and remain two pixels above
-the projected source at 1537. All changed pixels stay in the annotation
-windows, with identical badges.
+The fractional D1 first span worsens .236→.159 under AX's historical
+projection. First lines sit one pixel below the photograph at 4K and
+align closely at 1600. AX reported a two-pixel fractional offset using
+separately projected line anchors; EG's uniform whole-photo sampling
+supersedes that fractional diagnosis below. All changed pixels stay in
+the annotation windows, with identical badges.
 
 Brightness and photographic softness remain unresolved. Fractional R>130
 overlap worsens on all four native lines; 1600 R>160 has no native core
@@ -62,6 +64,31 @@ exclude the first line's final pixel row.
 
 State and integrated validation are recorded in
 [round thirty-five](../reference-svg-round35.md).
+
+### EG current-package and source-sampling recheck
+
+Fresh packaged captures at 3840×2160, 1600×900 and 1537×947 match the
+accepted AX captures; 1600 also matches the current golden exactly.
+At R>70, first-line native/source rows are 1976–1986/1975–1985 at 4K,
+823–827/822–827 at 1600, and 789–793/790–794 at fractional size.
+Thus the fractional first lines are one row above source, not two.
+Second lines match source rows at both smaller sizes. These are
+thresholded printing extents, not measurements of font baselines; a
+common baseline shift is not supported across sizes and both lines.
+
+The direct SVG has a separate raster result: its 4K first-line R>100
+rows and fractional R>70 rows match source. At 1600 its bright core
+nearly vanishes. Native R>70 coverage is 61–63% of source at 4K,
+75–80% at 1600 and 75–83% at fractional size. This confirms a local
+printing residual without isolating ink, photographic glow or edge
+softness. It does not justify a uniform brightness or weight change.
+
+SVG Fontconfig resolves the bundled Rajdhani Regular bytes; the native
+selectors and completed font audit agree. Implementation correctness
+does not establish the photographed font's identity. Astra independently
+reproduces all three direct SVGs and source projections, 240 measurement
+groups, and the native/golden provenance. No artwork or font changes
+follow; see [round sixty](../reference-svg-round60.md).
 
 ## Repeated store metadata: unresolved font and spacing fit
 

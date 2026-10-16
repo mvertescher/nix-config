@@ -1574,7 +1574,7 @@ const fn rg5_opacity(id: &'static str, alpha: f32) -> Motion {
 /// Four certification marks measured from the source band.
 /// The warning block contains a source-thresholded micro contour.
 macro_rules! band_marks {
-    ($ink:expr, $knock:expr) => {
+    ($ink:expr, $knock:expr, $warn_x:expr) => {
         &[
             // Framed RG5 certification, then the filled square/disc SC mark.
             fill_rect(-16.5, 78.5, 10.8, 11.4, $ink),
@@ -1618,28 +1618,34 @@ macro_rules! band_marks {
                 Seg::Move(17.25, 84.1), Seg::Line(22.25, 84.1),
             ], $ink, 0.65),
             Prim::Round { x: 28.5, y: 74.0, w: 64.0, h: 18.0, r: 1.5, fill: None, stroke: Some($ink), width: 0.5 },
-            // Hollow warning triangle and positive exclamation on amber.
-            // Native bridge y88.8 preserves small-size coverage; SVG uses y88.6.
-            // See docs/kitsch/store-art.md for source and renderer calibration.
-            fill_path(30.3, 89.0, &[
-                Seg::Line(36.5, 78.2), Seg::Line(42.7, 89.0),
-                Seg::Cubic { c1x: 42.7, c1y: 89.0, c2x: 42.4, c2y: 89.0, x: 42.1, y: 89.0 },
-                Seg::Line(39.9, 89.0),
-                Seg::Cubic { c1x: 39.55, c1y: 89.0, c2x: 39.45, c2y: 88.9, x: 39.35, y: 88.8 },
-                Seg::Line(33.65, 88.8),
-                Seg::Cubic { c1x: 33.55, c1y: 88.9, c2x: 33.45, c2y: 89.0, x: 33.1, y: 89.0 },
-                Seg::Line(30.9, 89.0),
-                Seg::Cubic { c1x: 30.6, c1y: 89.0, c2x: 30.3, c2y: 89.0, x: 30.3, y: 89.0 },
-                Seg::Move(33.0, 87.8), Seg::Line(40.0, 87.8), Seg::Line(36.5, 81.2),
-            ], $ink),
-            fill_rect(36.0, 82.8, 1.0, 3.9, $ink),
-            Prim::Circle { x: 36.5, y: 88.0, r: 0.55, fill: Some($ink), stroke: None, width: 0.0 },
+            // Keep this nested: card_face indexes the top-level CARD entries.
+            Prim::At { x: $warn_x, y: 0.0, prims: WARNING_MARKS },
             fill_path(0.0, 0.0, store_art::BAND_MICRO, Ink::Fixed(BAND_MICRO_INK)),
         ]
     };
 }
-const BAND_MARKS: &[Prim] = band_marks!(Ink::Fixed(ON_BAND), Ink::Fixed(BAND));
-const BAND_MARKS_SEL: &[Prim] = band_marks!(Ink::Fixed(ON_BAND), Ink::Select);
+// Shared contour; only ordinary cards receive the source-fitted x offset below.
+// See docs/reference-svg-round67.md for the fixed profiles and local residuals.
+const WARNING_MARKS: &[Prim] = &[
+    // Hollow warning triangle and positive exclamation on amber.
+    // Native bridge y88.8 preserves small-size coverage; SVG uses y88.6.
+    // See docs/kitsch/store-art.md for source and renderer calibration.
+    fill_path(30.3, 89.0, &[
+        Seg::Line(36.5, 78.2), Seg::Line(42.7, 89.0),
+        Seg::Cubic { c1x: 42.7, c1y: 89.0, c2x: 42.4, c2y: 89.0, x: 42.1, y: 89.0 },
+        Seg::Line(39.9, 89.0),
+        Seg::Cubic { c1x: 39.55, c1y: 89.0, c2x: 39.45, c2y: 88.9, x: 39.35, y: 88.8 },
+        Seg::Line(33.65, 88.8),
+        Seg::Cubic { c1x: 33.55, c1y: 88.9, c2x: 33.45, c2y: 89.0, x: 33.1, y: 89.0 },
+        Seg::Line(30.9, 89.0),
+        Seg::Cubic { c1x: 30.6, c1y: 89.0, c2x: 30.3, c2y: 89.0, x: 30.3, y: 89.0 },
+        Seg::Move(32.108745010, 87.8), Seg::Line(40.891254990, 87.8), Seg::Line(36.5, 79.519347733),
+    ], Ink::Fixed(ON_BAND)),
+    fill_rect(36.0, 82.8, 1.0, 3.9, Ink::Fixed(ON_BAND)),
+    Prim::Circle { x: 36.5, y: 88.0, r: 0.55, fill: Some(Ink::Fixed(ON_BAND)), stroke: None, width: 0.0 },
+];
+const BAND_MARKS: &[Prim] = band_marks!(Ink::Fixed(ON_BAND), Ink::Fixed(BAND), 0.454039972301);
+const BAND_MARKS_SEL: &[Prim] = band_marks!(Ink::Fixed(ON_BAND), Ink::Select, 0.0);
 
 /// A standard product card, at its outline's own origin.
 const CARD: &[Prim] = &[
@@ -1649,8 +1655,8 @@ const CARD: &[Prim] = &[
     fill_path(-27.0, 94.0, BAND_SHAPE, Ink::Fixed(BAND)),
     Prim::At { x: 0.0, y: 0.0, prims: BAND_MARKS },
     fill_rect(160.0, 70.0, 60.0, 9.0, Ink::Fixed(ON_BAND)),
-    Prim::Wide { x: 163.0, y: 78.416667, size: 8.0, stretch: 1.42, ink: Ink::Fixed(BAND), face: Face::Bold, anchor: Anchor::Start, content: "PETROCHEM" },
-    Prim::Wide { x: 160.416667, y: 89.416667, size: 8.0, stretch: 1.50, ink: Ink::Fixed(ON_BAND), face: Face::Bold, anchor: Anchor::Start, content: "BETTERLIFE TEC" },
+    Prim::ReusableWide { x: 163.0, y: 78.416667, size: 8.0, stretch: 1.42, ink: Ink::Fixed(BAND), face: Face::Bold, anchor: Anchor::Start, content: "PETROCHEM" },
+    Prim::ReusableWide { x: 160.416667, y: 89.416667, size: 8.0, stretch: 1.50, ink: Ink::Fixed(ON_BAND), face: Face::Bold, anchor: Anchor::Start, content: "BETTERLIFE TEC" },
     Prim::At { x: 0.0, y: 0.0, prims: GUN_PLAIN },
     GUN_SEAM,
     card_stat(41.0, 225.0, 19.0, Ink::Fixed(MINT_BAR), "DPS"),
@@ -1733,8 +1739,8 @@ const GROWN: &[Prim] = &[
     Prim::Tracked { x: 10.0, y: 48.5, size: 19.5, tracking: 0.6, ink: Ink::Fixed(ON_GROWN), face: Face::Medium, anchor: Anchor::Start, content: "HAND GUN" },
     Prim::At { x: 0.0, y: 0.0, prims: BAND_MARKS_SEL },
     fill_rect(160.0, 70.0, 60.0, 9.0, Ink::Fixed(ON_GROWN)),
-    Prim::Wide { x: 163.0, y: 78.416667, size: 8.0, stretch: 1.42, ink: Ink::Select, face: Face::Bold, anchor: Anchor::Start, content: "PETROCHEM" },
-    Prim::Wide { x: 160.416667, y: 89.416667, size: 8.0, stretch: 1.50, ink: Ink::Fixed(ON_BAND), face: Face::Bold, anchor: Anchor::Start, content: "BETTERLIFE TEC" },
+    Prim::ReusableWide { x: 163.0, y: 78.416667, size: 8.0, stretch: 1.42, ink: Ink::Select, face: Face::Bold, anchor: Anchor::Start, content: "PETROCHEM" },
+    Prim::ReusableWide { x: 160.416667, y: 89.416667, size: 8.0, stretch: 1.50, ink: Ink::Fixed(ON_BAND), face: Face::Bold, anchor: Anchor::Start, content: "BETTERLIFE TEC" },
     // The grown card has its own native dark print and light openings.
     Prim::At { x: 0.0, y: 0.0, prims: GUN_SELECTED },
     card_stat(41.0, 202.5, 18.5, Ink::Fixed(ON_BAND), "DPS"),
@@ -2958,12 +2964,12 @@ pub const DASHBOARD: &[Prim] = &[
     // selected face, whose opaque gold fill covers it.
     Prim::Soft { prims: FACE_FIELDS },
     // header notes: Rajdhani 600 8 stretched 1.3 (lines 107-122)
-    Prim::Wide { x: 205.0, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "SPARE TIME MANAGER WAS DEVELO-" },
-    Prim::Wide { x: 205.0, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "PED BY SEOCHO. SERVING CUSTO-" },
-    Prim::Wide { x: 205.0, y: 131.9, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "MERS SINCE 2006." },
-    Prim::Wide { x: 715.3, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "SPARE TIME MANAGER WAS DEVELO-" },
-    Prim::Wide { x: 715.3, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "PED BY SEOCHO. SERVING CUSTO-" },
-    Prim::Wide { x: 715.3, y: 131.9, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "MERS SINCE 2006." },
+    Prim::ReusableWide { x: 205.0, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "SPARE TIME MANAGER WAS DEVELO-" },
+    Prim::ReusableWide { x: 205.0, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "PED BY SEOCHO. SERVING CUSTO-" },
+    Prim::ReusableWide { x: 205.0, y: 131.9, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "MERS SINCE 2006." },
+    Prim::ReusableWide { x: 715.3, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "SPARE TIME MANAGER WAS DEVELO-" },
+    Prim::ReusableWide { x: 715.3, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "PED BY SEOCHO. SERVING CUSTO-" },
+    Prim::ReusableWide { x: 715.3, y: 131.9, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "MERS SINCE 2006." },
     Prim::Wide { x: 1253.8, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "MAPS ARE PROVIDED BY SEOCHO." },
     Prim::Wide { x: 1253.8, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "SATELITE SERVICES SINCE 2006." },
     // boxed A / C / D: 24x24 2px squares (lines 125-129) holding a

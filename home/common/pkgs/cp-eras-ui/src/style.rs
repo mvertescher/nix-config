@@ -991,6 +991,19 @@ impl Style {
         Style::ink_in(&self.palette, ink)
     }
 
+    /// Resting DELETE ink in the working mail panel. The built-in and
+    /// published Entropism palettes use the darker ground on their
+    /// mid-sage alert plate; custom palettes keep their selected ink.
+    pub(crate) fn mail_delete_ink(&self) -> Color {
+        if self.era == Era::Entropism
+            && crate::eras::entropism::access_reference_palette(&self.palette)
+        {
+            self.palette.bg
+        } else {
+            self.palette.on_select
+        }
+    }
+
     fn ink_in(p: &crate::palette::Palette, ink: Ink) -> Option<Color> {
         Some(match ink {
             Ink::None => return None,
@@ -1028,8 +1041,8 @@ impl Style {
         Self::from_theme(&crate::theme::Theme::load())
     }
 
-    /// Resolve one published theme, retaining its explicit variant when
-    /// deciding whether the dashboard's reference correction applies.
+    /// Resolve a published theme, retaining its explicit variant when
+    /// deciding whether source-calibrated screen drawings apply.
     pub fn from_theme(theme: &crate::theme::Theme) -> Style {
         let named_era = Era::parse(&theme.era);
         let era = named_era.unwrap_or(Era::Neomil);
@@ -1038,7 +1051,14 @@ impl Style {
         if named_era != Some(era) || theme.variant != "reference" {
             style.dashboard_reference_fg = None;
             style.store_reference_fg = None;
-            style.store_reference = None;
+            // Entropism names its published source palette "nexus".
+            // Variant provenance and complete palette equality are both
+            // required; identical colors in a custom variant do not opt in.
+            if named_era != Some(Era::Entropism) || theme.variant != "nexus"
+                || !crate::eras::entropism::access_reference_palette(&style.palette)
+            {
+                style.store_reference = None;
+            }
             style.mailbox.list.selected_printing = None;
         }
         style
@@ -1069,7 +1089,11 @@ impl Style {
     }
 
     fn eligible_store_reference(&self, category: usize, card: usize) -> Option<(StoreReference, &'static StoreBackdrop)> {
-        if self.palette == self.era.style().palette {
+        let source_palette = match self.era {
+            Era::Entropism => crate::eras::entropism::access_reference_palette(&self.palette),
+            _ => self.palette == self.era.style().palette,
+        };
+        if source_palette {
             if let Some(reference) = self.store_reference {
                 if let Some(background) = reference.backdrops.iter()
                     .find(|b| b.category == category && b.card == card)
@@ -2793,7 +2817,8 @@ pub enum Prim {
         content: &'static str,
     },
     /// A `Wide` run whose unchanged glyph outlines may be reused within
-    /// one scene draw. Only the Neomil store's clipped title echoes opt in.
+    /// one scene draw. Measured repeated runs opt in; unsupported font,
+    /// anchor, size or stretch combinations retain ordinary `Wide` painting.
     ReusableWide {
         x: f32,
         y: f32,

@@ -144,6 +144,50 @@ source, and which are originals.
   it is the one to iterate against and G2 is the sanity read beside it.
 - Run any of them with `scripts/fidelity_check.sh [--source|--inventory|--implementation] [era [screen]]`.
 
+## Sampling originals at a viewport size
+
+Use `scripts/sample_source.py` for new local source comparisons. It needs
+Python and Pillow and provides both a CLI and `project_source(image, size)`:
+
+```sh
+python3 scripts/sample_source.py images/img-09-store.png \
+  --size 1537x947 --out /tmp/source-1537x947.png \
+  --metadata /tmp/source-1537x947.json
+python3 scripts/test_sample_source.py
+```
+
+The full-frame originals are 3840×2160. Like `Scene::scale`, the helper
+uses one uniform scale and top-left alignment. At 1537×947, the image
+content ends at y864.5625. Stretching to the viewport or first rounding
+the content height to 865 moves every text baseline. The helper instead
+uses a floating source box with RGB Lanczos filtering. Whole-frame
+1600×900 sampling preserves the existing RGB Lanczos pixels exactly.
+It filters only the content tile, then places that tile on the viewport;
+unused viewport height or width does not enlarge the source filter canvas.
+
+The output is RGBA: alpha 255 means full geometric source coverage,
+1–254 means partial coverage, and 0 marks unknown viewport padding.
+Partial coverage is quantized while reserving 0 and 255 for their exact
+meanings. Edge extension supplies filter support, so even fully covered
+pixels within the Lanczos boundary footprint can depend on synthetic
+samples. Exclude padding, partial pixels and boundary-filter pixels from
+strict local evidence; inspect the original at source edges. Alpha is
+not a confidence score and the transparent area is not photographed black.
+
+Metadata records input/output hashes and sizes, scale, fractional content
+bounds, the inverse viewport box and the smaller resampled box. Keep it
+with comparison artifacts. Use an explicitly top-left SVG viewport
+(`viewBox="0 0 1600 900"`, `preserveAspectRatio="xMinYMin meet"`) for
+fractional comparisons; distinguish a directly rendered 1600px SVG from
+a downsampled 4K render. Verify native baselines by hashes and decoded
+pixels against the accepted state, rather than trusting a scratch filename.
+
+The existing structural gates and `compare_ref.py` are unchanged. Their
+generic resizing does not interpret this alpha coverage; do not treat
+their padding scores as source evidence. Historical studies retain their
+recorded kernels and rejected controls. The new `sourceSampling` passthru
+case runs with the existing matrix, alongside its 27 visual cases.
+
 ## Rendering one screen by hand
 
 `scripts/render.sh` is the golden matrix's recipe — headless weston,

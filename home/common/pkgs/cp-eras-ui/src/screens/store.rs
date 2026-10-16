@@ -197,44 +197,46 @@ mod tests {
     fn reference_surfaces_follow_selection_without_changing_navigation_or_custom_palettes() {
         use crate::palette::rgb;
         use crate::screens::scene::hit_selected;
-        let style = Era::Neomil.style();
-        let reference = style.store_reference.expect("source store material");
-        assert_eq!(reference.backdrops.len(), 20);
-        for category in 0..5 {
-            for card in 0..4 {
-                let picked = Picked { category, card, module: 0 };
-                let (scene, backdrop) = style.store_layers(category, card);
-                assert!(std::ptr::eq(scene, reference.scene));
-                assert!(std::ptr::eq(style.store_states_for(category, card), reference.states.unwrap()));
-                assert_eq!(reference.backdrops.iter().filter(|b| b.category == category && b.card == card).count(), 1);
-                let original_motion = style.store.iter().find_map(|p| match p {
-                    crate::style::Prim::Motion { motion, .. }
-                        if matches!(motion.change, crate::style::Change::Clip { .. }) => Some(motion),
-                    _ => None,
-                }).unwrap();
-                assert!(backdrop.iter().any(|p| matches!(p, crate::style::Prim::Motion { motion, .. } if motion == original_motion)));
-                let mut original = Vec::new();
-                let mut actual = Vec::new();
-                plates_selected(style.store, picked, 0.0, 0.0, &mut original);
-                plates_selected(scene, picked, 0.0, 0.0, &mut actual);
-                assert_eq!(actual, original);
-                // Exercise grown-card bottoms and the permanent fourth-card
-                // cut, including points just outside each drawing.
-                for x in [147.0, 153.0, 360.0, 362.0, 436.0, 450.0, 769.0, 1039.0, 1097.0, 1426.0, 1556.0, 1558.0] {
-                    for y in [150.0, 180.0, 300.0, 580.0, 612.0, 650.0, 779.0, 797.0, 799.0] {
-                        let point = iced::Point::new(x, y);
-                        assert_eq!(hit_selected(scene, picked, 1.0, point), hit_selected(style.store, picked, 1.0, point));
+        for era in [Era::Neomil, Era::Entropism] {
+            let style = era.style();
+            let reference = style.store_reference.expect("source store material");
+            assert_eq!(reference.backdrops.len(), 20);
+            for category in 0..5 {
+                for card in 0..4 {
+                    let picked = Picked { category, card, module: 0 };
+                    let (scene, backdrop) = style.store_layers(category, card);
+                    assert!(std::ptr::eq(scene, reference.scene));
+                    assert!(std::ptr::eq(style.store_states_for(category, card), reference.states.unwrap()));
+                    assert_eq!(reference.backdrops.iter().filter(|b| b.category == category && b.card == card).count(), 1);
+                    let original_motion = style.store.iter().find_map(|p| match p {
+                        crate::style::Prim::Motion { motion, .. }
+                            if matches!(motion.change, crate::style::Change::Clip { .. }) => Some(motion),
+                        _ => None,
+                    }).unwrap();
+                    assert!(backdrop.iter().any(|p| matches!(p, crate::style::Prim::Motion { motion, .. } if motion == original_motion)));
+                    let mut original = Vec::new();
+                    let mut actual = Vec::new();
+                    plates_selected(style.store, picked, 0.0, 0.0, &mut original);
+                    plates_selected(scene, picked, 0.0, 0.0, &mut actual);
+                    assert_eq!(actual, original);
+                    // Exercise grown-card bottoms and the permanent fourth-card
+                    // cut, including points just outside each drawing.
+                    for x in [147.0, 153.0, 360.0, 362.0, 436.0, 450.0, 769.0, 1039.0, 1097.0, 1426.0, 1556.0, 1558.0, 1564.0, 1564.7] {
+                        for y in [150.0, 180.0, 300.0, 580.0, 612.0, 650.0, 779.0, 797.0, 799.0] {
+                            let point = iced::Point::new(x, y);
+                            assert_eq!(hit_selected(scene, picked, 1.0, point), hit_selected(style.store, picked, 1.0, point));
+                        }
                     }
                 }
             }
+            assert_eq!(style.store_layers(5, 4), (style.store, style.store));
+            assert!(std::ptr::eq(style.store_states_for(5, 4), style.store_states));
+            let mut custom = style;
+            custom.palette.panel = rgb(0x183638);
+            assert_eq!(custom.store_layers(0, 1), (style.store, style.store));
+            assert!(std::ptr::eq(custom.store_states_for(0, 1), style.store_states));
         }
-        assert_eq!(style.store_layers(5, 4), (style.store, style.store));
-        assert!(std::ptr::eq(style.store_states_for(5, 4), style.store_states));
-        let mut custom = style;
-        custom.palette.panel = rgb(0x183638);
-        assert_eq!(custom.store_layers(0, 1), (style.store, style.store));
-        assert!(std::ptr::eq(custom.store_states_for(0, 1), style.store_states));
-        for era in [Era::Entropism, Era::Kitsch, Era::Neokitsch] {
+        for era in [Era::Kitsch, Era::Neokitsch] {
             let style = era.style();
             assert_eq!(style.store_layers(0, 1), (style.store, style.store));
             assert!(std::ptr::eq(style.store_states_for(0, 1), style.store_states));
@@ -359,7 +361,8 @@ mod tests {
                 store.update(Message::Select { group: Group::Card, index: card });
                 let x = [437.0, 769.0, 1096.0, 1425.0][card] + 66.0;
                 assert_eq!(hit_selected(store.style.store, store.picked(), k, point(x, 700.0, k)), Some((Group::Card, card)));
-                assert_eq!(hit_selected(store.style.store, store.picked(), k, point(1557.25, 350.0, k)), None);
+                assert_eq!(hit_selected(store.style.store, store.picked(), k, point(1558.05, 350.0, k)), Some((Group::Card, 3)));
+                assert_eq!(hit_selected(store.style.store, store.picked(), k, point(1558.55, 350.0, k)), None);
                 assert_eq!(hit_selected(store.style.store, store.picked(), k, point(1580.0, 700.0, k)), None);
                 let idle_x = [437.0, 769.0, 1096.0, 1425.0][(card + 1) % 4] + 66.0;
                 assert_eq!(hit_selected(store.style.store, store.picked(), k, point(idle_x, 700.0, k)), None);
@@ -414,7 +417,7 @@ mod tests {
                 for (group, index, centre) in found {
                     assert_eq!(hit_selected(store.style.store, store.picked(), 1.0, centre), Some((group, index)), "{era:?}, card{card}, {centre:?}");
                     if era == Era::Neomil && group == Group::Card && index == 3 {
-                        assert_eq!(centre.x, 1491.0, "fourth-card centre uses its visible132px width");
+                        assert_eq!(centre.x, 1491.65, "fourth-card centre uses its visible 133.3px width");
                     }
                     if era == Era::Kitsch && group == Group::Card && index == 3 && card == 3 {
                         assert_eq!(centre, iced::Point::new(1496.5, 468.0),

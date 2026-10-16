@@ -24,6 +24,7 @@ use crate::motion;
 use crate::screens::soft;
 use crate::style::{Anchor, Change, Face, Group, Ink, PlateStates, Prim, Seg, Style};
 use crate::Element;
+use std::borrow::Cow;
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Duration;
 use iced::widget::canvas;
@@ -38,10 +39,10 @@ mod resize;
 /// G2i both use exactly that, and nothing else should have to.
 pub const FRAME: (f32, f32) = (1600.0, 900.0);
 
-/// Where a glyph's baseline sits inside the line box iced lays out when
-/// the text is top-aligned: the leading above the ascender plus the
-/// ascender itself, as a fraction of the font size. The traces give
-/// every text run its SVG baseline, so the scene has to convert.
+/// Retained Rajdhani line-box calibration used by existing scene coordinates.
+/// Pinned Iced actually places its default 1.2-line outline baseline at 0.892
+/// (see docs/font-rendering-audit.md). Existing source-fitted coordinates
+/// prevent a global replacement; audited callers compensate locally.
 const BASELINE: f32 = 0.84;
 
 /// [`BASELINE`] for Orbitron, whose ascender stands taller (hhea
@@ -55,10 +56,18 @@ const ORBITRON_BASELINE: f32 = 0.984;
 // The canvas's centred 1.2 line gives 0.6 + (0.9 - 0.2)/2.
 const FREE_SANS_BASELINE: f32 = 0.95;
 
-/// Only marked `ReusableWide` runs use this small, one-draw cache. Keeping
-/// paths for just this draw avoids making assumptions about font registration.
+/// Only marked `ReusableWide` runs use these outline-entry bounds. The
+/// tracked-run path cache below has separate limits. Both live for one draw
+/// to avoid assumptions about font registration across draws.
 const OUTLINE_CACHE_LIMIT: usize = 4;
 const OUTLINE_CONTENT_LIMIT: usize = 64;
+const ADVANCES_CACHE_LIMIT: usize = 16;
+const ADVANCES_CONTENT_LIMIT: usize = 256;
+const TRACKED_PATH_CACHE_LIMIT: usize = 4;
+const TRACKED_PATH_CONTENT_LIMIT: usize = 64;
+const TRACKED_PATH_GLYPH_LIMIT: usize = 32;
+const TRACKED_PATH_PATH_LIMIT: usize = 32;
+const TRACKED_PATH_EVENT_LIMIT: usize = 8192;
 const OUTLINE_SENTINEL: Color = Color {
     r: 0.123456,
     g: 0.234567,
@@ -74,12 +83,173 @@ struct OutlineEntry {
     paths: Option<Vec<canvas::Path>>,
 }
 
+struct AdvancesEntry {
+    content: &'static str,
+    font: iced::Font,
+    size_bits: u32,
+    values: Vec<f32>,
+}
+
+/// Paths have the positions produced by `Text::draw_with` already baked in.
+/// Color and the enclosing frame transform are intentionally absent.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct TrackedPathKey {
+    content: &'static str,
+    font: iced::Font,
+    face: Face,
+    size_bits: u32,
+    tracking_bits: u32,
+    anchor: Anchor,
+    x_bits: u32,
+    baseline_bits: u32,
+}
+
+struct TrackedPathEntry {
+    key: TrackedPathKey,
+    /// None remembers a missing-outline/raster fallback within this draw.
+    paths: Option<Vec<canvas::Path>>,
+    events: usize,
+}
+
+#[derive(Default)]
+struct TrackedPathCollector {
+    paths: Vec<canvas::Path>,
+    events: usize,
+    unsupported: bool,
+}
+
+impl TrackedPathCollector {
+    fn push(&mut self, path: canvas::Path, color: Color) {
+        if self.unsupported {
+            return;
+        }
+        if color != OUTLINE_SENTINEL
+            || self.paths.len() == TRACKED_PATH_PATH_LIMIT
+        {
+            self.unsupported = true;
+            self.paths.clear();
+            self.events = 0;
+            return;
+        }
+        let events = path.raw().iter().count();
+        if events > TRACKED_PATH_EVENT_LIMIT - self.events {
+            self.unsupported = true;
+            self.paths.clear();
+            self.events = 0;
+            return;
+        }
+        self.events += events;
+        self.paths.push(path);
+    }
+
+    fn finish(self) -> Option<Vec<canvas::Path>> {
+        (!self.unsupported && !self.paths.is_empty()).then_some(self.paths)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum FrameRoute {
+    /// Root frame or `with_clip` draft. Both pinned Wgpu and tiny-skia start
+    /// drafts at identity; an enclosing Turn's transform is not inherited.
+    Plain,
+    /// Only a direct quarter-turn from Plain is known to use outline fill
+    /// on both backends. All nested and other turns keep original painting.
+    QuarterTurn,
+    Other,
+}
+
+impl FrameRoute {
+    fn turn(self, angle: f32) -> Self {
+        if self == Self::Plain && (angle == 90.0 || angle == -90.0) {
+            Self::QuarterTurn
+        } else {
+            Self::Other
+        }
+    }
+
+    fn draft() -> Self {
+        Self::Plain
+    }
+}
+
 #[derive(Default)]
 struct OutlineCache {
     entries: Vec<OutlineEntry>,
+    advances: Vec<AdvancesEntry>,
+    tracked_paths: Vec<TrackedPathEntry>,
+    tracked_path_events: usize,
 }
 
 impl OutlineCache {
+    /// Keep prefix-shaped advances only for this draw. Position, ink,
+    /// tracking and anchor are applied after shaping and are not part of
+    /// this key. The eligibility cap bounds retained text and entries.
+    fn tracked_advances(&mut self, content: &'static str, size: f32, font: iced::Font) -> Cow<'_, [f32]> {
+        if !Self::can_cache_advances(content, size) {
+            return Cow::Owned(advances(content, size, font));
+        }
+        let size_bits = size.to_bits();
+        if let Some(index) = self.advances.iter().position(|entry|
+            entry.content == content && entry.font == font && entry.size_bits == size_bits
+        ) {
+            return Cow::Borrowed(&self.advances[index].values);
+        }
+        let values = advances(content, size, font);
+        if self.advances.len() == ADVANCES_CACHE_LIMIT {
+            self.advances.remove(0);
+        }
+        self.advances.push(AdvancesEntry { content, font, size_bits, values });
+        Cow::Borrowed(&self.advances.last().unwrap().values)
+    }
+
+    fn can_cache_advances(content: &str, size: f32) -> bool {
+        !content.is_empty() && content.len() <= ADVANCES_CONTENT_LIMIT
+            && size.is_finite() && size > 0.0 && size <= 256.0
+    }
+
+    fn can_cache_tracked_paths(key: TrackedPathKey) -> bool {
+        !key.content.is_empty()
+            && key.content.len() <= TRACKED_PATH_CONTENT_LIMIT
+            && key.content.chars().count() <= TRACKED_PATH_GLYPH_LIMIT
+            && f32::from_bits(key.size_bits).is_finite()
+            && f32::from_bits(key.size_bits) > 0.0
+            && f32::from_bits(key.size_bits) <= 256.0
+            && f32::from_bits(key.tracking_bits).is_finite()
+            && f32::from_bits(key.x_bits).is_finite()
+            && f32::from_bits(key.baseline_bits).is_finite()
+    }
+
+    fn tracked_run_paths(
+        &mut self,
+        key: TrackedPathKey,
+        build: impl FnOnce() -> Option<Vec<canvas::Path>>,
+    ) -> Option<&[canvas::Path]> {
+        if !Self::can_cache_tracked_paths(key) {
+            return None;
+        }
+        if let Some(index) = self.tracked_paths.iter().position(|entry| entry.key == key) {
+            return self.tracked_paths[index].paths.as_deref();
+        }
+        let paths = build();
+        let events = paths.as_ref().map_or(0, |paths| paths.iter()
+            .fold(0usize, |events, path| events.saturating_add(path.raw().iter().count())));
+        // Remember an unsupported/oversized result, so later identical
+        // runs do not perform another doomed extraction this draw.
+        let paths = if paths.as_ref().is_some_and(|paths|
+            paths.len() > TRACKED_PATH_PATH_LIMIT || events > TRACKED_PATH_EVENT_LIMIT
+        ) { None } else { paths };
+        let events = if paths.is_some() { events } else { 0 };
+        while self.tracked_paths.len() == TRACKED_PATH_CACHE_LIMIT
+            || self.tracked_path_events + events > TRACKED_PATH_EVENT_LIMIT
+        {
+            let evicted = self.tracked_paths.remove(0);
+            self.tracked_path_events -= evicted.events;
+        }
+        self.tracked_path_events += events;
+        self.tracked_paths.push(TrackedPathEntry { key, paths, events });
+        self.tracked_paths.last().and_then(|entry| entry.paths.as_deref())
+    }
+
     fn paths(&mut self, content: &'static str, font: iced::Font, size: f32, text: &canvas::Text) -> Option<&[canvas::Path]> {
         if content.is_empty() || content.len() > OUTLINE_CONTENT_LIMIT
             || !size.is_finite() || size <= 0.0 || size > 256.0
@@ -915,6 +1085,7 @@ impl<M> Scene<M> {
         alpha: f32,
         interaction: Option<(Target, bool)>,
         clip: Option<Rectangle>,
+        route: FrameRoute,
     ) {
         for prim in prims {
             match *prim {
@@ -983,12 +1154,16 @@ impl<M> Scene<M> {
                     let color = self.ink(ink, alpha);
                     let font = Self::font(face);
                     let size = size * k;
-                    let run = run_width(content, size, font) * stretch;
+                    let run = if anchor == Anchor::Start {
+                        0.0
+                    } else {
+                        run_width(content, size, font) * stretch
+                    };
                     let px = anchored((ox + x) * k, anchor, run);
                     let py = (oy + y) * k - size * baseline(face);
                     let reusable = matches!(prim, Prim::ReusableWide { .. })
                         && anchor == Anchor::Start
-                        && face == Face::Bold
+                        && matches!(face, Face::Bold | Face::SemiBold)
                         && !content.is_empty()
                         && content.len() <= OUTLINE_CONTENT_LIMIT
                         && size.is_finite() && size > 0.0 && size <= 256.0
@@ -1025,24 +1200,62 @@ impl<M> Scene<M> {
                 }
                 Prim::Tracked { x, y, size, ink, face, anchor, tracking, content } => {
                     let (size, tracking) = (size * k, tracking * k);
-                    let advances = advances(content, size, Self::font(face));
+                    let font = Self::font(face);
+                    let advances = outlines.tracked_advances(content, size, font);
                     let total: f32 = advances.iter().sum::<f32>()
                         + tracking * advances.len().saturating_sub(1) as f32;
                     let mut gx = anchored((ox + x) * k, anchor, total);
-                    for (glyph, advance) in content.chars().zip(advances) {
-                        let mut buf = [0u8; 4];
-                        self.paint_text(
-                            frame,
-                            glyph.encode_utf8(&mut buf),
-                            gx,
-                            (oy + y) * k,
-                            size,
-                            ink,
-                            face,
-                            Anchor::Start,
-                            alpha,
-                        );
-                        gx += advance + tracking;
+                    if route == FrameRoute::QuarterTurn {
+                        let start_x = gx;
+                        let baseline_y = (oy + y) * k;
+                        // Retain the original per-character f32 addition order, including
+                        // the final addition after the last glyph.
+                        let origins: Vec<f32> = advances.iter().copied().map(|advance| {
+                            let origin = gx;
+                            gx += advance + tracking;
+                            origin
+                        }).collect();
+                        let key = TrackedPathKey {
+                            content, font, face, size_bits: size.to_bits(),
+                            tracking_bits: tracking.to_bits(), anchor,
+                            x_bits: start_x.to_bits(), baseline_bits: baseline_y.to_bits(),
+                        };
+                        let paths = if origins.iter().all(|origin| origin.is_finite()) {
+                            outlines.tracked_run_paths(key, ||
+                                Self::extract_tracked_paths(content, &origins, baseline_y, size, face))
+                        } else {
+                            None
+                        };
+                        if let Some(paths) = paths {
+                            let color = self.ink(ink, alpha);
+                            for path in paths {
+                                frame.fill(path, color);
+                            }
+                        } else {
+                            // Ineligible key, oversized path, or raster callback: use the
+                            // original renderer path and its per-pixel fallback colors.
+                            for (glyph, origin) in content.chars().zip(origins.iter().copied()) {
+                                let mut buf = [0u8; 4];
+                                self.paint_text(frame, glyph.encode_utf8(&mut buf), origin,
+                                    baseline_y, size, ink, face, Anchor::Start, alpha);
+                            }
+                        }
+                    } else {
+                        for (glyph, advance) in content.chars().zip(advances.iter().copied()) {
+                            let mut buf = [0u8; 4];
+                            self.paint_text(
+                                frame,
+                                glyph.encode_utf8(&mut buf),
+                                gx,
+                                (oy + y) * k,
+                                size,
+                                ink,
+                                face,
+                                Anchor::Start,
+                                alpha,
+                            );
+                            gx += advance + tracking;
+                        }
                     }
                 }
                 Prim::TrackedWords { x, y, size, ink, face, anchor, tracking, extra_space, content } => {
@@ -1056,7 +1269,7 @@ impl<M> Scene<M> {
                             x: x + offset_px / k, y, size, ink, face,
                             anchor: Anchor::Start, tracking, content: word,
                         }];
-                        self.paint(frame, outlines, &run, ox, oy, k, alpha, interaction, clip);
+                        self.paint(frame, outlines, &run, ox, oy, k, alpha, interaction, clip, route);
                     }
                 }
                 Prim::Spaced { x, y, size, ink, face, pitch, content } => {
@@ -1160,19 +1373,19 @@ impl<M> Scene<M> {
                 }
                 Prim::Plate { group, index, on, off, .. } => {
                     let prims = self.plate_prims(group, index, interaction, on, off);
-                    self.paint(frame, outlines, prims, ox, oy, k, alpha, interaction, clip);
+                    self.paint(frame, outlines, prims, ox, oy, k, alpha, interaction, clip, route);
                 }
                 Prim::Pick { group, index, on, off } => {
                     let prims = if self.picked.get(group) == index { on } else { off };
-                    self.paint(frame, outlines, prims, ox, oy, k, alpha, interaction, clip);
+                    self.paint(frame, outlines, prims, ox, oy, k, alpha, interaction, clip, route);
                 }
                 Prim::Viewport { x, y, w, h, prims } => {
                     let region = Rectangle { x: (ox + x) * k, y: (oy + y) * k, width: w * k, height: h * k };
                     if let Some(region) = clip_region(clip, region) {
-                        frame.with_clip(region, |f| self.paint(f, outlines, prims, ox, oy, k, alpha, interaction, Some(region)));
+                        frame.with_clip(region, |f| self.paint(f, outlines, prims, ox, oy, k, alpha, interaction, Some(region), FrameRoute::draft()));
                     }
                 }
-                Prim::At { x, y, prims } => self.paint(frame, outlines, prims, ox + x, oy + y, k, alpha, interaction, clip),
+                Prim::At { x, y, prims } => self.paint(frame, outlines, prims, ox + x, oy + y, k, alpha, interaction, clip, route),
                 Prim::Motion { motion, prims } => {
                     let t = motion::progress(&motion, self.at);
                     match motion.change {
@@ -1202,7 +1415,7 @@ impl<M> Scene<M> {
                                 height: Change::lerp(h, t) * k,
                             };
                             if let Some(region) = clip_region(clip, region) {
-                                frame.with_clip(region, |f| self.paint(f, outlines, prims, ox, oy, k, alpha, interaction, Some(region)));
+                                frame.with_clip(region, |f| self.paint(f, outlines, prims, ox, oy, k, alpha, interaction, Some(region), FrameRoute::draft()));
                             }
                         }
                         Change::Opacity { alpha: fade } => {
@@ -1217,7 +1430,7 @@ impl<M> Scene<M> {
                             // rest. Nothing is painted at 0.
                             let a = alpha * Change::lerp(fade, t);
                             if a > 0.0 {
-                                self.paint(frame, outlines, prims, ox, oy, k, a, interaction, clip);
+                                self.paint(frame, outlines, prims, ox, oy, k, a, interaction, clip, route);
                             }
                         }
                     }
@@ -1233,7 +1446,7 @@ impl<M> Scene<M> {
                     frame.with_save(|f| {
                         f.translate(iced::Vector::new((ox + x) * k, (oy + y) * k));
                         f.rotate(iced::Radians(angle.to_radians()));
-                        self.paint(f, outlines, prims, 0.0, 0.0, k, alpha, interaction, clip);
+                        self.paint(f, outlines, prims, 0.0, 0.0, k, alpha, interaction, clip, route.turn(angle));
                     });
                 }
                 // Painted by the `Backdrop` canvas underneath; see
@@ -1305,6 +1518,35 @@ impl<M> Scene<M> {
         frame.fill_text(text);
     }
 
+    /// Probe only positioned glyph outlines. A raster callback carries a
+    /// quantized color and must remain on the original `fill_text` route.
+    fn extract_tracked_paths(
+        content: &str,
+        origins: &[f32],
+        baseline_y: f32,
+        size: f32,
+        face: Face,
+    ) -> Option<Vec<canvas::Path>> {
+        debug_assert_eq!(content.chars().count(), origins.len());
+        let mut collector = TrackedPathCollector::default();
+        for (glyph, origin) in content.chars().zip(origins.iter().copied()) {
+            let mut buf = [0u8; 4];
+            let glyph = glyph.encode_utf8(&mut buf);
+            let mut text = Self::text(
+                glyph, origin, baseline_y, size,
+                OUTLINE_SENTINEL, face, Anchor::Start,
+            );
+            if matches!(face, Face::FreeSansBold | Face::CpErasKitschSansBold) {
+                text.position.y = baseline_y.round() - (size * baseline(face)).round();
+            }
+            text.draw_with(|path, color| collector.push(path, color));
+            if collector.unsupported {
+                break;
+            }
+        }
+        collector.finish()
+    }
+
     /// A run on its SVG baseline, as the canvas lays it out: what
     /// `paint_text` fills and what `Prim::Outlined` strokes, built in
     /// one place so the two land on the same pixels.
@@ -1342,9 +1584,10 @@ pub(crate) fn anchored(x: f32, anchor: Anchor, run: f32) -> f32 {
     }
 }
 
-/// The advance of each glyph of `content` at `size` in `font`, measured
-/// through the shaper as prefix widths so kerning inside the run is
-/// kept. What a tracked run is walked with, here and on the login.
+/// Prefix-width deltas used by the calibrated tracked runs here and on
+/// the login. These are not general shaped glyph advances: contextual
+/// kerning can move a glyph before its prefix ends. New faces or scripts
+/// need a full-run glyph-position check before using this split painter.
 pub(crate) fn advances(content: &str, size: f32, font: iced::Font) -> Vec<f32> {
     let mut out = Vec::with_capacity(content.chars().count());
     let mut previous = 0.0;
@@ -1663,7 +1906,7 @@ impl<M> canvas::Program<M, Style> for Scene<M> {
                 on_select: self.on_select,
             };
             let mut outlines = OutlineCache::default();
-            scene.paint(&mut frame, &mut outlines, self.prims, 0.0, 0.0, k, 1.0, state.interaction(self.prims), None);
+            scene.paint(&mut frame, &mut outlines, self.prims, 0.0, 0.0, k, 1.0, state.interaction(self.prims), None, FrameRoute::Plain);
         }
         vec![frame.into_geometry()]
     }
@@ -1672,10 +1915,221 @@ impl<M> canvas::Program<M, Style> for Scene<M> {
 #[cfg(test)]
 mod tests {
     #[test]
+    fn tracked_advances_cache_keys_full_run_font_and_exact_size() {
+        crate::fonts::ensure_test_fonts();
+        let mut cache = OutlineCache::default();
+        let regular = crate::fonts::FONT_RAJDHANI_REGULAR;
+        let bold = crate::fonts::FONT_RAJDHANI_BOLD;
+        let orbitron = crate::fonts::FONT_ORBITRON_REGULAR;
+        let free_sans = crate::fonts::FONT_FREE_SANS_BOLD;
+        let kitsch_sans = crate::fonts::FONT_CP_ERAS_KITSCH_SANS_BOLD;
+        let near_size = f32::from_bits(12.0f32.to_bits() + 1);
+        for (content, size, font, expected_entries) in [
+            ("PETROCHEM", 12.0, regular, 1),
+            ("PETROCHEM", 12.0, regular, 1),
+            ("PETROCHEM", 12.0, bold, 2),
+            ("PETROCHEM", 12.0, orbitron, 3),
+            ("PETROCHEM", near_size, regular, 4),
+            ("PETROCHE", 12.0, regular, 5),
+            ("MANIPULATE", 12.0, free_sans, 6),
+            ("MANIPULATE", 12.0, kitsch_sans, 7),
+        ] {
+            let cached = cache.tracked_advances(content, size, font);
+            let uncached = advances(content, size, font);
+            assert_eq!(cached.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
+                uncached.iter().map(|v| v.to_bits()).collect::<Vec<_>>());
+            assert_eq!(cache.advances.len(), expected_entries);
+        }
+    }
+
+    #[test]
+    fn tracked_advances_cache_is_bounded_and_rejects_ineligible_keys() {
+        assert!(!OutlineCache::can_cache_advances("", 12.0));
+        assert!(!OutlineCache::can_cache_advances("A", 0.0));
+        assert!(!OutlineCache::can_cache_advances("A", f32::NAN));
+        assert!(!OutlineCache::can_cache_advances("A", f32::INFINITY));
+        assert!(!OutlineCache::can_cache_advances("A", 257.0));
+        assert!(!OutlineCache::can_cache_advances(&"A".repeat(257), 12.0));
+        assert!(OutlineCache::can_cache_advances(&"A".repeat(256), 256.0));
+
+        crate::fonts::ensure_test_fonts();
+        let mut cache = OutlineCache::default();
+        let font = crate::fonts::FONT_RAJDHANI_REGULAR;
+        for size in 1..=ADVANCES_CACHE_LIMIT + 1 {
+            let _ = cache.tracked_advances("AV", size as f32, font);
+        }
+        assert_eq!(cache.advances.len(), ADVANCES_CACHE_LIMIT);
+        assert_eq!(cache.advances[0].size_bits, 2.0f32.to_bits());
+        let _ = cache.tracked_advances("", 12.0, font);
+        assert_eq!(cache.advances.len(), ADVANCES_CACHE_LIMIT);
+    }
+
+    #[test]
     fn outline_probe_color_cannot_survive_raster_quantization() {
         let [r, g, b, a] = OUTLINE_SENTINEL.into_rgba8();
         let raster_color = Color::from_rgba8(r, g, b, a as f32 / 255.0);
         assert_ne!(raster_color, OUTLINE_SENTINEL);
+    }
+
+    #[test]
+    fn tracked_outline_extraction_preserves_positioned_path_events() {
+        crate::fonts::ensure_test_fonts();
+        let origins = [0.375, 8.625];
+        let baseline_y = 17.125;
+        let size = 18.0;
+        for face in [Face::Regular, Face::FreeSansBold, Face::CpErasKitschSansBold] {
+            let replay = Scene::<()>::extract_tracked_paths("AM", &origins, baseline_y, size, face).unwrap();
+            let mut direct = Vec::new();
+            for (glyph, origin) in ["A", "M"].into_iter().zip(origins) {
+                let mut text = Scene::<()>::text(glyph, origin, baseline_y, size,
+                    Color::BLACK, face, Anchor::Start);
+                if matches!(face, Face::FreeSansBold | Face::CpErasKitschSansBold) {
+                    text.position.y = baseline_y.round() - (size * baseline(face)).round();
+                }
+                text.draw_with(|path, color| {
+                    assert_eq!(color, Color::BLACK);
+                    direct.push(path);
+                });
+            }
+            assert_eq!(replay.len(), direct.len());
+            for (a, b) in replay.iter().zip(&direct) {
+                assert_eq!(a.raw().iter().collect::<Vec<_>>(), b.raw().iter().collect::<Vec<_>>());
+            }
+        }
+    }
+
+    #[test]
+    fn tracked_path_cache_separates_exact_geometry_and_bounds_retention() {
+        let font = crate::fonts::FONT_RAJDHANI_REGULAR;
+        let base = TrackedPathKey {
+            content: "AB", font, face: Face::Regular,
+            size_bits: 18.0f32.to_bits(), tracking_bits: 0.25f32.to_bits(),
+            anchor: Anchor::Start, x_bits: 2.0f32.to_bits(),
+            baseline_bits: 17.0f32.to_bits(),
+        };
+        let free_sans = TrackedPathKey { font: crate::fonts::FONT_FREE_SANS_BOLD,
+            face: Face::FreeSansBold, ..base };
+        let variants = [
+            TrackedPathKey { font: crate::fonts::FONT_RAJDHANI_BOLD, ..base },
+            TrackedPathKey { size_bits: base.size_bits + 1, ..base },
+            TrackedPathKey { tracking_bits: base.tracking_bits + 1, ..base },
+            TrackedPathKey { x_bits: base.x_bits + 1, ..base },
+            TrackedPathKey { baseline_bits: base.baseline_bits + 1, ..base },
+            TrackedPathKey { anchor: Anchor::Middle, ..base },
+            TrackedPathKey { font: crate::fonts::FONT_CP_ERAS_KITSCH_SANS_BOLD, ..free_sans },
+        ];
+        let path = || canvas::Path::line(Point::ORIGIN, Point::new(1.0, 1.0));
+        for variant in variants {
+            let first = if variant.face == Face::FreeSansBold { free_sans } else { base };
+            let mut cache = OutlineCache::default();
+            let mut builds = 0;
+            assert!(cache.tracked_run_paths(first, || { builds += 1; Some(vec![path()]) }).is_some());
+            assert!(cache.tracked_run_paths(variant, || { builds += 1; Some(vec![path()]) }).is_some());
+            assert!(cache.tracked_run_paths(variant, || { builds += 1; None }).is_some());
+            assert_eq!(builds, 2, "distinct key must miss once, then reuse");
+        }
+
+        let mut cache = OutlineCache::default();
+        let mut builds = 0;
+        assert!(cache.tracked_run_paths(base, || { builds += 1; Some(vec![path()]) }).is_some());
+        assert!(cache.tracked_run_paths(base, || { builds += 1; None }).is_some());
+        assert_eq!(builds, 1);
+        for i in 0..TRACKED_PATH_CACHE_LIMIT {
+            let key = TrackedPathKey { x_bits: (3.0 + i as f32).to_bits(), ..base };
+            let _ = cache.tracked_run_paths(key, || Some(vec![path()]));
+        }
+        assert_eq!(cache.tracked_paths.len(), TRACKED_PATH_CACHE_LIMIT);
+        assert!(!cache.tracked_paths.iter().any(|entry| entry.key == base));
+        assert!(cache.tracked_path_events <= TRACKED_PATH_EVENT_LIMIT);
+
+        let oversized = canvas::Path::new(|builder| {
+            builder.move_to(Point::ORIGIN);
+            for i in 0..TRACKED_PATH_EVENT_LIMIT {
+                builder.line_to(Point::new(i as f32, 1.0));
+            }
+        });
+        let retained = cache.tracked_paths.len();
+        assert!(cache.tracked_run_paths(base, || Some(vec![oversized])).is_none());
+        assert_eq!(cache.tracked_paths.len(), retained);
+        assert!(cache.tracked_paths.iter().any(|entry| entry.key == base && entry.paths.is_none()));
+        assert!(cache.tracked_run_paths(base, || panic!("oversized result should be remembered")).is_none());
+
+        let too_many: Vec<_> = (0..=TRACKED_PATH_PATH_LIMIT).map(|_| path()).collect();
+        let many = TrackedPathKey { content: "D", ..base };
+        assert!(cache.tracked_run_paths(many, || Some(too_many)).is_none());
+        assert!(cache.tracked_run_paths(many, || panic!("path count should be remembered")).is_none());
+
+        let unsupported = TrackedPathKey { content: "C", ..base };
+        assert!(cache.tracked_run_paths(unsupported, || None).is_none());
+        assert!(cache.tracked_run_paths(unsupported, || panic!("fallback should be remembered")).is_none());
+        assert!(!OutlineCache::can_cache_tracked_paths(TrackedPathKey { size_bits: f32::NAN.to_bits(), ..base }));
+        assert!(!OutlineCache::can_cache_tracked_paths(TrackedPathKey { x_bits: f32::INFINITY.to_bits(), ..base }));
+        assert!(!OutlineCache::can_cache_tracked_paths(TrackedPathKey { content: "A very long text run with more than sixty-four bytes should stay on fill_text", ..base }));
+    }
+
+    #[test]
+    fn tracked_path_collector_stops_retaining_on_fallback_and_bounds() {
+        let path = || canvas::Path::line(Point::ORIGIN, Point::new(1.0, 1.0));
+        let mut raster = TrackedPathCollector::default();
+        raster.push(path(), OUTLINE_SENTINEL);
+        let [r, g, b, a] = OUTLINE_SENTINEL.into_rgba8();
+        raster.push(path(), Color::from_rgba8(r, g, b, a as f32 / 255.0));
+        assert!(raster.unsupported);
+        assert!(raster.paths.is_empty());
+        raster.push(path(), OUTLINE_SENTINEL);
+        assert!(raster.finish().is_none());
+
+        let mut many = TrackedPathCollector::default();
+        for _ in 0..=TRACKED_PATH_PATH_LIMIT {
+            many.push(path(), OUTLINE_SENTINEL);
+        }
+        assert!(many.unsupported);
+        assert!(many.paths.is_empty());
+
+        let huge = canvas::Path::new(|builder| {
+            builder.move_to(Point::ORIGIN);
+            for i in 0..TRACKED_PATH_EVENT_LIMIT {
+                builder.line_to(Point::new(i as f32, 1.0));
+            }
+        });
+        let mut events = TrackedPathCollector::default();
+        events.push(huge, OUTLINE_SENTINEL);
+        assert!(events.unsupported);
+        assert!(events.paths.is_empty());
+    }
+
+    #[test]
+    fn tracked_path_cache_evicts_to_aggregate_event_limit() {
+        let base = TrackedPathKey {
+            content: "A", font: crate::fonts::FONT_RAJDHANI_REGULAR,
+            face: Face::Regular, size_bits: 18.0f32.to_bits(),
+            tracking_bits: 0.0f32.to_bits(), anchor: Anchor::Start,
+            x_bits: 0.0f32.to_bits(), baseline_bits: 17.0f32.to_bits(),
+        };
+        let large = || canvas::Path::new(|builder| {
+            builder.move_to(Point::ORIGIN);
+            for i in 0..(TRACKED_PATH_EVENT_LIMIT / 2 + 100) {
+                builder.line_to(Point::new(i as f32, 1.0));
+            }
+        });
+        let mut cache = OutlineCache::default();
+        let next = TrackedPathKey { x_bits: 1.0f32.to_bits(), ..base };
+        assert!(cache.tracked_run_paths(base, || Some(vec![large()])).is_some());
+        assert!(cache.tracked_run_paths(next, || Some(vec![large()])).is_some());
+        assert_eq!(cache.tracked_paths.len(), 1);
+        assert_eq!(cache.tracked_paths[0].key, next);
+        assert!(cache.tracked_path_events <= TRACKED_PATH_EVENT_LIMIT);
+    }
+
+    #[test]
+    fn tracked_outline_route_requires_one_direct_quarter_turn() {
+        assert_eq!(FrameRoute::Plain.turn(90.0), FrameRoute::QuarterTurn);
+        assert_eq!(FrameRoute::Plain.turn(-90.0), FrameRoute::QuarterTurn);
+        assert_eq!(FrameRoute::Plain.turn(45.0), FrameRoute::Other);
+        assert_eq!(FrameRoute::QuarterTurn.turn(-90.0), FrameRoute::Other);
+        assert_eq!(FrameRoute::Other.turn(90.0), FrameRoute::Other);
+        // `with_clip` starts a fresh backend frame, including inside a Turn.
+        assert_eq!(FrameRoute::draft().turn(90.0), FrameRoute::QuarterTurn);
     }
 
     #[test]
@@ -1705,6 +2159,45 @@ mod tests {
             assert_eq!(cache.paths("MAGNUM 650", font, size, &text).unwrap().as_ptr(), reused);
         }
         assert_eq!(cache.entries.len(), 2);
+    }
+
+    #[test]
+    fn repeated_wide_outlines_keep_bold_and_semibold_distinct() {
+        crate::fonts::ensure_test_fonts();
+        // Same text and size must not reuse another weight's glyph paths.
+        // The footer now exercises both weights in one per-draw cache.
+        for size in [9.0_f32, 9.0 * 2.4] {
+            let mut cache = OutlineCache::default();
+            let mut weights = Vec::new();
+            for font in [crate::fonts::FONT_RAJDHANI_BOLD,
+                         crate::fonts::FONT_RAJDHANI_SEMIBOLD] {
+                let text = canvas::Text {
+                    content: "COMBAT COLONIZATION".into(),
+                    color: OUTLINE_SENTINEL,
+                    size: size.into(),
+                    font,
+                    ..Default::default()
+                };
+                let mut fresh = Vec::new();
+                text.draw_with(|path, color| {
+                    assert_eq!(color, OUTLINE_SENTINEL);
+                    fresh.push(path.raw().iter().collect::<Vec<_>>());
+                });
+                assert!(!fresh.is_empty());
+                let cached = cache.paths("COMBAT COLONIZATION", font, size, &text).unwrap();
+                assert_eq!(cached.iter().map(|p| p.raw().iter().collect::<Vec<_>>())
+                    .collect::<Vec<_>>(), fresh);
+                weights.push((text, cached.as_ptr(), fresh));
+            }
+            assert_ne!(weights[0].2, weights[1].2, "both weights must resolve distinctly");
+            for (text, original, fresh) in weights {
+                let cached = cache.paths("COMBAT COLONIZATION", text.font, size, &text).unwrap();
+                assert_eq!(cached.as_ptr(), original);
+                assert_eq!(cached.iter().map(|p| p.raw().iter().collect::<Vec<_>>())
+                    .collect::<Vec<_>>(), fresh);
+            }
+            assert_eq!(cache.entries.len(), 2);
+        }
     }
 
     fn material_scenes(style: Style) -> Vec<(&'static [Prim], &'static str)> {
@@ -1858,6 +2351,31 @@ mod tests {
         let state = cache.state.lock().unwrap();
         assert_eq!(state.entries.len(), 1);
         assert_eq!(state.bytes, 16);
+    }
+
+    #[test]
+    fn entropism_store_selection_reuses_rifle_cache_images() {
+        let style = crate::style::Era::Entropism.style();
+        let cache = SoftCache::default();
+        let mut original = Vec::new();
+        for card in 0..4 {
+            for category in 0..5 {
+                let (_, backdrop) = style.store_layers(category, card);
+                let layers = soft_layers(backdrop);
+                cache.prepare(&layers, &style.palette, (160, 90), 0.1);
+                let state = cache.state.lock().unwrap();
+                assert_eq!(state.entries.len(), 5, "ground and four reusable rifles");
+                if original.is_empty() {
+                    original = state.entries.iter().map(|e| (e.key.clone(), e.bands.clone())).collect();
+                } else {
+                    for entry in &state.entries {
+                        let (_, bands) = original.iter().find(|(key, _)| *key == entry.key)
+                            .expect("selection must retain the same cache keys");
+                        assert!(Arc::ptr_eq(bands, &entry.bands), "selection rerasterized a rifle");
+                    }
+                }
+            }
+        }
     }
 
     #[test]

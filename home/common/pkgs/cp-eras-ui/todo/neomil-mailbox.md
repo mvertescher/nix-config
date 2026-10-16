@@ -92,6 +92,12 @@ trace screen and are not backend defects.
   though full-strip error improves in four rows. Clear ground already
   matches closely; a shared background adjustment is unsupported. See the
   [material controls](../docs/neomil/mailbox-fidelity.md#al-inner-terminal-material-controls).
+  EC's phase/pitch fit also fails independent rows on fixed sample support.
+  Aligning to observed source edges reduces the apparent common shift to
+  near zero; authored SVG/native icon origins already agree. The image
+  phase does not isolate a shared rib-path error. Preserve accepted X/AM
+  geometry and separate row-local material/registration from contour
+  claims. See [round fifty-six](../docs/reference-svg-round56.md#neomil-mailbox-terminal-phase).
   Inspect native source crops before
   adding secondary art; do not invent glow/noise or weaken gate thresholds.
   AZ's fixed body-phrase audit identifies primary registration before

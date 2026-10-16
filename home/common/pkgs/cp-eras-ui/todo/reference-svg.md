@@ -38,6 +38,53 @@ corrects locked-login notice ink and narrow-window notice containment.
 Both affected gates, 288 Rust tests, 22 repository checks and 27 exact
 visual cases pass; all 220 frozen hashes match the tested Nix source.
 
+The [ordinary-frame follow-up](../docs/reference-svg-round69.md) corrects
+Neomil Store's primary contours in the trace, component and native masks.
+All three sizes and sixteen native state pairs are verified; both Store
+gates, 305 packaged tests and full 22-check/28-case verification pass. One
+fourth-left 1600 L1 loss remains explicit. Geometry is complete; primary
+coverage and faint printing remain separately tracked in
+[Neomil Store](neomil-store.md).
+
+The [top-coverage follow-up](../docs/reference-svg-round70.md) replaces the
+first/third ordinary Store strokes with continuous outlines and thinner tops.
+Source comparisons improve at all three sizes; native structural/state and
+custom-palette controls, package parity and full checks pass. Small SVG
+stroke-to-fill losses along other sides remain explicit. That checkpoint
+left the fourth top, other thin edges and faint printing open.
+
+The [fourth-top follow-up](../docs/reference-svg-round71.md) completes the
+cropped ordinary top with its permanent cut and bright held border intact.
+Source/state/custom controls, both Store gates, 305 packaged tests, full
+checks and three-size package parity pass. That checkpoint accepts left-only
+source thinning and rejects combined bottom thinning for smaller-size
+regressions; the completed left-edge native follow-up is recorded below. Other coverage and faint printing remain open in
+[Neomil Store](neomil-store.md).
+
+The [left-coverage follow-up](../docs/reference-svg-round72.md) completes
+ordinary Store left edges and their component sample. Source, state/custom,
+both Store gates, 305 packaged tests, full checks and three-size package
+parity pass. The sole ignored raw SVG attribute line is removed with exact
+cleanup rendering. Bottom/full lower-stem trials are rejected for smaller
+size losses; primary coverage and faint printing remain open in
+[Neomil Store](neomil-store.md).
+
+The [fourth-cut follow-up](../docs/reference-svg-round73.md) extends the
+ordinary fourth face, open caps, content and native drawing/hit viewport to
+source-supported x1558.3. Whole-card source comparisons improve at three
+sizes, with one fractional bottom-endpoint loss retained. State/custom
+controls, both Store gates, 305 packaged tests, full checks and fresh
+three-size package parity pass. At that checkpoint, complete printing-echo
+trials remained unaccepted for local smaller-size edge losses.
+
+The [frame-echo follow-up](../docs/reference-svg-round74.md) restores the
+ordinary impressions with masked coverage and coupled lower-stem/bar geometry.
+All fixed source regions improve or stay exact; four tiny native row losses
+remain explicit. State/custom controls, 307 packaged tests, both Store gates,
+full checks and actual-package parity pass. A bounded stroke walk reduces
+prototype preparation cost with identical pixels; warm CPU drawing is similar.
+Bottom coverage and unrelated fine printing remain open.
+
 ## Entropism
 
 - [x] **E1 — Login masks and typography:** source has ten masks; SVG has
@@ -56,6 +103,17 @@ visual cases pass; all 220 frozen hashes match the tested Nix source.
   Medium loses 6–9 of 30 local spans at each threshold, and every trial
   increases RGB error. Body line endings are already close; avoid repeating
   those global trials. See [the review](../docs/reference-svg-round20.md#next-round-scratch-review).
+  EB now proves an exact complete-run SVG font replay at 4K and 1600,
+  using isolated renamed copies of the current fonts. Its parentheses-only
+  contour trial fails selected-heading and small-size bright-core controls,
+  and changes 36 exterior 4K pixels. Keep that outline rejected; preserve
+  the replay route for a source-supported contour and require native
+  verification separately. See [round fifty-five](../docs/reference-svg-round55.md).
+  EC's independent layout probe and unchanged-prefix controls narrow the
+  exterior effect to whole-run painting with edited outlines; they do not
+  establish a renderer defect or rescue the rejected contour. Do not add
+  per-letter draws as a workaround. See
+  [round fifty-six](../docs/reference-svg-round56.md#entropism-whole-run-paint-locality).
 - [x] **E2 follow-up — Correct the clearance-badge T contours and T1 gap.**
   AR replaces the overly heavy T stems and the digit 1 that closed the
   source-width T1 gap. Digits 2/3/4, badge frames and selection inks remain
@@ -105,9 +163,9 @@ visual cases pass; all 220 frozen hashes match the tested Nix source.
   baseline, preserving an explicit selected-subtitle contour tradeoff.
   The SVG title lift fails first/last glyph controls and is rejected.
   AH corrects SVG title width/spacing with all 36 fixed segments and
-  108 glyph checks improving; native rendering is unchanged. Fifteen local
-  inter-letter gap regressions remain explicit alongside exact contours
-  and printing. Integrated verification is recorded in
+  108 glyph checks improving; native rendering is unchanged. AH recorded
+  fifteen local inter-letter gap regression cases alongside exact contours
+  and printing; EE below updates that count after CM/CQ. Integrated verification is recorded in
   [round nineteen](../docs/reference-svg-round19.md).
   See [typography measurements](../docs/entropism/store-typography.md).
   Do not replace that artwork again.
@@ -116,8 +174,8 @@ visual cases pass; all 220 frozen hashes match the tested Nix source.
   pixel, but removes weak source ink in smaller-size controls and is
   rejected. Stem profiles support a row-varying placement/coverage model;
   a rigid shift or rectangular trim does not fit all height bands. This
-  glyph has a concrete source crop for further work; other fine weapon
-  echoes still need one. CH synchronizes the selected component title to
+  glyph has a concrete source crop for further work. EH below also
+  isolates a repeated ordinary stock seam; other weapon detail remains. CH synchronizes the selected component title to
   AH's accepted parent nodes: full-size crop exact, title-only changes at
   full/half sheet size. All 24 SVG structural checks and full
   22-check/27-case verification pass; the package is identical to CF.
@@ -136,6 +194,47 @@ visual cases pass; all 220 frozen hashes match the tested Nix source.
   Regional strict-threshold losses and the 1600 right-foot RGB loss remain;
   CQ production/package and full checks pass. Broad E4 stays open. See
   [round forty-seven](../docs/reference-svg-round47.md).
+  EE replays all 96 frozen gap/threshold cases: CM's selected first-M
+  resolves three historical regressions, leaving twelve unchanged and
+  introducing none. Mixed per-glyph offsets do not support another global
+  tracking or translation sweep. Source face contours and photographic
+  edges remain unresolved; direct SVG and native coverage also differ.
+  The current golden matches the actual CQ production capture, while the
+  similarly named earlier package capture differs at the selected M.
+  See [round fifty-eight](../docs/reference-svg-round58.md#entropism-store-title-gaps).
+  EH supplies the missing ordinary stock seam in the SVG and component,
+  with whole-stock RGB gains at all three sizes and exact exterior controls.
+  The native semantic-Mid trial loses both stock crops at every size and
+  is rejected; local native ink and the lower segmented band remain open.
+  Preserve the accepted masks and selected inverse drawing. See
+  [round sixty-one](../docs/reference-svg-round61.md#entropism-ordinary-rifle-seam).
+  EI adds the lower segmented band to SVG/component after correcting
+  the source-read left junction. All 24 segment/size/card comparisons
+  improve, with exact slot, exterior and upper-seam controls; fine ink
+  residuals remain explicit. Both details still need a coordinated
+  native bright-field/ink review. See
+  [round sixty-two](../docs/reference-svg-round62.md).
+  EJ's joint native bright-ink/seam/band port improves 4K and all stock
+  crops but loses smaller rail/receiver detail. Most loss lies outside
+  solid ink plateaus; source/SVG/native coverage differs. Reject the port
+  and investigate that translation before another color or geometry fit.
+  Custom and Kitsch negative controls remain exact. See
+  [round sixty-three](../docs/reference-svg-round63.md).
+  EM translates the accepted rifle fills through the existing encoded-RGB
+  compositor, including EH/EI's exact stock contours. EN separates a two-unit
+  fourth-rifle placement error from its correctly placed card chrome. All
+  whole-rifle source comparisons improve at three sizes; local rail losses
+  remain explicit. Selection/opening/feedback and static-cache controls pass;
+  final production 4K foreground CPU draw improves 20.5%. All 305
+  local/packaged Rust tests, 22 repository checks and 28 first-attempt matrix
+  cases pass; fresh packaged 4K pixels equal the reviewed candidate. Exact
+  printing and fine photographic detail keep broad E4 open. See
+  [round sixty-four](../docs/reference-svg-round64.md).
+  EZ rechecks AH's SVG-only title correction: native ordinary width and
+  subtitle baseline already have separate source calibration. Copying the
+  SVG tracking into native is unsupported; no unported font fix is found.
+  Exact contours/printing stay open. See
+  [round sixty-eight](../docs/reference-svg-round68.md#entropism-store-title-calibration).
 - [x] **E4 follow-up — Restore ordinary manufacturer-label width and weight.**
   At AP baseline, all three visible `BETTERLIFE TEC` runs are about
   34–35 native pixels too narrow and two pixels high, with thinner strokes. The
@@ -419,6 +518,12 @@ visual cases pass; all 220 frozen hashes match the tested Nix source.
   (native 10.18→11.27; SVG 5.55→6.38). RG5 lettering is still an
   unverified reading; exact ink, SC glyphs and warning microprint keep K8
   open. See [round twenty-five](../docs/reference-svg-round25.md).
+  EH verifies the intended font and fresh native baseline, but a one-pixel
+  upper-print translation loses cards 1 and 4 at every size. Source dark
+  cores do not establish a repeated missing contour or confirm `RG5`.
+  The corrected fractional SVG viewport preserves those local scores;
+  no native or font change is accepted. See
+  [round sixty-one](../docs/reference-svg-round61.md#kitsch-certification-lettering).
   AO rejects a selected-only lower-rule shift after normalized source
   controls fail to establish a distinct contour. Its apparent RGB gain
   does not justify geometry changes; see the
@@ -430,6 +535,36 @@ visual cases pass; all 220 frozen hashes match the tested Nix source.
   and packaged parity, both gates, 292 Rust tests and the full 22-check /
   27-case matrix pass in [round thirty-six](../docs/reference-svg-round36.md).
   Only 24 golden pixels change; K8 stays open for its remaining details.
+  ED's outer-foot trial is corrected to keep its new joins collinear with
+  the accepted long sides. Small coverage changes remain, and selected
+  right-foot/whole-edge source controls still worsen despite ordinary
+  gains. It is rejected. The scratch native baseline is corrected from
+  the rejected direct port to the accepted AY calibration, whose warning
+  crops match the current golden. See
+  [round fifty-seven](../docs/reference-svg-round57.md#kitsch-warning-outer-feet).
+  EP freezes side/band controls before foot extraction, but does not obtain
+  an identifiable ink or shared foot boundary. The first opaque-core test
+  validates its own variation; most SVG profile windows lack both half-height
+  crossings. Corrected per-side reporting and XML ancestry prevent those
+  diagnostics from becoming a false width or placement correction. Preserve
+  current geometry; a next study needs complete corresponding profiles with
+  neighboring print excluded geometrically. See
+  [round sixty-five](../docs/reference-svg-round65.md).
+  EQ's complete corresponding profiles confirm narrower source contrast
+  in SVG and packaged native. ER/ET's hollow-only trial still loses the
+  fourth-card native left side and foot and is rejected; see
+  [round sixty-six](../docs/reference-svg-round66.md). EU's independent
+  frame/stem controls then fix EV/EW's one +0.454039972301 ordinary-warning
+  x offset; selected x stays zero. Combined with the frozen hollow, all
+  twelve whole-mark source comparisons improve in both SVG and native.
+  The fourth-card side loss becomes a gain at every size. Fractional card 1
+  retains a one-pixel left-foot loss and a 1.0% complete exclamation/dot
+  loss; exact feet, ink and remaining printing stay open. Structural no-ops
+  are exact at three sizes, component copies agree, and twelve paired
+  states preserve all pixels outside warnings. Both Store gates, 305 packaged
+  Rust tests, 22 repository checks and 28 first-attempt matrix cases pass;
+  fresh packaged 4K parity is exact. K8 remains open; see
+  [round sixty-seven](../docs/reference-svg-round67.md).
 - [x] **K8 follow-up — Restore four SC badge corner apertures.** A local
   source recheck finds four small light cutouts inside the dark square,
   outside its circular disc, repeated on all four photographed cards.
@@ -462,6 +597,13 @@ visual cases pass; all 220 frozen hashes match the tested Nix source.
   but finds no robust opaque glyph interior to isolate ink from blur/phase.
   One opaque-color trial fails selected/strict-core controls and is rejected;
   preserve the current artwork. See the AQ audit in the art record.
+
+  EA rechecks the frozen inputs after the font audit and tests a bounded
+  photographic blur/registration model using text-free controls only.
+  Held-out edges barely improve or worsen, and blur remains ambiguous;
+  this model does not justify an ink or glyph change. Native equivalence
+  is not inferred from the SVG-based diagnostic. Keep K8 open; see the
+  [control study](../docs/font-rendering-audit.md#ea-sc-photographic-control-follow-up).
 
 - [x] **K9 — Source citations:** corrected login bracket/barcode bounds,
   bar USER-box extent and blanket ink/stroke claims. Descriptions distinguish
@@ -534,6 +676,12 @@ visual cases pass; all 220 frozen hashes match the tested Nix source.
   [text review](../docs/neokitsch/text-fit.md). Production/packaged parity,
   four gates, 292 Rust tests and the 22-check / 27-case matrix pass in
   [round thirty-five](../docs/reference-svg-round35.md).
+  EG rechecks current packaged C/D footers and corrects the fractional
+  first-line offset from two rows to one using uniform whole-photo
+  sampling. Actual bundled Regular font resolution is correct; dim
+  printing and opposing scale-dependent row residuals do not support a
+  common baseline, ink or weight change. All three fresh captures match
+  accepted AX frames. See [round sixty](../docs/reference-svg-round60.md).
   BF's repeated store metadata audit finds that cap-normalized FreeSans
   Bold improves whole-line overlap, but a single tracking fit intrudes into
   photographed word gaps and raises the upper first-line core one row too
@@ -672,6 +820,31 @@ visual cases pass; all 220 frozen hashes match the tested Nix source.
   shared segment. Astra reproduces the field and reviews the overlay.
   This supports local continuation, not a full curve graph or geometry
   change. See [round forty-eight](../docs/reference-svg-round48.md).
+  EB reproduces the lower-left source trace and finds no supported visible
+  right endpoint. Fixed cross-sections show a missing local fan rather
+  than a single missing strand: source vertical profiles have 15–18 peaks
+  versus 4–7 in the SVG. Fit a bounded family with supported entries/exits
+  and density controls; do not port a truncated CU ridge. See
+  [round fifty-five](../docs/reference-svg-round55.md#neo-kitsch-lower-fan).
+  EC traces a 22-entry family, but strict stops are algorithm limits and
+  momentum continuation merges strands or loops back to the left. Eleven
+  top hits represent only eight distinct positions. Source-supported,
+  ordered correspondence through the turn remains unresolved; do not
+  interpret tracker stops as visible endpoints or port this diagnostic.
+  See [round fifty-six](../docs/reference-svg-round56.md#neo-kitsch-lower-fan-correspondence).
+  EF's ordered peak assignment loses known ridge identity; this is a
+  solver failure, not a source endpoint. Orthogonal sections confirm two
+  separate visible turns. The lower entry's proposed continuation toward
+  the right turn crosses weak normalized response and remains unconfirmed;
+  that threshold failure does not establish photographic occlusion.
+  Preserve local evidence without porting a truncated strand or inventing
+  the family. See [round fifty-nine](../docs/reference-svg-round59.md#neo-kitsch-lower-fan-correspondence).
+  EG reproduces the weak bridge in all three original RGB channels;
+  green mask normalization is not its cause. A transverse diagnostic
+  also fails known left-ridge controls, so it cannot establish absence.
+  Nearby parallel peaks retain ambiguous identities. The bridge remains
+  unconfirmed, with no supported endpoint or curve to port; see
+  [round sixty](../docs/reference-svg-round60.md#neo-kitsch-veneer).
 - [x] **NK-08 — Store weapons:** shared source-native MAGNUM contours
   replace the block silhouettes, fitted at 0.99 scale with measured local
   translation. Both plain and raised cards retain their placement and
@@ -760,6 +933,57 @@ visual cases pass; all 220 frozen hashes match the tested Nix source.
   The separately calibrated +.8 SVG tail fails 1600 area and fractional
   width controls, so both SVGs remain unchanged. Core/halo work stays open.
   See [the current profile review](../docs/neokitsch/store-frame.md#bo-current-production-profile-confirmation).
+  ED reproduces the direct SVG baseline at three sizes but finds no new
+  independent width estimate: halo and flank-floor choice confound local
+  coverage measures. Endpoint-based area cannot replace the existing
+  neighbor-gap controls. Keep the accepted CC native correction; no new
+  SVG/component change is justified by this study. See
+  [round fifty-seven](../docs/reference-svg-round57.md#neo-kitsch-selected-frame).
+  LO's same-coordinate donor check fails exact equality, retaining
+  one-level RGB differences. LP's separately frozen donor interval passes
+  3,200 new clear pixels and supplies conditional lower-frame profiles.
+  Neighboring gaps and lower tails retain positive ink above that interval;
+  their floors must not be treated as clear backing. This does not isolate
+  a stroke kernel or identify its width. Preserve the existing local and
+  small-size controls; no paint candidate follows. See the
+  [background interval study](../docs/neokitsch/store-frame.md#lolp-background-intervals-for-lower-frame-profiles-2026-10-04).
+  LZ verifies pixel-exact ground injection with all five font faces pinned.
+  MA's unchanged complete photographic SVG passes all 3,200 clear pixels
+  but fails the fixed core/gap checks: 755/756 pixels are outside the
+  conditional rendered interval. Surrounding rows are too bright while
+  narrow source peaks exceed the model. This rejects the current stack's
+  explanation, not one isolated stroke parameter. MC completes omission
+  of each whole global glow pass and both together. Text glow contributes
+  zero in all measured strips; removing line glow flips the coherent
+  failures to missing ink. All three variants remain rejected. Any next
+  material hypothesis must explain narrow peaks and surrounding printing
+  together; do not repeat pass deletion or infer a native halo port. See the
+  [whole-scene check](../docs/neokitsch/store-frame.md#lzma-complete-photographic-svg-check-2026-10-04).
+  MK/ML find that the overlapping rows do not identify a narrower blur.
+  Isolated outer top segments use different ink/width from the echoes;
+  their proposed donor and pixel isolation remain unverified. Treat them
+  as possible primary-stroke controls, not fifth-echo material evidence.
+  No new filter trial follows; see the
+  [spread-control preflight](../docs/neokitsch/store-frame.md#mkml-independent-spread-controls).
+  MO's fixed top-control donor check fails 629/3,480 presumed-clear
+  pixels in the C4/selected lower bands. It stops before target profiles;
+  no box/bound adjustment or blur inference follows. The primary-control
+  route needs independent ground/printing separation; see the
+  [donor check](../docs/neokitsch/store-frame.md#mo-outer-top-donor-check).
+  MS/MT independently verify opposite edges on genuinely straight fifth
+  stems. Card 3 alone passes the translation screen (24/24); card 1,
+  card 4 and selected each fail all 24 entries through asymmetric flanks.
+  Card 3's fourth and outer neighbors disagree on displacement, so its
+  local pass does not establish a whole-card or fifth-only correction.
+  All raw RGB, nonseparable SVG entries and rational-arithmetic review
+  remain in the [straight-side study](../docs/neokitsch/store-frame.md#msmt-straight-side-registration).
+  No material or geometry candidate is adopted.
+  MV/MX test card 3's opposite left side independently. All 48 fixed
+  red/green pairs reject the near-+1-pixel whole-card requirement; cards
+  1/4 show similar left-flank residuals. The verified
+  [opposite-side control](../docs/neokitsch/store-frame.md#mvmx-opposite-side-control)
+  stops that translation hypothesis before a candidate. It does not
+  identify a replacement axis, width or material.
 
 - [x] **NK-15 — Runtime socket scatter:** native K review found the
   selected store socket still renders a schematic block QR, while the

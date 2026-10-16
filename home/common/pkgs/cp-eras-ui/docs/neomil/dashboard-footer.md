@@ -416,3 +416,258 @@ exactly. Both Dashboard gates, 294 local/Nix Rust tests, 24 SVG structure
 checks and the full 22-check/27-case repository run pass; 26 visual cases
 are exact and the one-level Neo-kitsch bar residual is unchanged. See
 [round forty-five](../reference-svg-round45.md).
+
+## KS outer-left coverage limit (2026-10-04)
+
+The remaining straight shoulder is not a reason to keep moving the opaque
+native contour. Its 38 source pixels at x2901/y2084..2121 average
+(106.29,23.55,23.55), while the accepted native shoulder is (128,23,23)
+throughout. Four-sample linear-light MSAA explains this as one covered
+sample: current ink over the modeled backing predicts (128,24,24), within
+one channel level. Two samples predict red176, consistent with CF's old
+red175 shoulder. Removing the remaining sample would jump toward the dark
+backing and increase error. This constrains this opaque straight edge,
+not corners, other devices' sample locations or other painting operators.
+
+One primary-free SVG render retains the current ground, echoes, inner strip
+and other artwork. Outer flanks agree with the original within three RGB
+levels. Inner flanks include printing/material residuals up to 36 red
+levels; the predeclared combined uncertainty ±(37,20,20) passes the spatial
+holdouts but cannot identify subtle inner coverage. It does not establish
+the true backing beneath the primary. Source core pixels are (251,53,53),
+above the current (239,51,51) ink: coverage alone cannot produce that exact
+core. A local ink explanation requires its own independent controls.
+
+Astra reproduces all 494 RGB records, eighteen flank metric vectors and
+266 projections, plus an exact independent SVG replay. There are 228
+identifiable feasible projections and 38 feasible but unidentifiable
+zero-contrast samples; those 38 are not failed controls. The historical
+4K straight crop matches the verified EF package, and its 1600 counterpart
+matches the current golden locally. No fresh current-package 4K parity
+is claimed. No geometry, font, effect or cache change follows this study.
+Evidence and the analyzer-repair history are in
+`/tmp/cp-eras-next/ks-footer-coverage/`; independent checks, corrected
+projection classification and the source contact are in `ht-echo-review/`
+under the same scratch root.
+
+## KT local primary ink (2026-10-04)
+
+A separate source-only audit finds a repeated local color difference.
+Seventeen geometry-defined supports retain all 14,138 original RGB records.
+Selecting opaque pixels from the existing SVG, before inspecting source
+values, gives source (251,53,53) at all 210/360 top-left/top-right pixels,
+114/38 left/right pixels and 42/19 top-left/top-right join pixels. The
+current SVG uses (239,51,51). Bottom plateaus agree at 210/280 and 360/480
+pixels, with mixed lower coverage; the divider agrees at 38/76. Glyph
+controls also contain brighter cores but have registration and contour
+differences, so this audit does not justify recoloring whole text runs.
+
+This supports one local primary-frame SVG color test, preserving geometry,
+opacities, text and echoes. It does not justify changing the Dashboard's
+global foreground: earlier independent main-tile controls support the
+existing color there. KT did not resample those tile controls. Native
+transfer remains separate: brighter ink would raise the one-sample left
+shoulder and worsen its source error. No new effect or font change is
+proposed.
+
+Astra independently reproduces every raw record and 553 summary fields
+and views the complete source/SVG/native footer. Historical native pixels
+provide unchanged-side context, not fresh full-frame parity. KU evaluates
+the one SVG color proposal below. Evidence and the pre-freeze
+draft-control history are in `/tmp/cp-eras-next/kt-footer-ink-audit/`;
+independent verification is in `ht-echo-review/kt-verification.json` under
+the same scratch root.
+
+## KU color-transfer limit (2026-10-04)
+
+The eight-attribute SVG color trial is rejected. Whole-footer RGB L1
+improves by 36,100 at 4K, but worsens by 946 at 1600 and 857 at fractional
+size; RMS also worsens at both smaller sizes. Bottom and divider controls
+expose the loss. The 4K upper bottom shoulder at y2129 loses 4,416 L1,
+while core rows y2130–2132 improve almost exactly. This does not transfer
+to the smaller raster phases: both direct bottom windows lose detail.
+Some broad text/blank boxes also lose because they include frame edges,
+despite unchanged lettering. The local source-color evidence stays valid,
+but a single color replacement is insufficient with the existing coverage.
+
+Astra verifies eight color-only XML changes, three exact baseline replays,
+all 754 nonempty RGB metric sets and 810 threshold-F1 values across 45
+fixed regions at each size. All 101 L1/RMS exceptions and every changed
+pixel remain recorded. Changed-pixel losses number 436/329/294 at the
+three sizes. All changes stay inside the footer, with exact alpha and
+fully covered source pixels. Three source/baseline/trial contacts are
+reviewed. Overlapping downsampled row controls are not independent rows.
+
+No SVG, component, Rust, font, cache or golden change follows. A joint
+color/coverage explanation needs independent backing and boundary evidence;
+removing the failed bottom/divider edits after scoring would not supply it.
+The native MSAA constraint also remains. Evidence is in
+`/tmp/cp-eras-next/ku-footer-primary-ink/`; independent scores and the
+rejection are in `ht-echo-review/ku-verification.json` under the same root.
+
+## KW bottom-backing prerequisite (2026-10-04)
+
+The next diagnostic stops at its frozen backing gate. Removing the five
+primary footer elements preserves text and echoes and exactly replays the
+untouched baseline. Three 47-column strips use separate upper and lower
+off-primary bands. The left-derived upper uncertainty is ±(4,4,4), but
+the two right holdouts fail in 222/235 and 228/235 pixels. Their mean red
+residuals are +26.08/+28.74 versus −0.57 on the left. Both lower holdouts
+pass the separate ±(49,11,11) envelope. The differing upper material is
+not identified by this diagnostic; nearby printing is a possible cause.
+
+Per the predeclared rule, no primary-coverage projection, boundary, opacity
+or candidate is inferred. Astra checks all 2,730 raw records, 72 statistic
+vectors/matrices, exact five-node removal, baseline replay and localized
+failures, and views the source/current/backing contact. Divider and joins
+remain separate controls. A different independently supported backing
+constraint is required; the failed holdouts cannot be used to refit this
+envelope. Production artwork, fonts and caches stay unchanged. Plan and
+execution evidence are in `/tmp/cp-eras-next/kv-footer-bottom-plan/` and
+`kw-footer-bottom-backing/`; independent review is in
+`ht-echo-review/kw-verification.json` under the same scratch root.
+
+## KY shared source ground (2026-10-04)
+
+Same-coordinate context in the four original screens supplies an independent
+ground control. Login and Store are clear at the footer and match exactly
+over all 60,000 pixels in (2820,2040)..(3320,2160). Dashboard matches both
+in 16,115 predeclared clear pixels: exterior left, right and above, plus
+KW's left upper cell. The occupied Mail badge is a retained negative
+control, differing in 2,798 of 8,800 pixels. All originals are opaque;
+these are native-resolution comparisons, without viewport resampling.
+
+This supports shared ground at the declared controls. It does not expose
+paint beneath the opaque primary frame, identify the original font, or
+make KW's failed upper holdouts pass. Source-minus-ground can now separate
+visible printing from the shared background without estimating that
+background from a failed caption region. The source pixels remain audit
+inputs, not an asset embedded in the production scene.
+
+Astra reproduces all eleven donor/control comparisons, input hashes and
+four exact context crops. Plans, results and the contact are in
+`/tmp/cp-eras-next/ky-footer-source-context/`; the independent replay is
+`ht-echo-review/verify-ky.py` and its result is `ky-verification.json` under
+the same scratch root. No font, artwork, effect or cache changes follow
+from this ground check alone.
+
+## KX second-caption isolation (2026-10-04)
+
+Removing only the three existing `DEFENCE PROGRAM` text nodes from KW's
+primary-free SVG isolates the current caption and its two copies. The
+unchanged replay is byte-exact. The isolation changes 2,527 pixels inside
+(3065,2104)..(3209,2123), inclusive, with unchanged alpha and footer
+exterior. Its footprint ends at y2123; it cannot explain source printing
+in the following upper-band rows by increasing the current copies' ink.
+
+Across the two fixed covered boxes, source-minus-verified-ground mean red
+is 29.00 and 31.65; the terminal transition is 25.08. Most of those pixels
+have zero contribution from the current caption. The clear right box is
+70/75 pixels exact against the ground, with only five red fringes of at
+most two levels; the left box is entirely exact. The simulated background
+itself differs from the donor by at most four levels in clear controls.
+Consequently, positive source-minus-SVG values alone are not evidence of
+missing printing: the clear-box differences include this ground error.
+The much larger covered/terminal residual supports localized longer
+printing, without identifying a unique source layer or font.
+
+The lower echo and divider controls remain separate, and KW's failed
+backing gate stays failed. This diagnostic does not supply hidden primary
+backing, a correction to bottom coverage or a new caption opacity. AY/EG's
+rejected frame-echo profile is unchanged. Any caption-tail proposal needs
+its own source-supported extent and independent clear/glyph controls.
+
+Astra independently checks all 1,366 raw pixel records, 55 metric sets,
+308 row/column records and 21 correlation fields, the exact three-node
+removal and the full-frame locality, and reviews the source/ground/layer
+contact. Plans, preserved analyzer versions and results are in
+`/tmp/cp-eras-next/kx-footer-upper-residual/`; the independent verifier and
+contact are in `ht-echo-review/` under the same root. No production SVG,
+Rust, font, cache or golden changes follow this isolation.
+
+## KZ caption-tail support limit (2026-10-04)
+
+The source-only follow-up confirms localized ink, but its frozen column
+mask cannot discriminate the painting mechanism. In the 580-pixel tail
+below the existing caption, red excess over verified ground exceeds
+4/12/24 levels in 525/448/278 pixels. The separate terminal contributes
+24/18/10 of 28 pixels; both clear controls have zero hits at every level.
+The current caption's union over rows covers 143 of 145 columns, leaving
+only two gap columns. A displaced echo could fill those gaps, so their
+observed ink neither validates nor excludes a text-copy explanation.
+
+All six components across the three thresholds touch the expanded context
+boundary and remain explicitly clipped. Their complete contours cannot
+be inferred. Lower echoes and the divider remain separate. Astra verifies
+all 5,817 raw records, 579 statistic sets, 24 threshold-region comparisons
+and six component memberships. Evidence is in
+`/tmp/cp-eras-next/kz-footer-tail-support/`, with independent checks in
+`ht-echo-review/kz-verification.json` under the same scratch root.
+No fitting, candidate, render or production change follows this diagnostic.
+The tail needs a more discriminating independent constraint before choosing
+an effect; this nearly full column mask must not become an acceptance gate.
+
+## LH/LI source text displacement (2026-10-04)
+
+The next source-only diagnostic uses two-dimensional bright-core masks,
+subtracting KY's same-coordinate Login ground from the original Dashboard.
+Store independently matches that donor. No image resampling, font fitting
+or SVG rendering enters this diagnostic. Both clear controls have exactly
+zero source excess.
+
+LH searches 342 integer right/down displacements using the left half of
+the code tail, then evaluates the same displacements on the right half.
+Each score subtracts the row mean from both the source red excess and the
+shifted binary mask, retaining all 1,188 pixels in each half. Red-excess
+thresholds 120 and 160 produce unclipped core masks. Both select (5,5)
+physical pixels on the training half and rank it first on the held-out
+half: scores are 0.4954/0.7166 and 0.4790/0.6999. The threshold-80 mask
+touches the context boundary and stays flagged as clipped. A secondary
+(10,8) association is exploratory; it does not establish a second copy.
+
+LI transfers the fixed (5,5) and (10,8) offsets to the captions without
+another search, with opposite-horizontal and vertical-only controls.
+The (5,5) mask correlates positively with the Combat tail, scoring
+0.3364/0.2609 at thresholds 120/160. It reaches only one/zero pixels of
+the deeper Defence tail and cannot explain that support. The fixed
+(10,8) mask reaches 172/122 Defence-tail pixels and scores 0.4079/0.3659,
+but substantial ink remains outside it. All four caption masks are
+unclipped. These associations constrain displacement; they do not identify
+the original font, opacity, edge softness or complete printing kernel.
+
+Astra independently recomputes LH's 7,870 raw records and 3,078 lag/region
+scores, and LI's 8,248 records and 16 fixed comparisons. Plans, frozen
+inputs, raw measurements and independent `verify.py`/`VERIFIED.json` pairs
+are in `/tmp/cp-eras-next/lh-footer-code-echo/` and
+`li-footer-lag-transfer/` under the same scratch root.
+
+## LJ position-only transfer limit (2026-10-04)
+
+One frozen SVG trial moves the existing two text-copy groups to physical
+(5,5) and (10,8) offsets, preserving all six text nodes, fonts, opacity,
+color, primary lettering, frame and paint order. At the 1600 design scale,
+those offsets are (2.083333333333,2.083333333333) and
+(4.166666666667,3.333333333333). This tests a bounded hypothesis from LH/LI,
+not an identified source effect. No offsets are retuned after measurement.
+
+Whole-footer RGB L1 improves by 46,143/9,538/7,313 at 4K/1600/fractional
+size; RMS also improves. The three complete glyph regions and all four
+code/caption-tail regions improve in aggregate at every size. However,
+both captions' bright-source subsets lose at all three sizes, the upper
+left code-edge controls lose, and a 4K clear-area control worsens by 38
+L1. There are 24 L1/RMS exceptions across the fixed region/subset pairs.
+The trial fails its predeclared regional acceptance check and stays out
+of production despite the aggregate gain. Moving both existing copies
+farther is insufficient; these results do not justify discarding their
+near-edge contribution or treating the source associations as a full model.
+
+Astra checks the exact two XML transform changes, three byte-exact baseline
+replays, canonical source-sampling provenance, all 403 nonempty metric
+pairs and 882 threshold-F1 values, and all 10,194 changed pixels. The
+three source/current/trial contacts are reviewed. Alpha and footer exterior
+are exact, and all changed pixels have full source coverage. Smaller-size
+supports overlap after resampling and are not independent source rows.
+No native port, SVG, font, cache or golden change follows. Evidence and
+the independent rejection are in `/tmp/cp-eras-next/lj-footer-text-offsets/`.
+NM1 remains open for a supported explanation of both near-edge and trailing
+printing, alongside the separate primary-frame coverage constraints.
