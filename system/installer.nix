@@ -9,7 +9,20 @@
 { modulesPath, ... }:
 
 let
-  sshKeys = import ../lib/ssh-keys.nix;
+  # Installer-only keys, on top of the shared list. Kept here rather than
+  # in ../lib/ssh-keys.nix because that file is authorized on every
+  # running host too, and these machines must only be able to *install*
+  # a box, not log into the fleet (decided 2026-10-17).
+  #
+  # arca: the small always-on cloud box, so an on-demand dev box can be
+  # provisioned while terra is down. terra's own key is already in
+  # ssh-keys.nix; the ISO uploaded 2026-08-17 predates it, which is why
+  # `./provision up arca` from terra failed with "no SSH as root".
+  # Rebuild and re-upload the ISO after changing either list.
+  installerOnlyKeys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPevIyUUgWN5WCCnQFrueP2OTX/gcAD8PO0OWappqQVK mverte@arca"
+  ];
+  sshKeys = (import ../lib/ssh-keys.nix) ++ installerOnlyKeys;
 in
 {
   imports = [
