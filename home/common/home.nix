@@ -40,7 +40,16 @@ in
     # notifications about home-manager news
     news.display = "silent";
 
-
+    # Stylix's KDE target prepends its store path to XDG_CONFIG_DIRS. When
+    # the variable was unset, that drops the spec default (/etc/xdg), which
+    # breaks xdg-user-dirs-update ("No default user directories"), autostart
+    # entries and menus. Re-append /etc/xdg when it is missing.
+    home.sessionVariablesExtra = lib.optionalString pkgs.stdenv.isLinux ''
+      case ":''${XDG_CONFIG_DIRS:-}:" in
+        *:/etc/xdg:*) ;;
+        *) export XDG_CONFIG_DIRS="''${XDG_CONFIG_DIRS:+''${XDG_CONFIG_DIRS}:}/etc/xdg" ;;
+      esac
+    '';
 
     stylix.fonts = {
       monospace = {
