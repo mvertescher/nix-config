@@ -80,12 +80,16 @@ in
       systemd.enable = true;
     };
 
-    systemd.user.services.waybar.Unit = {
-      X-Reload-Triggers = [ "${config.xdg.configFile."waybar/colors.css".source}" ];
-      X-Restart-Triggers = [
-        "${config.xdg.configFile."waybar/config.jsonc".source}"
-        "${config.xdg.configFile."waybar/modules.jsonc".source}"
-      ];
+    # Guarded so a host that turns waybar off (e.g. a headless server) is
+    # not left with a stub waybar.service that has triggers but no ExecStart.
+    systemd.user.services = lib.mkIf config.programs.waybar.enable {
+      waybar.Unit = {
+        X-Reload-Triggers = [ "${config.xdg.configFile."waybar/colors.css".source}" ];
+        X-Restart-Triggers = [
+          "${config.xdg.configFile."waybar/config.jsonc".source}"
+          "${config.xdg.configFile."waybar/modules.jsonc".source}"
+        ];
+      };
     };
 
     # Every family below is base16 accent + two derived shades. The mid and
