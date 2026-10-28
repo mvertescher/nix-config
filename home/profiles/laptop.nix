@@ -27,6 +27,12 @@ in
       general = {
         # Honour dbus idle inhibitors, so video playback keeps the screen on.
         ignore_dbus_inhibit = false;
+        # Ignore Wayland zwp_idle_inhibit_manager_v1 inhibitors: Chromium on
+        # Wayland leaks zwp_idle_inhibitor_v1 objects after video/RTC wake
+        # locks (while properly releasing its D-Bus ScreenSaver lock), and
+        # Hyprland treats windows on inactive workspaces as visible when
+        # animations are disabled, permanently wedging ext_idle_notifier_v1.
+        ignore_wayland_inhibit = true;
         after_sleep_cmd = "${hyprctl} dispatch dpms on";
       };
 
