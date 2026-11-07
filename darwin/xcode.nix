@@ -89,6 +89,22 @@ in
       default = [ "iOS" ];
       description = "Simulator platforms to download (`xcodebuild -downloadPlatform`).";
     };
+
+    automationModeWithoutAuth = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Let XCUITests that drive a macOS app (a Mac or Mac Catalyst
+        destination) turn on Automation Mode without a password prompt:
+        `automationmodetool enable-automationmode-without-authentication`,
+        run by activation as root, only while `automationmodetool` still
+        says the device requires authentication. Without it such a test
+        stops at an authentication dialog nobody is there to answer
+        (headless runs over ssh). The trade-off: any process of a user
+        on this Mac can then put it in Automation Mode, which synthesizes
+        input to apps; enable it only on a build/test machine.
+      '';
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -101,6 +117,13 @@ in
         if [ "$(/usr/bin/xcode-select -p 2>/dev/null)" != "${developer}" ]; then
           /usr/bin/xcode-select -s ${developer}
         fi
+      fi
+    '' + lib.optionalString cfg.automationModeWithoutAuth ''
+      # Automation Mode without a password (custom.xcode.automationModeWithoutAuth).
+      if /usr/bin/automationmodetool 2>/dev/null | /usr/bin/grep -q "requires user authentication"; then
+        echo "automation mode: allowing it without authentication..." >&2
+        /usr/bin/automationmodetool enable-automationmode-without-authentication \
+          || echo "warning: automationmodetool failed; Mac XCUITests will ask for a password" >&2
       fi
     '';
 
