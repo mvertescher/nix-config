@@ -578,7 +578,7 @@
     <use href="#btn" x="728" y="702" fill="#e63132"/>
     <!-- Switch Weapon, corrected 2026-11-13: weight 500 and the era's
          on-select ink #1a0405 (was 400 in #59171b). Full-res source:
-         ink core #3b090a, darkest 1% #120101, on #e63131 -- #59171b is
+         ink core #3b090a, darkest 1% #120101, on #e63131; #59171b is
          lighter than any core pixel. In the box 738,732 110x19 the
          source has 16.9% past the fill/ink midpoint; the old setting
          rendered 6.3%, this one 18.4% (500 in the core #3b090a: 16.6%).
