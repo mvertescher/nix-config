@@ -189,6 +189,13 @@ from the cache payload and live hardware-GPU memory usage.
 - [ ] **Live desktop verification remains separate.** Check actual
   hardware-GPU first presentation, resize and navigation when authorized
   to launch the app. Headless draw timing does not close this item.
+  **2026-11-13, first live run** ([record](../docs/live-desktop-2026-11-13.md)),
+  RTX 4070 at 3840x2160: window mapped after 3.6 s (dashboard), 2.8 s
+  (login), 2.4 s (mailbox); first store open 3.6-6.8 s; 280% CPU over
+  the hub's first 24 s; 1.1 GB resident, 439 MiB GPU. Warm route changes
+  start in 200-370 ms and settle within 1 s; idle CPU 0%. So warm
+  navigation is fine and cold start is the cost. Still open: where the
+  cold seconds go on real hardware, and frame pacing during boot-in.
 - [x] **Profile remaining image upload/presentation work.** The optimized
   headless 4K app still spends about 1.60 s between its first foreground
   callback and the next backdrop callback, outside the measured CPU

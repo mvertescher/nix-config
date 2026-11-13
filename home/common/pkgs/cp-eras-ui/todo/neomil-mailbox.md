@@ -142,6 +142,12 @@ trace screen and are not backend defects.
 - [ ] Live desktop verification of input, hub navigation and route-return
   behavior. Headless pointer and startup tests do not close this; an
   authorized GUI launch is required when the user is ready.
+  **2026-11-13, first live run** ([record](../docs/live-desktop-2026-11-13.md)):
+  the mailbox draws at 4K and Down moves the selection with the message
+  pane following. Still open: pointer input, what Enter and Escape are
+  meant to do here, and hub navigation -- the Neomil hub has no route to
+  the mailbox at all (finding 5), so "route-return" cannot be exercised
+  until a module points at it.
 
 ## Earlier mailbox batch validation record
 

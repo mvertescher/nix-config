@@ -599,7 +599,16 @@ lib.mkMerge [
       Service = {
         Type = "simple";
         ExecStart = lib.getExe' pkgs.cp-eras-ui "cp-eras-ui-bar";
-        Restart = "on-failure";
+        # "always", not "on-failure": when the compositor removes and
+        # re-adds the output (an HDMI re-handshake, a monitor waking), the
+        # bar's layer surface is closed and the bar exits 0 -- a clean exit
+        # that on-failure does not restart. Seen on terra 2026-11-13: the
+        # output was re-created 22 s after login (hypridle logged the
+        # wl_output going and coming back in the same second) and the
+        # session then had no bar at all. PartOf still stops it with the
+        # session. The better fix is in the bar: re-create the surface on
+        # the new output instead of exiting (cp-eras-ui todo/bar.md).
+        Restart = "always";
         RestartSec = 3;
       };
       Install.WantedBy = [ "graphical-session.target" ];
