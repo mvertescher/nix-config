@@ -16,6 +16,9 @@
 let
   inherit (pkgs) freefont_ttf noto-cjk-subset rajdhani-fontshare;
   orbitron = pkgs.orbitron-vf;
+  # The same override `default.nix` stages: Michroma alone, from the
+  # pinned google/fonts checkout.
+  michroma = pkgs.google-fonts.override { fonts = [ "Michroma" ]; };
 
   # Where `fonts/` goes: this directory, not the cwd. Entering the
   # shell from `public/` used to leave a stray `public/fonts/` behind.
@@ -65,6 +68,7 @@ pkgs.mkShell {
     cp -f ${rajdhani-fontshare}/share/fonts/truetype/*.ttf "${crate}/fonts/"
     cp -f ${noto-cjk-subset}/share/fonts/opentype/*.otf "${crate}/fonts/"
     cp -f ${freefont_ttf}/share/fonts/truetype/FreeSansBold.ttf "${crate}/fonts/"
+    cp -f ${michroma}/share/fonts/truetype/Michroma-Regular.ttf "${crate}/fonts/"
     python3 "${crate}/scripts/make-kitsch-sans.py" "${crate}/fonts/FreeSansBold.ttf" "${crate}/fonts/CP-Eras-Kitsch-Sans-Bold.ttf" "${crate}/fonts/CP-Eras-Kitsch-Sans-Bold.audit.json"
     chmod +w "${crate}"/fonts/*.ttf "${crate}"/fonts/*.otf
 

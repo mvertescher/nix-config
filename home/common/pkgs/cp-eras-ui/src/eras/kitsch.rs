@@ -492,6 +492,16 @@ pub const BARCODE_TAB: iced::Color = rgb(0x16a49c);
 pub const BRIGHT: iced::Color = rgb(0x82f0d3);
 
 const NOTE_1: &str = "ACCESS MANAGER WAS DEVE-";
+/// Every Kitsch badge note (login, mailbox, dashboard, store corners) in
+/// Michroma at its natural width: the photographed cap is 4.17 (Michroma
+/// cap 0.75 em), and the words sit wider apart than Michroma's space
+/// (ink gaps 3-4px on #51 against 1px), hence the extra word space.
+pub const NOTE_SIZE: f32 = 5.56;
+pub const NOTE_WORD_SPACE: f32 = 2.0;
+/// The access notes in Michroma (review 2026-11-13, decision 5), fitted to
+/// #50: cap 4.17 (Michroma cap 0.75 em) and the photographed line extents
+/// x 372.5..497.5 / ..495 / ..480.4 within about 2%.
+const LOGIN_NOTE_SIZE: f32 = NOTE_SIZE;
 const NOTE_2: &str = "LOPED BY SEOCHO. SERVING";
 const NOTE_3: &str = "CUSTOMERS SINCE 2006.";
 
@@ -599,7 +609,7 @@ pub const ACCESS: Access = Access {
             )),
             emblem: Emblem::Chip,
             name: Some(
-                Legend::new("GUEST 7702", 340.0, 355.0, 20.0, Ink::Fixed(NAME_INK)).medium(),
+                Legend { weight: iced::font::Weight::Semibold, ..Legend::new("GUEST 7702", 340.0, 355.6, 22.0, Ink::Fixed(BRIGHT)) },
             ),
             badge: Some(Plate::outlined(
                 Plot::new(339.3, 371.9, 24.5, 24.1),
@@ -613,15 +623,15 @@ pub const ACCESS: Access = Access {
                     .stretched(1.7),
             ),
             notes: &[
-                Legend::new(NOTE_1, 372.1, 376.3, 8.0, Ink::Fixed(BRIGHT))
-                    .bold()
-                    .stretched(1.32),
-                Legend::new(NOTE_2, 372.1, 385.5, 8.0, Ink::Fixed(BRIGHT))
-                    .bold()
-                    .stretched(1.32),
-                Legend::new(NOTE_3, 372.1, 394.7, 8.0, Ink::Fixed(BRIGHT))
-                    .bold()
-                    .stretched(1.32),
+                Legend::new(NOTE_1, 372.3, 376.3, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .wide()
+                    .word_spaced(NOTE_WORD_SPACE),
+                Legend::new(NOTE_2, 372.3, 385.5, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .wide()
+                    .word_spaced(NOTE_WORD_SPACE),
+                Legend::new(NOTE_3, 372.3, 394.7, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .wide()
+                    .word_spaced(NOTE_WORD_SPACE),
             ],
             field: Some(
                 Plate::filled(Plot::new(257.2, 413.3, 334.6, 50.4), Ink::Fixed(WELL))
@@ -667,7 +677,7 @@ pub const ACCESS: Access = Access {
             )),
             emblem: Emblem::Chip,
             name: Some(
-                Legend::new("GUEST 7702", 733.0, 355.0, 20.0, Ink::Fixed(NAME_INK)).medium(),
+                Legend { weight: iced::font::Weight::Semibold, ..Legend::new("GUEST 7702", 733.0, 355.6, 22.0, Ink::Fixed(BRIGHT)) },
             ),
             badge: Some(Plate::outlined(
                 Plot::new(732.3, 371.9, 24.5, 24.1),
@@ -681,15 +691,15 @@ pub const ACCESS: Access = Access {
                     .stretched(1.7),
             ),
             notes: &[
-                Legend::new(NOTE_1, 765.1, 376.3, 8.0, Ink::Fixed(BRIGHT))
-                    .bold()
-                    .stretched(1.32),
-                Legend::new(NOTE_2, 765.1, 385.5, 8.0, Ink::Fixed(BRIGHT))
-                    .bold()
-                    .stretched(1.32),
-                Legend::new(NOTE_3, 765.1, 394.7, 8.0, Ink::Fixed(BRIGHT))
-                    .bold()
-                    .stretched(1.32),
+                Legend::new(NOTE_1, 765.3, 376.3, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .wide()
+                    .word_spaced(NOTE_WORD_SPACE),
+                Legend::new(NOTE_2, 765.3, 385.5, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .wide()
+                    .word_spaced(NOTE_WORD_SPACE),
+                Legend::new(NOTE_3, 765.3, 394.7, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .wide()
+                    .word_spaced(NOTE_WORD_SPACE),
             ],
             action: Some(
                 Plate::filled(Plot::new(649.6, 462.4, 334.9, 35.3), Ink::Fixed(LOCKED))
@@ -714,7 +724,7 @@ pub const ACCESS: Access = Access {
             )),
             emblem: Emblem::Chip,
             name: Some(
-                Legend::new("GUEST 7702", 1125.0, 355.0, 20.0, Ink::Fixed(NAME_INK)).medium(),
+                Legend { weight: iced::font::Weight::Semibold, ..Legend::new("GUEST 7702", 1125.0, 355.6, 22.0, Ink::Fixed(BRIGHT)) },
             ),
             badge: Some(Plate::outlined(
                 Plot::new(1124.3, 371.9, 24.5, 24.1),
@@ -728,15 +738,15 @@ pub const ACCESS: Access = Access {
                     .stretched(1.7),
             ),
             notes: &[
-                Legend::new(NOTE_1, 1157.1, 376.3, 8.0, Ink::Fixed(BRIGHT))
-                    .bold()
-                    .stretched(1.32),
-                Legend::new(NOTE_2, 1157.1, 385.5, 8.0, Ink::Fixed(BRIGHT))
-                    .bold()
-                    .stretched(1.32),
-                Legend::new(NOTE_3, 1157.1, 394.7, 8.0, Ink::Fixed(BRIGHT))
-                    .bold()
-                    .stretched(1.32),
+                Legend::new(NOTE_1, 1157.3, 376.3, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .wide()
+                    .word_spaced(NOTE_WORD_SPACE),
+                Legend::new(NOTE_2, 1157.3, 385.5, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .wide()
+                    .word_spaced(NOTE_WORD_SPACE),
+                Legend::new(NOTE_3, 1157.3, 394.7, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .wide()
+                    .word_spaced(NOTE_WORD_SPACE),
             ],
             action: Some(
                 Plate::filled(Plot::new(1042.2, 462.4, 334.9, 35.3), Ink::Fixed(LOCKED))
@@ -826,9 +836,15 @@ const MAIL_BACKDROP: &[Prim] = &[Prim::Soft { prims: MAIL_GROUND }];
 /// (a quarter of the ink, 25% narrow).
 const fn mid(x: f32, y: f32, s: &'static str) -> Piece {
     Piece::Label(Note {
-        at: Run::new(x, y, 8.0, Ink::Fg).bold(),
+        at: Run::new(x, y, NOTE_SIZE, Ink::Fg).wide().word_spaced(NOTE_WORD_SPACE),
         text: s,
     })
+}
+
+/// A section label (USER / DESCRIPTION / SECURITY LEVEL): Michroma at the
+/// photographed cap 7.92, x 0.95 to the photographed extents.
+const fn section(x: f32, s: &'static str) -> Piece {
+    Piece::Label(Note { at: Run::new(x, 159.2, 10.56, Ink::Fg).wide().stretched(0.95), text: s })
 }
 
 const fn letter(x: f32, y: f32, s: &'static str) -> Piece {
@@ -913,13 +929,13 @@ static FLAG: [(f32, f32); 5] = [
 
 static CHROME: [Piece; 26] = [
     mid(205.0, 110.0, "SPARE TIME MANAGER WAS DEVELO-"),
-    mid(205.0, 119.0, "PED BY SEOCHO. SERVING CUSTO-"),
-    mid(205.0, 128.0, "MERS SINCE 2006."),
-    mid(624.6, 110.0, "MAPS ARE PROVIDED BY SEOCHO."),
-    mid(624.6, 119.0, "SATELITE SERVICES SINCE 2006."),
-    mid(1259.1, 110.0, "SPARE TIME MANAGER WAS DEVELO-"),
-    mid(1259.1, 119.0, "PED BY SEOCHO. SERVING CUSTO-"),
-    mid(1259.1, 128.0, "MERS SINCE 2006."),
+    mid(205.0, 119.2, "PED BY SEOCHO. SERVING CUSTO-"),
+    mid(205.0, 128.3, "MERS SINCE 2006."),
+    mid(624.1, 110.0, "MAPS ARE PROVIDED BY SEOCHO."),
+    mid(624.1, 119.2, "SATELITE SERVICES SINCE 2006."),
+    mid(1258.7, 110.0, "SPARE TIME MANAGER WAS DEVELO-"),
+    mid(1258.7, 119.2, "PED BY SEOCHO. SERVING CUSTO-"),
+    mid(1258.7, 128.3, "MERS SINCE 2006."),
     Piece::Box {
         at: Frame::new(165.2, 106.2, 24.1, 23.8),
         fill: None,
@@ -928,7 +944,7 @@ static CHROME: [Piece; 26] = [
         trim: Trim::NONE,
     },
     letter(177.25, 125.5, "A"),
-    Piece::Label(Note { at: Run::new(166.0, 159.0, 12.3, Ink::Fg).bold(), text: "USER" }),
+    section(165.2, "USER"),
     Piece::Box {
         at: Frame::new(586.2, 106.2, 24.2, 23.8),
         fill: None,
@@ -937,7 +953,7 @@ static CHROME: [Piece; 26] = [
         trim: Trim::NONE,
     },
     letter(598.3, 125.5, "B"),
-    Piece::Label(Note { at: Run::new(587.0, 159.0, 12.3, Ink::Fg).bold(), text: "DESCRIPTION" }),
+    section(586.1, "DESCRIPTION"),
     Piece::Box {
         at: Frame::new(1216.6, 106.2, 24.4, 23.8),
         fill: None,
@@ -946,7 +962,7 @@ static CHROME: [Piece; 26] = [
         trim: Trim::NONE,
     },
     letter(1228.8, 125.5, "C"),
-    Piece::Label(Note { at: Run::new(1217.0, 159.0, 12.3, Ink::Fg).bold(), text: "SECURITY LEVEL" }),
+    section(1216.85, "SECURITY LEVEL"),
     Piece::Poly {
         points: &USER_BOX,
         fill: None,
@@ -1021,14 +1037,18 @@ static MESSAGE_FLAG: [Piece; 3] = [
     }),
 ];
 
-/// Dark selected printing uses a lighter sender face than bright idle printing.
 /// The selected template follows selection, including after changing messages.
+/// Measured on #51 (review 2026-11-13): idle subjects cap 12.5 and stem
+/// ~1.7px (Rajdhani Medium 20; were Regular 18, cap 11 / stem 1.35); the
+/// dark selected subject on yellow ~1.3px, between Regular 20 (0.9) and
+/// Medium 20 (1.6), so it keeps the idle face; senders stem ~1.4px idle and
+/// ~1.3px selected (Medium both; were Bold 2.2px / SemiBold 1.7px).
 const MAIL_SELECTED_ROW_TYPE: MailRowType = MailRowType {
-    title: Run::new(220.0, 27.0, 18.0, Ink::Fg),
-    from: Run::new(220.0, 48.0, 13.5, Ink::Mid).semibold(),
+    title: Run::new(220.0, 27.0, 20.0, Ink::Fg).medium(),
+    from: Run::new(220.0, 48.0, 13.5, Ink::Mid).medium(),
 };
 static MAIL_ROW_TYPE: [MailRowType; 5] = [MailRowType {
-    from: Run::new(220.0, 48.0, 13.5, Ink::Mid).bold(),
+    from: Run::new(220.0, 48.0, 13.5, Ink::Mid).medium(),
     ..MAIL_SELECTED_ROW_TYPE
 }; 5];
 
@@ -1556,6 +1576,19 @@ const QR_FLAT: &[Prim] = qr!(Ink::Fixed(ON_BAND), 282.5);
 
 /// The source socket lettering has a 20-native-pixel cap, independently
 /// measured in all three cells of both card states.
+/// The selected card's lower list, at the photographed size and weight:
+/// "Recoil" cap 12.9, 42.9 wide and stem ~1.8px on #52, against Regular
+/// 16's 10.0 / 35.0 / 1.4.
+const GROWN_LIST_SIZE: f32 = 19.5;
+
+const fn grown_line(x: f32, y: f32, content: &'static str) -> Prim {
+    Prim::Text { x, y, size: GROWN_LIST_SIZE, ink: Ink::Fixed(GROWN_DETAIL), face: Face::Medium, anchor: Anchor::Start, content }
+}
+
+const fn store_note(x: f32, y: f32, content: &'static str) -> Prim {
+    Prim::TrackedWords { x, y, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content }
+}
+
 const fn socket_label(x: f32, y: f32, ink: Ink, content: &'static str) -> Prim {
     Prim::Text { x, y, size: 13.0, ink, face: Face::SemiBold, anchor: Anchor::Middle, content }
 }
@@ -1763,15 +1796,15 @@ const GROWN: &[Prim] = &[
         Seg::Move(118.0, 414.0), Seg::Line(118.0, 462.0),
         Seg::Move(190.0, 414.0), Seg::Line(190.0, 462.0),
     ], Ink::Fixed(GROWN_OUTLINE), 1.5),
-    txt(16.0, 279.0, 16.0, Ink::Fixed(GROWN_DETAIL), "20"),
-    txt(52.0, 279.0, 16.0, Ink::Fixed(GROWN_DETAIL), "Recoil"),
-    txt(16.0, 300.0, 16.0, Ink::Fixed(GROWN_DETAIL), "22"),
-    txt(52.0, 300.0, 16.0, Ink::Fixed(GROWN_DETAIL), "Sperad"),
-    txt(16.0, 321.0, 16.0, Ink::Fixed(GROWN_DETAIL), "12"),
-    txt(52.0, 321.0, 16.0, Ink::Fixed(GROWN_DETAIL), "Range"),
-    txt(16.0, 350.0, 16.0, Ink::Fixed(GROWN_DETAIL), "Bonus"),
-    txt(16.0, 371.0, 16.0, Ink::Fixed(GROWN_DETAIL), "+9 Reflexes"),
-    txt(16.0, 392.0, 16.0, Ink::Fixed(GROWN_DETAIL), "+2 Modules Slots"),
+    grown_line(16.0, 279.0, "20"),
+    grown_line(52.0, 279.0, "Recoil"),
+    grown_line(16.0, 300.0, "22"),
+    grown_line(52.0, 300.0, "Sperad"),
+    grown_line(16.0, 321.0, "12"),
+    grown_line(52.0, 321.0, "Range"),
+    grown_line(16.0, 350.0, "Bonus"),
+    grown_line(16.0, 371.0, "+9 Reflexes"),
+    grown_line(16.0, 392.0, "+2 Modules Slots"),
     Prim::At { x: 0.0, y: 0.0, prims: QR_SEL },
     socket_label(82.75, 436.5, Ink::Fixed(GROWN_DETAIL), "EMPTY"),
     socket_label(82.75, 450.0, Ink::Fixed(GROWN_DETAIL), "SOCKET"),
@@ -1787,16 +1820,25 @@ const GROWN: &[Prim] = &[
 // The nav's five chevrons and the shelf's four positions, as plates:
 // hit box, the drawing worn when this one is the selection, and the
 // drawing worn when it is not.
+/// Nav labels as store-trace sets them (Rajdhani 500, letter-spacing
+/// -0.4); the table drew Regular 22, whose stems measured 1.4px against the
+/// photo's 2.0 (review 2026-11-13).
+const NAV_SIZE: f32 = 24.5;
+const NAV_TRACKING: f32 = -0.4;
+/// Scene Rajdhani lands 0.052 em below its `y` (`scene::BASELINE`); the
+/// photographed baselines are the trace's, so the labels stand this much
+/// higher.
+const NAV_RISE: f32 = 1.25;
 macro_rules! nav {
     ($top:expr, $base:expr, $label:expr) => {
         (
             &[
                 Prim::At { x: 140.0, y: $top, prims: NAV_SOLID },
-                txt(170.0, $base, 22.0, Ink::Fixed(ON_BAND), $label),
+                Prim::Tracked { x: 170.0, y: $base - NAV_RISE, size: NAV_SIZE, tracking: NAV_TRACKING, ink: Ink::Fixed(ON_BAND), face: Face::Medium, anchor: Anchor::Start, content: $label },
             ],
             &[
                 Prim::At { x: 140.0, y: $top, prims: NAV_OUTLINE },
-                txt(170.0, $base, 22.0, Ink::Fg, $label),
+                Prim::Tracked { x: 170.0, y: $base - NAV_RISE, size: NAV_SIZE, tracking: NAV_TRACKING, ink: Ink::Fg, face: Face::Medium, anchor: Anchor::Start, content: $label },
             ],
         )
     };
@@ -1819,7 +1861,7 @@ macro_rules! nav_states {
             index: $index,
             hover: &[
                 Prim::At { x: 140.0, y: $top, prims: NAV_LIFT },
-                txt(170.0, $base, 22.0, Ink::Fixed(ON_MINT_BAR), $label),
+                Prim::Tracked { x: 170.0, y: $base - NAV_RISE, size: NAV_SIZE, tracking: NAV_TRACKING, ink: Ink::Fixed(ON_MINT_BAR), face: Face::Medium, anchor: Anchor::Start, content: $label },
             ],
             pressed: $on,
             preserve_selected_hover: true,
@@ -2069,11 +2111,13 @@ pub const STORE: &[Prim] = &[
         prims: SHELF,
     },
     // footer marks
-    txt(181.0, 738.0, 7.5, Ink::Dim, "SPARE TIME MANAGER WAS DEVELO-"),
-    txt(181.0, 747.0, 7.5, Ink::Dim, "PED BY SEOCHO. SERVING CUSTO-"),
-    txt(181.0, 756.0, 7.5, Ink::Dim, "MERS SINCE 2006."),
-    txt(1325.0, 746.0, 7.5, Ink::Dim, "MAPS ARE PROVIDED BY SEOCHO."),
-    txt(1325.0, 755.0, 7.5, Ink::Dim, "SATELITE SERVICES SINCE 2006."),
+    // corner notes: Michroma as every badge note, at the photographed extents
+    // (x 181.7..333.3 / 1325.8..1468.8) in the trace's bright mint
+    store_note(181.4, 737.9, "SPARE TIME MANAGER WAS DEVELO-"),
+    store_note(181.4, 747.1, "PED BY SEOCHO. SERVING CUSTO-"),
+    store_note(181.4, 755.9, "MERS SINCE 2006."),
+    store_note(1325.4, 746.3, "MAPS ARE PROVIDED BY SEOCHO."),
+    store_note(1325.4, 755.4, "SATELITE SERVICES SINCE 2006."),
     line_rect(350.0, 733.0, 28.0, 27.0, Ink::Fixed(MARK), 1.5),
     txt_mid(364.0, 752.0, 14.0, Ink::Fixed(MARK), "A"),
     line_rect(1500.0, 733.0, 29.0, 27.0, Ink::Fixed(MARK), 1.5),
@@ -2227,11 +2271,11 @@ mod store_interaction_tests {
             assert_eq!((state.group, state.index), (Group::Category, index));
             assert_eq!((w, h), (216.0, 39.0));
             assert_eq!(state.hover[0], Prim::At { x, y, prims: NAV_LIFT });
-            let Prim::Text { x, y, size, face, anchor, content, .. } = off[1] else {
-                panic!("category label is text");
+            let Prim::Tracked { x, y, size, face, anchor, tracking, content, .. } = off[1] else {
+                panic!("category label is tracked text");
             };
-            assert_eq!(state.hover[1], Prim::Text {
-                x, y, size, face, anchor, content, ink: Ink::Fixed(ON_MINT_BAR),
+            assert_eq!(state.hover[1], Prim::Tracked {
+                x, y, size, face, anchor, tracking, content, ink: Ink::Fixed(ON_MINT_BAR),
             });
             assert_eq!(state.pressed, on, "release leaves the same flat selected face");
             assert!(state.preserve_selected_hover);
@@ -2934,6 +2978,15 @@ const DASHBOARD_STATES: &[PlateStates] = &[
     blade_states(0), blade_states(1), blade_states(2), blade_states(3), blade_states(4), blade_states(5),
 ];
 
+/// The header and DEVICE SOFTWARE notes and section labels, in Michroma
+/// (review 2026-11-13, decision 5). Fitted to #49: notes cap 4.1 and
+/// extents x 205..356.3 / 205..350 / 205..284.2; labels cap 7.92 and
+/// USER 38.3 / SECURITY LEVEL 117.9 / DESCRIPTION 96.7 / DEVICE SOFTWARE
+/// 136.7 wide. Rajdhani SemiBold x1.37 drew them 10% narrow at 1.5x the
+/// photographed stem.
+const DASH_LABEL_SIZE: f32 = 10.56;
+const DASH_LABEL_STRETCH: f32 = 0.95;
+
 pub const DASHBOARD: &[Prim] = &[
     Prim::Soft { prims: HUB_BACK },
     // the two fans' depth, each wiped on from the left over 0.45 s from
@@ -2963,15 +3016,15 @@ pub const DASHBOARD: &[Prim] = &[
     // foreground outlines/labels. The same fixed field remains under a
     // selected face, whose opaque gold fill covers it.
     Prim::Soft { prims: FACE_FIELDS },
-    // header notes: Rajdhani 600 8 stretched 1.3 (lines 107-122)
-    Prim::ReusableWide { x: 205.0, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "SPARE TIME MANAGER WAS DEVELO-" },
-    Prim::ReusableWide { x: 205.0, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "PED BY SEOCHO. SERVING CUSTO-" },
-    Prim::ReusableWide { x: 205.0, y: 131.9, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "MERS SINCE 2006." },
-    Prim::ReusableWide { x: 715.3, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "SPARE TIME MANAGER WAS DEVELO-" },
-    Prim::ReusableWide { x: 715.3, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "PED BY SEOCHO. SERVING CUSTO-" },
-    Prim::ReusableWide { x: 715.3, y: 131.9, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "MERS SINCE 2006." },
-    Prim::Wide { x: 1253.8, y: 113.6, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "MAPS ARE PROVIDED BY SEOCHO." },
-    Prim::Wide { x: 1253.8, y: 122.8, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "SATELITE SERVICES SINCE 2006." },
+    // header notes: Michroma, NOTE_SIZE with NOTE_WORD_SPACE
+    Prim::TrackedWords { x: 204.6, y: 114.0, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "SPARE TIME MANAGER WAS DEVELO-" },
+    Prim::TrackedWords { x: 204.6, y: 122.9, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "PED BY SEOCHO. SERVING CUSTO-" },
+    Prim::TrackedWords { x: 204.6, y: 132.0, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "MERS SINCE 2006." },
+    Prim::TrackedWords { x: 715.0, y: 114.0, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "SPARE TIME MANAGER WAS DEVELO-" },
+    Prim::TrackedWords { x: 715.0, y: 122.9, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "PED BY SEOCHO. SERVING CUSTO-" },
+    Prim::TrackedWords { x: 715.0, y: 132.0, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "MERS SINCE 2006." },
+    Prim::TrackedWords { x: 1253.3, y: 114.0, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "MAPS ARE PROVIDED BY SEOCHO." },
+    Prim::TrackedWords { x: 1253.3, y: 122.9, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "SATELITE SERVICES SINCE 2006." },
     // boxed A / C / D: 24x24 2px squares (lines 125-129) holding a
     // size-18 cap stretched 1.7, centred on the box (lines 130-134)
     line_rect(164.6, 109.8, 24.2, 24.2, Ink::Fixed(BRIGHT), 2.0),
@@ -2980,10 +3033,10 @@ pub const DASHBOARD: &[Prim] = &[
     Prim::Wide { x: 176.7, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Middle, content: "A" },
     Prim::Wide { x: 685.4, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Middle, content: "C" },
     Prim::Wide { x: 1227.2, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Middle, content: "D" },
-    // section labels: Rajdhani 600 12.3 stretched 1.37 (lines 137-141)
-    Prim::Wide { x: 165.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "USER" },
-    Prim::Wide { x: 674.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "SECURITY LEVEL" },
-    Prim::Wide { x: 1216.0, y: 163.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "DESCRIPTION" },
+    // section labels: Michroma 10.56 x0.95
+    Prim::Wide { x: 164.8, y: 162.9, size: DASH_LABEL_SIZE, stretch: DASH_LABEL_STRETCH, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, content: "USER" },
+    Prim::Wide { x: 673.1, y: 162.9, size: DASH_LABEL_SIZE, stretch: DASH_LABEL_STRETCH, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, content: "SECURITY LEVEL" },
+    Prim::Wide { x: 1214.9, y: 162.9, size: DASH_LABEL_SIZE, stretch: DASH_LABEL_STRETCH, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, content: "DESCRIPTION" },
     // USER box and GUES 7702 (lines 148-151)
     shut_path(155.5, 189.5, USER_STEP, Ink::Fixed(MARK), 1.25),
     Prim::Text { x: 164.0, y: 218.0, size: 21.5, ink: Ink::Fixed(NAME_INK), face: Face::SemiBold, anchor: Anchor::Start, content: "GUES 7702" },
@@ -3018,13 +3071,13 @@ pub const DASHBOARD: &[Prim] = &[
         },
         prims: HUB_PANEL,
     },
-    // B DEVICE SOFTWARE mark: notes Rajdhani 700 8 stretched 1.3, the
+    // B DEVICE SOFTWARE mark: notes Michroma as in the header, the
     // boxed B, the label (lines 302-308)
-    Prim::Wide { x: 609.9, y: 746.0, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::Bold, anchor: Anchor::Start, content: "MAPS ARE PROVIDED BY SEOCHO." },
-    Prim::Wide { x: 609.9, y: 755.0, size: 8.0, stretch: 1.3, ink: Ink::Fixed(BRIGHT), face: Face::Bold, anchor: Anchor::Start, content: "SATELITE SERVICES SINCE 2006." },
+    Prim::TrackedWords { x: 609.6, y: 745.4, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "MAPS ARE PROVIDED BY SEOCHO." },
+    Prim::TrackedWords { x: 609.6, y: 754.6, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "SATELITE SERVICES SINCE 2006." },
     line_rect(574.3, 741.0, 24.0, 24.2, Ink::Fixed(BRIGHT), 2.0),
     Prim::Wide { x: 586.3, y: 761.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Middle, content: "B" },
-    Prim::Wide { x: 575.0, y: 794.0, size: 12.3, stretch: 1.37, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "DEVICE SOFTWARE" },
+    Prim::Wide { x: 574.05, y: 794.2, size: DASH_LABEL_SIZE, stretch: DASH_LABEL_STRETCH, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, content: "DEVICE SOFTWARE" },
     // the foot line, one bold weight, two runs (lines 318-321)
     txt_bold(503.0, 870.0, 9.0, Ink::Fixed(BRIGHT), "ARASAKA CONSUMER TECHNOLOGY"),
     txt_bold(641.0, 870.0, 9.0, Ink::Fixed(BRIGHT), "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),

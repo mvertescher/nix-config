@@ -137,6 +137,8 @@ pub enum Face {
     OrbitronBold,
     FreeSansBold,
     CpErasKitschSansBold,
+    /// Michroma Regular: Kitsch's wide extended labels and badge notes.
+    Michroma,
 }
 
 /// How one class of bar module is dressed: its silhouette and its inks.
@@ -1487,6 +1489,12 @@ pub struct Legend {
     /// The login renderer positions glyphs using their measured advances
     /// plus this spacing; horizontal `stretch` applies to the whole run.
     pub tracking: f32,
+    /// Set in Michroma Regular (Kitsch's wide label face) instead of
+    /// Rajdhani at `weight`; `weight` is then ignored.
+    pub wide: bool,
+    /// Extra advance after each U+0020, in design pixels (SVG
+    /// `word-spacing`), on top of `tracking`.
+    pub word_space: f32,
 }
 
 impl Legend {
@@ -1503,7 +1511,19 @@ impl Legend {
             turned: false,
             stretch: 1.0,
             tracking: 0.0,
+            wide: false,
+            word_space: 0.0,
         }
+    }
+
+    pub const fn wide(mut self) -> Legend {
+        self.wide = true;
+        self
+    }
+
+    pub const fn word_spaced(mut self, word_space: f32) -> Legend {
+        self.word_space = word_space;
+        self
     }
 
     pub const fn bold(mut self) -> Legend {
@@ -1988,6 +2008,13 @@ pub struct Run {
     pub medium: bool,
     /// Rajdhani 600; wins over `medium`.
     pub semibold: bool,
+    /// Michroma Regular, Kitsch's wide label face; wins over every
+    /// Rajdhani weight. Placed on its own true baseline, not on the
+    /// mailbox's Rajdhani `text_baseline` calibration.
+    pub wide: bool,
+    /// Extra advance after each U+0020, in design units (SVG
+    /// `word-spacing`). Left-anchored runs only; 0 draws the run whole.
+    pub word_space: f32,
     /// Centre on `x` rather than starting at it.
     pub center: bool,
     /// End at `x` rather than starting at it.
@@ -2005,6 +2032,8 @@ impl Run {
             bold: false,
             medium: false,
             semibold: false,
+            wide: false,
+            word_space: 0.0,
             center: false,
             right: false,
         }
@@ -2022,6 +2051,16 @@ impl Run {
 
     pub const fn semibold(mut self) -> Run {
         self.semibold = true;
+        self
+    }
+
+    pub const fn wide(mut self) -> Run {
+        self.wide = true;
+        self
+    }
+
+    pub const fn word_spaced(mut self, word_space: f32) -> Run {
+        self.word_space = word_space;
         self
     }
 

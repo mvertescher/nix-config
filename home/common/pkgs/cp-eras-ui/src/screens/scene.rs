@@ -56,6 +56,9 @@ const ORBITRON_BASELINE: f32 = 0.984;
 // FreeSans Bold hhea ascender 900, descender -200, units/em 1000.
 // The canvas's centred 1.2 line gives 0.6 + (0.9 - 0.2)/2.
 const FREE_SANS_BASELINE: f32 = 0.95;
+// Michroma: hhea 2368 / -544 over 2048, in the canvas's 1.2 line. Its runs
+// are new, so this is the true baseline with no legacy Rajdhani offset.
+const MICHROMA_BASELINE: f32 = crate::fonts::michroma_baseline_in(1.2);
 
 /// Only marked `ReusableWide` runs use these outline-entry bounds. The
 /// tracked-run path cache below has separate limits. Both live for one draw
@@ -286,6 +289,7 @@ fn baseline(face: Face) -> f32 {
     match face {
         Face::OrbitronBold => ORBITRON_BASELINE,
         Face::FreeSansBold | Face::CpErasKitschSansBold => FREE_SANS_BASELINE,
+        Face::Michroma => MICHROMA_BASELINE,
         _ => BASELINE,
     }
 }
@@ -1060,6 +1064,7 @@ impl<M> Scene<M> {
             Face::OrbitronBold => crate::fonts::FONT_ORBITRON_BOLD,
             Face::FreeSansBold => crate::fonts::FONT_FREE_SANS_BOLD,
             Face::CpErasKitschSansBold => crate::fonts::FONT_CP_ERAS_KITSCH_SANS_BOLD,
+            Face::Michroma => crate::fonts::FONT_MICHROMA,
         }
     }
 

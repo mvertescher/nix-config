@@ -13,6 +13,23 @@ pub const RAJDHANI_BOLD: &[u8] = include_bytes!("../fonts/Rajdhani-Bold.ttf");
 pub const FREE_SANS_BOLD: &[u8] = include_bytes!("../fonts/FreeSansBold.ttf");
 /// Named GNU FreeFont derivative for ordinary Kitsch Store second-line M.
 pub const CP_ERAS_KITSCH_SANS_BOLD: &[u8] = include_bytes!("../fonts/CP-Eras-Kitsch-Sans-Bold.ttf");
+/// Michroma Regular 1.100 (SIL OFL 1.1), staged from the pinned nixpkgs
+/// `google-fonts` checkout (`default.nix`). Kitsch's wide, extended label
+/// face: an open look-alike of the Eurostile Extended the reference sets
+/// its section labels and badge notes in (review 2026-11-13, decision 5).
+pub const MICHROMA_REGULAR: &[u8] = include_bytes!("../fonts/Michroma-Regular.ttf");
+
+/// Michroma's `hhea` ascender and descender, in ems (2368 / -544 over
+/// 2048). Its line box is taller than Rajdhani's, so the renderers that
+/// place a baseline from a line-box top need these rather than Rajdhani's.
+pub const MICHROMA_ASCENT: f32 = 2368.0 / 2048.0;
+pub const MICHROMA_DESCENT: f32 = 544.0 / 2048.0;
+
+/// Where Michroma's baseline sits below the top of a line box `line` ems
+/// tall: cosmic-text centres the face's ascent+descent in the box.
+pub const fn michroma_baseline_in(line: f32) -> f32 {
+    (line - (MICHROMA_ASCENT + MICHROMA_DESCENT)) / 2.0 + MICHROMA_ASCENT
+}
 
 /// Noto Sans CJK JP 700, subset to `益荒男` by the noto-cjk-subset package.
 /// The current MASURAO logotype uses vector art; this remains available
@@ -21,6 +38,13 @@ pub const CP_ERAS_KITSCH_SANS_BOLD: &[u8] = include_bytes!("../fonts/CP-Eras-Kit
 /// explicit family/weight, Advanced or Auto shaping, and coverage checks
 /// in a font-isolated render; extend the subset before adding characters.
 pub const NOTO_SANS_CJK_JP_BOLD: &[u8] = include_bytes!("../fonts/NotoSansCJKjp-Bold-subset.otf");
+
+pub const FONT_MICHROMA: iced::Font = iced::Font {
+    family: iced::font::Family::Name("Michroma"),
+    weight: iced::font::Weight::Normal,
+    stretch: iced::font::Stretch::Normal,
+    style: iced::font::Style::Normal,
+};
 
 // iced::Font constants for easy use
 pub const FONT_ORBITRON_REGULAR: iced::Font = iced::Font {
@@ -154,6 +178,46 @@ mod tests {
         }
     }
 
+    /// The Michroma runs place their baseline by `michroma_baseline_in`;
+    /// check it against the outline the canvas actually lays out, in the
+    /// canvas default 1.2 line and in the login's absolute 1.276 line.
+    #[test]
+    fn michroma_canvas_outline_sits_on_the_computed_baseline() {
+        use iced::advanced::graphics::geometry::path::lyon_path::PathEvent;
+        use iced::widget::canvas;
+
+        ensure_test_fonts();
+        for (line, line_height) in [
+            (1.2, iced::widget::text::LineHeight::Relative(1.2)),
+            (1.276, iced::widget::text::LineHeight::Absolute((10.56 * 1.276).into())),
+        ] {
+            let size = 10.56_f32;
+            let text = canvas::Text {
+                content: "H".into(),
+                size: size.into(),
+                line_height,
+                font: FONT_MICHROMA,
+                align_y: iced::alignment::Vertical::Top,
+                ..Default::default()
+            };
+            let mut bottom = f32::NEG_INFINITY;
+            text.draw_with(|path, _| {
+                for event in path.raw().iter() {
+                    let y = match event {
+                        PathEvent::Begin { at } => at.y,
+                        PathEvent::Line { from, to } => from.y.max(to.y),
+                        PathEvent::Quadratic { from, ctrl, to } => from.y.max(ctrl.y).max(to.y),
+                        PathEvent::Cubic { from, ctrl1, ctrl2, to } => from.y.max(ctrl1.y).max(ctrl2.y).max(to.y),
+                        PathEvent::End { last, first, .. } => last.y.max(first.y),
+                    };
+                    bottom = bottom.max(y);
+                }
+            });
+            assert!((bottom - size * michroma_baseline_in(line)).abs() < 0.05,
+                "line {line}: bottom {bottom}, expected {}", size * michroma_baseline_in(line));
+        }
+    }
+
     #[test]
     fn free_sans_selector_matches_the_shaped_font_and_declared_weight() {
         ensure_test_fonts();
@@ -247,6 +311,7 @@ mod tests {
             ("Orbitron Bold", FONT_ORBITRON_BOLD, ORBITRON_BOLD, 700, "next"),
             ("FreeSans Bold", FONT_FREE_SANS_BOLD, FREE_SANS_BOLD, 600, "ONLY CC35 CERTIFIED"),
             ("Kitsch Sans Bold", FONT_CP_ERAS_KITSCH_SANS_BOLD, CP_ERAS_KITSCH_SANS_BOLD, 600, "MANIPULATE, ACCESS"),
+            ("Michroma", FONT_MICHROMA, MICHROMA_REGULAR, 400, "SPARE TIME MANAGER WAS DEVELO- 2006."),
         ];
         for shaping in [Shaping::Basic, Shaping::Advanced, Shaping::default()] {
             for &(label, font, expected_bytes, expected_weight, content) in cases {

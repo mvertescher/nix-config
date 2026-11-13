@@ -359,6 +359,7 @@ fn font_of(face: Face) -> iced::Font {
         Face::OrbitronBold => FONT_ORBITRON_BOLD,
         Face::FreeSansBold => FONT_FREE_SANS_BOLD,
         Face::CpErasKitschSansBold => FONT_CP_ERAS_KITSCH_SANS_BOLD,
+        Face::Michroma => crate::fonts::FONT_MICHROMA,
     }
 }
 

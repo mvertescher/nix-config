@@ -503,6 +503,9 @@ use super::scene::{advances, run_width};
 
 /// The face a legend is set in.
 fn font_of(legend: &Legend) -> iced::Font {
+    if legend.wide {
+        return crate::fonts::FONT_MICHROMA;
+    }
     iced::Font {
         family: iced::font::Family::Name("Rajdhani"),
         weight: legend.weight,
@@ -519,13 +522,15 @@ fn run_extent(g: Grid, legend: &Legend, content: &str) -> f32 {
     }
     let size = g.span(legend.size);
     let advances = advances(content, size, font_of(legend));
+    let spaces = content.chars().filter(|&c| c == ' ').count();
     let window = advances.iter().sum::<f32>()
-        + g.span(legend.tracking) * (advances.len().max(1) - 1) as f32;
+        + g.span(legend.tracking) * (advances.len().max(1) - 1) as f32
+        + g.span(legend.word_space) * spaces as f32;
     window * legend.stretch / g.sx
 }
 
 fn note_extent(grid: Grid, note: &Legend) -> f32 {
-    if note.tracking == 0.0 {
+    if note.tracking == 0.0 && note.word_space == 0.0 {
         run_width(note.text, grid.span(note.size), font_of(note)) * note.stretch / grid.sx
     } else {
         run_extent(grid, note, note.text)
@@ -712,6 +717,7 @@ impl Pen<'_> {
         // glyph outlines as meshes -- and the crisper edges that comes
         // with are a visible difference on a screen this empty.
         let tracking = g.span(legend.tracking);
+        let word_space = g.span(legend.word_space);
         let anchor = g.at(legend.x, legend.baseline);
         let stretch = legend.stretch;
         // Turned or stretched, the run is drawn as glyph outlines, where
@@ -730,16 +736,21 @@ impl Pen<'_> {
             if (stretch - 1.0).abs() > 1e-4 {
                 frame.scale_nonuniform(Vector::new(stretch, 1.0));
             }
-            frame.translate(Vector::new(0.0, -size * ASCENT));
+            // The line box is Rajdhani's natural line, so its ascent is
+            // the baseline; Michroma's taller box centres differently.
+            let ascent = if legend.wide { crate::fonts::michroma_baseline_in(LINE) } else { ASCENT };
+            frame.translate(Vector::new(0.0, -size * ascent));
 
-            if tracking == 0.0 {
+            if tracking == 0.0 && word_space == 0.0 {
                 stem::fill_text(frame, text, stem);
                 return;
             }
 
             let advances = advances(content, size, font);
+            let spaces = content.chars().filter(|&c| c == ' ').count();
             let total: f32 = advances.iter().sum::<f32>()
-                + tracking * (advances.len().max(1) - 1) as f32;
+                + tracking * (advances.len().max(1) - 1) as f32
+                + word_space * spaces as f32;
             let mut x = if legend.centred { -total / 2.0 } else { 0.0 };
             for (glyph, advance) in content.chars().zip(advances) {
                 stem::fill_text(frame, canvas::Text {
@@ -748,7 +759,7 @@ impl Pen<'_> {
                     align_x: iced::advanced::text::Alignment::Left,
                     ..text.clone()
                 }, stem);
-                x += advance + tracking;
+                x += advance + tracking + if glyph == ' ' { word_space } else { 0.0 };
             }
         });
     }

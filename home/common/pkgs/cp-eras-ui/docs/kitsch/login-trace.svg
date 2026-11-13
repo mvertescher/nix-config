@@ -91,7 +91,18 @@
          ground #0a0907 (39%) #1b1e1c (22%) #984559 (11%) #83374d (10%)
                 #3b272e (8.5%) #642a3d (7.6%)
        Spot samples: ENTER fill #8afada, chip glyph #1cb6ae, input field
-       #162826, PROTECTED bar #122724, lobe #0f2320. -->
+       #162826, PROTECTED bar #122724, lobe #0f2320.
+
+       Notes, 2026-11-13 (review decision 5, measured on the 4K photo):
+         - the badge notes and section labels are a wide extended square
+           sans (Eurostile Extended-like), not stretched Rajdhani. Notes
+           (cap 4.17, words 3-4px apart) are Michroma Regular (OFL) 5.56
+           at natural width, each word 2 further on; labels (cap 7.92) are
+           Michroma 10.56 at scale(0.95 1). Michroma's cap is 0.75 em.
+         - GUEST 7702: Rajdhani 600 22 in #82f0d3 (was 600 20 ls 0.5 in
+           #a9e6df, and the Rust table drew 500 20): cap 14.2, 100 wide,
+           stem 2.5 and ink (130,246,221) on the photo, against the table's
+           13 / 90 / 1.8 / (169,230,223). -->
   <defs>
     <!-- bloom: rose across the whole top edge (#a34e60 at y 10 from x 140
          to 1450), receding to x>=400 by y 250 and gone by y~420 -->
@@ -144,17 +155,17 @@
       </g>
       <path d="M 23,52.6 H 29 V 59 H 23 Z M 23,52.6 L 29,59" fill="none" stroke="#0e2b2a" stroke-width="1"/>
       <!-- name: cap-height y 341..355 in the source, i.e. baseline 17 below the chip top -->
-      <text x="82" y="17" font-family="Rajdhani" font-size="20" font-weight="600"
-            letter-spacing="0.5" fill="#a9e6df">GUEST 7702</text>
+      <text x="82" y="17.6" font-family="Rajdhani" font-size="22" font-weight="600"
+            fill="#82f0d3">GUEST 7702</text>
       <!-- boxed A: a ~24x24 square with a 2px stroke (centreline x 339.3..363.8, y 371.9..396 on card 1) holding a
            wide heavy A (cap y 378.8..390.4, ~15.8 wide); the notes beside it are BRIGHT bold, wide, tracked micro-text
            (x 372..497.5, cap rows 371.3..376.3 / 380.5..385.5 / 389.7..394.7), not the dim regular run drawn before -->
       <rect x="81.3" y="33.9" width="24.5" height="24.1" fill="none" stroke="#82f0d3" stroke-width="2"/>
       <text transform="translate(93.55 52.4) scale(1.7 1)" font-family="Rajdhani" font-size="18" font-weight="500" text-anchor="middle" fill="#82f0d3">A</text>
-      <g transform="translate(114.1 0) scale(1.32 1)" font-family="Rajdhani" font-size="8" font-weight="700" fill="#82f0d3">
-        <text x="0" y="38.3">ACCESS MANAGER WAS DEVE-</text>
-        <text x="0" y="47.5">LOPED BY SEOCHO. SERVING</text>
-        <text x="0" y="56.7">CUSTOMERS SINCE 2006.</text>
+      <g font-family="Michroma" font-size="5.56" font-weight="400" fill="#82f0d3">
+        <text x="114.3" y="38.3">ACCESS <tspan dx="2">MANAGER</tspan> <tspan dx="2">WAS</tspan> <tspan dx="2">DEVE-</tspan></text>
+        <text x="114.3" y="47.5">LOPED <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan> <tspan dx="2">SERVING</tspan></text>
+        <text x="114.3" y="56.7">CUSTOMERS <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
       </g>
     </g>
   </defs>

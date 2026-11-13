@@ -87,7 +87,17 @@
        fan material fit in dashboard-material.md:
          ink   #2c9798 (3.8%)  #195147 (4.1%)  #f5cb23 (1.5%)
          ground #0d0d0c (46%) #9e4458 (15%) #211f1c (13%) #7a3346 (10%)
-                #4f2630 (7%) -->
+                #4f2630 (7%)
+
+       Notes, 2026-11-13 (review decision 5, measured on the 4K photo):
+         - the badge notes and section labels are a wide extended square
+           sans (Eurostile Extended-like), not stretched Rajdhani. Notes
+           (cap 4.17, words 3-4px apart) are Michroma Regular (OFL) 5.56
+           at natural width, each word 2 further on; labels (cap 7.92) are
+           Michroma 10.56 at scale(0.95 1). Michroma's cap is 0.75 em.
+         - labels measured USER 165.4..203.8 / SECURITY LEVEL 673.8..791.7 /
+           DESCRIPTION 1215.8..1312.5 / DEVICE SOFTWARE 575..711.7 at stem
+           ~1.2px; Rajdhani 600 x1.37 drew them 10% narrow at 1.6x the stem. -->
   <defs>
     <radialGradient id="bloom" cx="0.46875" cy="-0.356297" r="1">
       <stop offset="0" stop-color="#ad465f"/>
@@ -390,21 +400,15 @@
   <g font-family="Rajdhani" fill="#7fd4cc">
     <!-- the notes are BRIGHT bold, wide, tracked micro-text (the same #82f0d3 as the foot line, not dim):
          x 205..356 / 715..867 / 1254..1396, cap rows 109.4..113.6 / 118.6..122.8 / 127.3..131.9 -->
-    <g font-size="8" font-weight="600" fill="#82f0d3">
-      <g transform="translate(205 0) scale(1.3 1)">
-        <text x="0" y="113.6">SPARE TIME MANAGER WAS DEVELO-</text>
-        <text x="0" y="122.8">PED BY SEOCHO. SERVING CUSTO-</text>
-        <text x="0" y="131.9">MERS SINCE 2006.</text>
-      </g>
-      <g transform="translate(715.3 0) scale(1.3 1)">
-        <text x="0" y="113.6">SPARE TIME MANAGER WAS DEVELO-</text>
-        <text x="0" y="122.8">PED BY SEOCHO. SERVING CUSTO-</text>
-        <text x="0" y="131.9">MERS SINCE 2006.</text>
-      </g>
-      <g transform="translate(1253.8 0) scale(1.3 1)">
-        <text x="0" y="113.6">MAPS ARE PROVIDED BY SEOCHO.</text>
-        <text x="0" y="122.8">SATELITE SERVICES SINCE 2006.</text>
-      </g>
+    <g font-family="Michroma" font-size="5.56" font-weight="400" fill="#82f0d3">
+      <text x="204.6" y="114">SPARE <tspan dx="2">TIME</tspan> <tspan dx="2">MANAGER</tspan> <tspan dx="2">WAS</tspan> <tspan dx="2">DEVELO-</tspan></text>
+      <text x="204.6" y="122.9">PED <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan> <tspan dx="2">SERVING</tspan> <tspan dx="2">CUSTO-</tspan></text>
+      <text x="204.6" y="132">MERS <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
+      <text x="715" y="114">SPARE <tspan dx="2">TIME</tspan> <tspan dx="2">MANAGER</tspan> <tspan dx="2">WAS</tspan> <tspan dx="2">DEVELO-</tspan></text>
+      <text x="715" y="122.9">PED <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan> <tspan dx="2">SERVING</tspan> <tspan dx="2">CUSTO-</tspan></text>
+      <text x="715" y="132">MERS <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
+      <text x="1253.3" y="114">MAPS <tspan dx="2">ARE</tspan> <tspan dx="2">PROVIDED</tspan> <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan></text>
+      <text x="1253.3" y="122.9">SATELITE <tspan dx="2">SERVICES</tspan> <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
     </g>
     <!-- boxed A / C / D: ~24x24 squares with a 2px stroke (centrelines x 164.6..188.8 / 673.3..697.5 / 1215.2..1239.2,
          y 109.8..134), each holding a wide heavy cap ~15.8 x 11.7 at y 117.9..129.2 -->
@@ -418,12 +422,12 @@
       <text transform="translate(685.4 129.2) scale(1.7 1)">C</text>
       <text transform="translate(1227.2 129.2) scale(1.7 1)">D</text>
     </g>
-    <!-- section labels: the same bold wide face as the notes, cap y 155..163, USER x 165..204 / SECURITY LEVEL
-         674..791 / DESCRIPTION 1216..1312 (were Rajdhani 15 regular ls 2: the extent but half the ink) -->
-    <g font-size="12.3" font-weight="600" letter-spacing="0.6" fill="#82f0d3">
-      <text transform="translate(165 163) scale(1.37 1)">USER</text>
-      <text transform="translate(674 163) scale(1.37 1)">SECURITY LEVEL</text>
-      <text transform="translate(1216 163) scale(1.37 1)">DESCRIPTION</text>
+    <!-- section labels: the notes' wide face at a thinner stroke, cap y 155..162.9, USER x 165.4..203.8 / SECURITY LEVEL
+         673.8..791.7 / DESCRIPTION 1215.8..1312.5 (2026-11-13: Michroma 10.56 x0.95; was Rajdhani 600 12.3 x1.37) -->
+    <g font-family="Michroma" font-size="10.56" font-weight="400" fill="#82f0d3">
+      <text transform="translate(164.8 162.9) scale(0.95 1)">USER</text>
+      <text transform="translate(673.1 162.9) scale(0.95 1)">SECURITY LEVEL</text>
+      <text transform="translate(1214.9 162.9) scale(0.95 1)">DESCRIPTION</text>
     </g>
   </g>
 
@@ -691,13 +695,13 @@
   <g font-family="Rajdhani" fill="#7fd4cc">
     <!-- notes x 610..753, cap rows 741..746 / 750..755, bright and bold like the header's; the boxed B a ~24x24
          2px square (centreline x 574.3..598.3, y 741..765.2) with its cap at y 748..761 -->
-    <g transform="translate(609.9 0) scale(1.3 1)" font-size="8" font-weight="700" fill="#82f0d3">
-      <text x="0" y="746">MAPS ARE PROVIDED BY SEOCHO.</text>
-      <text x="0" y="755">SATELITE SERVICES SINCE 2006.</text>
+    <g font-family="Michroma" font-size="5.56" font-weight="400" fill="#82f0d3">
+      <text x="609.6" y="745.4">MAPS <tspan dx="2">ARE</tspan> <tspan dx="2">PROVIDED</tspan> <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan></text>
+      <text x="609.6" y="754.6">SATELITE <tspan dx="2">SERVICES</tspan> <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
     </g>
     <rect x="574.3" y="741" width="24" height="24.2" fill="none" stroke="#82f0d3" stroke-width="2"/>
     <text transform="translate(586.3 761.2) scale(1.7 1)" font-size="18" font-weight="600" text-anchor="middle" fill="#82f0d3">B</text>
-    <text transform="translate(575 794) scale(1.37 1)" font-size="12.3" font-weight="600" letter-spacing="0.6" fill="#82f0d3">DEVICE SOFTWARE</text>
+    <text transform="translate(574.05 794.2) scale(0.95 1)" font-family="Michroma" font-size="10.56" font-weight="400" fill="#82f0d3">DEVICE SOFTWARE</text>
   </g>
 
   <!-- ==== footer micro-text, y 864..869, x 504..1095: BRIGHT MINT, the
