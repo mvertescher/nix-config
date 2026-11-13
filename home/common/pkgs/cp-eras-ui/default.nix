@@ -34,7 +34,7 @@
 
 let
   # crane's Cargo filter excludes .wgsl files, which the patched iced_wgpu
-  # crate includes at compile time through include_str!.
+  # and cryoglyph crates include at compile time through include_str!.
   cleanSrc = lib.cleanSourceWith {
     src = lib.cleanSource ./.;
     filter = path: type:
@@ -43,19 +43,24 @@ let
       || (toString path == "${toString ./scripts/make-kitsch-sans.py}")
       || (toString path == "${toString ./scripts/KITSCH-SANS-NOTICE.md}")
       || (lib.hasPrefix "${toString ./vendor/iced_wgpu/src/shader}/" (toString path)
-        && lib.hasSuffix ".wgsl" (toString path));
+        && lib.hasSuffix ".wgsl" (toString path))
+      || (toString path == "${toString ./vendor/cryoglyph/src/shader.wgsl}");
   };
 
   cargoArtifacts = craneLib.buildDepsOnly {
     src = cleanSrc;
-    # Registry dependents need iced_wgpu's actual API. Crane replaces local
-    # crates with dummy targets; restore this patched dependency afterward.
+    # Registry dependents need iced_wgpu's and cryoglyph's actual APIs. Crane
+    # replaces local crates with dummy targets; restore these patched
+    # dependencies afterward.
     # Reference only the vendor directory to retain the dependency cache
     # when application sources change.
     extraDummyScript = ''
       rm -rf "$out/vendor/iced_wgpu"
       cp -r ${./vendor/iced_wgpu} "$out/vendor/iced_wgpu"
       chmod -R u+w "$out/vendor/iced_wgpu"
+      rm -rf "$out/vendor/cryoglyph"
+      cp -r ${./vendor/cryoglyph} "$out/vendor/cryoglyph"
+      chmod -R u+w "$out/vendor/cryoglyph"
     '';
     nativeBuildInputs = [ pkg-config cmake ];
     buildInputs = [
