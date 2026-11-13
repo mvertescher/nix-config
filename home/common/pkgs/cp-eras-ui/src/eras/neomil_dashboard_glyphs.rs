@@ -453,6 +453,28 @@ pub(super) const PRESSED: [Prim; 6] = [
     Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_5!(Ink::Fixed(super::ON_CARD)) },
 ];
 
+/// The selected (inverted) diamond's printing: the same source glyphs in
+/// the bright palette role over the dark face. An owner-approved extension
+/// (Matt, 2026-11-13), not traced: the source shows no selected tile.
+pub(super) const SELECTED: [Prim; 6] = [
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_0!(Ink::Fg) },
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_1!(Ink::Fg) },
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_2!(Ink::Fg) },
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_3!(Ink::Fg) },
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_4!(Ink::Fg) },
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_5!(Ink::Fg) },
+];
+/// Hovered while selected: the outlined-control hover ink (#f63333, the
+/// mailbox row hover) on the same geometry.
+pub(super) const SELECTED_HOVER: [Prim; 6] = [
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_0!(Ink::Fixed(rgb(0xf63333))) },
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_1!(Ink::Fixed(rgb(0xf63333))) },
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_2!(Ink::Fixed(rgb(0xf63333))) },
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_3!(Ink::Fixed(rgb(0xf63333))) },
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_4!(Ink::Fixed(rgb(0xf63333))) },
+    Prim::Turn { x: 0.0, y: 0.0, angle: -45.0, prims: hub_glyph_5!(Ink::Fixed(rgb(0xf63333))) },
+];
+
 /// Opaque silhouettes reused by the dashboard-only resting ink masks.
 /// Geometry comes from the same macros as REST / HOVER / PRESSED.
 pub(super) const WHITE: [Prim; 6] = [

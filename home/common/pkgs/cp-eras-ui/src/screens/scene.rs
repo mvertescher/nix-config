@@ -2637,6 +2637,57 @@ mod tests {
         }
     }
 
+    /// The dashboard's selection reaches Neomil's drawing: for each of
+    /// the six picks exactly that plate paints `on` (the inverted tile)
+    /// and the other five `off`; hovered it paints the selected hover and
+    /// held the ordinary press.
+    #[test]
+    fn neomil_selection_inverts_exactly_the_picked_tile() {
+        let style = crate::style::Era::Neomil.style();
+        let mut units = Vec::new();
+        fn collect(prims: &'static [Prim], out: &mut Vec<(usize, &'static [Prim], &'static [Prim])>) {
+            for p in prims {
+                match *p {
+                    Prim::Plate { group: Group::Module, index, on, off, .. } => out.push((index, on, off)),
+                    Prim::At { prims, .. } => collect(prims, out),
+                    _ => {}
+                }
+            }
+        }
+        collect(style.dashboard, &mut units);
+        assert_eq!(units.len(), 6);
+        for module in 0..6 {
+            let scene: Scene<()> = Scene {
+                style, prims: style.dashboard,
+                picked: Picked { module, ..Picked::default() },
+                cursor_group: None, states: style.dashboard_states,
+                at: motion::REST, on_select: |_, _| (),
+            };
+            for &(index, on, off) in &units {
+                assert_ne!(on, off);
+                let want = if index == module { on } else { off };
+                assert_eq!(scene.plate_prims(Group::Module, index, None, on, off), want);
+            }
+            let (_, on, off) = units[module];
+            let state = style.dashboard_states[module];
+            let mut pointer = Pointer::default();
+            pointer.sync(scene.prims);
+            let target = Some((Group::Module, module));
+            pointer.event(&move_pointer(), target);
+            assert_eq!(scene.plate_prims(Group::Module, module, pointer.interaction(scene.prims), on, off),
+                state.selected_hover.unwrap());
+            pointer.event(&press(), target);
+            assert_eq!(scene.plate_prims(Group::Module, module, pointer.interaction(scene.prims), on, off),
+                state.pressed);
+            // Another tile hovered leaves the selection inverted.
+            let other = (module + 1) % 6;
+            let mut pointer = Pointer::default();
+            pointer.sync(scene.prims);
+            pointer.event(&move_pointer(), Some((Group::Module, other)));
+            assert_eq!(scene.plate_prims(Group::Module, module, pointer.interaction(scene.prims), on, off), on);
+        }
+    }
+
     #[test]
     fn transient_drawings_follow_only_the_hovered_plate_and_clear_with_the_gesture() {
         let style = crate::style::Era::Neomil.style();

@@ -168,6 +168,12 @@ impl Dashboard {
 
     pub(crate) fn clear_feedback(&mut self) { self.held = None; }
 
+    /// The selection as the scene reads it: the plate whose `on`
+    /// drawing is painted.
+    pub(crate) fn picked(&self) -> Picked {
+        Picked { module: self.selected, ..Picked::default() }
+    }
+
     fn backdrop(&self) -> &'static [crate::style::Prim] {
         self.held.and_then(|index| self.style.dashboard_held_backdrops.get(index).copied())
             .unwrap_or(self.style.dashboard)
@@ -182,10 +188,7 @@ impl Dashboard {
                 prims: self.style.dashboard,
                 cursor_group: self.style.dashboard_cursor.then_some(Group::Module),
                 states: self.style.dashboard_states,
-                picked: Picked {
-                    module: self.selected,
-                    ..Picked::default()
-                },
+                picked: self.picked(),
                 // The dashboard has one chooser, so the group is not
                 // worth carrying: any plate in this scene is a module.
                 on_select: |_group, index| Message::Select { index },
@@ -307,6 +310,29 @@ mod tests {
             assert_eq!(hub.mail.style, original);
             assert_eq!(hub.store.style, original);
         }
+    }
+
+    /// The keys and a click move the selection, and the scene is handed
+    /// exactly that selection: what makes Neomil's inverted tile follow
+    /// the keyboard. Walks the whole Neomil menu by keys.
+    #[test]
+    fn the_selection_reaches_the_scene() {
+        use crate::screens::nav::Dir;
+        let mut dash = Dashboard::new(Era::Neomil.style());
+        assert_eq!(dash.picked(), Picked { module: 0, ..Picked::default() });
+        let mut seen = vec![dash.picked().module];
+        let mut walk = seen.clone();
+        for dir in [Dir::Right, Dir::Right, Dir::Down, Dir::Right, Dir::Left, Dir::Left] {
+            dash.update(Message::Move(dir));
+            assert_eq!(dash.picked().module, dash.selected);
+            seen.push(dash.selected);
+            walk.push(dash.selected);
+        }
+        seen.sort();
+        seen.dedup();
+        assert_eq!(seen, vec![0, 1, 2, 3, 4, 5], "the keys reach every tile: {walk:?}");
+        dash.update(Message::Select { index: 4 });
+        assert_eq!(dash.picked(), Picked { module: 4, ..Picked::default() });
     }
 
     #[test]

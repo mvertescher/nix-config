@@ -3,6 +3,12 @@
        (Behance 3fc4ef118663901.60e5fa6a7f2f7, 3840x2160 photo).
 
        Layout and remaining fidelity work: todo/neomil-dashboard.md.
+
+       Selected tile (2026-11-13): this trace shows the photo's resting
+       state, NO selected diamond, and stays so. The app draws its selected
+       diamond inverted, an owner-approved extension that is not traced;
+       its specimen is docs/neomil/components.svg section 13. The other
+       eras' traces carry a selected module only because their photos do.
        The 2026-09-14 passes restore glyphs, panel text/material, six inset
        contours and tabs, header/chrome, labels and the composite background.
        Pass 4 adds measured small lettering, badge/panel fields and connected

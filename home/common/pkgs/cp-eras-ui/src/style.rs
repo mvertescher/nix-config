@@ -865,6 +865,8 @@ pub struct Style {
     /// store (kitsch's and neomil's PRODUCTS); the screen an era has
     /// no module for is reached by a key from the hub (`m` the mailbox,
     /// `s` the store), not by standing the last module in for it.
+    /// The one non-label route is neomil's LOCATIONS -> mailbox, an owner
+    /// decision (2026-11-13) so every built screen has a tile.
     pub dashboard_destinations: [Option<Destination>; 6],
     // --- end dashboard ---
 }
