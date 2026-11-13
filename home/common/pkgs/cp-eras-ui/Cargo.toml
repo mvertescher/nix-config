@@ -53,6 +53,10 @@ iced = { version = "0.14", default-features = false, features = [
   "image-without-codecs",
 ] }
 iced_layershell = "0.19"
+# The glyph shader's dark-ink constants and sRGB curve (the vendored patch,
+# `[patch.crates-io]` below), shared with the outline route's stem
+# darkening in `src/widgets/stem.rs` so the two corrections agree.
+cryoglyph = "0.1"
 sysinfo = "0.33"
 # PulseAudio client bindings for the bar's audio module. Apache-2.0,
 # and the only Rust route to a sink volume that does not shell out to

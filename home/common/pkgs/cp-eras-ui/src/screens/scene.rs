@@ -23,6 +23,7 @@
 use crate::motion;
 use crate::screens::soft;
 use crate::style::{Anchor, Change, Face, Group, Ink, PlateStates, Prim, Seg, Style};
+use crate::widgets::stem;
 use crate::Element;
 use std::borrow::Cow;
 use std::sync::{Arc, Mutex, OnceLock};
@@ -1129,7 +1130,7 @@ impl<M> Scene<M> {
                     self.paint_path(frame, &path, fill, stroke, width, k, alpha);
                 }
                 Prim::Text { x, y, size, ink, face, anchor, content } => {
-                    self.paint_text(frame, content, (ox + x) * k, (oy + y) * k, size * k, ink, face, anchor, alpha);
+                    self.paint_text(frame, content, (ox + x) * k, (oy + y) * k, size * k, ink, face, anchor, alpha, route);
                 }
                 Prim::Outlined { x, y, size, ink, face, anchor, width, content } => {
                     // The canvas fills text and cannot stroke it, but
@@ -1152,6 +1153,13 @@ impl<M> Scene<M> {
                     // anchor is taken on the stretched run, as SVG
                     // applies `text-anchor` inside the `scale(sx,1)`.
                     let color = self.ink(ink, alpha);
+                    // Outlines whenever the run is stretched or turned;
+                    // only then can it be darkened (`widgets::stem`).
+                    let stem = if stretch != 1.0 || route != FrameRoute::Plain {
+                        stem::width(ink, color)
+                    } else {
+                        0.0
+                    };
                     let font = Self::font(face);
                     let size = size * k;
                     let run = if anchor == Anchor::Start {
@@ -1190,11 +1198,12 @@ impl<M> Scene<M> {
                                 for path in paths {
                                     f.fill(path, color);
                                 }
+                                stem::stroke_paths(f, paths, color, stem);
                             } else {
-                                f.fill_text(text);
+                                stem::fill_text(f, text, stem);
                             }
                         } else {
-                            f.fill_text(text);
+                            stem::fill_text(f, text, stem);
                         }
                     });
                 }
@@ -1231,13 +1240,14 @@ impl<M> Scene<M> {
                             for path in paths {
                                 frame.fill(path, color);
                             }
+                            stem::stroke_paths(frame, paths, color, stem::width(ink, color));
                         } else {
                             // Ineligible key, oversized path, or raster callback: use the
                             // original renderer path and its per-pixel fallback colors.
                             for (glyph, origin) in content.chars().zip(origins.iter().copied()) {
                                 let mut buf = [0u8; 4];
                                 self.paint_text(frame, glyph.encode_utf8(&mut buf), origin,
-                                    baseline_y, size, ink, face, Anchor::Start, alpha);
+                                    baseline_y, size, ink, face, Anchor::Start, alpha, route);
                             }
                         }
                     } else {
@@ -1253,6 +1263,7 @@ impl<M> Scene<M> {
                                 face,
                                 Anchor::Start,
                                 alpha,
+                                route,
                             );
                             gx += advance + tracking;
                         }
@@ -1286,6 +1297,7 @@ impl<M> Scene<M> {
                             face,
                             Anchor::Start,
                             alpha,
+                            route,
                         );
                     }
                 }
@@ -1508,6 +1520,7 @@ impl<M> Scene<M> {
         face: Face,
         anchor: Anchor,
         alpha: f32,
+        route: FrameRoute,
     ) {
         let mut text = Self::text(content, x, baseline, size, self.ink(ink, alpha), face, anchor);
         if matches!(face, Face::FreeSansBold | Face::CpErasKitschSansBold) {
@@ -1515,7 +1528,10 @@ impl<M> Scene<M> {
             // Round both terms so their sum lands on the requested baseline.
             text.position.y = baseline.round() - (size * self::baseline(face)).round();
         }
-        frame.fill_text(text);
+        // Every turn in the tables has a nonzero angle, so off the Plain
+        // route the text is drawn as outlines and may be darkened.
+        let stem = if route != FrameRoute::Plain { stem::width(ink, text.color) } else { 0.0 };
+        stem::fill_text(frame, text, stem);
     }
 
     /// Probe only positioned glyph outlines. A raster callback carries a
