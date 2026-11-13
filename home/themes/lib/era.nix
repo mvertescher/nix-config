@@ -606,8 +606,8 @@ lib.mkMerge [
         # output was re-created 22 s after login (hypridle logged the
         # wl_output going and coming back in the same second) and the
         # session then had no bar at all. PartOf still stops it with the
-        # session. The better fix is in the bar: re-create the surface on
-        # the new output instead of exiting (cp-eras-ui todo/bar.md).
+        # session. The bar itself was fixed the same day (it now takes a
+        # surface on every output, todo/bar.md); this stays as the backstop.
         Restart = "always";
         RestartSec = 3;
       };

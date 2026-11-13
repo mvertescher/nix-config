@@ -78,6 +78,29 @@
 //! moves within it, and clicking the row that is already open walks
 //! back up one level.
 //!
+//! ## Outputs come and go, and the bar stays
+//!
+//! The compositor can withdraw the output and announce it again -- an
+//! HDMI re-handshake does, and on terra did 22 s after login
+//! (`docs/live-desktop-2026-11-13.md`, finding 1). It closes every layer
+//! surface on that output as it goes. In `layershellev`'s default
+//! `StartMode::Active` the event loop *stops* once its last surface is
+//! gone, which is why the bar used to exit 0 at that moment.
+//!
+//! So the bar starts in `StartMode::AllScreens` instead. In that mode
+//! the library keeps running with no surfaces and puts a new bar on
+//! every output it is told about, the returning one included -- the
+//! waiting and the re-opening are both the library's, with nothing to
+//! do here but draw whichever window it hands over. The cost is that a
+//! second monitor would get a second bar, which for a status bar is
+//! the usual thing anyway.
+//!
+//! The one case that mode does not cover is a surface closed while its
+//! output stays: no output is announced, so no bar comes back, and the
+//! process would idle on with nothing on screen. `bar/surfaces.rs`
+//! keeps count and gives up after a grace period, so the unit's restart
+//! still gets its chance.
+//!
 //! Two flags beyond `--era`, both about the tray:
 //!
 //!     --icon-theme <name>   the icon theme tray icons are looked up
@@ -98,6 +121,8 @@ mod icon;
 mod network;
 #[path = "bar/sensor.rs"]
 mod sensor;
+#[path = "bar/surfaces.rs"]
+mod surfaces;
 #[path = "bar/tray.rs"]
 mod tray;
 
@@ -113,9 +138,9 @@ use iced_layershell::build_pattern::daemon;
 use iced_layershell::reexport::{
     Anchor, KeyboardInteractivity, Layer, NewLayerShellSettings, OutputOption,
 };
-use iced_layershell::settings::{LayerShellSettings, Settings};
+use iced_layershell::settings::{LayerShellSettings, Settings, StartMode};
 use iced_layershell::to_layer_message;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 /// A menu that has been asked for and not yet arrived.
 ///
@@ -172,6 +197,8 @@ struct BarApp {
     pointer: f32,
     pending: Option<Pending>,
     open: Option<Open>,
+    /// The bar's own surfaces, one per output. See the module header.
+    surfaces: surfaces::Surfaces<iced::window::Id>,
 }
 
 // Adds the layer-shell control variants the runtime dispatches through
@@ -203,8 +230,12 @@ enum Message {
     MenuHover(MenuPath, MenuInteraction),
     /// Anywhere else on the screen was clicked.
     Dismiss,
-    /// The compositor destroyed a surface. Only ever the menu's: the
-    /// bar's own surface outlives the process.
+    /// A surface was drawn for the first time: the menu's, or a bar on
+    /// an output the library has just put one on.
+    Shown(iced::window::Id),
+    /// The compositor destroyed a surface: the menu's, or a bar whose
+    /// output went away. See the module header for why the second no
+    /// longer ends the process.
     ///
     /// Was `daemon`'s `remove_id` callback until iced_layershell 0.19
     /// dropped it in favour of broadcasting the window event.
@@ -262,6 +293,7 @@ impl BarApp {
             pointer: 0.0,
             pending: None,
             open: None,
+            surfaces: surfaces::Surfaces::new(),
         };
         app.refresh();
         app
@@ -270,6 +302,15 @@ impl BarApp {
     fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::Tick => {
+                if self.surfaces.given_up(Instant::now()) {
+                    // Nonzero, so the journal reads it as the failure
+                    // it is and the unit restarts it either way.
+                    eprintln!(
+                        "cp-eras-ui-bar: no bar surface for {}s and none coming; exiting",
+                        surfaces::GRACE.as_secs()
+                    );
+                    std::process::exit(1);
+                }
                 self.refresh();
                 // An application that exits with its menu up leaves a
                 // panel over the screen that answers to nobody.
@@ -409,13 +450,20 @@ impl BarApp {
                 }
             }
             Message::Dismiss => return self.dismiss(),
-            // The compositor destroyed a surface. Only ever the menu's:
-            // the bar's own surface outlives the process, and a
-            // `Closed` naming any other window falls through.
+            // The compositor destroyed a surface. The menu's is
+            // forgotten; any other is a bar whose output went away, and
+            // the library will put a new one on the next output it
+            // announces -- nothing to do here but keep count.
             Message::Closed(id)
                 if self.open.as_ref().is_some_and(|open| open.window == id) =>
             {
                 self.open = None;
+            }
+            Message::Closed(id) => self.surfaces.closed(&id, Instant::now()),
+            Message::Shown(id)
+                if !self.open.as_ref().is_some_and(|open| open.window == id) =>
+            {
+                self.surfaces.opened(id);
             }
             _ => {}
         }
@@ -531,6 +579,9 @@ impl BarApp {
                 }
                 iced::Event::Window(iced::window::Event::Closed) => {
                     Some(Message::Closed(window))
+                }
+                iced::Event::Window(iced::window::Event::Opened { .. }) => {
+                    Some(Message::Shown(window))
                 }
                 _ => None,
             }),
@@ -649,6 +700,10 @@ fn main() -> Result<(), iced_layershell::Error> {
             // under the bar.
             exclusive_zone: height as i32,
             keyboard_interactivity: KeyboardInteractivity::None,
+            // Not the default `Active`, under which the event loop ends
+            // with the last surface: a bar on every output, re-made as
+            // outputs come back. See the module header.
+            start_mode: StartMode::AllScreens,
             ..Default::default()
         },
         fonts: shell::faces(),
