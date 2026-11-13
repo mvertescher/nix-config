@@ -1,3 +1,5 @@
+What all of this is in service of: [GOAL.md](GOAL.md).
+
 ## Current remaining work (2026-10-04)
 
 The requested [font and text-effect audit](todo/font-rendering.md) and its
