@@ -1,0 +1,73 @@
+{
+  "id": "neomil",
+  "name": "Neomil",
+  "score": 8,
+  "overall": "A very close recreation. At thumbnail size all four screens line up with the reference almost element for element: same layout, palette, shapes and nearly the same type. Surface material holds it back. The reference is printed: it has slightly misregistered ghost copies of text and shapes, faint scanline and dot texture inside fills, and dark separations between facets. Ours is clean and flat, so it reads as a very good vector redraw rather than the same object. On mailbox and store a second gap shows at once: text sitting on a solid red fill is too faint.",
+  "screens": [
+    {
+      "id": "login", "name": "Login", "score": 8.5,
+      "verdict": "The closest of the four; differences show only up close, mostly in surface treatment.",
+      "matches": [
+        "Header matches in placement and shape: CUSTOMER/T1 badge, #NC488402 protocol block, red tape, T1-T4 with T2 lit, and the hairline rule.",
+        "Three USER 01 cards match in chamfer, notched left tab, avatar box, portraits, password field and Login button.",
+        "The background (blue glow fading to black) and the margin marks (1/2 tabs, vertical codes, KIROSHI) sit where the reference has them."
+      ],
+      "gaps": [
+        {"t": "Inactive cards 2 and 3: ours have a visible top-to-bottom wash, pinkish-grey at the top and darker below. The reference cards are a more even maroon with fine horizontal scanlines.", "k": "known", "ref": "login scan modulation"},
+        {"t": "Header labels (CUSTOMER, #NC488402, SECURITY LEVEL): our ghost copy above each label is more legible and more detached than the reference's faint smear.", "k": "known", "ref": "printing echoes"},
+        {"t": "Fine print under the cards and in the protocol block: ours is thinner and lighter than the reference's slightly heavier, bled ink.", "k": "unsure"},
+        {"t": "Card edges are razor-sharp in ours; the reference edges glow slightly (the accepted softness difference).", "k": "known", "ref": "edge softness"}
+      ],
+      "question": null
+    },
+    {
+      "id": "mailbox", "name": "Mailbox", "score": 7.5,
+      "verdict": "Layout and geometry are near-exact, but text on the red-filled row and button is faint where the reference has strong dark ink.",
+      "matches": [
+        "Tab labels, eight disc icons, eight message rows with three NEW stamps, scroll rail with the R marker, and the footer tape all match in position.",
+        "The Urgent Information panel matches: outline, side tab, red edge bar and the body text wrap line for line.",
+        "Button row matches: four chamfered buttons, with Switch Weapon filled."
+      ],
+      "gaps": [
+        {"t": "Selected row and the \"Switch Weapon\" button: the reference sets this text in near-black, slightly heavier ink, high contrast on the red. Ours is a thin dim maroon that nearly disappears. The most noticeable difference on the screen. This morning's live capture shows the same faint text.", "k": "new", "ref": "the notes say \"corrected selected ink\", but the accepted render does not show it"},
+        {"t": "Unselected rows: the reference \"Jackie\" is visibly bolder than the subject line. Ours sets both at the same regular weight.", "k": "new"},
+        {"t": "\"Urgent Information (!)\" heading: ours is heavier and brighter than the reference.", "k": "new"},
+        {"t": "Button and row outlines: ours are brighter, crisper red lines. The reference outlines are dim and recede into the dark fill.", "k": "known", "ref": "ordinary-terminal contrast"},
+        {"t": "Disc icons: the reference has a soft offset echo behind each cartridge; ours are single clean drawings.", "k": "known", "ref": "cartridge echoes"}
+      ],
+      "question": null
+    },
+    {
+      "id": "store", "name": "Store", "score": 7.5,
+      "verdict": "Structurally faithful down to the stat numbers and sockets; it falls short mainly on the reference's heavy print doubling and on a few small icon and edge details.",
+      "matches": [
+        "MASURAO logo, customer/loyalty block, five-item menu with VIDEO filled, and the bottom-left tape are all in the right place.",
+        "Four weapon cards, including the taller centre card with RECOIL/SPREAD/RANGE and BONUS, the cropped fourth card and the red side bars, match in geometry.",
+        "The weapon line art and the DPS/PNT/ACC/ROF stat block match closely."
+      ],
+      "gaps": [
+        {"t": "Card text throughout (MAGNUM 650, the stat numbers, EMPTY SOCKET): the reference has strong offset ghost copies, for example a doubled \"86\". Ours is single-struck and crisp. Doubling is most visible on this screen, so its absence is too.", "k": "known", "ref": "store printing echoes"},
+        {"t": "Left of each menu item: ours draws a bright detached vertical stripe. In the reference it is only a faint dark offset edge.", "k": "new"},
+        {"t": "Three small icons at the top and bottom of each card: the reference draws hollow outlined squares, two with circles and one E. Ours are filled squares with small inner glyphs, which read heavier.", "k": "unsure", "ref": "possibly the open icon/plaque item"},
+        {"t": "CUSTOMER / #NC488402 bar: the reference text is paler and reads clearly against the red bar. Ours is red on red and faint.", "k": "new"},
+        {"t": "Menu and card fills: the reference has a fine dot-grid and scan texture inside the fills; ours are smooth.", "k": "known", "ref": "scan modulation"}
+      ],
+      "question": null
+    },
+    {
+      "id": "dashboard", "name": "Dashboard", "score": 8,
+      "verdict": "The composition is a near-overlay of the reference; differences are in diamond surface detail and in interaction states the reference does not define.",
+      "matches": [
+        "Header with the \"next TECHNOLOGY\" mark, tab labels, staggered 3+3 diamond menu with labels above and below, and the codes and glyphs on each tile all match.",
+        "The diamond silhouettes match, including the flattened outward tips, inset outlines and side tabs.",
+        "The GO HOME panel matches: chamfer, edge bar, text wrap and the M logo. The footer tape also matches."
+      ],
+      "gaps": [
+        {"t": "Diamonds: the reference shows a darker under-layer and thin dark lines where facets and tabs overlap, so each tile looks built from stacked plates. Ours are one flat red, so the tiles look flatter and run together.", "k": "known", "ref": "partly: dashboard Pass 4 surface"},
+        {"t": "Footer tape at bottom right: small glyph and caption differences, too small to judge at this size.", "k": "known", "ref": "NM1"},
+        {"t": "Interaction: tiles have no selected or focused look under keyboard navigation, and only one tile leads anywhere. The reference does not show a selected tile at all (all six share the same fill, outline and code), so both are design choices, not fidelity gaps.", "k": "new"}
+      ],
+      "question": "For keyboard focus on the diamonds, the reference shows no selected state. Should focus borrow the era's own language (dark ink on solid red, as on the mailbox row and store menu), for example by inverting the tile to a dark fill with a red outline? Or should it stay a subtle outline or glow so the at-rest screen still matches the art?"
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "id": "entropism",
+  "name": "Entropism",
+  "score": 8,
+  "overall": "Layout, proportions, palette, copy and the store's yellow bands and rifle art line up almost one-for-one with the references, so at a glance each screen reads as the same screen. Type and surface hold it back. The stand-in font (Rajdhani) is squarer and a step heavier than the original's softer, rounder sans. Text inside the solid sage fills comes out thin and grey where the reference has firm dark ink. And the reference's horizontal scanline grain is missing everywhere, so ours reads as a clean flat screen rather than a worn CRT.",
+  "screens": [
+    {
+      "id": "login", "name": "Login", "score": 8,
+      "verdict": "Almost identical in composition; it differs only in type weight and spacing, and in the missing scanline grain.",
+      "matches": [
+        "The three-cell header strip, the solid sage footer band and the centred username/NEXT group sit at the same positions and sizes.",
+        "Ten mask stars and the short cursor underline match.",
+        "The warm dark ground, with its brighter pool upper-centre, matches well. The footer band's grey-sage colour also matches."
+      ],
+      "gaps": [
+        {"t": "Header, USERNAME: and footer strings: our type is squarer and noticeably bolder than the reference's light, rounded sans (the C, S and G shapes).", "k": "known", "ref": "E1 closed; the original typeface is unidentified across the era"},
+        {"t": "NEXT button: our label has wide letter-spacing, and the fill is a brighter, more minty green than the reference's greyer sage.", "k": "new"},
+        {"t": "Footer strings (INTERFACE LOADED / PROVIDED BY / BUILD): ours are widely tracked and dimmer, while the reference sets them tighter at normal spacing.", "k": "new"},
+        {"t": "Whole ground: the reference has fine horizontal scanlines and print grain; ours is a smooth gradient.", "k": "known", "ref": "E5"},
+        {"t": "Header left string: the reference has a double space (\"SURGICAL  SOFTWAREV2\"); ours has a single space.", "k": "new"}
+      ],
+      "question": null
+    },
+    {
+      "id": "mailbox", "name": "Mailbox", "score": 8,
+      "verdict": "Layout, copy and line breaks match very closely. The visible differences are the typeface and the weight of text inside the selected fills.",
+      "matches": [
+        "Three boxed-letter sections, the seven-row list, the message panel, the four action buttons and the 2x2 T-badges all sit at the right positions and sizes.",
+        "The body paragraphs keep the same words and hyphenated breaks, line for line.",
+        "The highlighted cells are the same ones (row 1, message title bar, REPORT SPAM, T2), and the T1-T4 badges have the right wide, extended letterforms.",
+        "The open envelope icon on row 2 against closed envelopes on the other rows matches."
+      ],
+      "gaps": [
+        {"t": "Selected row 1 and the message title bar: our text inside the sage fill is thin, light grey-green and letter-spaced. The reference uses normal-weight dark ink, so ours looks washed out.", "k": "new"},
+        {"t": "Row titles and body copy: our font is squarer and more mechanical. The reference is a rounder humanist sans with a softer rhythm, most visible in the body paragraphs.", "k": "known", "ref": "E2"},
+        {"t": "Sage fills (row 1, title bar, REPORT SPAM, T2) are a slightly brighter, more saturated mint than the reference's greyer sage.", "k": "new"},
+        {"t": "Ground and text: the reference has scanlines, and its text has a slight doubled, ghosted print edge. Ours is crisp (the accepted softness difference).", "k": "known", "ref": "E5"}
+      ],
+      "question": null
+    },
+    {
+      "id": "store", "name": "Store", "score": 8,
+      "verdict": "The strongest of the four: the 4ST logo, product cards, rifle art, yellow bands, stat rows and socket cells line up almost exactly.",
+      "matches": [
+        "The 4ST logo (solid 4S, outlined T, spaced S T O R E) and the customer/loyalty block match in shape and position.",
+        "Card geometry matches: the selected card in sage, the yellow PETROCHEM / BETTERLIFE TEC bands, the rifle line art, the stat strips, the socket cell, and the cut at the right edge on card 4.",
+        "The left nav (SMG selected) and the fine print under the cards match in size and placement."
+      ],
+      "gaps": [
+        {"t": "Boxed A and B at the bottom-left: in the reference each letter is bold, with a doubled, outlined look inside its box. Ours are a thin plain A and B in a single box, which reads clearly lighter.", "k": "new"},
+        {"t": "Footer right \"BUILD 6.47.48441.R15\": the reference's text is larger and runs nearly to the frame edge; ours is smaller and ends about 20px short.", "k": "new"},
+        {"t": "Nav labels and card titles: our font is a little squarer and heavier than the reference's rounder sans. Less marked than on the mailbox.", "k": "known", "ref": "E4"},
+        {"t": "Fine print and the socket captions: ours are slightly more condensed. Too small to judge closely at this size.", "k": "known", "ref": "E4"},
+        {"t": "Ground: no scanlines, and the reference's glow on the logo and cards is absent (the accepted softness difference).", "k": "known", "ref": "E5"}
+      ],
+      "question": null
+    },
+    {
+      "id": "dashboard", "name": "Dashboard", "score": 7,
+      "verdict": "The module hub's grid, panels and badges match closely. The weakest spot is the caption strip on the selected BRAINDANCE tile, and the section headings run bolder than the reference.",
+      "matches": [
+        "The 3x2 tile grid, the MESSAGE panel and the vertical T1-T4 column have the right positions, sizes and spacing.",
+        "Tile labels and the BRAINDANCE paragraph match, including the hyphenated breaks.",
+        "The selected cells are the same (the BRAINDANCE tile and T2). The two-cell caption strips sit at the foot of every tile."
+      ],
+      "gaps": [
+        {"t": "Caption strip on the BRAINDANCE tile: in the reference the code and \"COMBAT COLONIZATION\" are firm dark ink, inside dark cell outlines and a dark outer frame. In ours the text is faint grey, and the strip has almost no visible divider or frame, so it nearly disappears.", "k": "new"},
+        {"t": "Section headings (MAIL BOX, MESSAGE, SECURITY LEVEL) and the T1-T4 labels: ours are visibly bolder than the reference's regular-weight headings.", "k": "new"},
+        {"t": "Caption fine print on the unselected tiles: ours is a taller, narrower face than the reference's squatter, heavier caption type.", "k": "known", "ref": "E5"},
+        {"t": "Ground: the reference's scanline grain and glow around the frames are absent (the accepted softness difference).", "k": "known", "ref": "E5"}
+      ],
+      "question": "The text inside the sage fills (the BRAINDANCE caption, the selected mail row, NEXT) is lighter and thinner in ours than in the reference on every screen. Do you want it matched to the reference's firm dark ink, or is the lighter look a softening you'd keep?"
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "id": "neokitsch",
+  "name": "Neo-kitsch",
+  "score": 7,
+  "overall": "A close recreation. Layout, proportions, the wire bands, the cascade cards and the weapon art register almost one-to-one, and at thumbnail size the two are hard to tell apart. Up close, the dark lettering on gold surfaces gives it away: the ENTER/LOGIN bars, the dashboard EMAIL panel and the selected store card set their text pale, thin and widely spaced, where the reference uses a firm dark brown. The wood veneer is the second giveaway: ours is evenly spaced straight stripes, the reference is figured grain with a seam and a bevelled rim.",
+  "screens": [
+    {
+      "id": "login", "name": "Login", "score": 7,
+      "verdict": "The composition matches almost exactly; the two ENTER / LOGIN bars are the one thing that reads wrong at a glance.",
+      "matches": [
+        "ARASAKA logotype, its info box, the clock block and both PRASE fields sit where the reference has them, at the right size.",
+        "The bottom wire band, with its plateaus and mirrored S-bend rises onto a single bridging line, matches in shape and strand count.",
+        "The A and B badges, the fine print beside them and the bottom disclaimer line are placed and sized right."
+      ],
+      "gaps": [
+        {"t": "ENTER / LOGIN bars: the reference label is a compact, dark-grey, wide geometric face with normal spacing. Ours is thin, very pale and letter-spaced across the whole bar, so it almost vanishes.", "k": "known", "ref": "NK-05; the notes say the CTA was deliberately left unchanged"},
+        {"t": "Input fields: the reference fill is a warm maroon-brown. Ours is a duller, greyer brown.", "k": "new"},
+        {"t": "ENTER / LOGIN bars: the reference's right end has slightly rounded corners; ours is square-cut.", "k": "new"},
+        {"t": "Violet glow at the top: ours spreads further right and leaves a teal cast in the top-right corner, where the reference fades to near-black.", "k": "new"},
+        {"t": "Small type under the logotype uses a squarer, pixel-like face, and its S reads almost like a 6 or G. The logotype's edges look slightly stair-stepped at 3x zoom.", "k": "known", "ref": "likely NK-04/NK-05"}
+      ],
+      "question": null
+    },
+    {
+      "id": "mailbox", "name": "Mailbox", "score": 8,
+      "verdict": "The strongest of the four: the list, the message body, the RIFLES buttons and the header band all line up, and only the selected row and the right-hand header labels read differently.",
+      "matches": [
+        "The seven mail rows, their envelope icons, underlines and tabs, and the wording and line breaks are at the reference positions.",
+        "The message body matches in font, size, line breaks and hyphenation.",
+        "The header wire band, the A/B badges and the T2 wireframe badge closely follow the reference.",
+        "The four RIFLES buttons match in size, spacing, corner cut and label."
+      ],
+      "gaps": [
+        {"t": "Selected row (\"Urgent information\"): the reference veneer has wavy, figured grain, a vertical seam near FROM: MOM, a darker bevelled rim and a rounded, tapered right end. Ours is flat, regular wavy stripes with a hard right cut. A row of small scallops also runs along its top edge, which the reference does not have.", "k": "known", "ref": "NK-07; the scallops look new"},
+        {"t": "Top-right header: SECURITY LEVEL and the LEVEL/T1, T3 and T4 labels sit about 8px higher than LEVEL/T2 inside the badge. In the reference all share one baseline. The dashboard header has them aligned, so this is specific to the mailbox.", "k": "new"},
+        {"t": "Top-right header: the T1-T4 numerals are narrower and heavier than the reference's wider, squarer letters.", "k": "known", "ref": "NK-05"},
+        {"t": "Selected row text is a little paler than the reference's dark brown.", "k": "known", "ref": "NK-05"}
+      ],
+      "question": null
+    },
+    {
+      "id": "store", "name": "Store", "score": 7,
+      "verdict": "The structure, card geometry and weapon art are excellent; the selected card's text, the product-name lines and the BASKET panel are what separate it from the reference.",
+      "matches": [
+        "4ST STORE logotype, the customer/discount block, the left nav buttons (SMG selected) and the header wire band all match.",
+        "The four product cards match in stepped tops, stacked echo outlines, foot tabs, stat grid and socket cells. The MAGNUM weapon drawings are very faithful.",
+        "The selected centre card's layout (stats, Recoil/Spread/Range, Bonus lines, socket row) is in the right places."
+      ],
+      "gaps": [
+        {"t": "Selected centre card: the body text (Recoil, Spread, Bonus) is thin and pale in ours, and starts about 10px further left. The reference is a medium-weight dark brown and clearly legible.", "k": "known", "ref": "NK-05"},
+        {"t": "Selected centre card: the reference veneer has a strong horizontal figured streak through the middle and warm darker shading. Ours is pale, even grain with one faint line.", "k": "known", "ref": "NK-07"},
+        {"t": "BASKET panel (top right): our fine print is larger than the reference's, so it runs out of the panel and is clipped (\"ARE\", \"DEVIC\"). The reference panel also has visible grain and a seam; ours is a flat fill.", "k": "new", "ref": "clipping new; grain known, NK-07"},
+        {"t": "MAGNUM 650 HAND GUN on all cards: ours is centred about 10px left of the reference, and \"HAND GUN\" is lighter and wider-spaced than the reference's medium weight.", "k": "known", "ref": "partly NK-05"},
+        {"t": "Card outlines: the outer echo strokes are crisper and more uniform than the reference's graded bright-to-faint stack.", "k": "known", "ref": "NK-14"}
+      ],
+      "question": null
+    },
+    {
+      "id": "dashboard", "name": "Dashboard", "score": 6.5,
+      "verdict": "The cascade cards and header are spot on, but the gold EMAIL preview panel on the right, the screen's focal point, has nearly unreadable body text and plain grain.",
+      "matches": [
+        "The six module cards match in staggered placement, the chamfer plus diagonal foot, stacked echo lines and label tabs.",
+        "The header (CUSTOMER, LEVEL T1, the SECURITY LEVEL row aligned correctly here, the wire band) and the C/D footers match.",
+        "The right panel's outline, its stepped top and the EMAIL caption below it are right."
+      ],
+      "gaps": [
+        {"t": "Right EMAIL panel body: ours is thin, pale and letter-spaced, barely darker than the gold. The reference is a dark-brown medium weight that reads easily. The biggest single visual miss on the screen.", "k": "known", "ref": "likely NK-05, not called out for this panel"},
+        {"t": "Selected EMAIL cascade card: the reference grain converges into a horizontal book-match seam about halfway down and has a thin bevelled gold rim. Ours is straight, evenly spaced vertical stripes with no rim.", "k": "known", "ref": "NK-07"},
+        {"t": "Right panel veneer: the reference has a curved wood figure in the lower third and darker shading at the top and bottom edges. Ours is nearly uniform.", "k": "known", "ref": "NK-07"},
+        {"t": "Header A/B fine print: the B note in ours is right-aligned against the badge, while the reference's is left-aligned. Ours is also wider-spaced.", "k": "new"},
+        {"t": "Fine-print blocks under the cards are slightly bolder and squarer than the reference. Hard to judge at this size.", "k": "unsure"}
+      ],
+      "question": "The flat, straight-stripe veneer has been the slowest item to converge (many rejected fits are recorded). Would you accept a pre-rendered raster texture for the selected wood surfaces, as the era's own notes suggest, instead of drawing the grain as vector lines?"
+    }
+  ]
+}
