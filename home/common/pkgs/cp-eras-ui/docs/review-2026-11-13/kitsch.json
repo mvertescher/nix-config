@@ -1,0 +1,76 @@
+{
+  "id": "kitsch",
+  "name": "Kitsch",
+  "score": 6,
+  "overall": "Kitsch is close. Layout, proportions, palette and almost every element match, and at thumbnail size all four screens read as the reference. Typography holds it back. The reference sets its small labels and microcopy (USER, SECURITY LEVEL, DESCRIPTION, the blurbs, the footer) in a thin, wide, extended face. Ours uses a bold condensed face, and several text weights are inverted: list subjects and nav labels are too thin, while sender lines and microcopy are too bold. A lesser gap: the reference's rose field fades to dark at the top corners, and ours runs edge to edge.",
+  "screens": [
+    {
+      "id": "login", "name": "Login", "score": 7,
+      "verdict": "The closest of the four. Geometry is near-exact; the logo artwork and the username weight are what give it away.",
+      "matches": [
+        "Bracket, lobe, barcode, input, ENTER bar and both PROTECTED bars sit where the reference puts them, with the right stepped notches.",
+        "Mint, teal and rose colours are right. The clock and footer are placed correctly.",
+        "The three-account repeat and the \"A\" badges with their blurbs line up."
+      ],
+      "gaps": [
+        {"t": "All three account logos: the reference draws the hexagon as an outline cut into the teal tile. Ours fills it as a solid dark hexagon, so it reads heavier and looks like a different mark.", "k": "new"},
+        {"t": "\"GUEST 7702\" headings: the reference is a medium-weight, bright mint condensed face. Ours is lighter and greyer, so the names recede.", "k": "new"},
+        {"t": "Top-left corner: the reference rose field is pulled back and desaturated there. Ours carries rose right to the left edge, so the bracket loses its dark backdrop.", "k": "new", "ref": "the ground-fit item is closed, so the corner falloff is not tracked"},
+        {"t": "The \"access manager\" microcopy is bolder and more condensed than the reference's wider, lighter printing.", "k": "known", "ref": "K5, approximately"}
+      ],
+      "question": null
+    },
+    {
+      "id": "mailbox", "name": "Mailbox", "score": 6,
+      "verdict": "Layout and colour are right, but the type is off: subject lines too thin, sender lines too bold, and header labels in the wrong face.",
+      "matches": [
+        "The header row (A/B/C blocks, GUES 7702 and MAILBOX boxes, 01-04 level boxes with amber 02) is positioned accurately.",
+        "The yellow message panel (tab, warning strip, outline, body text wrap) is nearly identical, line breaks included.",
+        "The DETAILS/MODS/PRICE/DAMAGE tab stack, the open-envelope selected row and the yellow selected subject bar match."
+      ],
+      "gaps": [
+        {"t": "Left list: subjects are noticeably thinner and smaller than the reference's regular-weight mint. The \"from:\" lines are bold where the reference's are regular. The hierarchy comes out inverted.", "k": "new", "ref": "K5 calls the senders fitted; the reviewer disagrees"},
+        {"t": "Header labels and blurbs (USER, DESCRIPTION, SECURITY LEVEL and the small text beside A/B/C): the reference uses a thin, wide extended face. Ours is bold condensed, the most visible type difference on the screen.", "k": "new"},
+        {"t": "Left list panel, top-left corner: the reference has a generous rounded corner whose top edge fades out to the right. Ours has a tight, stepped corner and a hard-ended line.", "k": "new"},
+        {"t": "Teal wave, bottom-left: the reference's left side is a smooth rounded curve. Ours shows visible polygon facets.", "k": "new"},
+        {"t": "The \"!\" in \"(!)\" and \"YOU!\" renders as a bar that reads as \"I\" (\"YOUI\"). The reference shows a clear dot.", "k": "unsure", "ref": "possibly the K8 exclamation note"},
+        {"t": "Top-right corner: the reference darkens to near-black. Ours stays rose.", "k": "new"}
+      ],
+      "question": null
+    },
+    {
+      "id": "store", "name": "Store", "score": 6,
+      "verdict": "A convincing store. The cards are very good, but the teal wave's shape, the dim corner microcopy and a streaky fourth-card fade are visible.",
+      "matches": [
+        "The three full cards (titles, amber shelf bands with certification marks, rifle art, stat band, socket row, compliance print) match closely in geometry and colour.",
+        "The selected amber card's grown shape, amber-over-dark split and Recoil/Bonus list content are right.",
+        "The nav tabs with selected SMG, the customer/loyalty block and the bracket path all sit in the right places."
+      ],
+      "gaps": [
+        {"t": "Bottom-left teal wave: the reference sweeps in a smooth S-curve and continues as a hairline. Ours has a flatter top, a rounded \"tongue\" end with a vertical right side, and stops short with no trailing line.", "k": "new"},
+        {"t": "Corner blurbs and A/C badges: the reference prints them in teal, in the wide extended face, with glow. Ours are dim grey and condensed, so they nearly disappear.", "k": "new"},
+        {"t": "Fourth card at the right edge: the reference clips it cleanly. Ours fades through vertical slices that read as smeared, streaky pixels on MAGNUM, the band and the stats.", "k": "known", "ref": "K7 is closed, but the result still looks like an artefact"},
+        {"t": "Selected card lower list (20 Recoil...): the reference is heavier and larger with a tighter number-to-word gap. Ours is thin with a wide gap. The amber silhouette art also loses the reference's lighter internal detail.", "k": "known", "ref": "K5/K8 partly"},
+        {"t": "Nav tab labels are lighter than the reference, and the tab outlines have sharp corners where the reference's are slightly rounded.", "k": "new"},
+        {"t": "4ST logo: our \"T\" sits further from \"4S\" and is slightly larger, so the mark reads less as one word.", "k": "new"}
+      ],
+      "question": null
+    },
+    {
+      "id": "dashboard", "name": "Dashboard", "score": 7,
+      "verdict": "The fan composition is excellent. The security-level boxes and the label typeface are the visible misses.",
+      "matches": [
+        "Both Y-shaped blade fans (angles, ghost-card counts, depth fade, connector curves, yellow EVENTS) match the reference closely.",
+        "The BRAINDANCE panel (tab, warning strip, text wrap, outline) is nearly identical.",
+        "The A/C/D/B header and footer blocks and GUES 7702 are placed correctly."
+      ],
+      "gaps": [
+        {"t": "Security level boxes (top centre): the reference has rounded corners, even gaps, a pale mint-white outline and a soft orange \"02\" on a paler amber fill. Ours are square-cornered teal outlines, with 03 and 04 almost touching and dark brown on saturated yellow.", "k": "new"},
+        {"t": "Labels SECURITY LEVEL, DESCRIPTION, USER and DEVICE SOFTWARE: thin and wide-extended in the reference, bold condensed in ours. The same issue as on the mailbox.", "k": "new"},
+        {"t": "Top-right corner: the reference vignettes to dark, and the rose field's lower edge curves away more on the right.", "k": "new"},
+        {"t": "Ghost blades: the deeper translucent fills are still slightly more uniform than the reference. Not judged finer than that at this size.", "k": "known", "ref": "K2"}
+      ],
+      "question": "The reference labels look like Eurostile Extended. Would you accept an open-licence look-alike (for example Michroma) for every Kitsch label and microcopy line, or should we keep the current face until the original is identified?"
+    }
+  ]
+}
