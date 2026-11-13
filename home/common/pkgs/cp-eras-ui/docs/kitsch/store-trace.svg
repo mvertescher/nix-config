@@ -168,7 +168,19 @@
     </linearGradient>
     <!-- Source #52 loses the fourth card's solid foreground at x1523,
          then leaves coloured residue to roughly x1550. The clips cover
-         the full selected-card height for inferred selection states. -->
+         the full selected-card height for inferred selection states.
+
+       Notes, 2026-11-13 (review decision 5, measured on the 4K photo):
+         - the badge notes and section labels are a wide extended square
+           sans (Eurostile Extended-like), not stretched Rajdhani. Notes
+           (cap 4.17, words 3-4px apart) are Michroma Regular (OFL) 5.56
+           at natural width, each word 2 further on; labels (cap 7.92) are
+           Michroma 10.56 at scale(0.95 1). Michroma's cap is 0.75 em.
+         - nav labels: the Rust table had drawn Regular 22; this trace's
+           Rajdhani 500 24.5 ls -0.4 measures right (stems 2.2 against the
+           photo's 2.0, RIFLES 61 / SHOTGUN 87 wide against 60 / 87).
+         - selected card lower list: Rajdhani 500 19.5 (was 400 16: "Recoil"
+           cap 10 / 35 wide / stem 1.4 against the photo's 12.9 / 42.9 / 1.8). -->
     <clipPath id="fourth-card-core"><rect x="1411" y="194" width="112" height="538"/></clipPath>
     <clipPath id="fourth-card-bleed-1"><rect x="1523" y="194" width="2" height="538"/></clipPath>
     <clipPath id="fourth-card-bleed-2"><rect x="1525" y="194" width="3" height="538"/></clipPath>
@@ -419,7 +431,7 @@
     <!-- lower body outline, y 457..680 (local 239..462), 10.5px quadratic lower feet; socket row 632..680 (414..462) -->
     <path d="M 0.5,239 V 451 Q 0.5,461.5 11,461.5 H 251 Q 261.5,461.5 261.5,451 V 239 M 0.5,414.5 H 261.5 M 52.5,414.5 V 461.5 M 118.5,414.5 V 461.5 M 190.5,414.5 V 461.5"
           fill="none" stroke="#e2a408" stroke-width="1.25"/>
-    <g font-family="Rajdhani" font-size="16" fill="#fabe29">
+    <g font-family="Rajdhani" font-size="19.5" font-weight="500" fill="#fabe29">
       <text x="16" y="279">20</text><text x="52" y="279">Recoil</text>
       <text x="16" y="300">22</text><text x="52" y="300">Sperad</text>
       <text x="16" y="321">12</text><text x="52" y="321">Range</text>
@@ -445,16 +457,13 @@
     <!-- the footnotes are BRIGHT mint in a bold, wide, tracked face (ink p90 (115,207,183) — the same #82f0d3 as the
          foot line), not dim: Rajdhani Bold 8 stretched 1.3x. Rows x 181..334 / 182..328 / 180..261, cap rows
          733.3..738.8 / 742.5..748.3 / 751.2..756.7; the C block x 1326..1469, rows 741.8..746.8 / 750.9..755.9 -->
-    <g font-size="8" font-weight="700" fill="#82f0d3">
-      <g transform="translate(181 0) scale(1.3 1)">
-        <text x="0" y="738.8">SPARE TIME MANAGER WAS DEVELO-</text>
-        <text x="0" y="747.8">PED BY SEOCHO. SERVING CUSTO-</text>
-        <text x="0" y="756.7">MERS SINCE 2006.</text>
-      </g>
-      <g transform="translate(1325.8 0) scale(1.3 1)">
-        <text x="0" y="746.8">MAPS ARE PROVIDED BY SEOCHO.</text>
-        <text x="0" y="755.9">SATELITE SERVICES SINCE 2006.</text>
-      </g>
+    <!-- 2026-11-13: Michroma 5.56 at natural width, words 2 further apart (header notes) -->
+    <g font-family="Michroma" font-size="5.56" font-weight="400" fill="#82f0d3">
+      <text x="181.4" y="737.9">SPARE <tspan dx="2">TIME</tspan> <tspan dx="2">MANAGER</tspan> <tspan dx="2">WAS</tspan> <tspan dx="2">DEVELO-</tspan></text>
+      <text x="181.4" y="747.1">PED <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan> <tspan dx="2">SERVING</tspan> <tspan dx="2">CUSTO-</tspan></text>
+      <text x="181.4" y="755.9">MERS <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
+      <text x="1325.4" y="746.3">MAPS <tspan dx="2">ARE</tspan> <tspan dx="2">PROVIDED</tspan> <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan></text>
+      <text x="1325.4" y="755.4">SATELITE <tspan dx="2">SERVICES</tspan> <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
     </g>
     <!-- boxed A / C: ~24x24 squares with a 2px stroke (centrelines x 354..377.7, y 734.3..758.5 and x 1501..1525.2,
          y 733.9..758.2), the letter a wide pointed cap 15.8 x 11.7 -->

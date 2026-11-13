@@ -115,7 +115,24 @@
          - the yellow family's 0.46 is the extractor hole-filling the
            closed panel outline against the render's antialiased
            rounded corners; not a trace fault, corners left rounded
-         - G1i inks 0.62 -> 0.67 (teal 0.81 -> 0.93, yellow 0.46 -> 0.46) -->
+         - G1i inks 0.62 -> 0.67 (teal 0.81 -> 0.93, yellow 0.46 -> 0.46)
+
+       Notes, 2026-11-13 (review decision 5, measured on the 4K photo):
+         - the header notes and section labels are a wide extended square
+           sans (Eurostile Extended-like), not stretched Rajdhani: notes
+           cap 4.17, line extents 151.3 / 145.0 / 79.2 (A), word gaps 3-4px;
+           labels cap 7.92, USER 38.3 / DESCRIPTION 96.3 / SECURITY LEVEL
+           117.5 wide, stem ~1.3px. Both now Michroma Regular (OFL), its
+           cap 0.75 em: notes 5.56 with word-spacing 2 at natural width,
+           labels 10.56 at scale(0.95 1). Rajdhani 600 x1.37 had drawn the
+           labels 33% narrow at 1.45x the stem. The first note line runs
+           ~6px long in Michroma (its M and W are wider than the photo's).
+         - list subjects Rajdhani 500 20 (were 400 18 ls 0.5: cap 11 and
+           stem 1.35 against the photo's 12.5 / 1.7); every sender Rajdhani
+           500 (were 700 idle / 600 selected: stems 2.2 / 1.7 against the
+           photo's 1.4 / 1.3). The selected subject, dark on yellow, takes
+           the same 500 20 (photo stem 1.3; 400 20 renders 0.9, 500 20 1.6;
+           was 400 17 ls 0.5). -->
   <defs>
     <radialGradient id="bloom" cx="0.46875" cy="-0.356297" r="1">
       <stop offset="0" stop-color="#ad465f"/>
@@ -185,21 +202,16 @@
   <g font-family="Rajdhani" fill="#7fd4cc">
     <!-- the notes are BRIGHT bold, wide, tracked micro-text (the same #82f0d3 as the foot line, not dim): x 205..357 /
          625..767 / 1259..1410, cap rows 105.8..109.9 / 114.9..119.1 / 124.1..128.2 -->
-    <g font-size="8" font-weight="600" fill="#82f0d3">
-      <g transform="translate(205 0) scale(1.3 1)">
-        <text x="0" y="110">SPARE TIME MANAGER WAS DEVELO-</text>
-        <text x="0" y="119.1">PED BY SEOCHO. SERVING CUSTO-</text>
-        <text x="0" y="128.2">MERS SINCE 2006.</text>
-      </g>
-      <g transform="translate(624.6 0) scale(1.3 1)">
-        <text x="0" y="110">MAPS ARE PROVIDED BY SEOCHO.</text>
-        <text x="0" y="119.1">SATELITE SERVICES SINCE 2006.</text>
-      </g>
-      <g transform="translate(1259.1 0) scale(1.3 1)">
-        <text x="0" y="110">SPARE TIME MANAGER WAS DEVELO-</text>
-        <text x="0" y="119.1">PED BY SEOCHO. SERVING CUSTO-</text>
-        <text x="0" y="128.2">MERS SINCE 2006.</text>
-      </g>
+    <!-- 2026-11-13: Michroma 5.56 at natural width, each word 2 further on (dx; librsvg ignores word-spacing) -->
+    <g font-family="Michroma" font-size="5.56" font-weight="400" fill="#82f0d3">
+      <text x="205" y="110">SPARE <tspan dx="2">TIME</tspan> <tspan dx="2">MANAGER</tspan> <tspan dx="2">WAS</tspan> <tspan dx="2">DEVELO-</tspan></text>
+      <text x="205" y="119.2">PED <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan> <tspan dx="2">SERVING</tspan> <tspan dx="2">CUSTO-</tspan></text>
+      <text x="205" y="128.3">MERS <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
+      <text x="624.1" y="110">MAPS <tspan dx="2">ARE</tspan> <tspan dx="2">PROVIDED</tspan> <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan></text>
+      <text x="624.1" y="119.2">SATELITE <tspan dx="2">SERVICES</tspan> <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
+      <text x="1258.7" y="110">SPARE <tspan dx="2">TIME</tspan> <tspan dx="2">MANAGER</tspan> <tspan dx="2">WAS</tspan> <tspan dx="2">DEVELO-</tspan></text>
+      <text x="1258.7" y="119.2">PED <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan> <tspan dx="2">SERVING</tspan> <tspan dx="2">CUSTO-</tspan></text>
+      <text x="1258.7" y="128.3">MERS <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
     </g>
     <!-- boxed A / B / C: ~24x24 squares with a 2px stroke (centrelines x 165.2..189.3 / 586.2..610.4 / 1216.6..1241,
          y 106.2..130), each holding a wide heavy cap 15.8 x 11.7 at y 113.8..125.5 -->
@@ -213,12 +225,12 @@
       <text transform="translate(598.3 125.5) scale(1.7 1)">B</text>
       <text transform="translate(1228.8 125.5) scale(1.7 1)">C</text>
     </g>
-    <!-- section labels: the same bold wide face as the notes, cap y 151..159, USER x 166..205 / DESCRIPTION
-         587..683 / SECURITY LEVEL 1217..1335 (were Rajdhani 12 regular ls 1.5: 25% narrow and a quarter of the ink) -->
-    <g font-size="12.3" font-weight="600" letter-spacing="0.6" fill="#82f0d3">
-      <text transform="translate(166 159) scale(1.37 1)">USER</text>
-      <text transform="translate(587 159) scale(1.37 1)">DESCRIPTION</text>
-      <text transform="translate(1217 159) scale(1.37 1)">SECURITY LEVEL</text>
+    <!-- section labels: the notes' wide face at a thinner stroke, cap y 151.3..159.2, USER x 165.8..204.2 / DESCRIPTION
+         587.1..683.3 / SECURITY LEVEL 1217.5..1335 (2026-11-13: Michroma 10.56 x0.95; was Rajdhani 600 12.3 x1.37) -->
+    <g font-family="Michroma" font-size="10.56" font-weight="400" fill="#82f0d3">
+      <text transform="translate(165.2 159.2) scale(0.95 1)">USER</text>
+      <text transform="translate(586.1 159.2) scale(0.95 1)">DESCRIPTION</text>
+      <text transform="translate(1216.85 159.2) scale(0.95 1)">SECURITY LEVEL</text>
     </g>
   </g>
 
@@ -261,8 +273,8 @@
     <path d="M 197,313 H 491 V 325 L 471,346 H 197 Z"/>
   </g>
   <use href="#env-open" x="166.95" y="322.5" fill="none" stroke="#4a3a05" stroke-width="0.7"/>
-  <text x="220" y="340" font-family="Rajdhani" font-size="17" letter-spacing="0.5" fill="#4a3a05">YOU'LL REGRET THAT</text>
-  <text x="220" y="361" font-family="Rajdhani" font-size="13.5" font-weight="600" fill="#f2c825">from: Jackie</text>
+  <text x="220" y="340" font-family="Rajdhani" font-size="20" font-weight="500" fill="#4a3a05">YOU'LL REGRET THAT</text>
+  <text x="220" y="361" font-family="Rajdhani" font-size="13.5" font-weight="500" fill="#f2c825">from: Jackie</text>
 
   <!-- the four unselected rows -->
   <g fill="none" stroke="#5fd6c2" stroke-width="0.9">
@@ -272,13 +284,13 @@
     <use href="#env" x="166.95" y="565.5"/>
   </g>
   <g font-family="Rajdhani" fill="#7fe0c8">
-    <g font-size="18" letter-spacing="0.5">
+    <g font-size="20" font-weight="500">
       <text x="220" y="399">URGENT INFORMATION (!)</text>
       <text x="220" y="459">HEIST DATA SENT TO YOU</text>
       <text x="220" y="518">I'M WORRIED MAN</text>
       <text x="220" y="578">SPECIAL OFFER TO YOU!</text>
     </g>
-    <g font-size="13.5" font-weight="700" fill="#87f9d8">
+    <g font-size="13.5" font-weight="500" fill="#87f9d8">
       <text x="220" y="420">from: Mom</text>
       <text x="220" y="480">from: 805000451</text>
       <text x="220" y="540">from: Rachel Ross</text>

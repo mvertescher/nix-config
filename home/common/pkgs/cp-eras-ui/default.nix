@@ -30,9 +30,16 @@
 , orbitron
 , rajdhani-fontshare
 , noto-cjk-subset
+, google-fonts
 }:
 
 let
+  # Michroma Regular (SIL OFL 1.1), the Kitsch wide label face: only that
+  # family out of the pinned google/fonts checkout, and its OFL.txt from
+  # the same source tree.
+  michroma = google-fonts.override { fonts = [ "Michroma" ]; };
+  michromaLicense = "${google-fonts.src}/ofl/michroma/OFL.txt";
+
   # crane's Cargo filter excludes .wgsl files, which the patched iced_wgpu
   # and cryoglyph crates include at compile time through include_str!.
   cleanSrc = lib.cleanSourceWith {
@@ -109,6 +116,7 @@ let
     cp ${rajdhani-fontshare}/share/fonts/truetype/*.ttf fonts/
     cp ${noto-cjk-subset}/share/fonts/opentype/*.otf fonts/
     cp ${freefont_ttf}/share/fonts/truetype/FreeSansBold.ttf fonts/
+    cp ${michroma}/share/fonts/truetype/Michroma-Regular.ttf fonts/
     python3 scripts/make-kitsch-sans.py fonts/FreeSansBold.ttf fonts/CP-Eras-Kitsch-Sans-Bold.ttf fonts/CP-Eras-Kitsch-Sans-Bold.audit.json
   '';
 
@@ -120,6 +128,10 @@ let
     mkdir -p $out/share/doc/cp-eras-ui/fonts/freefont
     cp ${freefont_ttf.src}/{COPYING,README,CREDITS} $out/share/doc/cp-eras-ui/fonts/freefont/
     cp scripts/KITSCH-SANS-NOTICE.md $out/share/doc/cp-eras-ui/fonts/freefont/
+    # Michroma is embedded under the SIL Open Font License 1.1, which
+    # requires its text to travel with the font.
+    mkdir -p $out/share/doc/cp-eras-ui/fonts/michroma
+    cp ${michromaLicense} $out/share/doc/cp-eras-ui/fonts/michroma/OFL.txt
   '';
 
   postFixup = ''
@@ -152,8 +164,9 @@ let
 
     meta = with lib; {
       description = "A UI toolkit using Rust and Iced.";
-      # Application code is MIT; the embedded FreeSans face is GPL-3.0+.
-      license = [ licenses.mit licenses.gpl3Plus ];
+      # Application code is MIT; the embedded FreeSans face is GPL-3.0+;
+      # the embedded Michroma face is OFL-1.1.
+      license = [ licenses.mit licenses.gpl3Plus licenses.ofl ];
       platforms = platforms.linux;
     };
   };

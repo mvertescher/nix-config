@@ -111,7 +111,7 @@ where
 /// All of them, always: the eras between them set Rajdhani at five
 /// weights and Orbitron at four, the shaper substitutes silently for a
 /// weight it was not given, and the bytes are in the binary either way.
-/// Kitsch compliance adds FreeSans Bold. The CJK subset rides along for
+/// Kitsch compliance adds FreeSans Bold, Kitsch's labels Michroma. The CJK subset rides along for
 /// the Han fallback (`fonts.rs`).
 pub fn faces() -> Vec<Cow<'static, [u8]>> {
     [
@@ -122,6 +122,7 @@ pub fn faces() -> Vec<Cow<'static, [u8]>> {
         fonts::RAJDHANI_BOLD,
         fonts::FREE_SANS_BOLD,
         fonts::CP_ERAS_KITSCH_SANS_BOLD,
+        fonts::MICHROMA_REGULAR,
         fonts::ORBITRON_REGULAR,
         fonts::ORBITRON_MEDIUM,
         fonts::ORBITRON_SEMIBOLD,
@@ -424,6 +425,7 @@ tape = "#728f76"
             fonts::RAJDHANI_BOLD,
             fonts::FREE_SANS_BOLD,
             fonts::CP_ERAS_KITSCH_SANS_BOLD,
+            fonts::MICHROMA_REGULAR,
             fonts::ORBITRON_REGULAR,
             fonts::ORBITRON_MEDIUM,
             fonts::ORBITRON_SEMIBOLD,
@@ -432,6 +434,6 @@ tape = "#728f76"
         ] {
             assert!(faces.iter().any(|f| f.as_ref() == bytes));
         }
-        assert_eq!(faces.len(), 12);
+        assert_eq!(faces.len(), 13);
     }
 }
