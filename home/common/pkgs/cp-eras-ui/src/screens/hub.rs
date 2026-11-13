@@ -18,7 +18,9 @@
 //! selects and stays, and the tables no longer stand the last module
 //! in for the missing screen. The keys are the hub's ([`hotkey`]), not
 //! [`nav::Stroke`]'s: a stroke is what every screen reads, and inside
-//! a screen `m` and `s` mean nothing.
+//! a screen `m` and `s` mean nothing. One exception to "the photos' own":
+//! neomil's LOCATIONS also opens the mailbox, an owner decision
+//! (2026-11-13) so every built screen is reachable from a tile.
 //!
 //! Each screen keeps its own clock. The dashboard's boot-in runs once,
 //! when the hub starts, and a return from a screen finds the panel
@@ -240,7 +242,8 @@ mod tests {
             Era::Entropism => vec![(0, Destination::Mail)],
             Era::Neokitsch => vec![(0, Destination::Mail)],
             Era::Kitsch => vec![(2, Destination::Store), (3, Destination::Store)],
-            Era::Neomil => vec![(4, Destination::Store)],
+            // LOCATIONS opens the mailbox (owner decision, 2026-11-13).
+            Era::Neomil => vec![(1, Destination::Mail), (4, Destination::Store)],
         }
     }
 
@@ -313,6 +316,36 @@ mod tests {
         assert_eq!(hub.dashboard.selected, 0);
     }
 
+    /// Neomil's hub reaches both built screens from a tile: LOCATIONS
+    /// (module 1) the mailbox, PRODUCTS (module 4) the store, the rest
+    /// nothing. Walked by keys from the opening selection, with Enter,
+    /// and Esc comes back from each with the selection intact.
+    #[test]
+    fn neomil_locations_opens_the_mailbox_and_products_the_store() {
+        let style = Era::Neomil.style();
+        assert_eq!(style.dashboard_destinations,
+            [None, Some(Destination::Mail), None, None, Some(Destination::Store), None]);
+        let mut hub = Hub::new(style);
+        assert_eq!(hub.dashboard.selected, 0, "VEHICLES");
+        hub.update(Message::Stroke(Stroke::Move(Dir::Right)));
+        assert_eq!(hub.dashboard.selected, 1, "LOCATIONS");
+        hub.update(Message::Stroke(Stroke::Open));
+        assert_eq!(hub.route, Route::Mail);
+        hub.update(Message::Stroke(Stroke::Back));
+        assert_eq!(hub.route, Route::Dashboard);
+        assert_eq!(hub.dashboard.selected, 1);
+        hub.update(Message::Stroke(Stroke::Move(Dir::Down)));
+        assert_eq!(hub.dashboard.selected, 4, "PRODUCTS");
+        hub.update(Message::Stroke(Stroke::Open));
+        assert_eq!(hub.route, Route::Store);
+        hub.update(Message::Stroke(Stroke::Back));
+        assert_eq!(hub.route, Route::Dashboard);
+        for index in [0, 2, 3, 5] {
+            hub.update(Message::Dashboard(dashboard::Message::Select { index }));
+            assert_eq!(hub.route, Route::Dashboard, "module {index} is inert");
+        }
+    }
+
     /// A click on a module goes straight through.
     #[test]
     fn a_click_on_a_module_opens_it() {
@@ -328,9 +361,9 @@ mod tests {
     #[test]
     fn an_empty_module_only_selects() {
         let mut hub = Hub::new(Era::Neomil.style());
-        hub.update(Message::Dashboard(dashboard::Message::Select { index: 1 }));
+        hub.update(Message::Dashboard(dashboard::Message::Select { index: 2 }));
         assert_eq!(hub.route, Route::Dashboard);
-        assert_eq!(hub.dashboard.selected, 1);
+        assert_eq!(hub.dashboard.selected, 2);
         hub.update(Message::Stroke(Stroke::Open));
         assert_eq!(hub.route, Route::Dashboard);
         hub.update(Message::Dashboard(dashboard::Message::Select { index: 5 }));

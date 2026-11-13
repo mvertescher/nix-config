@@ -353,18 +353,21 @@ pub fn style() -> Style {
         dashboard_reference_fg: Some(rgb(0xef3333)),
         store_reference_fg: Some(rgb(0xfb3535)),
         store_reference: Some(store_material::REFERENCE),
-        // The photo distinguishes no unit (trace header :107-121 and
-        // components.svg :722-723: "the source shows NO selected
-        // state"), so every plate wears one dress and the opening
-        // selection is the first unit by convention.
+        // The photo distinguishes no unit (trace header and
+        // components.svg MENU DIAMOND: the source shows no selected
+        // state). The selected unit is drawn inverted all the same, an
+        // owner decision (2026-11-13, CELLS_SELECTED), so the keyboard's
+        // selection shows; the opening selection is the first unit by
+        // convention.
         dashboard_selection: 0,
         dashboard_cursor: false,
         mailbox_cursor: false,
         dashboard_states: HUB_STATES,
         dashboard_held_backdrops: &[],
-        // PRODUCTS is unit 4; no unit says "mail", and the mailbox is
-        // `m` from the hub instead (`screens::hub`).
-        dashboard_destinations: [None, None, None, None, Some(Destination::Store), None],
+        // PRODUCTS is unit 4. No unit says "mail"; LOCATIONS (unit 1)
+        // opens the mailbox so every built screen is reachable from a
+        // tile (owner decision, 2026-11-13). The other four are inert.
+        dashboard_destinations: [None, Some(Destination::Mail), None, None, Some(Destination::Store), None],
         // --- end dashboard ---
         metrics: Metrics {
             stroke: 1.5,
@@ -2497,6 +2500,70 @@ const CELLS: [[Prim; 5]; 6] = cells(Ink::Fg, Ink::Border, dashboard_glyphs::REST
 const CELLS_HOVER: [[Prim; 5]; 6] = cells(Ink::Fixed(rgb(0xf63333)), Ink::Fixed(rgb(0x59171b)), dashboard_glyphs::HOVER);
 const CELLS_PRESSED: [[Prim; 5]; 6] = cells(Ink::Fixed(rgb(0xa52223)), Ink::Fixed(ON_CARD), dashboard_glyphs::PRESSED);
 
+// The selected diamond, drawn INVERTED: an owner-approved extension
+// (Matt, 2026-11-13, docs/review-2026-11-13/DECISIONS.md item 1), not
+// traced -- the source shows no selected tile (components.svg
+// #dashboard-tile-selected). Every part keeps its measured geometry and
+// swaps roles: the face and the offset tab take the store nav row's dark
+// fill (NAV_FILL, the era's dark menu-item surface) and are edged in the
+// bright foreground, the era's outlined-control rung; the inset outline
+// and the glyph go from dark-on-red to the bright foreground on dark. The
+// tab's closed edge is the seam. Painted over the resting Soft material,
+// which it covers completely inside the silhouette, so a selection change
+// redraws vector prims only and never rebuilds the cached backdrop.
+const SELECTED_EDGE: f32 = 1.5;
+// The four ground-coloured separators (DASHBOARD, after the units) cut the
+// facing side tips. On a red tile the cut reads as the red's edge; on the
+// dark face it would leave the edge open, so the inverted silhouette is cut
+// there itself, half an edge inside the separator so the stroke meets it.
+// `cut_tip` x = separator edge - tile centre -/+ SELECTED_EDGE / 2; a tip
+// on the menu's outside keeps its point. Every edge is the resting
+// silhouette's own line, |y| = 104 - |x|.
+const SELECTED_OUTERS: [(f32, f32, &[Seg]); 6] = [
+    // VEHICLES (334): right tip cut by the 424 separator.
+    (-15.0, -89.0, &[Seg::Line(15.0, -89.0), Seg::Line(89.25, -14.75), Seg::Line(89.25, 14.75),
+        Seg::Line(0.0, 104.0), Seg::Line(-104.0, 0.0)]),
+    // LOCATIONS (530): left by 424+16, right by 619.5.
+    (-15.0, -89.0, &[Seg::Line(15.0, -89.0), Seg::Line(88.75, -15.25), Seg::Line(88.75, 15.25),
+        Seg::Line(0.0, 104.0), Seg::Line(-89.25, 14.75), Seg::Line(-89.25, -14.75)]),
+    // FACTIONS (725): left by 619.5+16.
+    (-15.0, -89.0, &[Seg::Line(15.0, -89.0), Seg::Line(104.0, 0.0),
+        Seg::Line(0.0, 104.0), Seg::Line(-88.75, 15.25), Seg::Line(-88.75, -15.25)]),
+    // WEAPONS (431): right by 521.5.
+    (0.0, -104.0, &[Seg::Line(89.75, -14.25), Seg::Line(89.75, 14.25), Seg::Line(15.0, 89.0),
+        Seg::Line(-15.0, 89.0), Seg::Line(-104.0, 0.0)]),
+    // PRODUCTS (628): left by 521.5+16, right by 717.
+    (0.0, -104.0, &[Seg::Line(88.25, -15.75), Seg::Line(88.25, 15.75), Seg::Line(15.0, 89.0),
+        Seg::Line(-15.0, 89.0), Seg::Line(-89.75, 14.25), Seg::Line(-89.75, -14.25)]),
+    // CORPORATIONS (822): left by 717+16.
+    (0.0, -104.0, &[Seg::Line(104.0, 0.0), Seg::Line(15.0, 89.0),
+        Seg::Line(-15.0, 89.0), Seg::Line(-88.25, 15.75), Seg::Line(-88.25, -15.75)]),
+];
+const fn selected_cells(face: Ink, ink: Ink, glyphs: [Prim; 6]) -> [[Prim; 4]; 6] {
+    let mut out = [[fill_rect(0.0, 0.0, 0.0, 0.0, face); 4]; 6];
+    let mut i = 0;
+    while i < out.len() {
+        let inner = CELL_INNERS_STARTS[i];
+        let tab = CELL_TABS_STARTS[i];
+        let (ox, oy, outer) = SELECTED_OUTERS[i];
+        out[i] = [
+            Prim::Path { x: ox, y: oy, segs: outer, close: true, fill: Some(face), stroke: Some(ink), width: SELECTED_EDGE },
+            shut_path(inner.0, inner.1, CELL_INNERS[i], ink, 1.0),
+            glyphs[i],
+            Prim::Path { x: tab.0, y: tab.1, segs: CELL_TABS[i], close: true, fill: Some(face), stroke: Some(ink), width: SELECTED_EDGE },
+        ];
+        i += 1;
+    }
+    out
+}
+const CELLS_SELECTED: [[Prim; 4]; 6] = selected_cells(Ink::Fixed(NAV_FILL), Ink::Fg, dashboard_glyphs::SELECTED);
+// Hovered while selected: the outlined-control hover coat the store nav
+// row and the mailbox row use (#551719 wash, #f63333 edge and ink).
+// Pressed while selected falls back to the ordinary held drawing
+// (CELLS_PRESSED), as components.svg section 9 has it: "a press reads on
+// a control that is already selected".
+const CELLS_SELECTED_HOVER: [[Prim; 4]; 6] = selected_cells(Ink::Fixed(rgb(0x551719)), Ink::Fixed(rgb(0xf63333)), dashboard_glyphs::SELECTED_HOVER);
+
 // Keep CELLS as the geometry reference for unchanged inferred hover/held inks.
 // Rest paints its palette-role face and local printing in the leading Soft
 // group, then these crisp foreground details. Plate hit bounds are unchanged.
@@ -2524,7 +2591,7 @@ macro_rules! unit {
         &[Prim::Plate {
             group: Group::Module, index: $i,
             x: -104.0, y: $top, w: 208.0, h: 193.0,
-            on: &CELL_DETAILS[$i], off: &CELL_DETAILS[$i],
+            on: &CELLS_SELECTED[$i], off: &CELL_DETAILS[$i],
         }]
     };
 }
@@ -2541,7 +2608,7 @@ const fn hub_states(index: usize) -> crate::style::PlateStates {
     crate::style::PlateStates {
         group: Group::Module, index,
         hover: &CELLS_HOVER[index], pressed: &CELLS_PRESSED[index],
-        selected_hover: None, selected_pressed: None, selected_away: None,
+        selected_hover: Some(&CELLS_SELECTED_HOVER[index]), selected_pressed: None, selected_away: None,
         preserve_selected_hover: false,
     }
 }
@@ -2601,6 +2668,99 @@ mod hub_interaction_tests {
                 }
                 assert!(matches!(drawing[0], Prim::Path { fill: Some(Ink::Fixed(c)), .. } if c == fill));
                 assert!(matches!(drawing[2], Prim::Turn { angle: -45.0, .. }));
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod hub_selection_tests {
+    use super::*;
+
+    fn geometry(p: Prim) -> (f32, f32, &'static [Seg], bool) {
+        match p {
+            Prim::Path { x, y, segs, close, .. } => (x, y, segs, close),
+            _ => panic!("expected a path"),
+        }
+    }
+
+    /// The inverted tile is the resting tile's own measured geometry --
+    /// silhouette, inset, glyph, tab -- with the roles swapped: a dark
+    /// face and tab edged in the bright foreground, and the inset and
+    /// printing in that foreground. The resting (unselected) drawing is
+    /// exactly what it was.
+    #[test]
+    fn the_selected_diamond_is_the_resting_one_inverted() {
+        for (i, rest) in CELLS.iter().enumerate() {
+            for (drawing, face, ink, glyphs) in [
+                (&CELLS_SELECTED[i], Ink::Fixed(NAV_FILL), Ink::Fg, &dashboard_glyphs::SELECTED),
+                (&CELLS_SELECTED_HOVER[i], Ink::Fixed(rgb(0x551719)), Ink::Fixed(rgb(0xf63333)), &dashboard_glyphs::SELECTED_HOVER),
+            ] {
+                assert_eq!(geometry(drawing[0]), (SELECTED_OUTERS[i].0, SELECTED_OUTERS[i].1, SELECTED_OUTERS[i].2, true));
+                assert!(matches!(drawing[0], Prim::Path { fill: Some(f), stroke: Some(s), width, .. }
+                    if f == face && s == ink && width == SELECTED_EDGE));
+                assert_eq!(geometry(drawing[1]), geometry(rest[1]), "tile {i} inset");
+                assert!(matches!(drawing[1], Prim::Path { fill: None, stroke: Some(s), width: 1.0, .. } if s == ink));
+                assert_eq!(drawing[2], glyphs[i]);
+                assert_eq!(geometry(drawing[3]), geometry(rest[3]), "tile {i} tab");
+                assert!(matches!(drawing[3], Prim::Path { fill: Some(f), stroke: Some(s), .. } if f == face && s == ink));
+            }
+            // The silhouette is the resting one with only the separator-cut
+            // tips flattened: each vertex is a resting vertex or lies on a
+            // resting edge at a cut.
+            let (x0, y0, segs, _) = geometry(rest[0]);
+            let corners: Vec<(f32, f32)> = std::iter::once((x0, y0))
+                .chain(segs.iter().map(|s| match *s { Seg::Line(x, y) => (x, y), _ => panic!() })).collect();
+            let (sx, sy, ssegs) = SELECTED_OUTERS[i];
+            for (x, y) in std::iter::once((sx, sy)).chain(ssegs.iter().map(|s| match *s { Seg::Line(x, y) => (x, y), _ => panic!() })) {
+                let on_corner = corners.contains(&(x, y));
+                let on_cut_edge = (y.abs() - (104.0 - x.abs())).abs() < 1e-4 && x.abs() > 88.0;
+                assert!(on_corner || on_cut_edge, "tile {i} vertex ({x}, {y})");
+            }
+            // The glyphs are the resting glyphs' geometry, re-inked.
+            let (Prim::Turn { prims: a, .. }, Prim::Turn { prims: b, .. }) =
+                (dashboard_glyphs::SELECTED[i], dashboard_glyphs::REST[i]) else { panic!() };
+            assert_eq!(a.len(), b.len());
+        }
+    }
+
+    /// Each of the six plates paints the inverted drawing when it is the
+    /// selection and its unchanged resting details otherwise; hovering
+    /// the selected plate gets the selected hover, pressing it the
+    /// ordinary held drawing.
+    #[test]
+    fn every_plate_wears_the_inversion_only_when_selected() {
+        let mut seen = 0;
+        for unit in [UNIT_0, UNIT_1, UNIT_2, UNIT_3, UNIT_4, UNIT_5] {
+            let Prim::Plate { index, on, off, .. } = unit[0] else { panic!("expected a plate") };
+            assert_eq!(on, &CELLS_SELECTED[index][..]);
+            assert_eq!(off, &CELL_DETAILS[index][..]);
+            let state = HUB_STATES[index];
+            assert_eq!(state.selected_hover, Some(&CELLS_SELECTED_HOVER[index][..]));
+            assert_eq!(state.selected_pressed, None, "a press on the selected tile is the ordinary press");
+            assert_eq!(state.selected_away, None);
+            seen |= 1 << index;
+        }
+        assert_eq!(seen, 0b111111);
+    }
+
+    /// Each flattened tip sits half an edge inside the separator that
+    /// cuts the resting tile there, so the stroke meets the separator.
+    #[test]
+    fn the_inverted_tips_meet_the_separators() {
+        let centres = [(334.0, 460.0), (530.0, 460.0), (725.0, 460.0), (431.0, 593.0), (628.0, 592.0), (822.0, 592.0)];
+        let bars: Vec<(f32, f32)> = DASHBOARD.iter().filter_map(|p| match *p {
+            Prim::Rect { x, w, fill: Some(Ink::Fixed(c)), .. } if c == HUB_GROUND => Some((x, x + w)),
+            _ => None,
+        }).collect();
+        assert_eq!(bars.len(), 4);
+        for (i, &(cx, _)) in centres.iter().enumerate() {
+            let xs: Vec<f32> = SELECTED_OUTERS[i].2.iter().map(|s| match *s { Seg::Line(x, _) => x, _ => panic!() }).collect();
+            let (lo, hi) = (xs.iter().cloned().fold(f32::INFINITY, f32::min), xs.iter().cloned().fold(f32::NEG_INFINITY, f32::max));
+            for (edge, inner) in [(cx + hi + SELECTED_EDGE / 2.0, true), (cx + lo - SELECTED_EDGE / 2.0, false)] {
+                let cut = bars.iter().any(|&(l, r)| if inner { (edge - l).abs() < 1e-3 } else { (edge - r).abs() < 1e-3 });
+                let open = if inner { hi == 104.0 } else { lo == -104.0 };
+                assert!(cut || open, "tile {i} tip at {edge}");
             }
         }
     }

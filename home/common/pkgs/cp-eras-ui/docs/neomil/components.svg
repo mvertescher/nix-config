@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="2000" viewBox="0 0 1920 2000">
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="2300" viewBox="0 0 1920 2300">
   <!-- NEOMIL COMPONENT SHEET, rebuilt 2026-09-03.
 
        What this is: the widget sheet for the neo-militarism era. Every
@@ -3764,4 +3764,89 @@
   <text x="30" y="1760" font-family="Rajdhani" font-size="13" fill="#df3131">12 // MAILBOX HEADER AND MATERIAL</text>
 <svg x="30" y="1775" width="350" height="110" viewBox="105 70 350 110" overflow="hidden"><use href="#mailbox-source-screen"/></svg><svg x="415" y="1775" width="270" height="110" viewBox="1120 70 270 110" overflow="hidden"><use href="#mailbox-source-screen"/></svg><svg x="725" y="1775" width="730" height="130" viewBox="725 305 730 130" overflow="hidden"><use href="#mailbox-source-screen"/></svg>
   <text x="30" y="1930" font-family="Rajdhani" font-size="8" fill="#96282d">Source #61: measured lettering and badge fields; blue upper panel with body and maker printing. See mailbox-fidelity.md / mailbox-material.md.</text>
+
+  <!-- ============================================================ -->
+  <!-- 13 . HUB TILE, SELECTED (INVERTED)                           -->
+  <!-- ============================================================ -->
+  <!-- OWNER-APPROVED EXTENSION, NOT TRACED. Added 2026-11-13 on Matt's
+       decision (docs/review-2026-11-13/DECISIONS.md item 1). The source
+       (img-07-dashboard.png) shows NO selected diamond: all six share one
+       fill, inset and code, and dashboard-trace.svg keeps that, because a
+       trace records what its photo shows (the other eras' traces carry a
+       selected module only because their photos do). The app still has to
+       show the keyboard's selection, so the selected diamond is drawn
+       INVERTED, borrowing the era's outlined-control rung (section 9: dark
+       fill, bright stroke, bright ink; nav AUDIO, list rows 2..8):
+         face + tab   NAV_FILL #2e1012 (the store nav row's dark fill),
+                      edged 1.5 in the bright foreground (#ef3333 on the
+                      reference dashboard; the palette's fg role elsewhere)
+         inset        the same measured contour, 1 wide, bright foreground
+         code         the same source glyph (matrix, 61-9A / 161-9A, symbol),
+                      bright foreground instead of the dark #200506 ink
+         seam         the tab's closed edge
+         label        unchanged (it is already bright ink on the dark ground)
+       The silhouette is the resting one with the separator-cut side tips
+       flattened half an edge (0.75) inside each separator, so the outline
+       closes there instead of running under the ground bar; outer tips
+       keep their points. Hovered while selected: #551719 face, #f63333
+       edge and ink (the store nav / mailbox row hover coat). Pressed while
+       selected: the ordinary held drawing (#a52223, #420f10 ink, resting
+       silhouette), as section 9 says a press reads on a selected control.
+       The five unselected diamonds are unchanged. Rust:
+       src/eras/neomil.rs CELLS_SELECTED / CELLS_SELECTED_HOVER /
+       SELECTED_OUTERS, glyphs neomil_dashboard_glyphs.rs SELECTED /
+       SELECTED_HOVER. The resting screen always has one selected tile
+       (VEHICLES), an accepted departure from the photo. Tiles drawn here
+       at 1:1 trace scale about local centres; separators at their trace
+       offsets. -->
+  <text x="30" y="1970" font-family="Rajdhani" font-size="13" letter-spacing="4.5" fill="#df3131">13 // HUB TILE, SELECTED = INVERTED  (OWNER-APPROVED EXTENSION 2026-11-13, NOT TRACED)</text>
+  <g transform="translate(150,2090)">
+    <path d="M -15,-89 L 15,-89 L 89.25,-14.75 L 89.25,14.75 L 0,104 L -104,0 Z" fill="#2e1012" stroke="#ef3333" stroke-width="1.5"/>
+    <path d="M -7.63,-58.15 L 10.44,-58.15 L 59.33,-9.25 L 59.33,9.76 L 1.41,67.68 L -66.02,0.24 Z" fill="none" stroke="#ef3333" stroke-width="1"/>
+    <rect x="-38" y="-38" width="76" height="76" fill="#ef3333" mask="url(#dashboard-matrix-0-primary)"/>
+    <path d="M 0,104 L 15,104 L 52,67 L 52,52 Z" fill="#2e1012" stroke="#ef3333" stroke-width="1.5"/>
+    <rect x="90" y="-15" width="16" height="30" fill="#070304"/>
+  </g>
+  <g transform="translate(420,2090)">
+    <path d="M -15,-89 L 15,-89 L 89.25,-14.75 L 89.25,14.75 L 0,104 L -104,0 Z" fill="#551719" stroke="#f63333" stroke-width="1.5"/>
+    <path d="M -7.63,-58.15 L 10.44,-58.15 L 59.33,-9.25 L 59.33,9.76 L 1.41,67.68 L -66.02,0.24 Z" fill="none" stroke="#f63333" stroke-width="1"/>
+    <rect x="-38" y="-38" width="76" height="76" fill="#f63333" mask="url(#dashboard-matrix-0-primary)"/>
+    <path d="M 0,104 L 15,104 L 52,67 L 52,52 Z" fill="#551719" stroke="#f63333" stroke-width="1.5"/>
+    <rect x="90" y="-15" width="16" height="30" fill="#070304"/>
+  </g>
+  <g transform="translate(690,2090)">
+    <path d="M -15,-89 L 15,-89 L 104,0 L 0,104 L -104,0 Z" fill="#a52223"/>
+    <path d="M -7.63,-58.15 L 10.44,-58.15 L 59.33,-9.25 L 59.33,9.76 L 1.41,67.68 L -66.02,0.24 Z" fill="none" stroke="#420f10" stroke-width="1"/>
+    <rect x="-38" y="-38" width="76" height="76" fill="#420f10" mask="url(#dashboard-matrix-0-primary)"/>
+    <path d="M 0,104 L 15,104 L 52,67 L 52,52 Z" fill="#a52223"/>
+    <path d="M 0,104 L 52,52" fill="none" stroke="#420f10" stroke-width="1"/>
+    <rect x="90" y="-15" width="16" height="30" fill="#070304"/>
+  </g>
+  <g transform="translate(980,2090)">
+    <path d="M -15,-89 L 15,-89 L 88.75,-15.25 L 88.75,15.25 L 0,104 L -89.25,14.75 L -89.25,-14.75 Z" fill="#2e1012" stroke="#ef3333" stroke-width="1.5"/>
+    <path d="M -7.51,-58.15 L 11.37,-58.15 L 69.31,-0.21 L 1.93,67.18 L -56.45,8.79 L -56.45,-9.21 Z" fill="none" stroke="#ef3333" stroke-width="1"/>
+    <rect x="-38" y="-38" width="76" height="76" fill="#ef3333" mask="url(#dashboard-matrix-1-primary)"/>
+    <path d="M 0,104 L 15,104 L 52,67 L 52,52 Z" fill="#2e1012" stroke="#ef3333" stroke-width="1.5"/>
+    <rect x="-106" y="-15" width="16" height="30" fill="#070304"/><rect x="89.5" y="-15" width="16" height="30" fill="#070304"/>
+  </g>
+  <g transform="translate(1250,2090)">
+    <use href="#dashboard-tile-1"/>
+    <use href="#dashboard-glyph-1"/>
+    <rect x="-106" y="-15" width="16" height="30" fill="#070304"/>
+    <rect x="89.5" y="-15" width="16" height="30" fill="#070304"/>
+  </g>
+  <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.2" fill="#96282d">
+    <text x="50" y="2215" font-weight="700" fill="#df3131">VEHICLES SELECTED</text>
+    <text x="50" y="2224">face + tab #2e1012, edge #ef3333 1.5, inset 1, code #ef3333</text>
+    <text x="320" y="2215" font-weight="700" fill="#df3131">VEHICLES SELECTED, HOVERED</text>
+    <text x="320" y="2224">face + tab #551719, edge, inset and code #f63333</text>
+    <text x="590" y="2215" font-weight="700" fill="#df3131">VEHICLES SELECTED, PRESSED</text>
+    <text x="590" y="2224">= the ordinary press: #a52223, inset/seam/code #420f10</text>
+    <text x="880" y="2215" font-weight="700" fill="#df3131">LOCATIONS SELECTED</text>
+    <text x="880" y="2224">both side tips cut: flat at x -89.25 / 88.75, 0.75 inside the separators</text>
+    <text x="1150" y="2215" font-weight="700" fill="#df3131">LOCATIONS UNSELECTED (as traced)</text>
+    <text x="1150" y="2224">#dashboard-tile-1 + #dashboard-glyph-1, unchanged</text>
+    <text x="50" y="2250">OWNER-APPROVED EXTENSION (Matt, 2026-11-13), NOT TRACED: the source shows no selected tile. One tile is always selected; the resting screen departs from the photo by that one tile.</text>
+    <text x="50" y="2260">Arrow keys / h j k l move it; Enter or a click opens LOCATIONS (mailbox) or PRODUCTS (store); the other four are inert. Labels do not change.</text>
+  </g>
 </svg>
