@@ -1,20 +1,26 @@
 # cp-eras agent guidance
 
-## Model allocation
+## Who works on this
 
-Agreed 2026-09-27. Keep orchestration and verification on GPT-6 Astra,
-and use smaller models for scoped implementation work.
+Since 2026-11-13 the crate is run by one Claude session, which
+orchestrates, verifies and commits. The GPT allocation agreed on
+2026-09-27 (Astra orchestrating and verifying, Sol and Luna as workers) no
+longer applies; rounds 1-85 in `docs/` were done under it.
 
-| Role | Model | Reasoning | Responsibilities |
-| --- | --- | --- | --- |
-| Orchestrator | `gpt-6-astra` | Retain the session setting | Select tasks, define acceptance checks, make architectural decisions and integrate changes. |
-| Verifier | `gpt-6-astra` | Retain the session setting | Review diffs, source fidelity and test evidence before closing tasks. |
-| Default implementation worker | `gpt-6-sol` | `medium` | Scoped Rust fixes, SVG corrections, tests and performance work. |
-| Simple-task worker | `gpt-6-luna` | `medium` | Inventories, documentation cleanup and scripted measurements with explicit instructions. |
+The goal, in order (Matt, 2026-11-13): faithful recreations of the four
+eras; Matt evaluates them; animations; then a larger UI framework per era.
+Where a visual judgment is Matt's to make, show him the comparison rather
+than deciding fidelity for him.
 
-The orchestrator may also act as the verifier. Keep ambiguous visual
-judgments and changes spanning shared rendering behavior with Astra;
-workers should report uncertainty and unresolved failures to it.
+When work is delegated to subagents, the rules below still hold: the
+orchestrating session reviews the actual changes, keeps ambiguous visual
+judgments and anything touching shared rendering for itself, and workers
+report uncertainty rather than closing a task on it.
+
+Live desktop runs are allowed (Matt, 2026-11-13): these apps may be
+launched on terra's logged-in session, sent test input and screenshotted.
+Never a real password, never a workspace switch, and say so before each
+round. See `docs/live-desktop-2026-11-13.md` for the method.
 
 ## Keep delegation focused
 
@@ -33,7 +39,7 @@ workers should report uncertainty and unresolved failures to it.
 
 ## Verify before closing work
 
-Astra reviews the actual changes and evidence, not just the worker's
+The orchestrator reviews the actual changes and evidence, not just the worker's
 completion claim. For fidelity corrections, compare the original image,
 the rendered SVG and the Iced result in the affected region and relevant
 states. Broad shape gates and matching goldens alone do not establish

@@ -435,6 +435,11 @@ content is intentionally static; no network/payment backend is specified.
   intentional goldens. Run both gates, Rust tests and full repo checks.
 - [ ] Live desktop navigation/feedback verification remains separate;
   no GUI launch is authorized solely by headless testing requirements.
+  **2026-11-13, first live run** ([record](../docs/live-desktop-2026-11-13.md)):
+  the store opens from the hub, draws correctly at 4K, redraws at
+  1600x900 and back, and Escape returns. Still open: keyboard navigation
+  and card hover inside the store (that batch ran against the hub by
+  mistake and was discarded).
 
 Baseline frozen output equals its golden. G1i18/43 shapes,71% source
 area; G2i14/36 shapes,79% trace area. All pass despite these defects;

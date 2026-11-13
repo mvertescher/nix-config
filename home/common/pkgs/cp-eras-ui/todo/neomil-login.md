@@ -193,6 +193,12 @@ account cards are source artwork, not an account-management backend.
 - [ ] Live desktop keyboard/pointer/IME and actual greetd/session check
   remain separate from headless checks; do not use real passwords in
   capture tooling or start desktop applications without authorization.
+  **2026-11-13, first live run** ([record](../docs/live-desktop-2026-11-13.md)):
+  the greeter logged a real session in on terra, and the windowed login
+  takes typed text (masked), Backspace and Enter. Still open: pointer
+  states, IME, and why Escape after typing did not return to the rest
+  frame (finding 7). Matt has given standing permission for live launches
+  with test input; never a real password.
 
 Baseline: frozen Iced equals its existing golden. G1i matches16/34 shapes,
 79% source area; G2i26/31 shapes,96% trace area. Those are extracted-shape

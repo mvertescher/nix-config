@@ -198,3 +198,15 @@ Open:
   `target-components.svg` inventories are moot too: the sheets were
   rebuilt as `components.svg` 2026-09-03 and the README entries
   rewritten from the new sheets.
+
+## Live desktop, 2026-11-13
+
+- [ ] **Survive the output being re-created.** On terra the compositor
+  removed and re-added the output 22 s after login; the bar's layer
+  surface closed and the bar exited 0, leaving the session with no bar
+  ([record](../docs/live-desktop-2026-11-13.md), finding 1). The unit now
+  restarts on any exit (`home/themes/lib/era.nix`, `Restart=always`),
+  which hides it with a 3 s gap. The fix that belongs here: on the
+  surface's `Closed`, wait for an output and open a new surface rather
+  than exiting. `examples/cp-eras-ui-bar.rs` already distinguishes the
+  bar's own window from popups in `Message::Closed`.
