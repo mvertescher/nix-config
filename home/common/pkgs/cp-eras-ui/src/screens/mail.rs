@@ -70,6 +70,7 @@ use crate::widgets::surface::{outline, Corners, Cut};
 use crate::screens::nav::{Dir, Stroke};
 use crate::screens::scene::{blend_over, Backdrop, Pointer, PointerAction};
 use crate::widgets::ground;
+use crate::widgets::stem;
 use crate::Element;
 use iced::widget::{canvas, stack, Action};
 use iced::{mouse, Color, Event, Length, Point, Rectangle, Renderer, Size, Subscription, Vector};
@@ -1092,7 +1093,24 @@ fn curve_at(
     if steps.is_empty() {
         return;
     }
-    let path = canvas::Path::new(|b| {
+    let path = curve_path(scale, start, steps, close);
+    if let Some(color) = fill {
+        frame.fill(&path, color);
+    }
+    if let Some((color, width)) = stroke {
+        frame.stroke(
+            &path,
+            canvas::Stroke::default()
+                .with_color(color)
+                .with_width(scale.len(width))
+                .with_line_join(canvas::LineJoin::Round),
+        );
+    }
+}
+
+/// A [`Piece::Curve`]'s path, in canvas pixels.
+fn curve_path(scale: Scale, start: (f32, f32), steps: &[Seg], close: bool) -> canvas::Path {
+    canvas::Path::new(|b| {
         b.move_to(scale.point(start.0, start.1));
         for step in steps {
             match *step {
@@ -1111,19 +1129,7 @@ fn curve_at(
         if close {
             b.close();
         }
-    });
-    if let Some(color) = fill {
-        frame.fill(&path, color);
-    }
-    if let Some((color, width)) = stroke {
-        frame.stroke(
-            &path,
-            canvas::Stroke::default()
-                .with_color(color)
-                .with_width(scale.len(width))
-                .with_line_join(canvas::LineJoin::Round),
-        );
-    }
+    })
 }
 
 /// One run of text, positioned by the baseline the trace gives.
@@ -1177,11 +1183,15 @@ fn label_keep(
         if glyphs.len() != content.len() || skip_prefix > glyphs.len() {
             return false;
         }
+        let darken = stem::stroke(color, stem::width(s.ink_override.unwrap_or(at.ink), color));
         frame.with_save(|f| {
             f.translate(Vector::new(origin.x, origin.y));
             f.scale_nonuniform(Vector::new(at.stretch, 1.0));
-            for (path, color) in glyphs.into_iter().skip(skip_prefix) {
-                f.fill(&path, color);
+            for (path, glyph_color) in glyphs.into_iter().skip(skip_prefix) {
+                f.fill(&path, glyph_color);
+                if darken.width > 0.0 && glyph_color == color {
+                    f.stroke(&path, darken);
+                }
             }
         });
     } else if (at.stretch - 1.0).abs() <= 1e-4 {
@@ -1193,7 +1203,10 @@ fn label_keep(
         frame.with_save(|frame| {
             frame.translate(iced::Vector::new(text.position.x, text.position.y));
             frame.scale_nonuniform(iced::Vector::new(at.stretch, 1.0));
-            frame.fill_text(canvas::Text { position: Point::ORIGIN, ..text });
+            // Stretched, so on the outline route: dark ink on a fill is
+            // grown there (`widgets::stem`).
+            let stem = stem::width(s.ink_override.unwrap_or(at.ink), color);
+            stem::fill_text(frame, canvas::Text { position: Point::ORIGIN, ..text }, stem);
         });
     }
     true
@@ -1590,6 +1603,22 @@ impl Sheet<'_> {
                     frame.with_save(|f| {
                         f.translate(Vector::new(at.x * scale.sx, at.y * scale.sy));
                         pieces(f, scale, Paint { ink_override: Some(title_ink), ..s }, list.new_pill_art);
+                        // The pill's letters are traced glyph outlines, filled
+                        // through the same MSAA route as outline text: on the
+                        // selected row they are dark ink on the fill and are
+                        // grown the same way (`widgets::stem`). Its frame is a
+                        // stroke, not a glyph, and is left alone.
+                        let color = ink(s, title_ink);
+                        let width = stem::width(title_ink, color);
+                        if width > 0.0 {
+                            for piece in list.new_pill_art {
+                                if let Piece::Curve { start, steps, close, fill: Some(_), stroke: None, .. } = piece {
+                                    if !steps.is_empty() {
+                                        f.stroke(&curve_path(scale, *start, steps, *close), stem::stroke(color, width));
+                                    }
+                                }
+                            }
+                        }
                     });
                     return;
                 }

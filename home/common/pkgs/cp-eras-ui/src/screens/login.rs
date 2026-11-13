@@ -43,6 +43,7 @@
 
 use crate::greetd::{self, Refusal, Secret};
 use crate::motion;
+use crate::widgets::stem;
 use crate::style::{
     Access, Blink, Caret, Coat, Colophon, Emblem, Entry, Fixture, Ink, Legend, Masthead, Plate, Plot,
     Seg, Slot,
@@ -713,6 +714,14 @@ impl Pen<'_> {
         let tracking = g.span(legend.tracking);
         let anchor = g.at(legend.x, legend.baseline);
         let stretch = legend.stretch;
+        // Turned or stretched, the run is drawn as glyph outlines, where
+        // dark ink on a fill is grown (`widgets::stem`); otherwise it is
+        // on the glyph atlas and left to its shader.
+        let stem = if legend.turned || (stretch - 1.0).abs() > 1e-4 {
+            stem::width(legend.ink, color)
+        } else {
+            0.0
+        };
         self.frame.with_save(|frame| {
             frame.translate(Vector::new(anchor.x, anchor.y));
             if legend.turned {
@@ -724,7 +733,7 @@ impl Pen<'_> {
             frame.translate(Vector::new(0.0, -size * ASCENT));
 
             if tracking == 0.0 {
-                frame.fill_text(text);
+                stem::fill_text(frame, text, stem);
                 return;
             }
 
@@ -733,12 +742,12 @@ impl Pen<'_> {
                 + tracking * (advances.len().max(1) - 1) as f32;
             let mut x = if legend.centred { -total / 2.0 } else { 0.0 };
             for (glyph, advance) in content.chars().zip(advances) {
-                frame.fill_text(canvas::Text {
+                stem::fill_text(frame, canvas::Text {
                     content: glyph.to_string(),
                     position: Point::new(x, 0.0),
                     align_x: iced::advanced::text::Alignment::Left,
                     ..text.clone()
-                });
+                }, stem);
                 x += advance + tracking;
             }
         });
