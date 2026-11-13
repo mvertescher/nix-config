@@ -3,6 +3,9 @@
 A Rust/[iced](https://iced.rs) UI toolkit for the four Cyberpunk 2077
 interface eras: **entropism**, **kitsch**, **neo-militarism** and
 **neokitsch**.
+What the project is for, and the order it is being done in, is in
+[GOAL.md](GOAL.md). The task list is [TODO.md](TODO.md) and `todo/`.
+
 
 Formerly `neomil-ui`, which implemented one era. The rename came with the
 generalisation described below. `entropism-ui`, the one-era crate beside

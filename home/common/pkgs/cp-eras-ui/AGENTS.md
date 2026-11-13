@@ -7,12 +7,14 @@ orchestrates, verifies and commits. The GPT allocation agreed on
 2026-09-27 (Astra orchestrating and verifying, Sol and Luna as workers) no
 longer applies; rounds 1-85 in `docs/` were done under it.
 
-The goal, in order (Matt, 2026-11-13): faithful recreations of the four
-eras; Matt evaluates them; animations; then a larger UI framework per era.
-Where a visual judgment is Matt's to make, show him the comparison rather
-than deciding fidelity for him.
+What the project is for is in [GOAL.md](GOAL.md): recreate the four eras,
+Matt evaluates them, animations, a framework per era, and mobile in the
+long term. Read it first. Where a visual judgment is Matt's to make, show
+him the comparison rather than deciding fidelity for him.
 
-When work is delegated to subagents, the rules below still hold: the
+When work is delegated to subagents they run on Opus 5.5 (Matt,
+2026-11-13; with the Agent tool, `model: "opus"`), and the rules below
+still hold: the
 orchestrating session reviews the actual changes, keeps ambiguous visual
 judgments and anything touching shared rendering for itself, and workers
 report uncertainty rather than closing a task on it.
