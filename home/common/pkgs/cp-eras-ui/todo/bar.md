@@ -201,12 +201,45 @@ Open:
 
 ## Live desktop, 2026-11-13
 
-- [ ] **Survive the output being re-created.** On terra the compositor
+- [x] **Survive the output being re-created.** On terra the compositor
   removed and re-added the output 22 s after login; the bar's layer
   surface closed and the bar exited 0, leaving the session with no bar
-  ([record](../docs/live-desktop-2026-11-13.md), finding 1). The unit now
-  restarts on any exit (`home/themes/lib/era.nix`, `Restart=always`),
-  which hides it with a 3 s gap. The fix that belongs here: on the
-  surface's `Closed`, wait for an output and open a new surface rather
-  than exiting. `examples/cp-eras-ui-bar.rs` already distinguishes the
-  bar's own window from popups in `Message::Closed`.
+  ([record](../docs/live-desktop-2026-11-13.md), finding 1).
+  **The cause recorded here at first was wrong**: the bar never chose to
+  exit. In the default `StartMode::Active`, layershellev stops its event
+  loop when the last unit closes (`layershellev-0.19.1/src/lib.rs`, the
+  `units.is_empty() && !is_allscreens() && !is_background()` check after
+  `closed_ids` are handled), so `run()` returns `Ok` and the process ends
+  0. Fixed with `StartMode::AllScreens`: the loop keeps running with no
+  units and makes a layer surface for every `wl_output` that appears.
+  `examples/bar/surfaces.rs` adds a 10 s watchdog (exit 1 if the last
+  surface is gone and none came back), for the case AllScreens cannot
+  cover: the compositor closing the surface while the output stays.
+  **Verified live 2026-11-13** (debug build, terra, one 4K output):
+  `hyprctl keyword monitor HDMI-A-1,disable`, then `hyprctl reload`, three
+  times. Same PID throughout, the unit never exited, exactly one bar
+  layer at 3840x31 after each cycle. While the monitor is disabled
+  Hyprland substitutes a 1920-wide fallback output and the bar moves onto
+  it. Not checked: a tray menu on the re-created bar; the watchdog firing
+  for real; the release package (only the debug binary was run).
+  Consequence, accepted by Matt 2026-11-13: a bar on every output.
+- [ ] **Each output re-creation leaks about 16 MB.** Measured on the same
+  run: 251 -> 266 -> 280 -> 299 MB resident over three disable/enable
+  cycles (each cycle is two surface creations, fallback then real), not
+  released 20 s later; threads 60 -> 62. Harmless at a reconnect or two a
+  day, so not fixed. Likely cause, **not confirmed**: in AllScreens the
+  surface is bound to its `wl_output`, and when the output's removal is
+  handled before the layer `closed`, `output_destroyed` drops the unit
+  first (`layershellev lib.rs`, `closed_ids`), so iced_layershell's
+  `handle_closed_event` (`multi_window.rs`) never finds it, never frees
+  the iced window and its wgpu surface, and never sends the app `Closed`
+  -- which would also keep a stale id counted, so the watchdog could not
+  fire later in that process. A fix would be a small patch to
+  layershellev under `[patch.crates-io]`, beside the iced_wgpu one. Before
+  patching, confirm the order of events with `WAYLAND_DEBUG=1`.
+- Live-test notes for next time: a cargo-built binary run outside
+  `nix-shell` dies with `ConnectError(NoWaylandLib)`; pass the shell's
+  `LD_LIBRARY_PATH` (`systemd-run --user --setenv=LD_LIBRARY_PATH=...`).
+  After re-enabling a monitor the display stays asleep until
+  `hyprctl dispatch dpms on`, and `grim` blocks forever while it is. The
+  active workspace changed (3 -> 2) across the cycle.

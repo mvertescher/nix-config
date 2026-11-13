@@ -35,8 +35,8 @@ coarse to time anything.
    logged the `wl_output` going and coming back at 09:01:40); the bar's
    layer surface closed, the bar exited 0, and `Restart=on-failure` did
    not bring it back. The session had no bar. Mitigated in
-   `home/themes/lib/era.nix` (`Restart=always`). The bar should re-create
-   its surface on the new output instead of exiting: open, `todo/bar.md`.
+   `home/themes/lib/era.nix` (`Restart=always`), then fixed the same day in
+   the bar (`StartMode::AllScreens`); verified live, see `todo/bar.md`.
 2. **Cold starts are slow at 4K.** Window mapped after 3.6 s (dashboard),
    2.8 s (login), 2.4 s (mailbox). The first store open took between 3.6
    and 6.8 s (full-frame captures, so no finer). The dashboard process
