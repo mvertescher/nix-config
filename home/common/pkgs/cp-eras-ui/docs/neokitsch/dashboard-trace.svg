@@ -697,8 +697,13 @@
          line slot, two lines. The hyphen in maece- is visible in the source.
          This reference reproduces the photographed text independently of
          the mailbox's separate message. Rajdhani16.3, x1180.4, native
-         ascender rows823/870/916/963/1010/1057 then1152/1197. -->
-    <g id="panel-copy" font-family="Rajdhani" font-size="16.3" fill="#4b341f">
+         ascender rows823/870/916/963/1010/1057 then1152/1197.
+         Weight 500 since 2026-11-13 (was the default 400): over the
+         first four lines (box 1179,341 222x71) the source has 15.4% of
+         pixels past the fill/ink midpoint and 2986 units of ink mass;
+         400 rendered 10.9% / 2531, 500 renders 14.6% / 3089. Full-res
+         ink core #4f3822 on #fcbc6a, so #4b341f stands. -->
+    <g id="panel-copy" font-family="Rajdhani" font-size="16.3" font-weight="500" fill="#4b341f">
       <text x="1180.4" y="354.2">Lorem ipsum dolor sit amet,</text>
       <text x="1180.4" y="373.7">consectetur adipiscing elit, sed</text>
       <text x="1180.4" y="393.2">do eiusmod tempor incididunt</text>

@@ -39,8 +39,9 @@
            a dark chocolate field [417,361]..[762,403] (#3c1c11, no
            outline), a solid gold bar [417,414]..[761,441] with a
            ~16x13 chamfer cut off its bottom-LEFT corner only, carrying
-           ENTER / LOGIN in a wide light face in dark brown (x
-           532.9..645.4: 14px 300 letter-spacing 4.1 centred on 582.5);
+           ENTER / LOGIN in a wide medium face in dark brown (x
+           533..646: 14px 500 stretched 1.42, untracked, centred on
+           589.5; 300 with letter-spacing 4.1 until 2026-11-13);
            a 26x26 letter box A (416,465) / B (836,465) with one external
            lower-right chamfer and a solid tab rising from its bottom
            edge, and the SPARE TIME MANAGER micro-text beside it
@@ -160,7 +161,15 @@
     </g>
     <g id="entrytext" font-family="Rajdhani">
       <text x="428.5" y="350" font-size="19.5" font-weight="500" letter-spacing="0.15" fill="#f5bf75">PRASE_6054012</text>
-      <text x="582.5" y="435" font-size="14" font-weight="300" letter-spacing="4.1"
+      <!-- ENTER / LOGIN, corrected 2026-11-13: weight 500, stretched
+           1.42, no tracking (was 300 with letter-spacing 4.1 on x
+           582.5). Full-res source: stems ~2.6px at 4K = 0.077 em
+           (Rajdhani 300 is 0.030, 500 is 0.073), ink core #78532a on
+           #ffc670, a wide face at normal spacing (E 8.3, N 10.4, O 10.4
+           wide at 1600), ink x 533..646. In the label box (530,422
+           118x16) the source has 13.4% of pixels past the fill/ink
+           midpoint; the 300 setting rendered 2.8%, this one 15.5% -->
+      <text transform="translate(589.5,435) scale(1.42,1)" font-size="14" font-weight="500"
             fill="#6b3f1e" text-anchor="middle">ENTER / LOGIN</text>
       <g font-size="7" fill="#a97c48" letter-spacing="0.4">
         <text x="454" y="471">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>

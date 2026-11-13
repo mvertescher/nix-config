@@ -468,8 +468,14 @@
   <g font-family="Rajdhani" font-size="17.5">
     <g transform="translate(241.25,315.4167)">
       <use href="#row1" fill="#e33131"/>
-      <text x="7.0833" y="24" fill="#531719">List of messages</text>
-      <text x="262.5833" y="24" fill="#531719" text-anchor="end">Jackie</text>
+      <!-- Weight 500 on the fill since 2026-11-13 (was 400): the source's
+           selected-row printing has 16.7% of the box 247,325 130x20 past
+           the fill/ink midpoint and 664 units of ink mass over
+           245,322 270x22; 400 rendered 7.9% / 448, 500 renders 13.8% /
+           594 (600 overshoots, 17.2% / 744). Full-res ink core #581517
+           on #e33132, so #531719 stands. -->
+      <text x="7.0833" y="24" font-weight="500" fill="#531719">List of messages</text>
+      <text x="262.5833" y="24" font-weight="500" fill="#531719" text-anchor="end">Jackie</text>
       <use href="#pill-art" x="162.5" y="46.875" color="#531719"/>
     </g>
     <g transform="translate(241.25,385.4167)">
@@ -570,7 +576,15 @@
   <!-- ==== action buttons y 702..758 ==== -->
   <g font-family="Rajdhani" font-size="16.6667">
     <use href="#btn" x="728" y="702" fill="#e63132"/>
-    <text x="740.5" y="746.6667" fill="#59171b">Switch Weapon</text>
+    <!-- Switch Weapon, corrected 2026-11-13: weight 500 and the era's
+         on-select ink #1a0405 (was 400 in #59171b). Full-res source:
+         ink core #3b090a, darkest 1% #120101, on #e63131 -- #59171b is
+         lighter than any core pixel. In the box 738,732 110x19 the
+         source has 16.9% past the fill/ink midpoint; the old setting
+         rendered 6.3%, this one 18.4% (500 in the core #3b090a: 16.6%).
+         #1a0405 is `on_select`, which the app's primary button already
+         printed in. -->
+    <text x="740.5" y="746.6667" font-weight="500" fill="#1a0405">Switch Weapon</text>
     <g fill="#1a0607" stroke="#8a2024" stroke-width="1">
       <use href="#btn" x="908" y="702"/>
       <use href="#btn" x="1088" y="702"/>

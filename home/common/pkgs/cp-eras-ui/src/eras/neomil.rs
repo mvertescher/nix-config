@@ -957,7 +957,7 @@ pub const ACCESS: Access = Access {
 // The panel material and its maker marks share the sheet's opening clip.
 use crate::style::{
     Frame, Icons, Mail, MailBadges, MailButtons, MailList, MailRowCoat, MailRowStates, MailMotion, MailPanel, MailPart,
-    Mailbox, Note, Piece, RowDecor, Run, Trim, FromAt, BL, BR,
+    MailRowType, Mailbox, Note, Piece, RowDecor, Run, Trim, FromAt, BL, BR,
 };
 
 #[path = "neomil_mailbox_art.rs"]
@@ -1111,6 +1111,9 @@ static OVERLAY: &[Piece] = &[
     },
 ];
 
+/// Per-button label runs: only the first, filled one differs (medium).
+static BUTTON_RUNS: [Run; 1] = [Run::new(12.5, 44.6667, 16.6667, Ink::OnSelect).medium()];
+
 static BUTTONS: [&str; 4] = [
     "Switch Weapon",
     "Confirm / Jump",
@@ -1171,7 +1174,16 @@ pub fn mailbox() -> Mailbox {
         overlay: OVERLAY,
         list: MailList {
             row_type: &[],
-            selected_row_type: None,
+            // The selected row's printing is set medium, the rest
+            // regular (mailbox-trace.svg, the row-1 note): at regular
+            // the dark ink on the red fill printed thin and faint
+            // against the source until 2026-11-13. Same anchors as the
+            // resting layout -- `text_x`/`title_dy` and the trailing
+            // sender 7 inside the row's right edge (241.25 + 269.5833).
+            selected_row_type: Some(MailRowType {
+                title: Run::new(248.3333, 24.0, 17.5, Ink::Fixed(rgb(0x531719))).medium(),
+                from: Run::new(503.8333, 24.0, 17.5, Ink::Fixed(rgb(0x531719))).medium().right(),
+            }),
             footer: MAIL_LIST_FOOTER,
             feedback: Some(MailRowStates {
                 hover: MailRowCoat {
@@ -1305,7 +1317,10 @@ pub fn mailbox() -> Mailbox {
             stroke: Ink::Dim,
             label: Run::new(12.5, 44.6667, 16.6667, Ink::Fixed(rgb(0xfb3535))),
             tab: None,
-            label_runs: &[],
+            // Switch Weapon, the filled one, is set medium in `on_select`
+            // (the renderer's ink for a filled button); the idle three
+            // stay regular. mailbox-trace.svg, the Switch Weapon note.
+            label_runs: &BUTTON_RUNS,
             labels: &BUTTONS,
         },
         badges: MailBadges {

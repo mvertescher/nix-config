@@ -715,13 +715,23 @@ mod interaction_tests {
         for row in 0..=list.rows.len() {
             assert_eq!(list.row_type_at(row, true), list.row_type_at(row, false));
         }
-        for era in [crate::style::Era::Entropism, crate::style::Era::Neokitsch,
-            crate::style::Era::Neomil] {
+        for era in [crate::style::Era::Entropism, crate::style::Era::Neokitsch] {
             let list = era.style().mailbox.list;
             assert!(list.selected_row_type.is_none());
             for row in 0..list.rows.len() {
                 assert_eq!(list.row_type_at(row, true), list.row_type_at(row, false));
             }
+        }
+        // Neomil sets only the selected row's printing medium, at the
+        // resting anchors (mailbox-trace.svg, the row-1 note).
+        let list = crate::style::Era::Neomil.style().mailbox.list;
+        for row in 0..list.rows.len() {
+            assert!(list.row_type_at(row, false).is_none());
+            let selected = list.row_type_at(row, true).unwrap();
+            assert!(selected.title.medium && selected.from.medium);
+            assert_eq!((selected.title.x, selected.title.y, selected.title.size),
+                (list.text_x, list.title_dy, list.title_size));
+            assert_eq!((selected.from.y, selected.from.size), (list.title_dy, list.from_size));
         }
     }
 

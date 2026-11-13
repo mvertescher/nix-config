@@ -1791,25 +1791,28 @@ const fn wide_mid(x: f32, y: f32, size: f32, stretch: f32, ink: Ink, face: Face,
 // One caption box, trace `<g id="caption">` (defs): drawn at the tile's
 // foot-left corner with the tile's own frame at y 0 and the box's bottom
 // edge lying on it. Top rule 28px up, divider 96px in, both 1.7px (the
-// def's `<path d="M 0,-28 H 194 M 96,-28 V 0">`), two cells of 600-weight
-// text stretched to the measured runs.
+// def's `<path d="M 0,-28 H 194 M 96,-28 V 0">`), two cells of text
+// stretched to the measured runs. The def sets them 700; the idle boxes
+// are drawn 600 here, the selected one at the trace's 700 (until
+// 2026-11-13 it was 600 too, and the dark caption on the sage fill came
+// out thin and pale beside the source's firm ink).
 macro_rules! caption {
-    ($rule_ink:expr, $text_ink:expr) => {
+    ($rule_ink:expr, $text_ink:expr, $face:expr) => {
         &[
             hline(0.0, -28.0, 194.0, $rule_ink, 1.7),
             vline(96.0, -28.0, 0.0, $rule_ink, 1.7),
-            Prim::ReusableWide { x: 6.0, y: -15.0, size: 12.0, stretch: 0.78, ink: $text_ink, face: Face::SemiBold, anchor: Anchor::Start, content: "85SD4F3Q5S41" },
-            Prim::ReusableWide { x: 103.0, y: -15.0, size: 12.0, stretch: 0.685, ink: $text_ink, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
-            Prim::ReusableWide { x: 103.0, y: -6.0, size: 10.5, stretch: 0.82, ink: $text_ink, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
+            Prim::ReusableWide { x: 6.0, y: -15.0, size: 12.0, stretch: 0.78, ink: $text_ink, face: $face, anchor: Anchor::Start, content: "85SD4F3Q5S41" },
+            Prim::ReusableWide { x: 103.0, y: -15.0, size: 12.0, stretch: 0.685, ink: $text_ink, face: $face, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
+            Prim::ReusableWide { x: 103.0, y: -6.0, size: 10.5, stretch: 0.82, ink: $text_ink, face: $face, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
         ]
     };
 }
 /// The box as the five idle tiles wear it, `<use href="#caption"
 /// fill="#a2cfa7" stroke="#a8d7a7">`.
-const CAPTION: &[Prim] = caption!(Ink::Fixed(HUB_CAPTION), Ink::Fixed(HUB_CAPTION_TEXT));
+const CAPTION: &[Prim] = caption!(Ink::Fixed(HUB_CAPTION), Ink::Fixed(HUB_CAPTION_TEXT), Face::SemiBold);
 /// The box as the selected tile wears it, `<use href="#caption"
 /// fill="#2e4a2c" stroke="#2e4a2c">` -- dark on the sage fill.
-const CAPTION_ON: &[Prim] = caption!(Ink::Fixed(HUB_ON_CAPTION), Ink::Fixed(HUB_ON_CAPTION));
+const CAPTION_ON: &[Prim] = caption!(Ink::Fixed(HUB_ON_CAPTION), Ink::Fixed(HUB_ON_CAPTION), Face::Bold);
 
 // One menu tile, foot-anchored like the caption def so the `At` that
 // places it carries the trace's own `<use href="#caption" x y>`

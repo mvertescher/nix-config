@@ -828,10 +828,14 @@ pub const ACCESS: Access = Access {
                     .bevelled(Bevel::bl(16.0)),
             ),
             action_label: Some(
-                Legend::new("ENTER / LOGIN", 582.5, 435.0, 14.0, Ink::Fixed(ON_BAR))
+                // 500, stretched 1.42 and untracked: the source is a wide
+                // medium face at normal spacing (login-trace.svg, the
+                // ENTER / LOGIN note; 300 with tracking 4.1 until
+                // 2026-11-13, which printed the label thin and pale)
+                Legend::new("ENTER / LOGIN", 589.5, 435.0, 14.0, Ink::Fixed(ON_BAR))
                     .centred()
-                    .light()
-                    .tracked(4.1),
+                    .medium()
+                    .stretched(1.42),
             ),
             badge: Some(Plate::outlined(
                 Plot::new(416.0, 465.0, 26.0, 26.0),
@@ -870,10 +874,14 @@ pub const ACCESS: Access = Access {
                     .bevelled(Bevel::bl(16.0)),
             ),
             action_label: Some(
-                Legend::new("ENTER / LOGIN", 1002.5, 435.0, 14.0, Ink::Fixed(ON_BAR))
+                // 500, stretched 1.42 and untracked: the source is a wide
+                // medium face at normal spacing (login-trace.svg, the
+                // ENTER / LOGIN note; 300 with tracking 4.1 until
+                // 2026-11-13, which printed the label thin and pale)
+                Legend::new("ENTER / LOGIN", 1009.5, 435.0, 14.0, Ink::Fixed(ON_BAR))
                     .centred()
-                    .light()
-                    .tracked(4.1),
+                    .medium()
+                    .stretched(1.42),
             ),
             badge: Some(Plate::outlined(
                 Plot::new(836.0, 465.0, 26.0, 26.0),
@@ -2875,12 +2883,14 @@ const PANEL_BODY: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: panel_grain::PATHS },
 ];
 
-/// The panel's paragraph text: Rajdhani 16.3 regular, `Start`-anchored
+/// The panel's paragraph text: Rajdhani 16.3 medium, `Start`-anchored
 /// at the trace's x 1180.4 so the L's stem lands on the measured ink
-/// left, in `HUB_DARK`.
+/// left, in `HUB_DARK`. Medium since 2026-11-13, with `#panel-copy`
+/// (dashboard-trace.svg): regular printed the panel thin and pale
+/// against the source's dark-brown medium weight.
 macro_rules! para {
     ($y:expr, $s:expr) => {
-        txt(1180.4, $y, 16.3, Ink::Fixed(HUB_DARK), $s)
+        Prim::Text { x: 1180.4, y: $y, size: 16.3, ink: Ink::Fixed(HUB_DARK), face: Face::Medium, anchor: Anchor::Start, content: $s }
     };
 }
 /// Literal source #69 detail-panel text (NK-06), six lines and two.
