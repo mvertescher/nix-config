@@ -45,6 +45,13 @@
   # Per-era styling knobs. The defaults are the shared "hard edges"
   # house style; an ornamental era overrides them.
   knobs ? { },
+  # Extra top-level keys for theme/current.toml, as TOML text. An era
+  # with a designed desktop publishes its scale here (neomil: ui_scale,
+  # line_scale) so the native bar is fitted by the same numbers as the
+  # rest of the desktop.
+  tomlExtra ? "",
+  # Appended to the notification stylesheet, for the same kind of era.
+  swayncExtra ? "",
   # Lock screen. Everything it generates is mkDefault, so a host
   # overrides any individual setting with a plain definition; set
   # enable = false to opt out of the theme's lock entirely and drive
@@ -202,6 +209,7 @@ let
     era = "${lib.toLower name}"
     variant = "${variant}"
     polarity = "${rolesLib.polarityOf roles}"
+    ${tomlExtra}
 
     [font]
     ui = "${font.name}"
@@ -925,6 +933,8 @@ lib.mkMerge [
         .widget-title > button:hover { color: ${c.fg}; }
 
         .notification-group-headers { color: ${c.dim}; }
+
+        ${swayncExtra}
       '';
     };
 

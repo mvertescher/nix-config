@@ -28,6 +28,10 @@ let
   scheme = import ./scheme.nix;
   roleLib = import ../lib/roles.nix;
 
+  designed = import ./desktop.nix {
+    inherit lib config;
+    inherit (cfg) target unit uiFont;
+  };
   overrides = lib.filterAttrs (_: v: v != null) cfg.colors;
 
   resolved = scheme.resolve {
@@ -134,6 +138,43 @@ in
       '';
     };
 
+    target = lib.mkOption {
+      type = lib.types.enum [
+        "desktop"
+        "tv"
+      ];
+      default = "desktop";
+      description = ''
+        Which fitting of the design to build (./design, ./desktop.nix).
+        desktop -- a monitor at arm's length, the reference's own sizes.
+        tv      -- a television across the room: everything 1.5 times
+                   larger, lines one and a half times heavier, wider
+                   margins.
+      '';
+    };
+
+    unit = lib.mkOption {
+      type = lib.types.float;
+      default = 2.4;
+      example = 1.6;
+      description = ''
+        Native pixels per design unit on the desktop fitting. The
+        design is drawn in the traces' 1600x900 frame, so this is the
+        output's width over 1600: 2.4 at 3840x2160, 1.6 at 2560x1440.
+        Assumes a monitor scale of 1.
+      '';
+    };
+
+    designed = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = ''
+        Dress Hyprland, the launcher, notifications and the lock screen
+        from the approved design in ./design (2026-11-14) rather than
+        the shared era chrome. Off gives the theme as it was before.
+      '';
+    };
+
     texture = lib.mkOption {
       type = lib.types.enum [
         "none"
@@ -225,7 +266,11 @@ in
         inherit (cfg) monoFont;
         browserRestart = cfg.firefox.restartOnActivation;
         inherit (cfg) lock;
+        tomlExtra = lib.optionalString cfg.designed designed.toml;
+        swayncExtra = lib.optionalString cfg.designed designed.swaync;
       })
+
+      (lib.mkIf cfg.designed designed.config)
     ]))
   ];
 }
