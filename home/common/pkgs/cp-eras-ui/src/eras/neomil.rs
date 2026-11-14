@@ -3203,3 +3203,30 @@ const DASHBOARD_FOOTER_TEXT_ECHO_2: &[Prim] = &[
     Prim::ReusableWide { x: 1278.4, y: 885.0 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_DEFENCE_SIZE, stretch: DASHBOARD_FOOTER_DEFENCE_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
 ];
 // --- end dashboard -------------------------------------------------------
+
+// --- print -----------------------------------------------------------------
+/// Neomil's print material (`crate::print`; measurements in
+/// `docs/print-overlay.md`). Every bright element of all four references
+/// has faint copies displaced outward from the screen centre, fitted as a
+/// whole-frame scale of 0.55 % per copy (dashboard 0.50 %, store 0.55 %,
+/// login 0.8 %, a second copy at twice the step), with rows modulated at the
+/// established 1.985 px scan pitch to ~60 % depth. Opacities and softness
+/// were set by eye on the mailbox, which draws no per-element copies. Clear ground has no
+/// scanlines (row amplitude 0.01 levels) and the dashboard's flat red tiles
+/// are exactly #ef3333 with zero variance, so there are no global fill
+/// scanlines; the ground's own texture is about one level of fine noise.
+pub const PRINT: crate::print::Print = crate::print::Print {
+    echo_scale: 0.0055,
+    echo_alpha: (0.24, 0.14),
+    echo_scan_depth: 0.6,
+    echo_scan_pitch: 1.985,
+    echo_gate: (0.20, 0.32),
+    echo_gate_radius: 6.0,
+    echo_soft: 1.5,
+    scan_depth: 0.0,
+    scan_pitch: 1.985,
+    grain_mul: 0.0,
+    grain_add: 0.004,
+    grain_cell: 0.42,
+};
+// --- end print -------------------------------------------------------------

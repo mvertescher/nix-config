@@ -29,6 +29,8 @@ use cp_eras_ui::shell;
 fn main() -> iced::Result {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let style = shell::style();
+    // The era's print material over the whole frame (`print`).
+    cp_eras_ui::print::wear(style.era);
     let greeter = if shell::switch(&args, "--greet") {
         let user = shell::flag(&args, "--user").unwrap_or_else(|| usage("--greet needs --user <name>"));
         let cmd = shell::flag(&args, "--cmd")

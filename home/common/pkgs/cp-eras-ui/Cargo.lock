@@ -634,6 +634,7 @@ dependencies = [
  "futures-lite",
  "iced",
  "iced_layershell",
+ "iced_wgpu",
  "libpulse-binding",
  "png",
  "resvg",

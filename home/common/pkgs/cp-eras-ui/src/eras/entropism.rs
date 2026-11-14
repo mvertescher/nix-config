@@ -1972,3 +1972,31 @@ const HUB_SCAN: &[Prim] = &[
 ];
 
 // --- end dashboard -------------------------------------------------------
+
+// --- print -----------------------------------------------------------------
+/// Entropism's print material (`crate::print`; measurements in
+/// `docs/print-overlay.md`). Faint, soft copies of the light ink displaced
+/// outward from the screen centre: a whole-frame correlation fit gives a
+/// 0.6 % scale on all four references, the visible ghost on isolated stems
+/// sits farther, so 0.8 % with a second copy at twice it was chosen by eye,
+/// opacities held down so the mean colour does not overshoot the reference
+/// (its frame strokes are already brighter than the art);
+/// rows banded at about 3.3 px; light fills carry
+/// chromatic grain of ~2.3 % (sage selection row: RGB std 4.4/6.0/9.0 on
+/// 168/212/171), the dark ground about 0.7 levels; no scanlines on fills or
+/// ground.
+pub const PRINT: crate::print::Print = crate::print::Print {
+    echo_scale: 0.008,
+    echo_alpha: (0.32, 0.18),
+    echo_scan_depth: 0.3,
+    echo_scan_pitch: 3.33,
+    echo_gate: (0.40, 0.55),
+    echo_gate_radius: 6.0,
+    echo_soft: 2.0,
+    scan_depth: 0.0,
+    scan_pitch: 1.985,
+    grain_mul: 0.028,
+    grain_add: 0.003,
+    grain_cell: 0.8,
+};
+// --- end print -------------------------------------------------------------
