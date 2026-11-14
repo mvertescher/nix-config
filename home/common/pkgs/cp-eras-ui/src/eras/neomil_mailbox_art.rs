@@ -4809,14 +4809,17 @@ pub(super) const HEADER: &[Prim] = &[
         Seg::Line(272.9167, 158.75),
         Seg::Line(272.9167, 158.75),
     ], close: false, fill: Some(Ink::Fixed(rgb(0x481114))), stroke: None, width: 0.0 },
+    // The header rule: Neomil's `hairline` (0.7) of the bright line ink,
+    // centred on the measured y 187.45 (native row 449 full, 450 at 0.62;
+    // docs/neomil/line-weights.md). It was 1.5 of #a8282b.
     Prim::Path { x: 0.0, y: 0.0, segs: &[
-        Seg::Move(42.0, 187.0),
-        Seg::Line(1558.0, 187.0),
-        Seg::Line(1558.0, 188.5),
-        Seg::Line(42.0, 188.5),
-        Seg::Line(42.0, 187.0),
-        Seg::Line(42.0, 187.0),
-    ], close: false, fill: Some(Ink::Fixed(rgb(0xa8282b))), stroke: None, width: 0.0 },
+        Seg::Move(42.0, 187.1),
+        Seg::Line(1558.0, 187.1),
+        Seg::Line(1558.0, 187.8),
+        Seg::Line(42.0, 187.8),
+        Seg::Line(42.0, 187.1),
+        Seg::Line(42.0, 187.1),
+    ], close: false, fill: Some(Ink::Fixed(rgb(0xfb3535))), stroke: None, width: 0.0 },
     Prim::Path { x: 0.0, y: 0.0, segs: &[
         Seg::Move(241.5, 194.5),
         Seg::Line(451.5, 194.5),

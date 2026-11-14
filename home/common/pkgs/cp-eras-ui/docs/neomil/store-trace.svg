@@ -695,7 +695,8 @@
     <use href="#nav67" x="153" y="248" fill="url(#store-nav-on)"/>
     <rect x="148" y="248" width="3" height="51" fill="#fb3535"/>
     <text x="162.5" y="298.25" letter-spacing="-0.21" fill="#4a0f10">VIDEO</text>
-    <g fill="#2e1012" stroke="#96282d" stroke-width="1.2">
+    <!-- line weights re-measured 2026-11-14, docs/neomil/line-weights.md (nav rows: 2 native px of #62..#76; was #96282d 1.2) -->
+    <g fill="#2e1012" stroke="#5e1112" stroke-width="0.8333">
       <use href="#nav62" x="153" y="318" fill="url(#store-nav-off1)"/><use href="#nav62" x="153" y="385" fill="url(#store-nav-off2)"/>
       <use href="#nav62" x="153" y="452" fill="url(#store-nav-off3)"/><use href="#nav62" x="153" y="519" fill="url(#store-nav-off4)"/>
     </g>

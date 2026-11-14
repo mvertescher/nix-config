@@ -732,7 +732,11 @@ pub enum Chrome {
 /// Numbers a screen needs that are not colours or shapes.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Metrics {
+    /// The outline width a built-in surface draws with. An era that has
+    /// measured its line vocabulary sets this to `weights.line`.
     pub stroke: f32,
+    /// The era's line weights. See [`Weights`].
+    pub weights: Weights,
     /// Gap between sibling cards and list rows.
     pub gap: f32,
     /// Interior padding of a surface.
@@ -746,6 +750,7 @@ impl Default for Metrics {
     fn default() -> Self {
         Metrics {
             stroke: 1.0,
+            weights: Weights::uniform(1.0),
             gap: 16.0,
             pad: 16.0,
             text_body: 14,
@@ -1204,6 +1209,101 @@ impl Coat {
             weight,
             ..self
         }
+    }
+}
+
+/// An era's line weights: the few stroke widths its reference art
+/// actually uses, measured once and named, so a screen -- traced or new
+/// -- asks for "the outline" rather than restating a number.
+///
+/// In design px of the era's trace frame (1600x900 for every era), the
+/// unit every `Prim` width is in. Measured per era; Neomil's are
+/// `eras::neomil::WEIGHTS`, with the measurements in
+/// `docs/neomil/line-weights.md`. An era that has not measured its own
+/// gets [`Weights::uniform`] of its old single stroke.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Weights {
+    /// A full-width rule: the thinnest line the era draws.
+    pub hairline: f32,
+    /// The outline of a plate, row, button, field, card or panel. One
+    /// weight whatever the element's size or role.
+    pub line: f32,
+    /// A detail line on a solid plate's face, inside its silhouette.
+    pub inset: f32,
+    /// The heavy frame of a small stamped label.
+    pub heavy: f32,
+}
+
+impl Weights {
+    /// One weight for everything: an era that has not measured its lines.
+    pub const fn uniform(w: f32) -> Weights {
+        Weights { hairline: w, line: w, inset: w, heavy: w }
+    }
+}
+
+/// One coat of an *outlined dark plate*: a dark face edged in a red
+/// line, carrying bright marks and, on some plates, a secondary inset
+/// line. The era's outlined-control rung (a resting nav row, list row or
+/// ghost button), its lit hover rung, and the inverted selected hub tile
+/// are all this treatment with different parameters, so each is defined
+/// once, by name, in the era table and every element that wears it
+/// draws from that definition.
+///
+/// The `Prim` constructors below are `const` so the era's scene tables
+/// can be built from a treatment; [`DarkPlate::coat`] gives the same
+/// treatment to an iced built-in, which cannot draw an inset.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DarkPlate {
+    /// The face. `Ink::None` leaves a face the caller paints itself
+    /// (graded or translucent plates).
+    pub face: Ink,
+    /// The outline ink and width.
+    pub edge: Ink,
+    pub edge_weight: f32,
+    /// A secondary line on the face (an inset contour, a seam).
+    pub inset: Ink,
+    pub inset_weight: f32,
+    /// Marks printed on the face: text, glyphs, the spine.
+    pub ink: Ink,
+}
+
+impl DarkPlate {
+    /// A plate with no inset line of its own (the inset falls back to
+    /// the edge).
+    pub const fn new(face: Ink, edge: Ink, edge_weight: f32, ink: Ink) -> DarkPlate {
+        DarkPlate { face, edge, edge_weight, inset: edge, inset_weight: edge_weight, ink }
+    }
+
+    pub const fn with_inset(mut self, inset: Ink, weight: f32) -> DarkPlate {
+        self.inset = inset;
+        self.inset_weight = weight;
+        self
+    }
+
+    pub const fn with_face(mut self, face: Ink) -> DarkPlate {
+        self.face = face;
+        self
+    }
+
+    /// The silhouette, filled with the face and edged.
+    pub const fn plate(self, x: f32, y: f32, segs: &'static [Seg]) -> Prim {
+        let fill = match self.face { Ink::None => None, face => Some(face) };
+        Prim::Path { x, y, segs, close: true, fill, stroke: Some(self.edge), width: self.edge_weight }
+    }
+
+    /// A closed secondary contour on the face.
+    pub const fn inset_contour(self, x: f32, y: f32, segs: &'static [Seg]) -> Prim {
+        Prim::Path { x, y, segs, close: true, fill: None, stroke: Some(self.inset), width: self.inset_weight }
+    }
+
+    /// An open secondary line on the face (a seam between two parts).
+    pub const fn seam(self, x: f32, y: f32, segs: &'static [Seg]) -> Prim {
+        Prim::Path { x, y, segs, close: false, fill: None, stroke: Some(self.inset), width: self.inset_weight }
+    }
+
+    /// The same treatment for an iced built-in control.
+    pub const fn coat(self) -> Coat {
+        Coat { fill: self.face, edge: self.edge, weight: self.edge_weight, ink: self.ink }
     }
 }
 

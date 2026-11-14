@@ -228,7 +228,8 @@
   </g>
 
   <!-- full-width hairline rule, measured y=188 x 42..1558 -->
-  <rect x="42" y="188" width="1516" height="1.5" fill="#ae2729"/>
+  <!-- line weights re-measured 2026-11-14, docs/neomil/line-weights.md (header rule: 0.7 of #fb3535 centred y 188.16; was 1.5 of #ae2729) -->
+  <rect x="42" y="187.81" width="1516" height="0.7" fill="#fb3535"/>
 
   <!-- ==== margins ==== -->
   <g font-family="Rajdhani" font-size="11" letter-spacing="1">
@@ -291,7 +292,8 @@
 
     <text x="379" y="594" font-family="Rajdhani" font-size="15" fill="#f63333">password:</text>
     <!-- password field y 602..634 -->
-    <rect x="372.5" y="602.5" width="252" height="32" fill="#430e0f" stroke="#ae2729" stroke-width="1"/>
+    <!-- line weights re-measured 2026-11-14, docs/neomil/line-weights.md (field outline: 2 native px peaking #72..#7b; was #ae2729 1) -->
+    <rect x="372.5" y="602.5" width="252" height="32" fill="#430e0f" stroke="#760e0f" stroke-width="0.8333"/>
     <!-- Ten source-sized stars on 11.25px pitch; a single blinking stroke
          follows them. The trace holds the photo's illustrated rest state. -->
     <g id="password-rest" fill="#f63333">
@@ -328,7 +330,7 @@
       <rect x="692" y="315" width="255" height="254" fill="url(#login-open-right)" mask="url(#login-open-mask)"/>
     </g>
     <path d="M 692,315 H 896 L 947,366 V 655 H 714 L 692,633 Z"
-          fill="none" stroke="#ae2729" stroke-width="1.5"/>
+          fill="none" stroke="#ae2729" stroke-width="0.8333"/>
     <path d="M 692,569 H 947 V 655 H 714 L 692,633 Z" fill="#461012"/>
     <use href="#notch" x="692" fill="#080405"/>
     <rect x="692" y="390" width="1.5" height="106" fill="#ae2729"/>
@@ -352,7 +354,7 @@
       <rect x="982" y="315" width="254" height="254" fill="url(#login-locked-right)" mask="url(#login-locked-mask)"/>
     </g>
     <path d="M 982,315 H 1185 L 1236,366 V 655 H 1004 L 982,633 Z"
-          fill="none" stroke="#8a2027" stroke-width="1.5"/>
+          fill="none" stroke="#8a2027" stroke-width="0.8333"/>
     <path d="M 982,569 H 1236 V 655 H 1004 L 982,633 Z" fill="#2f0b0c"/>
     <use href="#notch" x="982" fill="#080405"/>
     <rect x="982" y="390" width="1.5" height="106" fill="#8a2027"/>
