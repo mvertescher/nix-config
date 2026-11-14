@@ -724,6 +724,73 @@ fn path_rings(x: f32, y: f32, segs: &[Seg]) -> Vec<Vec<(f32, f32)>> {
     rings
 }
 
+
+/// The fill outline of each prim in `shape` -- rects, rounded rects and
+/// paths; anything else is skipped -- in pixel space under `xf`.
+fn shape_rings(shape: &[Prim], xf: Xf) -> Vec<Vec<Vec<(f32, f32)>>> {
+    let map = |pts: Vec<(f32, f32)>| -> Vec<(f32, f32)> { pts.into_iter().map(|(x, y)| xf.at(x, y)).collect() };
+    shape
+        .iter()
+        .filter_map(|prim| match *prim {
+            Prim::Rect { x, y, w, h, .. } => Some(vec![map(round_rect(x, y, w, h, 0.0))]),
+            Prim::Round { x, y, w, h, r, .. } => Some(vec![map(round_rect(x, y, w, h, r))]),
+            Prim::Path { x, y, segs, .. } => Some(path_rings(x, y, segs).into_iter().map(map).collect()),
+            _ => None,
+        })
+        .collect()
+}
+
+/// A surface painted per pixel by `paint` (pixel centre in, colour out)
+/// and clipped to the fills of `shape` (design coordinates, translated
+/// by `(ox, oy)`, scaled by `k`), with an optional `rim`: a light line
+/// of the given colour and design width just inside the edge, clipped to
+/// the shape like the paint. Coverage is this module's, so the edge
+/// lands where a composited fill of the same shape would.
+///
+/// Returns the pixel box `(x0, y0, w, h)` and its premultiplied RGBA, or
+/// `None` when the shape covers no pixel. The neo-kitsch veneer
+/// (`crate::veneer`) is the caller.
+pub(crate) fn clipped(
+    shape: &[Prim],
+    ox: f32,
+    oy: f32,
+    k: f32,
+    rim: Option<(Color, f32)>,
+    paint: &dyn Fn(f32, f32) -> Color,
+) -> Option<(usize, usize, usize, usize, Vec<u8>)> {
+    let xf = Xf::scaled(k).moved(ox, oy);
+    let rings = shape_rings(shape, xf);
+    let (x0, x1, y0, y1) = bbox(rings.iter().flatten().flatten().copied())?;
+    if !(x1 > x0 && y1 > y0) || x1 <= 0.0 || y1 <= 0.0 {
+        return None;
+    }
+    let area = Area {
+        x0: x0.floor().max(0.0) as usize,
+        y0: y0.floor().max(0.0) as usize,
+        x1: x1.ceil().max(0.0) as usize,
+        y1: y1.ceil().max(0.0) as usize,
+    };
+    if area.empty() {
+        return None;
+    }
+    let mut buf = Buf::region(area);
+    for r in &rings {
+        buf.fill(r, paint);
+    }
+    if let Some((colour, width)) = rim {
+        // A stroke centred on the outline, twice the rim's width, kept
+        // to its inner half by the shape's own coverage.
+        let mut cover = Buf::region(area);
+        let mut line = Buf::region(area);
+        for r in &rings {
+            cover.fill(r, &|_, _| Color::WHITE);
+            line.stroke(r, true, 2.0 * width * k, colour);
+        }
+        line.mask(&cover);
+        buf.over(&line);
+    }
+    Some((area.x0, area.y0, area.x1 - area.x0, area.y1 - area.y0, buf.bytes()))
+}
 /// Can `prim` be rasterised by [`composite`]? What `soft_groups_hold_only_fills`
 /// asserts of every era table.
 pub fn supported(prim: &Prim) -> bool {
@@ -753,6 +820,7 @@ pub fn supported(prim: &Prim) -> bool {
         | Prim::TrackedWords { .. }
         | Prim::Grain { .. }
         | Prim::Dots { .. }
+        | Prim::Veneer { .. }
         | Prim::Plate { .. } => false,
     }
 }
@@ -1200,6 +1268,7 @@ fn walk_engine<const BOUNDED: bool, const BATCH: bool>(
             | Prim::Motion { .. }
             | Prim::Pick { .. }
             | Prim::Viewport { .. }
+            | Prim::Veneer { .. }
             | Prim::Plate { .. } => {
                 debug_assert!(false, "Prim::Soft holds fills only; see soft.rs");
             }

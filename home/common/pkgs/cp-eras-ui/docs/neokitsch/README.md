@@ -66,10 +66,10 @@ Role mapping: `bg`=bg, `panel`=bloom field, `border`=frame gold,
 - **Selection is a material, not a colour**: the chosen button, card or
   mail row is filled with wood veneer — fine wavy grain lines over a
   light gold base, chevroning into a book-match seam and arcing into
-  the chamfered corner. In these SVGs it is a fill plus grain strokes;
-  a real implementation should treat it as a texture asset — the first
-  raster asset in any era, and the stress test the repo TODO flags for
-  the toolkit abstraction.
+  the chamfered corner. Since 2026-11-13 (owner decision) it is a
+  generated texture asset clipped to each shape, in the traces and the
+  crate alike — the first raster asset in any era;
+  [veneer-texture.md](veneer-texture.md).
 - Corners are cut per widget rather than by one rule: the hub's cascade
   cards chamfer top-right and run a 45-degree diagonal across the whole
   foot (re-measured 2026-09-03; the traces used to draw it as a second

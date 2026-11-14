@@ -69,12 +69,12 @@ use crate::style::{
 use crate::widgets::surface::{outline, Corners, Cut};
 use crate::screens::nav::{Dir, Stroke};
 use crate::screens::scene::{blend_over, Backdrop, Pointer, PointerAction};
-use crate::widgets::ground;
+use crate::widgets::{ground, layered};
 use crate::widgets::stem;
 use crate::Element;
 use iced::widget::{canvas, stack, Action};
 use iced::{mouse, Color, Event, Length, Point, Rectangle, Renderer, Size, Subscription, Vector};
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
 use std::time::{Duration, Instant};
 
 /// The frame every trace measures in.
@@ -185,13 +185,15 @@ impl MailBox {
     }
 
     pub fn view(&self) -> Element<'_, Message> {
-        let sheet = canvas(Sheet {
+        let sheet = layered::canvas(Sheet {
             style: &self.style,
             selected: self.selected,
             showing: self.showing,
             initial_fixture: self.initial_fixture,
             at: self.at(),
             alpha: Cell::new(1.0),
+            clip: Cell::new(None),
+            veneers: RefCell::new(Vec::new()),
         })
         .width(Length::Fill)
         .height(Length::Fill);
@@ -226,6 +228,28 @@ struct Sheet<'a> {
     /// drawing methods take `&self` and a region's fills fade under
     /// their own cover inside it.
     alpha: Cell<f32>,
+    /// The clip the covers around the region being drawn have come to,
+    /// in canvas pixels, `None` for none: what a veneer recorded inside
+    /// them is cut to. Kept beside `alpha` by [`Sheet::under`].
+    clip: Cell<Option<Rectangle>>,
+    /// The veneer textures met while drawing, in order, for the layer
+    /// under the sheet ([`Sheet::selection`]).
+    veneers: RefCell<Vec<VeneerDraw>>,
+}
+
+/// A veneer the sheet draws in its own layer *under* everything else:
+/// it is an image, and a canvas draws images above every mesh in their
+/// layer, which would bury the selected row's envelope, notch and
+/// outline. Nothing the sheet draws before the bar overlaps it.
+#[derive(Debug, Clone, Copy)]
+struct VeneerDraw {
+    texture: crate::veneer::Texture,
+    at: (f32, f32),
+    shape: &'static [crate::style::Prim],
+    /// The row offset of the bar from where the table parks it.
+    shift: f32,
+    alpha: f32,
+    clip: Option<Rectangle>,
 }
 
 /// What the motions naming a part of the sheet have come to: the clip
@@ -342,7 +366,13 @@ impl Sheet<'_> {
             Some(c) => Rectangle::new(scale.point(c.x, c.y), scale.size(c.w, c.h)),
             None => Rectangle::with_size(frame.size()),
         };
+        let outer = self.clip.get();
+        self.clip.set(Some(match outer {
+            Some(o) => o.intersection(&region).unwrap_or(Rectangle::new(Point::ORIGIN, Size::ZERO)),
+            None => region,
+        }));
         frame.with_clip(region, |f| draw(self, f));
+        self.clip.set(outer);
         self.alpha.set(was);
     }
 
@@ -415,7 +445,7 @@ mod interaction_tests {
     fn sheet(style: &Style) -> Sheet<'_> {
         Sheet { style, selected: style.mailbox.list.selected,
             showing: style.mailbox.panel.message, initial_fixture: true,
-            at: motion::REST, alpha: Cell::new(1.0) }
+            at: motion::REST, alpha: Cell::new(1.0), clip: Cell::new(None), veneers: RefCell::new(Vec::new()) }
     }
 
     fn click(pressed: bool) -> Event {
@@ -431,6 +461,8 @@ mod interaction_tests {
             initial_fixture: mail.initial_fixture,
             at: mail.at(),
             alpha: Cell::new(1.0),
+            clip: Cell::new(None),
+            veneers: RefCell::new(Vec::new()),
         }
     }
 
@@ -1688,6 +1720,16 @@ impl Sheet<'_> {
     fn selection(&self, frame: &mut canvas::Frame, scale: Scale, list: &MailList, shift: f32) {
         let s = self.paint();
         let at = list.sel.shifted(0.0, shift);
+        if let Some((texture, at, shape)) = list.veneer.and_then(|v| v.texture) {
+            // Recorded, not painted: the texture goes in the layer under
+            // the sheet, cut to the covers in force here.
+            if self.alpha.get() > 0.0 {
+                self.veneers.borrow_mut().push(VeneerDraw {
+                    texture, at, shape, shift, alpha: self.alpha.get(), clip: self.clip.get(),
+                });
+            }
+            return;
+        }
         let fill = match list.veneer {
             Some(v) => v.base,
             None => ink(s, list.sel_fill),
@@ -2056,6 +2098,8 @@ impl canvas::Program<Message, Style> for Sheet<'_> {
         let list_sheet = Sheet {
             selected: self.cursor_row(state),
             alpha: Cell::new(1.0),
+            clip: Cell::new(None),
+            veneers: RefCell::new(Vec::new()),
             ..*self
         };
         list_sheet.under(&mut frame, scale, self.cover(MailPart::List), |me, f| me.list(f, scale, &m.list, state.interaction(m.list.rows)));
@@ -2065,7 +2109,38 @@ impl canvas::Program<Message, Style> for Sheet<'_> {
         self.under(&mut frame, scale, self.cover(MailPart::Badges), |me, f| me.badges(f, scale, &m.badges));
         self.under(&mut frame, scale, self.cover(MailPart::Overlay), |me, f| pieces(f, scale, me.paint(), m.overlay));
 
-        vec![frame.into_geometry()]
+        // The veneers, in a layer under the sheet (`VeneerDraw`). A
+        // texture is rasterised at one uniform scale, the larger axis,
+        // and stretched onto the sheet's own axes, which only differ off
+        // 16:9 -- the "less clean scaling at odd sizes" the owner
+        // accepted.
+        let veneers = list_sheet.veneers.take();
+        if veneers.is_empty() {
+            return vec![frame.into_geometry()];
+        }
+        let mut under = canvas::Frame::new(renderer, bounds.size());
+        let k = scale.sx.max(scale.sy);
+        for v in veneers {
+            let Some(image) = crate::veneer::image(v.texture, v.at.0, v.at.1, v.shape, 0.0, v.shift, k) else { continue };
+            let b = image.bounds;
+            let bounds = Rectangle {
+                x: b.x * scale.sx / k,
+                y: b.y * scale.sy / k,
+                width: b.width * scale.sx / k,
+                height: b.height * scale.sy / k,
+            };
+            let draw = |f: &mut canvas::Frame| {
+                f.draw_image(bounds, canvas::Image::new(image.handle.clone())
+                    .filter_method(iced::widget::image::FilterMethod::Linear)
+                    .opacity(v.alpha));
+            };
+            match v.clip {
+                Some(region) if region.width > 0.0 && region.height > 0.0 => under.with_clip(region, draw),
+                Some(_) => {}
+                None => draw(&mut under),
+            }
+        }
+        vec![under.into_geometry(), frame.into_geometry()]
     }
 }
 

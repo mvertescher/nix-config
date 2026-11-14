@@ -1172,6 +1172,17 @@ const MAIL_ROW_TYPE: &[MailRowType] = &[
     },
 ];
 
+/// The mailbox selection bar's silhouette (mailbox-trace.svg `#selclip`):
+/// 477x55 from (35,315), a 22 chamfer top right and a 4 round bottom
+/// right. The veneer texture is clipped to it.
+const MAIL_SELECTION: &[Prim] = &[fill_path(35.0, 315.0, &[
+    Seg::Line(490.0, 315.0),
+    Seg::Line(512.0, 337.0),
+    Seg::Line(512.0, 366.0),
+    Seg::Quad { cx: 512.0, cy: 370.0, x: 508.0, y: 370.0 },
+    Seg::Line(35.0, 370.0),
+], Ink::Fixed(BAR))];
+
 pub fn mailbox() -> Mailbox {
     Mailbox {
         text_baseline: 0.95,
@@ -1244,6 +1255,8 @@ pub fn mailbox() -> Mailbox {
                 turn: 26.0,
                 sway: 2.4,
                 phase: 100.0,
+                // the generated texture, clipped to the trace's #selclip
+                texture: Some((crate::veneer::Texture::MailboxRow, (35.0, 315.0), MAIL_SELECTION)),
             }),
             // the one era that puts the envelope on the right
             glyph_x: 429.0,
@@ -1438,20 +1451,19 @@ pub const MAILBOX_MOTIONS: &[MailMotion] = &[
 // The trace spends about four fifths of its bytes on **wood-veneer
 // grain** -- hundreds of 0.7px polylines clipped to the three gold
 // fills, "drawn as clipped 0.7 strokes in a mid gold over the fill *so
-// the average stays at the sampled mean*". The selected store body
-// uses longitudinal paths and a narrow seam in `store_grain`; inferred
-// pressed feedback and the nav/BASKET bands still use `Prim::Grain`.
-// (This comment said until 2026-09-07 that the grain was left
-// out as photographic texture; the tables below had carried it since
-// the store's first pass.) The soft `#38261a` halo under every stroke
+// the average stays at the sampled mean*". Since 2026-11-13 none of
+// that is drawn here: by owner decision the three veneered fills (and
+// the inferred pressed band) wear generated textures (`crate::veneer`,
+// `Prim::Veneer`), and the trace references the same files. The soft `#38261a` halo under every stroke
 // is the photograph's glow and is out (docs/PIPELINE.md). Everything
 // structural -- the wire band, the echo strands, the BASKET plate, the
 // card frames, the socket rows, the tabs -- is here.
 
 use crate::style::{
-    fill_path, fill_rect, line_path, shut_path, txt, txt_bold, txt_end, txt_mid, vline, Anchor,
+    fill_path, fill_rect, line_path, shut_path, txt, txt_bold, txt_end, txt_mid, Anchor,
     Change, Group, Motion, Prim,
 };
+use crate::veneer::Texture;
 use iced::animation::Easing;
 
 /// The run's ink families, sampled by k-means over the photo: a bright
@@ -1475,10 +1487,6 @@ pub const GUN_BASE: iced::Color = rgb(0xac9152);
 pub const GUN_BRIGHT: iced::Color = rgb(0xffd779);
 const STORE_LOGO_SOLID: iced::Color = rgb(0xfdcd9d);
 const STORE_LOGO_OUTLINE: iced::Color = rgb(0xf0c48a);
-/// The mid gold the source's veneer grain is drawn in.
-pub const GRAIN_LINE: iced::Color = rgb(0xcd9553);
-/// Dark convergence in the store card's selected-body veneer.
-pub const GRAIN_SEAM: iced::Color = rgb(0xa86e33);
 /// Low-contrast wire-band echoes. The card frames use the brighter
 /// source-fitted `FRAME_ECHO*` inks below.
 ///
@@ -1962,17 +1970,18 @@ const GROWN: &[Prim] = &[
 ];
 
 /// The selected card's solid gold body (store-trace :516-666 and
-/// :756-794): the veneer fill and its grain, the dark values and meta
-/// lines, the dark socket rules and QR and the EMPTY / SOCKET pairs --
-/// every dark run that sits on the gold. Its own table because `GROWN`
-/// fades it in under `#body-fade`.
-#[path = "neokitsch/store_grain.rs"]
-mod store_grain;
-
+/// :756-794): the veneer, the dark values and meta lines, the dark
+/// socket rules and QR and the EMPTY / SOCKET pairs -- every dark run
+/// that sits on the gold. Its own table because `GROWN` fades it in
+/// under `#body-fade`.
+///
+/// The veneer is the generated `store-card` texture (owner decision
+/// 2026-11-13, `crate::veneer`): body and socket band in one, the
+/// horizontal streak and the band's cross fan in the texture. It
+/// replaced 125 traced strands, a seam and a `Grain` band.
+const BODY_SHAPE: &[Prim] = &[fill_rect(0.0, 411.2, 262.1, 241.7, Ink::Fixed(BODY_FILL))];
 const BODY_SURFACE: &[Prim] = &[
-    fill_rect(0.0, 411.2, 262.1, 241.7, Ink::Fixed(BODY_FILL)),
-    Prim::At { x: 0.0, y: 0.0, prims: store_grain::PATHS },
-    Prim::Grain { x: 0.0, y: 603.8, w: 262.1, h: 49.1, pitch: 2.4, width: 0.7, ink: Ink::Fixed(GRAIN_LINE) },
+    Prim::Veneer { x: 0.0, y: 411.2, texture: Texture::StoreCard, shape: BODY_SHAPE },
 ];
 
 const GROWN_BODY: &[Prim] = &[
@@ -2046,10 +2055,12 @@ const PRODUCT_SELECTED_HOVER: &[Prim] = product_hover!(232.9, 711.3, GROWN);
 // values/socket band. This compression is inferred: the source only
 // shows veneer on the expanded selection. Keep every existing glyph,
 // illustration, tab and frame in place; do not reveal expanded details.
-const fn compact_product_press() -> [Prim; 28] {
-    let mut prims = [CARD[0]; 28];
-    prims[0] = fill_rect(0.0, 492.9, 262.1, 88.45, Ink::Fixed(BODY_FILL));
-    prims[1] = Prim::Grain { x: 0.0, y: 492.9, w: 262.1, h: 88.45, pitch: 2.4, width: 0.7, ink: Ink::Fixed(GRAIN_LINE) };
+// The band wears the selected card's own texture at the same card-local
+// position, so it reads as a window onto that veneer.
+const PRESSED_BAND: &[Prim] = &[fill_rect(0.0, 492.9, 262.1, 88.45, Ink::Fixed(BODY_FILL))];
+const fn compact_product_press() -> [Prim; 27] {
+    let mut prims = [CARD[0]; 27];
+    prims[0] = Prim::Veneer { x: 0.0, y: 411.2, texture: Texture::StoreCard, shape: PRESSED_BAND };
     let mut i = 0;
     while i < CARD.len() {
         let mut prim = CARD[i];
@@ -2061,7 +2072,7 @@ const fn compact_product_press() -> [Prim; 28] {
                 _ => (),
             }
         }
-        prims[i + 2] = prim;
+        prims[i + 1] = prim;
         i += 1;
     }
     prims
@@ -2082,6 +2093,7 @@ const PLATE_LOWER: &[Seg] = &[
     Seg::Line(1307.0, 105.0),
     Seg::Line(1291.7, 90.0),
 ];
+const BASKET_BAND: &[Prim] = &[fill_path(1291.7, 60.0, PLATE_LOWER, Ink::Fixed(PLATE_BAND))];
 const BASKET_QR: &[Prim] = &[
     fill_rect(1464.25, 29.80, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
     fill_rect(1472.38, 29.80, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
@@ -2170,14 +2182,19 @@ const TEE: &[Seg] = &[
 
 
 // The nav's five buttons and the shelf's four positions, as plates. The
-// selected button is solid gold -- veneer in the source, so it carries
-// the grain -- with a dark label; the rest are outlines.
+// selected button is veneer in the source -- the generated `store-nav`
+// texture here, clipped to the button -- with a dark label; the rest
+// are outlines.
 macro_rules! nav {
     ($plate:expr, $tab:expr, $top:expr, $tabtop:expr, $base:expr, $label:expr) => {
         (
             &[
-                fill_path(97.0, $top, $plate, Ink::Fixed(SMG_FILL)),
-                Prim::Grain { x: 97.0, y: $top, w: 196.5, h: 34.0, pitch: 2.1, width: 0.7, ink: Ink::Fixed(GRAIN_LINE) },
+                Prim::Veneer {
+                    x: 92.9,
+                    y: $top,
+                    texture: Texture::StoreNav,
+                    shape: &[fill_path(97.0, $top, $plate, Ink::Fixed(SMG_FILL))],
+                },
                 fill_path(243.0, $tabtop, $tab, Ink::Fixed(NAV_TAB)),
                 txt(115.0, $base, 17.0, Ink::OnSelect, $label),
             ],
@@ -2310,8 +2327,8 @@ const CONTENT: &[Prim] = &[
     Prim::Spaced { x: 113.0, y: 138.0, size: 16.5, ink: Ink::Fixed(LABEL), face: Face::Bold, pitch: 39.0, content: "STORE" },
     // BASKET plate
     fill_path(1291.7, 19.6, PLATE_EDGE, Ink::Fixed(PLATE)),
-    fill_path(1291.7, 60.0, PLATE_LOWER, Ink::Fixed(PLATE_BAND)),
-    Prim::Grain { x: 1291.7, y: 60.0, w: 204.6, h: 30.0, pitch: 2.1, width: 0.7, ink: Ink::Fixed(GRAIN_LINE) },
+    // the lower band is veneer: the generated `store-basket` texture
+    Prim::Veneer { x: 1291.7, y: 60.0, texture: Texture::StoreBasket, shape: BASKET_BAND },
     fill_rect(1291.7, 59.6, 204.6, 0.8, Ink::Fixed(PLATE_INK)),
     fill_rect(1455.1, 19.6, 0.8, 40.4, Ink::Fixed(PLATE_INK)),
     txt_mid(1369.0, 50.0, 15.0, Ink::Fixed(PLATE_INK), "BASKET"),
@@ -2397,26 +2414,12 @@ const CONTENT: &[Prim] = &[
 //     (`A 4 4 0 0 1`, :154 and :217-222); `Seg` has no arc, so each is
 //     one cubic through the same two endpoints (k = 4/3 tan(135/4 deg)
 //     = 0.891, within 0.02 px of the arc). The control points and the
-//     EMAIL grain's strand ends (below) are the only figures in this
-//     block that are derived rather than copied.
-//   * the veneer grain's wander. Both solid gold fills carry it since
-//     2026-09-07 (EMAIL's card :503-546, the panel body :619-705): the
-//     trace's strands wave, lean into the card's top and swing into its
-//     two book-match seams, and `Prim::Grain` paints straight strands
-//     (its doc says so). The pitch, width, ink and coverage are the
-//     trace's, so the average over each fill is the sampled mean the
-//     trace holds itself to. Two more things `Grain` cannot say, and how
-//     this block says them instead: the strands run VERTICAL (the
-//     trace's `l 0,5` steps; `Grain` paints horizontal strands only),
-//     and EMAIL's are clipped to a chamfered, footed silhouette (`Grain`
-//     fills a rectangle). The panel body is a rectangle, so its grain
-//     is one `Grain` under a `Prim::Turn` of -90 about the body's
-//     bottom-left corner, which lays the strands on the body's x pitch
-//     from the bottom edge up; EMAIL's is one `vline` per strand with
-//     its ends on the silhouette, computed by `email_grain` from the
-//     `#ncardsel` geometry. The strands' wander would need a polyline
-//     grain prim, or `Grain` with a `wave`; neither exists, and neither
-//     is added here (the style vocabulary is another agent's).
+//     the only figures in this block that are derived rather than
+//     copied.
+//   * the veneer grain. The trace drew it as clipped strands; since
+//     2026-11-13 both solid gold fills (EMAIL's card, the panel body)
+//     wear generated textures instead (`crate::veneer`, owner decision
+//     3 of docs/review-2026-11-13/DECISIONS.md), and so does the trace.
 
 /// The run's dashboard ink families, the trace's hex values. None of
 /// them is an existing era const (`GOLD_TEXT #e7c686` and `AMBER
@@ -2579,12 +2582,17 @@ const CARD_IDLE: &[Prim] = &[
     Prim::Round { x: -0.6, y: 54.6, w: 6.0, h: 38.3, r: 1.5, fill: Some(Ink::Fixed(HUB_PLATE)), stroke: None, width: 0.0 },
 ];
 /// A card's selected dress, from EMAIL (:489-547): the well silhouette
-/// filled AND stroked `#f2b463` 1.2, no rings, the veneer grain clipped
-/// to it, and the smaller 4.6x32.1 plate standing 1.25 proud of the
-/// edge inside the well (244.75 = 246 - 1.25, 442.3 = 384 + 58.3).
+/// in veneer -- the generated `dashboard-email` texture, card-local, so
+/// a held card wears it at its own origin -- stroked `#f2b463` 1.2 as
+/// its rim, no rings, and the smaller 4.6x32.1 plate standing 1.25
+/// proud of the edge inside the well (244.75 = 246 - 1.25, 442.3 =
+/// 384 + 58.3).
+const CARD_SHAPE: &[Prim] = &[
+    Prim::Path { x: 0.0, y: 6.5, segs: NCARDSEL, close: true, fill: Some(Ink::Fixed(HUB_FILL)), stroke: None, width: 0.0 },
+];
 const CARD_SELECTED: &[Prim] = &[
-    Prim::Path { x: 0.0, y: 6.5, segs: NCARDSEL, close: true, fill: Some(Ink::Fixed(HUB_FILL)), stroke: Some(Ink::Fixed(HUB_FILL)), width: 1.2 },
-    Prim::At { x: 0.0, y: 0.0, prims: &EMAIL_GRAIN },
+    Prim::Veneer { x: 0.0, y: 0.0, texture: Texture::DashboardEmail, shape: CARD_SHAPE },
+    Prim::Path { x: 0.0, y: 6.5, segs: NCARDSEL, close: true, fill: None, stroke: Some(Ink::Fixed(HUB_FILL)), width: 1.2 },
     Prim::Round { x: -1.25, y: 58.3, w: 4.6, h: 32.1, r: 1.5, fill: Some(Ink::Fixed(HUB_PLATE)), stroke: None, width: 0.0 },
 ];
 
@@ -2635,52 +2643,6 @@ const HUB_STATES: &[crate::style::PlateStates] = &[
     module_states!(5, 826.0, 182.0),
 ];
 
-/// The strand count of [`EMAIL_GRAIN`]: the trace's 42 strands at 2.1
-/// (:504-545), plus the two the plate well cuts in two.
-const EMAIL_STRANDS: usize = 44;
-/// EMAIL's veneer grain (:503-546): 42 vertical strands on the trace's
-/// 2.1 pitch, 0.7 wide in `GRAIN_LINE`, each clipped to `#ncardsel`
-/// (see the block comment above on why these are `vline`s and not a
-/// `Grain`). Card-local, like `CARD_SELECTED`.
-static EMAIL_GRAIN: [Prim; EMAIL_STRANDS] = email_grain();
-/// Each strand's ends on the `NCARDSEL` silhouette, at local x = 2.1 k:
-/// the top edge, or the 45-degree chamfer (`L 90.5,42.5` from (48,0))
-/// past x 48; the foot diagonal (`L 0,241.5` from (83.7,325.2), also
-/// slope 1) to x 83.7, then the chord of the r4 fillet to (90.5,322.3),
-/// which lies inside the arc so no strand leaves the fill. The two
-/// strands inside the well (x < 5) break over it, between its slants
-/// (`L 5,90.8` from (0,94.2), `L 0,54.2` from (5,57.1)). The trace's
-/// `clip-path` does all of this at once; here it is arithmetic, the
-/// one place in this block a figure is computed rather than read.
-const fn email_grain() -> [Prim; EMAIL_STRANDS] {
-    const PITCH: f32 = 2.1;
-    const WIDTH: f32 = 0.7;
-    const INK: Ink = Ink::Fixed(GRAIN_LINE);
-    let mut out = [fill_rect(0.0, 0.0, 0.0, 0.0, INK); EMAIL_STRANDS];
-    let mut n = 0;
-    let mut k = 1;
-    while k <= 42 {
-        let x = PITCH * k as f32;
-        let top = if x <= 48.0 { 0.0 } else { x - 48.0 };
-        let bottom = if x <= 83.7 {
-            241.5 + x
-        } else {
-            325.2 - (x - 83.7) * (2.9 / 6.8)
-        };
-        if x < 5.0 {
-            // the well: its top slant runs (0,54.2) to (5,57.1), its
-            // bottom slant (5,90.8) to (0,94.2)
-            out[n] = vline(x, top, 54.2 + x * (2.9 / 5.0), INK, WIDTH);
-            out[n + 1] = vline(x, 94.2 - x * (3.4 / 5.0), bottom, INK, WIDTH);
-            n += 2;
-        } else {
-            out[n] = vline(x, top, bottom, INK, WIDTH);
-            n += 1;
-        }
-        k += 1;
-    }
-    out
-}
 /// One menu unit: the plate's hit box is the stroke-centre silhouette
 /// (90.5x327) at the trace's `<use x y>`, and both dresses are the
 /// card-local consts placed there.
@@ -2869,18 +2831,13 @@ const CASCADE: &[Prim] = &[
     Prim::At { x: 830.75, y: 529.2, prims: NCAPTION },
 ];
 
-// Exact SVG grain paths retain the existing panel-fade animation. The
-// scene cannot fade a Soft composite; ordinary paths remain foreground
-// artwork and the persistent viewport applies the SVG's #panelclip.
-#[path = "neokitsch/panel_grain.rs"]
-mod panel_grain;
-
-// Iced pastes clipped meshes underneath the frame's pending geometry.
-// Keep the base and grain in the same clipped layer, or the un-clipped
-// base would cover every strand when the parent frame is finished.
+// The panel body is veneer: the generated `dashboard-panel` texture
+// (owner decision 2026-11-13, `crate::veneer`), which replaced the 85
+// traced strands. It fades with `#panel-fade` as an image opacity, and
+// the persistent viewport still applies the SVG's #panelclip.
+const PANEL_SHAPE: &[Prim] = &[fill_rect(1170.8, 326.0, 230.4, 309.0, Ink::Fixed(HUB_PLATE))];
 const PANEL_BODY: &[Prim] = &[
-    fill_rect(1170.8, 326.0, 230.4, 309.0, Ink::Fixed(HUB_PLATE)),
-    Prim::At { x: 0.0, y: 0.0, prims: panel_grain::PATHS },
+    Prim::Veneer { x: 1170.8, y: 326.0, texture: Texture::DashboardPanel, shape: PANEL_SHAPE },
 ];
 
 /// The panel's paragraph text: Rajdhani 16.3 medium, `Start`-anchored
@@ -2913,9 +2870,7 @@ const PANEL_COPY: [&str; 8] = [
 const PANEL: &[Prim] = &[
     // ==== the detail panel (:460-748) ====
     Prim::At { x: 1170.8, y: 259.7, prims: PANEL_FRAME },
-    // the body (:612): `HUB_PLATE`, not `HUB_FILL`, because `#f2b463`
-    // is the body's sampled AVERAGE and the grain takes 26% of it in
-    // `GRAIN_LINE`; `#fcbe6d` under that averages back to it
+    // the body (:612), in veneer
     Prim::Viewport { x: 1170.8, y: 326.0, w: 230.4, h: 309.0, prims: PANEL_BODY },
     // two paragraphs on the 19.5 pitch from the first baseline 354.2,
     // one slot blank between them (:725-732)
@@ -3050,10 +3005,10 @@ mod dashboard_tests {
             assert_eq!(state.selected_pressed, Some(GROWN));
             assert_eq!(state.pressed, PRODUCT_PRESSED);
         }
-        assert_eq!(PRODUCT_PRESSED.len(), CARD.len() + 2);
+        assert_eq!(PRODUCT_PRESSED.len(), CARD.len() + 1);
         // Same compact content/positions, with only ink and QR polarity
         // changed inside the new veneer strip. No expanded-only text.
-        for (i, (rest, held)) in CARD.iter().zip(&PRODUCT_PRESSED[2..]).enumerate() {
+        for (i, (rest, held)) in CARD.iter().zip(&PRODUCT_PRESSED[1..]).enumerate() {
             let mut expected = *rest;
             if (8..=23).contains(&i) {
                 match &mut expected {
@@ -3065,8 +3020,12 @@ mod dashboard_tests {
             }
             assert_eq!(*held, expected);
         }
-        let Prim::Grain { y, h, pitch, ink, .. } = PRODUCT_PRESSED[1] else { panic!("veneer needs grain") };
-        assert_eq!((y, h, pitch, ink), (492.9, 88.45, 2.4, Ink::Fixed(GRAIN_LINE)));
+        // The band is the selected card's texture at its own card-local
+        // origin, clipped to the compact values/socket band.
+        let Prim::Veneer { x, y, texture, shape } = PRODUCT_PRESSED[0] else { panic!("the band is veneer") };
+        assert_eq!((x, y, texture), (0.0, 411.2, Texture::StoreCard));
+        let [Prim::Rect { y, h, .. }] = shape else { panic!("one band rect") };
+        assert_eq!((*y, *h), (492.9, 88.45));
         for (hover, top, bottom) in [(PRODUCT_HOVER, 314.6, 640.4), (PRODUCT_SELECTED_HOVER, 232.9, 711.3)] {
             for (i, prim) in hover[..7].iter().enumerate() {
                 let n = (7 - i) as f32;

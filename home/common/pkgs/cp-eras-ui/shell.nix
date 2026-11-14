@@ -32,7 +32,8 @@ pkgs.mkShell {
   nativeBuildInputs = with pkgs; [
     cargo
     rustc
-    (python3.withPackages (ps: [ ps.fonttools ]))
+    # numpy: scripts/make-veneer.py, the Neo-kitsch veneer textures.
+    (python3.withPackages (ps: [ ps.fonttools ps.numpy ]))
     pkg-config
     cmake
     weston

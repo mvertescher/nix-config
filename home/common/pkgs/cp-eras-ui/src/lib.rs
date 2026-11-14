@@ -25,6 +25,7 @@ pub mod screens;
 pub mod shell;
 pub mod style;
 pub mod theme;
+pub mod veneer;
 pub mod widgets;
 
 // The interactive half of the mail screen -- same era-agnostic

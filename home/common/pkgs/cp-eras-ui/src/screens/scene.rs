@@ -23,7 +23,7 @@
 use crate::motion;
 use crate::screens::soft;
 use crate::style::{Anchor, Change, Face, Group, Ink, PlateStates, Prim, Seg, Style};
-use crate::widgets::stem;
+use crate::widgets::{layered, stem};
 use crate::Element;
 use std::borrow::Cow;
 use std::sync::{Arc, Mutex, OnceLock};
@@ -182,6 +182,144 @@ struct OutlineCache {
     advances: Vec<AdvancesEntry>,
     tracked_paths: Vec<TrackedPathEntry>,
     tracked_path_events: usize,
+    /// The layer this paint is drawing; it rides along with the other
+    /// per-draw state every `paint` call already threads.
+    pass: Pass,
+}
+
+/// One pass of a layered draw. A [`Prim::Veneer`] is an image, which a
+/// canvas draws above every mesh in its layer; so a scene holding `n`
+/// veneers is painted `n + 1` times, each pass into its own frame and
+/// layer ([`crate::widgets::layered`]), every pass walking the whole
+/// table (clips, translations and plate choices included) and drawing
+/// only the leaves assigned to its layer:
+///
+///   * veneer `i` is layer `i`, the last thing in it;
+///   * a fill or stroke goes to the lowest layer above every earlier
+///     veneer its box touches, and above every earlier promoted fill it
+///     touches, so paint order holds wherever things overlap. One that
+///     touches no veneer stays in layer 0 beside its neighbours: its
+///     antialiased edges then resolve against them exactly as before,
+///     which keeps everything away from a veneer pixel-identical;
+///   * text, and anything whose box is not known here (inside a turn),
+///     takes the layer of the veneers met so far, as in paint order.
+///     Raster text is drawn after every mesh of its layer anyway.
+///
+/// A scene with no veneer is one pass that draws everything, as before.
+#[derive(Debug, Default)]
+struct Pass {
+    /// Veneers met so far in this pass's walk.
+    seen: usize,
+    /// The layer being painted.
+    target: usize,
+    /// Pixel boxes of the veneers met so far, in order.
+    veneers: Vec<[f32; 4]>,
+    /// Boxes of the fills raised above layer 0 so far, with their layer.
+    promoted: Vec<([f32; 4], usize)>,
+    /// Inside a `Prim::Turn`, where design boxes are not tracked.
+    turned: bool,
+}
+
+impl Pass {
+    fn start(&mut self, target: usize) {
+        *self = Pass { target, veneers: std::mem::take(&mut self.veneers), promoted: std::mem::take(&mut self.promoted), ..Pass::default() };
+        self.veneers.clear();
+        self.promoted.clear();
+    }
+
+    /// The layer of one leaf at translation `(ox, oy)` and scale `k`,
+    /// and the bookkeeping its walk needs. Boxes are compared as the
+    /// canvas pixels they touch: two shapes that share no pixel cannot
+    /// change each other's antialiased edge.
+    fn layer(&mut self, prim: &Prim, ox: f32, oy: f32, k: f32) -> usize {
+        let touches = |a: &[f32; 4], b: &[f32; 4]| a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
+        let snap = |b: [f32; 4]| [(b[0] * k).floor(), (b[1] * k).floor(), (b[2] * k).ceil(), (b[3] * k).ceil()];
+        if let Prim::Veneer { shape, .. } = *prim {
+            let layer = self.seen;
+            self.seen += 1;
+            let b = shape.iter().filter_map(|p| leaf_box(p, ox, oy)).reduce(|a, b| {
+                [a[0].min(b[0]), a[1].min(b[1]), a[2].max(b[2]), a[3].max(b[3])]
+            });
+            if let Some(b) = b {
+                self.veneers.push(snap(b));
+            }
+            return layer;
+        }
+        let mesh = matches!(
+            prim,
+            Prim::Rect { .. } | Prim::Path { .. } | Prim::Round { .. } | Prim::Ellipse { .. }
+                | Prim::Circle { .. } | Prim::Grain { .. } | Prim::Dots { .. }
+        );
+        if !mesh || self.turned {
+            return self.seen;
+        }
+        let Some(b) = leaf_box(prim, ox, oy) else { return self.seen };
+        let b = snap(b);
+        let mut layer = 0;
+        for (i, v) in self.veneers.iter().enumerate() {
+            if touches(v, &b) {
+                layer = layer.max(i + 1);
+            }
+        }
+        for (p, l) in &self.promoted {
+            if *l > layer && touches(p, &b) {
+                layer = *l;
+            }
+        }
+        if layer > 0 {
+            self.promoted.push((b, layer));
+        }
+        layer
+    }
+}
+
+/// A fill or stroke leaf's box in design units at translation `(ox, oy)`,
+/// stroke half-width included; `None` for anything else.
+fn leaf_box(prim: &Prim, ox: f32, oy: f32) -> Option<[f32; 4]> {
+    let pad = |w: f32, stroke: bool| if stroke { w.abs() / 2.0 } else { 0.0 };
+    let b = match *prim {
+        Prim::Rect { x, y, w, h, stroke, width, .. } | Prim::Round { x, y, w, h, stroke, width, .. } => {
+            let p = pad(width, stroke.is_some());
+            [x.min(x + w) - p, y.min(y + h) - p, x.max(x + w) + p, y.max(y + h) + p]
+        }
+        Prim::Path { x, y, segs, stroke, width, .. } => {
+            let mut b = [x, y, x, y];
+            let mut add = |px: f32, py: f32| {
+                b = [b[0].min(px), b[1].min(py), b[2].max(px), b[3].max(py)];
+            };
+            for seg in segs {
+                match *seg {
+                    Seg::Move(px, py) | Seg::Line(px, py) => add(px, py),
+                    Seg::Quad { cx, cy, x, y } => {
+                        add(cx, cy);
+                        add(x, y);
+                    }
+                    Seg::Cubic { c1x, c1y, c2x, c2y, x, y } => {
+                        add(c1x, c1y);
+                        add(c2x, c2y);
+                        add(x, y);
+                    }
+                }
+            }
+            let p = pad(width, stroke.is_some());
+            [b[0] - p, b[1] - p, b[2] + p, b[3] + p]
+        }
+        Prim::Ellipse { x, y, rx, ry, stroke, width, .. } => {
+            let p = pad(width, stroke.is_some());
+            [x - rx - p, y - ry - p, x + rx + p, y + ry + p]
+        }
+        Prim::Circle { x, y, r, stroke, width, .. } => {
+            let p = pad(width, stroke.is_some());
+            [x - r - p, y - r - p, x + r + p, y + r + p]
+        }
+        Prim::Grain { x, y, w, h, width, .. } => [x, y, x + w, y + h + width],
+        Prim::Dots { x, y, cell, pitch, rows, .. } => {
+            let cols = rows.iter().map(|r| r.chars().count()).max().unwrap_or(0) as f32;
+            [x, y, x + cols * pitch + cell, y + rows.len() as f32 * pitch + cell]
+        }
+        _ => return None,
+    };
+    Some([b[0] + ox, b[1] + oy, b[2] + ox, b[3] + oy])
 }
 
 impl OutlineCache {
@@ -359,7 +497,7 @@ impl<M: 'static> Scene<M> {
             canvas(Backdrop { style: self.style, prims: backdrop, stretch: false, at: self.at })
                 .width(iced::Length::Fill)
                 .height(iced::Length::Fill),
-            canvas(self).width(iced::Length::Fill).height(iced::Length::Fill),
+            layered::canvas(self).width(iced::Length::Fill).height(iced::Length::Fill),
         ]
         .into()
     }
@@ -389,7 +527,7 @@ impl<M: 'static> Scene<M> {
         iced::widget::stack![
             canvas(Backdrop { style: self.style, prims: backdrop_prims, stretch: false, at: self.at })
                 .width(iced::Length::Fill).height(iced::Length::Fill),
-            canvas(FeedbackScene { scene: self, on_feedback })
+            layered::canvas(FeedbackScene { scene: self, on_feedback })
                 .width(iced::Length::Fill).height(iced::Length::Fill),
         ].into()
     }
@@ -409,7 +547,7 @@ impl<M: 'static> Scene<M> {
                 at: self.at,
             }))
                 .width(iced::Length::Fill).height(iced::Length::Fill),
-            canvas(FeedbackScene { scene: self, on_feedback })
+            layered::canvas(FeedbackScene { scene: self, on_feedback })
                 .width(iced::Length::Fill).height(iced::Length::Fill),
         ].into()
     }
@@ -1094,6 +1232,15 @@ impl<M> Scene<M> {
         route: FrameRoute,
     ) {
         for prim in prims {
+            // Containers always recurse; a leaf belongs to one layer.
+            let container = matches!(
+                prim,
+                Prim::Plate { .. } | Prim::Pick { .. } | Prim::Viewport { .. } | Prim::At { .. }
+                    | Prim::Motion { .. } | Prim::Turn { .. } | Prim::TrackedWords { .. } | Prim::Soft { .. }
+            );
+            if !container && outlines.pass.layer(prim, ox, oy, k) != outlines.pass.target {
+                continue;
+            }
             match *prim {
                 Prim::Rect { x, y, w, h, fill, stroke, width } => {
                     let path = canvas::Path::rectangle(
@@ -1318,6 +1465,19 @@ impl<M> Scene<M> {
                         gy += pitch;
                     }
                 }
+                Prim::Veneer { x, y, texture, shape } => {
+                    // Pixel-aligned at the canvas scale, so it is drawn
+                    // 1:1; a fading group fades it as an opacity, in
+                    // linear light like any image (a few frames at most).
+                    if let Some(image) = crate::veneer::image(texture, x, y, shape, ox, oy, k) {
+                        frame.draw_image(
+                            image.bounds,
+                            canvas::Image::new(image.handle.clone())
+                                .filter_method(iced::widget::image::FilterMethod::Linear)
+                                .opacity(alpha),
+                        );
+                    }
+                }
                 Prim::Dots { x, y, cell, pitch, ink, rows } => {
                     let color = self.ink(ink, alpha);
                     for (r, row) in rows.iter().enumerate() {
@@ -1460,11 +1620,13 @@ impl<M> Scene<M> {
                     // through. Text under a rotation is rendered by
                     // iced as filled glyph outlines, so a label turns
                     // with its group rather than staying upright.
+                    let turned = std::mem::replace(&mut outlines.pass.turned, true);
                     frame.with_save(|f| {
                         f.translate(iced::Vector::new((ox + x) * k, (oy + y) * k));
                         f.rotate(iced::Radians(angle.to_radians()));
                         self.paint(f, outlines, prims, 0.0, 0.0, k, alpha, interaction, clip, route.turn(angle));
                     });
+                    outlines.pass.turned = turned;
                 }
                 // Painted by the `Backdrop` canvas underneath; see
                 // `Scene::view`.
@@ -1912,24 +2074,36 @@ impl<M> canvas::Program<M, Style> for Scene<M> {
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
-        let mut frame = canvas::Frame::new(renderer, bounds.size());
         let k = scale(bounds);
-        if k > 0.0 {
-            // Only rendering sees the cursor pick. Hover never mutates
-            // the screen's destination or the keyboard's selection.
-            let scene = Scene {
-                style: self.style,
-                prims: self.prims,
-                picked: state.picked(self.prims, self.picked, self.cursor_group),
-                cursor_group: self.cursor_group,
-                states: self.states,
-                at: self.at,
-                on_select: self.on_select,
-            };
-            let mut outlines = OutlineCache::default();
-            scene.paint(&mut frame, &mut outlines, self.prims, 0.0, 0.0, k, 1.0, state.interaction(self.prims), None, FrameRoute::Plain);
+        if k <= 0.0 {
+            return vec![canvas::Frame::new(renderer, bounds.size()).into_geometry()];
         }
-        vec![frame.into_geometry()]
+        // Only rendering sees the cursor pick. Hover never mutates
+        // the screen's destination or the keyboard's selection.
+        let scene = Scene {
+            style: self.style,
+            prims: self.prims,
+            picked: state.picked(self.prims, self.picked, self.cursor_group),
+            cursor_group: self.cursor_group,
+            states: self.states,
+            at: self.at,
+            on_select: self.on_select,
+        };
+        // One frame per layer ([`Pass`]): the first pass counts the
+        // veneers it meets, and each of them opens one more layer.
+        let mut outlines = OutlineCache::default();
+        let mut layers = Vec::new();
+        loop {
+            let target = layers.len();
+            outlines.pass.start(target);
+            let mut frame = canvas::Frame::new(renderer, bounds.size());
+            scene.paint(&mut frame, &mut outlines, self.prims, 0.0, 0.0, k, 1.0, state.interaction(self.prims), None, FrameRoute::Plain);
+            layers.push(frame.into_geometry());
+            if target >= outlines.pass.seen {
+                break;
+            }
+        }
+        layers
     }
 }
 
