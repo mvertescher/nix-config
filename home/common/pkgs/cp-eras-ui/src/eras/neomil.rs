@@ -21,6 +21,7 @@ use crate::style::{
     Era, Face, Footnotes, Ground, Ink, MenuMarker, MenuRule, Metrics, Nameplate,
     PanelEcho, Selection, Style, Ticket, WindowLabel,
 };
+use crate::style::{DarkPlate, Weights};
 use crate::widgets::surface::{Corners, Cut};
 // --- login ---
 use crate::style::{
@@ -33,6 +34,80 @@ mod neomil_login_echoes;
 #[path = "neomil_store_art.rs"]
 mod neomil_store_art;
 // --- end login ---
+
+// --- line vocabulary ---
+//
+// The era's line weights and its outlined-dark-plate treatments, measured
+// on the four 3840x2160 references (images/img-06..09) and recorded in
+// docs/neomil/line-weights.md, with the method, every element family and
+// the pixel comparison against this crate's 4K renders. Widths are design
+// px (native / 2.4). FWHM = full width at half maximum of the line's
+// perpendicular profile, 40 profiles per edge, raw pixels (no
+// interpolation) on axis-aligned edges.
+
+/// Neomil's line weights. The era draws almost every line at one weight,
+/// whatever the element's size or role; it does not thicken an outline
+/// for a bigger panel or a more prominent control.
+pub const WEIGHTS: Weights = Weights {
+    // The full-width header rule on login, mailbox and dashboard: one
+    // fully covered native row of #fb3535 plus a partial one, 1.55-1.81
+    // native px of coverage (FWHM 1.71-1.81) = 0.65-0.75 dp. A hair under
+    // `line`; the difference (~0.25 native px) is at the limit of what a
+    // partial-pixel line can resolve.
+    hairline: 0.7,
+    // Every outline: store nav rows (FWHM 1.94-2.38 px, 16 edges), mailbox
+    // rows (1.90-1.99, 14), Confirm / Jump buttons (1.86-2.10, 12), tab
+    // plates (1.87-2.41, 8), header badges (1.90-2.21, 10), login idle
+    // cards (1.75-2.17, 8), password field (1.82-1.98), store product card
+    // (1.64-1.97), Urgent panel (1.82-1.86), GO HOME panel (1.92-2.26).
+    // Median ~2.0 native px, hard-edged (the core two pixels at the line's
+    // colour, no glow): 2 / 2.4 = 0.8333 dp.
+    line: 0.8333,
+    // The hub diamonds' inset contour and tab seam, dark on the red face:
+    // diagonal FWHM 2.3-2.7 px where this crate's 1.0 dp line measures
+    // 1.9-2.5 px by the same method; 1.0 dp within +-0.1.
+    inset: 1.0,
+    // The footer tape's frame and divider: FWHM 3.60-3.82 px = 1.50-1.59 dp.
+    // The era's only heavy line; the tape is a stamp, not a panel.
+    heavy: 1.5,
+};
+
+/// The era's bright line ink: the peak colour of every bright outline
+/// and rule in the references -- the header rule on all three headers,
+/// the footer tape, the Urgent panel, the store cards -- is #fb3535 (the
+/// GO HOME panel's reads #f42727-#f82727). The dashboard's palette fg is
+/// overridden to the diamond face red #ef3333, which is a fill, not this.
+pub const LINE_INK: iced::Color = rgb(0xfb3535);
+
+/// The outlined-control rung at rest: a dark face edged at `line` in the
+/// palette's `border` (#5e1112, "sampled from reference borders"; the
+/// measured dark outlines peak #58..#76 over their fills, median ~#63),
+/// bright marks. Store nav rows, Confirm / Jump.
+pub const REST_PLATE: DarkPlate = DarkPlate::new(Ink::Fixed(NAV_FILL), Ink::Border, WEIGHTS.line, Ink::Fg);
+/// The idle mailbox button: the rest rung on the near-ground `#1a0607`
+/// fill the trace samples, lettered in the mid red.
+pub const GHOST_PLATE: DarkPlate = REST_PLATE.with_face(Ink::Fixed(rgb(0x1a0607)));
+/// The lit (hover) rung of an outlined control: the bright ink at 0.22
+/// over the dark face (#551719) and the edge and ink lifted to #f63333.
+/// Inferred, components.svg section 9.
+pub const LIT_PLATE: DarkPlate = DarkPlate::new(Ink::Fixed(rgb(0x551719)), Ink::Fixed(rgb(0xf63333)), WEIGHTS.line, Ink::Fixed(rgb(0xf63333)));
+/// A solid red plate drawn INVERTED (the selected hub diamond; owner-
+/// approved extension, not in the reference). It is the red diamond's
+/// own three tones, swapped: the red face becomes the dark nav face, the
+/// near-black marks (glyph ink core #0e..#20) become the bright marks,
+/// and the mid-dark secondary line (inset #671b21 on #ef3333, about half
+/// way from face to marks) becomes the mid red `dim` (#a32226: 60% of the
+/// way from #2e1012 to #ef3333). The silhouette takes the era's outline
+/// -- a dark plate is always outlined -- at `line` in the bright line
+/// ink, as the bright-outlined dark panels of comparable size are (GO
+/// HOME 238x442, product card 270x457, idle login cards 255x340; the
+/// diamond is 208x193). The inset keeps the diamond's own `inset` weight.
+pub const INVERTED_PLATE: DarkPlate = DarkPlate::new(Ink::Fixed(NAV_FILL), Ink::Fixed(LINE_INK), WEIGHTS.line, Ink::Fg)
+    .with_inset(Ink::Dim, WEIGHTS.inset);
+/// The inverted plate hovered: the lit rung's face, edge and marks; the
+/// inset stays the secondary mid red.
+pub const INVERTED_LIT_PLATE: DarkPlate = LIT_PLATE.with_inset(Ink::Dim, WEIGHTS.inset);
+// --- end line vocabulary ---
 
 pub const BG: iced::Color = rgb(0x050304);
 /// The cold blue behind the reds. As a palette role it is unconsumed as
@@ -312,26 +387,30 @@ pub fn style() -> Style {
                 pressed: Some(Coat::filled(Ink::Fixed(rgb(0xa52223)), Ink::Fixed(rgb(0x420f10)))),
             },
             ghost_states: ControlStates {
-                hover: Some(Coat::filled(Ink::Fixed(rgb(0x451010)), Ink::Cta).edged(Ink::Cta, 1.0)),
+                hover: Some(Coat::filled(Ink::Fixed(rgb(0x451010)), Ink::Cta).edged(Ink::Cta, WEIGHTS.line)),
                 pressed: Some(Coat::filled(Ink::Fixed(rgb(0xa52223)), Ink::Fixed(rgb(0x59171b)))),
             },
             field_states: ControlStates {
-                hover: Some(Coat::filled(Ink::Fixed(rgb(0x6a1617)), Ink::Fixed(rgb(0xf63333))).edged(Ink::Fixed(rgb(0xf63333)), 1.0)),
+                hover: Some(Coat::filled(Ink::Fixed(rgb(0x6a1617)), Ink::Fixed(rgb(0xf63333))).edged(Ink::Fixed(rgb(0xf63333)), WEIGHTS.line)),
                 // Focus restores the photographed well; iced draws
                 // the caret. The hover wash must not persist in focus.
-                pressed: Some(Coat::filled(Ink::Fixed(WELL), Ink::Fixed(rgb(0xf63333))).edged(Ink::Fixed(rgb(0xae2729)), 1.0)),
+                // The photographed field IS the focused one: its outline
+                // is a 2 px line peaking #72..#7b (FIELD_EDGE).
+                pressed: Some(Coat::filled(Ink::Fixed(WELL), Ink::Fixed(rgb(0xf63333))).edged(Ink::Fixed(FIELD_EDGE), WEIGHTS.line)),
             },
             // Switch Weapon / Login: the fill red, dark ink.
             primary: Coat::filled(Ink::Cta, Ink::OnSelect),
             // Confirm / Jump: the near-ground fill `mailbox.buttons`
             // reads for the idle three, edged and lettered in the mid
             // red.
-            ghost: Coat::filled(Ink::Fixed(rgb(0x1a0607)), Ink::Dim).edged(Ink::Dim, 1.0),
+            // Edged in the rest plate's `border` at `line`: the source
+            // outline is 2 native px peaking #58..#5d, not the mid red.
+            ghost: Coat { ink: Ink::Dim, ..GHOST_PLATE.coat() },
             // The protected card is the idle one "everything one stop
             // darker": edge and ink each drop a role.
-            disabled: Coat::filled(Ink::Fixed(rgb(0x1a0607)), Ink::Border).edged(Ink::Border, 1.0),
+            disabled: Coat::filled(Ink::Fixed(rgb(0x1a0607)), Ink::Border).edged(Ink::Border, WEIGHTS.line),
             // The password well: solid, edged 1 in the mid red.
-            field: Coat::filled(Ink::Fixed(WELL), Ink::Fg).edged(Ink::Dim, 1.0),
+            field: Coat::filled(Ink::Fixed(WELL), Ink::Fg).edged(Ink::Dim, WEIGHTS.line),
             placeholder: Ink::Dim,
             radius: 0.0,
         },
@@ -370,7 +449,9 @@ pub fn style() -> Style {
         dashboard_destinations: [None, Some(Destination::Mail), None, None, Some(Destination::Store), None],
         // --- end dashboard ---
         metrics: Metrics {
-            stroke: 1.5,
+            // A built-in surface's outline is the era's one outline weight.
+            stroke: WEIGHTS.line,
+            weights: WEIGHTS,
             gap: 16.0,
             pad: 16.0,
             ..Metrics::default()
@@ -418,6 +499,9 @@ pub const AVATAR: iced::Color = rgb(0xc72a2b);
 pub const GLYPH_INK: iced::Color = rgb(0x200506);
 /// The live card's password well and its Login button.
 pub const WELL: iced::Color = rgb(0x430e0f);
+/// The password field's outline as photographed (focused): a 2 native px
+/// line peaking #72..#7b on its four sides (line-weights.md).
+pub const FIELD_EDGE: iced::Color = rgb(0x760e0f);
 pub const COMMIT: iced::Color = rgb(0xa52223);
 /// The compliance micro-text under a card, a shade off the bright red.
 pub const NOTICE: iced::Color = rgb(0xe63132);
@@ -751,7 +835,11 @@ pub const ACCESS: Access = Access {
             Plate::filled(Plot::new(1329.58, 126.67, 27.0833, 12.0833), Ink::Fg)
                 .outlined_path((1329.58, 126.67), LOGIN_TIER_4).edged(Ink::Fg, 0.35),
         ],
-        rule: Plate::filled(Plot::new(42.0, 188.0, 1516.0, 1.5), Ink::Dim),
+        // The header rule: a `hairline` of the bright line ink, centred on
+        // the measured y 188.16 (login native rows 450..452 cover 0.32,
+        // 1.0, 0.49).
+        rule: Plate::filled(Plot::new(42.0, 187.81, 1516.0, WEIGHTS.hairline), Ink::Dim)
+            .reference_fill(LINE_INK),
         labels: &[
             Legend::new("CUSTOMER", 123.6, 90.0, 14.0, Ink::Fg).stretched(0.93),
             Legend::new("#NC488402", 253.9, 90.0, 14.0, Ink::Fg).stretched(0.93),
@@ -790,7 +878,7 @@ pub const ACCESS: Access = Access {
             prompt: Some(Legend::new("password:", 379.0, 594.0, 15.0, Ink::Fg)),
             field: Some(
                 Plate::filled(Plot::new(372.5, 602.5, 252.0, 32.0), Ink::Fixed(WELL))
-                    .edged(Ink::Dim, 1.0),
+                    .edged(Ink::Dim, WEIGHTS.line).reference_edge(FIELD_EDGE, WEIGHTS.line),
             ),
             // The illustrated fixture has ten stars followed by one
             // horizontal stroke. Awake input uses the same pitch and
@@ -842,10 +930,10 @@ pub const ACCESS: Access = Access {
                         bl: 22.0,
                         ..Bevel::NONE
                     })
-                    .edged(Ink::Dim, 1.5),
+                    .edged(Ink::Dim, WEIGHTS.line),
             ),
             reference_body: Some(Plate::outlined(
-                Plot::new(692.0, 315.0, 255.0, 340.0), Ink::Dim, 1.5,
+                Plot::new(692.0, 315.0, 255.0, 340.0), Ink::Dim, WEIGHTS.line,
             ).bevelled(Bevel { tr: 51.0, bl: 22.0, ..Bevel::NONE })),
             foot: Some(
                 Plate::filled(
@@ -853,7 +941,7 @@ pub const ACCESS: Access = Access {
                     Ink::Fixed(SECTION_OPEN),
                 )
                 .bevelled(Bevel::bl(22.0))
-                .edged(Ink::Dim, 1.0),
+                .edged(Ink::Dim, WEIGHTS.line),
             ),
             notch: Some(Plate::filled(Plot::new(692.0, 390.0, 15.0, 106.0), Ink::Bg)
                 .reference_fill(NOTCH_GROUND)
@@ -887,10 +975,10 @@ pub const ACCESS: Access = Access {
                     bl: 22.0,
                     ..Bevel::NONE
                 })
-                .edged(Ink::Fixed(EDGE_LOCKED), 1.5),
+                .edged(Ink::Fixed(EDGE_LOCKED), WEIGHTS.line),
             ),
             reference_body: Some(Plate::outlined(
-                Plot::new(982.0, 315.0, 254.0, 340.0), Ink::Fixed(EDGE_LOCKED), 1.5,
+                Plot::new(982.0, 315.0, 254.0, 340.0), Ink::Fixed(EDGE_LOCKED), WEIGHTS.line,
             ).bevelled(Bevel { tr: 51.0, bl: 22.0, ..Bevel::NONE })),
             foot: Some(
                 Plate::filled(
@@ -898,7 +986,7 @@ pub const ACCESS: Access = Access {
                     Ink::Fixed(SECTION_LOCKED),
                 )
                 .bevelled(Bevel::bl(22.0))
-                .edged(Ink::Fixed(EDGE_LOCKED), 1.0),
+                .edged(Ink::Fixed(EDGE_LOCKED), WEIGHTS.line),
             ),
             notch: Some(Plate::filled(Plot::new(982.0, 390.0, 15.0, 106.0), Ink::Bg)
                 .reference_fill(NOTCH_GROUND)
@@ -1225,7 +1313,8 @@ pub fn mailbox() -> Mailbox {
             row_fill: Some(Ink::Fixed(rgb(0x280c0d))),
             row_fills: MAIL_ROW_FILLS,
             row_stroke: Some(Ink::Fixed(rgb(0x660e0f))),
-            row_width: 0.8333,
+            // Already the measured `line`; the row's own sampled #660e0f.
+            row_width: WEIGHTS.line,
             row_trim: Trim::chamfer(BL, 15.0),
             spine: None,
             rule: None,
@@ -1316,8 +1405,9 @@ pub fn mailbox() -> Mailbox {
             joined: false,
             chevron: false,
             trim: Trim::chamfer(BR, 9.0),
-            width: 1.0,
-            stroke: Ink::Dim,
+            // The rest plate's edge: 2 native px peaking #58..#5d.
+            width: REST_PLATE.edge_weight,
+            stroke: REST_PLATE.edge,
             label: Run::new(12.5, 44.6667, 16.6667, Ink::Fixed(rgb(0xfb3535))),
             tab: None,
             // Switch Weapon, the filled one, is set medium in `on_select`
@@ -2189,8 +2279,11 @@ const NAV67: &[Seg] = &[
     Seg::Line(16.0, 67.0),
     Seg::Line(0.0, 51.0),
 ];
+// The rest plate: was edged 1.2 in the mid red (#a32226), which the 4K
+// comparison put at 2.9-3.5 native px against the source's 1.9-2.4 px of
+// #62..#76 (line-weights.md).
 const NAV_ROW: &[Prim] = &[
-    Prim::Path { x: 0.0, y: 0.0, segs: NAV62, close: true, fill: Some(Ink::Fixed(NAV_FILL)), stroke: Some(Ink::Dim), width: 1.2 },
+    REST_PLATE.plate(0.0, 0.0, NAV62),
     fill_rect(-5.0, 0.0, 3.0, 46.0, Ink::Dim),
 ];
 const NAV_SELECTED: &[Prim] = &[
@@ -2203,7 +2296,7 @@ const NAV_SELECTED: &[Prim] = &[
 // use the filled-control ladder instead; pointer state never grows or
 // shrinks a row, changes its label, or selects a product card.
 const NAV_HOVER: &[Prim] = &[
-    Prim::Path { x: 0.0, y: 0.0, segs: NAV62, close: true, fill: Some(Ink::Fixed(rgb(0x551719))), stroke: Some(Ink::Fg), width: 1.2 },
+    Prim::Path { x: 0.0, y: 0.0, segs: NAV62, close: true, fill: Some(Ink::Fixed(rgb(0x551719))), stroke: Some(Ink::Fg), width: WEIGHTS.line },
     fill_rect(-5.0, 0.0, 3.0, 46.0, Ink::Fg),
 ];
 const NAV_PRESSED: &[Prim] = &[
@@ -2504,65 +2597,70 @@ const CELLS_PRESSED: [[Prim; 5]; 6] = cells(Ink::Fixed(rgb(0xa52223)), Ink::Fixe
 // (Matt, 2026-11-13, docs/review-2026-11-13/DECISIONS.md item 1), not
 // traced -- the source shows no selected tile (components.svg
 // #dashboard-tile-selected). Every part keeps its measured geometry and
-// swaps roles: the face and the offset tab take the store nav row's dark
-// fill (NAV_FILL, the era's dark menu-item surface) and are edged in the
-// bright foreground, the era's outlined-control rung; the inset outline
-// and the glyph go from dark-on-red to the bright foreground on dark. The
-// tab's closed edge is the seam. Painted over the resting Soft material,
-// which it covers completely inside the silhouette, so a selection change
-// redraws vector prims only and never rebuilds the cached backdrop.
-const SELECTED_EDGE: f32 = 1.5;
+// wears the era's INVERTED_PLATE treatment (see the line vocabulary at
+// the top of this file): face and offset tab dark, the silhouette edged
+// at the era's one outline weight in the bright line ink, the inset
+// contour and the tab seam in the secondary mid red at the diamond's own
+// inset weight, the glyph in the bright foreground. Painted over the
+// resting Soft material, which it covers completely inside the
+// silhouette, so a selection change redraws vector prims only and never
+// rebuilds the cached backdrop. The edge was 1.5 until 2026-11-14 (the
+// footer tape's heavy weight); docs/neomil/line-weights.md.
 // The four ground-coloured separators (DASHBOARD, after the units) cut the
 // facing side tips. On a red tile the cut reads as the red's edge; on the
 // dark face it would leave the edge open, so the inverted silhouette is cut
 // there itself, half an edge inside the separator so the stroke meets it.
-// `cut_tip` x = separator edge - tile centre -/+ SELECTED_EDGE / 2; a tip
+// `cut_tip` x = separator edge - tile centre -/+ INVERTED_PLATE.edge_weight / 2; a tip
 // on the menu's outside keeps its point. Every edge is the resting
 // silhouette's own line, |y| = 104 - |x|.
 const SELECTED_OUTERS: [(f32, f32, &[Seg]); 6] = [
     // VEHICLES (334): right tip cut by the 424 separator.
-    (-15.0, -89.0, &[Seg::Line(15.0, -89.0), Seg::Line(89.25, -14.75), Seg::Line(89.25, 14.75),
+    (-15.0, -89.0, &[Seg::Line(15.0, -89.0), Seg::Line(89.5833, -14.4167), Seg::Line(89.5833, 14.4167),
         Seg::Line(0.0, 104.0), Seg::Line(-104.0, 0.0)]),
     // LOCATIONS (530): left by 424+16, right by 619.5.
-    (-15.0, -89.0, &[Seg::Line(15.0, -89.0), Seg::Line(88.75, -15.25), Seg::Line(88.75, 15.25),
-        Seg::Line(0.0, 104.0), Seg::Line(-89.25, 14.75), Seg::Line(-89.25, -14.75)]),
+    (-15.0, -89.0, &[Seg::Line(15.0, -89.0), Seg::Line(89.0833, -14.9167), Seg::Line(89.0833, 14.9167),
+        Seg::Line(0.0, 104.0), Seg::Line(-89.5833, 14.4167), Seg::Line(-89.5833, -14.4167)]),
     // FACTIONS (725): left by 619.5+16.
     (-15.0, -89.0, &[Seg::Line(15.0, -89.0), Seg::Line(104.0, 0.0),
-        Seg::Line(0.0, 104.0), Seg::Line(-88.75, 15.25), Seg::Line(-88.75, -15.25)]),
+        Seg::Line(0.0, 104.0), Seg::Line(-89.0833, 14.9167), Seg::Line(-89.0833, -14.9167)]),
     // WEAPONS (431): right by 521.5.
-    (0.0, -104.0, &[Seg::Line(89.75, -14.25), Seg::Line(89.75, 14.25), Seg::Line(15.0, 89.0),
+    (0.0, -104.0, &[Seg::Line(90.0833, -13.9167), Seg::Line(90.0833, 13.9167), Seg::Line(15.0, 89.0),
         Seg::Line(-15.0, 89.0), Seg::Line(-104.0, 0.0)]),
     // PRODUCTS (628): left by 521.5+16, right by 717.
-    (0.0, -104.0, &[Seg::Line(88.25, -15.75), Seg::Line(88.25, 15.75), Seg::Line(15.0, 89.0),
-        Seg::Line(-15.0, 89.0), Seg::Line(-89.75, 14.25), Seg::Line(-89.75, -14.25)]),
+    (0.0, -104.0, &[Seg::Line(88.5833, -15.4167), Seg::Line(88.5833, 15.4167), Seg::Line(15.0, 89.0),
+        Seg::Line(-15.0, 89.0), Seg::Line(-90.0833, 13.9167), Seg::Line(-90.0833, -13.9167)]),
     // CORPORATIONS (822): left by 717+16.
     (0.0, -104.0, &[Seg::Line(104.0, 0.0), Seg::Line(15.0, 89.0),
-        Seg::Line(-15.0, 89.0), Seg::Line(-88.25, 15.75), Seg::Line(-88.25, -15.75)]),
+        Seg::Line(-15.0, 89.0), Seg::Line(-88.5833, 15.4167), Seg::Line(-88.5833, -15.4167)]),
 ];
-const fn selected_cells(face: Ink, ink: Ink, glyphs: [Prim; 6]) -> [[Prim; 4]; 6] {
-    let mut out = [[fill_rect(0.0, 0.0, 0.0, 0.0, face); 4]; 6];
+// The tab is edged all round like the face, so their shared edge would
+// read as outline; the seam, drawn last at the inset weight (wider than
+// the edge), re-inks it as the secondary line it is on the red tile.
+const fn selected_cells(plate: DarkPlate, glyphs: [Prim; 6]) -> [[Prim; 5]; 6] {
+    let mut out = [[fill_rect(0.0, 0.0, 0.0, 0.0, plate.face); 5]; 6];
     let mut i = 0;
     while i < out.len() {
         let inner = CELL_INNERS_STARTS[i];
         let tab = CELL_TABS_STARTS[i];
         let (ox, oy, outer) = SELECTED_OUTERS[i];
         out[i] = [
-            Prim::Path { x: ox, y: oy, segs: outer, close: true, fill: Some(face), stroke: Some(ink), width: SELECTED_EDGE },
-            shut_path(inner.0, inner.1, CELL_INNERS[i], ink, 1.0),
+            plate.plate(ox, oy, outer),
+            plate.inset_contour(inner.0, inner.1, CELL_INNERS[i]),
             glyphs[i],
-            Prim::Path { x: tab.0, y: tab.1, segs: CELL_TABS[i], close: true, fill: Some(face), stroke: Some(ink), width: SELECTED_EDGE },
+            plate.plate(tab.0, tab.1, CELL_TABS[i]),
+            plate.seam(tab.0, tab.1, CELL_SEAMS[i]),
         ];
         i += 1;
     }
     out
 }
-const CELLS_SELECTED: [[Prim; 4]; 6] = selected_cells(Ink::Fixed(NAV_FILL), Ink::Fg, dashboard_glyphs::SELECTED);
+const CELLS_SELECTED: [[Prim; 5]; 6] = selected_cells(INVERTED_PLATE, dashboard_glyphs::SELECTED);
 // Hovered while selected: the outlined-control hover coat the store nav
 // row and the mailbox row use (#551719 wash, #f63333 edge and ink).
 // Pressed while selected falls back to the ordinary held drawing
 // (CELLS_PRESSED), as components.svg section 9 has it: "a press reads on
 // a control that is already selected".
-const CELLS_SELECTED_HOVER: [[Prim; 4]; 6] = selected_cells(Ink::Fixed(rgb(0x551719)), Ink::Fixed(rgb(0xf63333)), dashboard_glyphs::SELECTED_HOVER);
+const CELLS_SELECTED_HOVER: [[Prim; 5]; 6] = selected_cells(INVERTED_LIT_PLATE, dashboard_glyphs::SELECTED_HOVER);
 
 // Keep CELLS as the geometry reference for unchanged inferred hover/held inks.
 // Rest paints its palette-role face and local printing in the leading Soft
@@ -2616,6 +2714,76 @@ const HUB_STATES: &[crate::style::PlateStates] = &[
     hub_states(0), hub_states(1), hub_states(2),
     hub_states(3), hub_states(4), hub_states(5),
 ];
+
+#[cfg(test)]
+mod line_vocabulary_tests {
+    use super::*;
+
+    /// The measured weights, as docs/neomil/line-weights.md states them:
+    /// one outline weight of 2 native px at 4K (0.8333 dp), the
+    /// diamond's 1.0 inset, the tape's 1.5, the header hairline.
+    #[test]
+    fn the_era_weights_are_the_measured_ones() {
+        assert_eq!(WEIGHTS.line, 0.8333);
+        assert!((WEIGHTS.line * 2.4 - 2.0).abs() < 1e-3, "2 native px at 3840x2160");
+        assert_eq!((WEIGHTS.hairline, WEIGHTS.inset, WEIGHTS.heavy), (0.7, 1.0, 1.5));
+        assert!(WEIGHTS.hairline < WEIGHTS.line && WEIGHTS.line < WEIGHTS.inset && WEIGHTS.inset < WEIGHTS.heavy);
+        let style = Era::Neomil.style();
+        assert_eq!(style.metrics.weights, WEIGHTS);
+        assert_eq!(style.metrics.stroke, WEIGHTS.line, "built-in surfaces outline at the era's line");
+    }
+
+    /// Every outlined dark plate of the era draws at the one outline
+    /// weight; only its inks differ by rung.
+    #[test]
+    fn every_dark_plate_rung_uses_the_outline_weight() {
+        for plate in [REST_PLATE, GHOST_PLATE, LIT_PLATE, INVERTED_PLATE, INVERTED_LIT_PLATE] {
+            assert_eq!(plate.edge_weight, WEIGHTS.line);
+        }
+        assert_eq!(INVERTED_PLATE.inset_weight, WEIGHTS.inset);
+        assert_eq!(INVERTED_PLATE.edge, Ink::Fixed(LINE_INK));
+        assert_eq!(INVERTED_PLATE.inset, Ink::Dim);
+        assert_eq!(INVERTED_PLATE.face, Ink::Fixed(NAV_FILL));
+        assert_eq!(REST_PLATE.edge, Ink::Border);
+    }
+
+    /// The treatment's constructors round-trip their parameters into the
+    /// prims they draw, and into a built-in's coat.
+    #[test]
+    fn a_dark_plate_round_trips_to_its_prims_and_coat() {
+        const SQ: &[Seg] = &[Seg::Line(10.0, 0.0), Seg::Line(10.0, 10.0), Seg::Line(0.0, 10.0)];
+        let p = INVERTED_PLATE;
+        assert_eq!(p.plate(1.0, 2.0, SQ), Prim::Path { x: 1.0, y: 2.0, segs: SQ, close: true,
+            fill: Some(p.face), stroke: Some(p.edge), width: p.edge_weight });
+        assert_eq!(p.inset_contour(1.0, 2.0, SQ), Prim::Path { x: 1.0, y: 2.0, segs: SQ, close: true,
+            fill: None, stroke: Some(p.inset), width: p.inset_weight });
+        assert_eq!(p.seam(1.0, 2.0, SQ), Prim::Path { x: 1.0, y: 2.0, segs: SQ, close: false,
+            fill: None, stroke: Some(p.inset), width: p.inset_weight });
+        assert_eq!(p.coat(), Coat { fill: p.face, edge: p.edge, weight: p.edge_weight, ink: p.ink });
+        // A plate with no face of its own leaves the fill to its caller.
+        assert!(matches!(p.with_face(Ink::None).plate(0.0, 0.0, SQ), Prim::Path { fill: None, .. }));
+        // Without an inset, the inset is the edge.
+        let r = REST_PLATE;
+        assert_eq!((r.inset, r.inset_weight), (r.edge, r.edge_weight));
+    }
+
+    /// The elements re-measured against the source draw from the
+    /// vocabulary: store nav rows, mailbox rows and buttons, the ghost
+    /// coat, the login cards and field, the GO HOME outline.
+    #[test]
+    fn the_outlined_elements_draw_from_the_vocabulary() {
+        assert_eq!(NAV_ROW[0], REST_PLATE.plate(0.0, 0.0, NAV62));
+        assert!(matches!(NAV_HOVER[0], Prim::Path { width, .. } if width == WEIGHTS.line));
+        let mail = mailbox();
+        assert_eq!(mail.list.row_width, WEIGHTS.line);
+        assert_eq!((mail.buttons.width, mail.buttons.stroke), (REST_PLATE.edge_weight, REST_PLATE.edge));
+        let style = Era::Neomil.style();
+        assert_eq!((style.controls.ghost.edge, style.controls.ghost.weight), (GHOST_PLATE.edge, WEIGHTS.line));
+        assert_eq!(style.controls.ghost.fill, GHOST_PLATE.face);
+        assert_eq!(style.controls.field.weight, WEIGHTS.line);
+        assert!(matches!(GO_HOME[0], Prim::Path { width, .. } if width == WEIGHTS.line));
+    }
+}
 
 #[cfg(test)]
 mod hub_interaction_tests {
@@ -2685,25 +2853,30 @@ mod hub_selection_tests {
     }
 
     /// The inverted tile is the resting tile's own measured geometry --
-    /// silhouette, inset, glyph, tab -- with the roles swapped: a dark
-    /// face and tab edged in the bright foreground, and the inset and
-    /// printing in that foreground. The resting (unselected) drawing is
-    /// exactly what it was.
+    /// silhouette, inset, glyph, tab, seam -- worn in the era's named
+    /// INVERTED_PLATE treatment (and INVERTED_LIT_PLATE when hovered):
+    /// every width and ink comes from the treatment, none is restated.
+    /// The resting (unselected) drawing is exactly what it was.
     #[test]
     fn the_selected_diamond_is_the_resting_one_inverted() {
         for (i, rest) in CELLS.iter().enumerate() {
-            for (drawing, face, ink, glyphs) in [
-                (&CELLS_SELECTED[i], Ink::Fixed(NAV_FILL), Ink::Fg, &dashboard_glyphs::SELECTED),
-                (&CELLS_SELECTED_HOVER[i], Ink::Fixed(rgb(0x551719)), Ink::Fixed(rgb(0xf63333)), &dashboard_glyphs::SELECTED_HOVER),
+            for (drawing, plate, glyphs) in [
+                (&CELLS_SELECTED[i], INVERTED_PLATE, &dashboard_glyphs::SELECTED),
+                (&CELLS_SELECTED_HOVER[i], INVERTED_LIT_PLATE, &dashboard_glyphs::SELECTED_HOVER),
             ] {
                 assert_eq!(geometry(drawing[0]), (SELECTED_OUTERS[i].0, SELECTED_OUTERS[i].1, SELECTED_OUTERS[i].2, true));
                 assert!(matches!(drawing[0], Prim::Path { fill: Some(f), stroke: Some(s), width, .. }
-                    if f == face && s == ink && width == SELECTED_EDGE));
+                    if f == plate.face && s == plate.edge && width == plate.edge_weight));
                 assert_eq!(geometry(drawing[1]), geometry(rest[1]), "tile {i} inset");
-                assert!(matches!(drawing[1], Prim::Path { fill: None, stroke: Some(s), width: 1.0, .. } if s == ink));
+                assert!(matches!(drawing[1], Prim::Path { fill: None, stroke: Some(s), width, .. }
+                    if s == plate.inset && width == plate.inset_weight));
                 assert_eq!(drawing[2], glyphs[i]);
                 assert_eq!(geometry(drawing[3]), geometry(rest[3]), "tile {i} tab");
-                assert!(matches!(drawing[3], Prim::Path { fill: Some(f), stroke: Some(s), .. } if f == face && s == ink));
+                assert!(matches!(drawing[3], Prim::Path { fill: Some(f), stroke: Some(s), width, .. }
+                    if f == plate.face && s == plate.edge && width == plate.edge_weight));
+                assert_eq!(geometry(drawing[4]), geometry(rest[4]), "tile {i} seam");
+                assert!(matches!(drawing[4], Prim::Path { fill: None, stroke: Some(s), width, close: false, .. }
+                    if s == plate.inset && width == plate.inset_weight));
             }
             // The silhouette is the resting one with only the separator-cut
             // tips flattened: each vertex is a resting vertex or lies on a
@@ -2757,7 +2930,7 @@ mod hub_selection_tests {
         for (i, &(cx, _)) in centres.iter().enumerate() {
             let xs: Vec<f32> = SELECTED_OUTERS[i].2.iter().map(|s| match *s { Seg::Line(x, _) => x, _ => panic!() }).collect();
             let (lo, hi) = (xs.iter().cloned().fold(f32::INFINITY, f32::min), xs.iter().cloned().fold(f32::NEG_INFINITY, f32::max));
-            for (edge, inner) in [(cx + hi + SELECTED_EDGE / 2.0, true), (cx + lo - SELECTED_EDGE / 2.0, false)] {
+            for (edge, inner) in [(cx + hi + INVERTED_PLATE.edge_weight / 2.0, true), (cx + lo - INVERTED_PLATE.edge_weight / 2.0, false)] {
                 let cut = bars.iter().any(|&(l, r)| if inner { (edge - l).abs() < 1e-3 } else { (edge - r).abs() < 1e-3 });
                 let open = if inner { hi == 104.0 } else { lo == -104.0 };
                 assert!(cut || open, "tile {i} tip at {edge}");
@@ -3031,7 +3204,9 @@ const PANEL_BAR: &[Seg] = &[
 /// maker's mark. Its own table because `DASHBOARD` plays it in under
 /// `#panel-open`.
 const GO_HOME: &[Prim] = &[
-    Prim::Path { x: 1128.0, y: 314.0, segs: PANEL, close: true, fill: None, stroke: Some(Ink::Fg), width: 1.5 },
+    // `line`: the source outline is 1.92-2.26 native px (0.80-0.94 dp);
+    // it was drawn 1.5 (3.8-4.4 px at 4K).
+    Prim::Path { x: 1128.0, y: 314.0, segs: PANEL, close: true, fill: None, stroke: Some(Ink::Fg), width: WEIGHTS.line },
     fill_path(1366.0, 405.0, PANEL_BAR, Ink::Fg),
     dashboard_panel_primary::HEADING,
     Prim::Text { x: 1138.75, y: 365.4167, size: 16.6667, ink: Ink::Fixed(rgb(0xf93333)), face: Face::Medium, anchor: Anchor::Start, content: "Lorem ipsum dolor sit amet," },
@@ -3096,7 +3271,10 @@ pub const DASHBOARD: &[Prim] = &[
         Prim::Soft { prims: dashboard_brand_echoes::ECHOES },
     ] },
     Prim::At { x: 0.0, y: 0.0, prims: dashboard_chrome::HEADER },
-    fill_rect(42.0, 187.0, 1516.0, 2.0, Ink::Dim),
+    // The header rule: a `hairline` of the bright line ink centred on the
+    // measured y 187.85 (native row 450 full, 451 at 0.55). It was 2.0 of
+    // the mid red, 4.85 native px against the source's 1.7.
+    fill_rect(42.0, 187.5, 1516.0, WEIGHTS.hairline, Ink::Fixed(LINE_INK)),
     Prim::At { x: 0.0, y: 0.0, prims: dashboard_chrome::TABS },
     // the six-diamond menu (:204-209), each cell at its centre
     Prim::At { x: 334.0, y: 460.0, prims: UNIT_0 },
@@ -3181,7 +3359,9 @@ pub const DASHBOARD: &[Prim] = &[
     // The source's bright bottom spans 4K rows 2129..2132. Keep the
     // existing rim and add its missing upper coverage between the sides.
     fill_rect(1210.5, 2129.0 / 2.4, 142.0, (2133.0 - 2129.0) / 2.4, Ink::Fg),
-    fill_rect(1270.0, 864.5, 1.2, 24.0, Ink::Fg),
+    // The tape divider at `heavy`, centred on the measured x 1270.92
+    // (FWHM 3.77 px); it was 1.2 wide (3.0 px).
+    fill_rect(1270.17, 864.5, WEIGHTS.heavy, 24.0, Ink::Fg),
     Prim::ReusableWide { x: 1214.2, y: 875.1 + DASHBOARD_FOOTER_CODE_BASELINE_DY, size: DASHBOARD_FOOTER_CODE_SIZE, stretch: DASHBOARD_FOOTER_CODE_STRETCH, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
     Prim::ReusableWide { x: 1276.2, y: 874.6 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_COMBAT_SIZE, stretch: DASHBOARD_FOOTER_COMBAT_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
     Prim::ReusableWide { x: 1276.6, y: 883.0 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_DEFENCE_SIZE, stretch: DASHBOARD_FOOTER_DEFENCE_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },

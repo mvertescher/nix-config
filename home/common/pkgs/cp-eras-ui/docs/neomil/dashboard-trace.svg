@@ -1475,7 +1475,8 @@
   <path d="M 274.5833,156.6667 L 275.8333,156.6667 L 275.8333,156.2500 L 280.0000,156.2500 L 280.0000,156.6667 L 279.5833,156.6667 L 280.0000,157.5000 L 278.7500,157.5000 L 278.7500,156.6667 L 278.3333,156.6667 L 278.3333,157.5000 L 275.8333,157.5000 L 275.8333,157.9167 L 275.4167,157.9167 L 275.4167,157.0833 L 274.5833,157.0833 L 274.5833,156.6667 Z" fill="#8a2a2f" fill-rule="evenodd"/>
 </g>
 
-  <rect x="42" y="187" width="1516" height="2" fill="#ae272b"/>
+  <!-- line weights re-measured 2026-11-14, docs/neomil/line-weights.md (header rule: 0.7 of #fb3535 centred y 187.85; was 2 of #ae272b) -->
+  <rect x="42" y="187.5" width="1516" height="0.7" fill="#fb3535"/>
 <g id="dashboard-tabs-measured">
 <g id="dashboard-chip-echoes">
 <g id="tape-chip-echo-chip1"><g mask="url(#tape-chip-echo-chip1-scan)"><g transform="translate(-7.062409,-2.640003)"><use href="#tape-chip-echo-chip1-profile-0" opacity="0.003279"/><use href="#tape-chip-echo-chip1-profile-1" opacity="0.070403"/><use href="#tape-chip-echo-chip1-profile-3" opacity="0.23292"/></g></g><g mask="url(#tape-chip-echo-chip1-scan)"><g transform="translate(-3.531205,-1.320002)"><use href="#tape-chip-echo-chip1-profile-1" opacity="0.100008"/><use href="#tape-chip-echo-chip1-profile-2" opacity="0.186838"/><use href="#tape-chip-echo-chip1-profile-3" opacity="0.186478"/></g></g></g>
@@ -1596,7 +1597,8 @@
 <g id="brand-echo-petrochem"><g mask="url(#brand-echo-petrochem-scan)"><g transform="translate(5.532391,-1.045592)"><use href="#brand-echo-petrochem-profile-0" opacity="0.031282"/><use href="#brand-echo-petrochem-profile-2" opacity="0.074002"/><use href="#brand-echo-petrochem-profile-3" opacity="0.078928"/></g></g><g mask="url(#brand-echo-petrochem-scan)"><g transform="translate(2.766196,-0.522796)"><use href="#brand-echo-petrochem-profile-0" opacity="0.068611"/><use href="#brand-echo-petrochem-profile-1" opacity="0.016579"/><use href="#brand-echo-petrochem-profile-3" opacity="0.177399"/></g></g></g>
 </g>
 
-    <path d="M 1128,314 H 1358 L 1366,322 V 508 L 1358,516 V 756 H 1170 L 1128,714 Z" fill="none" stroke="#ef3333" stroke-width="1.5"/>
+    <!-- line weights re-measured 2026-11-14, docs/neomil/line-weights.md (GO HOME outline: 1.92-2.26 native px; was 1.5) -->
+    <path d="M 1128,314 H 1358 L 1366,322 V 508 L 1358,516 V 756 H 1170 L 1128,714 Z" fill="none" stroke="#ef3333" stroke-width="0.8333"/>
     <!-- the bright bar on the right edge, y 405..516, chamfered 8 at both ends -->
     <path d="M 1366,405 V 508 L 1358,516 V 414 Z" fill="#ef3333"/>
 
@@ -1732,7 +1734,8 @@
     <rect x="1210" y="865.000000000" width="143.0" height="0.416666667" fill="#ef3333"/>
     <rect id="footer-left-inner-coverage" x="1210" y="865.416666667" width="0.416666667" height="22.500000000" fill="#ef3333"/>
     <rect x="1210.5" y="887.083333333" width="142" height="1.666666667" fill="#ef3333"/>
-    <rect x="1270" y="864.5" width="1.2" height="24" fill="#ef3333"/>
+    <!-- line weights re-measured 2026-11-14, docs/neomil/line-weights.md (tape divider: 1.5, centred x 1270.92; was 1.2) -->
+    <rect x="1270.17" y="864.5" width="1.5" height="24" fill="#ef3333"/>
     <g font-family="Rajdhani" fill="#ef3333" opacity=".23" transform="translate(.8,1)">
       <text x="0" y="0" transform="translate(1214.2,875.1) scale(.844,1)" font-size="9.8" font-weight="700">68SD1D1100D1S</text>
       <text x="0" y="0" transform="translate(1276.2,874.6) scale(.79,1)" font-size="9.5" font-weight="600">COMBAT COLONIZATION</text>

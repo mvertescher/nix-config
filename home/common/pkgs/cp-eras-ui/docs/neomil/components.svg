@@ -2272,7 +2272,7 @@
   <g font-family="Rajdhani" font-size="16.6667">
     <use href="#mailbox-component-btn" x="728" y="702" fill="#e63132"/>
     <text x="740.5" y="746.6667" fill="#59171b">Switch Weapon</text>
-    <g fill="#1a0607" stroke="#8a2024" stroke-width="1">
+    <g fill="#1a0607" stroke="#5e1112" stroke-width="0.8333">
       <use href="#mailbox-component-btn" x="908" y="702"/>
       <use href="#mailbox-component-btn" x="1088" y="702"/>
       <use href="#mailbox-component-btn" x="1267" y="702"/>
@@ -2493,15 +2493,20 @@
     <text x="1490" y="151">13x24, shaft 2x18</text>
   </g>
 
-  <!-- HEADER RULE. login-trace.svg rect(42,187,1516x1.5) #ae2729;
-       mailbox-trace.svg the same at 1.5 #a8282b; dashboard-trace.svg
-       rect(42,187,1516x2) #ae272b. Drawn here at its true 1516 length,
-       translated by (-12,+53). The store screen has no rule. -->
+  <!-- HEADER RULE. Re-measured 2026-11-14 at native 4K
+       (docs/neomil/line-weights.md): on all three headers it is one
+       fully covered native row of #fb3535 plus a partial one, 0.65-0.75
+       design px: Neomil's `hairline` (0.7) in the bright line ink,
+       centred y 188.16 (login), 187.45 (mailbox), 187.85 (dashboard).
+       It was traced 1.5 / 2 high in the mid red (#ae2729 / #a8282b /
+       #ae272b), a 1600-scale reading of the line plus its echo copies.
+       Drawn here at its true 1516 length, translated by (-12,+53). The
+       store screen has no rule. -->
   <g transform="translate(-12,53)">
-    <rect x="42" y="187" width="1516" height="1.5" fill="#ae2729"/>
+    <rect x="42" y="187.81" width="1516" height="0.7" fill="#fb3535"/>
   </g>
   <g font-family="Rajdhani" font-size="7.5" letter-spacing="0.3" fill="#96282d">
-    <text x="30" y="249">HEADER RULE . full width x 42..1558 (1516 long) at y 187, 1.5 high (2 on the dashboard), #ae2729 / #a8282b / #ae272b . closes the header on login, mailbox and dashboard . the store screen has NO rule and no header</text>
+    <text x="30" y="249">HEADER RULE . full width x 42..1558 (1516 long) at y 187.5-188.2, 0.7 high (hairline), #fb3535 (re-measured 2026-11-14; was 1.5-2 of #ae2729) . closes the header on login, mailbox and dashboard . the store screen has NO rule and no header</text>
   </g>
 
   <!-- FOOTER, STORE. store-trace.svg x 153..430 y 851..879: a two cell
@@ -2524,7 +2529,8 @@
        stronger top across x 1210..1353/y 865..865.4167 and bottom
        across x 1210.5..1352.5/y 887.0833..888.75;
        retained rim fades to .15 below y888.75;
-       divided at x 1270 by a 1.2px rule. Code starts at x 1215,
+       divided at x 1270.17..1271.67 by the 1.5 heavy rule (re-measured
+       2026-11-14: FWHM 3.77 native px; was 1.2). Code starts at x 1215,
        two captions at x 1277.
        Tall, narrow primary type and two soft local copies match the trace.
        (Re-read 2026-09-03: the earlier three filled cells 48/38/59 were
@@ -2544,7 +2550,7 @@
     <rect id="footer-left-inner-coverage" x="1210" y="865.416666667" width="0.416666667" height="22.500000000" fill="#ef3333"/>
     <!-- Source-bound dashboard bottom primary band; same as dashboard trace. -->
     <rect x="1210.5" y="887.083333333" width="142" height="1.666666667" fill="#ef3333"/>
-    <rect x="1270" y="864.5" width="1.2" height="24" fill="#ef3333"/>
+    <rect x="1270.17" y="864.5" width="1.5" height="24" fill="#ef3333"/>
     <g font-family="Rajdhani" fill="#ef3333" opacity=".23" transform="translate(.8,1)">
       <text x="0" y="0" transform="translate(1214.2,875.1) scale(.844,1)" font-size="9.8" font-weight="700">68SD1D1100D1S</text>
       <text x="0" y="0" transform="translate(1276.2,874.6) scale(.79,1)" font-size="9.5" font-weight="600">COMBAT COLONIZATION</text>
@@ -2643,7 +2649,7 @@
     <use href="#nav67" x="153" y="248" fill="url(#store-nav-on)"/>
     <rect x="148" y="248" width="3" height="51" fill="#df3131"/>
     <text x="162.5" y="298.25" letter-spacing="-0.21" fill="#4a0f10">VIDEO</text>
-    <g fill="#2e1012" stroke="#96282d" stroke-width="1.2">
+    <g fill="#2e1012" stroke="#5e1112" stroke-width="0.8333">
       <use href="#nav62" x="153" y="318" fill="url(#store-nav-off1)"/>
     </g>
     <rect x="148" y="318" width="3" height="46" fill="#96282d"/>
@@ -2793,7 +2799,7 @@
 
     <text x="379" y="594" font-family="Rajdhani" font-size="15" fill="#f63333">password:</text>
     <!-- password field y 602..634 -->
-    <rect x="372.5" y="602.5" width="252" height="32" fill="#430e0f" stroke="#ae2729" stroke-width="1"/>
+    <rect x="372.5" y="602.5" width="252" height="32" fill="#430e0f" stroke="#760e0f" stroke-width="0.8333"/>
     <!-- Ten source-sized stars on 11.25px pitch; a single blinking stroke
          follows them. The trace holds the photo's illustrated rest state. -->
     <g id="password-rest" fill="#f63333">
@@ -2845,7 +2851,7 @@
       <rect x="692" y="315" width="255" height="254" fill="url(#login-open-right)" mask="url(#login-open-mask)"/>
     </g>
     <path d="M 692,315 H 896 L 947,366 V 655 H 714 L 692,633 Z"
-          fill="none" stroke="#ae2729" stroke-width="1.5"/>
+          fill="none" stroke="#ae2729" stroke-width="0.8333"/>
     <path d="M 692,569 H 947 V 655 H 714 L 692,633 Z" fill="#461012"/>
     <use href="#notch" x="692" fill="#080405"/>
     <rect x="692" y="390" width="1.5" height="106" fill="#ae2729"/>
@@ -3089,7 +3095,7 @@
 <g id="brand-echo-petrochem"><g mask="url(#brand-echo-petrochem-scan)"><g transform="translate(5.532391,-1.045592)"><use href="#brand-echo-petrochem-profile-0" opacity="0.031282"/><use href="#brand-echo-petrochem-profile-2" opacity="0.074002"/><use href="#brand-echo-petrochem-profile-3" opacity="0.078928"/></g></g><g mask="url(#brand-echo-petrochem-scan)"><g transform="translate(2.766196,-0.522796)"><use href="#brand-echo-petrochem-profile-0" opacity="0.068611"/><use href="#brand-echo-petrochem-profile-1" opacity="0.016579"/><use href="#brand-echo-petrochem-profile-3" opacity="0.177399"/></g></g></g>
 </g>
 
-    <path d="M 1128,314 H 1358 L 1366,322 V 508 L 1358,516 V 756 H 1170 L 1128,714 Z" fill="none" stroke="#ef3333" stroke-width="1.5"/>
+    <path d="M 1128,314 H 1358 L 1366,322 V 508 L 1358,516 V 756 H 1170 L 1128,714 Z" fill="none" stroke="#ef3333" stroke-width="0.8333"/>
     <path d="M 1366,405 V 508 L 1358,516 V 414 Z" fill="#ef3333"/>
 
     <g id="go-home-heading-echoes" mask="url(#panel-heading-print-scan)" fill="#f83333"><use href="#panel-heading-ghost-template" transform="translate(1139.8028302,332.0057576)" opacity="0.2368014"/><use href="#panel-heading-ghost-template" transform="translate(1137.7924133,332.6979361)" opacity="0.3244518"/></g><text transform="translate(1135.7819965,333.3901147) scale(0.9876806,1)" font-family="Rajdhani" font-size="20.8708111" font-weight="700" fill="#f83333">GO HOME</text>
@@ -3436,18 +3442,19 @@
   <!-- BUTTON, OUTLINED, three states. Rest is mailbox-trace.svg #btn
        at (908,702) as drawn in section 2 (img-08-main.png #61,
        1600-scale box x 908..1083 y 702..758, native x 2179..2599
-       y 1685..1819): fill #1a0607, stroke #8a2024 1, ink #a8282b.
+       y 1685..1819): fill #1a0607, stroke #5e1112 0.8333 (re-measured
+       2026-11-14: 2 native px peaking #58..#5d; was #8a2024 1), ink #a8282b.
        Hover: inferred. Wash of #df3131 at 0.22 over #1a0607 = #451010;
        stroke and ink to #e63132. Press: inferred. Fill #a52223, ink
        #59171b (the filled button's ink), no stroke. Translated so the
        rest sits at (30,1100): (-878,+398); the siblings at +185 each. -->
   <g font-family="Rajdhani" font-size="16.6667">
     <g id="button-rest" transform="translate(-878,398)">
-      <use href="#btn" x="908" y="702" fill="#1a0607" stroke="#8a2024" stroke-width="1"/>
+      <use href="#btn" x="908" y="702" fill="#1a0607" stroke="#5e1112" stroke-width="0.8333"/>
       <text x="921" y="746.6667" fill="#a8282b">Confirm / Jump</text>
     </g>
     <g id="button-hover" transform="translate(-693,398)">
-      <use href="#btn" x="908" y="702" fill="#451010" stroke="#e63132" stroke-width="1"/>
+      <use href="#btn" x="908" y="702" fill="#451010" stroke="#e63132" stroke-width="0.8333"/>
       <text x="921" y="746.6667" fill="#e63132">Confirm / Jump</text>
     </g>
     <g id="button-press" transform="translate(-508,398)">
@@ -3473,12 +3480,12 @@
        (+487,+782); siblings at +226 each. -->
   <g font-family="Rajdhani" font-size="17.5" font-weight="500" letter-spacing="-0.2">
     <g id="nav-rest" transform="translate(487,782)">
-      <use href="#nav62" x="153" y="318" fill="#2e1012" stroke="#96282d" stroke-width="1.2"/>
+      <use href="#nav62" x="153" y="318" fill="#2e1012" stroke="#5e1112" stroke-width="0.8333"/>
       <rect x="148" y="318" width="3" height="46" fill="#96282d"/>
       <text x="162.92" y="364.58" fill="#df3131">AUDIO</text>
     </g>
     <g id="nav-hover" transform="translate(713,782)">
-      <use href="#nav62" x="153" y="318" fill="#551719" stroke="#df3131" stroke-width="1.2"/>
+      <use href="#nav62" x="153" y="318" fill="#551719" stroke="#df3131" stroke-width="0.8333"/>
       <rect x="148" y="318" width="3" height="46" fill="#df3131"/>
       <text x="162.92" y="364.58" fill="#df3131">AUDIO</text>
     </g>
@@ -3490,7 +3497,7 @@
   </g>
   <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.2" fill="#96282d">
     <text x="640" y="1174" font-weight="700" fill="#df3131">NAV CELL . rest / hover / press  (the same reading for a LIST ROW and a PRODUCT CARD)</text>
-    <text x="640" y="1183">rest SOURCED store #nav62 (153,318): #2e1012, stroke #96282d 1.2, ink #df3131, spine #96282d</text>
+    <text x="640" y="1183">rest SOURCED store #nav62 (153,318): #2e1012, stroke #5e1112 0.8333 (2 native px, re-measured 2026-11-14; was #96282d 1.2), ink #df3131, spine #96282d</text>
     <text x="640" y="1192">hover INFERRED: wash #551719, stroke + spine + ink #df3131 . press INFERRED: #a52223, ink #4a0f10, spine #df3131, height unchanged</text>
   </g>
 
@@ -3527,7 +3534,8 @@
        of img-06-private.png (#59; 1600-scale box x 372..625 y 602..634,
        native x 893..1500 y 1445..1522; also visible in stills 55 and
        57), and it is drawn FOCUSED: masked run with a lit caret, fill
-       #430e0f, stroke #ae2729 1 (login-trace.svg rect(372.5,602.5,
+       #430e0f, stroke #760e0f 0.8333 (re-measured 2026-11-14: a 2 native
+       px line peaking #72..#7b; was #ae2729 1) (login-trace.svg rect(372.5,602.5,
        252x32)). So here it is the PRESS (focus) state that is sourced
        and the rest that is inferred: the same box with the caret
        gone. Hover: inferred. Wash of #f63333 at 0.22 over #430e0f =
@@ -3538,22 +3546,22 @@
   <g font-family="Rajdhani">
     <text x="37" y="1212" font-size="15" fill="#f63333">password:</text>
     <g id="field-rest" transform="translate(-342,618)">
-      <rect x="372.5" y="602.5" width="252" height="32" fill="#430e0f" stroke="#ae2729" stroke-width="1"/>
+      <rect x="372.5" y="602.5" width="252" height="32" fill="#430e0f" stroke="#760e0f" stroke-width="0.8333"/>
       <text x="381.9" y="632.1" font-size="23" letter-spacing="1.93" fill="#f63333">**********</text>
     </g>
     <g id="field-hover" transform="translate(-80,618)">
-      <rect x="372.5" y="602.5" width="252" height="32" fill="#6a1617" stroke="#f63333" stroke-width="1"/>
+      <rect x="372.5" y="602.5" width="252" height="32" fill="#6a1617" stroke="#f63333" stroke-width="0.8333"/>
       <text x="381.9" y="632.1" font-size="23" letter-spacing="1.93" fill="#f63333">**********</text>
     </g>
     <g id="field-press" transform="translate(182,618)">
-      <rect x="372.5" y="602.5" width="252" height="32" fill="#430e0f" stroke="#ae2729" stroke-width="1"/>
+      <rect x="372.5" y="602.5" width="252" height="32" fill="#430e0f" stroke="#760e0f" stroke-width="0.8333"/>
       <text x="381.9" y="632.1" font-size="23" letter-spacing="1.93" fill="#f63333">**********</text>
       <rect x="499.17" y="622.92" width="13.75" height="0.83" fill="#f63333"/>
     </g>
   </g>
   <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.2" fill="#96282d">
     <text x="30" y="1264" font-weight="700" fill="#df3131">FIELD . rest / hover / press = focus</text>
-    <text x="30" y="1273">rest INFERRED: the focused box with no caret . hover INFERRED: wash #6a1617, stroke #f63333 . press = FOCUS, SOURCED: login field (372.5,602.5) 252x32, #430e0f, stroke #ae2729 1, caret lit</text>
+    <text x="30" y="1273">rest INFERRED: the focused box with no caret . hover INFERRED: wash #6a1617, stroke #f63333 . press = FOCUS, SOURCED: login field (372.5,602.5) 252x32, #430e0f, stroke #760e0f 0.8333, caret lit</text>
   </g>
 
   <!-- Static Login-button slot, remeasured 2026-09-14 from
@@ -3745,7 +3753,7 @@
        their own source geometry, fills and typography. -->
   <text x="30" y="1340" font-family="Rajdhani" font-size="13" letter-spacing="4.5" fill="#df3131">10 // DASHBOARD HEADER AND MARGIN SOURCE CORRECTIONS</text>
   <use href="#dashboard-header-measured" transform="translate(0,1310)"/>
-  <rect x="42" y="1497" width="1516" height="2" fill="#ae272b"/>
+  <rect x="42" y="1497.5" width="1516" height="0.7" fill="#fb3535"/>
   <use href="#dashboard-tabs-measured" transform="translate(0,1310)"/>
   <svg x="1610" y="1347" width="26" height="140" viewBox="32 448 26 140" overflow="hidden" letter-spacing="0"><use href="#dashboard-margins-measured"/></svg>
   <svg x="1660" y="1347" width="44" height="246" viewBox="1526 526 44 246" overflow="hidden" letter-spacing="0"><use href="#dashboard-margins-measured"/></svg>
@@ -3772,46 +3780,58 @@
        decision (docs/review-2026-11-13/DECISIONS.md item 1). The source
        (img-07-dashboard.png) shows NO selected diamond: all six share one
        fill, inset and code, and dashboard-trace.svg keeps that, because a
-       trace records what its photo shows (the other eras' traces carry a
-       selected module only because their photos do). The app still has to
-       show the keyboard's selection, so the selected diamond is drawn
-       INVERTED, borrowing the era's outlined-control rung (section 9: dark
-       fill, bright stroke, bright ink; nav AUDIO, list rows 2..8):
-         face + tab   NAV_FILL #2e1012 (the store nav row's dark fill),
-                      edged 1.5 in the bright foreground (#ef3333 on the
-                      reference dashboard; the palette's fg role elsewhere)
-         inset        the same measured contour, 1 wide, bright foreground
-         code         the same source glyph (matrix, 61-9A / 161-9A, symbol),
-                      bright foreground instead of the dark #200506 ink
-         seam         the tab's closed edge
-         label        unchanged (it is already bright ink on the dark ground)
+       trace records what its photo shows. The app still has to show the
+       keyboard's selection, so the selected diamond is drawn INVERTED.
+
+       Re-derived 2026-11-14 from the era's measured line vocabulary
+       (docs/neomil/line-weights.md), as the treatment INVERTED_PLATE in
+       src/eras/neomil.rs. The red diamond has three tones (face #ef3333,
+       a mid-dark secondary line (inset and seam, #671b21, 1.0) and
+       near-black marks (glyph ink core #0e..#20)), and the inverted one
+       swaps them, adding the outline every dark plate in this era carries:
+         face + tab   NAV_FILL #2e1012 (the store nav row's dark fill)
+         outline      the era's ONE outline weight, 0.8333 (2 native px at
+                      4K; every outlined plate, row, button, card and panel
+                      in the four references measures 1.9-2.3 px FWHM,
+                      whatever its size), in the bright line ink #fb3535
+                      (the peak of every bright outline and rule in the
+                      references). WAS 1.5 in #ef3333 until 2026-11-14;
+                      1.5 is the footer tape's heavy weight, not a panel's.
+         inset        the same measured contour at the diamond's own inset
+                      weight 1.0, in the secondary mid red #a32226 (dim):
+                      as the inset sits about half way from face to marks
+                      on red, it sits ~60% of the way from #2e1012 to the
+                      bright ink here. WAS 1.0 in the bright foreground.
+         seam         the tab's closed edge, re-inked as the inset (1.0,
+                      #a32226) over the outline, as it is on the red tile.
+                      WAS the bright 1.5 tab edge.
+         code         the same source glyph, bright foreground #ef3333.
+         label        unchanged.
        The silhouette is the resting one with the separator-cut side tips
-       flattened half an edge (0.75) inside each separator, so the outline
-       closes there instead of running under the ground bar; outer tips
-       keep their points. Hovered while selected: #551719 face, #f63333
-       edge and ink (the store nav / mailbox row hover coat). Pressed while
-       selected: the ordinary held drawing (#a52223, #420f10 ink, resting
-       silhouette), as section 9 says a press reads on a selected control.
-       The five unselected diamonds are unchanged. Rust:
-       src/eras/neomil.rs CELLS_SELECTED / CELLS_SELECTED_HOVER /
-       SELECTED_OUTERS, glyphs neomil_dashboard_glyphs.rs SELECTED /
-       SELECTED_HOVER. The resting screen always has one selected tile
-       (VEHICLES), an accepted departure from the photo. Tiles drawn here
+       flattened half an outline (0.4167) inside each separator. Hovered
+       while selected: face #551719, outline and code #f63333 (the lit
+       rung, LIT_PLATE), inset and seam #a32226. Pressed while selected:
+       the ordinary held drawing (#a52223, #420f10 ink). Rust:
+       src/eras/neomil.rs INVERTED_PLATE / INVERTED_LIT_PLATE,
+       CELLS_SELECTED / CELLS_SELECTED_HOVER / SELECTED_OUTERS; glyphs
+       neomil_dashboard_glyphs.rs SELECTED / SELECTED_HOVER. Tiles drawn
        at 1:1 trace scale about local centres; separators at their trace
        offsets. -->
-  <text x="30" y="1970" font-family="Rajdhani" font-size="13" letter-spacing="4.5" fill="#df3131">13 // HUB TILE, SELECTED = INVERTED  (OWNER-APPROVED EXTENSION 2026-11-13, NOT TRACED)</text>
+  <text x="30" y="1970" font-family="Rajdhani" font-size="13" letter-spacing="4.5" fill="#df3131">13 // HUB TILE, SELECTED = INVERTED  (OWNER-APPROVED EXTENSION 2026-11-13, NOT TRACED; WEIGHTS 2026-11-14)</text>
   <g transform="translate(150,2090)">
-    <path d="M -15,-89 L 15,-89 L 89.25,-14.75 L 89.25,14.75 L 0,104 L -104,0 Z" fill="#2e1012" stroke="#ef3333" stroke-width="1.5"/>
-    <path d="M -7.63,-58.15 L 10.44,-58.15 L 59.33,-9.25 L 59.33,9.76 L 1.41,67.68 L -66.02,0.24 Z" fill="none" stroke="#ef3333" stroke-width="1"/>
+    <path d="M -15,-89 L 15,-89 L 89.5833,-14.4167 L 89.5833,14.4167 L 0,104 L -104,0 Z" fill="#2e1012" stroke="#fb3535" stroke-width="0.8333"/>
+    <path d="M -7.63,-58.15 L 10.44,-58.15 L 59.33,-9.25 L 59.33,9.76 L 1.41,67.68 L -66.02,0.24 Z" fill="none" stroke="#a32226" stroke-width="1"/>
     <rect x="-38" y="-38" width="76" height="76" fill="#ef3333" mask="url(#dashboard-matrix-0-primary)"/>
-    <path d="M 0,104 L 15,104 L 52,67 L 52,52 Z" fill="#2e1012" stroke="#ef3333" stroke-width="1.5"/>
+    <path d="M 0,104 L 15,104 L 52,67 L 52,52 Z" fill="#2e1012" stroke="#fb3535" stroke-width="0.8333"/>
+    <path d="M 0,104 L 52,52" fill="none" stroke="#a32226" stroke-width="1"/>
     <rect x="90" y="-15" width="16" height="30" fill="#070304"/>
   </g>
   <g transform="translate(420,2090)">
-    <path d="M -15,-89 L 15,-89 L 89.25,-14.75 L 89.25,14.75 L 0,104 L -104,0 Z" fill="#551719" stroke="#f63333" stroke-width="1.5"/>
-    <path d="M -7.63,-58.15 L 10.44,-58.15 L 59.33,-9.25 L 59.33,9.76 L 1.41,67.68 L -66.02,0.24 Z" fill="none" stroke="#f63333" stroke-width="1"/>
+    <path d="M -15,-89 L 15,-89 L 89.5833,-14.4167 L 89.5833,14.4167 L 0,104 L -104,0 Z" fill="#551719" stroke="#f63333" stroke-width="0.8333"/>
+    <path d="M -7.63,-58.15 L 10.44,-58.15 L 59.33,-9.25 L 59.33,9.76 L 1.41,67.68 L -66.02,0.24 Z" fill="none" stroke="#a32226" stroke-width="1"/>
     <rect x="-38" y="-38" width="76" height="76" fill="#f63333" mask="url(#dashboard-matrix-0-primary)"/>
-    <path d="M 0,104 L 15,104 L 52,67 L 52,52 Z" fill="#551719" stroke="#f63333" stroke-width="1.5"/>
+    <path d="M 0,104 L 15,104 L 52,67 L 52,52 Z" fill="#551719" stroke="#f63333" stroke-width="0.8333"/>
+    <path d="M 0,104 L 52,52" fill="none" stroke="#a32226" stroke-width="1"/>
     <rect x="90" y="-15" width="16" height="30" fill="#070304"/>
   </g>
   <g transform="translate(690,2090)">
@@ -3823,10 +3843,11 @@
     <rect x="90" y="-15" width="16" height="30" fill="#070304"/>
   </g>
   <g transform="translate(980,2090)">
-    <path d="M -15,-89 L 15,-89 L 88.75,-15.25 L 88.75,15.25 L 0,104 L -89.25,14.75 L -89.25,-14.75 Z" fill="#2e1012" stroke="#ef3333" stroke-width="1.5"/>
-    <path d="M -7.51,-58.15 L 11.37,-58.15 L 69.31,-0.21 L 1.93,67.18 L -56.45,8.79 L -56.45,-9.21 Z" fill="none" stroke="#ef3333" stroke-width="1"/>
+    <path d="M -15,-89 L 15,-89 L 89.0833,-14.9167 L 89.0833,14.9167 L 0,104 L -89.5833,14.4167 L -89.5833,-14.4167 Z" fill="#2e1012" stroke="#fb3535" stroke-width="0.8333"/>
+    <path d="M -7.51,-58.15 L 11.37,-58.15 L 69.31,-0.21 L 1.93,67.18 L -56.45,8.79 L -56.45,-9.21 Z" fill="none" stroke="#a32226" stroke-width="1"/>
     <rect x="-38" y="-38" width="76" height="76" fill="#ef3333" mask="url(#dashboard-matrix-1-primary)"/>
-    <path d="M 0,104 L 15,104 L 52,67 L 52,52 Z" fill="#2e1012" stroke="#ef3333" stroke-width="1.5"/>
+    <path d="M 0,104 L 15,104 L 52,67 L 52,52 Z" fill="#2e1012" stroke="#fb3535" stroke-width="0.8333"/>
+    <path d="M 0,104 L 52,52" fill="none" stroke="#a32226" stroke-width="1"/>
     <rect x="-106" y="-15" width="16" height="30" fill="#070304"/><rect x="89.5" y="-15" width="16" height="30" fill="#070304"/>
   </g>
   <g transform="translate(1250,2090)">
@@ -3836,17 +3857,17 @@
     <rect x="89.5" y="-15" width="16" height="30" fill="#070304"/>
   </g>
   <g font-family="Rajdhani" font-size="6.5" letter-spacing="0.2" fill="#96282d">
-    <text x="50" y="2215" font-weight="700" fill="#df3131">VEHICLES SELECTED</text>
-    <text x="50" y="2224">face + tab #2e1012, edge #ef3333 1.5, inset 1, code #ef3333</text>
+    <text x="50" y="2215" font-weight="700" fill="#df3131">VEHICLES SELECTED (INVERTED_PLATE)</text>
+    <text x="50" y="2224">face + tab #2e1012, outline #fb3535 0.8333, inset + seam #a32226 1, code #ef3333</text>
     <text x="320" y="2215" font-weight="700" fill="#df3131">VEHICLES SELECTED, HOVERED</text>
-    <text x="320" y="2224">face + tab #551719, edge, inset and code #f63333</text>
+    <text x="320" y="2224">face + tab #551719, outline + code #f63333 0.8333, inset + seam #a32226 1</text>
     <text x="590" y="2215" font-weight="700" fill="#df3131">VEHICLES SELECTED, PRESSED</text>
     <text x="590" y="2224">= the ordinary press: #a52223, inset/seam/code #420f10</text>
     <text x="880" y="2215" font-weight="700" fill="#df3131">LOCATIONS SELECTED</text>
-    <text x="880" y="2224">both side tips cut: flat at x -89.25 / 88.75, 0.75 inside the separators</text>
+    <text x="880" y="2224">both side tips cut: flat at x -89.5833 / 89.0833, 0.4167 inside the separators</text>
     <text x="1150" y="2215" font-weight="700" fill="#df3131">LOCATIONS UNSELECTED (as traced)</text>
     <text x="1150" y="2224">#dashboard-tile-1 + #dashboard-glyph-1, unchanged</text>
     <text x="50" y="2250">OWNER-APPROVED EXTENSION (Matt, 2026-11-13), NOT TRACED: the source shows no selected tile. One tile is always selected; the resting screen departs from the photo by that one tile.</text>
-    <text x="50" y="2260">Arrow keys / h j k l move it; Enter or a click opens LOCATIONS (mailbox) or PRODUCTS (store); the other four are inert. Labels do not change.</text>
+    <text x="50" y="2260">Weights and inks from the era's measured line vocabulary (line-weights.md): outline = the era's one 2-native-px line, never the tape's 1.5 heavy. Labels do not change.</text>
   </g>
 </svg>

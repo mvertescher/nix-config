@@ -160,6 +160,23 @@ including all 26 screenshot cases. The live-clock case reaches a 100% match
 using mailbox presentation to avoid headless FIFO stalls. The
 [mailbox TODO](../../todo/neomil-mailbox.md) records acceptance results.
 
+## Line weights, 2026-11-14
+
+The era's line vocabulary was measured at native 4K on all four
+references and is recorded in [line-weights.md](line-weights.md): one
+outline weight for every plate, row, button, field, card and panel
+(2 native px = 0.8333), a header hairline (0.7), the diamonds' inset
+(1.0) and the footer tape's heavy frame (1.5). It is a component, not a
+table of literals: `eras::neomil::WEIGHTS` and the outlined-dark-plate
+treatments `REST_PLATE`, `GHOST_PLATE`, `LIT_PLATE`, `INVERTED_PLATE`,
+`INVERTED_LIT_PLATE` (`style::Weights`, `style::DarkPlate`). The selected
+hub diamond (components.svg section 13) is drawn from `INVERTED_PLATE`;
+its outline went from 1.5 to 0.8333. The same record has the
+pixel-for-pixel comparison of the existing outlined elements and the
+corrections made from it (store nav rows, mailbox buttons, login cards
+and field, GO HOME outline, the header rule on three screens, the tape
+divider).
+
 ## Motion
 
 The traces carry their boot-ins as SMIL on the element that moves
