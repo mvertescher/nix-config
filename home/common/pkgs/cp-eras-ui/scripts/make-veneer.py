@@ -14,32 +14,48 @@ seams and figures. So a texture is the iso-lines of scalar fields
 
     phi(s, t) = s + D(s, t)
 
-where `s` runs across the grain and `t` along it, one line every
-`pitch` design px. A surface holds one or more *families* of lines,
-each its own `phi`, each shown inside a window along `t`. Where two
-windows overlap both families are drawn and their lines cross, which is
-how the references' seams read. A family can be the mirror image of the
-field about a line t = m: the book-match, two leaves cut from one log.
-`D` sums:
+where `s` runs across the grain and `t` along it. A surface holds one
+or more *families* of lines, each its own `phi`, each shown inside a
+window along `t`. Where two windows overlap both families are drawn and
+their lines cross, which is how the references' seams read. A family
+can be the mirror image of the field about a line t = m: the
+book-match, two leaves cut from one log. `D` sums:
 
-  * `wave`  -- smooth anisotropic lattice noise (fBm): the cathedral
-               wander, and with a short across-grain cell the bunching
-               of the lines;
-  * `bend`  -- lines pushed sideways near t = ts, decaying as
-               exp(-|t - ts| / w), by an amount that varies linearly
-               across the grain. Steep enough and the lines turn to run
-               along the seam: the streaks and converging seams;
-  * `fold`  -- a sigmoid shift across a sloping line: the panel's figure,
-               where the grain folds down-left;
+  * `wave`  -- smooth anisotropic lattice noise: the long, lazy
+               cathedral wander (measured: the drift is carried by
+               wavelengths of 50-200 design px, not by wiggle);
+  * `bend`  -- lines pushed sideways near t = ts by an amount that
+               varies across the grain, with profile exp(-(d/w)^p) or a
+               tent. Steep enough and the lines turn to run along the
+               seam: the streaks and converging seams. A small `w`
+               makes the knee sharp, as the references' are;
+  * `fold`  -- a shift across a sloping ridge: the panel's figure;
   * `fan`   -- lines spread away from a centre line near t = ts: the
-               mailbox's open book.
+               open book;
+  * `knot`  -- a local gaussian bump the lines bend around; `kinks`
+               scatters small ones at random (fixed seed).
 
-Each line is a gaussian core `core` native px wide (the references'
-cores measure about one native px), evaluated on a 3x3 supersample from
-the distance |phi - nearest line| / |grad phi|, so converging lines
-merge into a darker band rather than aliasing. Then fine pore noise
-stretched along the grain, a faint blotch, a mild edge shade, and a
-three-stop colour ramp per surface.
+The lines are then *spaced* irregularly: they are the integer levels of
+u = (phi + B(phi, t)) / pitch, where B is smooth noise in phi itself, so
+a bunch of close lines stays a bunch as it travels along the grain
+(the references' pitch runs 1.4-3.7 design px around a mean of about
+2.2). Each line has its own weight, hashed from its index and drifting
+slowly along it: some lines are bold, some faint, as in the reference.
+
+Rendering keeps converging lines as lines. A line is an ink stroke of
+fixed width in *native* pixels (`core`, FWHM), whatever |grad phi| does;
+nearby lines' ink is summed as optical depth, tau = sum ink * w_n *
+gauss(dist_n), and the texel is exp(-tau) of the base colour, per
+channel (`tint`). So where lines bunch, the light gaps close first while
+each line stays sharp, and only where several lines overlap does the
+ink compound into a dark core -- what the references show, measured
+through the store streak: line minima stay at G ~140 while the gaps
+close, then the core falls to G ~57, about 4-7 design px tall. Each
+texel is the mean transmission of SUPER x SUPER samples.
+
+Then fine pore noise stretched along the grain, a faint blotch, a mild
+edge shade. The palette is the light-to-base ramp below `base_at` and
+base * exp(-tau * tint) above it, so index is linear in optical depth.
 
 Output: one 8-bit *indexed* PNG per surface at 2.4 texels per design px
 (3840x2160 is 2.4x the 1600x900 design), the ramp stored as its PLTE so
@@ -47,9 +63,10 @@ that the same file is what rsvg draws in the traces and what the crate
 decodes. Indices run 0 (lightest) to 255 (darkest).
 
 Reproducible: a fixed seed per surface (numpy's PCG64, whose stream is
-stable across numpy releases), float64 arithmetic, and a hand-written
-PNG encoder with fixed zlib settings, so two runs give the same bytes.
-Run through the crate's dev shell:
+stable across numpy releases), integer hashing for the per-line weights,
+float64 arithmetic in fixed-size chunks, and a hand-written PNG encoder
+with fixed zlib settings, so two runs give the same bytes. Run through
+the crate's dev shell:
 
     nix-shell shell.nix --run 'python3 scripts/make-veneer.py docs/neokitsch/veneer'
 
@@ -66,128 +83,175 @@ from pathlib import Path
 import numpy as np
 
 R = 2.4          # texels per design px
-SUPER = 3        # supersamples per texel, per axis
+SUPER = 4        # supersamples per texel, per axis
+NEAR = 4         # lines summed on each side of a sample
+CHUNK = 32       # texel rows per chunk (fixed: part of the recipe)
+
+# Shared defaults, overridden per surface.
+LINE = dict(core=1.2, ink=0.5, weight=(0.45, 1.25), width=(0.7, 1.15), along=70.0)
+SPACING = dict(amp=0.38, cell=6.0, along=150.0)
+TINT = (0.45, 1.0, 1.45)
 
 # Per-surface recipes. `size` is the surface's bounding box in design
-# px, the texture's extent. `colours` are (light, base, dark) in sRGB
-# hex: light at index 0, base at `base_at`, dark at 255. A family's
-# `window` is (t0, t1, fade): shown for t0 <= t <= t1, faded in and out
-# over `fade` design px (None for an open end).
+# px, the texture's extent. `colours` are (light, base) in sRGB hex:
+# light at index 0, base at `base_at`; above it the ramp is the base
+# darkened by optical depth up to `taumax`. A family's `window` is
+# (t0, t1, fade): shown for t0 <= t <= t1, faded in and out over `fade`
+# design px (None for an open end).
 SURFACES = {
     # Dashboard, the selected EMAIL cascade card (#ncardsel, 90.5 x 325.2).
-    # Vertical grain. Lines swing left into the top chamfer, crossing a
-    # second leaf there; a horizontal book-match about halfway down
-    # (t 160) where both leaves bend right and cross; the foot bends left
-    # along the diagonal cut.
+    # Vertical grain. A second leaf crosses the first at the top-left
+    # chamfer (the swirl); a horizontal book-match at t 160 where both
+    # leaves hook right into a point at the right edge; the foot bends
+    # left along the diagonal cut.
     'dashboard-email': dict(
-        size=(90.5, 325.2), axis='v', seed=1101, pitch=2.2, core=0.8,
-        colours=('ffcf84', 'ffbf6c', '7a4818'), base_at=30,
-        wave=dict(amp=2.0, along=80.0, across=14.0),
+        size=(90.5, 325.2), axis='v', seed=1101, pitch=2.0,
+        colours=('ffd488', 'ffc56e'), base_at=30, taumax=2.2, tint=(0.62, 1.0, 1.4),
+        wave=dict(amp=1.6, along=160.0, across=40.0),
+        kinks=dict(n=10, amp=1.6, rs=(3.0, 8.0), rt=(4.0, 12.0)),
         families=[
-            dict(window=(None, 186.0, 26.0), terms=[
-                dict(kind='bend', ts=0.0, w=38.0, amount=(-40.0, -12.0)),
-                dict(kind='bend', ts=160.0, w=14.0, q=1.5, amount=(0.0, 42.0)),
+            dict(window=(None, 162.0, 3.0), terms=[
+                dict(kind='bend', ts=0.0, w=30.0, amount=(-34.0, -10.0)),
+                dict(kind='bend', ts=160.0, w=14.0, c=0.15, amount=(0.0, 34.0), power=1.6),
+                dict(kind='bend', ts=160.0, w=1.4, amount=(0.0, 16.0), power=2.5),
             ]),
-            dict(mirror=160.0, window=(134.0, None, 26.0), terms=[
-                dict(kind='bend', ts=160.0, w=14.0, q=1.5, amount=(0.0, 42.0)),
-                dict(kind='bend', ts=325.2, w=40.0, amount=(-26.0, -4.0), real=True),
+            dict(mirror=160.0, window=(158.0, None, 3.0), terms=[
+                dict(kind='bend', ts=160.0, w=14.0, c=0.15, amount=(0.0, 34.0), power=1.6),
+                dict(kind='bend', ts=160.0, w=1.4, amount=(0.0, 16.0), power=2.5),
+                dict(kind='bend', ts=325.2, w=34.0, amount=(-26.0, -4.0), real=True),
             ]),
-            dict(mirror=24.0, window=(None, 46.0, 22.0), terms=[
-                dict(kind='bend', ts=0.0, w=14.0, amount=(-30.0, -10.0)),
+            # The crossing leaves: lines curving the other way, shown
+            # 60 px either side of the seam, so the lines cross in a
+            # lattice the way the reference's do around the book-match.
+            dict(window=(96.0, 154.0, 24.0), weight=0.7, terms=[
+                dict(kind='bend', ts=160.0, w=40.0, amount=(0.0, -40.0), power=1.4),
+            ]),
+            dict(mirror=160.0, window=(166.0, 224.0, 24.0), weight=0.7, terms=[
+                dict(kind='bend', ts=160.0, w=40.0, amount=(0.0, -40.0), power=1.4),
+            ]),
+            dict(mirror=30.0, window=(None, 90.0, 30.0), weight=0.7, terms=[
+                dict(kind='bend', ts=0.0, w=16.0, amount=(-34.0, -8.0)),
+                dict(kind='bend', ts=30.0, w=10.0, amount=(6.0, 0.0)),
             ]),
         ],
         edge=dict(width=7.0, depth=8.0, right=1.6),
     ),
     # Dashboard, the right-hand EMAIL panel body (230.4 x 309). Vertical
-    # grain, calm under the text, folding down-left in the lower third
-    # (the ridge runs from local (179, 259) down to (84, 299)).
+    # grain, calm under the text, folding in the lower third: lines lean
+    # down-left above a ridge from local (184, 259) to (84, 299), turn
+    # hard at it, and open to a 3.4-3.8 pitch below it.
     'dashboard-panel': dict(
-        size=(230.4, 309.0), axis='v', seed=1202, pitch=2.15, core=0.8,
-        colours=('ffd189', 'ffc26e', '8a5824'), base_at=30,
-        wave=dict(amp=2.0, along=90.0, across=14.0),
+        size=(230.4, 309.0), axis='v', seed=1202, pitch=2.0,
+        colours=('ffd68d', 'ffc872'), base_at=30, taumax=2.2,
+        line=dict(ink=0.36),
+        wave=dict(amp=1.8, along=200.0, across=50.0),
+        kinks=dict(n=14, amp=1.4, rs=(3.0, 9.0), rt=(5.0, 14.0)),
         families=[
             dict(window=(None, None, None), terms=[
-                dict(kind='fold', at=(84.0, 299.0), to=(184.0, 259.0), beyond=(-0.25, 0.10),
-                     w=26.0, amount=(-95.0, -55.0)),
+                dict(kind='fold', at=(84.0, 299.0), to=(184.0, 259.0), beyond=(-0.25, 0.05),
+                     w=32.0, c=0.25, below=70.0, amount=(-10.0, -100.0)),
+                dict(kind='bend', ts=0.0, w=30.0, amount=(10.0, 0.0)),
                 dict(kind='bend', ts=309.0, w=30.0, amount=(-10.0, -2.0)),
             ]),
         ],
-        edge=dict(width=8.0, depth=10.0),
+        edge=dict(width=8.0, depth=8.0),
     ),
-    # Mailbox, the selected row (477 x 55). Horizontal grain, wavy and
+    # Mailbox, the selected row (477 x 55). Horizontal grain, dense and
     # bunched; the left end's lines rise to the top edge; a vertical
-    # book-match at t 239 (design x 274) where the lines fan away from
-    # the bar's middle height into the seam: the open book.
+    # open-book seam at t 239 (design x 274): lines from both sides hook
+    # into it, a narrow dark crease.
     'mailbox-row': dict(
-        size=(477.0, 55.0), axis='h', seed=1303, pitch=2.2, core=0.8,
-        colours=('ffda98', 'ffca84', '8c561f'), base_at=30,
-        wave=dict(amp=5.0, along=70.0, across=10.0),
+        size=(477.0, 55.0), axis='h', seed=1303, pitch=1.75,
+        colours=('ffe0a4', 'ffd78e'), base_at=30, taumax=2.2,
+        line=dict(ink=0.4),
+        wave=dict(amp=3.0, along=120.0, across=20.0),
+        kinks=dict(n=16, amp=1.2, rs=(2.0, 5.0), rt=(6.0, 18.0)),
         families=[
-            dict(window=(None, 239.0, None), terms=[
+            dict(window=(None, 239.6, 0.6), terms=[
                 dict(kind='bend', ts=0.0, w=24.0, amount=(22.0, 10.0)),
-                dict(kind='fan', ts=239.0, w=20.0, centre=30.0, gain=2.6),
+                dict(kind='bend', ts=239.0, w=12.0, c=0.2, amount=(4.0, 40.0), power=1.3),
+                dict(kind='bend', ts=239.0, w=1.0, amount=(0.0, 10.0), power=1.5),
             ]),
-            dict(mirror=239.0, window=(239.0, None, None), terms=[
-                dict(kind='fan', ts=239.0, w=20.0, centre=30.0, gain=2.6),
+            dict(mirror=239.0, window=(238.4, None, 0.6), terms=[
+                dict(kind='bend', ts=239.0, w=12.0, c=0.2, amount=(4.0, 40.0), power=1.3),
+                dict(kind='bend', ts=239.0, w=1.0, amount=(0.0, 10.0), power=1.5),
             ]),
         ],
         edge=dict(width=6.0, depth=8.0),
     ),
     # Store, the selected SMG category (200.6 x 38.6). Horizontal grain,
     # lines pinching into nested arcs at the left end, a book-match at
-    # t 75 (design x 168).
+    # t 100 (design x 193, the button's middle) where the lines bend down
+    # into a vertical crease, as the mailbox row's do.
     'store-nav': dict(
-        size=(200.6, 38.6), axis='h', seed=1404, pitch=2.05, core=0.8,
-        colours=('ffda98', 'fac883', '8a521c'), base_at=30,
-        wave=dict(amp=2.4, along=60.0, across=12.0),
+        size=(200.6, 38.6), axis='h', seed=1404, pitch=1.8,
+        colours=('ffdc9c', 'fccc86'), base_at=30, taumax=2.2,
+        wave=dict(amp=2.0, along=100.0, across=20.0),
+        kinks=dict(n=6, amp=1.0, rs=(2.0, 5.0), rt=(5.0, 14.0)),
         families=[
-            dict(window=(None, 75.0, None), terms=[
+            dict(window=(None, 100.6, 0.6), terms=[
                 dict(kind='bend', ts=0.0, w=16.0, amount=(14.0, -10.0)),
-                dict(kind='fan', ts=75.0, w=12.0, centre=19.0, gain=2.0),
+                dict(kind='bend', ts=100.0, w=10.0, c=0.2, amount=(3.0, 26.0), power=1.3),
+                dict(kind='bend', ts=100.0, w=1.0, amount=(0.0, 7.0), power=1.5),
             ]),
-            dict(mirror=75.0, window=(75.0, None, None), terms=[
-                dict(kind='fan', ts=75.0, w=12.0, centre=19.0, gain=2.0),
+            dict(mirror=100.0, window=(99.4, None, 0.6), terms=[
+                dict(kind='bend', ts=100.0, w=10.0, c=0.2, amount=(3.0, 26.0), power=1.3),
+                dict(kind='bend', ts=100.0, w=1.0, amount=(0.0, 7.0), power=1.5),
+                dict(kind='bend', ts=200.6, w=14.0, amount=(-8.0, 8.0), real=True),
             ]),
         ],
         edge=dict(width=5.0, depth=8.0),
     ),
     # Store, the selected card's body and socket band (262.1 x 241.7).
     # Vertical grain with the strong horizontal streak at t 120 (design
-    # y 531): both leaves bend right into it, hardest at the right edge.
-    # Below t 192.6 (design 603.8, the socket rule) a separate leaf fans
-    # across.
+    # y 531): the lines run straight until close to it, turn hard and
+    # converge into a thin dark core toward the right edge, the two
+    # leaves crossing at its left. Below t 192.6 (design 603.8, the
+    # socket rule) a separate leaf fans across.
     'store-card': dict(
-        size=(262.1, 241.7), axis='v', seed=1505, pitch=2.2, core=0.8,
-        colours=('ffdc9a', 'ffce84', '7e4614'), base_at=30,
-        wave=dict(amp=3.0, along=70.0, across=14.0),
+        size=(262.1, 241.7), axis='v', seed=1505, pitch=2.0,
+        colours=('ffe0a0', 'ffd286'), base_at=30, taumax=2.2, sat=1.35,
+        spacing=dict(amp=0.5, cell=5.0),
+        wave=dict(amp=2.0, along=150.0, across=40.0),
+        kinks=dict(n=10, amp=1.4, rs=(3.0, 8.0), rt=(5.0, 14.0)),
         families=[
-            dict(window=(None, 124.0, 4.0), terms=[
-                dict(kind='bend', ts=0.0, w=22.0, amount=(-10.0, -4.0)),
-                dict(kind='bend', ts=70.0, w=40.0, q=1.2, amount=(-2.0, 14.0)),
-                dict(kind='bend', ts=120.0, w=26.0, q=2.0, power=2.0, amount=(0.0, 100.0)),
+            dict(window=(None, 122.0, 3.0), terms=[
+                dict(kind='shear', ts=44.0, w=6.0, amount=(1.6, 0.9)),
+                dict(kind='ripple', ts=40.0, w=4.0, amount=2.6, wavelength=(14.0, 45.0)),
+                dict(kind='bend', ts=36.0, w=7.0, c=0.15, amount=(0.0, 22.0), power=2.5),
+                dict(kind='bend', ts=36.0, w=1.2, amount=(0.0, 10.0), power=3.0),
+                dict(kind='bend', ts=120.0, w=8.0, c=0.1, amount=(0.0, 60.0), power=2.5),
+                dict(kind='bend', ts=120.0, w=1.2, amount=(0.0, 28.0), power=2.5),
             ]),
-            dict(mirror=120.0, window=(116.0, 192.6, 4.0), terms=[
-                dict(kind='bend', ts=120.0, w=26.0, q=2.0, power=2.0, amount=(0.0, 100.0)),
+            dict(mirror=120.0, window=(118.0, 192.6, 3.0), terms=[
+                dict(kind='bend', ts=120.0, w=8.0, c=0.1, amount=(0.0, 60.0), power=2.5),
+                dict(kind='bend', ts=120.0, w=1.2, amount=(0.0, 28.0), power=2.5),
             ]),
             dict(window=(192.6, None, None), terms=[
-                dict(kind='bend', ts=192.6, w=14.0, amount=(-18.0, -30.0), real=True),
+                dict(kind='bend', ts=192.6, w=16.0, c=0.3, amount=(4.0, 26.0), power=1.5, real=True),
                 dict(kind='bend', ts=241.7, w=18.0, amount=(8.0, 14.0), real=True),
             ]),
         ],
         edge=dict(width=6.0, depth=8.0),
     ),
     # Store, the BASKET plate's lower band (204.6 x 45). Horizontal
-    # grain with a book-match at t 37 (design x 1329).
+    # grain with a book-match at t 85 (design x 1377): a sharp vertical
+    # crease the lines barely bend into; they rise at the right end.
     'store-basket': dict(
-        size=(204.6, 45.0), axis='h', seed=1606, pitch=2.0, core=0.8,
-        colours=('ffc77e', 'fab56b', '84471c'), base_at=30,
-        wave=dict(amp=2.2, along=60.0, across=12.0),
+        size=(204.6, 45.0), axis='h', seed=1606, pitch=1.8,
+        colours=('ffc77e', 'fab56b'), base_at=30, taumax=2.2,
+        wave=dict(amp=2.0, along=100.0, across=20.0),
+        kinks=dict(n=6, amp=1.0, rs=(2.0, 5.0), rt=(5.0, 14.0)),
         families=[
-            dict(window=(None, 37.0, None), terms=[
-                dict(kind='fan', ts=37.0, w=10.0, centre=24.0, gain=1.8),
+            dict(window=(None, 85.5, 0.5), terms=[
+                dict(kind='bend', ts=85.0, w=6.0, c=0.3, amount=(2.0, 8.0)),
+                dict(kind='bend', ts=85.0, w=0.8, amount=(1.0, 5.0)),
+                dict(kind='bend', ts=0.0, w=14.0, amount=(6.0, -10.0), real=True),
             ]),
-            dict(mirror=37.0, window=(37.0, None, None), terms=[
-                dict(kind='fan', ts=37.0, w=10.0, centre=24.0, gain=1.8),
+            dict(mirror=85.0, window=(84.5, None, 0.5), terms=[
+                dict(kind='bend', ts=85.0, w=6.0, c=0.3, amount=(2.0, 8.0)),
+                dict(kind='bend', ts=85.0, w=0.8, amount=(1.0, 5.0)),
+                dict(kind='bend', ts=204.6, w=22.0, amount=(14.0, 4.0), real=True),
             ]),
         ],
         edge=dict(width=5.0, depth=8.0),
@@ -195,7 +259,7 @@ SURFACES = {
 }
 
 
-def lattice_noise(rng, shape_px, cell, out_shape):
+def lattice_noise(rng, cell, out_shape):
     """Smooth value noise: a random lattice every `cell` texels,
     interpolated with a C1 smoothstep. Returns an array of `out_shape`
     in about [-1, 1]."""
@@ -216,38 +280,34 @@ def lattice_noise(rng, shape_px, cell, out_shape):
     return top + (bot - top) * sy[:, None]
 
 
-class Wave:
-    """Anisotropic fBm in design px, evaluated anywhere in a margin
-    around the surface: a book-matched leaf reads the same wander at the
-    reflected position, so its lines meet the other leaf's at the seam
-    instead of doubling them."""
+class Lattice:
+    """Smooth 2-D value noise over a rectangle of (a, b) space, `octaves`
+    of it, each half the cell of the last and `gain` times the amplitude.
+    Evaluated anywhere; outside its extent it clamps."""
 
-    OCTAVES = 3
-
-    def __init__(self, rng, S, T, along, across, margin):
-        self.along, self.across = along, across
-        self.lo_s, self.lo_t = -margin, -margin
+    def __init__(self, rng, lo, hi, cell, octaves=1, gain=0.5):
+        self.lo, self.cell, self.gain = lo, cell, gain
         self.grids = []
-        for o in range(self.OCTAVES):
+        for o in range(octaves):
             f = 2.0 ** o
-            gs = int(np.ceil((S + 2 * margin) * f / across)) + 3
-            gt = int(np.ceil((T + 2 * margin) * f / along)) + 3
-            self.grids.append(rng.uniform(-1.0, 1.0, size=(gt, gs)))
+            n = [int(np.ceil((hi[i] - lo[i]) * f / cell[i])) + 3 for i in (0, 1)]
+            self.grids.append(rng.uniform(-1.0, 1.0, size=(n[1], n[0])))
 
-    def __call__(self, s, t):
-        total = np.zeros_like(s)
+    def __call__(self, a, b):
+        total = np.zeros_like(a)
         norm = 0.0
         for o, grid in enumerate(self.grids):
             f = 2.0 ** o
-            u = (s - self.lo_s) * f / self.across
-            v = (t - self.lo_t) * f / self.along
+            u = (a - self.lo[0]) * f / self.cell[0]
+            v = (b - self.lo[1]) * f / self.cell[1]
             u0 = np.clip(np.floor(u).astype(int), 0, grid.shape[1] - 2)
             v0 = np.clip(np.floor(v).astype(int), 0, grid.shape[0] - 2)
-            fu, fv = u - u0, v - v0
+            fu = np.clip(u - u0, 0.0, 1.0)
+            fv = np.clip(v - v0, 0.0, 1.0)
             su, sv = fu * fu * (3 - 2 * fu), fv * fv * (3 - 2 * fv)
             top = grid[v0, u0] + (grid[v0, u0 + 1] - grid[v0, u0]) * su
             bot = grid[v0 + 1, u0] + (grid[v0 + 1, u0 + 1] - grid[v0 + 1, u0]) * su
-            amp = 0.5 ** o
+            amp = self.gain ** o
             total += amp * (top + (bot - top) * sv)
             norm += amp
         return total / norm
@@ -257,29 +317,80 @@ def across(s, S, amount, power=1.0):
     """Across the grain: amount[0] at s = 0, amount[1] at s = S, linear
     or, with `power` > 1, gathered towards s = S."""
     a0, a1 = amount
-    return a0 + (a1 - a0) * (s / S) ** power
+    return a0 + (a1 - a0) * np.clip(s / S, 0.0, 1.0) ** power
 
 
-def family_phi(spec, fam, s, t, S, wave):
+def hash01(n, j, seed):
+    """A uniform [0, 1) per (line index, along-grain cell), from integer
+    arithmetic only (splitmix64), so it is the same on every machine."""
+    x = (n.astype(np.int64).astype(np.uint64) * np.uint64(0x9E3779B97F4A7C15)
+         + j.astype(np.int64).astype(np.uint64) * np.uint64(0xBF58476D1CE4E5B9)
+         + np.uint64(seed))
+    x = (x ^ (x >> np.uint64(30))) * np.uint64(0xBF58476D1CE4E5B9)
+    x = (x ^ (x >> np.uint64(27))) * np.uint64(0x94D049BB133111EB)
+    x = x ^ (x >> np.uint64(31))
+    return (x >> np.uint64(11)).astype(np.float64) / float(1 << 53)
+
+
+class Surface:
+    """Everything random about one surface, drawn once from its seed."""
+
+    def __init__(self, spec):
+        self.spec = spec
+        W, H = spec['size']
+        self.S, self.T = (W, H) if spec['axis'] == 'v' else (H, W)
+        rng = np.random.Generator(np.random.PCG64(spec['seed']))
+        m = max(self.S, self.T)
+        wv = spec['wave']
+        self.wave = Lattice(rng, (-m, -m), (self.S + m, self.T + m),
+                            (wv['across'], wv['along']), octaves=wv.get('octaves', 2),
+                            gain=wv.get('gain', 0.35))
+        sp = dict(SPACING, **spec.get('spacing', {}))
+        self.spacing = sp
+        lo = -m - 200.0
+        self.space = Lattice(rng, (lo, -m), (self.S + m + 200.0, self.T + m),
+                             (sp['cell'], sp['along']), octaves=2, gain=0.5)
+        self.knots = []
+        k = spec.get('kinks')
+        if k:
+            for _ in range(k['n']):
+                s0 = rng.uniform(0.0, self.S)
+                t0 = rng.uniform(0.0, self.T)
+                a = rng.uniform(0.5, 1.0) * k['amp'] * (1 if rng.uniform() < 0.5 else -1)
+                rs = rng.uniform(*k['rs'])
+                rt = rng.uniform(*k['rt'])
+                self.knots.append((s0, t0, rs, rt, a))
+        self.line = dict(LINE, **spec.get('line', {}))
+
+
+def family_phi(surf, fam, s, t):
     """phi of one family, in design px. A mirrored family reads the
     field -- the wander included -- at the reflected along-grain
     coordinate; a term marked `real` is placed in the surface's own
     coordinates even so."""
+    spec, S = surf.spec, surf.S
     m = fam.get('mirror')
     tm = 2 * m - t if m is not None else t
-    phi = s + spec['wave']['amp'] * wave(s, tm)
+    phi = s + spec['wave']['amp'] * surf.wave(s, tm)
+    for (s0, t0, rs, rt, a) in surf.knots:
+        phi = phi + a * np.exp(-((s - s0) / rs) ** 2 - ((tm - t0) / rt) ** 2)
     fan = None
     for term in fam['terms']:
         tt = t if term.get('real') else tm
         kind = term['kind']
         if kind == 'bend':
             d = np.abs(tt - term['ts']) / term['w']
-            if 'q' in term:
+            if 'c' in term:
+                # A knee: exponential at the seam (the lines keep a
+                # slope there), gaussian beyond it, so they run straight
+                # until close and then turn hard.
+                prof = np.exp(-(d * d + 2.0 * term['c'] * d))
+            elif 'q' in term:
                 # A tent: the lines lean at a near-constant angle inside
                 # `w` of the seam and turn at a knee where it ends.
                 prof = np.maximum(1.0 - d, 0.0) ** term['q']
             else:
-                prof = np.exp(-d)
+                prof = np.exp(-d ** term.get('p', 1.0))
             phi = phi + across(s, S, term['amount'], term.get('power', 1.0)) * prof
         elif kind == 'fold':
             (x0, y0), (x1, y1) = term['at'], term['to']
@@ -290,14 +401,45 @@ def family_phi(spec, fam, s, t, S, wave):
             line = np.where(s > x1, y1 + hi * (s - x1), line)
             # Gradual above the ridge, complete below it: the lines lean
             # more and more as they near the ridge and turn there.
-            z = np.minimum(tt - line, 0.0)
-            phi = phi + across(s, S, term['amount']) * np.exp(z / term['w'])
+            z = np.maximum(line - tt, 0.0) / term['w']
+            if 'c' in term:
+                prof = np.exp(-(z * z + 2.0 * term['c'] * z))
+            else:
+                prof = np.exp(-z ** term.get('p', 1.0))
+            if 'below' in term:
+                # Below the ridge the shift relaxes again over `below`:
+                # the lines lean back the other way, their pitch opening.
+                zb = np.maximum(tt - line, 0.0) / term['below']
+                prof = np.where(tt < line, prof, np.exp(-zb))
+            phi = phi + across(s, S, term['amount']) * prof
+        elif kind == 'shear':
+            # One-sided: beyond ts, on the side t < ts, the lines lean
+            # at `amount` (ds/dt); on the other side they run straight;
+            # a soft knee `w` wide between: grain running off an edge.
+            z = (term['ts'] - tt) / term['w']
+            knee = term['w'] * np.logaddexp(0.0, z)
+            phi = phi + across(s, S, term['amount'], term.get('power', 1.0)) * knee
+        elif kind == 'ripple':
+            # Cathedral zigzag: a sideways wave along the grain, on the
+            # side t < ts (soft edge `w`), its phase drifting across it.
+            env = 1.0 / (1.0 + np.exp((tt - term['ts']) / term['w']))
+            lam, lam_s = term['wavelength']
+            vary = 0.6 + 0.6 * surf.wave(S - s, surf.T - tt)
+            phase = tt / lam + s / lam_s + 0.35 * surf.wave(s, surf.T - tt)
+            phi = phi + term['amount'] * env * vary * np.sin(2.0 * np.pi * phase)
+        elif kind == 'knot':
+            (s0, t0), (rs, rt) = term['at'], term['r']
+            phi = phi + term['amount'] * np.exp(-((s - s0) / rs) ** 2 - ((tt - t0) / rt) ** 2)
         elif kind == 'fan':
             fan = term
     if fan is not None:
         g = 1.0 + fan['gain'] * np.exp(-np.abs(tm - fan['ts']) / fan['w'])
         phi = fan['centre'] + (phi - fan['centre']) / g
-    return phi
+    # Irregular spacing: B is noise in phi itself, so a bunch of lines
+    # stays a bunch along the grain. |dB/dphi| <= amp keeps it monotone.
+    sp = surf.spacing
+    phi = phi + sp['amp'] * sp['cell'] / 3.0 * surf.space(phi, tm)
+    return phi, tm
 
 
 def window(t, w):
@@ -311,42 +453,79 @@ def window(t, w):
     return out
 
 
-def line_darkness(phi, pitch, step, core):
-    """Gaussian line cores on the iso-lines phi = n * pitch. `step` is
-    the sample spacing in design px; `core` the line's full width at
-    half maximum in native (2.4/design px) pixels. Darkness in [0, 1]."""
+def family_tau(surf, fam, s, t, step, pad):
+    """Optical depth of one family's ink on a sample grid (with `pad`
+    extra rows above and below for the gradient). Each line is a
+    gaussian stroke `core` native px wide at half depth, whatever the
+    line spacing; the NEAR lines either side are summed, so bunched
+    lines keep their own cores and the ink compounds only where they
+    overlap."""
+    L = surf.line
+    pitch = surf.spec['pitch']
+    phi, tm = family_phi(surf, fam, s, t)
     gy, gx = np.gradient(phi, step)
     grad = np.maximum(np.sqrt(gx * gx + gy * gy), 1e-6)
+    if pad:
+        phi, grad, tm, t = phi[pad:-pad], grad[pad:-pad], tm[pad:-pad], t[pad:-pad]
     u = phi / pitch
-    dist = np.abs(u - np.round(u)) * pitch / grad * R    # native px
-    sigma = core / 2.3548
-    return np.exp(-0.5 * (dist / sigma) ** 2)
+    n0 = np.floor(u)
+    scale = pitch / grad * R                    # native px per unit of u
+    inv = 1.0 / (L['core'] / 2.3548)
+    j = np.floor(tm / L['along'])
+    f = tm / L['along'] - j
+    f = f * f * (3 - 2 * f)
+    lo, hi = L['weight']
+    wlo, whi = L['width']
+    seed = surf.spec['seed']
+    tau = np.zeros_like(u)
+    for k in range(-NEAR + 1, NEAR + 1):
+        n = n0 + k
+        d = (u - n) * scale * inv
+        hit = np.abs(d) < 6.0
+        if not hit.any():
+            continue
+        w = hash01(n, j, seed) * (1 - f) + hash01(n, j + 1, seed) * f
+        w = lo + (hi - lo) * w
+        # Each line its own width too (measured FWHM p10-p90 about
+        # 1.2-2.5 native px): the same ink spread thinner or wider.
+        wide = wlo + (whi - wlo) * hash01(n, n * 0, seed + 1)
+        dd = d / wide
+        tau += np.where(hit, w * np.exp(-0.5 * np.minimum(dd * dd, 36.0)), 0.0)
+    return tau * L['ink'] * fam.get('weight', 1.0) * window(t, fam['window'])
 
 
 def render(spec):
     W, H = spec['size']
     tw, th = int(np.ceil(W * R)), int(np.ceil(H * R))
-    rng = np.random.Generator(np.random.PCG64(spec['seed']))
+    surf = Surface(spec)
     n = SUPER
-    fw, fh = tw * n, th * n
     step = 1.0 / (R * n)                # design px per supersample
-    X, Y = np.meshgrid((np.arange(fw) + 0.5) * step, (np.arange(fh) + 0.5) * step)
-    s, t, S = (X, Y, W) if spec['axis'] == 'v' else (Y, X, H)
-    wv = spec['wave']
-    T = H if spec['axis'] == 'v' else W
-    wave = Wave(rng, S, T, wv['along'], wv['across'], margin=max(S, T))
-    dark = np.zeros((fh, fw))
-    for fam in spec['families']:
-        d = line_darkness(family_phi(spec, fam, s, t, S, wave), spec['pitch'], step, spec['core'])
-        dark = np.maximum(dark, d * window(t, fam['window']))
-    dark = dark.reshape(th, n, tw, n).mean(axis=(1, 3))
+    xs = (np.arange(tw * n) + 0.5) * step
+    trans = np.zeros((th, tw))
+    pad = 1
+    for r0 in range(0, th, CHUNK):
+        r1 = min(r0 + CHUNK, th)
+        rows = np.arange(r0 * n - pad, r1 * n + pad)
+        ys = (rows + 0.5) * step
+        X, Y = np.meshgrid(xs, ys)
+        s, t = (X, Y) if spec['axis'] == 'v' else (Y, X)
+        tau = np.zeros((rows.size - 2 * pad, xs.size))
+        for fam in spec['families']:
+            tau += family_tau(surf, fam, s, t, step, pad)
+        # Ink saturates: a few overlapping strokes darken, a pile of
+        # them does not go black (the references' cores stop at about
+        # G 57, tau ~1.3).
+        sat = spec.get('sat', 1.6)
+        T = np.exp(-sat * (1.0 - np.exp(-tau / sat)))
+        trans[r0:r1] = T.reshape(r1 - r0, n, tw, n).mean(axis=(1, 3))
+    tau = -np.log(np.maximum(trans, 1e-9))
 
     # Pore noise, a little longer along the grain, and a faint blotch.
     rng2 = np.random.Generator(np.random.PCG64(spec['seed'] + 7))
     pore = rng2.standard_normal((th, tw))
     ax = 0 if spec['axis'] == 'v' else 1
     pore = (pore + np.roll(pore, 1, ax) + np.roll(pore, -1, ax)) / np.sqrt(3)
-    blot = lattice_noise(rng2, None, 9.0, (th, tw))
+    blot = lattice_noise(rng2, 9.0, (th, tw))
 
     # Edge shade: darker within `width` design px of the box's sides.
     ex = (np.arange(tw) + 0.5) / R
@@ -356,22 +535,26 @@ def render(spec):
     dy = np.minimum(ey, H - ey)
     shade = E['depth'] * np.exp(-np.minimum(dx[None, :], dy[:, None]) / E['width'])
 
-    idx = spec['base_at'] + dark * 175.0 + pore * 5.0 + blot * 4.0 + shade
+    span = 255 - spec['base_at']
+    idx = spec['base_at'] + tau / spec['taumax'] * span + pore * 2.4 + blot * 1.5 + shade / 3.0
     return np.clip(np.round(idx), 0, 255).astype(np.uint8)
 
 
-def ramp(colours, base_at):
-    """The 256-entry palette: light -> base over [0, base_at], base ->
-    dark over [base_at, 255], interpolated in encoded sRGB."""
-    light, base, dark = [np.array([int(c[i:i + 2], 16) for i in (0, 2, 4)], float) for c in colours]
+def ramp(spec):
+    """The 256-entry palette: light -> base over [0, base_at] (linear in
+    encoded sRGB), then the base darkened by optical depth tau =
+    (i - base_at) / (255 - base_at) * taumax, channel c by exp(-tau *
+    tint[c]): ink that takes more blue than red, as measured."""
+    light, base = [np.array([int(c[i:i + 2], 16) for i in (0, 2, 4)], float) for c in spec['colours']]
+    tint = np.array(spec.get('tint', TINT))
+    b = spec['base_at']
     pal = []
     for i in range(256):
-        if i <= base_at:
-            f = i / base_at
-            c = light + (base - light) * f
+        if i <= b:
+            c = light + (base - light) * (i / b)
         else:
-            f = (i - base_at) / (255 - base_at)
-            c = base + (dark - base) * f
+            tau = (i - b) / (255 - b) * spec['taumax']
+            c = base * np.exp(-tau * tint)
         pal.append(np.clip(np.round(c), 0, 255).astype(np.uint8))
     return np.array(pal, dtype=np.uint8)
 
@@ -411,7 +594,7 @@ def main():
         if args.only and name not in args.only:
             continue
         idx = render(spec)
-        data = png_indexed(idx, ramp(spec['colours'], spec['base_at']))
+        data = png_indexed(idx, ramp(spec))
         (out / f'{name}.png').write_bytes(data)
         print(f'{hashlib.sha256(data).hexdigest()}  {name}.png  {idx.shape[1]}x{idx.shape[0]}  {len(data)} bytes',
               file=sys.stderr)
