@@ -1,0 +1,60 @@
+/* Neomil design mock-ups: page chrome and the motion studies.
+   The era is hard-edged, so motion is stepped, never eased. */
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+:root { --nd-bg: #0b0708; --nd-panel: #140b0d; --nd-line: #5e1112; --nd-fg: #e9dcdc; --nd-mute: #a08c8d; --nd-red: #ef3333; color-scheme: dark }
+.nd-page { background: var(--nd-bg); color: var(--nd-fg); font: 400 16px/1.5 Rajdhani, 'Segoe UI', system-ui, sans-serif; min-height: 100vh; padding-block: 28px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+.nd-wrap { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px }
+.nd-page h1 { font: 600 2rem/1.1 Rajdhani, sans-serif; letter-spacing: .04em; text-transform: uppercase; margin: 0; text-wrap: balance }
+.nd-page h2 { font: 600 1.15rem/1.2 Rajdhani, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--nd-red); margin: 0 }
+.nd-page p { margin: 0; max-width: 68ch; color: var(--nd-mute) }
+.nd-page p.lead { color: var(--nd-fg); font-size: 1.05rem }
+.nd-eyebrow { font: 500 .75rem/1 'Geist Mono', ui-monospace, monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--nd-red) }
+.nd-controls { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; flex-wrap: wrap; gap: 10px 18px; padding: 10px 12px; background: var(--nd-panel); border: 1px solid var(--nd-line) }
+.nd-group { display: flex; flex-wrap: wrap; align-items: center; gap: 6px }
+.nd-label { font: 500 .7rem/1 'Geist Mono', ui-monospace, monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--nd-mute); margin-right: 2px }
+.nd-controls button, .nd-replay { font: 600 .85rem/1 Rajdhani, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--nd-fg); background: transparent; border: 1px solid var(--nd-line); padding: 8px 10px; cursor: pointer }
+.nd-controls button[aria-pressed="true"] { background: var(--nd-red); border-color: var(--nd-red); color: #19090a }
+.nd-controls button:focus-visible, .nd-replay:focus-visible { outline: 2px solid var(--nd-fg); outline-offset: 2px }
+.nd-stage { display: flex; flex-direction: column; gap: 34px }
+.nd-scene { display: flex; flex-direction: column; gap: 8px; min-width: 0 }
+.nd-frame { border: 1px solid var(--nd-line); overflow: auto; background: #050304; max-width: 100% }
+.nd-frame svg { display: block; width: 100%; height: auto }
+.nd-frame.is-actual svg { width: 3840px; max-width: none }
+.nd-replay { align-self: flex-start; color: var(--nd-mute) }
+.nd-notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px }
+.nd-note { border: 1px solid var(--nd-line); background: var(--nd-panel); padding: 14px; display: flex; flex-direction: column; gap: 6px; min-width: 0 }
+.nd-note ul { margin: 0; padding-left: 18px; color: var(--nd-mute) }
+.nd-page table { border-collapse: collapse; font-size: .92rem; width: 100% }
+.nd-page th, .nd-page td { text-align: left; padding: 5px 10px 5px 0; border-bottom: 1px solid var(--nd-line); color: var(--nd-mute) }
+.nd-page th { color: var(--nd-fg); font-weight: 600 }
+.nd-scroll { overflow-x: auto }
+
+.neomil-scene .f-ui { font-family: Rajdhani, 'Segoe UI', sans-serif; text-transform: none }
+.neomil-scene .f-wide { font-family: Orbitron, Rajdhani, sans-serif }
+.neomil-scene .f-mono { font-family: 'Geist Mono', ui-monospace, 'DejaVu Sans Mono', monospace }
+
+/* Motion studies. Durations are the proposal; steps() keeps them hard. */
+@media (prefers-reduced-motion: no-preference) {
+  .play .a-win { animation: nd-open .28s steps(7) both }
+  .play .a-win .echo, .play .is-focus .echo { animation: nd-echo .5s steps(4) both }
+  .play .a-launch { animation: nd-drop .22s steps(6) both }
+  .play .a-row { animation: nd-row .12s steps(2) both }
+  .play .a-sel { animation: nd-blink .3s steps(1) .45s 2 }
+  .play .a-note { animation: nd-note .3s steps(6) .4s both }
+  .play .a-ws { animation: nd-blink .36s steps(1) 2 }
+  .play .a-caret { animation: nd-caret 1s steps(1) infinite }
+  .play .a-card { animation: nd-open .3s steps(7) both }
+  .play .w1 .edge { animation: nd-focus-out 6s steps(1) 1.5s infinite }
+  .play .w2 .edge { animation: nd-focus-in 6s steps(1) 1.5s infinite }
+  .play .w1 .echo { animation: nd-vis-out 6s steps(1) 1.5s infinite }
+}
+@keyframes nd-open { from { clip-path: inset(0 100% 100% 0) } to { clip-path: inset(-20px) } }
+@keyframes nd-echo { 0% { opacity: 0 } 25% { opacity: 2.5 } 50% { opacity: .4 } 100% { opacity: 1 } }
+@keyframes nd-drop { from { clip-path: inset(0 -20px 100% -20px) } to { clip-path: inset(-20px) } }
+@keyframes nd-row { from { opacity: 0 } to { opacity: 1 } }
+@keyframes nd-note { from { transform: translateX(110%) } to { transform: translateX(0) } }
+@keyframes nd-blink { 0%, 100% { opacity: 1 } 50% { opacity: .35 } }
+@keyframes nd-caret { 0%, 100% { opacity: 1 } 50% { opacity: 0 } }
+@keyframes nd-focus-out { 0%, 49% { stroke: #fb3535 } 50%, 100% { stroke: #5e1112 } }
+@keyframes nd-focus-in { 0%, 49% { stroke: #5e1112 } 50%, 100% { stroke: #fb3535 } }
+@keyframes nd-vis-out { 0%, 49% { opacity: 1 } 50%, 100% { opacity: 0 } }

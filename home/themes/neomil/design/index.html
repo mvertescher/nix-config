@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Neomil Desktop Design</title><link rel="stylesheet" href="neomil-design.css"><style>body{margin:0}</style></head><body>
+<div class="nd-page"><div class="nd-wrap">
+<span class="nd-eyebrow">home/themes/neomil · design</span>
+<h1>Neomil Desktop Design</h1>
+<p class="lead">How the Neomil Hyprland theme should look before any of it is built. Every part is taken from the recreated reference screens: the header badges, the tab plate, the outlined dark plates, the solid selected row, the printed echo, and the measured line weights.</p>
+<p>Use the switches to compare the two targets, the two bar heights and the two window styles. Actual size shows the scene at 3840 pixels wide, as on the display. Motion plays the proposed animations; Replay runs them again.</p>
+<div id="nd-root"></div>
+<h2>What changes between desktop and TV</h2>
+<div class="nd-scroll"><table><tr><th>Part</th><th>Desktop (4K or 1440p monitor)</th><th>TV (4K, across the room)</th></tr>
+<tr><td>Scale of type, bar and plates</td><td>1.0</td><td>1.5</td></tr>
+<tr><td>Outline</td><td>2 px (measured)</td><td>3 px</td></tr>
+<tr><td>Focused window and selected row outline</td><td>2 px, bright</td><td>5.4 px, bright (the footer tape weight)</td></tr>
+<tr><td>Screen margin</td><td>40</td><td>80, for overscan</td></tr>
+<tr><td>Gaps, outer / inner</td><td>10 / 6</td><td>16 / 10</td></tr></table></div>
+<h2>What stock Hyprland can and cannot draw</h2>
+<div class="nd-notes">
+<div class="nd-note"><strong>Can, by configuration</strong><ul><li>Rectangular 2 px borders in the bright and dim inks</li><li>Gaps, the wallpaper ground, stepped animations</li><li>Our own bar for both bar designs</li><li>Launcher, notifications and lock drawn by our own cp-eras-ui programs</li></ul></div>
+<div class="nd-note"><strong>Needs more than configuration</strong><ul><li>Red title plate on the focused window: a title-bar plugin or one of our own</li><li>The printed echo around a window: possibly a hard offset shadow, to be tried</li><li>Chamfered window corners: not attempted; windows stay rectangular</li></ul></div>
+<div class="nd-note"><strong>Not decided here</strong><ul><li>Application interiors (terminal colours, browser, editor themes) are stand-ins</li><li>Bar content: which status cells, and what they are called</li><li>Durations of each animation</li></ul></div>
+</div></div></div>
+<script src="neomil-design.js"></script>
+<script>NeomilDesign.mount(document.getElementById("nd-root"), NeomilDesign.scenes);</script>
+</body></html>
