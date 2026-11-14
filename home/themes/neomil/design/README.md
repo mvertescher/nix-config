@@ -22,12 +22,17 @@ mock-up only (the theme itself takes them from nixpkgs).
 
 - Top bar: the reference header (62 units) or a slim bar (30 units).
 - Windows: dark with red lines, or a red title plate on the focused one.
+- Window corners: cut on all four (stock Hyprland), cut as the art cuts
+  them, or square.
 
 ## What stock Hyprland cannot draw
 
-A title plate needs a title-bar plugin or our own; the printed echo
-around a window may be possible as a hard offset shadow (untried);
-chamfered window corners are not attempted. The launcher, notifications
+Cut corners it can draw: `decoration:rounding` with `rounding_power =
+1.0` gives a straight chamfer, on all four corners alike (terra already
+sets the power to 1.0, with rounding 0). Cutting only top-right and
+bottom-left, as the art's panels do, it cannot. A title plate needs a
+title-bar plugin or our own; the printed echo around a window may be
+possible as a hard offset shadow (untried). The launcher, notifications
 and lock are drawn by our own programs, so they are not limited this way.
 
 ## Not yet designed

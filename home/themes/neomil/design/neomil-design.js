@@ -116,15 +116,17 @@
     return s;
   }
 
-  // A tiled window. Hyprland draws a rectangular border; the title plate
+  // A tiled window. Hyprland cuts all four corners alike (rounding with
+  // rounding_power 1.0); the art cuts top-right and bottom-left. The title plate
   // (windows: 'red') and the echo are the parts that need more than stock
   // Hyprland (see README).
   function win(x, y, w, h, T, o, { title, focused = false, kind, cls = '' }) {
-    const u = T.u, d = plate(x, y, w, h), red = o.windows === 'red';
+    const u = T.u, k = 8 * u, cut = o.corners === 'four' ? { tl: k, tr: k, br: k, bl: k } : o.corners === 'art' ? { tr: k, bl: k } : {};
+    const d = plate(x, y, w, h, cut), red = o.windows === 'red';
     const th = red && focused ? 15 * u : 0;
     let s = `<g class="win ${cls} ${focused ? 'is-focus' : ''}">`;
     if (focused) s += echo(d, T, 1, 1);
-    s += `<clipPath id="c${n(x)}-${n(y)}"><rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}"/></clipPath>`;
+    s += `<clipPath id="c${n(x)}-${n(y)}"><path d="${d}"/></clipPath>`;
     s += path(d, `fill="${INK.win}"`);
     s += `<g clip-path="url(#c${n(x)}-${n(y)})">`;
     if (th) { s += `<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(th)}" fill="${INK.fg}"/>`; s += text(x + 8 * u, y + th * 0.74, title, { size: 8.5 * u, fill: INK.onRed, weight: 600, ls: 0.08 }); s += barcode(x + w - 60 * u, y + 4 * u, 52 * u, th - 8 * u, INK.onRed); }
@@ -207,7 +209,7 @@
   const SCENES = { tiled: (T, o) => tiled(T, o), empty, launcher, lock };
   let uid = 0;
   function render(scene, opts = {}) {
-    const o = Object.assign({ target: 'desktop', bar: 'reference', windows: 'dark' }, opts), T = TARGET[o.target];
+    const o = Object.assign({ target: 'desktop', bar: 'reference', windows: 'dark', corners: 'four' }, opts), T = TARGET[o.target];
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" class="neomil-scene s-${scene} t-${o.target}" role="img" aria-label="Neomil ${scene} mock-up, ${o.target}">${ground(++uid)}${SCENES[scene](T, o)}</svg>`;
   }
 
@@ -217,12 +219,12 @@
     launcher: ['Launcher and notification', 'The launcher is the GO HOME panel with the password field as its query and menu rows as results. The notification is a small bright panel.'],
     lock: ['Lock and login', 'The login screen\'s user card, password field and ENTER button, with the clock.'],
   };
-  const CHOICES = { target: [['desktop', 'Desktop'], ['tv', 'TV']], bar: [['reference', 'Reference header'], ['slim', 'Slim bar']], windows: [['dark', 'Dark, red lines'], ['red', 'Red title on focus']] };
-  const LABEL = { target: 'Target', bar: 'Top bar', windows: 'Windows' };
+  const CHOICES = { target: [['desktop', 'Desktop'], ['tv', 'TV']], bar: [['reference', 'Reference header'], ['slim', 'Slim bar']], windows: [['dark', 'Dark, red lines'], ['red', 'Red title on focus']], corners: [['four', 'Cut, all four'], ['art', 'Cut, as the art'], ['square', 'Square']] };
+  const LABEL = { target: 'Target', bar: 'Top bar', windows: 'Windows', corners: 'Corners' };
 
   // Mount the review UI: one set of switches, then each scene.
   function mount(root, scenes) {
-    const state = { target: 'desktop', bar: 'reference', windows: 'dark', motion: true, actual: false };
+    const state = { target: 'desktop', bar: 'reference', windows: 'dark', corners: 'four', motion: true, actual: false };
     try { Object.assign(state, JSON.parse(localStorage.getItem('neomil-design') || '{}')); } catch (e) {}
     const ctl = document.createElement('div'); ctl.className = 'nd-controls';
     const stage = document.createElement('div'); stage.className = 'nd-stage';
