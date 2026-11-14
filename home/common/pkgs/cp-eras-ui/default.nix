@@ -49,6 +49,12 @@ let
       || (toString path == "${toString ./scripts}")
       || (toString path == "${toString ./scripts/make-kitsch-sans.py}")
       || (toString path == "${toString ./scripts/KITSCH-SANS-NOTICE.md}")
+      # The generated Neo-kitsch veneer textures, which src/veneer.rs
+      # embeds with include_bytes! (scripts/make-veneer.py writes them).
+      || (toString path == "${toString ./docs}")
+      || (toString path == "${toString ./docs/neokitsch}")
+      || (lib.hasPrefix "${toString ./docs/neokitsch/veneer}" (toString path)
+        && (type == "directory" || lib.hasSuffix ".png" (toString path)))
       || (lib.hasPrefix "${toString ./vendor/iced_wgpu/src/shader}/" (toString path)
         && lib.hasSuffix ".wgsl" (toString path))
       || (toString path == "${toString ./vendor/cryoglyph/src/shader.wgsl}");
@@ -242,6 +248,18 @@ in
 package.overrideAttrs (old: {
   passthru = (old.passthru or { }) // {
     tests = {
+      # The committed veneer textures are exactly what the generator
+      # makes: re-run it in the sandbox and compare byte for byte.
+      veneer = runCommand "cp-eras-ui-veneer" {
+        nativeBuildInputs = [ (python3.withPackages (ps: [ ps.numpy ])) ];
+      } ''
+        python3 ${./scripts/make-veneer.py} out
+        for f in ${./docs/neokitsch/veneer}/*.png; do
+          cmp "$f" "out/$(basename "$f")"
+        done
+        touch "$out"
+      '';
+
       # Source comparisons must use the Scene's uniform scale at fractional
       # viewport sizes. Keep this helper checked by the existing matrix.
       sourceSampling = runCommand "cp-eras-ui-source-sampling" {

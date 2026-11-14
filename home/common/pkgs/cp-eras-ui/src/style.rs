@@ -2184,6 +2184,13 @@ pub struct Veneer {
     pub turn: f32,
     pub sway: f32,
     pub phase: f32,
+    /// The generated texture that replaces the base and the drawn grain
+    /// (owner decision 2026-11-13, [`crate::veneer`]): the texture, its
+    /// top-left in the parked selection's design coordinates, and the
+    /// bar's silhouette to clip it to, in the same coordinates. The
+    /// screen shifts all three with the selection. `None` draws the
+    /// base and the zigzag grain above.
+    pub texture: Option<(crate::veneer::Texture, (f32, f32), &'static [Prim])>,
 }
 
 /// The column of isometric cartridge icons neomil sets beside its list,
@@ -2950,6 +2957,23 @@ pub enum Prim {
         pitch: f32,
         width: f32,
         ink: Ink,
+    },
+    /// A generated wood-veneer texture ([`crate::veneer`]) with its
+    /// top-left at `(x, y)`, clipped to the fills of `shape` (rects,
+    /// rounded rects and paths in the same coordinates; their inks are
+    /// not read).
+    ///
+    /// Neo-kitsch's selected surfaces, by owner decision 2026-11-13: a
+    /// pre-rendered texture rather than drawn grain, which every vector
+    /// fit failed to converge on (`docs/neokitsch/veneer-fit.md`). It
+    /// is an image, and a canvas draws images above every mesh in its
+    /// layer, so the scene paints whatever follows a veneer in a layer
+    /// of its own (`screens/scene.rs`).
+    Veneer {
+        x: f32,
+        y: f32,
+        texture: crate::veneer::Texture,
+        shape: &'static [Prim],
     },
     /// A dot matrix -- every era's socket-row "QR" glyph, which is not
     /// a QR in any of them. `rows` is one string per row, `#` for a

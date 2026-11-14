@@ -15,6 +15,13 @@
 //! drawing each wears. It opens on the
 //! selection its trace shows -- entropism's first card, everyone
 //! else's second -- so a capture of it is comparable with the trace.
+//!
+//! Two capture-only environment variables, for headless renders of a
+//! moved selection (`scripts/render.sh` passes its environment through;
+//! a headless compositor has no pointer to click with):
+//! `CP_ERAS_UI_CATEGORY=<0..4>` and `CP_ERAS_UI_CARD=<0..3>` open on that
+//! category / card instead of the era's `store_selection`. Neither is
+//! read by the library; with neither set the binary is unchanged.
 
 use cp_eras_ui::screens::nav;
 use cp_eras_ui::screens::store::Store;
@@ -24,7 +31,16 @@ fn main() -> iced::Result {
     let style = shell::style();
     // The era's print material over the whole frame (`print`).
     cp_eras_ui::print::wear(style.era);
-    shell::application(move || Store::new(style), Store::update, Store::view)
+    let pick = |name: &str, below: usize| std::env::var(name).ok()
+        .and_then(|v| v.trim().parse::<usize>().ok())
+        .filter(|&i| i < below);
+    let (category, card) = (pick("CP_ERAS_UI_CATEGORY", 5), pick("CP_ERAS_UI_CARD", 4));
+    shell::application(move || {
+        let mut store = Store::new(style);
+        if let Some(i) = category { store.category = i; }
+        if let Some(i) = card { store.card = i; }
+        store
+    }, Store::update, Store::view)
         .title(Store::title)
         .subscription(|store| iced::Subscription::batch([
             nav::strokes().filter_map(Store::stroke),
