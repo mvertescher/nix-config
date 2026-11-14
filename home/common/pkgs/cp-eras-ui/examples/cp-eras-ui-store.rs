@@ -22,6 +22,8 @@ use cp_eras_ui::shell;
 
 fn main() -> iced::Result {
     let style = shell::style();
+    // The era's print material over the whole frame (`print`).
+    cp_eras_ui::print::wear(style.era);
     shell::application(move || Store::new(style), Store::update, Store::view)
         .title(Store::title)
         .subscription(|store| iced::Subscription::batch([

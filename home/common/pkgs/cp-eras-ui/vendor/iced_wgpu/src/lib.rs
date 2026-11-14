@@ -24,6 +24,8 @@
 #![allow(missing_docs)]
 pub mod layer;
 pub mod primitive;
+// Local patch: the optional print pass (PATCHES.md).
+pub mod print;
 pub mod settings;
 pub mod window;
 
@@ -93,6 +95,9 @@ pub struct Renderer {
     image_cache: std::cell::RefCell<image::Cache>,
 
     staging_belt: wgpu::util::StagingBelt,
+
+    // Local patch: the print pass, created the first time a material is set.
+    print: Option<print::Pass>,
 }
 
 impl Renderer {
@@ -126,6 +131,8 @@ impl Renderer {
             staging_belt: wgpu::util::StagingBelt::new(
                 buffer::MAX_WRITE_SIZE as u64,
             ),
+
+            print: None,
 
             engine,
         }
@@ -165,11 +172,32 @@ impl Renderer {
     pub fn present(
         &mut self,
         clear_color: Option<Color>,
-        _format: wgpu::TextureFormat,
+        format: wgpu::TextureFormat,
         frame: &wgpu::TextureView,
         viewport: &Viewport,
     ) -> wgpu::SubmissionIndex {
-        let encoder = self.draw(clear_color, frame, viewport);
+        // Local patch: with a print material set, draw into an offscreen
+        // frame and run the print pass from it into the surface. Without
+        // one this is the upstream single draw (PATCHES.md).
+        let encoder = match print::get() {
+            None => self.draw(clear_color, frame, viewport),
+            Some(params) => {
+                let source = self.engine.format;
+                let device = &self.engine.device;
+                let pass = match self.print.take() {
+                    Some(pass) if pass.target_format == format => pass,
+                    _ => print::Pass::new(device, source, format),
+                };
+                let mut pass = pass;
+                let target =
+                    pass.target(device, viewport.physical_size());
+                let mut encoder =
+                    self.draw(clear_color, &target, viewport);
+                pass.encode(&self.engine.queue, &mut encoder, frame, &params);
+                self.print = Some(pass);
+                encoder
+            }
+        };
 
         self.staging_belt.finish();
         let submission = self.engine.queue.submit([encoder.finish()]);

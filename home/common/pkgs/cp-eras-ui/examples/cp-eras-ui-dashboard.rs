@@ -31,6 +31,8 @@ use cp_eras_ui::style::{Group, Prim, Style};
 
 fn main() -> iced::Result {
     let style = capture_state(shell::style());
+    // The era's print material over the whole frame (`print`).
+    cp_eras_ui::print::wear(style.era);
     let module = std::env::var("CP_ERAS_UI_MODULE").ok()
         .and_then(|v| v.trim().parse::<usize>().ok())
         .filter(|&m| m < 6);

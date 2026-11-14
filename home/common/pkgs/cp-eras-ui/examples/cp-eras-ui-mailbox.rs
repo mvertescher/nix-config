@@ -12,6 +12,8 @@ use cp_eras_ui::shell;
 
 fn main() -> iced::Result {
     let style = shell::style();
+    // The era's print material over the whole frame (`print`).
+    cp_eras_ui::print::wear(style.era);
     shell::application(move || MailBox::new(style), MailBox::update, MailBox::view)
         .title(MailBox::title)
         .subscription(|mail| {

@@ -20,6 +20,7 @@
 pub mod catalog;
 pub mod eras;
 pub mod palette;
+pub mod print;
 pub mod screens;
 pub mod shell;
 pub mod style;

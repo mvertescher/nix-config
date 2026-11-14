@@ -57,6 +57,10 @@ iced_layershell = "0.19"
 # `[patch.crates-io]` below), shared with the outline route's stem
 # darkening in `src/widgets/stem.rs` so the two corrections agree.
 cryoglyph = "0.1"
+# The print pass (`src/print.rs`): its parameters are stated straight to the
+# renderer, the vendored patch below. No features: the ones iced turns on
+# are unchanged, so the build graph is the same.
+iced_wgpu = { version = "0.14", default-features = false }
 sysinfo = "0.33"
 # PulseAudio client bindings for the bar's audio module. Apache-2.0,
 # and the only Rust route to a sink volume that does not shell out to
@@ -110,7 +114,8 @@ resvg = { version = "0.46", default-features = false }
 # pipeline is not switched instead. Provenance, the curve and the removal
 # condition: vendor/cryoglyph/PATCHES.md.
 cryoglyph = { path = "vendor/cryoglyph" }
-# Keep later canvas meshes intact when a fractional clip snaps empty.
+# Keep later canvas meshes intact when a fractional clip snaps empty, and the
+# optional per-era print pass (`src/print.rs`), which is skipped unless set.
 # Provenance and removal condition: vendor/iced_wgpu/PATCHES.md.
 iced_wgpu = { path = "vendor/iced_wgpu" }
 
