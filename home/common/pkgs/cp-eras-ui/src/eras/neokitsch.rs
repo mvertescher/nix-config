@@ -298,6 +298,7 @@ pub fn style() -> Style {
             // login-trace's 10:10 PM at (1293,87): the only clock in
             // the run, and it is unboxed.
             clock_plain: Some((18, Face::Medium)),
+            header: None,
 
             menu: BarMenu {
                 // The dashboard cascade card: chamfer 22 on the

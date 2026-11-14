@@ -1,5 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="220" viewBox="0 0 1600 220" font-family="Rajdhani">
-  <!-- NEOMIL BAR reference (restyled 2026-09-02).
+  <!-- SUPERSEDED 2026-11-14: the Neomil bar is now the desktop design's
+       reference header (home/themes/neomil/design, bar() with
+       bar: 'reference'; code bar::header_bar, widgets::header,
+       eras::neomil::HEADER). This drawing is kept as the record of the
+       strip it replaced; the bar-neomil golden no longer matches it.
+
+       NEOMIL BAR reference (restyled 2026-09-02).
 
        The bar has no Behance source; it is an original composition. Every
        decision below is borrowed from a measured feature of one of the four

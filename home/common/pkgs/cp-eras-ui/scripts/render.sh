@@ -37,6 +37,12 @@
 #   --live          use the real application clock instead of freezing it.
 #                   Use this to check startup and subscriptions; mutually
 #                   exclusive with --at. Capture after --settle seconds.
+#   --theme-key K=V add a top-level key to the published theme, as
+#                   home/themes/lib/era.nix would write it; repeatable.
+#                   `--theme-key ui_scale=2.4` renders the 4K desktop
+#                   fitting (use --size 3840x528 for the bar),
+#                   `--theme-key ui_scale=3.6 --theme-key line_scale=1.5`
+#                   the TV one. Needs --era other than none.
 #   --keep-log      accepted and ignored: the log is always kept.
 #
 # Examples:
@@ -100,6 +106,7 @@ name=""
 at=2.4
 at_set=0
 live=0
+theme_keys=()
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -110,6 +117,7 @@ while [ $# -gt 0 ]; do
     --settle) settle=$2; shift 2 ;;
     --at)     at=$2; at_set=1; shift 2 ;;
     --live)   live=1; shift ;;
+    --theme-key) theme_keys+=("$2"); shift 2 ;;
     --keep-log) shift ;;
     -h|--help) usage; exit 0 ;;
     -*) echo "render.sh: unknown option $1" >&2; usage >&2; exit 2 ;;
@@ -282,7 +290,17 @@ unset XDG_CONFIG_HOME
 
 if [ -n "$theme_toml" ]; then
   mkdir -p "$HOME/.config/theme"
-  cp "$theme_toml" "$HOME/.config/theme/current.toml"
+  # Top-level keys go before the first [section], or they would land in
+  # it; `K=V` becomes `K = V`, unquoted, as a number is written.
+  {
+    for kv in ${theme_keys[@]+"${theme_keys[@]}"}; do
+      echo "${kv%%=*} = ${kv#*=}"
+    done
+    cat "$theme_toml"
+  } > "$HOME/.config/theme/current.toml"
+elif [ ${#theme_keys[@]} -gt 0 ]; then
+  echo "render.sh: --theme-key needs a published theme (--era NAME)" >&2
+  exit 2
 fi
 
 # Unique per run, so two renders can be in flight at once. The socket

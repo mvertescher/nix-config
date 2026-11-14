@@ -194,6 +194,7 @@ pub fn style() -> Style {
             alert_suffix: Some(" (!)"),
             bold_tiers: false,
             clock_plain: None,
+            header: None,
 
             menu: BarMenu {
                 panel: Dress {

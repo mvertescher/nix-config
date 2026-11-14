@@ -188,6 +188,9 @@ struct BarApp {
     style: Style,
     readings: Readings,
     system: sysinfo::System,
+    /// Hardware sensors, for the CPU temperature. Read on the tick with
+    /// CPU and memory: a hwmon read is a sysfs file, not a round trip.
+    components: sysinfo::Components,
     audio: audio::Monitor,
     network: network::Monitor,
     hypr: hypr::Monitor,
@@ -275,9 +278,10 @@ impl BarApp {
             show_passive: flag("--show-passive"),
             icon_theme: option("--icon-theme"),
             // Decode at the size the cell will draw, so the icon is
-            // resampled once rather than twice.
-            icon_size: cp_eras_ui::bar::icon_size(&style).round() as u32,
-            menu_icon_size: cp_eras_ui::bar::menu_icon_size(&style).round() as u32,
+            // resampled once rather than twice: design px times the
+            // target's scale, which is what reaches the screen.
+            icon_size: (cp_eras_ui::bar::icon_size(&style) * style.metrics.scale).round() as u32,
+            menu_icon_size: (cp_eras_ui::bar::menu_icon_size(&style) * style.metrics.scale).round() as u32,
         };
         let mut app = BarApp {
             style,
@@ -286,6 +290,7 @@ impl BarApp {
                 ..Readings::default()
             },
             system: sysinfo::System::new(),
+            components: sysinfo::Components::new_with_refreshed_list(),
             audio: audio::Monitor::spawn(),
             network: network::Monitor::spawn(),
             hypr: hypr::Monitor::spawn(),
@@ -612,6 +617,8 @@ impl BarApp {
     fn refresh(&mut self) {
         self.system.refresh_cpu_usage();
         self.system.refresh_memory();
+        self.components.refresh(false);
+        self.readings.temperature = cpu_temperature(&self.components);
 
         self.readings.cpu = self.system.global_cpu_usage().round().clamp(0.0, 100.0) as u8;
         let total = self.system.total_memory().max(1);
@@ -629,7 +636,10 @@ impl BarApp {
 
         let now = chrono::Local::now();
         self.readings.clock = now.format("%H:%M").to_string();
-        self.readings.date = now.format("%Y-%m-%d").to_string();
+        // A header era prints the date its own way ("SAT 14 NOV");
+        // the strip eras keep ISO.
+        let date = self.style.bar.header.map_or("%Y-%m-%d", |h| h.date_format);
+        self.readings.date = now.format(date).to_string();
     }
 
     /// The compositor's part of the readings alone: what `Message::Hypr`
@@ -664,6 +674,24 @@ fn option(name: &str) -> Option<String> {
     None
 }
 
+/// The CPU package's temperature, if a sensor names it: AMD's `Tctl`
+/// (k10temp), Intel's `Package id 0` (coretemp), or failing those a
+/// sensor whose label says CPU. `None` rather than a guess among the
+/// drives and the GPU, which would be a number the cell cannot vouch for.
+fn cpu_temperature(components: &sysinfo::Components) -> Option<u8> {
+    let list = components.list();
+    let by = |needle: &str| {
+        list.iter()
+            .find(|c| c.label().to_ascii_lowercase().contains(needle))
+            .and_then(|c| c.temperature())
+    };
+    ["tctl", "package id", "cpu"]
+        .into_iter()
+        .find_map(by)
+        .filter(|t| t.is_finite())
+        .map(|t| t.round().clamp(0.0, 255.0) as u8)
+}
+
 fn hostname() -> String {
     std::fs::read_to_string("/etc/hostname")
         .map(|s| s.trim().to_string())
@@ -672,7 +700,14 @@ fn hostname() -> String {
 
 fn main() -> Result<(), iced_layershell::Error> {
     let style = shell::style();
-    let height = style.bar.height;
+    // The surface and the zone it reserves, in the compositor's logical
+    // pixels: design px times the target's scale (`ui_scale`), which iced
+    // also applies to everything drawn (`.scale_factor` below), so the
+    // bar lays out the same dp at every scale. A header hangs its rule's
+    // echo past the reserved height, into the window gap.
+    let scale = style.metrics.scale;
+    let height = (cp_eras_ui::bar::surface_height(&style) as f32 * scale).round() as u32;
+    let reserve = (style.bar.height as f32 * scale).round() as i32;
 
     // 0.19's `daemon` boots the state itself, as iced's own builders
     // do, and has no `remove_id` slot -- see `Message::Closed`. Its
@@ -688,6 +723,7 @@ fn main() -> Result<(), iced_layershell::Error> {
     )
     .theme(|app: &BarApp, _window| app.style)
     .style(BarApp::style)
+    .scale_factor(|app: &BarApp, _window| app.style.metrics.scale)
     .subscription(BarApp::subscription)
     .settings(Settings {
         layer_settings: LayerShellSettings {
@@ -698,7 +734,7 @@ fn main() -> Result<(), iced_layershell::Error> {
             size: Some((0, height)),
             // Reserving the height keeps tiled windows from sliding
             // under the bar.
-            exclusive_zone: height as i32,
+            exclusive_zone: reserve,
             keyboard_interactivity: KeyboardInteractivity::None,
             // Not the default `Active`, under which the event loop ends
             // with the last surface: a bar on every output, re-made as

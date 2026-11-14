@@ -118,6 +118,14 @@ pub struct Theme {
     pub polarity: Polarity,
     pub ui_font: String,
     pub colors: Roles,
+    /// `ui_scale`: native px per design px on this target (2.4 for a
+    /// 3840x2160 desktop, 3.6 for the TV fitting of the same screen,
+    /// 1.6 at 2560x1440). Top-level and optional; `None` when absent or
+    /// not a positive number, which the toolkit reads as 1.
+    pub ui_scale: Option<f32>,
+    /// `line_scale`: what the target multiplies the era's line weights
+    /// by on top of `ui_scale`. Optional, as `ui_scale`.
+    pub line_scale: Option<f32>,
 }
 
 impl Theme {
@@ -161,6 +169,8 @@ impl Theme {
                 .get("font.ui")
                 .cloned()
                 .unwrap_or_else(|| "Rajdhani".to_string()),
+            ui_scale: scale(flat.get("ui_scale")),
+            line_scale: scale(flat.get("line_scale")),
             colors: Roles {
                 bg: role("bg")?,
                 panel: role("panel")?,
@@ -196,6 +206,8 @@ impl Theme {
             variant: "reference".into(),
             polarity: Polarity::Dark,
             ui_font: "Rajdhani".into(),
+            ui_scale: None,
+            line_scale: None,
             colors: Roles {
                 bg: Rgb { r: 5, g: 3, b: 4 },
                 panel: Rgb { r: 0, g: 26, b: 51 },
@@ -211,6 +223,15 @@ impl Theme {
             },
         }
     }
+}
+
+/// A positive, finite scale, or `None`. The generator writes a bare
+/// float (`ui_scale = 2.4`); a quoted one is accepted too, since the
+/// flattener has already stripped the quotes.
+fn scale(value: Option<&String>) -> Option<f32> {
+    value
+        .and_then(|v| v.parse::<f32>().ok())
+        .filter(|v| v.is_finite() && *v > 0.0)
 }
 
 /// Flatten `[section]` + `key = "value"` into `section.key -> value`.
@@ -338,6 +359,22 @@ ornament = "#1cb39b"
         // Kitsch has no well anywhere in its references, so it declares
         // no `inset` -- absence has to survive the round trip.
         assert_eq!(x.inset, None);
+    }
+
+    #[test]
+    fn scales_are_top_level_optional_floats() {
+        let t = Theme::parse(SAMPLE).expect("sample should parse");
+        assert_eq!((t.ui_scale, t.line_scale), (None, None));
+
+        let fitted = format!("ui_scale = 3.6\nline_scale = 1.5\n{SAMPLE}");
+        let t = Theme::parse(&fitted).expect("fitted sample should parse");
+        assert_eq!((t.ui_scale, t.line_scale), (Some(3.6), Some(1.5)));
+
+        // A key under a section is not the top-level one, and nonsense
+        // is ignored rather than drawing a bar at scale zero.
+        let wrong = format!("ui_scale = 0\nline_scale = \"x\"\n{SAMPLE}\nui_scale = 2.4\n");
+        let t = Theme::parse(&wrong).expect("sample should parse");
+        assert_eq!((t.ui_scale, t.line_scale), (None, None));
     }
 
     #[test]

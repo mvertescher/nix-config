@@ -330,6 +330,15 @@ The native-source fit and held-out render comparisons are recorded in
 
 ## The bar — the one original
 
+**Superseded 2026-11-14.** The Neomil bar is now the "reference header"
+of the owner-approved desktop design, `home/themes/neomil/design`
+(`neomil-design.js`, `bar()` with `bar: 'reference'`), which is its spec;
+the code is `bar::header_bar`, `widgets::header` and
+`eras::neomil::HEADER` (crate README, "Neomil: the reference header").
+The golden `bar-neomil-1600x220.png` was re-taken from it. `bar.svg`
+below is kept as the record of the strip it replaced and no longer
+describes the Neomil bar; the other three eras' `bar.svg` still do.
+
 - `bar.svg` — the status bar: host tape, workspaces, tray, the
   wired/audio/CPU/MEM modules and the clock, at the 1600x220 geometry
   the bar golden tests render. The bar has no photo source, so this is

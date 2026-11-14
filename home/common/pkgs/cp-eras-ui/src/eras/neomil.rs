@@ -21,6 +21,7 @@ use crate::style::{
     Era, Face, Footnotes, Ground, Ink, MenuMarker, MenuRule, Metrics, Nameplate,
     PanelEcho, Selection, Style, Ticket, WindowLabel,
 };
+use crate::style::{Badge, BadgeCoat, Barcode, EchoRule, Header, HeaderGlow, TabPlate, Type};
 use crate::style::{DarkPlate, Weights};
 use crate::widgets::surface::{Corners, Cut};
 // --- login ---
@@ -109,6 +110,159 @@ pub const INVERTED_PLATE: DarkPlate = DarkPlate::new(Ink::Fixed(NAV_FILL), Ink::
 pub const INVERTED_LIT_PLATE: DarkPlate = LIT_PLATE.with_inset(Ink::Dim, WEIGHTS.inset);
 // --- end line vocabulary ---
 
+// --- header ---
+//
+// The reference header of the Neomil desktop design
+// (`home/themes/neomil/design/neomil-design.js`: `bar()` with
+// `bar: 'reference'`, `badge()`, `barcode()`, `ground()`, `INK`,
+// `TARGET.desktop`), owner-approved 2026-11-14. Every figure is the
+// design's, in dp; the design is drawn from this era's measured
+// vocabulary (line weights and inks in docs/neomil/line-weights.md), not
+// traced. Where the design writes a size as a fraction of the badge
+// (`h * 0.36`), the product for its 32 dp badge is given.
+
+/// The design's `INK.fg`: the diamond face red, which the header sets
+/// its words and figures in (the palette's `fg` is the darker RED_FILL).
+pub const HEADER_RED: iced::Color = rgb(0xef3333);
+/// `INK.badgeFace` / `INK.badgeEdge`: the dashboard header badge's face
+/// and its outline (measured #6e203a, line-weights.md).
+pub const BADGE_FACE: iced::Color = rgb(0x2a0d16);
+pub const BADGE_EDGE: iced::Color = rgb(0x701d39);
+/// `INK.onRed`: marks on the solid red badge.
+pub const ON_RED: iced::Color = rgb(0x19090a);
+/// `INK.lit`: the lit rung's face, for a badge in alarm.
+pub const LIT_FACE: iced::Color = rgb(0x551719);
+/// `INK.tabFace` / `INK.tabEdge`: the dashboard's tab plate.
+pub const TAB_FACE: iced::Color = rgb(0x171a3c);
+pub const TAB_EDGE: iced::Color = rgb(0x68232e);
+/// `INK.glow`, and the design ground's middle stop.
+pub const GLOW_TOP: iced::Color = rgb(0x131f52);
+pub const GLOW_MID: iced::Color = rgb(0x0a0a1c);
+
+/// The design's `barcode()` pattern, in modules of `h / 14`.
+const BARCODE: &[u8] = &[2, 1, 1, 3, 1, 2, 2, 1, 3, 1, 1, 2, 1, 1, 3, 2, 1, 2];
+
+/// Rajdhani at the design's default `font-weight: 500`.
+const fn ui(size: f32, track: f32) -> Type {
+    Type { face: Face::Medium, size, track, upper: true }
+}
+
+/// The bar as the design's reference header (`bar()`, `ref` true).
+pub const HEADER: Header = Header {
+    // `T.margin`.
+    margin: 40.0,
+    // `text(mx, 13, 'WORKSPACE', { size: 7.5, ls: 0.1 })`.
+    caption: ui(7.5, 0.1),
+    caption_ink: Ink::Fixed(HEADER_RED),
+    caption_baseline: 13.0,
+    workspace_caption: "WORKSPACE",
+    // The design draws no tray; its items get a group of their own
+    // beside SYSTEM rather than passing for system readings.
+    tray_caption: "TRAY",
+    system_caption: "SYSTEM",
+    workspace_badge: "LEVEL",
+    workspace_prefix: "T",
+    // `cy = 20`, `gap = 3`.
+    row_top: 20.0,
+    gap: 3.0,
+    group_gap: 12.0,
+    badge: Badge {
+        // `cw = 36`, `ch = 32`, `plate(.., { bl: 6 })`.
+        width: 36.0,
+        height: 32.0,
+        chamfer: 6.0,
+        pad: 4.0,
+        // `size: h * 0.2`, `ls: 0.12`, baseline `h * 0.36`.
+        caption: ui(6.4, 0.12),
+        caption_baseline: 11.52,
+        // `size: h * 0.42`, `font: 'wide'`, `weight: 600`, the default
+        // `ls: 0.04`, baseline `h * 0.8`.
+        value: Type { face: Face::OrbitronSemiBold, size: 13.44, track: 0.04, upper: true },
+        value_baseline: 25.6,
+        // Two thirds of the figures' size, its cap height centred where
+        // theirs is (Orbitron caps are 0.72 em).
+        word: Type { face: Face::OrbitronSemiBold, size: 9.0, track: 0.04, upper: true },
+        word_baseline: 24.0,
+        // A tray icon in the value's place: the value's cap height,
+        // centred where the figures stand.
+        icon: 12.0,
+        icon_centre: 20.8,
+        // Faces and outlines from `badge()`; the caption at `op .75`
+        // (`.9` on the solid plate).
+        rest: BadgeCoat {
+            face: Ink::Fixed(BADGE_FACE),
+            edge: Ink::Fixed(BADGE_EDGE),
+            ink: Ink::Fixed(HEADER_RED),
+            caption_alpha: 0.75,
+        },
+        on: BadgeCoat {
+            face: Ink::Fixed(HEADER_RED),
+            edge: Ink::Fixed(LINE_INK),
+            ink: Ink::Fixed(ON_RED),
+            caption_alpha: 0.9,
+        },
+        // Not in the design: the lit rung's face (LIT_PLATE) under the
+        // era's alert ink, so a warning is neither the selection nor
+        // a resting badge.
+        alert: BadgeCoat {
+            face: Ink::Fixed(LIT_FACE),
+            edge: Ink::Alert,
+            ink: Ink::Alert,
+            caption_alpha: 0.9,
+        },
+    },
+    // `tw = 250`, `th = 16`, face `fill-opacity .7`, text 8.5 at
+    // `ls: 0.08`, baseline `th * 0.72`.
+    title: TabPlate {
+        width: 250.0,
+        height: 16.0,
+        face: Ink::Fixed(TAB_FACE),
+        face_alpha: 0.7,
+        edge: Ink::Fixed(TAB_EDGE),
+        ink: Ink::Fixed(HEADER_RED),
+        text: ui(8.5, 0.08),
+        baseline: 11.52,
+        pad: 6.0,
+    },
+    title_top: 28.0,
+    // `text(kx, cy + ch * 0.62, '14:07', { size: 19, font: 'wide',
+    // weight: 600 })`, right on the margin; the status run leaves it 78.
+    clock: Type { face: Face::OrbitronSemiBold, size: 19.0, track: 0.04, upper: false },
+    clock_ink: Ink::Fixed(HEADER_RED),
+    clock_baseline: 39.84,
+    clock_block: 78.0,
+    // `text(kx, cy + ch * 0.98, 'SAT 14 NOV', { size: 7, ls: 0.12,
+    // fill: INK.tape, op: 0.85 })`.
+    date: ui(7.0, 0.12),
+    date_ink: Ink::Tape,
+    date_alpha: 0.85,
+    date_baseline: 51.36,
+    date_format: "%a %d %b",
+    // `barcode(kx - 70, 8, 70, 5, INK.dim)`.
+    barcode: Barcode { pattern: BARCODE, ink: Ink::Dim },
+    barcode_top: 8.0,
+    barcode_size: (70.0, 5.0),
+    host_gap: 6.0,
+    // The design's empty-desktop scene: `bar(T, o, 'NO WINDOW')`.
+    no_window: "NO WINDOW",
+    // `ry = bh - 1`, `hairline`, `INK.bright`; the echo `2 * u` below
+    // at `opacity .16`.
+    rule: EchoRule { ink: Ink::Fixed(LINE_INK), echo_gap: 2.0, echo_alpha: 0.16 },
+    rule_top: 61.0,
+    overhang: 2,
+    // `ground()`: the gradient `g` over the top 0.62 of the screen along
+    // (0.25, 1), and the edge vignette `v` of bg at .85 / .8.
+    glow: Some(HeaderGlow {
+        stops: [(0.0, GLOW_TOP), (0.42, GLOW_MID), (0.7, BG)],
+        skew: 0.25,
+        reach: 0.62,
+        aspect: 900.0 / 1600.0,
+        left: (0.85, 0.12),
+        right: (0.8, 0.9),
+    }),
+};
+// --- end header ---
+
 pub const BG: iced::Color = rgb(0x050304);
 /// The cold blue behind the reds. As a palette role it is unconsumed as
 /// of 2026-09-03: `bloom` is read only by `widgets::ground` under
@@ -179,7 +333,16 @@ pub fn style() -> Style {
         ground: Ground::Flat,
         chrome: Chrome::Tape,
         nameplate: Nameplate::Header,
-        // --- bar --- (docs/neomil/bar.svg, IMPLEMENTATION DELTA)
+        // --- bar ---
+        //
+        // Since 2026-11-14 the bar is the Neomil desktop design's
+        // "reference header" (`home/themes/neomil/design`, `bar()` with
+        // `bar: 'reference'`, owner-approved): drawn by `bar::header_bar`
+        // from `HEADER` below, 62 dp reserved. The strip fields that
+        // follow are what the bar was until then
+        // (docs/neomil/bar.svg, IMPLEMENTATION DELTA) and are unused
+        // while `header` is set, but for `host_tape`, `stroke` and
+        // `menu`, which the tray menu still wears.
         //
         // The SECURITY LEVEL badge row, compressed to 25px and laid
         // across the header glow every neomil screen opens with. The
@@ -188,7 +351,10 @@ pub fn style() -> Style {
         // 57), the mailbox rows (12 on 68) and the store nav (16 on
         // 62) all agree, and 15/57 * 25 is 6.
         bar: Bar {
-            height: 31,
+            // The design's `bh = 62` for the reference header: what the
+            // compositor reserves. The rule's echo hangs 2 below it
+            // (`HEADER.overhang`).
+            height: 62,
             host_tape: true,
 
             pad_left: 6.0,
@@ -208,7 +374,10 @@ pub fn style() -> Style {
             // The design sized its cells by counting characters flat.
             space_em: 0.58,
             alert_track: 0.0,
-            stroke: 1.5,
+            // The menu's lines: the GO HOME panel the menu wears measures
+            // `line` (docs/neomil/line-weights.md), not the 1.5 the
+            // strip was drawn at.
+            stroke: WEIGHTS.line,
             icon_pad: 18.0,
             label_left: false,
             face: Face::Regular,
@@ -299,6 +468,7 @@ pub fn style() -> Style {
             // and the clock are the bar's tiers.
             bold_tiers: true,
             clock_plain: None,
+            header: Some(HEADER),
 
             menu: BarMenu {
                 // The GO HOME panel of dashboard-trace: top-right

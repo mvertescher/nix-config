@@ -195,6 +195,60 @@ Modules: hostname tape, workspaces, focused window, network, audio,
 CPU, memory, date, clock, and a StatusNotifierItem tray. Every one of
 them is the same `cell`, so none of them knows which era it is in.
 
+### Neomil: the reference header
+
+Since 2026-11-14 Neomil's bar is not the strip but the "reference
+header" of the owner-approved Neomil desktop design
+(`home/themes/neomil/design`, `bar()` with `bar: 'reference'`), which
+is the spec: `WORKSPACE` over a row of `LEVEL` / `T1..Tn` badges at the
+left, the focused window in the dashboard's tab plate at the centre,
+`TRAY` and `SYSTEM` badge rows (each tray item; WIFI or NET, CPU, MEM,
+TEMP, VOL or MUT) at the right, the clock in Orbitron with the date
+under it and a barcode over it, and the full-width hairline rule with
+its echo. An era opts in with `Bar::header` (`style::Header`); the three
+strip eras set `None` and draw exactly as before.
+
+It is built from named parts in `widgets::header`, each a canvas
+painter with its parameters in the era table rather than in the bar,
+so another screen can set the same part: `badge` (`style::Badge`, a
+caption over a figure, a word or an icon, in three coats: rest, on,
+alert), `tab_plate` (`TabPlate`), `echo_rule` (`EchoRule`), `barcode`
+(`Barcode`) and the ground `glow_pixels` / `glow_at` (`HeaderGlow`).
+Neomil's figures are `eras::neomil::HEADER`, each citing the design.
+Translucent inks (the captions' .75, the plate's .7, the echo's .16) are
+mixed in sRGB against what is under them and drawn opaque, because the
+renderer blends in linear light and the browser that drew the design
+does not; measured on the echo, that is R 47 against the design's 46
+where plain alpha gave 112.
+
+The header reserves `Bar::height` (62 dp) and its surface is
+`bar::surface_height` (64 dp): the rule's echo hangs 2 dp into the
+window gap, as in the design. Workspaces are drawn as the compositor
+lists them (Hyprland's existing workspaces), the active one on the solid
+red plate; the bar has no click-to-switch and no urgent or empty state
+to show, as before.
+
+### Scale: desktop and TV
+
+An era's bar is laid out in design px (dp, the traces' 1600x900 frame).
+The target's scale is applied in one place: the window's iced scale
+factor, read from two optional top-level keys in `theme/current.toml`:
+
+- `ui_scale` -- native px per dp. 2.4 for a 3840x2160 desktop, 3.6 for
+  the TV fitting of the same screen, 1.6 at 2560x1440. Absent (or not a
+  positive number) is 1, which is how every golden is taken.
+- `line_scale` -- multiplies the era's line weights on top of
+  `ui_scale` (the header's `line` and `hairline`, the strip's and the
+  menu's `Bar::stroke`). Absent is 1.
+
+Both land on `Metrics::scale` / `Metrics::line_scale`, and apply to a
+forced `--era` too, since they describe the screen and not the era. The
+layer surface follows: its height is `round(surface_height * ui_scale)`
+and its exclusive zone `round(height * ui_scale)` logical px -- for
+Neomil 154 / 149 at 2.4, 230 / 223 at 3.6, 102 / 99 at 1.6 (the strip
+eras: 31 times the scale for both). Tray icons are decoded at their dp
+size times the scale.
+
 A per-era SVG reference at the golden geometry lives in
 `docs/<era>/bar.svg` — the same 1600x220 frame the `tests.bar.<era>`
 goldens render into, so a capture sits directly beneath the drawing
@@ -329,6 +383,12 @@ and only having both cases can catch it breaking.
 If you drive the harness by hand rather than through nix, `unset
 XDG_CONFIG_HOME` first, or you will render the "reference" screen in
 whatever era your desktop is currently sitting in.
+
+`scripts/render.sh --theme-key KEY=VALUE` adds a top-level key to the
+theme it publishes, so the bar renders at a target's scale:
+`--size 3840x528 --theme-key ui_scale=2.4` is the 4K desktop fitting of
+the 1600x220 golden, and `--size 3840x792 --theme-key ui_scale=3.6` the
+TV one.
 
 ## Status
 

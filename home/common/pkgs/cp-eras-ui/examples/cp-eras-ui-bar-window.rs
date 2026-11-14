@@ -58,7 +58,15 @@ fn sample_icon(rgb: [u8; 3]) -> image::Handle {
 /// Fixed readings. Every optional module is present, because a module
 /// that is absent from the sample is a module the golden says nothing
 /// about.
-fn sample() -> Readings {
+///
+/// The date is the same fixed day in whatever form the era's bar prints
+/// it: a header era names its `date_format`, and the strip eras keep
+/// the ISO date their goldens were taken with.
+fn sample(style: &Style) -> Readings {
+    let date = chrono::NaiveDate::from_ymd_opt(2026, 8, 23)
+        .expect("a real date")
+        .format(style.bar.header.map_or("%Y-%m-%d", |h| h.date_format))
+        .to_string();
     Readings {
         host: "nomad".to_string(),
         workspaces: (1..=6)
@@ -70,6 +78,7 @@ fn sample() -> Readings {
         window: "~/src/cp-eras-ui - nvim src/bar.rs".to_string(),
         cpu: 12,
         memory: 47,
+        temperature: Some(47),
         audio: Some(Audio {
             volume: 62,
             muted: false,
@@ -107,7 +116,7 @@ fn sample() -> Readings {
             ssid: "AFTERLIFE".to_string(),
         },
         clock: "23:41".to_string(),
-        date: "2026-08-23".to_string(),
+        date,
     }
 }
 
@@ -212,7 +221,7 @@ impl BarWindow {
             // could never exercise would only be a claim the capture
             // cannot check.
             container(bar(&self.style, &self.readings, None))
-                .height(Length::Fixed(self.style.bar.height as f32)),
+                .height(Length::Fixed(cp_eras_ui::bar::surface_height(&self.style) as f32)),
             // Flush under the bar, and right-aligned with a margin,
             // which is where the live bar puts it: the overlay surface
             // begins exactly where the bars end, and the chain hangs
@@ -262,7 +271,7 @@ fn main() -> iced::Result {
     shell::application(
         move || BarWindow {
             style,
-            readings: sample(),
+            readings: sample(&style),
             menu: sample_menu(),
         },
         BarWindow::update,
@@ -270,5 +279,9 @@ fn main() -> iced::Result {
     )
     .title(BarWindow::title)
     .window_size((1600.0, 220.0))
+    // The target's scale (`ui_scale`), as the live bar applies it: a
+    // capture at 3840 wide with `ui_scale = 2.4` lays out the same
+    // 1600 dp as the 1600 wide golden at 1.
+    .scale_factor(|window: &BarWindow| window.style.metrics.scale)
     .run()
 }

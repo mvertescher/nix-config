@@ -357,6 +357,7 @@ fn font_of(face: Face) -> iced::Font {
         Face::SemiBold => FONT_RAJDHANI_SEMIBOLD,
         Face::Bold => FONT_RAJDHANI_BOLD,
         Face::OrbitronBold => FONT_ORBITRON_BOLD,
+        Face::OrbitronSemiBold => crate::fonts::FONT_ORBITRON_SEMIBOLD,
         Face::FreeSansBold => FONT_FREE_SANS_BOLD,
         Face::CpErasKitschSansBold => FONT_CP_ERAS_KITSCH_SANS_BOLD,
         Face::Michroma => crate::fonts::FONT_MICHROMA,
@@ -1255,6 +1256,7 @@ fn levels<'a>(style: &Style, menu: &'a TrayMenu, open: &[usize]) -> Vec<Level<'a
 /// pointer, so a host placing the chain by this width gets it there
 /// for free -- and one sizing a surface to the chain needs the sum.
 pub fn menu_chain_width(style: &Style, menu: &TrayMenu, open: &[usize]) -> f32 {
+    let style = &lined(style);
     let m = &style.bar.menu;
     let levels = levels(style, menu, open);
     let panels: f32 = levels
@@ -2022,6 +2024,7 @@ fn tray_menu_inner<'a, Message: Clone + 'static>(
     on_submenu: fn(MenuPath) -> Message,
     on_hover: Option<fn(MenuPath, MenuInteraction) -> Message>,
 ) -> Element<'a, Message> {
+    let style = &lined(style);
     let m = &style.bar.menu;
     let levels = levels(style, menu, open);
 
@@ -2081,6 +2084,10 @@ pub struct Readings {
     /// Whole percent, so the bar never reflows on a decimal.
     pub cpu: u8,
     pub memory: u8,
+    /// The CPU's temperature in whole degrees Celsius, `None` where no
+    /// sensor answers. Drawn by the header layout (`Bar::header`); the
+    /// strip bars carry no module for it.
+    pub temperature: Option<u8>,
     /// `None` when no sound server answered. A machine without one is a
     /// normal state rather than a failure, so the module leaves the row
     /// instead of showing a zero it cannot vouch for.
@@ -2205,7 +2212,20 @@ fn audio_cell<'a, Message: 'static>(style: &Style, audio: &Audio) -> Slot<'a, Me
 /// the size they will be drawn, and the alternative is two constants
 /// that agree until one of them is edited.
 pub fn icon_size(style: &Style) -> f32 {
-    (style.bar.height as f32 - 12.0).clamp(10.0, 24.0)
+    match style.bar.header {
+        Some(h) => h.badge.icon,
+        None => (style.bar.height as f32 - 12.0).clamp(10.0, 24.0),
+    }
+}
+
+/// How tall the bar's surface is: [`crate::style::Bar::height`], which is
+/// what the compositor reserves, and whatever a header hangs below it.
+/// Design px; the window's scale factor takes it to pixels.
+pub fn surface_height(style: &Style) -> u32 {
+    match style.bar.header {
+        Some(h) => h.depth(style.bar.height),
+        None => style.bar.height,
+    }
 }
 
 /// One tray item drawn as its icon.
@@ -2423,6 +2443,10 @@ pub fn bar<'a, Message: Clone + 'static>(
     r: &'a Readings,
     on_tray: Option<OnTray<Message>>,
 ) -> Element<'a, Message> {
+    if let Some(header) = style.bar.header {
+        return header_bar(style, &header, r, on_tray);
+    }
+    let style = &lined(style);
     let b = &style.bar;
 
     let mut left: Vec<Slot<'a, Message>> = Vec::new();
@@ -2615,6 +2639,425 @@ pub fn bar<'a, Message: Clone + 'static>(
         .height(Length::Fill)
         .into()
 }
+
+
+// --- header ---
+//
+// The bar as a screen header (`Bar::header`): captions over rows of
+// caption-over-value badges, the focused window in a tab plate, the
+// clock with the date under it and a barcode over it, and the
+// full-width rule with its echo -- the Neomil desktop design's
+// "reference header". Laid out here; every part is drawn by
+// `widgets::header` from the era's `Header` table, so nothing below
+// names a figure or an era.
+
+use crate::style::Header;
+use crate::widgets::header::{self as parts, Anchor as At, Value, Wear as Coat};
+
+/// One badge of the header, measured.
+#[derive(Debug, Clone)]
+struct Cell {
+    caption: String,
+    value: Value,
+    wear: Coat,
+    width: f32,
+}
+
+impl Cell {
+    fn new(h: &Header, caption: impl Into<String>, value: Value, wear: Coat) -> Cell {
+        let caption = caption.into();
+        let width = parts::badge_width(&h.badge, &caption, &value);
+        Cell { caption, value, wear, width }
+    }
+
+    fn text(h: &Header, caption: impl Into<String>, value: impl Into<String>, wear: Coat) -> Cell {
+        Cell::new(h, caption, Value::Text(value.into()), wear)
+    }
+}
+
+/// The header's badges, as the readings make them.
+struct Cells {
+    workspaces: Vec<Cell>,
+    tray: Vec<Cell>,
+    system: Vec<Cell>,
+}
+
+fn header_cells(h: &Header, r: &Readings) -> Cells {
+    let workspaces = r
+        .workspaces
+        .iter()
+        .map(|ws| {
+            Cell::text(
+                h,
+                h.workspace_badge,
+                format!("{}{}", h.workspace_prefix, ws.id),
+                if ws.active { Coat::On } else { Coat::Rest },
+            )
+        })
+        .collect();
+
+    // An item's own name heads its icon; one with no icon is its name,
+    // under a caption saying what it is.
+    let tray = r
+        .tray
+        .iter()
+        .map(|item| {
+            let wear = if item.attention { Coat::Alert } else { Coat::Rest };
+            let name = clip(&item.label, 6);
+            match &item.icon {
+                Some(icon) => Cell::new(h, name, Value::Icon(icon.clone()), wear),
+                None => Cell::new(h, "APP", Value::Word(name), wear),
+            }
+        })
+        .collect();
+
+    // Built by pushing, because audio, network and temperature are
+    // absent -- not blank -- when their subsystem has nothing to say.
+    // The ones that are always there come last, nearest the clock, so
+    // a module appearing does not move them.
+    let mut system = Vec::new();
+    match &r.network {
+        Network::Unknown => {}
+        Network::Offline => system.push(Cell::text(h, "NET", "--", Coat::Alert)),
+        Network::Wired { interface } => {
+            system.push(Cell::new(h, "NET", Value::Word(clip(interface, 12)), Coat::Rest))
+        }
+        Network::Wireless { interface, ssid } => {
+            let name = if ssid.is_empty() { interface } else { ssid };
+            system.push(Cell::new(h, "WIFI", Value::Word(clip(name, 12)), Coat::Rest));
+        }
+    }
+    system.push(Cell::text(h, "CPU", r.cpu.to_string(), Coat::Rest));
+    system.push(Cell::text(h, "MEM", r.memory.to_string(), Coat::Rest));
+    if let Some(temperature) = r.temperature {
+        system.push(Cell::text(h, "TEMP", temperature.to_string(), Coat::Rest));
+    }
+    if let Some(audio) = &r.audio {
+        let volume = audio.volume.min(999).to_string();
+        system.push(if audio.muted {
+            Cell::text(h, "MUT", volume, Coat::Alert)
+        } else {
+            Cell::text(h, "VOL", volume, Coat::Rest)
+        });
+    }
+    Cells { workspaces, tray, system }
+}
+
+/// Where the right-hand groups fall, as distances from the bar's right
+/// edge to each badge's left edge, in document order: `(tray, system)`.
+/// Shared by the drawing and the tray's hit areas, so the two cannot
+/// disagree about where a cell is.
+fn right_offsets(h: &Header, cells: &Cells, clock: &str, date: &str) -> (Vec<f32>, Vec<f32>) {
+    let block = h
+        .clock_block
+        .max(parts::measure(&h.clock, &parts::cased(&h.clock, clock)))
+        .max(parts::measure(&h.date, &parts::cased(&h.date, date)));
+    // The design: `rx = W - mx - 78 - n * (sw + gap)`, so the last badge
+    // ends a gap short of the clock's block.
+    let place = |group: &[Cell], edge: &mut f32| -> Vec<f32> {
+        let mut out = vec![0.0; group.len()];
+        for (i, cell) in group.iter().enumerate().rev() {
+            *edge += cell.width;
+            out[i] = *edge;
+            *edge += h.gap;
+        }
+        out
+    };
+    let mut edge = h.margin + block + h.gap;
+    let system = place(&cells.system, &mut edge);
+    if !cells.system.is_empty() {
+        edge += h.group_gap - h.gap;
+    }
+    let tray = place(&cells.tray, &mut edge);
+    (tray, system)
+}
+
+/// Everything the header draws but its ground, on one canvas.
+#[derive(Debug, Clone)]
+struct HeaderPlate {
+    style: Style,
+    h: Header,
+    cells: std::rc::Rc<Cells>,
+    title: String,
+    clock: String,
+    date: String,
+    host: Option<String>,
+    /// A digest of everything above, so the canvas re-tessellates only
+    /// when a reading changes rather than on every pointer move.
+    key: u64,
+}
+
+impl std::fmt::Debug for Cells {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Cells")
+            .field("workspaces", &self.workspaces.len())
+            .field("tray", &self.tray.len())
+            .field("system", &self.system.len())
+            .finish()
+    }
+}
+
+#[derive(Default)]
+struct PlateCache {
+    cache: canvas::Cache,
+    key: std::cell::Cell<u64>,
+}
+
+impl HeaderPlate {
+    fn paint(&self, frame: &mut Frame, w: f32) {
+        let (style, h) = (&self.style, &self.h);
+        // What a translucent part is printed over: the glow, or the
+        // era's ground where the header declares none.
+        let ground = |x: f32, y: f32| match &h.glow {
+            Some(g) => parts::glow_at(g, style.palette.bg, w, x, y),
+            None => style.palette.bg,
+        };
+        let lines = style.metrics.weights;
+        let line = lines.line * style.metrics.line_scale;
+        let hairline = lines.hairline * style.metrics.line_scale;
+        let caption_ink = h.caption_ink.of(&style.palette);
+        let caption = |frame: &mut Frame, text: &str, x: f32, anchor: At| {
+            parts::set(frame, &h.caption, &parts::cased(&h.caption, text), x, h.caption_baseline, anchor, caption_ink);
+        };
+        let badge = |frame: &mut Frame, cell: &Cell, x: f32| {
+            parts::badge(frame, style, &h.badge, line, x, h.row_top, cell.width, &cell.caption, &cell.value, cell.wear);
+        };
+
+        // Left: WORKSPACE over the workspace badges.
+        caption(frame, h.workspace_caption, h.margin, At::Start);
+        let mut x = h.margin;
+        for cell in &self.cells.workspaces {
+            badge(frame, cell, x);
+            x += cell.width + h.gap;
+        }
+        let left_end = (x - h.gap)
+            .max(h.margin + parts::measure(&h.caption, h.workspace_caption));
+
+        // Right: the clock on the margin, the date under it and the
+        // barcode over it, then SYSTEM and TRAY leftwards.
+        let kx = w - h.margin;
+        parts::set(frame, &h.clock, &parts::cased(&h.clock, &self.clock), kx, h.clock_baseline, At::End, h.clock_ink.of(&style.palette));
+        let date = parts::cased(&h.date, &self.date);
+        let date_ink = parts::over(
+            h.date_ink.of(&style.palette),
+            h.date_alpha,
+            ground(kx - parts::measure(&h.date, &date) / 2.0, h.date_baseline),
+        );
+        parts::set(frame, &h.date, &date, kx, h.date_baseline, At::End, date_ink);
+        let (bw, bh) = h.barcode_size;
+        parts::barcode(frame, style, &h.barcode, kx - bw, h.barcode_top, bw, bh);
+
+        let (tray, system) = right_offsets(h, &self.cells, &self.clock, &self.date);
+        let mut right_start = kx - parts::measure(&h.clock, &parts::cased(&h.clock, &self.clock));
+        let mut group = |frame: &mut Frame, cells: &[Cell], offsets: &[f32], name: &str| {
+            for (cell, offset) in cells.iter().zip(offsets) {
+                badge(frame, cell, w - offset);
+            }
+            if let Some(first) = offsets.first() {
+                caption(frame, name, w - first, At::Start);
+                right_start = w - first;
+            }
+        };
+        group(frame, &self.cells.system, &system, h.system_caption);
+        let system_caption_end = system
+            .first()
+            .map(|first| w - first + parts::measure(&h.caption, h.system_caption));
+        group(frame, &self.cells.tray, &tray, h.tray_caption);
+
+        // The host, on the caption line ending short of the barcode, if
+        // it clears the SYSTEM caption.
+        if let Some(host) = &self.host {
+            let end = kx - bw - h.host_gap;
+            let host = parts::cased(&h.caption, host);
+            let start = end - parts::measure(&h.caption, &host);
+            if system_caption_end.is_none_or(|c| start >= c + h.host_gap) {
+                caption(frame, &host, end, At::End);
+            }
+        }
+
+        // Centre: the title plate on the bar's centre, narrowed to keep
+        // a group's gap from either side rather than overlap them.
+        let (lo, hi) = (left_end + h.group_gap, right_start - h.group_gap);
+        let width = h.title.width.min(hi - lo);
+        if width >= h.title.height * 2.0 {
+            let x = (w / 2.0 - width / 2.0).clamp(lo, hi - width);
+            parts::tab_plate(frame, style, &h.title, line, x, h.title_top, width, &self.title, &ground);
+        }
+
+        // Foot: the rule margin to margin, its echo under it.
+        parts::echo_rule(frame, style, &h.rule, hairline, h.margin, w - h.margin, h.rule_top, &ground);
+    }
+}
+
+impl<Message> canvas::Program<Message, Style> for HeaderPlate {
+    type State = PlateCache;
+
+    fn draw(
+        &self,
+        state: &Self::State,
+        renderer: &Renderer,
+        _theme: &Style,
+        bounds: Rectangle,
+        _cursor: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        use std::hash::{Hash, Hasher};
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        self.key.hash(&mut hasher);
+        bounds.width.to_bits().hash(&mut hasher);
+        bounds.height.to_bits().hash(&mut hasher);
+        let key = hasher.finish();
+        if state.key.get() != key {
+            state.cache.clear();
+            state.key.set(key);
+        }
+        vec![state.cache.draw(renderer, bounds.size(), |frame| self.paint(frame, bounds.width))]
+    }
+}
+
+/// The header's ground: [`crate::style::HeaderGlow`] computed at the
+/// bar's own pixels and drawn as one image, under [`HeaderPlate`]'s
+/// canvas (a canvas draws its images over its meshes).
+#[derive(Debug, Clone, Copy)]
+struct Glow {
+    style: Style,
+    glow: crate::style::HeaderGlow,
+}
+
+#[derive(Default)]
+struct GlowCache(std::cell::RefCell<Option<((u32, u32, u32), image::Handle)>>);
+
+impl<Message> canvas::Program<Message, Style> for Glow {
+    type State = GlowCache;
+
+    fn draw(
+        &self,
+        state: &Self::State,
+        renderer: &Renderer,
+        _theme: &Style,
+        bounds: Rectangle,
+        _cursor: mouse::Cursor,
+    ) -> Vec<canvas::Geometry> {
+        let mut frame = Frame::new(renderer, bounds.size());
+        // At the window's own pixels, so the scale factor never stretches
+        // the gradient; capped, since a ground this smooth gains nothing
+        // past it.
+        let scale = self.style.metrics.scale.clamp(0.25, 8.0);
+        let px = (bounds.width * scale).round().clamp(1.0, 8192.0) as u32;
+        let py = (bounds.height * scale).round().clamp(1.0, 2048.0) as u32;
+        let key = (px, py, bounds.width.to_bits());
+        let mut slot = state.0.borrow_mut();
+        if slot.as_ref().is_none_or(|(k, _)| *k != key) {
+            let pixels = parts::glow_pixels(&self.glow, self.style.palette.bg, bounds.width, bounds.height, px, py);
+            *slot = Some((key, image::Handle::from_rgba(px, py, pixels)));
+        }
+        if let Some((_, handle)) = slot.as_ref() {
+            frame.draw_image(
+                Rectangle { x: 0.0, y: 0.0, width: bounds.width, height: bounds.height },
+                canvas::Image::new(handle.clone()).filter_method(image::FilterMethod::Linear),
+            );
+        }
+        vec![frame.into_geometry()]
+    }
+}
+
+/// The bar as a header. See the block comment above.
+fn header_bar<'a, Message: Clone + 'static>(
+    style: &Style,
+    h: &Header,
+    r: &'a Readings,
+    on_tray: Option<OnTray<Message>>,
+) -> Element<'a, Message> {
+    use std::hash::{Hash, Hasher};
+
+    let cells = header_cells(h, r);
+    let title = if r.window.is_empty() { h.no_window.to_string() } else { r.window.clone() };
+    let host = (style.bar.host_tape && !r.host.is_empty()).then(|| r.host.clone());
+
+    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+    for cell in cells.workspaces.iter().chain(&cells.tray).chain(&cells.system) {
+        cell.caption.hash(&mut hasher);
+        (cell.wear as u8).hash(&mut hasher);
+        match &cell.value {
+            Value::Text(text) => (0u8, text).hash(&mut hasher),
+            Value::Word(text) => (1u8, text).hash(&mut hasher),
+            Value::Icon(handle) => handle.id().hash(&mut hasher),
+        }
+        // Group boundaries move badges too.
+        0xffu8.hash(&mut hasher);
+    }
+    (cells.workspaces.len(), cells.tray.len(), cells.system.len()).hash(&mut hasher);
+    (&title, &r.clock, &r.date, &host).hash(&mut hasher);
+    style.metrics.line_scale.to_bits().hash(&mut hasher);
+
+    let (tray_offsets, _) = right_offsets(h, &cells, &r.clock, &r.date);
+    let tray_widths: Vec<f32> = cells.tray.iter().map(|cell| cell.width).collect();
+
+    let plate = HeaderPlate {
+        style: *style,
+        h: *h,
+        cells: std::rc::Rc::new(cells),
+        title,
+        clock: r.clock.clone(),
+        date: r.date.clone(),
+        host,
+        key: hasher.finish(),
+    };
+
+    let mut layers = stack![];
+    if let Some(glow) = h.glow {
+        layers = layers.push(canvas(Glow { style: *style, glow }).width(Length::Fill).height(Length::Fill));
+    }
+    layers = layers.push(canvas(plate).width(Length::Fill).height(Length::Fill));
+
+    // The tray cells' hit areas, over the badges the canvas drew: a row
+    // pinned to the right edge at the same offsets.
+    if let (Some(on_tray), Some(&last)) = (on_tray, tray_offsets.last()) {
+        let mut hits = row![Space::new().width(Length::Fill).height(Length::Shrink)];
+        for (index, (&offset, &width)) in tray_offsets.iter().zip(&tray_widths).enumerate() {
+            if index > 0 {
+                let gap = tray_offsets[index - 1] - tray_widths[index - 1] - offset;
+                hits = hits.push(Space::new().width(Length::Fixed(gap.max(0.0))).height(Length::Shrink));
+            }
+            hits = hits.push(
+                mouse_area(
+                    Space::new()
+                        .width(Length::Fixed(width))
+                        .height(Length::Fixed(h.badge.height)),
+                )
+                .on_press(on_tray(index, TrayAction::Activate))
+                .on_middle_press(on_tray(index, TrayAction::Secondary))
+                .on_right_press(on_tray(index, TrayAction::Context))
+                .on_scroll(move |delta| on_tray(index, TrayAction::Scroll(detents(delta))))
+                .interaction(mouse::Interaction::Pointer),
+            );
+        }
+        let tail = last - tray_widths[tray_widths.len() - 1];
+        hits = hits.push(Space::new().width(Length::Fixed(tail.max(0.0))).height(Length::Shrink));
+        layers = layers.push(
+            container(hits)
+                .padding(Padding::ZERO.top(h.row_top))
+                .width(Length::Fill)
+                .height(Length::Fill),
+        );
+    }
+
+    container(layers).width(Length::Fill).height(Length::Fill).into()
+}
+
+/// The style with the target's `line_scale` applied to the strip's and
+/// the menu's lines (the header applies it to the era's weights itself).
+fn lined(style: &Style) -> Style {
+    let mut s = *style;
+    let k = s.metrics.line_scale;
+    if k != 1.0 {
+        s.bar.stroke *= k;
+        if let Some(stroke) = s.bar.window.stroke.as_mut() {
+            *stroke *= k;
+        }
+    }
+    s
+}
+// --- end header ---
 
 #[cfg(test)]
 mod tests {
@@ -2878,5 +3321,73 @@ mod tests {
             Cut::Chamfer { x: 10.0, y: 7.0 }
         );
         assert_eq!(cell(Era::Neokitsch).top_left, Cut::Round { radius: 3.0 });
+    }
+
+    /// Neomil's bar is the design's reference header; the other three
+    /// are the strip they were, at the height they were.
+    #[test]
+    fn only_neomil_draws_the_header_and_its_surface_hangs_past_its_zone() {
+        for era in Era::ALL {
+            let s = crate::eras::style(era);
+            match era {
+                Era::Neomil => {
+                    assert_eq!(s.bar.height, 62);
+                    assert_eq!(surface_height(&s), 64);
+                }
+                _ => {
+                    assert!(s.bar.header.is_none());
+                    assert_eq!(s.bar.height, 31);
+                    assert_eq!(surface_height(&s), 31);
+                }
+            }
+            assert_eq!((s.metrics.scale, s.metrics.line_scale), (1.0, 1.0));
+        }
+    }
+
+    fn readings() -> Readings {
+        Readings {
+            workspaces: (1..=3).map(|id| Workspace { id, active: id == 2 }).collect(),
+            cpu: 12,
+            memory: 47,
+            temperature: None,
+            audio: Some(Audio { volume: 62, muted: true }),
+            network: Network::Unknown,
+            clock: "23:41".into(),
+            date: "Sun 23 Aug".into(),
+            ..Readings::default()
+        }
+    }
+
+    #[test]
+    fn the_header_badges_follow_the_readings() {
+        let h = style().bar.header.expect("neomil header");
+        let cells = header_cells(&h, &readings());
+        let wears: Vec<_> = cells.workspaces.iter().map(|c| c.wear).collect();
+        assert_eq!(wears, [Coat::Rest, Coat::On, Coat::Rest]);
+        assert!(matches!(&cells.workspaces[1].value, Value::Text(t) if t == "T2"));
+        // No network reading and no sensor: no badge, not a blank one.
+        // The muted sink is the one alarm.
+        let captions: Vec<_> = cells.system.iter().map(|c| c.caption.as_str()).collect();
+        assert_eq!(captions, ["CPU", "MEM", "MUT"]);
+        assert_eq!(cells.system[2].wear, Coat::Alert);
+        assert!(cells.tray.is_empty());
+    }
+
+    /// The tray's hit areas are laid out from the same offsets the
+    /// canvas draws at: the system run ends a gap short of the clock's
+    /// block, and the tray a group gap short of the system run.
+    #[test]
+    fn the_right_groups_hang_off_the_clock_block() {
+        crate::fonts::ensure_test_fonts();
+        let h = style().bar.header.expect("neomil header");
+        let mut r = readings();
+        r.tray = vec![TrayItem { label: "SYNC".into(), icon: None, attention: false }];
+        let cells = header_cells(&h, &r);
+        let (tray, system) = right_offsets(&h, &cells, &r.clock, &r.date);
+        let last = cells.system.last().unwrap();
+        assert_eq!(system.last().copied(), Some(h.margin + h.clock_block + h.gap + last.width));
+        let run: f32 = cells.system.iter().map(|c| c.width + h.gap).sum::<f32>() - h.gap;
+        assert!((system[0] - (h.margin + h.clock_block + h.gap + run)).abs() < 1e-3);
+        assert!((tray[0] - (system[0] + h.group_gap + cells.tray[0].width)).abs() < 1e-3);
     }
 }

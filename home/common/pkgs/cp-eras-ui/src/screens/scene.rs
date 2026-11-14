@@ -289,7 +289,7 @@ impl OutlineCache {
 /// The baseline fraction of a face.
 fn baseline(face: Face) -> f32 {
     match face {
-        Face::OrbitronBold => ORBITRON_BASELINE,
+        Face::OrbitronBold | Face::OrbitronSemiBold => ORBITRON_BASELINE,
         Face::FreeSansBold | Face::CpErasKitschSansBold => FREE_SANS_BASELINE,
         Face::Michroma => MICHROMA_BASELINE,
         Face::KronaOne => KRONA_ONE_BASELINE,
@@ -1065,6 +1065,7 @@ impl<M> Scene<M> {
             Face::SemiBold => crate::fonts::FONT_RAJDHANI_SEMIBOLD,
             Face::Bold => crate::fonts::FONT_RAJDHANI_BOLD,
             Face::OrbitronBold => crate::fonts::FONT_ORBITRON_BOLD,
+            Face::OrbitronSemiBold => crate::fonts::FONT_ORBITRON_SEMIBOLD,
             Face::FreeSansBold => crate::fonts::FONT_FREE_SANS_BOLD,
             Face::CpErasKitschSansBold => crate::fonts::FONT_CP_ERAS_KITSCH_SANS_BOLD,
             Face::Michroma => crate::fonts::FONT_MICHROMA,

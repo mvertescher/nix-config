@@ -263,6 +263,7 @@ pub fn style() -> Style {
             alert_suffix: None,
             bold_tiers: false,
             clock_plain: None,
+            header: None,
 
             menu: BarMenu {
                 panel: Dress {

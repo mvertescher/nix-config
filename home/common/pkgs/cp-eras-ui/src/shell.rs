@@ -62,7 +62,14 @@ pub fn style_for(era: Option<Era>) -> Style {
 
 fn style_with_theme(era: Option<Era>, theme: &crate::theme::Theme) -> Style {
     match era {
-        Some(era) if Era::parse(&theme.era) != Some(era) => era.style(),
+        // The scale is the target's, not the era's: a forced era on a TV
+        // is still drawn at the TV's scale.
+        Some(era) if Era::parse(&theme.era) != Some(era) => {
+            let mut style = era.style();
+            style.metrics.scale = theme.ui_scale.unwrap_or(1.0);
+            style.metrics.line_scale = theme.line_scale.unwrap_or(1.0);
+            style
+        }
         _ => Style::from_theme(theme),
     }
 }

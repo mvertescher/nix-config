@@ -135,6 +135,10 @@ pub enum Face {
     SemiBold,
     Bold,
     OrbitronBold,
+    /// Orbitron 600: the wide face the Neomil desktop design sets its
+    /// header values and clock in (`home/themes/neomil/design`,
+    /// `font: 'wide', weight: 600`).
+    OrbitronSemiBold,
     FreeSansBold,
     CpErasKitschSansBold,
     /// Michroma Regular: Kitsch's wide extended section labels.
@@ -478,6 +482,13 @@ pub struct Bar {
     pub clock_plain: Option<(u16, Face)>,
 
     pub menu: BarMenu,
+
+    /// The bar drawn as a screen header instead of a strip of modules:
+    /// captions over a row of badges, a title plate, a clock with the
+    /// date under it, and the full-width rule. `None` in every era whose
+    /// bar is the strip; when set, everything above but `height`,
+    /// `host_tape`, `stroke` and `menu` is unused. See [`Header`].
+    pub header: Option<Header>,
 }
 
 impl BarMenu {
@@ -552,6 +563,7 @@ impl Default for Bar {
             alert_suffix: None,
             bold_tiers: false,
             clock_plain: None,
+            header: None,
 
             menu: BarMenu {
                 panel: Dress {
@@ -593,6 +605,196 @@ impl Default for Bar {
         }
     }
 }
+
+// --- header ---
+//
+// The reference header: the screen header the Neomil recreations open
+// with (captions over a LEVEL badge row, a tab plate, the full-width
+// rule), as the desktop bar (`home/themes/neomil/design`, `bar()` with
+// `bar: 'reference'`). Each part is a named component with its own
+// parameters, drawn by `widgets::header`, so a screen other than the bar
+// can set the same badge, plate, rule or barcode from the era table.
+// Everything is in design px (dp); the target's scale is applied once,
+// by the window (`Metrics::scale`).
+
+/// A run of type as the header sets it: face, size and tracking.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Type {
+    pub face: Face,
+    pub size: f32,
+    /// Letter-spacing in ems, as SVG `letter-spacing` (added after every
+    /// glyph, the last included).
+    pub track: f32,
+    /// Set in capitals whatever the reading's own case.
+    pub upper: bool,
+}
+
+/// One state of a [`Badge`]: its face, outline and marks.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct BadgeCoat {
+    pub face: Ink,
+    pub edge: Ink,
+    pub ink: Ink,
+    /// Opacity of the caption over the face; the value is always solid.
+    pub caption_alpha: f32,
+}
+
+/// A caption-over-value cell: the dashboard's SECURITY LEVEL badge, a
+/// small word above a figure set in the wide face, on a plate cut at
+/// the bottom-left. The header's workspaces and status readings are all
+/// this one component.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Badge {
+    /// The cell, before a value that outgrows it widens it.
+    pub width: f32,
+    pub height: f32,
+    /// The bottom-left chamfer, the only corner the era cuts on a badge.
+    pub chamfer: f32,
+    /// The least air either side of a caption or value that outgrows
+    /// `width`.
+    pub pad: f32,
+    pub caption: Type,
+    /// Baselines from the cell's top.
+    pub caption_baseline: f32,
+    pub value: Type,
+    pub value_baseline: f32,
+    /// A value that is a word rather than a figure (a network's name, a
+    /// tray item with no icon): smaller, so one long name does not take
+    /// the row. Not in the design, whose badges hold only figures.
+    pub word: Type,
+    pub word_baseline: f32,
+    /// A pixmap standing in for the value (a tray icon): its side, and
+    /// the height of its centre from the cell's top.
+    pub icon: f32,
+    pub icon_centre: f32,
+    pub rest: BadgeCoat,
+    /// The selected badge: the solid red plate.
+    pub on: BadgeCoat,
+    /// A reading that is a warning (a muted sink, no route out, a tray
+    /// item asking to be looked at).
+    pub alert: BadgeCoat,
+}
+
+/// The dashboard's tab plate, holding one line of text: square, a
+/// translucent face, outlined at the era's `line`.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct TabPlate {
+    /// The plate's width when there is room for it; it narrows to fit
+    /// between its neighbours rather than overlap them.
+    pub width: f32,
+    pub height: f32,
+    pub face: Ink,
+    pub face_alpha: f32,
+    pub edge: Ink,
+    pub ink: Ink,
+    pub text: Type,
+    pub baseline: f32,
+    /// Air either side of the text before it is ellipsised.
+    pub pad: f32,
+}
+
+/// A full-width rule printed with one faint echo copy beneath it.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct EchoRule {
+    pub ink: Ink,
+    /// How far below the rule's top edge the echo's top edge sits.
+    pub echo_gap: f32,
+    pub echo_alpha: f32,
+}
+
+/// The era's barcode strip: alternate bars and spaces of `pattern`
+/// modules, a module being `height / 14` wide (the design's ratio),
+/// repeated until the strip is full.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Barcode {
+    pub pattern: &'static [u8],
+    pub ink: Ink,
+}
+
+/// The top-of-screen glow the header sits in: the design's ground, a
+/// skewed linear gradient over the top of the screen with the left and
+/// right edges darkened toward `bg`, sampled at the bar's own pixels.
+///
+/// In fractions of the screen: the gradient fills the top `reach` of
+/// it and runs along `(skew, 1)` in that box (SVG `objectBoundingBox`),
+/// and the screen is taken to be `aspect` (height / width) of the bar's
+/// width, because the bar knows its width and not the output's height.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HeaderGlow {
+    pub stops: [(f32, Color); 3],
+    pub skew: f32,
+    pub reach: f32,
+    pub aspect: f32,
+    /// `(alpha at the left edge, where it reaches 0)` and the same for
+    /// the right, of `bg` over the gradient.
+    pub left: (f32, f32),
+    pub right: (f32, f32),
+}
+
+/// The bar as a screen header. All positions are dp from the bar's
+/// top-left, or from its right edge for the right-hand group.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Header {
+    /// The header's side margin: the captions, the badge rows and the
+    /// rule all start and end on it.
+    pub margin: f32,
+    /// The group captions (`WORKSPACE`, `SYSTEM`) and their baseline.
+    pub caption: Type,
+    pub caption_ink: Ink,
+    pub caption_baseline: f32,
+    pub workspace_caption: &'static str,
+    pub tray_caption: &'static str,
+    pub system_caption: &'static str,
+    /// The caption on every workspace badge, and the prefix before its
+    /// number (`LEVEL` / `T3`).
+    pub workspace_badge: &'static str,
+    pub workspace_prefix: &'static str,
+    /// Top of the badge rows, the gap between badges, and between the
+    /// tray's group and the system's.
+    pub row_top: f32,
+    pub gap: f32,
+    pub group_gap: f32,
+    pub badge: Badge,
+    pub title: TabPlate,
+    pub title_top: f32,
+    /// The clock, right-aligned on the margin, and the room the right
+    /// group leaves it.
+    pub clock: Type,
+    pub clock_ink: Ink,
+    pub clock_baseline: f32,
+    pub clock_block: f32,
+    pub date: Type,
+    pub date_ink: Ink,
+    pub date_alpha: f32,
+    pub date_baseline: f32,
+    /// `strftime` for the date reading (chrono), set in `date`'s case.
+    pub date_format: &'static str,
+    pub barcode: Barcode,
+    /// The barcode strip's top, width and height, right-aligned on the
+    /// margin above the clock.
+    pub barcode_top: f32,
+    pub barcode_size: (f32, f32),
+    /// The hostname (`Bar::host_tape`), set in the caption type on the
+    /// caption baseline, ending this far left of the barcode.
+    pub host_gap: f32,
+    /// What the title plate says when no window has focus.
+    pub no_window: &'static str,
+    pub rule: EchoRule,
+    /// The rule's top edge.
+    pub rule_top: f32,
+    /// How far the surface runs below `Bar::height`, which is what the
+    /// compositor reserves: the rule's echo hangs into the window gap.
+    pub overhang: u32,
+    pub glow: Option<HeaderGlow>,
+}
+
+impl Header {
+    /// Everything the bar draws: its reserved height and the overhang.
+    pub fn depth(&self, height: u32) -> u32 {
+        height + self.overhang
+    }
+}
+// --- end header ---
 
 /// Where a card carries its name. Structural rather than decorative:
 /// three eras head their cards, neokitsch foots them.
@@ -744,6 +946,16 @@ pub struct Metrics {
     pub text_body: u16,
     pub text_caption: u16,
     pub text_title: u16,
+    /// Native px per design px for the target this runs on: the one
+    /// number a desktop and a TV fitting of the same era differ by
+    /// (`ui_scale` in `theme/current.toml`; 1 when absent, which draws
+    /// one dp to one logical px, as every golden is taken). Applied by
+    /// the window as iced's scale factor, so nothing measured in dp
+    /// restates it.
+    pub scale: f32,
+    /// What the target multiplies the era's line weights by on top of
+    /// `scale` (`line_scale`; 1 when absent). Read by the bar.
+    pub line_scale: f32,
 }
 
 impl Default for Metrics {
@@ -756,6 +968,8 @@ impl Default for Metrics {
             text_body: 14,
             text_caption: 9,
             text_title: 19,
+            scale: 1.0,
+            line_scale: 1.0,
         }
     }
 }
@@ -1060,6 +1274,8 @@ impl Style {
         let era = named_era.unwrap_or(Era::Neomil);
         let mut style = era.style();
         style.palette = style.palette.with_theme(theme);
+        style.metrics.scale = theme.ui_scale.unwrap_or(1.0);
+        style.metrics.line_scale = theme.line_scale.unwrap_or(1.0);
         if named_era != Some(era) || theme.variant != "reference" {
             style.dashboard_reference_fg = None;
             style.store_reference_fg = None;

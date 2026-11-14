@@ -16,6 +16,15 @@
          docs/neomil/store-trace.svg      (images/img-09-store.png)
          docs/neomil/bar.svg              (original composition; used only
                                            as a pointer back into the four)
+       Header parts as code (2026-11-14): the dashboard header badge,
+       tab plate, full-width rule (with its echo) and barcode tape are
+       now reusable painters in src/widgets/header.rs (badge, tab_plate,
+       echo_rule, barcode), parameterised by style::{Badge, TabPlate,
+       EchoRule, Barcode}; Neomil's values are eras::neomil::HEADER, taken
+       from the desktop design (home/themes/neomil/design), which drew
+       them from this sheet's badge and tab plate and from
+       docs/neomil/line-weights.md. The status bar is their first user.
+
        All four traces are gated against their photos (docs/PIPELINE.md
        G1i). Those gates measure layout, not detail completeness. The
        dashboard examples were re-measured against their source in 2026-09-14

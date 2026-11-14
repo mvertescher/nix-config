@@ -86,6 +86,14 @@ pub const FONT_ORBITRON_MEDIUM: iced::Font = iced::Font {
     style: iced::font::Style::Normal,
 };
 
+/// Orbitron 600, the Neomil header's wide face (`Face::OrbitronSemiBold`).
+pub const FONT_ORBITRON_SEMIBOLD: iced::Font = iced::Font {
+    family: iced::font::Family::Name("Orbitron"),
+    weight: iced::font::Weight::Semibold,
+    stretch: iced::font::Stretch::Normal,
+    style: iced::font::Style::Normal,
+};
+
 pub const FONT_ORBITRON_BOLD: iced::Font = iced::Font {
     family: iced::font::Family::Name("Orbitron"),
     weight: iced::font::Weight::Bold,
