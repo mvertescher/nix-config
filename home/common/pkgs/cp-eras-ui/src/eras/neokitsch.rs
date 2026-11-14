@@ -3123,3 +3123,29 @@ mod dashboard_tests {
         assert!(!PANEL_COPY.iter().any(|line| line.contains("Ut enim")));
     }
 }
+
+// --- print -----------------------------------------------------------------
+/// Neo-kitsch's print material (`crate::print`; `docs/print-overlay.md`,
+/// "Registration copies, measured 2026-11-14"). Bloom-aware fit on 9 sites
+/// of the dashboard and login: two copies, copy 1 0.60 % across / 0.60 %
+/// down, copy 2 1.57 % across (four sites within 0.0002) / about 1.5 % down,
+/// opacity about 0.21 and 0.12, blur sigma about 1.7 native px; normal alpha
+/// fits better than lighten on every usable site. The glow and the copies'
+/// diagonal hatching are not drawn by this pass. Grain and fill scanlines
+/// not measured.
+pub const PRINT: crate::print::Print = crate::print::Print {
+    echo: [
+        crate::print::Echo { kx: 0.0060, ky: 0.0060, gain: 0.21 },
+        crate::print::Echo { kx: 0.0157, ky: 0.0150, gain: 0.12 },
+        crate::print::Echo::NONE,
+    ],
+    echo_centre: (800.0, 450.0),
+    echo_blend: crate::print::Blend::Over,
+    echo_soft: 0.7,
+    echo_lift: (0.02, 0.10),
+    echo_texture: crate::print::Texture::FLAT,
+    echo_gate: (0.60, 0.75),
+    echo_gate_radius: 6.0,
+    ..crate::print::Print::OFF
+};
+// --- end print -------------------------------------------------------------

@@ -3283,3 +3283,29 @@ mod dashboard_feedback_tests {
         assert!(!left.iter().zip(right).any(|(a, b)| *a && b));
     }
 }
+
+// --- print -----------------------------------------------------------------
+/// Kitsch's print material (`crate::print`; `docs/print-overlay.md`,
+/// "Registration copies, measured 2026-11-14"). Bloom-aware fit on 7 sites
+/// of the dashboard and login: two copies, copy 1 0.60 % across / 0.65 %
+/// down, copy 2 1.58 % across (down scattered 0.6-2.9 %, about 1.8 %),
+/// opacity about 0.28 and 0.08 (sites 0.16-0.62, 0.04-0.23), blur sigma about 1.6 native px; normal alpha
+/// fits better than lighten on 6 of 7 sites. The text's strong glow (a
+/// centred blur, sigma about 5 native px) and the copies' diagonal hatching
+/// are not drawn by this pass. Grain and fill scanlines not measured.
+pub const PRINT: crate::print::Print = crate::print::Print {
+    echo: [
+        crate::print::Echo { kx: 0.0060, ky: 0.0065, gain: 0.28 },
+        crate::print::Echo { kx: 0.0158, ky: 0.0180, gain: 0.08 },
+        crate::print::Echo::NONE,
+    ],
+    echo_centre: (800.0, 450.0),
+    echo_blend: crate::print::Blend::Over,
+    echo_soft: 0.65,
+    echo_lift: (0.02, 0.10),
+    echo_texture: crate::print::Texture::FLAT,
+    echo_gate: (0.60, 0.75),
+    echo_gate_radius: 6.0,
+    ..crate::print::Print::OFF
+};
+// --- end print -------------------------------------------------------------

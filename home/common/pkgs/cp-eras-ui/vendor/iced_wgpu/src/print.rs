@@ -1,9 +1,9 @@
 //! Print pass (local patch; see `PATCHES.md`).
 //!
 //! An optional full-screen pass over the finished frame that gives it the
-//! surface of the reference art: registration copies (the frame scaled about
-//! the screen centre and lighten-composited, with scanlined rows), fill
-//! scanlines and grain. The application states the material once with
+//! surface of the reference art: registration copies (up to three copies of
+//! the frame scaled about a centre, blurred, colour-textured and composited
+//! under the art), fill scanlines and grain. The application states the material once with
 //! [`set`]; [`Renderer::present`](crate::Renderer::present) then draws the
 //! frame into an offscreen target and runs `shader/print.wgsl` from it into
 //! the surface. With no material set, or one whose strengths are all zero,
@@ -22,27 +22,50 @@ use std::sync::RwLock;
 
 use crate::core::Size;
 
+/// How a registration copy is laid over the frame.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Blend {
+    /// Normal alpha compositing of the (textured) copy at its opacity, so
+    /// overlapping copies combine as `1 - (1 - a1)(1 - a2)`: brighter than
+    /// either alone, less than their sum. A copy can darken a channel (a
+    /// saturated copy over a blue ground lowers its green and blue).
+    Over,
+    /// Per-channel lighten of the composited copy: never darkens.
+    Lighten,
+}
+
 /// One era's print material. See the module documentation for units.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Params {
     /// The design frame the lengths below are measured in.
     pub frame: (f32, f32),
-    /// Registration copies: scale step `k`; copies at `1 + k` and
-    /// `1 + 2k` about the screen centre.
-    pub echo_scale: f32,
-    /// Opacity of the near (`1 + k`) and far (`1 + 2k`) copy.
-    pub echo_alpha: (f32, f32),
-    /// Row modulation of the copies: depth (0 = flat) and pitch.
-    pub echo_scan_depth: f32,
-    pub echo_scan_pitch: f32,
-    /// Phase of the copies' rows, in cycles.
+    /// Up to three registration copies, each `(kx, ky, opacity)`: the frame
+    /// scaled by `1 + kx` across and `1 + ky` down about `echo_centre`. A
+    /// zero scale or opacity is no copy. Composited farthest first.
+    pub echo: [(f32, f32, f32); 3],
+    /// The point the copies are scaled about (design px).
+    pub echo_centre: (f32, f32),
+    pub echo_blend: Blend,
+    /// Softness of the copies: the standard deviation of their blur.
+    pub echo_soft: f32,
+    /// Lift gate: a copy shows only where it is lighter than the pixel
+    /// under it, fading in over this encoded-luminance difference. This is
+    /// what puts the copies *under* the art: ink is not covered by a copy
+    /// of the ground, nor by a copy of other ink. `(0, 0)` disables it.
+    pub echo_lift: (f32, f32),
+    /// The copies' colour texture: `t = cos(2pi (d / pitch + phase))` along
+    /// the direction `angle` degrees from +x (90 = rows); each channel of a
+    /// copy is scaled by `mix(trough, crest, (1 + t) / 2)`.
+    pub echo_tex_pitch: f32,
+    pub echo_tex_angle: f32,
+    pub echo_tex_crest: [f32; 3],
+    pub echo_tex_trough: [f32; 3],
+    /// Phase of the copies' texture, in cycles.
     pub echo_phase: f32,
     /// Fill gate: the encoded luminance, averaged on a ring of this radius,
     /// at which copies start (`.0`) and finish (`.1`) being suppressed.
     pub echo_gate: (f32, f32),
     pub echo_gate_radius: f32,
-    /// Softness of the copies: the spread of a 4-tap box blur.
-    pub echo_soft: f32,
     /// Fill scanlines: darkening at the trough (0 = none), pitch, phase in
     /// cycles.
     pub scan_depth: f32,
@@ -60,14 +83,18 @@ impl Params {
     /// No material: every strength zero.
     pub const OFF: Self = Self {
         frame: (1600.0, 900.0),
-        echo_scale: 0.0,
-        echo_alpha: (0.0, 0.0),
-        echo_scan_depth: 0.0,
-        echo_scan_pitch: 2.0,
+        echo: [(0.0, 0.0, 0.0); 3],
+        echo_centre: (800.0, 450.0),
+        echo_blend: Blend::Over,
+        echo_soft: 0.0,
+        echo_lift: (0.0, 0.0),
+        echo_tex_pitch: 2.0,
+        echo_tex_angle: 90.0,
+        echo_tex_crest: [1.0; 3],
+        echo_tex_trough: [1.0; 3],
         echo_phase: 0.0,
         echo_gate: (1.0, 1.0),
         echo_gate_radius: 6.0,
-        echo_soft: 0.0,
         scan_depth: 0.0,
         scan_pitch: 2.0,
         scan_phase: 0.0,
@@ -77,11 +104,17 @@ impl Params {
         grain_seed: 0,
     };
 
+    /// Whether any registration copy would draw.
+    pub fn has_echo(&self) -> bool {
+        self.echo.iter().any(|&(kx, ky, a)| (kx != 0.0 || ky != 0.0) && a > 0.0)
+    }
+
     /// Whether the pass would change no pixel, so it is skipped.
     pub fn is_off(&self) -> bool {
-        let echo = self.echo_scale > 0.0
-            && (self.echo_alpha.0 > 0.0 || self.echo_alpha.1 > 0.0);
-        !(echo || self.scan_depth > 0.0 || self.grain_mul > 0.0 || self.grain_add > 0.0)
+        !(self.has_echo()
+            || self.scan_depth > 0.0
+            || self.grain_mul > 0.0
+            || self.grain_add > 0.0)
     }
 }
 
@@ -120,11 +153,28 @@ pub fn device_pitch(pitch: f32, scale: f32) -> f32 {
     }
 }
 
-/// The shader's uniform block, six `vec4`s (`shader/print.wgsl`).
+/// The copies with an effect, farthest (largest `|kx| + |ky|`) first,
+/// padded with empty slots: the order the shader composites them in.
+pub fn echo_order(echo: &[(f32, f32, f32); 3]) -> [(f32, f32, f32); 3] {
+    let mut out = [(0.0, 0.0, 0.0); 3];
+    let mut live: Vec<(f32, f32, f32)> = echo
+        .iter()
+        .copied()
+        .filter(|&(kx, ky, a)| (kx != 0.0 || ky != 0.0) && a > 0.0)
+        .collect();
+    let reach = |c: &(f32, f32, f32)| c.0.abs() + c.1.abs();
+    live.sort_by(|a, b| reach(b).total_cmp(&reach(a)));
+    for (slot, c) in out.iter_mut().zip(live) {
+        *slot = c;
+    }
+    out
+}
+
+/// The shader's uniform block, eleven `vec4`s (`shader/print.wgsl`).
 #[derive(Debug, Clone, Copy, PartialEq, bytemuck::Zeroable, bytemuck::Pod)]
 #[repr(C)]
 pub struct Uniforms {
-    pub u: [[f32; 4]; 6],
+    pub u: [[f32; 4]; 11],
 }
 
 impl Uniforms {
@@ -133,24 +183,56 @@ impl Uniforms {
         let sx = w / p.frame.0.max(1.0);
         let sy = h / p.frame.1.max(1.0);
         let s = sx.min(sy);
+        let e = echo_order(&p.echo);
+        // The texture's direction per device pixel: a design-space unit
+        // direction (c, s) advances (c / sx, s / sy) design px per device
+        // px; its length converts the pitch to device pixels.
+        let (sa, ca) = p.echo_tex_angle.to_radians().sin_cos();
+        let (dx, dy) = (ca / sx, sa / sy);
+        let n = (dx * dx + dy * dy).sqrt().max(1e-9);
+        let tex_pitch = device_pitch(p.echo_tex_pitch, 1.0 / n);
+        let blend = match p.echo_blend {
+            Blend::Over => 0.0,
+            Blend::Lighten => 1.0,
+        };
         Self {
             u: [
                 [w, h, sx, sy],
-                [p.echo_scale, p.echo_alpha.1, p.echo_alpha.0, p.echo_scan_depth],
+                [e[0].0, e[0].1, e[0].2, e[1].0],
+                [e[1].1, e[1].2, e[2].0, e[2].1],
+                [e[2].2, 0.0, p.echo_centre.0 * sx, p.echo_centre.1 * sy],
+                [tex_pitch, p.echo_phase, dx / n, dy / n],
                 [
-                    device_pitch(p.echo_scan_pitch, sy),
-                    p.echo_phase,
+                    p.echo_tex_crest[0],
+                    p.echo_tex_crest[1],
+                    p.echo_tex_crest[2],
+                    blend,
+                ],
+                [
+                    p.echo_tex_trough[0],
+                    p.echo_tex_trough[1],
+                    p.echo_tex_trough[2],
+                    0.0,
+                ],
+                [
                     p.echo_gate.0,
                     p.echo_gate.1,
+                    (p.echo_gate_radius * s).max(1.0),
+                    p.echo_soft * s,
                 ],
                 [
-                    (p.echo_gate_radius * s).max(1.0),
+                    p.echo_lift.0,
+                    p.echo_lift.1,
                     p.scan_depth,
                     device_pitch(p.scan_pitch, sy),
-                    p.scan_phase,
                 ],
-                [p.grain_mul, p.grain_add, (p.grain_cell * s).max(1.0), p.grain_seed as f32],
-                [p.echo_soft * s * 0.5, 0.0, 0.0, 0.0],
+                [
+                    p.scan_phase,
+                    p.grain_mul,
+                    p.grain_add,
+                    (p.grain_cell * s).max(1.0),
+                ],
+                [p.grain_seed as f32, 0.0, 0.0, 0.0],
             ],
         }
     }
@@ -386,6 +468,22 @@ mod tests {
     fn off_is_off_and_default() {
         assert!(Params::OFF.is_off());
         assert_eq!(Params::default(), Params::OFF);
+    }
+
+    #[test]
+    fn copies_are_ordered_farthest_first() {
+        let e = echo_order(&[(0.006, 0.01, 0.38), (0.0, 0.0, 0.3), (0.012, 0.017, 0.19)]);
+        assert_eq!(e, [(0.012, 0.017, 0.19), (0.006, 0.01, 0.38), (0.0, 0.0, 0.0)]);
+        let p = Params { echo: [(0.005, 0.005, 0.0), (0.0, 0.0, 0.4), (0.0, 0.0, 0.0)], ..Params::OFF };
+        assert!(p.is_off());
+    }
+
+    #[test]
+    fn rows_texture_runs_along_y() {
+        let p = Params { echo_tex_pitch: 1.985, echo_tex_angle: 90.0, ..Params::OFF };
+        let u = Uniforms::new(&p, Size::new(3840, 2160));
+        assert!((u.u[4][0] - 4.764).abs() < 1e-3, "{:?}", u.u[4]);
+        assert!(u.u[4][2].abs() < 1e-6 && (u.u[4][3] - 1.0).abs() < 1e-6);
     }
 
     #[test]
