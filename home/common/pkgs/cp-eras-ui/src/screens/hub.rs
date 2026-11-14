@@ -326,9 +326,7 @@ mod tests {
         assert_eq!(style.dashboard_destinations,
             [None, Some(Destination::Mail), None, None, Some(Destination::Store), None]);
         let mut hub = Hub::new(style);
-        assert_eq!(hub.dashboard.selected, 0, "VEHICLES");
-        hub.update(Message::Stroke(Stroke::Move(Dir::Right)));
-        assert_eq!(hub.dashboard.selected, 1, "LOCATIONS");
+        assert_eq!(hub.dashboard.selected, 1, "opens on LOCATIONS");
         hub.update(Message::Stroke(Stroke::Open));
         assert_eq!(hub.route, Route::Mail);
         hub.update(Message::Stroke(Stroke::Back));

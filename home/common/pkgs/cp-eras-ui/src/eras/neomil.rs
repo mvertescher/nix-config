@@ -436,9 +436,9 @@ pub fn style() -> Style {
         // components.svg MENU DIAMOND: the source shows no selected
         // state). The selected unit is drawn inverted all the same, an
         // owner decision (2026-11-13, CELLS_SELECTED), so the keyboard's
-        // selection shows; the opening selection is the first unit by
-        // convention.
-        dashboard_selection: 0,
+        // selection shows; the opening selection is LOCATIONS, the first unit
+        // that leads somewhere (owner decision, 2026-11-14).
+        dashboard_selection: 1,
         dashboard_cursor: false,
         mailbox_cursor: false,
         dashboard_states: HUB_STATES,

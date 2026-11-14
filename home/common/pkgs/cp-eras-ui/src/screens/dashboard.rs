@@ -319,6 +319,8 @@ mod tests {
     fn the_selection_reaches_the_scene() {
         use crate::screens::nav::Dir;
         let mut dash = Dashboard::new(Era::Neomil.style());
+        assert_eq!(dash.picked().module, 1, "opens on LOCATIONS");
+        dash.update(Message::Select { index: 0 });
         assert_eq!(dash.picked(), Picked { module: 0, ..Picked::default() });
         let mut seen = vec![dash.picked().module];
         let mut walk = seen.clone();
