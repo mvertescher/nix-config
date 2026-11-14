@@ -503,6 +503,9 @@ use super::scene::{advances, run_width};
 
 /// The face a legend is set in.
 fn font_of(legend: &Legend) -> iced::Font {
+    if legend.krona {
+        return crate::fonts::FONT_KRONA_ONE;
+    }
     if legend.wide {
         return crate::fonts::FONT_MICHROMA;
     }
@@ -737,9 +740,24 @@ impl Pen<'_> {
                 frame.scale_nonuniform(Vector::new(stretch, 1.0));
             }
             // The line box is Rajdhani's natural line, so its ascent is
-            // the baseline; Michroma's taller box centres differently.
-            let ascent = if legend.wide { crate::fonts::michroma_baseline_in(LINE) } else { ASCENT };
-            frame.translate(Vector::new(0.0, -size * ascent));
+            // the baseline; Michroma's and Krona One's boxes centre
+            // differently.
+            let ascent = if legend.krona {
+                crate::fonts::krona_one_baseline_in(LINE)
+            } else if legend.wide {
+                crate::fonts::michroma_baseline_in(LINE)
+            } else {
+                ASCENT
+            };
+            if legend.krona && !legend.turned && (stretch - 1.0).abs() <= 1e-4 {
+                // On the glyph atlas, cryoglyph truncates the box top and
+                // rounds the baseline offset separately; round both so the
+                // 4px-cap notes sit on the pixel row nearest their baseline.
+                frame.translate(Vector::new(0.0,
+                    anchor.y.round() - anchor.y - (size * ascent).round()));
+            } else {
+                frame.translate(Vector::new(0.0, -size * ascent));
+            }
 
             if tracking == 0.0 && word_space == 0.0 {
                 stem::fill_text(frame, text, stem);

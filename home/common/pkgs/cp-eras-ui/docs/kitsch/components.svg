@@ -270,10 +270,10 @@
             fill="#82f0d3">GUEST 7702</text>
       <rect x="81.3" y="33.9" width="24.5" height="24.1" fill="none" stroke="#82f0d3" stroke-width="2"/>
       <text transform="translate(93.55 52.4) scale(1.7 1)" font-family="Rajdhani" font-size="18" font-weight="500" text-anchor="middle" fill="#82f0d3">A</text>
-      <g font-family="Michroma" font-size="5.56" font-weight="400" fill="#82f0d3">
-        <text x="114.3" y="38.3">ACCESS <tspan dx="2">MANAGER</tspan> <tspan dx="2">WAS</tspan> <tspan dx="2">DEVE-</tspan></text>
-        <text x="114.3" y="47.5">LOPED <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan> <tspan dx="2">SERVING</tspan></text>
-        <text x="114.3" y="56.7">CUSTOMERS <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
+      <g font-family="Krona One" font-size="5.46" font-weight="400" letter-spacing="0.64" fill="#82f0d3">
+        <text x="114.3" y="37.7">ACCESS <tspan x="151.5">MANAGER</tspan> <tspan x="195.21">WAS</tspan> <tspan x="217.28">DEVE-</tspan></text>
+        <text x="114.3" y="46.9">LOPED <tspan x="144.48">BY</tspan> <tspan x="158.23">SEOCHO.</tspan> <tspan x="199.3">SERVING</tspan></text>
+        <text x="114.3" y="56">CUSTOMERS <tspan x="169.33">SINCE</tspan> <tspan x="197.73">2006.</tspan></text>
       </g>
     </g>
     <!-- LOCATIONS specimen: the parent dashboard depth-2/3 stroke occlusion hypothesis. -->
@@ -347,17 +347,17 @@
   <!-- BOXED LETTER UNIT. mailbox-trace.svg header column A: a 24.1x23.8
        square stroked 2 in #82f0d3 at (165.2,106.2), a wide heavy cap
        (Rajdhani 600 18 stretched 1.7, centred, cap y 113.8..125.5), three
-       lines of in-fiction micro-text at x 205 (Michroma 5.56, words 2
-       further apart, rows 110 / 119.2 / 128.3) and a section label beneath
-       (Michroma 10.56 x0.95, cap y 151.3..159.2) -- 2026-11-13, were
-       stretched Rajdhani 600.
+       lines of in-fiction micro-text at x 205 (Krona One 5.46, letter-
+       spacing 0.64, words 0.45 further apart, rows 110 / 119.2 / 128.3)
+       and a section label beneath (Michroma 10.56 x0.95, cap y
+       151.3..159.2) -- 2026-11-13, were stretched Rajdhani 600.
        The same unit appears in dashboard-trace (A/C/D at x 164.6 / 673.3 /
        1215.2, y 109.8) and store-trace (A/C in the foot). -->
   <g transform="translate(-129.2 121.8)" fill="#7fd4cc">
-    <g font-family="Michroma" font-size="5.56" font-weight="400" fill="#82f0d3">
-      <text x="205" y="110">SPARE <tspan dx="2">TIME</tspan> <tspan dx="2">MANAGER</tspan> <tspan dx="2">WAS</tspan> <tspan dx="2">DEVELO-</tspan></text>
-      <text x="205" y="119.2">PED <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan> <tspan dx="2">SERVING</tspan> <tspan dx="2">CUSTO-</tspan></text>
-      <text x="205" y="128.3">MERS <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
+    <g font-family="Krona One" font-size="5.46" font-weight="400" letter-spacing="0.64" fill="#82f0d3">
+      <text x="205" y="110">SPARE <tspan x="236.07">TIME</tspan> <tspan x="258.35">MANAGER</tspan> <tspan x="302.05">WAS</tspan> <tspan x="324.13">DEVELO-</tspan></text>
+      <text x="205" y="119.2">PED <tspan x="224.36">BY</tspan> <tspan x="238.11">SEOCHO.</tspan> <tspan x="279.17">SERVING</tspan> <tspan x="318.85">CUSTO-</tspan></text>
+      <text x="205" y="128.3">MERS <tspan x="231.37">SINCE</tspan> <tspan x="259.76">2006.</tspan></text>
     </g>
     <rect x="165.2" y="106.2" width="24.1" height="23.8" fill="none" stroke="#82f0d3" stroke-width="2"/>
     <text transform="translate(177.25 125.5) scale(1.7 1)" font-size="18" font-weight="600" text-anchor="middle" fill="#82f0d3">A</text>
@@ -407,16 +407,16 @@
   </g>
 
   <!-- FOOTER MARK. store-trace.svg foot: three lines of bright bold wide
-       micro-text at x 181.4 (Michroma 5.56, words 2 further apart, baselines
+       micro-text at x 181.4 (Krona One 5.46, ls 0.64, words +0.45, baselines
        737.9 / 747.1 / 755.9; 2026-11-13) beside a boxed A, a
        23.7x24.2 square stroked 2 with a size-18 cap stretched 1.7.
        dashboard-trace draws the same mark as B DEVICE SOFTWARE at x 574.3,
        y 741, with the section label beneath it. -->
   <g transform="translate(-145 -236.3)" fill="#7fd4cc">
-    <g font-family="Michroma" font-size="5.56" font-weight="400" fill="#82f0d3">
-      <text x="181.4" y="737.9">SPARE <tspan dx="2">TIME</tspan> <tspan dx="2">MANAGER</tspan> <tspan dx="2">WAS</tspan> <tspan dx="2">DEVELO-</tspan></text>
-      <text x="181.4" y="747.1">PED <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan> <tspan dx="2">SERVING</tspan> <tspan dx="2">CUSTO-</tspan></text>
-      <text x="181.4" y="755.9">MERS <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
+    <g font-family="Krona One" font-size="5.46" font-weight="400" letter-spacing="0.64" fill="#82f0d3">
+      <text x="181.4" y="737.9">SPARE <tspan x="212.47">TIME</tspan> <tspan x="234.75">MANAGER</tspan> <tspan x="278.45">WAS</tspan> <tspan x="300.53">DEVELO-</tspan></text>
+      <text x="181.4" y="747.1">PED <tspan x="200.76">BY</tspan> <tspan x="214.51">SEOCHO.</tspan> <tspan x="255.57">SERVING</tspan> <tspan x="295.25">CUSTO-</tspan></text>
+      <text x="181.4" y="755.9">MERS <tspan x="207.77">SINCE</tspan> <tspan x="236.16">2006.</tspan></text>
     </g>
     <rect x="354" y="734.3" width="23.7" height="24.2" fill="none" stroke="#82f0d3" stroke-width="2"/>
     <text transform="translate(365.9 753.8) scale(1.7 1)" font-size="18" font-weight="700" text-anchor="middle" fill="#82f0d3">A</text>
@@ -747,14 +747,14 @@
   </g>
 
   <!-- TYPOGRAPHY. Every glyph in every kitsch trace is Rajdhani, weights
-       300..700, except the badge notes and section labels, which are
-       Michroma Regular since 2026-11-13 (review decision 5: the photo's
-       wide extended face); Orbitron is available to the crate but no kitsch
+       300..700, except the section labels, Michroma Regular, and the badge
+       notes, Krona One Regular, since 2026-11-13 (review decision 5: the
+       photo's wide extended face; Michroma was too light for the notes); Orbitron is available to the crate but no kitsch
        trace uses it. Two habits worth copying: sizes are measured, not rounded (24.4,
        16.8, 12.3, 21.5), and the small in-fiction text is HORIZONTALLY
        STRETCHED rather than letter-spaced (scale(1.3 1) etc, because the
        photo's face is wider than Rajdhani at the same cap height). -->
-  <text x="1035" y="640" font-size="11" font-weight="600" letter-spacing="1.6" fill="#82f0d3">9 . TYPOGRAPHY (Rajdhani, Michroma labels)</text>
+  <text x="1035" y="640" font-size="11" font-weight="600" letter-spacing="1.6" fill="#82f0d3">9 . TYPOGRAPHY (Rajdhani, Michroma labels, Krona One notes)</text>
   <g fill="#a9e6df">
     <text x="1035" y="664" font-size="24.4" font-weight="500" letter-spacing="-0.75">MAGNUM 650</text>
     <text x="1180" y="664" font-size="8.5" fill="#7fd4cc">500 24.4 ls -0.75</text>
@@ -767,10 +767,10 @@
     <text x="1035" y="775" font-size="8.5" fill="#7fd4cc">500 20 list titles . 500 16.8 message body . 500 13.5 from: lines</text>
     <text transform="translate(1035 793) scale(0.95 1)" font-family="Michroma" font-size="10.56" font-weight="400" fill="#82f0d3">SECURITY LEVEL</text>
     <text x="1180" y="793" font-size="8.5" fill="#7fd4cc">Michroma 10.56 x0.95 label</text>
-    <g font-family="Michroma" font-size="5.56" font-weight="400" fill="#82f0d3">
-      <text x="1035" y="808">MAPS <tspan dx="2">ARE</tspan> <tspan dx="2">PROVIDED</tspan> <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan></text>
+    <g font-family="Krona One" font-size="5.46" font-weight="400" letter-spacing="0.64" fill="#82f0d3">
+      <text x="1035" y="808">MAPS <tspan x="1061.8">ARE</tspan> <tspan x="1081.14">PROVIDED</tspan> <tspan x="1125.53">BY</tspan> <tspan x="1139.28">SEOCHO.</tspan></text>
     </g>
-    <text x="1180" y="808" font-size="8.5" fill="#7fd4cc">Michroma 5.56, words +2 notes</text>
+    <text x="1180" y="808" font-size="8.5" fill="#7fd4cc">Krona One 5.46 ls .64, words +.45 notes</text>
     <text x="1035" y="823" font-size="9" font-weight="700" letter-spacing="0.18" fill="#82f0d3">ARASAKA CONSUMER TECHNOLOGY</text>
     <text x="1035" y="836" font-size="8.5" fill="#7fd4cc">700 9 ls .18/.24 FOOT LINE x 503..1095 y 870 (+ CC35 run from x 641)</text>
     <text x="1035" y="851" font-size="8.5" fill="#7fd4cc">also: 700 73 stretched 1.63/1.89/1.24 logotype . 600 23 badge digits . 600 20 tab</text>

@@ -122,11 +122,12 @@
            sans (Eurostile Extended-like), not stretched Rajdhani: notes
            cap 4.17, line extents 151.3 / 145.0 / 79.2 (A), word gaps 3-4px;
            labels cap 7.92, USER 38.3 / DESCRIPTION 96.3 / SECURITY LEVEL
-           117.5 wide, stem ~1.3px. Both now Michroma Regular (OFL), its
-           cap 0.75 em: notes 5.56 with word-spacing 2 at natural width,
-           labels 10.56 at scale(0.95 1). Rajdhani 600 x1.37 had drawn the
-           labels 33% narrow at 1.45x the stem. The first note line runs
-           ~6px long in Michroma (its M and W are wider than the photo's).
+           117.5 wide, stem ~1.3px. Labels are Michroma Regular (OFL), its
+           cap 0.75 em, 10.56 at scale(0.95 1); Rajdhani 600 x1.37 had
+           drawn them 33% narrow at 1.45x the stem. Notes are Krona One
+           Regular (OFL; cap 0.763 em) 5.46, letter-spacing 0.64, each word
+           0.45 further on: Michroma 5.56 came out thin and dim and ran its
+           first line ~6px long; Krona One lands every line within ~2.5px.
          - list subjects Rajdhani 500 20 (were 400 18 ls 0.5: cap 11 and
            stem 1.35 against the photo's 12.5 / 1.7); every sender Rajdhani
            500 (were 700 idle / 600 selected: stems 2.2 / 1.7 against the
@@ -202,16 +203,17 @@
   <g font-family="Rajdhani" fill="#7fd4cc">
     <!-- the notes are BRIGHT bold, wide, tracked micro-text (the same #82f0d3 as the foot line, not dim): x 205..357 /
          625..767 / 1259..1410, cap rows 105.8..109.9 / 114.9..119.1 / 124.1..128.2 -->
-    <!-- 2026-11-13: Michroma 5.56 at natural width, each word 2 further on (dx; librsvg ignores word-spacing) -->
-    <g font-family="Michroma" font-size="5.56" font-weight="400" fill="#82f0d3">
-      <text x="205" y="110">SPARE <tspan dx="2">TIME</tspan> <tspan dx="2">MANAGER</tspan> <tspan dx="2">WAS</tspan> <tspan dx="2">DEVELO-</tspan></text>
-      <text x="205" y="119.2">PED <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan> <tspan dx="2">SERVING</tspan> <tspan dx="2">CUSTO-</tspan></text>
-      <text x="205" y="128.3">MERS <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
-      <text x="624.1" y="110">MAPS <tspan dx="2">ARE</tspan> <tspan dx="2">PROVIDED</tspan> <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan></text>
-      <text x="624.1" y="119.2">SATELITE <tspan dx="2">SERVICES</tspan> <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
-      <text x="1258.7" y="110">SPARE <tspan dx="2">TIME</tspan> <tspan dx="2">MANAGER</tspan> <tspan dx="2">WAS</tspan> <tspan dx="2">DEVELO-</tspan></text>
-      <text x="1258.7" y="119.2">PED <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan> <tspan dx="2">SERVING</tspan> <tspan dx="2">CUSTO-</tspan></text>
-      <text x="1258.7" y="128.3">MERS <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
+    <!-- 2026-11-13: Krona One 5.46, letter-spacing 0.64, each word 0.45 further on. Words sit at absolute tspan x
+         (advances + 0.64 per glyph + 0.45 per space): librsvg ignores word-spacing and drops letter-spacing at tspan dx -->
+    <g font-family="Krona One" font-size="5.46" font-weight="400" letter-spacing="0.64" fill="#82f0d3">
+      <text x="205" y="110">SPARE <tspan x="236.07">TIME</tspan> <tspan x="258.35">MANAGER</tspan> <tspan x="302.05">WAS</tspan> <tspan x="324.13">DEVELO-</tspan></text>
+      <text x="205" y="119.2">PED <tspan x="224.36">BY</tspan> <tspan x="238.11">SEOCHO.</tspan> <tspan x="279.17">SERVING</tspan> <tspan x="318.85">CUSTO-</tspan></text>
+      <text x="205" y="128.3">MERS <tspan x="231.37">SINCE</tspan> <tspan x="259.76">2006.</tspan></text>
+      <text x="624.1" y="110">MAPS <tspan x="650.9">ARE</tspan> <tspan x="670.24">PROVIDED</tspan> <tspan x="714.63">BY</tspan> <tspan x="728.38">SEOCHO.</tspan></text>
+      <text x="624.1" y="119.2">SATELITE <tspan x="666.64">SERVICES</tspan> <tspan x="711.05">SINCE</tspan> <tspan x="739.44">2006.</tspan></text>
+      <text x="1258.7" y="110">SPARE <tspan x="1289.77">TIME</tspan> <tspan x="1312.05">MANAGER</tspan> <tspan x="1355.75">WAS</tspan> <tspan x="1377.83">DEVELO-</tspan></text>
+      <text x="1258.7" y="119.2">PED <tspan x="1278.06">BY</tspan> <tspan x="1291.81">SEOCHO.</tspan> <tspan x="1332.87">SERVING</tspan> <tspan x="1372.55">CUSTO-</tspan></text>
+      <text x="1258.7" y="128.3">MERS <tspan x="1285.07">SINCE</tspan> <tspan x="1313.46">2006.</tspan></text>
     </g>
     <!-- boxed A / B / C: ~24x24 squares with a 2px stroke (centrelines x 165.2..189.3 / 586.2..610.4 / 1216.6..1241,
          y 106.2..130), each holding a wide heavy cap 15.8 x 11.7 at y 113.8..125.5 -->

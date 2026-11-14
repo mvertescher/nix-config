@@ -31,6 +31,24 @@ pub const fn michroma_baseline_in(line: f32) -> f32 {
     (line - (MICHROMA_ASCENT + MICHROMA_DESCENT)) / 2.0 + MICHROMA_ASCENT
 }
 
+/// Krona One Regular 1.003 (SIL OFL 1.1), staged from the same pinned
+/// nixpkgs `google-fonts` checkout (`default.nix`). Kitsch's badge notes
+/// only (review 2026-11-13: Michroma's single hairline weight came out
+/// thin and dim at their 4.2 px cap, where the reference sets them bold
+/// and wide); the section labels stay Michroma.
+pub const KRONA_ONE_REGULAR: &[u8] = include_bytes!("../fonts/KronaOne-Regular.ttf");
+
+/// Krona One's `hhea` ascender and descender, in ems (2030 / -530 over
+/// 2048), for the same reason as Michroma's.
+pub const KRONA_ONE_ASCENT: f32 = 2030.0 / 2048.0;
+pub const KRONA_ONE_DESCENT: f32 = 530.0 / 2048.0;
+
+/// Where Krona One's baseline sits below the top of a line box `line`
+/// ems tall (see [`michroma_baseline_in`]).
+pub const fn krona_one_baseline_in(line: f32) -> f32 {
+    (line - (KRONA_ONE_ASCENT + KRONA_ONE_DESCENT)) / 2.0 + KRONA_ONE_ASCENT
+}
+
 /// Noto Sans CJK JP 700, subset to `益荒男` by the noto-cjk-subset package.
 /// The current MASURAO logotype uses vector art; this remains available
 /// for text fallback. Automatic Han fallback can select a different host
@@ -41,6 +59,13 @@ pub const NOTO_SANS_CJK_JP_BOLD: &[u8] = include_bytes!("../fonts/NotoSansCJKjp-
 
 pub const FONT_MICHROMA: iced::Font = iced::Font {
     family: iced::font::Family::Name("Michroma"),
+    weight: iced::font::Weight::Normal,
+    stretch: iced::font::Stretch::Normal,
+    style: iced::font::Style::Normal,
+};
+
+pub const FONT_KRONA_ONE: iced::Font = iced::Font {
+    family: iced::font::Family::Name("Krona One"),
     weight: iced::font::Weight::Normal,
     stretch: iced::font::Stretch::Normal,
     style: iced::font::Style::Normal,
@@ -218,6 +243,46 @@ mod tests {
         }
     }
 
+    /// The Krona One runs place their baseline by `krona_one_baseline_in`,
+    /// checked the same way as Michroma's: the canvas default 1.2 line,
+    /// and the login's absolute 1.276 line, at the notes' size.
+    #[test]
+    fn krona_one_canvas_outline_sits_on_the_computed_baseline() {
+        use iced::advanced::graphics::geometry::path::lyon_path::PathEvent;
+        use iced::widget::canvas;
+
+        ensure_test_fonts();
+        for (line, line_height) in [
+            (1.2, iced::widget::text::LineHeight::Relative(1.2)),
+            (1.276, iced::widget::text::LineHeight::Absolute((5.46 * 1.276).into())),
+        ] {
+            let size = 5.46_f32;
+            let text = canvas::Text {
+                content: "H".into(),
+                size: size.into(),
+                line_height,
+                font: FONT_KRONA_ONE,
+                align_y: iced::alignment::Vertical::Top,
+                ..Default::default()
+            };
+            let mut bottom = f32::NEG_INFINITY;
+            text.draw_with(|path, _| {
+                for event in path.raw().iter() {
+                    let y = match event {
+                        PathEvent::Begin { at } => at.y,
+                        PathEvent::Line { from, to } => from.y.max(to.y),
+                        PathEvent::Quadratic { from, ctrl, to } => from.y.max(ctrl.y).max(to.y),
+                        PathEvent::Cubic { from, ctrl1, ctrl2, to } => from.y.max(ctrl1.y).max(ctrl2.y).max(to.y),
+                        PathEvent::End { last, first, .. } => last.y.max(first.y),
+                    };
+                    bottom = bottom.max(y);
+                }
+            });
+            assert!((bottom - size * krona_one_baseline_in(line)).abs() < 0.05,
+                "line {line}: bottom {bottom}, expected {}", size * krona_one_baseline_in(line));
+        }
+    }
+
     #[test]
     fn free_sans_selector_matches_the_shaped_font_and_declared_weight() {
         ensure_test_fonts();
@@ -312,6 +377,7 @@ mod tests {
             ("FreeSans Bold", FONT_FREE_SANS_BOLD, FREE_SANS_BOLD, 600, "ONLY CC35 CERTIFIED"),
             ("Kitsch Sans Bold", FONT_CP_ERAS_KITSCH_SANS_BOLD, CP_ERAS_KITSCH_SANS_BOLD, 600, "MANIPULATE, ACCESS"),
             ("Michroma", FONT_MICHROMA, MICHROMA_REGULAR, 400, "SPARE TIME MANAGER WAS DEVELO- 2006."),
+            ("Krona One", FONT_KRONA_ONE, KRONA_ONE_REGULAR, 400, "SPARE TIME MANAGER WAS DEVELO- 2006."),
         ];
         for shaping in [Shaping::Basic, Shaping::Advanced, Shaping::default()] {
             for &(label, font, expected_bytes, expected_weight, content) in cases {
