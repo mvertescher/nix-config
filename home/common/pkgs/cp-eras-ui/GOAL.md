@@ -33,6 +33,16 @@ before it is accepted.
    widgets and rules that let new screens be built in that era's style,
    not only the four reference screens.
 
+This is what the reproductions are FOR (Matt, 2026-11-14): eventually every
+component -- surfaces, outlines, text treatments, effects -- is to be
+applied to new designs. So work on a reproduction is not finished when
+the screen matches: the thing that makes it match should be a component
+or a named treatment that a new screen can use, with its measured
+parameters (line weights, colours, effect strengths) recorded, not a
+one-off fitted to that screen. Getting those details exactly right now,
+pixel for pixel against the reference where it shows them, is worth the
+depth, because every later screen inherits them.
+
 ## Long term
 
 - **Mobile.** Plan for these themes on iOS and Android, or a general
@@ -52,6 +62,7 @@ before it is accepted.
 
 ## History
 
+- 2026-11-14: the reuse paragraph under the stages, from Matt.
 - 2026-11-13: written, from Matt's statement of the goal that day, when
   the project passed from the GPT agents that ran rounds 1-85 to Claude.
   The mobile direction was added the same day.
