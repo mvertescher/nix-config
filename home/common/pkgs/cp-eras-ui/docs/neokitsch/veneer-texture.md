@@ -1,5 +1,9 @@
 # NK-07: the veneer as a generated texture (2026-11-13)
 
+> 2026-11-14: [veneer-construction.md](veneer-construction.md) recovers the
+> reference's actual construction (blended polylines, twin combs, book-match
+> mirrors) and adds a candidate generator, `scripts/make-veneer-blend.py`.
+
 Owner decision 3 of [the 2026-11-13 review](../review-2026-11-13/DECISIONS.md):
 the selected Neo-kitsch surfaces wear a **pre-rendered texture clipped to
 their shapes**, not drawn vector grain. Accepted costs: an image asset, and
