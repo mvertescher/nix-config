@@ -360,6 +360,7 @@ fn font_of(face: Face) -> iced::Font {
         Face::FreeSansBold => FONT_FREE_SANS_BOLD,
         Face::CpErasKitschSansBold => FONT_CP_ERAS_KITSCH_SANS_BOLD,
         Face::Michroma => crate::fonts::FONT_MICHROMA,
+        Face::KronaOne => crate::fonts::FONT_KRONA_ONE,
     }
 }
 

@@ -59,6 +59,8 @@ const FREE_SANS_BASELINE: f32 = 0.95;
 // Michroma: hhea 2368 / -544 over 2048, in the canvas's 1.2 line. Its runs
 // are new, so this is the true baseline with no legacy Rajdhani offset.
 const MICHROMA_BASELINE: f32 = crate::fonts::michroma_baseline_in(1.2);
+// Krona One: hhea 2030 / -530 over 2048, likewise new and true.
+const KRONA_ONE_BASELINE: f32 = crate::fonts::krona_one_baseline_in(1.2);
 
 /// Only marked `ReusableWide` runs use these outline-entry bounds. The
 /// tracked-run path cache below has separate limits. Both live for one draw
@@ -290,6 +292,7 @@ fn baseline(face: Face) -> f32 {
         Face::OrbitronBold => ORBITRON_BASELINE,
         Face::FreeSansBold | Face::CpErasKitschSansBold => FREE_SANS_BASELINE,
         Face::Michroma => MICHROMA_BASELINE,
+        Face::KronaOne => KRONA_ONE_BASELINE,
         _ => BASELINE,
     }
 }
@@ -1065,6 +1068,7 @@ impl<M> Scene<M> {
             Face::FreeSansBold => crate::fonts::FONT_FREE_SANS_BOLD,
             Face::CpErasKitschSansBold => crate::fonts::FONT_CP_ERAS_KITSCH_SANS_BOLD,
             Face::Michroma => crate::fonts::FONT_MICHROMA,
+            Face::KronaOne => crate::fonts::FONT_KRONA_ONE,
         }
     }
 
@@ -1528,8 +1532,9 @@ impl<M> Scene<M> {
         route: FrameRoute,
     ) {
         let mut text = Self::text(content, x, baseline, size, self.ink(ink, alpha), face, anchor);
-        if matches!(face, Face::FreeSansBold | Face::CpErasKitschSansBold) {
-            // cryoglyph rounds line_y and truncates text.position.y separately.
+        if matches!(face, Face::FreeSansBold | Face::CpErasKitschSansBold | Face::KronaOne) {
+            // cryoglyph rounds line_y and truncates text.position.y separately
+            // (Krona One: the 4px-cap badge notes landed a pixel high).
             // Round both terms so their sum lands on the requested baseline.
             text.position.y = baseline.round() - (size * self::baseline(face)).round();
         }
@@ -1557,7 +1562,7 @@ impl<M> Scene<M> {
                 glyph, origin, baseline_y, size,
                 OUTLINE_SENTINEL, face, Anchor::Start,
             );
-            if matches!(face, Face::FreeSansBold | Face::CpErasKitschSansBold) {
+            if matches!(face, Face::FreeSansBold | Face::CpErasKitschSansBold | Face::KronaOne) {
                 text.position.y = baseline_y.round() - (size * baseline(face)).round();
             }
             text.draw_with(|path, color| collector.push(path, color));

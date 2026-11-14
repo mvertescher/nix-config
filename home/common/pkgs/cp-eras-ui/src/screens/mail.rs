@@ -1148,6 +1148,17 @@ fn label_font(at: Run) -> iced::Font {
     }
 }
 
+/// The face a run names: Krona One, Michroma, or a Rajdhani weight.
+fn run_font(at: Run) -> iced::Font {
+    if at.krona {
+        crate::fonts::FONT_KRONA_ONE
+    } else if at.wide {
+        crate::fonts::FONT_MICHROMA
+    } else {
+        label_font(at)
+    }
+}
+
 /// One run of text, positioned by the baseline the trace gives.
 fn label(frame: &mut canvas::Frame, scale: Scale, s: Paint, at: Run, color: Color, content: &str) {
     let _ = label_keep(frame, scale, s, at, color, content, 0);
@@ -1161,11 +1172,30 @@ fn label_keep(
     if content.is_empty() || at.size <= 0.0 {
         return false;
     }
+    if at.tracking != 0.0 && skip_prefix == 0 && !at.center && !at.right {
+        // Tracked (SVG `letter-spacing`): each glyph on its own, at the
+        // intact line's shaped advances plus the tracking, and the word
+        // space after each U+0020, all under the run's stretch.
+        let shaped = crate::screens::scene::advances(content, scale.len(at.size), run_font(at));
+        if shaped.len() == content.chars().count() {
+            let mut pen = 0.0f32;
+            for (glyph, advance) in content.chars().zip(shaped) {
+                if glyph != ' ' {
+                    let x = at.x + pen * at.stretch / scale.sx;
+                    let mut buf = [0u8; 4];
+                    label_keep(frame, scale, s, Run { x, word_space: 0.0, tracking: 0.0, ..at },
+                        color, glyph.encode_utf8(&mut buf), 0);
+                }
+                pen += advance + scale.len(at.tracking)
+                    + if glyph == ' ' { scale.len(at.word_space) } else { 0.0 };
+            }
+            return true;
+        }
+    }
     if at.word_space != 0.0 && skip_prefix == 0 && !at.center && !at.right && content.contains(' ') {
         // Word-spaced: each word on its own, at the intact line's shaped
         // prefix advance plus the extra space, all under the run's stretch.
-        let font = if at.wide { crate::fonts::FONT_MICHROMA } else { label_font(at) };
-        let shaped = crate::screens::scene::advances(content, scale.len(at.size), font);
+        let shaped = crate::screens::scene::advances(content, scale.len(at.size), run_font(at));
         if shaped.len() == content.chars().count() {
             let (mut pen, mut chars) = (0.0f32, 0usize);
             for word in content.split(' ') {
@@ -1185,19 +1215,31 @@ fn label_keep(
         }
     }
     let size = scale.len(at.size);
-    // A wide run is Michroma on its own baseline (canvas default 1.2 line);
-    // the era's `text_baseline` is a Rajdhani calibration.
-    let baseline = if at.wide {
+    // A wide run is Michroma on its own baseline (canvas default 1.2 line),
+    // a krona run Krona One on its own; the era's `text_baseline` is a
+    // Rajdhani calibration.
+    let baseline = if at.krona {
+        crate::fonts::krona_one_baseline_in(1.2)
+    } else if at.wide {
         crate::fonts::michroma_baseline_in(1.2)
     } else {
         s.style.mailbox.text_baseline
     };
+    // Krona One's 4px-cap notes: cryoglyph truncates the box top and
+    // rounds the line's baseline offset separately, which can land a run a
+    // whole pixel high; round both so it sits on the nearest pixel row to
+    // its baseline (as the scene does for FreeSans and Krona One).
+    let top = if at.krona {
+        (at.y * scale.sy).round() - (size * baseline).round()
+    } else {
+        at.y * scale.sy - size * baseline
+    };
     let text = canvas::Text {
         content: content.to_string(),
-        position: Point::new(at.x * scale.sx, at.y * scale.sy - size * baseline),
+        position: Point::new(at.x * scale.sx, top),
         color,
         size: size.into(),
-        font: if at.wide { crate::fonts::FONT_MICHROMA } else { label_font(at) },
+        font: run_font(at),
         align_x: if at.center {
             iced::advanced::text::Alignment::Center
         } else if at.right {

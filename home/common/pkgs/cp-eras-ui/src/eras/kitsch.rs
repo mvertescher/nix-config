@@ -493,14 +493,19 @@ pub const BRIGHT: iced::Color = rgb(0x82f0d3);
 
 const NOTE_1: &str = "ACCESS MANAGER WAS DEVE-";
 /// Every Kitsch badge note (login, mailbox, dashboard, store corners) in
-/// Michroma at its natural width: the photographed cap is 4.17 (Michroma
-/// cap 0.75 em), and the words sit wider apart than Michroma's space
-/// (ink gaps 3-4px on #51 against 1px), hence the extra word space.
-pub const NOTE_SIZE: f32 = 5.56;
-pub const NOTE_WORD_SPACE: f32 = 2.0;
-/// The access notes in Michroma (review 2026-11-13, decision 5), fitted to
-/// #50: cap 4.17 (Michroma cap 0.75 em) and the photographed line extents
-/// x 372.5..497.5 / ..495 / ..480.4 within about 2%.
+/// Krona One (review 2026-11-13: Michroma's hairline came out thin and
+/// dim at this size; the photo sets these lines bold and wide). Fitted to
+/// all 32 photographed lines on #49-#52: cap 4.17 (Krona One cap 0.763
+/// em), at natural width -- its glyphs already match the photo's letter
+/// widths to a few percent -- opened by `NOTE_TRACKING` to the photo's
+/// letter gaps (median 1.25) and line extents (rms 1.5, worst 2.3 px),
+/// with `NOTE_WORD_SPACE` more after each space for word gaps of 4.2.
+pub const NOTE_SIZE: f32 = 5.46;
+pub const NOTE_TRACKING: f32 = 0.64;
+pub const NOTE_WORD_SPACE: f32 = 0.45;
+/// The access notes, as every badge note; the photographed line extents
+/// on #50 are x 372.5..497.5 / ..495 / ..480.4, their baselines 375.7 /
+/// 384.9 / 394.0 (the Michroma pass set 376.3 / 385.5 / 394.7).
 const LOGIN_NOTE_SIZE: f32 = NOTE_SIZE;
 const NOTE_2: &str = "LOPED BY SEOCHO. SERVING";
 const NOTE_3: &str = "CUSTOMERS SINCE 2006.";
@@ -623,14 +628,17 @@ pub const ACCESS: Access = Access {
                     .stretched(1.7),
             ),
             notes: &[
-                Legend::new(NOTE_1, 372.3, 376.3, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
-                    .wide()
+                Legend::new(NOTE_1, 372.3, 375.7, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .krona()
+                    .tracked(NOTE_TRACKING)
                     .word_spaced(NOTE_WORD_SPACE),
-                Legend::new(NOTE_2, 372.3, 385.5, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
-                    .wide()
+                Legend::new(NOTE_2, 372.3, 384.9, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .krona()
+                    .tracked(NOTE_TRACKING)
                     .word_spaced(NOTE_WORD_SPACE),
-                Legend::new(NOTE_3, 372.3, 394.7, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
-                    .wide()
+                Legend::new(NOTE_3, 372.3, 394.0, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .krona()
+                    .tracked(NOTE_TRACKING)
                     .word_spaced(NOTE_WORD_SPACE),
             ],
             field: Some(
@@ -691,14 +699,17 @@ pub const ACCESS: Access = Access {
                     .stretched(1.7),
             ),
             notes: &[
-                Legend::new(NOTE_1, 765.3, 376.3, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
-                    .wide()
+                Legend::new(NOTE_1, 765.3, 375.7, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .krona()
+                    .tracked(NOTE_TRACKING)
                     .word_spaced(NOTE_WORD_SPACE),
-                Legend::new(NOTE_2, 765.3, 385.5, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
-                    .wide()
+                Legend::new(NOTE_2, 765.3, 384.9, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .krona()
+                    .tracked(NOTE_TRACKING)
                     .word_spaced(NOTE_WORD_SPACE),
-                Legend::new(NOTE_3, 765.3, 394.7, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
-                    .wide()
+                Legend::new(NOTE_3, 765.3, 394.0, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .krona()
+                    .tracked(NOTE_TRACKING)
                     .word_spaced(NOTE_WORD_SPACE),
             ],
             action: Some(
@@ -738,14 +749,17 @@ pub const ACCESS: Access = Access {
                     .stretched(1.7),
             ),
             notes: &[
-                Legend::new(NOTE_1, 1157.3, 376.3, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
-                    .wide()
+                Legend::new(NOTE_1, 1157.3, 375.7, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .krona()
+                    .tracked(NOTE_TRACKING)
                     .word_spaced(NOTE_WORD_SPACE),
-                Legend::new(NOTE_2, 1157.3, 385.5, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
-                    .wide()
+                Legend::new(NOTE_2, 1157.3, 384.9, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .krona()
+                    .tracked(NOTE_TRACKING)
                     .word_spaced(NOTE_WORD_SPACE),
-                Legend::new(NOTE_3, 1157.3, 394.7, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
-                    .wide()
+                Legend::new(NOTE_3, 1157.3, 394.0, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
+                    .krona()
+                    .tracked(NOTE_TRACKING)
                     .word_spaced(NOTE_WORD_SPACE),
             ],
             action: Some(
@@ -831,12 +845,11 @@ const MAIL_GROUND: &[Prim] = &[
 ];
 const MAIL_BACKDROP: &[Prim] = &[Prim::Soft { prims: MAIL_GROUND }];
 
-/// The in-fiction micro-print: the re-cut trace measures it at size 8
-/// weight 600 in the bright mint, not the dim teal an earlier pass set
-/// (a quarter of the ink, 25% narrow).
+/// The in-fiction micro-print in the bright mint: a badge note, Krona One
+/// as on every screen (`NOTE_SIZE`).
 const fn mid(x: f32, y: f32, s: &'static str) -> Piece {
     Piece::Label(Note {
-        at: Run::new(x, y, NOTE_SIZE, Ink::Fg).wide().word_spaced(NOTE_WORD_SPACE),
+        at: Run::new(x, y, NOTE_SIZE, Ink::Fg).krona().tracked(NOTE_TRACKING).word_spaced(NOTE_WORD_SPACE),
         text: s,
     })
 }
@@ -1586,7 +1599,7 @@ const fn grown_line(x: f32, y: f32, content: &'static str) -> Prim {
 }
 
 const fn store_note(x: f32, y: f32, content: &'static str) -> Prim {
-    Prim::TrackedWords { x, y, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content }
+    Prim::TrackedWords { x, y, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::KronaOne, anchor: Anchor::Start, tracking: NOTE_TRACKING, extra_space: NOTE_WORD_SPACE, content }
 }
 
 const fn socket_label(x: f32, y: f32, ink: Ink, content: &'static str) -> Prim {
@@ -2111,7 +2124,7 @@ pub const STORE: &[Prim] = &[
         prims: SHELF,
     },
     // footer marks
-    // corner notes: Michroma as every badge note, at the photographed extents
+    // corner notes: Krona One as every badge note, at the photographed extents
     // (x 181.7..333.3 / 1325.8..1468.8) in the trace's bright mint
     store_note(181.4, 737.9, "SPARE TIME MANAGER WAS DEVELO-"),
     store_note(181.4, 747.1, "PED BY SEOCHO. SERVING CUSTO-"),
@@ -2978,9 +2991,9 @@ const DASHBOARD_STATES: &[PlateStates] = &[
     blade_states(0), blade_states(1), blade_states(2), blade_states(3), blade_states(4), blade_states(5),
 ];
 
-/// The header and DEVICE SOFTWARE notes and section labels, in Michroma
-/// (review 2026-11-13, decision 5). Fitted to #49: notes cap 4.1 and
-/// extents x 205..356.3 / 205..350 / 205..284.2; labels cap 7.92 and
+/// The header and DEVICE SOFTWARE notes (Krona One, `NOTE_SIZE`) and
+/// section labels (Michroma), review 2026-11-13. Fitted to #49: notes cap
+/// 4.17 and extents x 205..356.3 / 205..350 / 205..284.2; labels cap 7.92 and
 /// USER 38.3 / SECURITY LEVEL 117.9 / DESCRIPTION 96.7 / DEVICE SOFTWARE
 /// 136.7 wide. Rajdhani SemiBold x1.37 drew them 10% narrow at 1.5x the
 /// photographed stem.
@@ -3016,15 +3029,15 @@ pub const DASHBOARD: &[Prim] = &[
     // foreground outlines/labels. The same fixed field remains under a
     // selected face, whose opaque gold fill covers it.
     Prim::Soft { prims: FACE_FIELDS },
-    // header notes: Michroma, NOTE_SIZE with NOTE_WORD_SPACE
-    Prim::TrackedWords { x: 204.6, y: 114.0, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "SPARE TIME MANAGER WAS DEVELO-" },
-    Prim::TrackedWords { x: 204.6, y: 122.9, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "PED BY SEOCHO. SERVING CUSTO-" },
-    Prim::TrackedWords { x: 204.6, y: 132.0, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "MERS SINCE 2006." },
-    Prim::TrackedWords { x: 715.0, y: 114.0, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "SPARE TIME MANAGER WAS DEVELO-" },
-    Prim::TrackedWords { x: 715.0, y: 122.9, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "PED BY SEOCHO. SERVING CUSTO-" },
-    Prim::TrackedWords { x: 715.0, y: 132.0, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "MERS SINCE 2006." },
-    Prim::TrackedWords { x: 1253.3, y: 114.0, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "MAPS ARE PROVIDED BY SEOCHO." },
-    Prim::TrackedWords { x: 1253.3, y: 122.9, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "SATELITE SERVICES SINCE 2006." },
+    // header notes: Krona One, NOTE_SIZE, NOTE_TRACKING and NOTE_WORD_SPACE
+    Prim::TrackedWords { x: 204.6, y: 114.0, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::KronaOne, anchor: Anchor::Start, tracking: NOTE_TRACKING, extra_space: NOTE_WORD_SPACE, content: "SPARE TIME MANAGER WAS DEVELO-" },
+    Prim::TrackedWords { x: 204.6, y: 122.9, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::KronaOne, anchor: Anchor::Start, tracking: NOTE_TRACKING, extra_space: NOTE_WORD_SPACE, content: "PED BY SEOCHO. SERVING CUSTO-" },
+    Prim::TrackedWords { x: 204.6, y: 132.0, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::KronaOne, anchor: Anchor::Start, tracking: NOTE_TRACKING, extra_space: NOTE_WORD_SPACE, content: "MERS SINCE 2006." },
+    Prim::TrackedWords { x: 715.0, y: 114.0, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::KronaOne, anchor: Anchor::Start, tracking: NOTE_TRACKING, extra_space: NOTE_WORD_SPACE, content: "SPARE TIME MANAGER WAS DEVELO-" },
+    Prim::TrackedWords { x: 715.0, y: 122.9, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::KronaOne, anchor: Anchor::Start, tracking: NOTE_TRACKING, extra_space: NOTE_WORD_SPACE, content: "PED BY SEOCHO. SERVING CUSTO-" },
+    Prim::TrackedWords { x: 715.0, y: 132.0, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::KronaOne, anchor: Anchor::Start, tracking: NOTE_TRACKING, extra_space: NOTE_WORD_SPACE, content: "MERS SINCE 2006." },
+    Prim::TrackedWords { x: 1253.3, y: 114.0, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::KronaOne, anchor: Anchor::Start, tracking: NOTE_TRACKING, extra_space: NOTE_WORD_SPACE, content: "MAPS ARE PROVIDED BY SEOCHO." },
+    Prim::TrackedWords { x: 1253.3, y: 122.9, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::KronaOne, anchor: Anchor::Start, tracking: NOTE_TRACKING, extra_space: NOTE_WORD_SPACE, content: "SATELITE SERVICES SINCE 2006." },
     // boxed A / C / D: 24x24 2px squares (lines 125-129) holding a
     // size-18 cap stretched 1.7, centred on the box (lines 130-134)
     line_rect(164.6, 109.8, 24.2, 24.2, Ink::Fixed(BRIGHT), 2.0),
@@ -3071,10 +3084,10 @@ pub const DASHBOARD: &[Prim] = &[
         },
         prims: HUB_PANEL,
     },
-    // B DEVICE SOFTWARE mark: notes Michroma as in the header, the
+    // B DEVICE SOFTWARE mark: notes Krona One as in the header, the
     // boxed B, the label (lines 302-308)
-    Prim::TrackedWords { x: 609.6, y: 745.4, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "MAPS ARE PROVIDED BY SEOCHO." },
-    Prim::TrackedWords { x: 609.6, y: 754.6, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, tracking: 0.0, extra_space: NOTE_WORD_SPACE, content: "SATELITE SERVICES SINCE 2006." },
+    Prim::TrackedWords { x: 609.6, y: 745.4, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::KronaOne, anchor: Anchor::Start, tracking: NOTE_TRACKING, extra_space: NOTE_WORD_SPACE, content: "MAPS ARE PROVIDED BY SEOCHO." },
+    Prim::TrackedWords { x: 609.6, y: 754.6, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::KronaOne, anchor: Anchor::Start, tracking: NOTE_TRACKING, extra_space: NOTE_WORD_SPACE, content: "SATELITE SERVICES SINCE 2006." },
     line_rect(574.3, 741.0, 24.0, 24.2, Ink::Fixed(BRIGHT), 2.0),
     Prim::Wide { x: 586.3, y: 761.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Middle, content: "B" },
     Prim::Wide { x: 574.05, y: 794.2, size: DASH_LABEL_SIZE, stretch: DASH_LABEL_STRETCH, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, content: "DEVICE SOFTWARE" },

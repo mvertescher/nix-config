@@ -137,8 +137,11 @@ pub enum Face {
     OrbitronBold,
     FreeSansBold,
     CpErasKitschSansBold,
-    /// Michroma Regular: Kitsch's wide extended labels and badge notes.
+    /// Michroma Regular: Kitsch's wide extended section labels.
     Michroma,
+    /// Krona One Regular: Kitsch's badge notes, wide and heavier than
+    /// Michroma's hairline.
+    KronaOne,
 }
 
 /// How one class of bar module is dressed: its silhouette and its inks.
@@ -1497,6 +1500,9 @@ pub struct Legend {
     /// Extra advance after each U+0020, in design pixels (SVG
     /// `word-spacing`), on top of `tracking`.
     pub word_space: f32,
+    /// Set in Krona One Regular (Kitsch's badge-note face) instead;
+    /// wins over `wide`, and `weight` is ignored.
+    pub krona: bool,
 }
 
 impl Legend {
@@ -1515,11 +1521,17 @@ impl Legend {
             tracking: 0.0,
             wide: false,
             word_space: 0.0,
+            krona: false,
         }
     }
 
     pub const fn wide(mut self) -> Legend {
         self.wide = true;
+        self
+    }
+
+    pub const fn krona(mut self) -> Legend {
+        self.krona = true;
         self
     }
 
@@ -2017,6 +2029,12 @@ pub struct Run {
     /// Extra advance after each U+0020, in design units (SVG
     /// `word-spacing`). Left-anchored runs only; 0 draws the run whole.
     pub word_space: f32,
+    /// Krona One Regular, Kitsch's badge-note face; wins over `wide` and
+    /// every Rajdhani weight, on its own true baseline like `wide`.
+    pub krona: bool,
+    /// Letter-spacing in design units (SVG `letter-spacing`): each glyph's
+    /// own advance plus this. Left-anchored runs only; 0 draws as before.
+    pub tracking: f32,
     /// Centre on `x` rather than starting at it.
     pub center: bool,
     /// End at `x` rather than starting at it.
@@ -2036,6 +2054,8 @@ impl Run {
             semibold: false,
             wide: false,
             word_space: 0.0,
+            krona: false,
+            tracking: 0.0,
             center: false,
             right: false,
         }
@@ -2063,6 +2083,16 @@ impl Run {
 
     pub const fn word_spaced(mut self, word_space: f32) -> Run {
         self.word_space = word_space;
+        self
+    }
+
+    pub const fn krona(mut self) -> Run {
+        self.krona = true;
+        self
+    }
+
+    pub const fn tracked(mut self, tracking: f32) -> Run {
+        self.tracking = tracking;
         self
     }
 

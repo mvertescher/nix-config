@@ -173,8 +173,10 @@
        Notes, 2026-11-13 (review decision 5, measured on the 4K photo):
          - the badge notes and section labels are a wide extended square
            sans (Eurostile Extended-like), not stretched Rajdhani. Notes
-           (cap 4.17, words 3-4px apart) are Michroma Regular (OFL) 5.56
-           at natural width, each word 2 further on; labels (cap 7.92) are
+           (cap 4.17, words 3-4px apart) are Krona One Regular (OFL) 5.46
+           at natural width, letter-spacing 0.64, each word 0.45 further on
+           (later the same day: Michroma's hairline came out thin and dim
+           at this size; Krona One's cap is 0.763 em); labels (cap 7.92) are
            Michroma 10.56 at scale(0.95 1). Michroma's cap is 0.75 em.
          - nav labels: the Rust table had drawn Regular 22; this trace's
            Rajdhani 500 24.5 ls -0.4 measures right (stems 2.2 against the
@@ -457,13 +459,13 @@
     <!-- the footnotes are BRIGHT mint in a bold, wide, tracked face (ink p90 (115,207,183) — the same #82f0d3 as the
          foot line), not dim: Rajdhani Bold 8 stretched 1.3x. Rows x 181..334 / 182..328 / 180..261, cap rows
          733.3..738.8 / 742.5..748.3 / 751.2..756.7; the C block x 1326..1469, rows 741.8..746.8 / 750.9..755.9 -->
-    <!-- 2026-11-13: Michroma 5.56 at natural width, words 2 further apart (header notes) -->
-    <g font-family="Michroma" font-size="5.56" font-weight="400" fill="#82f0d3">
-      <text x="181.4" y="737.9">SPARE <tspan dx="2">TIME</tspan> <tspan dx="2">MANAGER</tspan> <tspan dx="2">WAS</tspan> <tspan dx="2">DEVELO-</tspan></text>
-      <text x="181.4" y="747.1">PED <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan> <tspan dx="2">SERVING</tspan> <tspan dx="2">CUSTO-</tspan></text>
-      <text x="181.4" y="755.9">MERS <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
-      <text x="1325.4" y="746.3">MAPS <tspan dx="2">ARE</tspan> <tspan dx="2">PROVIDED</tspan> <tspan dx="2">BY</tspan> <tspan dx="2">SEOCHO.</tspan></text>
-      <text x="1325.4" y="755.4">SATELITE <tspan dx="2">SERVICES</tspan> <tspan dx="2">SINCE</tspan> <tspan dx="2">2006.</tspan></text>
+    <!-- 2026-11-13: Krona One 5.46, letter-spacing 0.64, words 0.45 further apart at absolute tspan x (header notes) -->
+    <g font-family="Krona One" font-size="5.46" font-weight="400" letter-spacing="0.64" fill="#82f0d3">
+      <text x="181.4" y="737.9">SPARE <tspan x="212.47">TIME</tspan> <tspan x="234.75">MANAGER</tspan> <tspan x="278.45">WAS</tspan> <tspan x="300.53">DEVELO-</tspan></text>
+      <text x="181.4" y="747.1">PED <tspan x="200.76">BY</tspan> <tspan x="214.51">SEOCHO.</tspan> <tspan x="255.57">SERVING</tspan> <tspan x="295.25">CUSTO-</tspan></text>
+      <text x="181.4" y="755.9">MERS <tspan x="207.77">SINCE</tspan> <tspan x="236.16">2006.</tspan></text>
+      <text x="1325.4" y="746.3">MAPS <tspan x="1352.2">ARE</tspan> <tspan x="1371.54">PROVIDED</tspan> <tspan x="1415.93">BY</tspan> <tspan x="1429.68">SEOCHO.</tspan></text>
+      <text x="1325.4" y="755.4">SATELITE <tspan x="1367.94">SERVICES</tspan> <tspan x="1412.35">SINCE</tspan> <tspan x="1440.74">2006.</tspan></text>
     </g>
     <!-- boxed A / C: ~24x24 squares with a 2px stroke (centrelines x 354..377.7, y 734.3..758.5 and x 1501..1525.2,
          y 733.9..758.2), the letter a wide pointed cap 15.8 x 11.7 -->

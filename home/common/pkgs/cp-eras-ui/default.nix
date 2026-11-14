@@ -39,6 +39,10 @@ let
   # the same source tree.
   michroma = google-fonts.override { fonts = [ "Michroma" ]; };
   michromaLicense = "${google-fonts.src}/ofl/michroma/OFL.txt";
+  # Krona One Regular (SIL OFL 1.1), the Kitsch badge-note face, the same
+  # way and from the same checkout.
+  kronaOne = google-fonts.override { fonts = [ "Krona One" ]; };
+  kronaOneLicense = "${google-fonts.src}/ofl/kronaone/OFL.txt";
 
   # crane's Cargo filter excludes .wgsl files, which the patched iced_wgpu
   # and cryoglyph crates include at compile time through include_str!.
@@ -117,6 +121,7 @@ let
     cp ${noto-cjk-subset}/share/fonts/opentype/*.otf fonts/
     cp ${freefont_ttf}/share/fonts/truetype/FreeSansBold.ttf fonts/
     cp ${michroma}/share/fonts/truetype/Michroma-Regular.ttf fonts/
+    cp ${kronaOne}/share/fonts/truetype/KronaOne-Regular.ttf fonts/
     python3 scripts/make-kitsch-sans.py fonts/FreeSansBold.ttf fonts/CP-Eras-Kitsch-Sans-Bold.ttf fonts/CP-Eras-Kitsch-Sans-Bold.audit.json
   '';
 
@@ -132,6 +137,8 @@ let
     # requires its text to travel with the font.
     mkdir -p $out/share/doc/cp-eras-ui/fonts/michroma
     cp ${michromaLicense} $out/share/doc/cp-eras-ui/fonts/michroma/OFL.txt
+    mkdir -p $out/share/doc/cp-eras-ui/fonts/krona-one
+    cp ${kronaOneLicense} $out/share/doc/cp-eras-ui/fonts/krona-one/OFL.txt
   '';
 
   postFixup = ''
@@ -165,7 +172,7 @@ let
     meta = with lib; {
       description = "A UI toolkit using Rust and Iced.";
       # Application code is MIT; the embedded FreeSans face is GPL-3.0+;
-      # the embedded Michroma face is OFL-1.1.
+      # the embedded Michroma and Krona One faces are OFL-1.1.
       license = [ licenses.mit licenses.gpl3Plus licenses.ofl ];
       platforms = platforms.linux;
     };
