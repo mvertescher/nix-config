@@ -2327,10 +2327,16 @@ const CONTENT: &[Prim] = &[
     Prim::Spaced { x: 113.0, y: 138.0, size: 16.5, ink: Ink::Fixed(LABEL), face: Face::Bold, pitch: 39.0, content: "STORE" },
     // BASKET plate
     fill_path(1291.7, 19.6, PLATE_EDGE, Ink::Fixed(PLATE)),
+    // The QR cell's hairline before the veneer: it ends where the band
+    // begins, so it stays in layer 0 with the plate and its top pixel
+    // resolves against the plate edge as it did before the veneer. After
+    // the veneer it joined the band rule's raised layer (one stray
+    // pixel, 2026-11-13). Same ink as the rule, so their overlap is
+    // unchanged by the order.
+    fill_rect(1455.1, 19.6, 0.8, 40.4, Ink::Fixed(PLATE_INK)),
     // the lower band is veneer: the generated `store-basket` texture
     Prim::Veneer { x: 1291.7, y: 60.0, texture: Texture::StoreBasket, shape: BASKET_BAND },
     fill_rect(1291.7, 59.6, 204.6, 0.8, Ink::Fixed(PLATE_INK)),
-    fill_rect(1455.1, 19.6, 0.8, 40.4, Ink::Fixed(PLATE_INK)),
     txt_mid(1369.0, 50.0, 15.0, Ink::Fixed(PLATE_INK), "BASKET"),
     Prim::At { x: 0.0, y: 0.0, prims: BASKET_QR },
     txt(1307.0, 73.0, 8.0, Ink::Fixed(PLATE_INK), "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE"),

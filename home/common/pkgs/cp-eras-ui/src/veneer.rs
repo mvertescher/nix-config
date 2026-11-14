@@ -116,8 +116,8 @@ impl Texture {
 
 /// An indexed texture: one palette index per texel, the palette in
 /// encoded sRGB, and a chain of 2x2 box-filtered RGB levels below it.
-/// The levels are what keep the 1600x900 canvas, which reads 2.4 texels
-/// per pixel, from aliasing the 5-texel line pitch into moire.
+/// 1600x900, which reads 2.4 texels per pixel, box-filters level 0
+/// directly ([`Decoded::area`]); the levels serve smaller scales.
 struct Decoded {
     w: usize,
     h: usize,
@@ -212,29 +212,54 @@ impl Decoded {
     }
 
     /// The mean over a `foot`-texel square centred on `(u, v)` (level-0
-    /// texel coordinates): plain bilinear at or above 1:1; below it, the
-    /// mip whose texels are at most `foot` wide, box-filtered over the
-    /// rest of the footprint with a 2x2 or 3x3 tap grid.
+    /// texel coordinates): plain bilinear at or above 1:1; below it, an
+    /// exact box -- every texel the footprint touches, weighted by the
+    /// area it covers -- on level 0 while the footprint is under four
+    /// texels (1600x900 reads 2.4), and on the mip that brings it to two
+    /// to four texels beyond that.
+    ///
+    /// The exact box is the downscale the reference itself gets at
+    /// 1600x900 and keeps a line's contrast where its pitch allows: the
+    /// previous mip-then-tap path blurred over about 3.5 texels, which
+    /// turned bunched grain to mud.
     fn area(&self, u: f32, v: f32, foot: f32) -> [f32; 3] {
         if foot <= 1.0 {
             return self.bilinear(0, u, v);
         }
-        let level = (foot.log2().floor() as usize).min(self.mips.len());
+        let level = if foot < 4.0 { 0 } else { ((foot / 2.0).log2().floor() as usize).min(self.mips.len()) };
         let scale = (1u32 << level) as f32;
         let (u, v, foot) = (u / scale, v / scale, foot / scale);
-        let n = foot.ceil().max(1.0) as usize;
+        let half = foot / 2.0;
+        // Per-axis coverage of texel i (spanning [i, i + 1]) by the
+        // footprint [c - half, c + half].
+        let weights = |c: f32| {
+            let (lo, hi) = (c - half, c + half);
+            let first = lo.floor() as isize;
+            let last = (hi.ceil() as isize - 1).max(first);
+            (first..=last).map(move |i| {
+                let w = (hi.min(i as f32 + 1.0) - lo.max(i as f32)).max(0.0);
+                (i, w)
+            })
+        };
         let mut sum = [0.0f32; 3];
-        for j in 0..n {
-            for i in 0..n {
-                let su = u + foot * ((i as f32 + 0.5) / n as f32 - 0.5);
-                let sv = v + foot * ((j as f32 + 0.5) / n as f32 - 0.5);
-                let c = self.bilinear(level, su, sv);
-                for ch in 0..3 {
-                    sum[ch] += c[ch];
+        let mut total = 0.0f32;
+        for (y, wy) in weights(v) {
+            if wy <= 0.0 {
+                continue;
+            }
+            for (x, wx) in weights(u) {
+                let w = wx * wy;
+                if w <= 0.0 {
+                    continue;
                 }
+                let c = self.level_texel(level, x, y);
+                for ch in 0..3 {
+                    sum[ch] += c[ch] * w;
+                }
+                total += w;
             }
         }
-        sum.map(|s| s / (n * n) as f32)
+        sum.map(|s| s / total.max(1e-6))
     }
 }
 
