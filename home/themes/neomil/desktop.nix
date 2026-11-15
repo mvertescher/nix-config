@@ -124,6 +124,19 @@ in
       };
     };
 
+    # --- terminal -------------------------------------------------------
+    # The design's mono text is 7 units; at the TV's scale stylix's 12 pt
+    # is unreadable from the couch. The padding keeps the first glyph out
+    # of the window's cut corner (seen on terra 2026-11-14: the prompt's
+    # first letter was clipped).
+    programs.alacritty.settings = {
+      font.size = o (px 7 * 0.75);
+      window.padding = {
+        x = px 6;
+        y = px 5;
+      };
+    };
+
     # --- launcher: the GO HOME panel, the password field, menu rows ----
     xdg.configFile."rofi/era.rasi".text = lib.mkForce ''
       /* Generated from home/themes/neomil/desktop.nix (design/launcher.html). */
