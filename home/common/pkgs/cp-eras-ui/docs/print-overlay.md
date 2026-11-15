@@ -1,4 +1,4 @@
-# Print overlay, 2026-11-13 (copies remeasured, and on for all eras, 2026-11-14)
+# Print overlay, 2026-11-13 (copies remeasured, and on for all eras, 2026-11-14; ground and chroma gates 2026-11-15)
 
 Owner decision 6 (`docs/review-2026-11-13/DECISIONS.md`): one shared
 print-texture pass per era instead of element-by-element echo and grain
@@ -131,7 +131,116 @@ the era's treatment for a new screen (Neomil: the mailbox fit);
 reference binaries wear. `print::DEFAULT_STRENGTH` is 1: the fit is worn
 by default (below).
 
-Overrides: `CP_ERAS_UI_PRINT_SET="echo1=kx,ky,gain;echo2=...;echo_centre=x,y;echo_blend=over|lighten;echo_soft=s;echo_lift=lo,hi;tex_pitch=p;tex_angle=a;tex_crest=r,g,b;tex_trough=r,g,b;tex_phase=f;..."`.
+Overrides: `CP_ERAS_UI_PRINT_SET="echo1=kx,ky,gain;echo2=...;echo_centre=x,y;echo_blend=over|lighten;echo_soft=s;echo_lift=lo,hi;echo_ground=lo,hi,floor;echo_chroma=lo,hi;tex_pitch=p;tex_angle=a;tex_crest=r,g,b;tex_trough=r,g,b;tex_phase=f;..."`.
+
+Two more gates since 2026-11-15 (next section): `echo_ground` (a copy
+landing on a mid-tone ground is weakened to `floor` of its opacity) and
+`echo_chroma` (Neomil: copies only of saturated colour).
+
+## Copies over mid-tone grounds and neutral marks, 2026-11-15
+
+### What was wrong
+
+Kitsch's dashboard tiles: the light VEHICLES / WEAPONS / LOCATIONS /
+PRODUCTS labels on the mid-teal fill (encoded luminance 0.41-0.46) got a
+plainly visible copy to their left that the reference barely shows; and
+the tile outline got a grey band outside it that read as a dark halo.
+
+### Method
+
+A model-free *copy contrast* per site: on the ground pixels next to a
+light mark, the mean of those the mark's copy 1 lands on (the ink mask
+shifted outward by `k (p - centre)`) minus the mean of the mirror pixels
+(the mask shifted inward by the same amount, so the same distance from
+the ink). Anything centred on the ink -- the references' glow, the blur
+of the mark's own edge -- cancels; what is left is the copy. Measured in
+levels of the channel where the mark is brightest, on the reference and
+on our 4K render of the same screen (our own mask from the render), 4K
+native. Tools in the session scratch (`ghost-gate/tools/cc.py`,
+`sites.py`), not the repository.
+
+### What the references do
+
+The copies are **present, at reduced strength**, not absent and not
+hidden by the fill being as light as the copy. Reference against our
+render before this change (ratio = reference / ours, copy 1):
+
+| ground | sites | ground luminance | ratio |
+|---|---|---|---|
+| Kitsch, dark (B block, USER, GUES box, login GUEST, digits) | 6 | 0.06-0.24 | 0.43-0.68, mean 0.55 |
+| Kitsch, pink field (A/C/D notes, SECURITY LEVEL, DESCRIPTION, 10:20 PM, ...) | 9 | 0.29-0.37 | 0.22-0.57, mean 0.39 |
+| Kitsch, mid-teal tiles (VEHICLES, WEAPONS, LOCATIONS, PRODUCTS) | 4 | 0.41-0.46 | 0.35-0.49, mean 0.40 |
+| Neo-kitsch, dark (labels, mail row, store) | 7 | 0.04-0.10 | 0.56-1.97, median 1.19 (1.07-1.26 on the dashboard labels) |
+| Neo-kitsch, purple sky | 3 | 0.19-0.31 | 1.0, 1.07 at 0.19-0.21; 0.58 at 0.31 |
+| Entropism, dark (store and mail text) | 3 | 0.05-0.07 | 0.52-0.77 |
+
+In levels, VEHICLES' copy is 6.7 in the reference against 18.7 ours
+(fill G 142, ink G 255). So two things, both larger than the copies' own
+scatter:
+
+1. **Kitsch's copies were about 1.8x the reference's everywhere** (dark
+   ground ratio 0.55). The 2026-11-14 bloom-aware fit gave 0.28 / 0.08,
+   but in Kitsch the glow overlaps copy 1 and took some of its weight the
+   wrong way; the mirror measure cancels the glow. Neo-kitsch, measured
+   the same way, sits at 1.07-1.26 on its dashboard labels, which checks
+   the method.
+   Kitsch's gains are now 0.155 / 0.044 (x 0.55).
+2. **Over a mid-tone ground the reference's copies are weaker again**,
+   about 0.6 of their dark-ground strength relative to the mark's own
+   contrast: Kitsch 0.39-0.40 / 0.55 = 0.7 on the pink field and the
+   tiles, Neo-kitsch 0.58 / 1.17 = 0.5 on the brightest sky (against its dashboard labels); at ground
+   luminance up to about 0.21 there is no reduction in either era. That
+   is the ground gate.
+
+The tile outline's "dark halo" is not a darkening: the pass never lowers
+a pixel's luminance on that screen (0 pixels by more than 5 levels). It
+is the copy of the tile and its outline laid on the dark ground outside
+the outline -- the reference has one too (G 62-68 over a ground of 44,
+glowing teal) -- which at 1.8x strength, without the reference's glow
+and copying our whiter outline (169, 230, 223 against the reference's
+111, 237, 211), read as a grey shadow ring (G 69-79, R 46-52 over a
+ground of 31-39). With the Kitsch gains corrected it is G 52-58, R 37-40
+over 35-38: the same excess over its ground as the reference's. The
+outline colour itself is an art difference, not the pass's.
+
+### The ground gate
+
+`Print::echo_ground = (lo, hi, floor)`: a copy's opacity is scaled by
+`mix(1, floor, smoothstep(lo, hi, L))`, `L` the encoded luminance of the
+pixel the copy lands on (the frame before any copy). Every era wears
+`print::GROUND = (0.22, 0.30, 0.6)`. It is independent of the fill gate,
+which still removes copies inside light fills (luminance 0.6-0.75 for
+Kitsch / Neo-kitsch, measured on a ring) so dark ink on them stays firm.
+
+After (reference / ours, copy 1, Kitsch dashboard): VEHICLES 6.7 / 6.3,
+WEAPONS 5.6 / 5.4, LOCATIONS 5.4 / 4.9, PRODUCTS 8.7 / 6.2; pink-field
+notes and labels ratio 0.75-1.22; dark ground (B block) 18.0 / 14.9, USER
+13.5 / 11.7. Ratio median 1.06 over 13 dashboard sites (was 0.39);
+mailbox, store and login sites 0.61-1.44 (was 0.22-0.55). Neo-kitsch's
+brightest sky label (CUSTOMER, ground 0.31) 0.58 -> 0.80; its dark-ground
+sites unchanged.
+
+Neomil and Entropism hardly reach the gate: their grounds are darker than
+0.22 nearly everywhere (Neomil 90th percentile 0.16-0.22, its red fills
+already removed by its own fill gate at 0.20-0.32), and the light fills
+are gated already.
+
+### The chroma gate (Neomil)
+
+Neomil's copies are coloured by a row texture fitted on red ink only
+(crest `(1, 0.30, 0.30)`, trough `(0.58, 0.98, 0.98)` per channel). On a
+neutral mark those factors make cyan: the mail client's light title tab
+got pale cyan-striped copies. None of the four Neomil references has a
+neutral mark to fit -- no pixel has all three channels above 90, none is
+both light and low in chroma -- so there is no measured copy of one to
+match. `Print::echo_chroma = (lo, hi)` fades a copy in as the copied
+colour's saturation `(max - min) / max` rises from `lo` to `hi`; Neomil
+wears `(0.25, 0.45)` (its red ink is 0.79), so a neutral mark has no
+copies. Other eras: off. A hue-preserving texture (a luminance-only row
+modulation for neutral copies) is the alternative if neutral marks should
+carry copies; nothing in the references says which.
+
+
 
 ### On by default, 2026-11-14
 
@@ -174,12 +283,32 @@ radial registration copies the pass reproduces, so all were deleted:
 
 What looks different from the hand-drawn copies, by eye at 4K:
 
-- Store scatter-code cells: the reference's trails are a fairly continuous
-  smear; the pass gives two discrete, fainter steps of the same length.
-  The hand-drawn trail matched the intensity better.
-- Login notices: the pass's copies are fainter than the reference's (the
-  hand-drawn single copy at 0.30 was closer in strength). The login fit is
-  the weakest (8 sites).
+- Store scatter-code cells: by eye the reference's trails are a fairly
+  continuous smear and the pass gives two discrete, fainter steps. Measured
+  2026-11-15 (median red profile leftward from the left edge of 7 cells,
+  levels above a ground of 25): the reference has steps too -- about 82
+  for 4 px, then about 22 to px 13, then about 8 to px 21 -- and the pass
+  gives 77 for 3 px, about 16 to px 11, about 7 to px 21. So the shape is
+  the pass's (copy 1 then copy 2); the middle step is about 0.65 of the
+  reference's and the near one ends a pixel early. Copy contrast over the
+  cells: reference 66.5, ours 49.9 (0.75). Not changed: matching it needs
+  more copy for these cells only (about 1.4x the store fit), i.e. a
+  per-element weight the pass does not have; raising the store gains would
+  overshoot the 32 sites they were fitted on.
+- Login notices: the copies are fainter than the reference's. Measured
+  2026-11-15 on the notice under the active card: copy 1 contrast 33.6
+  levels in the reference, 22.4 ours (0.67); copy 2 23.1 / 13.8. Part is
+  the ink: the reference's notice peaks at red 251, ours at 228 (0.91).
+  A free fit puts the reference's copies at 0.45 / 0.18 of the ink and a
+  pixel farther out ((-5.2, 7.5) native against the login fit's (-4.2,
+  6.4)), ours at 0.38 / 0.15. But the notices on the two inactive cards
+  (on the dark red card fill) have **no** copies in the reference
+  (contrast -0.8 and 1.0) while ours have 4.7 and 8.4: the Neomil
+  references hide copies on their red fills, dark ones too, not only on
+  the bright tiles. So raising `PRINT_LOGIN`'s gains would fix one notice
+  and worsen the other two; not changed. What would: a gate on the ground's
+  redness (the card fill is about (90, 20, 25), luminance 0.07-0.11, below
+  the ground gate), and the notice ink at 251.
 - GO HOME vertical brands: the pass draws copies to their right that the
   reference barely shows (the hand-drawn ones were similar).
 - Gained: copies the hand drawing never had and the reference does (store
@@ -217,12 +346,16 @@ Tuning knobs (read once at start): `CP_ERAS_UI_PRINT=<strength>`,
 
 - No bloom (needs a separable blur, i.e. more passes). Entropism text
   regions stay darker than the reference (mail body mean G 38 vs 46).
-- Non-Neomil eras: the copies are crisper and a little more solid than
-  the reference's, which are broken by a diagonal pattern and wrapped in
-  bloom the pass does not draw; light text over a mid fill (Kitsch
-  dashboard tiles) shows a copy the reference hides. Gains left at the fit.
-- White ink under Neomil's red texture (the mail client's title tab) gets
-  pale cyan-striped copies; the texture was fitted on red ink only.
+- Non-Neomil eras: the copies are crisper than the reference's, which
+  are broken by a diagonal pattern and wrapped in bloom the pass does not
+  draw. Kitsch gains corrected 2026-11-15; Entropism's measure 1.3-1.9x
+  the reference's on dark ground the same way (ratio 0.52-0.77, 3 sites)
+  and are left at the fit.
+- Kitsch's BRAINDANCE panel body (yellow on dark): the reference's
+  copies are dark, hatched and nearly symmetric (copy contrast 1 level);
+  ours are solid (12 levels after the gain change). Not modelled.
+- Neomil copies of a neutral mark are dropped, not drawn (chroma gate):
+  the references have no neutral mark to fit.
 - Entropism mean colour rises 1-3.6 levels (G) against a reference ~1-2
   above the goldens: its frame strokes were already brighter than the art.
 - Lavapipe cost of the pass alone (timed 2026-11-14 with a throwaway

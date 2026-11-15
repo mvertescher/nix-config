@@ -66,6 +66,16 @@ pub struct Params {
     /// at which copies start (`.0`) and finish (`.1`) being suppressed.
     pub echo_gate: (f32, f32),
     pub echo_gate_radius: f32,
+    /// Ground gate: `(lo, hi, floor)`. A copy's opacity is scaled by
+    /// `mix(1, floor, smoothstep(lo, hi, L))`, `L` the encoded luminance of
+    /// the pixel the copy lands on: copies of light marks are weaker over a
+    /// mid-tone ground than over a dark one. `floor` 1 disables it.
+    pub echo_ground: (f32, f32, f32),
+    /// Chroma gate: a copy shows only where its own colour is saturated,
+    /// fading in as `(max - min) / max` of the copied colour rises from
+    /// `.0` to `.1`. For a colour texture fitted on one ink, so a neutral
+    /// mark does not get copies the fit never saw. `(0, 0)` disables it.
+    pub echo_chroma: (f32, f32),
     /// Fill scanlines: darkening at the trough (0 = none), pitch, phase in
     /// cycles.
     pub scan_depth: f32,
@@ -95,6 +105,8 @@ impl Params {
         echo_phase: 0.0,
         echo_gate: (1.0, 1.0),
         echo_gate_radius: 6.0,
+        echo_ground: (0.0, 0.0, 1.0),
+        echo_chroma: (0.0, 0.0),
         scan_depth: 0.0,
         scan_pitch: 2.0,
         scan_phase: 0.0,
@@ -200,7 +212,7 @@ impl Uniforms {
                 [w, h, sx, sy],
                 [e[0].0, e[0].1, e[0].2, e[1].0],
                 [e[1].1, e[1].2, e[2].0, e[2].1],
-                [e[2].2, 0.0, p.echo_centre.0 * sx, p.echo_centre.1 * sy],
+                [e[2].2, p.echo_chroma.0, p.echo_centre.0 * sx, p.echo_centre.1 * sy],
                 [tex_pitch, p.echo_phase, dx / n, dy / n],
                 [
                     p.echo_tex_crest[0],
@@ -212,7 +224,7 @@ impl Uniforms {
                     p.echo_tex_trough[0],
                     p.echo_tex_trough[1],
                     p.echo_tex_trough[2],
-                    0.0,
+                    p.echo_chroma.1,
                 ],
                 [
                     p.echo_gate.0,
@@ -232,7 +244,12 @@ impl Uniforms {
                     p.grain_add,
                     (p.grain_cell * s).max(1.0),
                 ],
-                [p.grain_seed as f32, 0.0, 0.0, 0.0],
+                [
+                    p.grain_seed as f32,
+                    p.echo_ground.0,
+                    p.echo_ground.1,
+                    p.echo_ground.2,
+                ],
             ],
         }
     }

@@ -95,6 +95,18 @@ pub struct Print {
     /// of the fill would otherwise pale the dark ink printed on it.
     pub echo_gate: (f32, f32),
     pub echo_gate_radius: f32,
+    /// Ground gate `(lo, hi, floor)`: a copy landing on a ground of encoded
+    /// luminance `L` is laid at `mix(1, floor, smoothstep(lo, hi, L))` of its
+    /// opacity. The references' copies of light marks are about 0.6 as
+    /// strong over a mid-tone ground (the Kitsch tiles and pink field, the
+    /// Neo-kitsch sky) as over a dark one, measured as a fraction of the
+    /// mark's contrast against that ground. `floor` 1 is no gate.
+    pub echo_ground: (f32, f32, f32),
+    /// Chroma gate: copies fade in as the copied colour's saturation
+    /// `(max - min) / max` rises from `.0` to `.1`. For a colour texture
+    /// fitted on a saturated ink (Neomil's red): a neutral mark gets no
+    /// copies the references never show. `(0, 0)` is no gate.
+    pub echo_chroma: (f32, f32),
     /// Fill scanlines over everything: darkening at the trough, pitch.
     pub scan_depth: f32,
     pub scan_pitch: f32,
@@ -116,6 +128,8 @@ impl Print {
         echo_texture: Texture::FLAT,
         echo_gate: (1.0, 1.0),
         echo_gate_radius: 6.0,
+        echo_ground: (0.0, 0.0, 1.0),
+        echo_chroma: (0.0, 0.0),
         scan_depth: 0.0,
         scan_pitch: 2.0,
         grain_mul: 0.0,
@@ -166,6 +180,8 @@ impl Print {
             echo_phase: t.phase + echo_phase,
             echo_gate: self.echo_gate,
             echo_gate_radius: self.echo_gate_radius,
+            echo_ground: self.echo_ground,
+            echo_chroma: self.echo_chroma,
             scan_depth: self.scan_depth,
             scan_pitch: self.scan_pitch,
             scan_phase,
@@ -182,7 +198,8 @@ impl Print {
     /// `echo_blend=over|lighten`, `echo_soft`, `echo_lift=lo,hi`,
     /// `tex_pitch`, `tex_angle`, `tex_crest=r,g,b`, `tex_trough=r,g,b`,
     /// `tex_phase`,
-    /// `echo_gate=lo,hi`, `echo_gate_radius`, `scan_depth`, `scan_pitch`,
+    /// `echo_gate=lo,hi`, `echo_gate_radius`, `echo_ground=lo,hi,floor`,
+    /// `echo_chroma=lo,hi`, `scan_depth`, `scan_pitch`,
     /// `grain_mul`, `grain_add`, `grain_cell`.
     pub fn with_overrides(mut self, spec: &str) -> Print {
         for item in spec.split(';') {
@@ -210,6 +227,8 @@ impl Print {
                 ("tex_phase", Some(v), ..) => self.echo_texture.phase = v,
                 ("echo_gate", _, Some(p), _) => self.echo_gate = p,
                 ("echo_gate_radius", Some(v), ..) => self.echo_gate_radius = v,
+                ("echo_ground", _, _, Some([lo, hi, f])) => self.echo_ground = (lo, hi, f),
+                ("echo_chroma", _, Some(p), _) => self.echo_chroma = p,
                 ("scan_depth", Some(v), ..) => self.scan_depth = v,
                 ("scan_pitch", Some(v), ..) => self.scan_pitch = v,
                 ("grain_mul", Some(v), ..) => self.grain_mul = v,
@@ -227,6 +246,14 @@ impl Default for Print {
         Print::OFF
     }
 }
+
+/// The ground gate every era wears ([`Print::echo_ground`]): full opacity
+/// over grounds darker than encoded luminance 0.22, `0.6` of it from 0.30
+/// up. Measured 2026-11-15 as the copy-side minus mirror-side contrast of
+/// copy 1 next to light marks, reference against our render, on 21 Kitsch
+/// and 10 Neo-kitsch sites (`docs/print-overlay.md`, "Copies
+/// over mid-tone grounds"). Light fills are handled by the fill gate.
+pub const GROUND: (f32, f32, f32) = (0.22, 0.30, 0.6);
 
 /// The strength [`wear`] applies when `CP_ERAS_UI_PRINT` is unset: the
 /// fit itself. On for every era since the owner's decision of 2026-11-14
@@ -362,6 +389,27 @@ mod tests {
     }
 
     #[test]
+    fn ground_and_chroma_gates_reach_the_shader() {
+        for era in Era::ALL {
+            let p = of(era);
+            assert_eq!(p.echo_ground, GROUND, "{era:?}");
+            let u = iced_wgpu::print::Uniforms::new(&p.params(0.0, 0.0, 0), iced_wgpu::core::Size::new(3840, 2160));
+            assert_eq!(&u.u[10][1..4], &[GROUND.0, GROUND.1, GROUND.2], "{era:?}");
+            assert_eq!((u.u[3][1], u.u[6][3]), p.echo_chroma, "{era:?}");
+        }
+        // Only Neomil's texture was fitted on one ink, so only it drops
+        // copies of neutral marks.
+        assert!(of(Era::Neomil).echo_chroma.1 > of(Era::Neomil).echo_chroma.0);
+        for era in [Era::Kitsch, Era::Neokitsch, Era::Entropism] {
+            assert_eq!(of(era).echo_chroma, (0.0, 0.0), "{era:?}");
+        }
+        // A floor of 1 is no gate; OFF has none.
+        assert_eq!(Print::OFF.echo_ground.2, 1.0);
+        let (lo, hi, floor) = GROUND;
+        assert!(lo < hi && (0.0..1.0).contains(&floor));
+    }
+
+    #[test]
     fn row_pattern_is_periodic_at_its_pitch() {
         for &pitch in &[2.0f32, 4.764, 7.94] {
             for i in 0..50 {
@@ -417,8 +465,10 @@ mod tests {
     #[test]
     fn overrides_parse() {
         let p = Print::OFF.with_overrides(
-            "echo1=0.01,0.02,0.4; echo2=0.02,0.03,0.2;bogus=1;scan_depth=x;tex_crest=1,0.3,0.3;echo_blend=lighten;echo_soft=0.5",
+            "echo1=0.01,0.02,0.4; echo2=0.02,0.03,0.2;bogus=1;scan_depth=x;tex_crest=1,0.3,0.3;echo_blend=lighten;echo_soft=0.5;echo_ground=0.2,0.3,0.6;echo_chroma=0.25,0.45",
         );
+        assert_eq!(p.echo_ground, (0.2, 0.3, 0.6));
+        assert_eq!(p.echo_chroma, (0.25, 0.45));
         assert_eq!(p.echo[0], Echo { kx: 0.01, ky: 0.02, gain: 0.4 });
         assert_eq!(p.echo[1], Echo { kx: 0.02, ky: 0.03, gain: 0.2 });
         assert_eq!(p.echo_texture.crest, [1.0, 0.3, 0.3]);

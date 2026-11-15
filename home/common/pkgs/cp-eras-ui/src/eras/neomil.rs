@@ -3527,6 +3527,15 @@ pub const DASHBOARD: &[Prim] = &[
 /// texture is about one level of fine noise.
 pub const PRINT: crate::print::Print = PRINT_MAILBOX;
 
+/// Chroma gate. Every mark in the four references is saturated red (no
+/// pixel has all three channels above 90, none light and low in chroma),
+/// so the row texture was fitted on red ink only; applied to a neutral
+/// mark (the mail client's light title tab) its per-channel factors turn
+/// the copy into pale cyan stripes. The references show no copy of a
+/// neutral mark to fit, so those copies are dropped: full at the red ink's
+/// saturation (0.79), none below 0.25.
+const NEOMIL_CHROMA: (f32, f32) = (0.25, 0.45);
+
 const PRINT_TEXTURE: crate::print::Texture = crate::print::Texture {
     pitch: 1.985,
     angle: 90.0,
@@ -3554,6 +3563,8 @@ const PRINT_MAILBOX: crate::print::Print = crate::print::Print {
     echo_texture: PRINT_TEXTURE,
     echo_gate: (0.20, 0.32),
     echo_gate_radius: 6.0,
+    echo_ground: crate::print::GROUND,
+    echo_chroma: NEOMIL_CHROMA,
     scan_depth: 0.0,
     scan_pitch: 1.985,
     grain_mul: 0.0,
