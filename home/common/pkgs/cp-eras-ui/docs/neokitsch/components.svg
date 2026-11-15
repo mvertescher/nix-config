@@ -172,8 +172,10 @@
     <clipPath id="panelclip"><rect x="1170.8" y="326" width="230.4" height="309"/></clipPath>
     <g id="entrylines">
       <rect x="417" y="361" width="345" height="42" fill="#3c1c11"/>
-      <!-- gold bar, bottom-left chamfer 16x13 -->
-      <path d="M 417,414 H 761 V 441 H 433 L 417,428 Z" fill="#fbc171"/>
+      <!-- gold bar: bottom-left chamfer 15 at 45 degrees, every corner
+           (the chamfer's knees too) filleted r 2.1; re-measured
+           2026-11-15 at 3840 (was a square-cut bar with a 16x13 cut) -->
+      <path d="M 419.1000,414 H 758.9000 A 2.1,2.1 0 0 1 761,416.1000 V 438.9000 A 2.1,2.1 0 0 1 758.9000,441 H 432.8698 A 2.1,2.1 0 0 1 431.3849,440.3849 L 417.6151,426.6151 A 2.1,2.1 0 0 1 417,425.1302 V 416.1000 A 2.1,2.1 0 0 1 419.1000,414 Z" fill="#fbc171"/>
       <use href="#login-letterbox" x="416" y="465"/>
     </g>
     <g id="entrytext" font-family="Rajdhani">
@@ -640,7 +642,7 @@
   </g>
   </g>
   <text x="1189" y="496.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">label 19.5px 500 ls 0.15 #f5bf75 · field 345x42 #3c1c11, NO outline, no caret, no inner rule · CTA bar</text>
-  <text x="1189" y="504.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">344x27 #fbc171, square but for a 16x13 bottom LEFT chamfer, ENTER / LOGIN 14px 300 ls 4.1 #6b3f1e centred</text>
+  <text x="1189" y="504.0" font-size="7.0" letter-spacing="0.15" fill="#a97c48">344x27 #fbc171, r2.1 corners, a 15 bottom LEFT chamfer, ENTER / LOGIN 14px 300 ls 4.1 #6b3f1e centred</text>
   <text x="1189" y="518" font-size="10" font-weight="600" letter-spacing="3.2" fill="#c5965a">4  MESSAGE PANEL: PLAIN TEXT, NO OUTLINE</text>
   <g transform="translate(452 269)" clip-path="url(#winMsg)">
   <!-- MESSAGE BODY. mailbox-trace.svg: the message is drawn with NO panel, no
@@ -998,7 +1000,7 @@
   <text x="1563" y="974.4" font-size="6.4" fill="#7e5836">FRAME_LIT #c69a55 is the nearest const, as bar.svg records.</text>
   <text x="1563" y="984.6" font-size="6.4" fill="#7e5836">STRATA #634427, 'fine lines of a strata divider bunching into a wedge': no trace has one. The era's</text>
   <text x="1563" y="991.8" font-size="6.4" fill="#7e5836">layered fine lines are the wire band and the onion rings.</text>
-  <text x="1563" y="1002.0" font-size="6.4" fill="#7e5836">FIELD #2c1c14 vs the measured field #3c1c11; VENEER #e3af5f vs bases #f8c678 / #f4c078 / #f6c27a;</text>
+  <text x="1563" y="1002.0" font-size="6.4" fill="#7e5836">FIELD is now the measured field #3c1c11 (was #2c1c14); VENEER #e3af5f vs bases #f8c678 / #f4c078 / #f6c27a;</text>
   <text x="1563" y="1009.2" font-size="6.4" fill="#7e5836">GOLD_TEXT #e7c686 vs cores #f5bf75 / #f3c583 / #e9bd7a. AMBER #fcc474 does agree with the CTA bar</text>
   <text x="1563" y="1016.4" font-size="6.4" fill="#7e5836">#fbc171.</text>
   <text x="1563" y="1026.6" font-size="6.4" fill="#7e5836">Trace mail ink #7b5438 / #895f3b / #865c39 now prints separately on the selected runtime row;</text>

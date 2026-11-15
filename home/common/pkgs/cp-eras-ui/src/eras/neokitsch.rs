@@ -49,7 +49,11 @@ pub const VENEER_LIGHT: iced::Color = rgb(0xf4c474);
 pub const VENEER_DARK: iced::Color = rgb(0xd8a558);
 pub const GRAIN: iced::Color = rgb(0xb98a44);
 pub const AMBER: iced::Color = rgb(0xfcc474);
-pub const FIELD: iced::Color = rgb(0x2c1c14);
+/// The login entry well (`Ink::Inset`): a flat warm maroon-brown,
+/// measured at 3840x2160 as `#3c1c11` over both wells' interiors (R 60.0,
+/// G 27.7-28.0, B 17.5-18.9; std under 2 levels, no gradient), the value
+/// `login-trace.svg` samples. `#2c1c14` until 2026-11-15 read greyer.
+pub const FIELD: iced::Color = rgb(0x3c1c11);
 pub const ON_VENEER: iced::Color = rgb(0x3a2410);
 pub const DIM: iced::Color = rgb(0x8a7048);
 /// Lit side of the relief bevel, against `FRAME_INNER` as its shaded
@@ -465,6 +469,18 @@ pub fn style() -> Style {
 /// them is printed in. `cta`/`AMBER` is the published role and is a
 /// hair lighter; the dark brown is not a role anywhere.
 pub const ON_BAR: iced::Color = rgb(0x6b3f1e);
+
+/// The ENTER / LOGIN bar's bottom-left chamfer, design units, square.
+/// Measured on both bars at 3840x2160 (2026-11-15): the cut runs at 45
+/// degrees (slope 0.99) from 36.0 px up the left edge, which is 15.0
+/// here; the trace's 16 x 13 was read by eye.
+pub const CTA_CHAMFER: f32 = 15.0;
+/// Corner radius of the ENTER / LOGIN bar, design units, at all four
+/// corners of its outline including the chamfer's knees. The reference
+/// bars are not square-cut: an iso-edge fit of their sharp (1 px)
+/// edges gives 6.3-7.0 px top-left and top-right and 5.3-6.0 px bottom
+/// right at 3840x2160. The era's one CTA radius; a new bar takes it.
+pub const CTA_ROUND: f32 = 2.1;
 /// The line-work of the header's caption box and of a letter box.
 pub const HAIRLINE: iced::Color = rgb(0xc8914d);
 /// The mid gold the captions, the letters and the clock are set in.
@@ -822,11 +838,12 @@ pub const ACCESS: Access = Access {
                 busy: "VERIFYING",
                 failed: "ACCESS DENIED",
             }),
-            // Bottom-left chamfer only, 16 wide by 13 tall; the table
-            // carries the one figure, so this is 16 square.
+            // Bottom-left chamfer only, at 45 degrees, every corner
+            // filleted: `CTA_CHAMFER`, `CTA_ROUND`.
             action: Some(
                 Plate::filled(Plot::new(417.0, 414.0, 344.0, 27.0), Ink::Cta)
-                    .bevelled(Bevel::bl(16.0)),
+                    .bevelled(Bevel::bl(CTA_CHAMFER))
+                    .rounded(CTA_ROUND),
             ),
             action_label: Some(
                 // 500, stretched 1.42 and untracked: the source is a wide
@@ -872,7 +889,8 @@ pub const ACCESS: Access = Access {
             }),
             action: Some(
                 Plate::filled(Plot::new(837.0, 414.0, 344.0, 27.0), Ink::Cta)
-                    .bevelled(Bevel::bl(16.0)),
+                    .bevelled(Bevel::bl(CTA_CHAMFER))
+                    .rounded(CTA_ROUND),
             ),
             action_label: Some(
                 // 500, stretched 1.42 and untracked: the source is a wide
@@ -952,18 +970,83 @@ use crate::style::{
 pub const BAR: iced::Color = rgb(0xf8c678);
 pub const BAR_GRAIN: iced::Color = rgb(0xcf975c);
 
-const fn text(x: f32, y: f32, size: f32, ink: Ink, s: &'static str) -> Piece {
-    Piece::Label(Note {
-        at: Run::new(x, y, size, ink),
-        text: s,
-    })
+/// One label of the shared screen header (mailbox and dashboard): its
+/// text, x, baseline and size in design units, and its letter form --
+/// SVG `letter-spacing` in design units, or a horizontal stretch at
+/// Rajdhani 600, or the plain 600 run.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum HeaderForm {
+    Tracked(f32),
+    Wide { stretch: f32, semibold: bool },
+    SemiBold,
 }
 
-const fn strong(x: f32, y: f32, size: f32, s: &'static str) -> Piece {
-    Piece::Label(Note {
-        at: Run::new(x, y, size, Ink::Fg).bold(),
-        text: s,
-    })
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HeaderLabel {
+    pub text: &'static str,
+    pub x: f32,
+    pub y: f32,
+    pub size: f32,
+    pub form: HeaderForm,
+}
+
+const fn hl(text: &'static str, x: f32, y: f32, size: f32, form: HeaderForm) -> HeaderLabel {
+    HeaderLabel { text, x, y, size, form }
+}
+
+/// The header's labels, in the dashboard's paint order (the T2 badge's
+/// pair, last, is drawn by `T2_BADGE`). x, size and letter form are the
+/// dashboard trace's (`dashboard-trace.svg` :271-308). Each `y` is the
+/// scene prim's y that lands the run's cap bottom on the source's
+/// baseline, measured 2026-11-15 at 3840x2160 on the mail and dashboard
+/// references (the two agree within 0.15): CUSTOMER 42.4; LEVEL 70.35
+/// at the left, over T1 and in the badge, 71.1 over T3 and T4;
+/// SECURITY / LEVEL 72.5 / 88.3; T1 92.1 (left) and 91.95, T2 92.05,
+/// T3 92.5, T4 92.0. A scene `Tracked` run sits ~0.4 and a `Wide` run
+/// ~1.1 below its y, so the y's are not those baselines.
+pub const HEADER_LABELS: [HeaderLabel; 13] = [
+    hl("CUSTOMER #NC488402", 118.3, 41.65, 13.0, HeaderForm::SemiBold),
+    hl("LEVEL", 118.7667, 69.65, 12.0, HeaderForm::Wide { stretch: 1.6, semibold: false }),
+    hl("T1", 131.5, 90.9, 21.0, HeaderForm::Wide { stretch: 1.45, semibold: true }),
+    hl("SECURITY", 1137.7, 71.8, 12.0, HeaderForm::Tracked(0.75)),
+    hl("LEVEL", 1137.7, 87.6, 12.0, HeaderForm::Tracked(0.75)),
+    hl("LEVEL", 1232.75, 69.95, 12.0, HeaderForm::Tracked(0.75)),
+    hl("LEVEL", 1354.8, 70.7, 12.0, HeaderForm::Tracked(0.75)),
+    hl("LEVEL", 1415.75, 70.7, 12.0, HeaderForm::Tracked(0.75)),
+    hl("T1", 1238.1, 90.9, 20.0, HeaderForm::Wide { stretch: 1.45, semibold: true }),
+    hl("T3", 1356.8, 91.35, 20.0, HeaderForm::Wide { stretch: 1.45, semibold: true }),
+    hl("T4", 1417.75, 91.0, 20.0, HeaderForm::Wide { stretch: 1.45, semibold: true }),
+    hl("LEVEL", 1294.2, 69.95, 12.5, HeaderForm::Tracked(0.3)),
+    hl("T2", 1296.0, 90.8, 21.0, HeaderForm::Wide { stretch: 1.45, semibold: true }),
+];
+
+/// How far, in ems, the mailbox's `text_baseline` (0.95) lifts a
+/// canvas run above where a scene prim at the same y puts its cap
+/// bottom. Measured 2026-11-15 on the eleven header labels drawn both
+/// ways at 3840x2160: 0.104-0.128 em across sizes 12-21, mean 0.113.
+/// A run shared with a scene adds it back.
+const MAILBOX_RUN_DROP: f32 = 0.113;
+
+const fn header_label(l: HeaderLabel) -> Piece {
+    let run = Run::new(l.x, l.y + MAILBOX_RUN_DROP * l.size, l.size, Ink::Fg);
+    let run = match l.form {
+        HeaderForm::Tracked(t) => run.tracked(t),
+        HeaderForm::Wide { stretch, semibold: true } => run.semibold().stretched(stretch),
+        HeaderForm::Wide { stretch, semibold: false } => run.stretched(stretch),
+        HeaderForm::SemiBold => run.semibold(),
+    };
+    Piece::Label(Note { at: run, text: l.text })
+}
+
+const fn header_prim(l: HeaderLabel, ink: Ink) -> Prim {
+    match l.form {
+        HeaderForm::Tracked(tracking) => Prim::Tracked { x: l.x, y: l.y, size: l.size, tracking, ink,
+            face: Face::Regular, anchor: Anchor::Start, content: l.text },
+        HeaderForm::Wide { stretch, semibold } => Prim::Wide { x: l.x, y: l.y, size: l.size, stretch, ink,
+            face: if semibold { Face::SemiBold } else { Face::Regular }, anchor: Anchor::Start, content: l.text },
+        HeaderForm::SemiBold => Prim::Text { x: l.x, y: l.y, size: l.size, ink,
+            face: Face::SemiBold, anchor: Anchor::Start, content: l.text },
+    }
 }
 
 // Source-specific mailbox frames and letters; other screens retain their
@@ -1051,22 +1134,28 @@ const OPEN_ENVELOPE: &[Piece] = &[
 ];
 
 static CHROME: [Piece; 33] = [
-    Piece::Label(Note {
-        at: Run::new(118.3, 42.2, 13.0, Ink::Fg).medium(),
-        text: "CUSTOMER #NC488402",
-    }),
-    text(120.0, 70.0, 12.0, Ink::Fg, "LEVEL"),
-    strong(126.0, 90.0, 21.0, "T1"),
-    text(1131.0, 68.0, 12.0, Ink::Fg, "SECURITY"),
-    text(1131.0, 83.0, 12.0, Ink::Fg, "LEVEL"),
-    text(1229.0, 63.0, 12.0, Ink::Fg, "LEVEL"),
-    text(1354.0, 63.0, 12.0, Ink::Fg, "LEVEL"),
-    text(1417.0, 63.0, 12.0, Ink::Fg, "LEVEL"),
-    strong(1236.0, 86.0, 20.0, "T1"),
-    strong(1361.0, 86.0, 20.0, "T3"),
-    strong(1424.0, 86.0, 20.0, "T4"),
-    text(1295.0, 71.0, 12.0, Ink::Fg, "LEVEL"),
-    strong(1296.0, 95.0, 21.0, "T2"),
+    // The header's labels are the dashboard's (`DASHBOARD`, ==== header):
+    // the two sources print the same header, every label within 1 px
+    // (measured 2026-11-15 at 3840x2160), on one LEVEL baseline (y 70.4)
+    // and one T baseline (92.1) across T1..T4, the T2 badge included.
+    // Until then the mailbox set its own -- LEVEL/T1/T3/T4 ~8 px above
+    // the badge's, T in bold unstretched -- so each run here is the
+    // dashboard prim's x, baseline, size, tracking or stretch and
+    // weight, in this screen's ink; `header_labels_match_the_dashboard`
+    // holds them together.
+    header_label(HEADER_LABELS[0]),
+    header_label(HEADER_LABELS[1]),
+    header_label(HEADER_LABELS[2]),
+    header_label(HEADER_LABELS[3]),
+    header_label(HEADER_LABELS[4]),
+    header_label(HEADER_LABELS[5]),
+    header_label(HEADER_LABELS[6]),
+    header_label(HEADER_LABELS[7]),
+    header_label(HEADER_LABELS[8]),
+    header_label(HEADER_LABELS[9]),
+    header_label(HEADER_LABELS[10]),
+    header_label(HEADER_LABELS[11]),
+    header_label(HEADER_LABELS[12]),
     mailbox_badges::MAIL_A_FRAME[0],
     mailbox_badges::MAIL_A_FRAME[1],
     mailbox_badges::MAIL_B_FRAME[0],
@@ -1573,8 +1662,48 @@ const BACKDROP: &[Prim] = &[
     fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(PAGE)),
     Prim::Turn { x: 712.8, y: -61.2, angle: 1.76, prims: HAZE_LOBE },
     Prim::Lobe { x: 430.0, y: -40.0, rx: 560.0, ry: 168.0, stops: LOBE },
-    Prim::Masked { prims: BLUE_TURNED, mask: BLUE_MASK },
+    Prim::Masked { prims: BLUE_RIMMED, mask: BLUE_MASK },
 ];
+/// The blue annulus's right-hand rim: where the haze stops short of the
+/// screen's right edge. Measured 2026-11-15 on 6,439 clear ground
+/// patches the four references share: the source holds the blue to
+/// x ~1530 and then drops it to the page within ~60 design px, along a
+/// line leaning left going down (B at y 3: 62 -> 21 over x 1525..1583;
+/// at y 117, 53 -> 15 over x 1508..1575), which the annulus alone
+/// cannot do -- it faded gradually and left `#0f1c29`-ish teal in the
+/// top-right corner where the source is `#0d0c12`. A luminance ramp
+/// across a line through (`BLUE_RIM_X`, 0) turned `BLUE_RIM_TURN`
+/// degrees, full to black over `BLUE_RIM_WIDTH`: corner RMS (x > 1450,
+/// y < 200) 5.81 -> 3.39 levels, the right-edge strip 7.29 -> 1.99,
+/// nothing else changes. The bar's ground does not take it.
+pub const BLUE_RIM_X: f32 = 1570.0;
+pub const BLUE_RIM_TURN: f32 = 9.0;
+pub const BLUE_RIM_WIDTH: f32 = 30.0;
+/// The ramp's box, in the rim's turned frame: from 1600 before the rim
+/// line to 100 past it, tall enough to cover the frame at any row.
+const BLUE_RIM_FROM: f32 = 1600.0;
+const BLUE_RIM_SPAN: f32 = 1700.0;
+const BLUE_RIM_STOPS: &[(f32, iced::Color)] = &[
+    (0.0, rgb(0xffffff)),
+    ((BLUE_RIM_FROM - BLUE_RIM_WIDTH / 2.0) / BLUE_RIM_SPAN, rgb(0xffffff)),
+    ((BLUE_RIM_FROM + BLUE_RIM_WIDTH / 2.0) / BLUE_RIM_SPAN, rgb(0x000000)),
+    (1.0, rgb(0x000000)),
+];
+const BLUE_RIM: &[Prim] = &[Prim::Turn {
+    x: BLUE_RIM_X,
+    y: 0.0,
+    angle: BLUE_RIM_TURN,
+    prims: &[Prim::Ramp {
+        x: -BLUE_RIM_FROM,
+        y: -100.0,
+        w: BLUE_RIM_SPAN,
+        h: 1300.0,
+        from: (0.0, 0.0),
+        to: (1.0, 0.0),
+        stops: BLUE_RIM_STOPS,
+    }],
+}];
+const BLUE_RIMMED: &[Prim] = &[Prim::Masked { prims: BLUE_TURNED, mask: BLUE_RIM }];
 /// The mailbox's and the login's ground: `BACKDROP` composited, the way
 /// `STORE` opens.
 const PAGE_BACKDROP: &[Prim] = &[Prim::Soft { prims: BACKDROP }];
@@ -1822,11 +1951,22 @@ const fn store_socket(x: f32, y: f32, ink: Ink, content: &'static str) -> Prim {
 // Six repeated Store metadata lines share one native word-spacing model.
 // The upper origins follow one copy-level calibration; B keeps its source origin.
 const fn store_metadata(x: f32, y: f32, upper: bool, second: bool, content: &'static str) -> Prim {
+    micro_note(x, y, upper, second, Ink::Fixed(STORE_MICRO), content)
+}
+
+/// The era's two-line micro note beside a lettered badge ("SPARE TIME
+/// MANAGER WAS DEVELOPED BY SEOCHO." / "SERVING CUSTOMERS SINCE 2006."):
+/// FreeSans Bold 5.96, tracked -0.26 with 0.76 extra per word space,
+/// left-aligned, lines 7.08 apart. Fitted on the store's A and C notes;
+/// the dashboard's and mailbox's header notes are the same print in the
+/// sources (runs 155.4 / 100.0 long at all three, measured 2026-11-15),
+/// so a new note takes this rather than a size of its own.
+const fn micro_note(x: f32, y: f32, upper: bool, second: bool, ink: Ink, content: &'static str) -> Prim {
     Prim::TrackedWords {
         x: if upper { x - 1.0 / 2.4 } else { x },
         y: if upper && second { y - 0.25 } else { y },
         size: 5.958333333333333,
-        ink: Ink::Fixed(STORE_MICRO),
+        ink,
         face: Face::FreeSansBold,
         anchor: Anchor::Start,
         tracking: -0.25854214123006725,
@@ -2094,6 +2234,16 @@ const PLATE_LOWER: &[Seg] = &[
     Seg::Line(1307.0, 105.0),
     Seg::Line(1291.7, 90.0),
 ];
+/// The BASKET band's fine print: face, size, tracking and the two
+/// lines' y. The source sets it in a round geometric sans (wide O, C
+/// and S), not the era's condensed Rajdhani: FreeSans Bold at 5 has its
+/// 3.75 cap and, tracked 0.11, its two run lengths (158.3 / 165.0),
+/// where Rajdhani 600 needs 0.6-0.8 of letter-spacing to reach them and
+/// reads spaced out.
+pub const BASKET_NOTE_FACE: Face = Face::FreeSansBold;
+pub const BASKET_NOTE_TRACKING: f32 = 0.11;
+pub const BASKET_NOTE_SIZE: f32 = 5.0;
+pub const BASKET_NOTE_BASELINES: [f32; 2] = [72.8, 78.8];
 const BASKET_BAND: &[Prim] = &[fill_path(1291.7, 60.0, PLATE_LOWER, Ink::Fixed(PLATE_BAND))];
 const BASKET_QR: &[Prim] = &[
     fill_rect(1464.25, 29.80, 2.3, 2.3, Ink::Fixed(PLATE_INK)),
@@ -2340,8 +2490,19 @@ const CONTENT: &[Prim] = &[
     fill_rect(1291.7, 59.6, 204.6, 0.8, Ink::Fixed(PLATE_INK)),
     txt_mid(1369.0, 50.0, 15.0, Ink::Fixed(PLATE_INK), "BASKET"),
     Prim::At { x: 0.0, y: 0.0, prims: BASKET_QR },
-    txt(1307.0, 73.0, 8.0, Ink::Fixed(PLATE_INK), "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE"),
-    txt(1307.0, 82.0, 8.0, Ink::Fixed(PLATE_INK), "ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
+    // The band's fine print (`BASKET_NOTE_*`), from x 1304.4 as
+    // `store-trace.svg` :510-514 places it. Measured on the source at
+    // 3840x2160 (2026-11-15): caps 3.75 tall on cap bottoms 72.9 /
+    // 78.75, runs x 1304.2..1462.5 and ..1469.2, inside the plate's
+    // 1496.3. Until then the table set it Rajdhani 8 regular from 1307
+    // -- caps 5.4, runs past 1495 -- so the plate clipped "ARE" and
+    // "DEVICE.".
+    Prim::Tracked { x: 1304.4, y: BASKET_NOTE_BASELINES[0], size: BASKET_NOTE_SIZE, tracking: BASKET_NOTE_TRACKING,
+        ink: Ink::Fixed(PLATE_INK), face: BASKET_NOTE_FACE, anchor: Anchor::Start,
+        content: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE" },
+    Prim::Tracked { x: 1304.4, y: BASKET_NOTE_BASELINES[1], size: BASKET_NOTE_SIZE, tracking: BASKET_NOTE_TRACKING,
+        ink: Ink::Fixed(PLATE_INK), face: BASKET_NOTE_FACE, anchor: Anchor::Start,
+        content: "ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE." },
     // header wire band: eight strands rising onto one bridge line
     strand!(160.4, Ink::Fixed(ECHO2)),
     strand!(163.6, Ink::Fixed(ECHO2)),
@@ -2756,8 +2917,8 @@ const PANEL_FRAME: &[Prim] = &[
 // The badge's ink-only silhouette is in the existing header Soft group;
 // text remains native alongside the other security-level labels.
 const T2_BADGE: &[Prim] = &[
-    Prim::Tracked { x: 1294.2, y: 69.6, size: 12.5, tracking: 0.3, ink: Ink::Fixed(CAPTION), face: Face::Regular, anchor: Anchor::Start, content: "LEVEL" },
-    Prim::Wide { x: 1296.0, y: 91.6, size: 21.0, stretch: 1.45, ink: Ink::Fixed(BADGE_LIT), face: Face::SemiBold, anchor: Anchor::Start, content: "T2" },
+    header_prim(HEADER_LABELS[11], Ink::Fixed(CAPTION)),
+    header_prim(HEADER_LABELS[12], Ink::Fixed(BADGE_LIT)),
 ];
 
 /// Dashboard source #69 header strand; mailbox #71 uses the separately
@@ -2896,24 +3057,29 @@ const PANEL: &[Prim] = &[
     Prim::Text { x: 1286.7, y: 692.0, size: 20.0, ink: Ink::Fixed(HUB_FILL), face: Face::SemiBold, anchor: Anchor::Middle, content: "EMAIL" },
 ];
 
+/// The dashboard header notes' origins (`micro_note` x, and its y for
+/// each line, which the store's calibration puts 0.08 / 0.42 below
+/// the cap bottoms 103.33 / 110.42 measured on the source).
+const DASH_NOTE_X: [f32; 2] = [279.33, 844.33];
+const DASH_NOTE_Y: [f32; 2] = [103.4, 110.85];
+
 pub const DASHBOARD: &[Prim] = &[
     // Composited in software, as the store's backdrop is: the two
     // lobes carry opacities and stack.
     Prim::Soft { prims: HUB_HEADER_BACKDROP },
     // ==== header (:271-308) ====
     // Iced native cap alignment: one pixel above the SVG baseline at 4K.
-    Prim::Text { x: 118.3, y: 41.7833, size: 13.0, ink: Ink::Fixed(HUB_MID),
-        face: Face::SemiBold, anchor: Anchor::Start, content: "CUSTOMER #NC488402" },
-    Prim::Wide { x: 118.7667, y: 69.6, size: 12.0, stretch: 1.6, ink: Ink::Fixed(HUB_MID), face: Face::Regular, anchor: Anchor::Start, content: "LEVEL" },
-    Prim::Wide { x: 131.5, y: 92.1, size: 21.0, stretch: 1.45, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T1" },
-    Prim::Tracked { x: 1137.7, y: 71.4, size: 12.0, tracking: 0.75, ink: Ink::Fixed(HUB_MID), face: Face::Regular, anchor: Anchor::Start, content: "SECURITY" },
-    Prim::Tracked { x: 1137.7, y: 87.2, size: 12.0, tracking: 0.75, ink: Ink::Fixed(HUB_MID), face: Face::Regular, anchor: Anchor::Start, content: "LEVEL" },
-    Prim::Tracked { x: 1232.75, y: 68.8, size: 12.0, tracking: 0.75, ink: Ink::Fixed(HUB_MID), face: Face::Regular, anchor: Anchor::Start, content: "LEVEL" },
-    Prim::Tracked { x: 1354.8, y: 69.6, size: 12.0, tracking: 0.75, ink: Ink::Fixed(HUB_MID), face: Face::Regular, anchor: Anchor::Start, content: "LEVEL" },
-    Prim::Tracked { x: 1415.75, y: 69.6, size: 12.0, tracking: 0.75, ink: Ink::Fixed(HUB_MID), face: Face::Regular, anchor: Anchor::Start, content: "LEVEL" },
-    Prim::Wide { x: 1238.1, y: 90.9, size: 20.0, stretch: 1.45, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T1" },
-    Prim::Wide { x: 1356.8, y: 90.9, size: 20.0, stretch: 1.45, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T3" },
-    Prim::Wide { x: 1417.75, y: 91.8, size: 20.0, stretch: 1.45, ink: Ink::Fixed(HUB_MID), face: Face::SemiBold, anchor: Anchor::Start, content: "T4" },
+    header_prim(HEADER_LABELS[0], Ink::Fixed(HUB_MID)),
+    header_prim(HEADER_LABELS[1], Ink::Fixed(HUB_MID)),
+    header_prim(HEADER_LABELS[2], Ink::Fixed(HUB_MID)),
+    header_prim(HEADER_LABELS[3], Ink::Fixed(HUB_MID)),
+    header_prim(HEADER_LABELS[4], Ink::Fixed(HUB_MID)),
+    header_prim(HEADER_LABELS[5], Ink::Fixed(HUB_MID)),
+    header_prim(HEADER_LABELS[6], Ink::Fixed(HUB_MID)),
+    header_prim(HEADER_LABELS[7], Ink::Fixed(HUB_MID)),
+    header_prim(HEADER_LABELS[8], Ink::Fixed(HUB_MID)),
+    header_prim(HEADER_LABELS[9], Ink::Fixed(HUB_MID)),
+    header_prim(HEADER_LABELS[10], Ink::Fixed(HUB_MID)),
     Prim::At { x: 0.0, y: 0.0, prims: T2_BADGE },
     // Source-fitted section badges. A/B retain their existing wire masks;
     // backing color/profile and photographic softness remain separate work.
@@ -2923,10 +3089,14 @@ pub const DASHBOARD: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: dashboard_badges::DASH_HEADER_B },
     Prim::At { x: 574.58333, y: 821.66667, prims: dashboard_badges::HUB_FOOT_C_ART },
     Prim::At { x: 1170.41667, y: 821.66667, prims: dashboard_badges::HUB_FOOT_D_ART },
-    txt(288.0, 106.0, 8.0, Ink::Fixed(MICRO), "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO."),
-    txt(288.0, 116.0, 8.0, Ink::Fixed(MICRO), "SERVING CUSTOMERS SINCE 2006."),
-    txt_end(1000.0, 106.0, 8.0, Ink::Fixed(MICRO), "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO."),
-    txt_end(1000.0, 116.0, 8.0, Ink::Fixed(MICRO), "SERVING CUSTOMERS SINCE 2006."),
+    // The header's A and B notes: the era's micro note, both
+    // left-aligned (the B note was end-anchored at 1000 and both were
+    // Rajdhani 8, 7% wide and 10 apart). Source, 3840x2160 (2026-11-15):
+    // A from x 279.17, B from 844.17, cap bottoms 103.33 / 110.42.
+    micro_note(DASH_NOTE_X[0], DASH_NOTE_Y[0], true, false, Ink::Fixed(MICRO), STORE_METADATA_FIRST),
+    micro_note(DASH_NOTE_X[0], DASH_NOTE_Y[1], true, true, Ink::Fixed(MICRO), STORE_METADATA_SECOND),
+    micro_note(DASH_NOTE_X[1], DASH_NOTE_Y[0], true, false, Ink::Fixed(MICRO), STORE_METADATA_FIRST),
+    micro_note(DASH_NOTE_X[1], DASH_NOTE_Y[1], true, true, Ink::Fixed(MICRO), STORE_METADATA_SECOND),
     txt(618.0, 827.6, 7.5, Ink::Fixed(MICRO), "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO."),
     txt(618.0, 834.0, 7.5, Ink::Fixed(MICRO), "SERVING CUSTOMERS SINCE 2006."),
     txt(1205.5, 827.6, 7.5, Ink::Fixed(MICRO), "MAPS ARE PROVIDED BY SEOCHO. SATELITE SERVICES"),

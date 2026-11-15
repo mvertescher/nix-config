@@ -698,7 +698,7 @@ mod interaction_tests {
             bevel = "#c69a55"
             shade = "#5e3414"
             ornament = "#634427"
-            inset = "#2c1c14"
+            inset = "#3c1c11"
         "##).unwrap();
         let reference = crate::style::Style::from_theme(&published);
         assert!(reference.mailbox_reference_palette());

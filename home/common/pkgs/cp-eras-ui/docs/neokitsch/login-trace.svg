@@ -126,6 +126,18 @@
     <mask id="bluemask">
       <rect width="1600" height="900" fill="url(#hazebluefade)"/>
     </mask>
+    <!-- The blue's right-hand rim (2026-11-15; BLUE_RIM_* in
+         src/eras/neokitsch.rs): the source holds the blue to x ~1530
+         and drops it to the page within ~60 px along a line through
+         (1570,0) turned 9 degrees, 30 wide, where the annulus alone
+         faded slowly and left teal in the top-right corner. -->
+    <linearGradient id="hazebluerim" gradientUnits="userSpaceOnUse" x1="1555.185" y1="-2.346" x2="1584.815" y2="2.346">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#000000"/>
+    </linearGradient>
+    <mask id="bluerim">
+      <rect x="-100" y="-100" width="1800" height="1100" fill="url(#hazebluerim)"/>
+    </mask>
     <radialGradient id="haze" gradientUnits="userSpaceOnUse" cx="712.8" cy="-61.2" r="1015.8" gradientTransform="rotate(1.76 712.8 -61.2) translate(712.8 -61.2) scale(1 0.387476) translate(-712.8 61.2)">
       <stop offset="0" stop-color="#7a538b"/>
       <stop offset="0.2" stop-color="#5e4169"/>
@@ -155,8 +167,10 @@
          glyphs so the two can carry different halos (2026-09-03) -->
     <g id="entrylines">
       <rect x="417" y="361" width="345" height="42" fill="#3c1c11"/>
-      <!-- gold bar, bottom-left chamfer 16x13 -->
-      <path d="M 417,414 H 761 V 441 H 433 L 417,428 Z" fill="#fbc171"/>
+      <!-- gold bar: bottom-left chamfer 15 at 45 degrees, every corner
+           (the chamfer's knees too) filleted r 2.1; re-measured
+           2026-11-15 at 3840 (was a square-cut bar with a 16x13 cut) -->
+      <path d="M 419.1000,414 H 758.9000 A 2.1,2.1 0 0 1 761,416.1000 V 438.9000 A 2.1,2.1 0 0 1 758.9000,441 H 432.8698 A 2.1,2.1 0 0 1 431.3849,440.3849 L 417.6151,426.6151 A 2.1,2.1 0 0 1 417,425.1302 V 416.1000 A 2.1,2.1 0 0 1 419.1000,414 Z" fill="#fbc171"/>
       <use href="#letterbox" x="416" y="465"/>
     </g>
     <g id="entrytext" font-family="Rajdhani">
@@ -204,7 +218,7 @@
   <rect width="1600" height="900" fill="#0d090c"/>
   <rect width="1600" height="900" fill="url(#haze)"/>
   <rect width="1600" height="300" fill="url(#hazelobe)"/>
-  <rect width="1600" height="560" fill="url(#hazeblue)" mask="url(#bluemask)"/>
+  <g mask="url(#bluemask)"><rect width="1600" height="560" fill="url(#hazeblue)" mask="url(#bluerim)"/></g>
 
   <!-- two halos: the bars' vertical smear under the line work, the
        glyphs' tight bloom under the text (2026-09-03; the text used to

@@ -179,6 +179,18 @@
     <mask id="bluemask">
       <rect width="1600" height="900" fill="url(#hazebluefade)"/>
     </mask>
+    <!-- The blue's right-hand rim (2026-11-15; BLUE_RIM_* in
+         src/eras/neokitsch.rs): the source holds the blue to x ~1530
+         and drops it to the page within ~60 px along a line through
+         (1570,0) turned 9 degrees, 30 wide, where the annulus alone
+         faded slowly and left teal in the top-right corner. -->
+    <linearGradient id="hazebluerim" gradientUnits="userSpaceOnUse" x1="1555.185" y1="-2.346" x2="1584.815" y2="2.346">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#000000"/>
+    </linearGradient>
+    <mask id="bluerim">
+      <rect x="-100" y="-100" width="1800" height="1100" fill="url(#hazebluerim)"/>
+    </mask>
     <radialGradient id="haze" gradientUnits="userSpaceOnUse" cx="712.8" cy="-61.2" r="1015.8" gradientTransform="rotate(1.76 712.8 -61.2) translate(712.8 -61.2) scale(1 0.387476) translate(-712.8 61.2)">
       <stop offset="0" stop-color="#7a538b"/>
       <stop offset="0.2" stop-color="#5e4169"/>
@@ -267,7 +279,7 @@
   <rect width="1600" height="900" fill="#0d090c"/>
   <rect width="1600" height="900" fill="url(#haze)"/>
   <rect width="1600" height="300" fill="url(#hazelobe)"/>
-  <rect width="1600" height="560" fill="url(#hazeblue)" mask="url(#bluemask)"/>
+  <g mask="url(#bluemask)"><rect width="1600" height="560" fill="url(#hazeblue)" mask="url(#bluerim)"/></g>
 
   <!-- two halos: the rules' vertical smear under the line work, the
        glyphs' tight bloom under the text (2026-09-03; the text used to
@@ -507,11 +519,14 @@
   <g id="text">
     <text font-family="Rajdhani" font-weight="700" x="112" y="138" font-size="16.5" letter-spacing="30.6" fill="#e9bd7a">STORE</text>
     <text x="1369" y="50" font-family="Rajdhani" font-size="15" letter-spacing="1.5" text-anchor="middle" fill="#5a3418">BASKET</text>
-    <!-- BASKET micro text: cap height 3.1, baselines 72.8 / 78.4, runs
-         x 1304.4..1462 and ..1468 (2026-09-03: was 8px with a textLength
-         librsvg ignores, and overran the plate) -->
-    <text font-family="Rajdhani" font-size="5" font-weight="600" fill="#5a3418" x="1304.4" y="72.8" letter-spacing="0.78">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE</text>
-    <text font-family="Rajdhani" font-size="5" font-weight="600" fill="#5a3418" x="1304.4" y="78.4" letter-spacing="0.82">ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
+    <!-- BASKET micro text: runs x 1304.4..1462 and ..1468 (2026-09-03:
+         was 8px with a textLength librsvg ignores, and overran the
+         plate). Re-measured 2026-11-15 at 3840: caps 3.75 on cap bottoms
+         72.9 / 78.75, in a round geometric sans: FreeSans Bold 5,
+         tracked 0.11, has the cap and both run lengths (Rajdhani 600
+         needed 0.78 / 0.82 of letter-spacing and read spaced out). -->
+    <text font-family="FreeSans" font-size="5" font-weight="bold" fill="#5a3418" x="1304.4" y="72.9" letter-spacing="0.11">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE</text>
+    <text font-family="FreeSans" font-size="5" font-weight="bold" fill="#5a3418" x="1304.4" y="78.75" letter-spacing="0.11">ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
     <path id="store-A-glyph" d="M 370.8333,148.3333 L 372.9167,148.3333 Q 373.75,148.3333 374.1667,149.5833 L 379.5833,159.5833 L 377.0833,159.5833 L 375.8333,157.0833 L 367.5,157.0833 L 366.6667,159.5833 L 364.5833,159.5833 M 371.6667,150 L 374.5833,155.4167 L 369.1667,155.4167 Z" fill="#f5c689" fill-rule="evenodd"/>
     <path id="store-C-glyph" d="M 1185.8333,147.9167 L 1195.8333,147.9167 Q 1197.5,147.9167 1197.5,149.5833 L 1197.5,152.9167 L 1195.8333,152.9167 L 1195.8333,150 L 1186.25,150 L 1186.25,160 L 1195.8333,160 L 1195.8333,156.6667 L 1197.5,156.6667 L 1197.5,160 Q 1197.5,162.0833 1195.4167,162.0833 L 1186.25,162.0833 Q 1183.75,162.0833 1183.75,160 L 1183.75,150 Q 1183.75,147.9167 1185.8333,147.9167 Z" fill="#f5c689" fill-rule="evenodd"/>
     <text font-family="FreeSans" font-weight="700" font-size="5.95833333" fill="#d9a877" x="400.58333333" y="148" letter-spacing="-0.25854214">SPARE <tspan dx="0.31151059929626912">TIME</tspan> <tspan dx="0.31151059929626912">MANAGER</tspan> <tspan dx="0.31151059929626912">WAS</tspan> <tspan dx="0.31151059929626912">DEVELOPED</tspan> <tspan dx="0.31151059929626912">BY</tspan> <tspan dx="0.31151059929626912">SEOCHO.</tspan></text>

@@ -35,7 +35,7 @@ gold text   #e7c686       logotype, headings
 champagne   #d3b279       bands, secondary text
 veneer      #f4c474 → #d8a558   wood-grain fill on selected elements
 amber CTA   #fcc474 → #c78948   ENTER / LOGIN bars
-field       #2c1c14       input fills
+field       #3c1c11       input fills (measured fill of the login wells)
 strata      #634427       fine-line layered dividers
 ```
 

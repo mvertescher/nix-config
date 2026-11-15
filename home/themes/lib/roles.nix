@@ -84,7 +84,7 @@ rec {
   #                    or less (neokitsch) saturated than.
   #
   #   inset            A recessed fill, below the surface it sits on:
-  #                    neokitsch's login field (#2c1c14) and socket
+  #                    neokitsch's login field (#3c1c11) and socket
   #                    wells. `bg` is the page, `panel` is the raised
   #                    thing; neither is the hole in it.
   #

@@ -449,12 +449,46 @@ fn plate_path(g: Grid, plate: &Plate) -> canvas::Path {
             if path.close { p.close(); }
             return;
         }
-        for (i, point) in plate_vertices(plate).iter().enumerate() {
+        let mut v = plate_vertices(plate);
+        if plate.round > 0.0 {
+            // A zero bevel repeats its corner; a fillet needs distinct
+            // neighbours on both sides.
+            v.dedup();
+            while v.len() > 1 && v.first() == v.last() { v.pop(); }
+        }
+        if plate.round > 0.0 && v.len() >= 3 {
+            let n = v.len();
+            let (a, b) = (v[n - 1], v[0]);
+            p.move_to(g.at((a.x + b.x) / 2.0, (a.y + b.y) / 2.0));
+            for i in 0..n {
+                let (prev, at, next) = (v[(i + n - 1) % n], v[i], v[(i + 1) % n]);
+                let r = fillet(prev, at, next, plate.round);
+                p.arc_to(g.at(at.x, at.y), g.at(next.x, next.y), g.span(r));
+            }
+            p.close();
+            return;
+        }
+        for (i, point) in v.iter().enumerate() {
             if i == 0 { p.move_to(g.at(point.x, point.y)); }
             else { p.line_to(g.at(point.x, point.y)); }
         }
         p.close();
     })
+}
+
+/// The fillet radius that fits at `at`: `radius`, shrunk so its tangent
+/// points stay within half of either adjacent edge.
+fn fillet(prev: Point, at: Point, next: Point, radius: f32) -> f32 {
+    let (ux, uy) = (prev.x - at.x, prev.y - at.y);
+    let (vx, vy) = (next.x - at.x, next.y - at.y);
+    let (lu, lv) = ((ux * ux + uy * uy).sqrt(), (vx * vx + vy * vy).sqrt());
+    if lu == 0.0 || lv == 0.0 { return 0.0; }
+    let cos = ((ux * vx + uy * vy) / (lu * lv)).clamp(-1.0, 1.0);
+    let half = cos.acos() / 2.0;
+    if half <= 0.0 || half >= std::f32::consts::FRAC_PI_2 { return 0.0; }
+    // Tangent length for radius r is r / tan(half).
+    let reach = lu.min(lv) / 2.0;
+    radius.min(reach * half.tan())
 }
 
 /// The same outline used for drawing, including the cut corners and
@@ -1683,6 +1717,27 @@ mod tests {
 
     use super::*;
     use crate::style::{Era, Fixture, Masthead};
+
+    #[test]
+    fn a_rounded_plate_keeps_its_box_and_cuts_its_corners() {
+        // The fillet is the asked radius on long edges at a square
+        // corner, and clamps to half the shorter edge on a short one.
+        let r = super::fillet(Point::new(0.0, 10.0), Point::new(0.0, 0.0), Point::new(10.0, 0.0), 2.0);
+        assert!((r - 2.0).abs() < 1e-5);
+        let r = super::fillet(Point::new(0.0, 1.0), Point::new(0.0, 0.0), Point::new(10.0, 0.0), 2.0);
+        assert!((r - 0.5).abs() < 1e-5);
+        // A rounded, bevelled bar: the corner point is outside, the
+        // middle and the bevel's inner side inside, at any radius.
+        let bar = Plate::filled(Plot::new(417.0, 414.0, 344.0, 27.0), Ink::Cta)
+            .bevelled(crate::style::Bevel::bl(15.0));
+        for round in [0.0, 2.1] {
+            let bar = bar.rounded(round);
+            assert!(plate_contains(&bar, Point::new(589.0, 427.0)));
+            assert!(plate_contains(&bar, Point::new(433.0, 438.0)));
+            assert!(!plate_contains(&bar, Point::new(418.0, 440.0)));
+            assert_eq!(plate_contains(&bar, Point::new(760.8, 414.2)), round == 0.0);
+        }
+    }
 
     #[test]
     fn ornamental_strokes_stay_open_without_changing_closed_surfaces() {

@@ -1691,6 +1691,12 @@ pub struct Plate {
     /// Custom themes retain the semantic stroke and its original weight.
     pub reference_stroke: Option<(Color, f32)>,
     pub weight: f32,
+    /// Fillet radius, in design units, at every corner of the bevelled
+    /// outline -- the square ones and the knees of a bevel alike, as a
+    /// drawing tool's corner radius rounds them (tangent arcs, clamped
+    /// to half the shorter adjacent edge). 0 is a sharp outline. Only
+    /// the bevel walk reads it; a custom `path` carries its own curves.
+    pub round: f32,
 }
 
 impl Plate {
@@ -1706,6 +1712,7 @@ impl Plate {
             stroke: None,
             reference_stroke: None,
             weight: 0.0,
+            round: 0.0,
         }
     }
 
@@ -1721,11 +1728,18 @@ impl Plate {
             stroke: Some(stroke),
             reference_stroke: None,
             weight,
+            round: 0.0,
         }
     }
 
     pub const fn bevelled(mut self, bevel: Bevel) -> Plate {
         self.bevel = bevel;
+        self
+    }
+
+    /// Round every corner of the outline by `radius` design units.
+    pub const fn rounded(mut self, radius: f32) -> Plate {
+        self.round = radius;
         self
     }
 

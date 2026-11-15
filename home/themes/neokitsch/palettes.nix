@@ -43,7 +43,7 @@
     bevel = "#c69a55"; # outer, lit stroke of the device frame
     shade = "#5e3414"; # its inner stroke
     ornament = "#634427"; # strata dividers, the fine-line wedge
-    inset = "#2c1c14"; # login field, socket wells
+    inset = "#3c1c11"; # login field (measured 2026-11-15; was #2c1c14)
   };
 
   # Light mode: the catalogue on paper. Warm off-white, the gold

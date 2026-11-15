@@ -164,6 +164,18 @@
     <mask id="bluemask">
       <rect width="1600" height="900" fill="url(#hazebluefade)"/>
     </mask>
+    <!-- The blue's right-hand rim (2026-11-15; BLUE_RIM_* in
+         src/eras/neokitsch.rs): the source holds the blue to x ~1530
+         and drops it to the page within ~60 px along a line through
+         (1570,0) turned 9 degrees, 30 wide, where the annulus alone
+         faded slowly and left teal in the top-right corner. -->
+    <linearGradient id="hazebluerim" gradientUnits="userSpaceOnUse" x1="1555.185" y1="-2.346" x2="1584.815" y2="2.346">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#000000"/>
+    </linearGradient>
+    <mask id="bluerim">
+      <rect x="-100" y="-100" width="1800" height="1100" fill="url(#hazebluerim)"/>
+    </mask>
 <radialGradient id="hazelobe" gradientUnits="userSpaceOnUse" cx="430" cy="-40" r="560" gradientTransform="translate(430 -40) scale(1 0.30) translate(-430 40)">
       <stop offset="0" stop-color="#7a598a" stop-opacity="0.85"/>
       <stop offset="0.45" stop-color="#7a598a" stop-opacity="0.55"/>
@@ -319,25 +331,29 @@
   <rect width="1600" height="900" fill="#0d090c"/>
   <rect width="1600" height="900" fill="url(#haze)"/>
   <rect width="1600" height="300" fill="url(#hazelobe)"/>
-  <rect width="1600" height="560" fill="url(#hazeblue)" mask="url(#bluemask)"/>
+  <g mask="url(#bluemask)"><rect width="1600" height="560" fill="url(#hazeblue)" mask="url(#bluerim)"/></g>
 
   <use href="#content" filter="url(#halo)" class="photo"/>
   <g id="content">
   <!-- ==== header ==== -->
+  <!-- Label baselines re-measured 2026-11-15 at 3840x2160 (cap bottoms;
+       the mail and dashboard sources agree within 0.15): the LEVELs at
+       70.35 (left, T1, badge) and 71.1 (T3, T4), the Ts 91.95-92.5.
+       The mailbox trace prints the same header. -->
   <g font-family="Rajdhani" fill="#bd8951">
-    <text x="118.3" y="42.2" font-size="13" font-weight="600" letter-spacing="0">CUSTOMER #NC488402</text>
-    <text transform="translate(119.2 70) scale(1.25 1)" x="0" y="0" font-size="12" letter-spacing="2">LEVEL</text>
-    <text transform="translate(131.5 92.5) scale(1.45 1)" x="0" y="0" font-size="21" font-weight="600">T1</text>
+    <text x="118.3" y="42.4" font-size="13" font-weight="600" letter-spacing="0">CUSTOMER #NC488402</text>
+    <text transform="translate(119.2 70.35) scale(1.25 1)" x="0" y="0" font-size="12" letter-spacing="2">LEVEL</text>
+    <text transform="translate(131.5 92.1) scale(1.45 1)" x="0" y="0" font-size="21" font-weight="600">T1</text>
 
-    <text x="1137.7" y="72.2" font-size="12" letter-spacing="0.75">SECURITY</text>
-    <text x="1137.7" y="88" font-size="12" letter-spacing="0.75">LEVEL</text>
+    <text x="1137.7" y="72.5" font-size="12" letter-spacing="0.75">SECURITY</text>
+    <text x="1137.7" y="88.3" font-size="12" letter-spacing="0.75">LEVEL</text>
     <g font-size="12" letter-spacing="0.75">
-      <text x="1232.75" y="69.2">LEVEL</text><text x="1354.8" y="70">LEVEL</text>
-      <text x="1415.75" y="70">LEVEL</text>
+      <text x="1232.75" y="70.35">LEVEL</text><text x="1354.8" y="71.1">LEVEL</text>
+      <text x="1415.75" y="71.1">LEVEL</text>
     </g>
     <g font-size="20" font-weight="600">
-      <text transform="translate(1238.1 91.8) scale(1.45 1)" x="0" y="0">T1</text><text transform="translate(1356.8 91.8) scale(1.45 1)" x="0" y="0">T3</text>
-      <text transform="translate(1417.75 92.7) scale(1.45 1)" x="0" y="0">T4</text>
+      <text transform="translate(1238.1 91.95) scale(1.45 1)" x="0" y="0">T1</text><text transform="translate(1356.8 92.5) scale(1.45 1)" x="0" y="0">T3</text>
+      <text transform="translate(1417.75 92.0) scale(1.45 1)" x="0" y="0">T4</text>
     </g>
     <!-- NK-03: native #69 shoulder, 1.23px descending fan; curved legs converge at the fixed bottom. -->
     <g id="t2-badge" fill="none" stroke="#e8c186">
@@ -356,8 +372,8 @@
       <path d="M 1284.9,41.7 L 1298.8,41.7 Q 1301.6,41.7,1304,40.1 L 1311.7,34.7 Q 1313.7,33.3,1316.3,33.3 L 1334.5,33.3 Q 1337.3,33.3,1337.3,36.1 C 1337.3,65,1337.3,96,1337.3,102.3 Q 1337.3,105.1,1334.5,105.1 L 1284.7,105.1 Q 1281.9,105.1,1281.9,102.3 C 1281.9,93,1281.9,72,1281.9,44.7 Q 1281.9,41.7,1284.9,41.7 Z" stroke-width="1.1" stroke-opacity="1"/>
       <path d="M 1293,105.1 Q 1294.2,105.1,1294.6,103.5 L 1295.1,101.3 Q 1295.2,100.6,1296,100.6 H 1324.7 Q 1325.5,100.6,1325.7,101.4 L 1326.2,103.5 Q 1326.7,105.1,1327.8,105.1 Z" fill="#f2b463" stroke="none"/>
     </g>
-    <text x="1294.2" y="70.2" font-size="12.5" letter-spacing="0.3" fill="#d9a877">LEVEL</text>
-    <text transform="translate(1296 92.2) scale(1.45 1)" x="0" y="0" font-size="21" font-weight="600" fill="#e8c186">T2</text>
+    <text x="1294.2" y="70.35" font-size="12.5" letter-spacing="0.3" fill="#d9a877">LEVEL</text>
+    <text transform="translate(1296 92.05) scale(1.45 1)" x="0" y="0" font-size="21" font-weight="600" fill="#e8c186">T2</text>
   </g>
 
   <!-- Header wire, remeasured at native resolution 2026-09-21 (NK-02).
@@ -398,11 +414,16 @@
       <path transform="translate(250.45 115.5)" fill-rule="evenodd" d="M -1.36667,-12.58333 L 0.71667,-12.58333 L 7.38333,-0.91667 L 4.88333,-0.91667 L 3.21667,-3.83333 L -3.45000,-3.83333 L -5.11667,-0.91667 L -7.61667,-0.91667 Z M -0.11667,-10.08333 L -2.61667,-5.50000 L 2.38333,-5.50000 Z"/><path transform="translate(1023.25 115.5)" fill-rule="evenodd" d="M -7.08333,-12.58333 L 3.33333,-12.58333 C 6.25000,-12.58333 7.50000,-11.33333 7.50000,-9.25000 C 7.50000,-7.58333 6.25000,-6.75000 4.58333,-6.33333 C 7.08333,-5.50000 7.50000,-4.25000 7.50000,-2.58333 C 7.50000,-0.08333 6.25000,1.16667 3.33333,1.16667 L -7.08333,1.16667 Z M -4.16667,-10.50000 L -4.16667,-7.16667 L 2.91667,-7.16667 C 4.58333,-7.16667 4.58333,-7.58333 4.58333,-8.83333 C 4.58333,-10.08333 4.58333,-10.50000 2.91667,-10.50000 Z M -4.16667,-5.08333 L -4.16667,-0.50000 L 2.91667,-0.50000 C 4.58333,-0.50000 5.00000,-1.33333 5.00000,-2.58333 C 5.00000,-4.25000 4.58333,-5.08333 2.50000,-5.08333 Z"/>
       <path d="M 583.75000 825.83333 H 590.41667 Q 594.16667 825.83333 594.16667 829.16667 V 830.83333 H 591.66667 V 829.16667 Q 591.66667 827.91667 590.41667 827.91667 H 583.75000 Q 582.08333 827.91667 582.08333 829.58333 V 836.25000 Q 582.08333 837.91667 583.75000 837.91667 H 590.41667 Q 591.66667 837.91667 591.66667 836.25000 V 834.58333 H 594.16667 V 836.66667 Q 594.16667 840.00000 590.41667 840.00000 H 583.75000 Q 579.58333 840.00000 579.58333 836.25000 V 829.58333 Q 579.58333 825.83333 583.75000 825.83333 Z" fill-rule="evenodd"/><path d="M 1175.00000 825.83333 H 1182.08333 C 1187.91667 825.83333 1190.83333 828.75000 1190.83333 832.50000 C 1190.83333 836.66667 1187.91667 840.00000 1182.08333 840.00000 H 1175.00000 Z M 1177.50000 827.91667 V 837.50000 H 1182.08333 C 1185.83333 837.50000 1187.91667 835.41667 1187.91667 832.50000 C 1187.91667 829.58333 1185.83333 827.91667 1182.08333 827.91667 Z" fill-rule="evenodd"/>
     </g>
+    <!-- Header A and B notes (re-measured 2026-11-15 at 3840): the
+         store's micro note (store-trace.svg, the A/C notes), both
+         left-aligned, from x 279.17 / 844.17 on cap bottoms 103.33 /
+         110.42. Until then: Rajdhani 8 tracked 0.4, the B pair
+         end-anchored at 1000. -->
+    <text font-family="FreeSans" font-weight="700" font-size="5.95833333" fill="#a97c48" x="278.91666667" y="103.4" letter-spacing="-0.25854214">SPARE <tspan dx="0.31151059929626912">TIME</tspan> <tspan dx="0.31151059929626912">MANAGER</tspan> <tspan dx="0.31151059929626912">WAS</tspan> <tspan dx="0.31151059929626912">DEVELOPED</tspan> <tspan dx="0.31151059929626912">BY</tspan> <tspan dx="0.31151059929626912">SEOCHO.</tspan></text>
+    <text font-family="FreeSans" font-weight="700" font-size="5.95833333" fill="#a97c48" x="278.91666667" y="110.45" letter-spacing="-0.25854214">SERVING <tspan dx="0.31151059929626912">CUSTOMERS</tspan> <tspan dx="0.31151059929626912">SINCE</tspan> <tspan dx="0.31151059929626912">2006.</tspan></text>
+    <text font-family="FreeSans" font-weight="700" font-size="5.95833333" fill="#a97c48" x="843.91666667" y="103.4" letter-spacing="-0.25854214">SPARE <tspan dx="0.31151059929626912">TIME</tspan> <tspan dx="0.31151059929626912">MANAGER</tspan> <tspan dx="0.31151059929626912">WAS</tspan> <tspan dx="0.31151059929626912">DEVELOPED</tspan> <tspan dx="0.31151059929626912">BY</tspan> <tspan dx="0.31151059929626912">SEOCHO.</tspan></text>
+    <text font-family="FreeSans" font-weight="700" font-size="5.95833333" fill="#a97c48" x="843.91666667" y="110.45" letter-spacing="-0.25854214">SERVING <tspan dx="0.31151059929626912">CUSTOMERS</tspan> <tspan dx="0.31151059929626912">SINCE</tspan> <tspan dx="0.31151059929626912">2006.</tspan></text>
     <g font-size="8" fill="#a97c48" letter-spacing="0.4">
-      <text x="288" y="106">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
-      <text x="288" y="116">SERVING CUSTOMERS SINCE 2006.</text>
-      <text x="1000" y="106" text-anchor="end">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
-      <text x="1000" y="116" text-anchor="end">SERVING CUSTOMERS SINCE 2006.</text>
       <text x="618" y="827.6" font-size="7.5" letter-spacing="0">SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.</text>
       <text x="618" y="834" font-size="7.5" letter-spacing="0">SERVING CUSTOMERS SINCE 2006.</text>
       <text x="1205.8" y="827.6" font-size="7.5" letter-spacing="0">MAPS ARE PROVIDED BY SEOCHO. SATELITE SERVICES</text>
