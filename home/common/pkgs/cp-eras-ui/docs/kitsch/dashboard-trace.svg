@@ -442,17 +442,20 @@
   <text x="164" y="218" font-family="Rajdhani" font-size="21.5" font-weight="600" letter-spacing="0.5"
         fill="#a9e6df">GUES 7702</text>
 
-  <!-- security badges, y 189..241, 02 filled amber -->
-  <!-- digits cap y 208..222, 01 spanning x 683..701 (were drawn 19 regular: 12 tall, 13 wide, a third of the ink) -->
+  <!-- security level boxes, re-measured 2026-11-15 on native #49: 55.3x51 stroke
+       centres on a 60.6 pitch from x 664.55, y 189.4, r 4, 1px #9ff5d8; the selected
+       box a #ffcc50 fill of the stroke's outer size (r 4.5) with #ce6950 digits; other
+       digits #a1ffe5 (kitsch.rs LEVEL_*). Were 57x52 square teal outlines with 03/04
+       2px apart and dark brown on #f5cb23. -->
   <g font-family="Rajdhani" font-size="22" font-weight="600" text-anchor="middle">
-    <use href="#badge" x="664.5" y="189.5" fill="none" stroke="#7fd4cc" stroke-width="1"/>
-    <text x="692" y="222" fill="#7fd4cc">01</text>
-    <use href="#badge" x="725" y="189" fill="#f5cb23"/>
-    <text x="753" y="222" fill="#6b4d08">02</text>
-    <use href="#badge" x="785.5" y="189.5" fill="none" stroke="#7fd4cc" stroke-width="1"/>
-    <text x="813" y="222" fill="#7fd4cc">03</text>
-    <use href="#badge" x="844.5" y="189.5" fill="none" stroke="#7fd4cc" stroke-width="1"/>
-    <text x="872" y="222" fill="#7fd4cc">04</text>
+    <rect x="664.55" y="189.4" width="55.3" height="51" rx="4" fill="none" stroke="#9ff5d8" stroke-width="1"/>
+    <text x="692.20" y="221.6" fill="#a1ffe5">01</text>
+    <rect x="724.65" y="188.9" width="56.3" height="52" rx="4.5" fill="#ffcc50"/>
+    <text x="752.80" y="221.6" fill="#ce6950">02</text>
+    <rect x="785.75" y="189.4" width="55.3" height="51" rx="4" fill="none" stroke="#9ff5d8" stroke-width="1"/>
+    <text x="813.40" y="221.6" fill="#a1ffe5">03</text>
+    <rect x="846.35" y="189.4" width="55.3" height="51" rx="4" fill="none" stroke="#9ff5d8" stroke-width="1"/>
+    <text x="874.00" y="221.6" fill="#a1ffe5">04</text>
   </g>
 
   <!-- ==== the two fans ==== -->

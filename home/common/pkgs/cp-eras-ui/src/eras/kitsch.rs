@@ -462,6 +462,37 @@ pub fn style() -> Style {
 pub const CHIP: iced::Color = rgb(0x1cb6ae);
 /// The dark hexagon, wedge and marks printed on the chip.
 pub const CHIP_INK: iced::Color = rgb(0x0e2b2a);
+/// The chip's hexagon, in chip units (design px from the chip's
+/// top-left), measured on native #50 (2026-11-15) as six edge lines
+/// fitted to the fill's half-level contour and intersected: the sharp
+/// corners of the dark fill. Vertical sides x 19.3 / 52.3, apexes
+/// y 4.0 / 41.4 -- an inset of about 1.5 on the earlier trace hexagon,
+/// whose outline is where the photo's thin ring runs.
+pub const CHIP_HEX: [(f32, f32); 6] = [
+    (35.3, 4.0),
+    (52.3, 13.7),
+    (52.3, 32.1),
+    (35.5, 41.4),
+    (19.3, 32.4),
+    (19.3, 13.6),
+];
+/// Corner radius of the dark hexagon: its apexes sit 0.4..0.8 inside
+/// the fitted corners.
+pub const CHIP_HEX_ROUND: f32 = 2.5;
+/// The lit slash across the hexagon, lower-left to upper-right corner:
+/// its centreline (fitted across x 24..48, slope -0.555) and its width
+/// (2.65 measured vertically, 2.3 across).
+pub const CHIP_SLASH: ((f32, f32), (f32, f32)) = ((19.3, 31.69), (52.3, 13.38));
+pub const CHIP_SLASH_WEIGHT: f32 = 2.3;
+/// The outline the photo cuts into the tile around the dark hexagon:
+/// the hexagon pushed out by this gap (fill edge to ring centre, 1.05..1.75
+/// on the six sides, mean 1.4) ...
+pub const CHIP_RING_GAP: f32 = 1.4;
+/// ... one native 4K pixel wide ...
+pub const CHIP_RING_WEIGHT: f32 = 1.0 / 2.4;
+/// ... and faint: the ring dips the tile by 30..45 levels, an integrated
+/// 0.4 native pixel of full chip ink.
+pub const CHIP_RING: iced::Color = iced::Color { a: 0.60, ..CHIP_INK };
 /// The recessed input well, and the lobe filling the elbow of the
 /// bracket. Neither is a role: the era declares no `inset` because its
 /// cards are unfilled outlines, and this screen is the one place it
@@ -491,6 +522,13 @@ pub const BARCODE_TAB: iced::Color = rgb(0x16a49c);
 /// [`ANNOTATION`] teal at a regular weight -- which came out 20% short
 /// and carried a fifth of the photo's ink.
 pub const BRIGHT: iced::Color = rgb(0x82f0d3);
+/// The GUEST 7702 names' extra stem weight over Rajdhani SemiBold, in
+/// design px (`Legend::embolden`). Native #50 (2026-11-15), 4K px at
+/// the half level: stems 6.1, E arms 6.0; SemiBold drew 5.6 / 4.8 and
+/// Bold would draw ~7.3 / 6.3. 0.25 design (0.6 native) lands the stems
+/// and takes the arms most of the way; the source face has less
+/// stem/arm contrast than Rajdhani, which no single weight reproduces.
+pub const NAME_EMBOLDEN: f32 = 0.25;
 
 const NOTE_1: &str = "ACCESS MANAGER WAS DEVE-";
 /// Every Kitsch badge note (login, mailbox, dashboard, store corners) in
@@ -532,6 +570,7 @@ const LOGIN_GROUND: &[Prim] = &[
     fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(LOGIN_PAGE)),
     Prim::Lobe { x: 750.0, y: -331.0, rx: 1600.0, ry: 929.0, stops: LOGIN_BLOOM },
     Prim::Lobe { x: 0.0, y: 434.0, rx: 700.0, ry: 433.0, stops: LOGIN_WASH },
+    CORNER_SHADE_SOFT,
 ];
 const LOGIN_BACKDROP: &[Prim] = &[Prim::Soft { prims: LOGIN_GROUND }];
 
@@ -615,7 +654,7 @@ pub const ACCESS: Access = Access {
             )),
             emblem: Emblem::Chip,
             name: Some(
-                Legend { weight: iced::font::Weight::Semibold, ..Legend::new("GUEST 7702", 340.0, 355.6, 22.0, Ink::Fixed(BRIGHT)) },
+                Legend { weight: iced::font::Weight::Semibold, ..Legend::new("GUEST 7702", 340.0, 355.6, 22.0, Ink::Fixed(BRIGHT)).emboldened(NAME_EMBOLDEN) },
             ),
             badge: Some(Plate::outlined(
                 Plot::new(339.3, 371.9, 24.5, 24.1),
@@ -686,7 +725,7 @@ pub const ACCESS: Access = Access {
             )),
             emblem: Emblem::Chip,
             name: Some(
-                Legend { weight: iced::font::Weight::Semibold, ..Legend::new("GUEST 7702", 733.0, 355.6, 22.0, Ink::Fixed(BRIGHT)) },
+                Legend { weight: iced::font::Weight::Semibold, ..Legend::new("GUEST 7702", 733.0, 355.6, 22.0, Ink::Fixed(BRIGHT)).emboldened(NAME_EMBOLDEN) },
             ),
             badge: Some(Plate::outlined(
                 Plot::new(732.3, 371.9, 24.5, 24.1),
@@ -736,7 +775,7 @@ pub const ACCESS: Access = Access {
             )),
             emblem: Emblem::Chip,
             name: Some(
-                Legend { weight: iced::font::Weight::Semibold, ..Legend::new("GUEST 7702", 1125.0, 355.6, 22.0, Ink::Fixed(BRIGHT)) },
+                Legend { weight: iced::font::Weight::Semibold, ..Legend::new("GUEST 7702", 1125.0, 355.6, 22.0, Ink::Fixed(BRIGHT)).emboldened(NAME_EMBOLDEN) },
             ),
             badge: Some(Plate::outlined(
                 Plot::new(1124.3, 371.9, 24.5, 24.1),
@@ -843,6 +882,8 @@ const MAIL_GROUND: &[Prim] = &[
     fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(PAGE)),
     Prim::Lobe { x: 750.0, y: -331.0, rx: 1600.0, ry: 929.0, stops: ROSE },
     Prim::Lobe { x: 0.0, y: 393.0, rx: 535.0, ry: 400.0, stops: MARGIN },
+    CORNER_SHADE_STEEP,
+    MAIL_VIGNETTE_TOP_RIGHT,
 ];
 const MAIL_BACKDROP: &[Prim] = &[Prim::Soft { prims: MAIL_GROUND }];
 
@@ -887,50 +928,52 @@ static DESC_BOX: [(f32, f32); 6] = [
     (575.5, 236.5),
 ];
 
-/// The list bracket: a top edge that fades right, a rounded corner, a
-/// left edge that FORKS at y~600, and the solid teal wave between the
-/// two branches. The trace's quadratics are stepped into short
-/// segments; at 2px they read the same.
-static BRACKET: [(f32, f32); 16] = [
-    (402.0, 268.0),
-    (140.0, 268.0),
-    (127.0, 271.0),
-    (121.0, 281.0),
-    (120.5, 288.0),
-    (120.5, 606.0),
-    (122.0, 628.0),
-    (138.0, 642.0),
-    (158.0, 644.0),
-    (278.0, 644.0),
-    (288.0, 647.0),
-    (296.0, 653.0),
-    (362.0, 741.0),
-    (368.0, 747.0),
-    (376.0, 748.0),
-    (451.0, 748.0),
+/// The list bracket, measured on native #51 (2026-11-15) as line
+/// centres: a top edge at y 268.4 fading out to the right, a circular
+/// top-left corner (r 36.2 -- rays from a trial centre agree to 0.3), a
+/// left edge at x 120.6, and at y 594 a second circular turn (r 49.5)
+/// into the wave's top at y 643.9, a fillet (r ~22) into the 3:4
+/// diagonal, a fillet (r ~16) onto the bottom line at y 748.5, which
+/// fades out to the right in its turn. Below the fork the photo draws
+/// no line: the wave's own edge is the outer branch.
+pub const LIST_TOP: f32 = 268.4;
+pub const LIST_LEFT: f32 = 120.6;
+pub const LIST_CORNER: f32 = 36.2;
+/// Where each fading run starts and its alpha along x: the top
+/// edge's profile (peak over ground) at x 330..426, the bottom line's
+/// at 380..480.
+pub const LIST_TOP_FADE: &[(f32, f32)] = &[(330.0, 1.0), (360.0, 0.86), (390.0, 0.44), (414.0, 0.11), (430.0, 0.0)];
+pub const LIST_FOOT_FADE: &[(f32, f32)] = &[(380.0, 1.0), (420.0, 0.83), (440.0, 0.63), (460.0, 0.36), (480.0, 0.0)];
+/// Quarter-circle handle for a cubic.
+const ARC: f32 = 0.5523;
+static BRACKET: [Seg; 9] = [
+    Seg::Line(LIST_LEFT + LIST_CORNER, LIST_TOP),
+    Seg::Cubic {
+        c1x: LIST_LEFT + LIST_CORNER * (1.0 - ARC), c1y: LIST_TOP,
+        c2x: LIST_LEFT, c2y: LIST_TOP + LIST_CORNER * (1.0 - ARC),
+        x: LIST_LEFT, y: LIST_TOP + LIST_CORNER,
+    },
+    Seg::Line(LIST_LEFT, 594.4),
+    Seg::Cubic { c1x: LIST_LEFT, c1y: 594.4 + 49.5 * ARC, c2x: 170.1 - 49.5 * ARC, c2y: 643.9, x: 170.1, y: 643.9 },
+    Seg::Line(273.3, 643.9),
+    Seg::Quad { cx: 284.3, cy: 643.9, x: 290.9, y: 652.7 },
+    Seg::Line(358.0, 742.1),
+    Seg::Quad { cx: 362.8, cy: 748.5, x: 370.8, y: 748.5 },
+    Seg::Line(380.0, 748.5),
 ];
-static BRACKET_FORK: [(f32, f32); 5] = [
-    (120.5, 606.0),
-    (120.5, 690.0),
-    (124.0, 726.0),
-    (146.0, 745.0),
-    (180.0, 748.5),
-];
-static WAVE: [(f32, f32); 14] = [
-    (120.5, 606.0),
-    (120.5, 628.0),
-    (132.0, 641.0),
-    (158.0, 644.0),
-    (278.0, 644.0),
-    (288.0, 647.0),
-    (296.0, 653.0),
-    (362.0, 741.0),
-    (368.0, 747.0),
-    (376.0, 748.0),
-    (180.0, 748.0),
-    (146.0, 745.0),
-    (124.0, 726.0),
-    (120.5, 690.0),
+/// The solid teal between the bracket's turn and the photo's outer
+/// edge: the same top and diagonal, a bottom at y 749.2 and a circular
+/// outer corner (r 67.5) up the left edge at x 120.4.
+static WAVE: [Seg; 9] = [
+    Seg::Cubic { c1x: LIST_LEFT, c1y: 594.4 + 49.5 * ARC, c2x: 170.1 - 49.5 * ARC, c2y: 643.9, x: 170.1, y: 643.9 },
+    Seg::Line(273.3, 643.9),
+    Seg::Quad { cx: 284.3, cy: 643.9, x: 290.9, y: 652.7 },
+    Seg::Line(358.0, 742.1),
+    Seg::Quad { cx: 362.8, cy: 748.5, x: 370.8, y: 748.5 },
+    Seg::Line(370.8, 749.2),
+    Seg::Line(187.9, 749.2),
+    Seg::Cubic { c1x: 187.9 - 67.5 * ARC, c1y: 749.2, c2x: 120.4, c2y: 681.7 + 67.5 * ARC, x: 120.4, y: 681.7 },
+    Seg::Line(120.4, 594.4),
 ];
 /// The outlined flag band hanging off the message tab's left edge.
 static FLAG: [(f32, f32); 5] = [
@@ -941,7 +984,7 @@ static FLAG: [(f32, f32); 5] = [
     (1127.5, 360.7),
 ];
 
-static CHROME: [Piece; 26] = [
+static CHROME: [Piece; 27] = [
     mid(205.0, 110.0, "SPARE TIME MANAGER WAS DEVELO-"),
     mid(205.0, 119.2, "PED BY SEOCHO. SERVING CUSTO-"),
     mid(205.0, 128.3, "MERS SINCE 2006."),
@@ -999,27 +1042,24 @@ static CHROME: [Piece; 26] = [
         at: Run::new(588.0, 213.0, 20.0, Ink::Fg).bold(),
         text: "MAILBOX",
     }),
-    Piece::Poly {
-        points: &WAVE,
+    Piece::Curve {
+        start: (LIST_LEFT, 594.4),
+        steps: &WAVE,
         fill: Some(Ink::Ornament),
         stroke: None,
         width: 0.0,
         close: true,
     },
-    Piece::Poly {
-        points: &BRACKET,
+    Piece::Curve {
+        start: (330.0, LIST_TOP),
+        steps: &BRACKET,
         fill: None,
         stroke: Some(Ink::Fg),
         width: 1.25,
         close: false,
     },
-    Piece::Poly {
-        points: &BRACKET_FORK,
-        fill: None,
-        stroke: Some(Ink::Fg),
-        width: 1.25,
-        close: false,
-    },
+    Piece::Fade { x0: 330.0, x1: 430.0, y: LIST_TOP, width: 1.25, ink: Ink::Fg, stops: LIST_TOP_FADE },
+    Piece::Fade { x0: 380.0, x1: 480.0, y: 748.5, width: 1.25, ink: Ink::Fg, stops: LIST_FOOT_FADE },
     Piece::Label(Note {
         at: Run::new(503.0, 870.0, 9.0, Ink::Fg).bold(),
         text: "ARASAKA CONSUMER TECHNOLOGY",
@@ -1381,6 +1421,44 @@ const MARGIN: &[(f32, iced::Color)] = &[
     (1.00, iced::Color { a: 0.0, ..rgb(0x26884f) }),
 ];
 
+/// The grey-green the rose gives way to in the top-left corner: the
+/// left margin's own level at y 160..240 on #49-#52 (47,49,45).
+pub const CORNER_WASH: iced::Color = rgb(0x2f312d);
+const fn wash(a: f32) -> iced::Color {
+    iced::Color { a, ..CORNER_WASH }
+}
+/// The top-left corner shade: `CORNER_WASH` over the rose, strongest on
+/// the left edge at about y 150-190 and gone by x~80, so the rose is
+/// pulled back from the corner and the bracket keeps a dark backdrop.
+/// Fitted 2026-11-15 to the darkening `(ours - source) / (ours - wash)`
+/// on the red channel over x 0..240, y 0..600 (UI excluded) as an
+/// ellipse at x 0 with alpha `(1 - t)^k`. Two laws: mail and store
+/// (#51/#52) take the steep one -- red RMS 13.4 -> 7.0 and 13.2 -> 6.6
+/// -- and dashboard and login (#49/#50) the soft one, 8.5 -> 7.1 and
+/// 5.9 -> 3.0; each is worse than none on the other pair.
+pub const CORNER_SHADE_STEEP: Prim = Prim::Lobe { x: 0.0, y: 150.0, rx: 80.0, ry: 270.0, stops: &[
+    (0.0, wash(1.0)), (0.2, wash(0.774)), (0.4, wash(0.556)), (0.6, wash(0.349)), (0.8, wash(0.157)), (1.0, wash(0.0)),
+] };
+pub const CORNER_SHADE_SOFT: Prim = Prim::Lobe { x: 0.0, y: 190.0, rx: 80.0, ry: 400.0, stops: &[
+    (0.0, wash(1.0)), (0.2, wash(0.560)), (0.4, wash(0.265)), (0.6, wash(0.092)), (0.8, wash(0.015)), (1.0, wash(0.0)),
+] };
+const fn page(a: f32) -> iced::Color {
+    iced::Color { a, ..PAGE }
+}
+/// The top-right vignette: page black over the rose inside a tall
+/// ellipse standing on the right edge, opaque to `t0` of its radius and
+/// fading out by its rim, so the rose stops short of the corner along a
+/// curve that runs from x~1592 at the top to x~1530 by y 240. Fitted to
+/// the darkening `1 - (source - page) / (ours - page)` over x 1380..1600,
+/// y 0..240 (dashboard RMS 0.041, store 0.050, as alpha). Mail (#51)
+/// vignettes further in: its own, wider ellipse.
+pub const VIGNETTE_TOP_RIGHT: Prim = Prim::Lobe { x: 1640.0, y: 450.0, rx: 120.0, ry: 565.0, stops: &[
+    (0.0, page(1.0)), (0.71, page(1.0)), (1.0, page(0.0)),
+] };
+pub const MAIL_VIGNETTE_TOP_RIGHT: Prim = Prim::Lobe { x: 1800.0, y: 450.0, rx: 337.0, ry: 758.0, stops: &[
+    (0.0, page(1.0)), (0.84, page(1.0)), (1.0, page(0.0)),
+] };
+
 /// The backdrop. Ground rather than ink -- but ground the extractor's
 /// palette split depends on: the source spends five of its eight
 /// clusters on it, so leaving the page flat is not the neutral choice
@@ -1393,29 +1471,61 @@ const BACKDROP: &[Prim] = &[
     fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(PAGE)),
     Prim::Lobe { x: 750.0, y: -331.0, rx: 1600.0, ry: 929.0, stops: ROSE },
     Prim::Lobe { x: 0.0, y: 393.0, rx: 535.0, ry: 400.0, stops: MARGIN },
+    CORNER_SHADE_STEEP,
+    VIGNETTE_TOP_RIGHT,
 ];
 
-/// The nav chevron, 216x39 at its own origin: the left edge rises to a
-/// peak, the right end chamfers back.
+/// The nav chevron in its 216x39 plate, as line centres measured on
+/// native #52 (2026-11-15, RIFLES): left edge x 1.15, bottom y 38.37,
+/// top y 2.8, right edge x 215.45; the left shoulder rises at 45 degrees
+/// from y 16.05 to a peak at y -5.95 (x~24) and drops vertically at
+/// x 26.05 into the top; the right end chamfers at 45 degrees from
+/// y 15.4 to x 192.5. Every corner is rounded, which is what the
+/// earlier transcription (straight 0.95-slope shoulders, a sloped drop,
+/// a pointed peak, sharp corners) missed: `NAV_ROUND` at the plate's
+/// corners, `NAV_PEAK` at the peak, `NAV_NOTCH` where the drop meets the
+/// top, `NAV_TOP_RIGHT` at the top-right, fitted from the offset of the
+/// line from its two edges' extensions near each corner.
+pub const NAV_ROUND: f32 = 3.0;
+/// (`NAV_PEAK` is the quadratic fillet that lands the measured apex,
+/// y -5.95: a circle there would be r 2.05; the quadratic through the
+/// corner sits 1.03 r below it, so 2.8.)
+pub const NAV_PEAK: f32 = 2.8;
+pub const NAV_NOTCH: f32 = 2.5;
+pub const NAV_TOP_RIGHT: f32 = 4.3;
+/// Tangent length of a fillet of radius `r` at a corner turning by 45
+/// degrees (tan 22.5) and by 135 (tan 67.5).
+const T45: f32 = 0.41421;
+const T135: f32 = 2.41421;
+const D45: f32 = 0.70711;
+/// Where the outline starts: on the bottom edge, past the bottom-left
+/// fillet.
+pub const CHEVRON_AT: (f32, f32) = (1.15 + NAV_ROUND, 38.37);
 const CHEVRON: &[Seg] = &[
-    Seg::Line(0.0, 19.0),
-    Seg::Line(18.0, 0.0),
-    Seg::Line(27.0, 3.0),
-    Seg::Line(214.0, 3.0),
-    Seg::Quad { cx: 216.0, cy: 3.0, x: 216.0, y: 5.0 },
-    Seg::Line(216.0, 11.0),
-    Seg::Line(190.0, 39.0),
+    Seg::Quad { cx: 1.15, cy: 38.37, x: 1.15, y: 38.37 - NAV_ROUND },
+    Seg::Line(1.15, 16.05 + NAV_ROUND * T45),
+    Seg::Quad { cx: 1.15, cy: 16.05, x: 1.15 + NAV_ROUND * T45 * D45, y: 16.05 - NAV_ROUND * T45 * D45 },
+    Seg::Line(26.05 - NAV_PEAK * T135 * D45, -8.85 + NAV_PEAK * T135 * D45),
+    Seg::Quad { cx: 26.05, cy: -8.85, x: 26.05, y: -8.85 + NAV_PEAK * T135 },
+    Seg::Line(26.05, 2.8 - NAV_NOTCH),
+    Seg::Quad { cx: 26.05, cy: 2.8, x: 26.05 + NAV_NOTCH, y: 2.8 },
+    Seg::Line(215.45 - NAV_TOP_RIGHT, 2.8),
+    Seg::Quad { cx: 215.45, cy: 2.8, x: 215.45, y: 2.8 + NAV_TOP_RIGHT },
+    Seg::Line(215.45, 15.4 - NAV_ROUND * T45),
+    Seg::Quad { cx: 215.45, cy: 15.4, x: 215.45 - NAV_ROUND * T45 * D45, y: 15.4 + NAV_ROUND * T45 * D45 },
+    Seg::Line(192.48 + NAV_ROUND * T45 * D45, 38.37 - NAV_ROUND * T45 * D45),
+    Seg::Quad { cx: 192.48, cy: 38.37, x: 192.48 - NAV_ROUND * T45, y: 38.37 },
 ];
 
-const NAV_OUTLINE: &[Prim] = &[shut_path(0.0, 39.0, CHEVRON, Ink::Border, 1.5)];
-const NAV_SOLID: &[Prim] = &[fill_path(0.0, 39.0, CHEVRON, Ink::Select)];
+const NAV_OUTLINE: &[Prim] = &[shut_path(CHEVRON_AT.0, CHEVRON_AT.1, CHEVRON, Ink::Border, 1.5)];
+const NAV_SOLID: &[Prim] = &[fill_path(CHEVRON_AT.0, CHEVRON_AT.1, CHEVRON, Ink::Select)];
 
 // `components.svg` #k-chevron-hover: inferred from the fan's first
 // ghost step, not a cursor state photographed in the source. Keep the
 // rest silhouette, paint its ghost (+20,-20), then the opaque idle slab.
 // These foreground alphas use the canvas blend, not `Soft`'s sRGB blend.
 const NAV_GHOST: &[Prim] = &[Prim::Path {
-    x: 0.0, y: 39.0, segs: CHEVRON, close: true,
+    x: CHEVRON_AT.0, y: CHEVRON_AT.1, segs: CHEVRON, close: true,
     fill: Some(Ink::Fixed(iced::Color { a: 0.58, ..rgb(0x0f9f80) })),
     stroke: Some(Ink::Fixed(iced::Color { a: 0.80, ..rgb(0x6cc4bd) })),
     width: 1.2,
@@ -1423,24 +1533,58 @@ const NAV_GHOST: &[Prim] = &[Prim::Path {
 const NAV_LIFT: &[Prim] = &[
     Prim::At { x: 20.0, y: -20.0, prims: NAV_GHOST },
     Prim::Path {
-        x: 0.0, y: 39.0, segs: CHEVRON, close: true,
+        x: CHEVRON_AT.0, y: CHEVRON_AT.1, segs: CHEVRON, close: true,
         fill: Some(Ink::Fixed(rgb(0x2c9798))),
         stroke: Some(Ink::Fixed(rgb(0xa9e6df))),
         width: 1.8,
     },
 ];
 
-/// The bracket's solid wave, and the single-stroke run of the bracket
-/// itself: a top line, an S-bend around the customer block, the long
-/// left edge, and the wave's own top and right side.
+/// The nav bracket's foot, measured on native #52 (2026-11-15) as line
+/// centres and fill edges: the left edge turns into the wave's top
+/// through a circle (r 55.9; 51.4..53.4 from a trial centre, fitted
+/// tangent), the top at y 618.7 rounds over (r 43.2) into a short
+/// vertical at x 345.1, which sweeps out concave (r 41.9) onto the
+/// bottom at y 718.8 and runs on as a hairline fading by x 460. The
+/// fill's outer edge is a quarter ellipse centred (300, 575), radii
+/// (193.5, 143.8): its half-level contour at y 620/660/700/715 sits on
+/// x 117.0/145.0/205.5/256.8, the ellipse on 116.9/144.6/204.8/256.3.
+/// The trace's quadratics (one control at each corner) bulged that edge
+/// ~10px further out and gave the right side a tighter tongue.
+pub const WAVE_CORNER: f32 = 55.9;
+pub const WAVE_TOP: f32 = 618.7;
+pub const WAVE_SHOULDER: f32 = 43.2;
+pub const WAVE_RIGHT: f32 = 345.1;
+pub const WAVE_SWEEP: f32 = 41.9;
+pub const WAVE_FOOT: f32 = 718.8;
+/// The hairline's alpha along x (peak over ground at x 388..460).
+pub const WAVE_TAIL: (f32, f32) = (387.0, 460.0);
+const WAVE_TAIL_STOPS: &[(f32, iced::Color)] = &[
+    (0.0, TEAL_OUTLINE),
+    (0.452, iced::Color { a: 0.79, ..TEAL_OUTLINE }),
+    (0.671, iced::Color { a: 0.54, ..TEAL_OUTLINE }),
+    (0.890, iced::Color { a: 0.12, ..TEAL_OUTLINE }),
+    (1.0, iced::Color { a: 0.0, ..TEAL_OUTLINE }),
+];
+const K: f32 = 0.5523;
+/// The left edge's turn, shoulder and sweep, shared by the fill and the
+/// line: from (106.5, 618.7 - r) to the start of the hairline.
+macro_rules! wave_run {
+    () => {
+        [
+            Seg::Cubic { c1x: 106.5, c1y: WAVE_TOP - WAVE_CORNER * (1.0 - K), c2x: 106.5 + WAVE_CORNER * (1.0 - K), c2y: WAVE_TOP, x: 106.5 + WAVE_CORNER, y: WAVE_TOP },
+            Seg::Line(WAVE_RIGHT - WAVE_SHOULDER, WAVE_TOP),
+            Seg::Cubic { c1x: WAVE_RIGHT - WAVE_SHOULDER * (1.0 - K), c1y: WAVE_TOP, c2x: WAVE_RIGHT, c2y: WAVE_TOP + WAVE_SHOULDER * (1.0 - K), x: WAVE_RIGHT, y: WAVE_TOP + WAVE_SHOULDER },
+            Seg::Line(WAVE_RIGHT, WAVE_FOOT - WAVE_SWEEP),
+            Seg::Cubic { c1x: WAVE_RIGHT, c1y: WAVE_FOOT - WAVE_SWEEP * (1.0 - K), c2x: WAVE_RIGHT + WAVE_SWEEP * (1.0 - K), c2y: WAVE_FOOT, x: WAVE_RIGHT + WAVE_SWEEP, y: WAVE_FOOT },
+        ]
+    };
+}
+const WAVE_RUN: [Seg; 5] = wave_run!();
 const WAVE_BODY: &[Seg] = &[
-    Seg::Quad { cx: 106.5, cy: 617.0, x: 150.0, y: 617.0 },
-    Seg::Line(312.0, 617.0),
-    Seg::Quad { cx: 345.0, cy: 617.0, x: 345.0, y: 650.0 },
-    Seg::Line(345.0, 685.0),
-    Seg::Quad { cx: 345.0, cy: 716.0, x: 375.0, y: 718.0 },
-    Seg::Line(310.0, 718.0),
-    Seg::Quad { cx: 110.0, cy: 718.0, x: 106.5, y: 575.0 },
+    WAVE_RUN[0], WAVE_RUN[1], WAVE_RUN[2], WAVE_RUN[3], WAVE_RUN[4],
+    Seg::Line(300.0, WAVE_FOOT),
+    Seg::Cubic { c1x: 300.0 - 193.5 * K, c1y: WAVE_FOOT, c2x: 106.5, c2y: 575.0 + 143.8 * K, x: 106.5, y: 575.0 },
 ];
 const BRACKET_PATH: &[Seg] = &[
     Seg::Line(372.0, 186.0),
@@ -1449,23 +1593,37 @@ const BRACKET_PATH: &[Seg] = &[
     Seg::Quad { cx: 348.0, cy: 268.0, x: 313.0, y: 268.0 },
     Seg::Line(136.0, 268.0),
     Seg::Quad { cx: 106.5, cy: 268.0, x: 106.5, y: 298.0 },
-    Seg::Line(106.5, 575.0),
-    Seg::Quad { cx: 106.5, cy: 617.0, x: 150.0, y: 617.0 },
-    Seg::Line(312.0, 617.0),
-    Seg::Quad { cx: 345.0, cy: 617.0, x: 345.0, y: 650.0 },
-    Seg::Line(345.0, 685.0),
-    Seg::Quad { cx: 345.0, cy: 716.0, x: 375.0, y: 718.0 },
+    Seg::Line(106.5, WAVE_TOP - WAVE_CORNER),
+    WAVE_RUN[0], WAVE_RUN[1], WAVE_RUN[2], WAVE_RUN[3], WAVE_RUN[4],
 ];
 
-/// The logotype's outlined T, x 280..318 with its stem at 292..306.
+/// The 4ST logotype, measured on native #52 (2026-11-15) at the half
+/// level. "4" ink x 150.8..210.4, y 87.1..133.8; "S" 213.8..275.0 --
+/// so the S ends 2 px short of the T, which is what makes the mark one
+/// word. Our run at size 60 drew the "4" 50.8 wide and 38.3 tall and
+/// left an 18.8 px gap before the T: the face was 22% too small, not
+/// the T too far. At `LOGO_SIZE` the cap height is the source's; the
+/// source's S is wider than its 4 where Rajdhani Bold's is narrower,
+/// so each glyph is set on its own pen x and stretch (`LOGO_FOUR`,
+/// `LOGO_S`) to land both ink extents.
+pub const LOGO_SIZE: f32 = 73.2;
+pub const LOGO_BASELINE: f32 = 130.15;
+/// `(pen x, horizontal stretch)` of each glyph.
+pub const LOGO_FOUR: (f32, f32) = (146.94, 1.642);
+pub const LOGO_S: (f32, f32) = (207.25, 1.892);
+/// The outlined T, as stroke centrelines: bar x 278.3..316.7,
+/// y 86.7..95.5, stem x 292.6..302.4 down to y 132.7, the stroke
+/// `LOGO_T_WEIGHT` wide (both edges of every side measured; the stem
+/// was 14 wide and the bar 11 tall before, against 9.8 and 8.8).
+pub const LOGO_T_WEIGHT: f32 = 2.0;
 const TEE: &[Seg] = &[
-    Seg::Line(318.0, 88.0),
-    Seg::Line(318.0, 99.0),
-    Seg::Line(306.0, 99.0),
-    Seg::Line(306.0, 132.0),
-    Seg::Line(292.0, 132.0),
-    Seg::Line(292.0, 99.0),
-    Seg::Line(280.0, 99.0),
+    Seg::Line(316.7, 86.7),
+    Seg::Line(316.7, 95.5),
+    Seg::Line(302.4, 95.5),
+    Seg::Line(302.4, 132.7),
+    Seg::Line(292.6, 132.7),
+    Seg::Line(292.6, 95.5),
+    Seg::Line(278.3, 95.5),
 ];
 
 /// The card outline: an r6 top-left, a 24px top-right chamfer, and
@@ -1953,32 +2111,43 @@ const GROWN_LIFT: &[Prim] = &[
     Prim::At { x: 20.0, y: -20.0, prims: &[card_ghost(GROWN_EDGE)] },
     Prim::At { x: 0.0, y: 0.0, prims: GROWN },
 ];
-// The fourth card is cropped by the photographed right edge. The main
-// drawing stops at x1523 (local 80); five narrow translucent copies carry
-// only its coloured residue through x1550. Applying this to each face
-// keeps the single interactive Plate and all selection/feedback states.
+// The fourth card is cropped by the photographed right edge. Native #52
+// (2026-11-15), fourth card, 4K samples per design px past the cut: the
+// band is full through x1524 (local 81) and at 0.62 for x1525; after
+// that only a soft halo is left (0.27..0.31 to x1529, 0.13 to x1535,
+// ground by x1545) -- no letter or gun detail survives in it, and the
+// MAGNUM title stops dead after its U. Until 2026-11-15 five slices
+// repeated the whole card at falling opacity through x1550, so the M,
+// the band glyphs and the stats showed through in visible steps; an
+// edge-column smear tried the same day combed the title's stems into
+// stripes. So the card is now cut clean: opaque through `CARD_4_CUT`
+// and one antialiasing column at the measured 0.62. The photo's halo
+// is not drawn. Applying this to each face keeps the single
+// interactive Plate and all selection/feedback states.
+pub const CARD_4_CUT: f32 = 81.0;
+/// The residue slices show the card from this local x (no shift: the
+/// card's own column).
+pub const CARD_4_SOURCE: f32 = 81.0;
+/// `(x, width, alpha)` of each residue slice, local to the card.
+pub const CARD_4_SMEAR: [(f32, f32, f32); 1] = [(81.0, 1.0, 0.62)];
 macro_rules! fourth_face {
     ($face:expr) => {
         &[
             // Retain the projecting flag, half-strokes and lifted ghost;
             // only the right edge is meant to crop the artwork.
-            Prim::Viewport { x: -32.0, y: -24.0, w: 112.0, h: 538.0, prims: $face },
-            fourth_strip!($face, 80.0, 2.0, 0.85, "kitsch-card4-bleed-1"),
-            fourth_strip!($face, 82.0, 3.0, 0.30, "kitsch-card4-bleed-2"),
-            fourth_strip!($face, 85.0, 5.0, 0.20, "kitsch-card4-bleed-3"),
-            fourth_strip!($face, 90.0, 7.0, 0.08, "kitsch-card4-bleed-4"),
-            fourth_strip!($face, 97.0, 10.0, 0.02, "kitsch-card4-bleed-5"),
+            Prim::Viewport { x: -32.0, y: -24.0, w: CARD_4_CUT + 32.0, h: 538.0, prims: $face },
+            fourth_strip!($face, 0, "kitsch-card4-bleed-1"),
         ]
     };
 }
 macro_rules! fourth_strip {
-    ($face:expr, $x:expr, $w:expr, $alpha:expr, $id:expr) => {
+    ($face:expr, $i:expr, $id:expr) => {
         Prim::Viewport {
-            x: $x, y: -24.0, w: $w, h: 538.0,
+            x: CARD_4_SMEAR[$i].0, y: -24.0, w: CARD_4_SMEAR[$i].1, h: 538.0,
             prims: &[Prim::Motion {
                 motion: Motion { id: $id, begin: 0, dur: 1,
-                    ease: Easing::Linear, change: Change::Opacity { alpha: ($alpha, $alpha) } },
-                prims: $face,
+                    ease: Easing::Linear, change: Change::Opacity { alpha: (CARD_4_SMEAR[$i].2, CARD_4_SMEAR[$i].2) } },
+                prims: &[Prim::At { x: CARD_4_SMEAR[$i].0 - CARD_4_SOURCE, y: 0.0, prims: $face }],
             }],
         }
     };
@@ -2089,8 +2258,9 @@ const SHELF: &[Prim] = &[
 pub const STORE: &[Prim] = &[
     Prim::Soft { prims: BACKDROP },
     // logotype: a heavy extended face, the T outline-only
-    Prim::Wide { x: 155.0, y: 132.0, size: 60.0, stretch: 1.7, ink: Ink::Fixed(LOGO), face: Face::Bold, anchor: Anchor::Start, content: "4S" },
-    shut_path(280.0, 88.0, TEE, Ink::Fixed(LOGO), 1.3),
+    Prim::Wide { x: LOGO_FOUR.0, y: LOGO_BASELINE, size: LOGO_SIZE, stretch: LOGO_FOUR.1, ink: Ink::Fixed(LOGO), face: Face::Bold, anchor: Anchor::Start, content: "4" },
+    Prim::Wide { x: LOGO_S.0, y: LOGO_BASELINE, size: LOGO_SIZE, stretch: LOGO_S.1, ink: Ink::Fixed(LOGO), face: Face::Bold, anchor: Anchor::Start, content: "S" },
+    shut_path(278.3, 86.7, TEE, Ink::Fixed(LOGO), LOGO_T_WEIGHT),
     Prim::Spaced { x: 154.0, y: 155.0, size: 15.0, ink: Ink::Fg, face: Face::Medium, pitch: 32.0, content: "STORE" },
     // customer chip and account lines
     Prim::Round { x: 123.0, y: 178.0, w: 215.0, h: 22.0, r: 8.0, fill: None, stroke: Some(Ink::Border), width: 1.5 },
@@ -2102,8 +2272,9 @@ pub const STORE: &[Prim] = &[
     txt_end(306.0, 243.0, 12.0, Ink::Fg, "10/05/2077"),
     // the nav bracket: one swept line wrapping the customer block, and
     // the solid wave it ends in
-    fill_path(106.5, 575.0, WAVE_BODY, Ink::Fixed(WAVE_INK)),
+    fill_path(106.5, WAVE_TOP - WAVE_CORNER, WAVE_BODY, Ink::Fixed(WAVE_INK)),
     line_path(440.0, 186.0, BRACKET_PATH, Ink::Border, 2.0),
+    Prim::Ramp { x: WAVE_TAIL.0, y: WAVE_FOOT - 1.0, w: WAVE_TAIL.1 - WAVE_TAIL.0, h: 2.0, from: (0.0, 0.5), to: (1.0, 0.5), stops: WAVE_TAIL_STOPS },
     // nav chevrons, SMG solid
     Prim::Plate { group: Group::Category, index: 0, x: 140.0, y: 297.0, w: 216.0, h: 39.0, on: NAV_ON_0, off: NAV_OFF_0 },
     Prim::Plate { group: Group::Category, index: 1, x: 140.0, y: 357.0, w: 216.0, h: 39.0, on: NAV_ON_1, off: NAV_OFF_1 },
@@ -2149,7 +2320,7 @@ mod store_interaction_tests {
     #[test]
     fn card_material_feedback_keeps_idle_geometry_and_content_until_selection() {
         fn fourth_face_keeps_content(face: &[Prim], source: &[Prim]) {
-            assert_eq!(face.len(), 6, "opaque slice plus five residue slices");
+            assert_eq!(face.len(), 1 + CARD_4_SMEAR.len(), "opaque slice plus the residue slices");
             let Prim::Viewport { x, y, w, h, prims } = face[0] else { panic!("opaque fourth-card slice") };
             assert!(x < -27.0 && y < -20.0 && y + h > 500.0,
                 "retain the projecting flag, lifted ghost and selected footer");
@@ -2164,11 +2335,15 @@ mod store_interaction_tests {
                 let Change::Opacity { alpha: (start, end) } = motion.change else { panic!("static residue opacity") };
                 assert_eq!(start, end, "persistent fade is independent of opening time");
                 assert!(start > 0.0 && start < previous_alpha);
+                // the residue column shows the card's own column there
+                let [Prim::At { x: shift, y: dy, prims }] = *prims else { panic!("residue shifted from the edge") };
+                assert_eq!(*dy, 0.0);
+                assert_eq!(sx - *shift, CARD_4_SOURCE);
                 assert_eq!(*prims, source);
                 right += sw;
                 previous_alpha = start;
             }
-            assert_eq!(right, 107.0, "source foreground ends at x1550");
+            assert_eq!(right, 82.0, "clean cut after one antialiasing column, x1525");
         }
         fn geometry(mut prim: Prim) -> Prim {
             match &mut prim {
@@ -2306,7 +2481,7 @@ mod store_interaction_tests {
             let Prim::Path { x, y, segs, close, .. } = prim else {
                 panic!("same chevron path in every state");
             };
-            assert_eq!((x, y, segs, close), (0.0, 39.0, CHEVRON, true));
+            assert_eq!((x, y, segs, close), (CHEVRON_AT.0, CHEVRON_AT.1, CHEVRON, true));
         }
         let Prim::Path { fill, stroke, width, .. } = NAV_GHOST[0] else { unreachable!() };
         assert_eq!(fill, Some(Ink::Fixed(iced::Color { a: 0.58, ..rgb(0x0f9f80) })));
@@ -2703,6 +2878,8 @@ const HUB_BACK: &[Prim] = &[
     fill_rect(0.0, 0.0, 1600.0, 900.0, Ink::Fixed(HUB_GROUND)),
     Prim::Lobe { x: 750.0, y: -331.0, rx: 1600.0, ry: 929.0, stops: ROSE },
     Prim::Lobe { x: 0.0, y: 393.0, rx: 535.0, ry: 400.0, stops: MARGIN },
+    CORNER_SHADE_SOFT,
+    VIGNETTE_TOP_RIGHT,
 ];
 
 // The ghosts, farthest first. Four trails step (+20,-20) in screen space;
@@ -2998,6 +3175,36 @@ const DASHBOARD_STATES: &[PlateStates] = &[
 /// USER 38.3 / SECURITY LEVEL 117.9 / DESCRIPTION 96.7 / DEVICE SOFTWARE
 /// 136.7 wide. Rajdhani SemiBold x1.37 drew them 10% narrow at 1.5x the
 /// photographed stem.
+/// The security level boxes, measured on native #49 (2026-11-15) as
+/// stroke centres: 55.3 x 51.0 on a 60.6 pitch from x 664.55, y 189.4
+/// (gaps 4.9 / 4.9 / 5.2 between neighbours; before, 57-wide boxes on
+/// 60.5 / 60.5 / 59 left 3.5 / 3.5 / 2.0, 03 and 04 nearly touching),
+/// corners r 4 (the stroke leaves the side 2.1 / 1.0 / 0.3 below the top
+/// at 0.45 / 1.45 / 2.45 in), a 1px pale mint-white stroke `LEVEL_EDGE`
+/// (core #9ff5d8; was the teal `MARK`). The selected box is a fill the
+/// stroke's outer size (724.65..780.77 x 188.93..240.72, r 4.5) in the
+/// paler amber `LEVEL_FILL` (#ffcc50, was the hub's #f5cb23) with soft
+/// orange digits `ON_LEVEL` (#ce6950, was dark brown #6b4d08); the other
+/// digits are `LEVEL_DIGIT` (#a1ffe5), 0.4 higher than before.
+pub const LEVEL_X: f32 = 664.55;
+pub const LEVEL_Y: f32 = 189.4;
+pub const LEVEL_W: f32 = 55.3;
+pub const LEVEL_H: f32 = 51.0;
+pub const LEVEL_PITCH: f32 = 60.6;
+pub const LEVEL_R: f32 = 4.0;
+pub const LEVEL_WEIGHT: f32 = 1.0;
+pub const LEVEL_BASELINE: f32 = 221.6;
+pub const LEVEL_EDGE: iced::Color = rgb(0x9ff5d8);
+pub const LEVEL_DIGIT: iced::Color = rgb(0xa1ffe5);
+pub const LEVEL_FILL: iced::Color = rgb(0xffcc50);
+pub const ON_LEVEL: iced::Color = rgb(0xce6950);
+const fn level_mid(i: usize) -> f32 {
+    LEVEL_X + LEVEL_PITCH * i as f32 + LEVEL_W / 2.0
+}
+const fn level_box(i: usize) -> Prim {
+    Prim::Round { x: LEVEL_X + LEVEL_PITCH * i as f32, y: LEVEL_Y, w: LEVEL_W, h: LEVEL_H, r: LEVEL_R, fill: None, stroke: Some(Ink::Fixed(LEVEL_EDGE)), width: LEVEL_WEIGHT }
+}
+
 const DASH_LABEL_SIZE: f32 = 10.56;
 const DASH_LABEL_STRETCH: f32 = 0.95;
 
@@ -3054,15 +3261,15 @@ pub const DASHBOARD: &[Prim] = &[
     // USER box and GUES 7702 (lines 148-151)
     shut_path(155.5, 189.5, USER_STEP, Ink::Fixed(MARK), 1.25),
     Prim::Text { x: 164.0, y: 218.0, size: 21.5, ink: Ink::Fixed(NAME_INK), face: Face::SemiBold, anchor: Anchor::Start, content: "GUES 7702" },
-    // security badges, `#badge` 57x52, 02 filled (lines 155-164)
-    line_rect(664.5, 189.5, 57.0, 52.0, Ink::Fixed(MARK), 1.0),
-    Prim::Text { x: 692.0, y: 222.0, size: 22.0, ink: Ink::Fixed(MARK), face: Face::SemiBold, anchor: Anchor::Middle, content: "01" },
-    fill_rect(725.0, 189.0, 57.0, 52.0, Ink::Fixed(HUB_YELLOW)),
-    Prim::Text { x: 753.0, y: 222.0, size: 22.0, ink: Ink::Fixed(ON_BADGE), face: Face::SemiBold, anchor: Anchor::Middle, content: "02" },
-    line_rect(785.5, 189.5, 57.0, 52.0, Ink::Fixed(MARK), 1.0),
-    Prim::Text { x: 813.0, y: 222.0, size: 22.0, ink: Ink::Fixed(MARK), face: Face::SemiBold, anchor: Anchor::Middle, content: "03" },
-    line_rect(844.5, 189.5, 57.0, 52.0, Ink::Fixed(MARK), 1.0),
-    Prim::Text { x: 872.0, y: 222.0, size: 22.0, ink: Ink::Fixed(MARK), face: Face::SemiBold, anchor: Anchor::Middle, content: "04" },
+    // security level boxes: see `LEVEL_*`
+    level_box(0),
+    Prim::Text { x: level_mid(0), y: LEVEL_BASELINE, size: 22.0, ink: Ink::Fixed(LEVEL_DIGIT), face: Face::SemiBold, anchor: Anchor::Middle, content: "01" },
+    Prim::Round { x: LEVEL_X - 0.5 + LEVEL_PITCH, y: LEVEL_Y - 0.5, w: LEVEL_W + 1.0, h: LEVEL_H + 1.0, r: LEVEL_R + 0.5, fill: Some(Ink::Fixed(LEVEL_FILL)), stroke: None, width: 0.0 },
+    Prim::Text { x: level_mid(1), y: LEVEL_BASELINE, size: 22.0, ink: Ink::Fixed(ON_LEVEL), face: Face::SemiBold, anchor: Anchor::Middle, content: "02" },
+    level_box(2),
+    Prim::Text { x: level_mid(2), y: LEVEL_BASELINE, size: 22.0, ink: Ink::Fixed(LEVEL_DIGIT), face: Face::SemiBold, anchor: Anchor::Middle, content: "03" },
+    level_box(3),
+    Prim::Text { x: level_mid(3), y: LEVEL_BASELINE, size: 22.0, ink: Ink::Fixed(LEVEL_DIGIT), face: Face::SemiBold, anchor: Anchor::Middle, content: "04" },
     // the six solid blades in the trace's order (lines 243-267);
     // EVENTS is the selection
     blade!(0, 364.0, 413.0, 30.0, BLADE_CW_ON, BLADE_CW_OFF, "VEHICLES", 0.83, 4.75, 21.0, 0.0),

@@ -727,6 +727,10 @@ impl Pen<'_> {
         } else {
             0.0
         };
+        // A run with `embolden` goes down the outline route whatever its
+        // transform, its outlines grown by that stroke on top of any
+        // darkening.
+        let stem = if legend.embolden > 0.0 { stem + g.span(legend.embolden) } else { stem };
         self.frame.with_save(|frame| {
             frame.translate(Vector::new(anchor.x, anchor.y));
             if legend.turned {
@@ -1300,20 +1304,28 @@ fn emblem(pen: &mut Pen, emblem: Emblem, at: Plot) {
             // A printed chip: a dark hexagon split by a lit slash, a
             // hatched wedge in the top-left corner, and a row of marks
             // along the foot.
+            use crate::eras::kitsch::{
+                CHIP_HEX, CHIP_HEX_ROUND, CHIP_RING, CHIP_RING_GAP, CHIP_RING_WEIGHT, CHIP_SLASH,
+                CHIP_SLASH_WEIGHT,
+            };
             let ink = Ink::Fixed(crate::eras::kitsch::CHIP_INK);
             let lit = Ink::Fixed(crate::eras::kitsch::CHIP);
-            pen.poly(
-                &[
-                    (x + 36.8, y + 3.7),
-                    (x + 54.0, y + 13.7),
-                    (x + 54.0, y + 33.0),
-                    (x + 36.8, y + 43.7),
-                    (x + 17.4, y + 33.0),
-                    (x + 17.4, y + 13.7),
-                ],
-                ink,
+            let g = pen.grid;
+            let hex = CHIP_HEX.map(|(hx, hy)| (x + hx, y + hy));
+            // The dark hexagon, its corners rounded ...
+            let fill = rounded_poly(g, &hex, CHIP_HEX_ROUND);
+            let color = pen.ink(ink);
+            pen.frame.fill(&fill, color);
+            // ... and the thin outline cut into the tile around it, the
+            // same hexagon pushed out by the gap.
+            let ring = rounded_poly(g, &offset_poly(&hex, CHIP_RING_GAP), CHIP_HEX_ROUND + CHIP_RING_GAP);
+            let color = pen.ink(Ink::Fixed(CHIP_RING));
+            pen.frame.stroke(
+                &ring,
+                canvas::Stroke::default().with_color(color).with_width(g.span(CHIP_RING_WEIGHT)),
             );
-            pen.rule(x + 17.4, y + 33.0, x + 54.0, y + 13.7, lit, 2.0);
+            let ((ax, ay), (bx, by)) = CHIP_SLASH;
+            pen.rule(x + ax, y + ay, x + bx, y + by, lit, CHIP_SLASH_WEIGHT);
             pen.poly(
                 &[
                     (x, y + 4.0),
@@ -1354,6 +1366,63 @@ fn emblem(pen: &mut Pen, emblem: Emblem, at: Plot) {
             pen.rule(x + 23.0, y + 52.6, x + 29.0, y + 59.0, ink, 1.0);
         }
     }
+}
+
+/// A closed convex polygon with every corner rounded to `r` (a
+/// quadratic through the corner, from the tangent points a circle of
+/// radius `r` would touch).
+fn rounded_poly(g: Grid, pts: &[(f32, f32)], r: f32) -> canvas::Path {
+    let n = pts.len();
+    let tangent = |i: usize| {
+        let (vx, vy) = pts[i];
+        let (px, py) = pts[(i + n - 1) % n];
+        let (nx, ny) = pts[(i + 1) % n];
+        let (ax, ay) = (px - vx, py - vy);
+        let (bx, by) = (nx - vx, ny - vy);
+        let (la, lb) = ((ax * ax + ay * ay).sqrt(), (bx * bx + by * by).sqrt());
+        let cos = ((ax * bx + ay * by) / (la * lb)).clamp(-1.0, 1.0);
+        let half = cos.acos() / 2.0;
+        let d = (r / half.tan()).min(la / 2.0).min(lb / 2.0);
+        ((vx + ax / la * d, vy + ay / la * d), (vx + bx / lb * d, vy + by / lb * d))
+    };
+    canvas::Path::new(|p| {
+        for i in 0..n {
+            let (t0, t1) = tangent(i);
+            if i == 0 {
+                p.move_to(g.at(t0.0, t0.1));
+            } else {
+                p.line_to(g.at(t0.0, t0.1));
+            }
+            p.quadratic_curve_to(g.at(pts[i].0, pts[i].1), g.at(t1.0, t1.1));
+        }
+        p.close();
+    })
+}
+
+/// A convex polygon with every edge moved out by `d`.
+fn offset_poly<const N: usize>(pts: &[(f32, f32); N], d: f32) -> [(f32, f32); N] {
+    let (cx, cy) = pts.iter().fold((0.0, 0.0), |(sx, sy), &(x, y)| (sx + x / N as f32, sy + y / N as f32));
+    // Each edge as a point and direction, moved along its outward normal.
+    let edge = |i: usize| {
+        let (ax, ay) = pts[i];
+        let (bx, by) = pts[(i + 1) % N];
+        let (dx, dy) = (bx - ax, by - ay);
+        let l = (dx * dx + dy * dy).sqrt();
+        let (mut nx, mut ny) = (dy / l, -dx / l);
+        if (ax - cx) * nx + (ay - cy) * ny < 0.0 {
+            (nx, ny) = (-nx, -ny);
+        }
+        ((ax + nx * d, ay + ny * d), (dx, dy))
+    };
+    let mut out = [(0.0, 0.0); N];
+    for (i, o) in out.iter_mut().enumerate() {
+        let ((px, py), (pdx, pdy)) = edge((i + N - 1) % N);
+        let ((qx, qy), (qdx, qdy)) = edge(i);
+        let den = pdx * qdy - pdy * qdx;
+        let t = ((qx - px) * qdy - (qy - py) * qdx) / den;
+        *o = (px + pdx * t, py + pdy * t);
+    }
+    out
 }
 
 // --------------------------------------------------------------- fixture

@@ -156,6 +156,14 @@
       <stop offset="0.7" stop-color="#15281e" stop-opacity="0.45"/>
       <stop offset="1" stop-color="#26884f" stop-opacity="0"/>
     </radialGradient>
+    <!-- the store wave's hairline fade, measured 2026-11-15 (peak over ground x 388..460) -->
+    <linearGradient id="tailR" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#5fd6c2" stop-opacity="1"/>
+      <stop offset="0.452" stop-color="#5fd6c2" stop-opacity="0.79"/>
+      <stop offset="0.671" stop-color="#5fd6c2" stop-opacity="0.54"/>
+      <stop offset="0.89" stop-color="#5fd6c2" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#5fd6c2" stop-opacity="0"/>
+    </linearGradient>
     <linearGradient id="fadeR" x1="0" x2="1" y1="0" y2="0">
       <stop offset="0"   stop-color="#5fd6c2" stop-opacity="1"/>
       <stop offset="0.6" stop-color="#5fd6c2" stop-opacity="1"/>
@@ -183,15 +191,12 @@
            photo's 2.0, RIFLES 61 / SHOTGUN 87 wide against 60 / 87).
          - selected card lower list: Rajdhani 500 19.5 (was 400 16: "Recoil"
            cap 10 / 35 wide / stem 1.4 against the photo's 12.9 / 42.9 / 1.8). -->
-    <clipPath id="fourth-card-core"><rect x="1411" y="194" width="112" height="538"/></clipPath>
-    <clipPath id="fourth-card-bleed-1"><rect x="1523" y="194" width="2" height="538"/></clipPath>
-    <clipPath id="fourth-card-bleed-2"><rect x="1525" y="194" width="3" height="538"/></clipPath>
-    <clipPath id="fourth-card-bleed-3"><rect x="1528" y="194" width="5" height="538"/></clipPath>
-    <clipPath id="fourth-card-bleed-4"><rect x="1533" y="194" width="7" height="538"/></clipPath>
-    <clipPath id="fourth-card-bleed-5"><rect x="1540" y="194" width="10" height="538"/></clipPath>
-
+    <!-- fourth card, 2026-11-15: cut clean at x1524 with one 0.62 antialiasing column (store-fade.md) -->
+    <clipPath id="fourth-card-core"><rect x="1411" y="194" width="113" height="538"/></clipPath>
+    <clipPath id="fourth-card-bleed-1"><rect x="1524" y="194" width="1" height="538"/></clipPath>
+                    
     <!-- nav chevron, 216x39, origin at bbox top-left (140,297) -->
-    <path id="nav" d="M 0,39 V 19 L 18,0 L 27,3 H 214 Q 216,3 216,5 V 11 L 190,39 Z"/>
+    <path id="nav" d="M 4.15,38.37 Q 1.15,38.37 1.15,35.37 L 1.15,17.29 Q 1.15,16.05 2.03,15.17 L 21.27,-4.07 Q 26.05,-8.85 26.05,-2.09 L 26.05,0.3 Q 26.05,2.8 28.55,2.8 L 211.15,2.8 Q 215.45,2.8 215.45,7.1 L 215.45,14.16 Q 215.45,15.4 214.57,16.28 L 193.36,37.49 Q 192.48,38.37 191.24,38.37 Z"/>
 
     <!-- The MAGNUM weapon below reuses the Entropism source-native body at
          (-2,+26) local offset. Kitsch's dark seam subtraction and grown
@@ -343,7 +348,7 @@
          cap y ~85..134), each a different horizontal stretch of Rajdhani Bold 73; rsvg ignores per-glyph x lists -->
     <text transform="translate(147.4 134) scale(1.63 1)" font-size="73" fill="#8ff2dc">4</text>
     <text transform="translate(207.9 134) scale(1.89 1)" font-size="73" fill="#8ff2dc">S</text>
-    <text transform="translate(277.5 134) scale(1.24 1)" font-size="73" fill="none" stroke="#8ff2dc" stroke-width="1.3">T</text>
+    <text transform="translate(277.5 134) scale(1.24 1)" font-size="73" fill="none" stroke="#8ff2dc" stroke-width="2">T</text>
     <!-- S T O R E: glyph lefts 154.2 / 192.1 / 230.4 / 270.8 / 309.6 in the photo (cap y 144..156), a 38.6px pitch -->
     <g font-size="17" font-weight="500" fill="#7fe0c8">
       <text x="153" y="156">S</text><text x="192" y="156">T</text><text x="229.3" y="156">O</text><text x="269.7" y="156">R</text><text x="308.5" y="156">E</text>
@@ -362,14 +367,15 @@
   </g>
 
   <!-- ==== the nav bracket and its wave ==== -->
-  <path d="M 106.5,575 Q 106.5,617 150,617 H 312 Q 345,617 345,650 V 685 Q 345,716 375,718 H 310 Q 110,718 106.5,575 Z"
+  <path d="M 106.5,562.8 C 106.5,593.67 131.53,618.7 162.4,618.7 H 301.9 C 325.76,618.7 345.1,638.04 345.1,661.9 V 676.9 C 345.1,700.04 363.86,718.8 387,718.8 H 300 C 193.13,718.8 106.5,654.42 106.5,575 Z"
         fill="#1bb6a3"/>
   <!-- top line (fading in from the right), S-bend around the customer block, corner, left edge, the wave's top and right side -->
-  <path d="M 440,186.5 H 372 Q 348.5,186.5 348.5,215 V 235 Q 348.5,267.5 313,267.5 H 136 Q 106.5,267.5 106.5,298 V 575 Q 106.5,617.5 150,617.5 H 312 Q 345.5,617.5 345.5,650 V 685 Q 345.5,716 375,718.5"
+  <path d="M 440,186.5 H 372 Q 348.5,186.5 348.5,215 V 235 Q 348.5,267.5 313,267.5 H 136 Q 106.5,267.5 106.5,298 V 562.8 C 106.5,593.67 131.53,618.7 162.4,618.7 H 301.9 C 325.76,618.7 345.1,638.04 345.1,661.9 V 676.9 C 345.1,700.04 363.86,718.8 387,718.8"
         fill="none" stroke="#5fd6c2" stroke-width="1.25"/>
   <path d="M 372,186.5 H 440" fill="none" stroke="url(#fadeR)" stroke-width="1.25"/>
   <!-- the outer sweep and the bottom line, fading right -->
-  <path d="M 106.5,575 Q 110,718.5 310,718.5 H 445" fill="none" stroke="url(#fadeR)" stroke-width="1.25"/>
+  <!-- 2026-11-15: no line on the outer sweep (the photo has none); the bottom runs on as a fading hairline -->
+  <path d="M 387,718.8 H 460" fill="none" stroke="url(#tailR)" stroke-width="2"/>
 
   <!-- nav chevrons, tops 297/357/417/477/537, SMG solid -->
   <g fill="none" stroke="#5fd6c2" stroke-width="1.25" stroke-linejoin="round">
@@ -392,11 +398,7 @@
   <use href="#card" x="484"  y="218"/>
   <use href="#card-card3" x="1123" y="218"/>
   <g clip-path="url(#fourth-card-core)"><use href="#card-card4" x="1443" y="218"/></g>
-  <g clip-path="url(#fourth-card-bleed-1)" opacity="0.85"><use href="#card-card4" x="1443" y="218"/></g>
-  <g clip-path="url(#fourth-card-bleed-2)" opacity="0.30"><use href="#card-card4" x="1443" y="218"/></g>
-  <g clip-path="url(#fourth-card-bleed-3)" opacity="0.20"><use href="#card-card4" x="1443" y="218"/></g>
-  <g clip-path="url(#fourth-card-bleed-4)" opacity="0.08"><use href="#card-card4" x="1443" y="218"/></g>
-  <g clip-path="url(#fourth-card-bleed-5)" opacity="0.02"><use href="#card-card4" x="1443" y="218"/></g>
+  <g clip-path="url(#fourth-card-bleed-1)" opacity="0.62"><use href="#card-card4" x="1443" y="218"/></g>
 
   <!-- card 2, the selection: grown and amber-filled, x0 = 804 -->
   <g transform="translate(804 218)">
