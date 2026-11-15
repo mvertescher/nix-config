@@ -42,6 +42,18 @@ in
       '';
     };
 
+    classes = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      example = lib.literalExpression ''[ "^(cp-eras-ui-(dashboard|store))$" ]'';
+      description = ''
+        Window class regexes that belong on `workspace`: a window that
+        matches is sent there and shown fullscreen, wherever it was
+        launched from. Hyprland 0.56's rule syntax; the older
+        `fullscreen, class:` form is rejected with "missing a value".
+      '';
+    };
+
     apps = lib.mkOption {
       type = lib.types.listOf (
         lib.types.submodule {
@@ -96,6 +108,10 @@ in
         message = "custom.workspaceApp: two applications claim the same workspace";
       }
     ];
+
+    wayland.windowManager.hyprland.settings.windowrule = map (
+      c: "match:class ${c}, workspace ${toString cfg.workspace}, fullscreen on"
+    ) cfg.classes;
 
     wayland.windowManager.hyprland.settings.workspace =
       [ "${toString cfg.workspace}, on-created-empty:${cfg.command}" ]
