@@ -23,8 +23,12 @@ drawn with the *line, ground and grain* measured for the blend generator.
    t = ts, profile exp(-(d/w)^p), or a knee exp(-(d^2 + 2cd)) whose
    corner is a crease), `lean` (one-sided: past `ts`, which may vary
    across the grain, the lines run at slope `amount`, steepening by
-   `accel` -- the run into a streak, crossing the axis), `fold` (the
-   panel ridge), `shear` (lean off an edge), `ripple` (zigzag), `knot`.
+   `accel` -- the run into a streak, crossing the axis), `ramp` (a band
+   between two curves across which the lines step sideways: the panel's
+   sweep and crease), `fold` (a ridge), `shear` (lean off an edge),
+   `ripple` (zigzag), `knot`. Amounts and curves may be piecewise linear
+   across the grain ([(s, value), ...]). A family may also be cut to a
+   strip across the grain (`swindow`); its lines end at the cut, a jog.
 
 2. Lines. The lines are the levels phi = (k + offset) * pitch: constant
    pitch away from the figure, `pitch` the measured per-comb spacing
@@ -79,6 +83,15 @@ SPACING = dict(amp=0.0, cell=6.0, along=150.0)
 QUANT = dict(step=30.0, hyst=3.0, tol=0.5, radius=9.5)
 CORE = (150.0, 61.0, 30.0)   # the store streak core, darkest compounded ink
 
+# The store streak (2026-11-15 refit): the lean's acceleration and the
+# core bend peak at s ~208-235 (native crop x 500-565) and ease off at the
+# right edge, so the core is darkest mid-card and thins to the right, as
+# the reference's spindle does (it was thickest at the edge).
+STREAK_LEAN = dict(kind='lean', ts=(110.0, 115.5), w=1.2, amount=(-2.8, -3.0),
+                   accel=[(0.0, 0.0), (150.0, -0.45), (208.0, -1.6), (235.0, -1.6), (262.0, -1.3)])
+STREAK_BEND = dict(kind='bend', ts=121.46, w=16.0, p=2.0,
+                   amount=[(0.0, 0.0), (200.0, -3.0), (235.0, -4.0), (262.0, -3.5)])
+
 SURFACES = {
     # Store, the selected card's body and socket band (262.1 x 241.7).
     # Vertical grain; the streak at t 121.46 (texel 291.5) is a book-match:
@@ -97,13 +110,9 @@ SURFACES = {
                 dict(kind='shear', ts=34.0, w=4.0, amount=(2.0, 1.2)),
                 dict(kind='ripple', ts=32.0, w=4.0, amount=1.8, wavelength=(14.0, 45.0)),
                 dict(kind='bend', ts=42.0, w=6.0, p=2.0, amount=(0.0, 40.0), power=3.0),
-                dict(kind='lean', ts=(110.0, 115.5), w=1.2, amount=(-2.8, -3.0), accel=(0.0, -2.0), accel_power=2.5),
-                dict(kind='bend', ts=121.46, w=16.0, p=2.0, amount=(0.0, -8.0), power=4.0),
+                STREAK_LEAN, STREAK_BEND,
             ]),
-            dict(mirror=121.46, window=(119.9, 192.6), terms=[
-                dict(kind='lean', ts=(110.0, 115.5), w=1.2, amount=(-2.8, -3.0), accel=(0.0, -2.0), accel_power=2.5),
-                dict(kind='bend', ts=121.46, w=16.0, p=2.0, amount=(0.0, -8.0), power=4.0),
-            ]),
+            dict(mirror=121.46, window=(119.9, 192.6), terms=[STREAK_LEAN, STREAK_BEND]),
             dict(window=(192.6, None), terms=[
                 dict(kind='bend', ts=192.6, w=16.0, c=0.3, amount=(4.0, 26.0), power=1.5, real=True),
                 dict(kind='bend', ts=241.7, w=18.0, amount=(8.0, 14.0), real=True),
@@ -136,10 +145,19 @@ SURFACES = {
         ],
     ),
     # Dashboard, the right-hand EMAIL panel body (230.4 x 309). Vertical
-    # grain, book-matched about its middle (t 154.4, texel 370.5): the lower
-    # leaf folds in its lower third -- lines lean down-left above a ridge
-    # from local (184, 259) to (84, 299), turn at it, and open below it --
-    # and the upper leaf is its mirror.
+    # grain, book-matched about its middle (t 154.4, texel 370.5). The lower
+    # leaf's fold (2026-11-15 refit, traced off the reference): the lines
+    # knee down-LEFT at a row from (15, 221) to (188, 261) and sweep nearly
+    # horizontal (ramp A1) to a crease from (83, 287) up to the tip at
+    # (188, 262); below it they run on down-left (ramp R2), and in the
+    # bottom-left corner nearly horizontal again, with a jog at s ~85
+    # where R2's amount drops. Right of s 187.5 a separate strip (the
+    # reference's vertical jog at native x ~450) whose lines only knee
+    # to a gentle lean below the crease tip. A1's amount tapers towards
+    # the strip edge by less than 1 per px, so the field stays monotone
+    # across the grain and few lines enter the crease from the strip
+    # edge. The upper leaf mirrors the grain but not the fold, which the
+    # reference's top half lacks.
     'dashboard-panel': dict(
         size=(230.4, 309.0), axis='v', seed=1202, pitch=10.2 / R,
         twin=dict(offset=0.42, shift=-1.5),
@@ -147,13 +165,22 @@ SURFACES = {
         wave=dict(amp=1.8, along=200.0, across=50.0),
         kinks=dict(n=10, amp=1.0, rs=(3.0, 9.0), rt=(5.0, 14.0)),
         families=[
-            dict(window=(153.4, None), terms=[
-                dict(kind='fold', at=(84.0, 299.0), to=(184.0, 259.0), beyond=(-0.25, 0.05),
-                     w=22.0, c=0.25, below=70.0, amount=(-10.0, -110.0)),
-                dict(kind='bend', ts=309.0, w=30.0, amount=(-10.0, -2.0)),
+            dict(window=(153.4, None), swindow=(None, 187.6), terms=[
+                dict(kind='ramp', k=2.0,
+                     a=[(14.6, 220.8), (56.2, 225.0), (97.9, 230.4), (139.6, 243.8), (170.8, 256.7), (187.5, 260.8)],
+                     b=[(14.6, 261.7), (56.2, 275.8), (83.3, 286.7), (97.9, 281.2), (139.6, 272.9), (170.8, 265.0), (187.5, 262.5)],
+                     amount=[(14.6, 95.0), (56.2, 125.0), (97.9, 105.0), (139.6, 70.0), (187.5, 30.0)]),
+                dict(kind='ramp', k=2.0,
+                     a=[(0.0, 288.3), (83.3, 288.3), (97.9, 282.1), (139.6, 273.8), (170.8, 267.5), (187.5, 264.2)],
+                     b=[(0.0, 329.2), (83.3, 333.3)],
+                     amount=[(14.6, 220.0), (79.2, 150.0), (93.8, 70.0), (187.5, 60.0)]),
             ]),
-            # The upper leaf mirrors the lower one's grain (its wander and
-            # jogs) but not the fold, which the reference's top half lacks.
+            dict(window=(153.4, None), swindow=(187.4, None), terms=[
+                dict(kind='ramp', k=3.0, a=[(187.5, 260.4), (230.4, 266.7)], b=[(187.5, 291.7), (230.4, 316.7)],
+                     amount=[(187.5, 40.0), (230.4, 30.0)]),
+                dict(kind='ramp', k=3.0, a=[(187.5, 291.7), (230.4, 316.7)], b=[(0.0, 341.7)],
+                     amount=[(187.5, 20.0), (230.4, 20.0)]),
+            ]),
             dict(mirror=154.4, window=(None, 155.4), terms=[
                 dict(kind='bend', ts=0.0, w=30.0, amount=(10.0, 0.0), real=True),
             ]),
@@ -262,10 +289,19 @@ class Lattice:
 
 def across(s, S, amount, power=1.0):
     """Across the grain: amount[0] at s = 0, amount[1] at s = S, linear
-    or, with `power` > 1, gathered towards s = S."""
+    or, with `power` > 1, gathered towards s = S; a list of (s, value)
+    points is piecewise linear instead."""
+    if isinstance(amount, list):
+        return pw(s, amount)
     a0, a1 = amount
     return a0 + (a1 - a0) * np.clip(s / S, 0.0, 1.0) ** power
 
+
+
+def pw(s, pts):
+    """Piecewise linear in s through [(s, value), ...], flat beyond."""
+    xs, ys = zip(*pts)
+    return np.interp(s, xs, ys)
 
 
 class Surface:
@@ -348,6 +384,17 @@ def family_phi(surf, fam, s, t):
                 zb = np.maximum(tt - line, 0.0) / term['below']
                 prof = np.where(tt < line, prof, np.exp(-zb))
             phi = phi + across(s, S, term['amount']) * prof
+        elif kind == 'ramp':
+            # A band across the grain between the curves t = a(s) and
+            # t = b(s) (piecewise linear through the given (s, t) points)
+            # inside which the lines lean at amount / (b - a): D steps by
+            # `amount` (also piecewise in s) over the band, with softplus
+            # knees `k` wide at both edges. Stacked ramps give the panel's
+            # sweep, its crease and the run below it.
+            a = pw(s, term['a']); b = pw(s, term['b'])
+            k = term.get('k', 2.0)
+            u = (k * np.logaddexp(0.0, (tt - a) / k) - k * np.logaddexp(0.0, (tt - b) / k)) / np.maximum(b - a, 1e-6)
+            phi = phi + pw(s, term['amount']) * u
         elif kind == 'shear':
             # One-sided: beyond ts, on the side t < ts, the lines lean
             # at `amount` (ds/dt); on the other side they run straight;
@@ -362,7 +409,7 @@ def family_phi(surf, fam, s, t):
             # `accel` (ds/dt per px) steepens the lean further on, so the
             # lines flatten as they near the seam and pile into it.
             ts = term['ts']
-            ts = across(s, S, ts) if isinstance(ts, tuple) else ts
+            ts = across(s, S, ts) if isinstance(ts, (tuple, list)) else ts
             z = (tt - ts) / term['w']
             d = term['w'] * np.logaddexp(0.0, z)
             lean = across(s, S, term['amount'], term.get('power', 1.0)) * d
@@ -407,10 +454,15 @@ def phi_at(surf, fam, s, t, twin):
 
 def shifted(term, dt):
     term = dict(term)
-    if isinstance(term.get('ts'), tuple):
+    if isinstance(term.get('ts'), list):
+        term['ts'] = [(x, v + dt) for x, v in term['ts']]
+    elif isinstance(term.get('ts'), tuple):
         term['ts'] = tuple(v + dt for v in term['ts'])
     elif 'ts' in term:
         term['ts'] = term['ts'] + dt
+    if term['kind'] == 'ramp':
+        term['a'] = [(x, y + dt) for x, y in term['a']]
+        term['b'] = [(x, y + dt) for x, y in term['b']]
     if 'at' in term and term['kind'] == 'fold':
         term['at'] = (term['at'][0], term['at'][1] + dt)
         term['to'] = (term['to'][0], term['to'][1] + dt)
@@ -424,7 +476,12 @@ def domain(surf, fam):
     t0, t1 = fam.get('window', (None, None))[:2]
     ta = -m if t0 is None else max(t0, -m)
     tb = surf.T + m if t1 is None else min(t1, surf.T + m)
-    return (-m, surf.S + m, ta, tb)
+    # An optional window across the grain: a strip whose lines end at
+    # its edges, a vertical jog where it meets its neighbour.
+    u0, u1 = fam.get('swindow', (None, None))
+    sa = -m if u0 is None else max(u0, -m)
+    sb = surf.S + m if u1 is None else min(u1, surf.S + m)
+    return (sa, sb, ta, tb)
 
 
 def trace_family(surf, fam, twin):

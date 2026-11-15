@@ -91,6 +91,49 @@ extensive; the EMAIL crossing is narrower and its right-edge core lighter;
 the mailbox and SMG seams are thinner creases than the reference's hooks;
 overall the reference reads a little darker (more lines in the figure).
 
+### Refinement (2026-11-15, after the merge)
+
+Two surfaces refit; the other four PNGs are byte-identical.
+
+- **Panel fold.** The committed fold leaned the wrong way: traced with a
+  structure tensor on the reference (native crop, 15 px rows), the lines
+  above the crease run down-*left* (angle +40..+82 deg from vertical),
+  ours ran down-right (-40..-89). The fold is now two `ramp` terms, a new
+  kind: a band between curves `a(s)` and `b(s)` across which the lines
+  step sideways by `amount`, softplus knees `k` at both edges (curves and
+  amounts piecewise linear across the grain, `[(s, v), ...]`). A1: knee
+  row from (14.6, 220.8) to (187.5, 260.8) design px, crease from
+  (83.3, 286.7) up to the tip at (187.5, 262.5), amount 95 / 125 / 105 /
+  70 / 30 at s 14.6 / 56.2 / 97.9 / 139.6 / 187.5. R2 below the crease,
+  to t ~330, amount 220 at the left falling to 150 at s 79 and 70 at
+  s 94 (the drop makes the bottom-left jog at native x ~200), 60 at the
+  tip. Right of s 187.5 a separate strip (`swindow`, new: a family cut
+  across the grain; its lines end at the cut, the reference's jog at
+  native x ~450) that only knees to a gentle lean (amount 40 then 20).
+  A1 tapers towards the strip edge by less than 1 per px: a steeper
+  taper makes `phi` non-monotone across the grain and the lines hairpin;
+  a large amount at the edge feeds lines into the crease from the strip
+  edge, a solid dark wedge. Knee row (first row off vertical) reference /
+  committed / now at native x 35, 235, 435: 530, 553, 605 / none (the
+  committed fold starts ~560 at the right only) / 515-530, 545, 590.
+  Not mirrored into the upper leaf: checked, the reference's upper half
+  under the text is vertical grain with only small edge bends.
+- **Store streak.** `STREAK_LEAN`'s `accel` and `STREAK_BEND`'s amount are
+  piecewise now, peaking at s 208-235 and easing at the right edge:
+  accel 0 / -0.45 / -1.6 / -1.6 / -1.3 at s 0 / 150 / 208 / 235 / 262,
+  bend 0 / -3 / -4 / -3.5 at s 0 / 200 / 235 / 262. Pixels per column
+  with G < 80 (G < 140), x 200 ... 620 as above: reference 3(10) 0(13)
+  0(25) 7(22) 9(19) 4(25) 3(30); third pass 0(12) 0(13) 0(18) 3(22)
+  6(23) 7(25) 7(25); now 0(8) 0(15) 1(23) 7(25) 7(25) 5(25) 3(22).
+
+Still wrong after it: the panel's crease is a soft convergence, not the
+reference's thin dark line, and the lines below it run flatter (~75 deg
+against 30-60); the store core is not pointed and the reference's knees
+rise towards the right edge (ours are level; raising them widened the
+band past the reference's G < 140 counts); the store card's upper streak
+and zigzag, the EMAIL crossing, the small surfaces' seams and the
+overall line density were not revisited.
+
 ## Surfaces
 
 | Texture | Surface | Design box | Texels |
