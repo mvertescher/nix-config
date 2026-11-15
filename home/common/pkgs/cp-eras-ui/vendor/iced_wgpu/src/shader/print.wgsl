@@ -15,6 +15,10 @@
 //      only where it is lighter than the pixel under it, and the fill gate
 //      suppresses copies where the neighbourhood is a light fill, so dark
 //      ink on a fill is not lightened by a copy of the fill around it.
+//      Two more weigh them: the ground gate weakens a copy that lands on a
+//      mid-tone ground (to `floor` of its opacity), and the chroma gate
+//      drops copies of unsaturated colour when the texture was fitted on a
+//      saturated ink.
 //   2. Fill scanlines: a darkening multiply by a raised cosine.
 //   3. Grain: bilinear value noise, per channel, multiplicative plus additive.
 
@@ -25,13 +29,13 @@ struct Uniforms {
     u1: vec4<f32>,
     // copy b: ky, opacity; copy c: kx, ky
     u2: vec4<f32>,
-    // copy c: opacity, unused, scale centre (device px)
+    // copy c: opacity, chroma gate lo, scale centre (device px)
     u3: vec4<f32>,
     // texture pitch (device px), phase (cycles), unit direction (device)
     u4: vec4<f32>,
     // texture crest factor per channel, blend (0 over, 1 lighten)
     u5: vec4<f32>,
-    // texture trough factor per channel, unused
+    // texture trough factor per channel, chroma gate hi
     u6: vec4<f32>,
     // fill gate lo, hi, ring radius (device px), copy blur sigma (device px)
     u7: vec4<f32>,
@@ -39,7 +43,7 @@ struct Uniforms {
     u8: vec4<f32>,
     // fill scan phase, grain mul, grain add (encoded), grain cell (device px)
     u9: vec4<f32>,
-    // grain seed, unused x3
+    // grain seed, ground gate lo, hi, floor
     u10: vec4<f32>,
 }
 
@@ -143,6 +147,14 @@ fn composite(out: vec3<f32>, here: vec3<f32>, p: vec2<f32>, k: vec2<f32>, a: f32
     var lift = 1.0;
     if (u.u8.y > u.u8.x) {
         lift = smoothstep(u.u8.x, u.u8.y, luma(src) - luma(here));
+    }
+    if (u.u10.w < 1.0) {
+        lift = lift * mix(1.0, u.u10.w, smoothstep(u.u10.y, u.u10.z, luma(here)));
+    }
+    if (u.u6.w > u.u3.y) {
+        let hi = max(src.r, max(src.g, src.b));
+        let lo = min(src.r, min(src.g, src.b));
+        lift = lift * smoothstep(u.u3.y, u.u6.w, (hi - lo) / max(hi, 1e-4));
     }
     let w = clamp(a * gate * lift, 0.0, 1.0);
     let col = clamp(src * tint, vec3<f32>(0.0), vec3<f32>(1.0));

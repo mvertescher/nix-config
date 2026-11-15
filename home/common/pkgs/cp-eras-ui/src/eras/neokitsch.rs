@@ -3147,6 +3147,7 @@ pub const PRINT: crate::print::Print = crate::print::Print {
     echo_texture: crate::print::Texture::FLAT,
     echo_gate: (0.60, 0.75),
     echo_gate_radius: 6.0,
+    echo_ground: crate::print::GROUND,
     ..crate::print::Print::OFF
 };
 // --- end print -------------------------------------------------------------

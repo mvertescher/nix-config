@@ -2116,6 +2116,8 @@ pub const PRINT: crate::print::Print = crate::print::Print {
     echo_texture: crate::print::Texture::FLAT,
     echo_gate: (0.40, 0.55),
     echo_gate_radius: 6.0,
+    echo_ground: crate::print::GROUND,
+    echo_chroma: (0.0, 0.0),
     scan_depth: 0.0,
     scan_pitch: 1.985,
     grain_mul: 0.028,

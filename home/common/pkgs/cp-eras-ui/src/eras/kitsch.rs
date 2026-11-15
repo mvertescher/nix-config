@@ -3294,10 +3294,17 @@ mod dashboard_feedback_tests {
 /// fits better than lighten on 6 of 7 sites. The text's strong glow (a
 /// centred blur, sigma about 5 native px) and the copies' diagonal hatching
 /// are not drawn by this pass. Grain and fill scanlines not measured.
+///
+/// Gains remeasured 2026-11-15 (`docs/print-overlay.md`, "Copies over
+/// mid-tone grounds"): the copy-side minus mirror-side contrast next to
+/// light marks, which the glow cancels out of, put the 0.28 / 0.08 copies at
+/// 1.8x the reference's on dark ground (ratio 0.43-0.68 over 6 sites, mean
+/// 0.55), so both are scaled by 0.55. Over mid-tone grounds the
+/// reference's copies are weaker still (the shared ground gate).
 pub const PRINT: crate::print::Print = crate::print::Print {
     echo: [
-        crate::print::Echo { kx: 0.0060, ky: 0.0065, gain: 0.28 },
-        crate::print::Echo { kx: 0.0158, ky: 0.0180, gain: 0.08 },
+        crate::print::Echo { kx: 0.0060, ky: 0.0065, gain: 0.155 },
+        crate::print::Echo { kx: 0.0158, ky: 0.0180, gain: 0.044 },
         crate::print::Echo::NONE,
     ],
     echo_centre: (800.0, 450.0),
@@ -3307,6 +3314,7 @@ pub const PRINT: crate::print::Print = crate::print::Print {
     echo_texture: crate::print::Texture::FLAT,
     echo_gate: (0.60, 0.75),
     echo_gate_radius: 6.0,
+    echo_ground: crate::print::GROUND,
     ..crate::print::Print::OFF
 };
 // --- end print -------------------------------------------------------------
