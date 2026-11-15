@@ -65,6 +65,13 @@ Use source crops and measured contours, not gate score alone, for review.
   4K/fractional RMS controls. Direct-paint and constant-gradient no-ops
   are exact at three sizes; no font, cache, SVG or Rust change follows.
   See [round sixty-eight](../docs/reference-svg-round68.md).
+  **Re-scoped 2026-11-15; the notes above predate the print pass.**
+  Offset echoes and grain are the pass's now (`docs/print-overlay.md`);
+  the dashboard's hand-drawn echo tables were removed on 2026-11-14 and
+  the labels, GO HOME heading and body, header and footer read closer
+  to the reference for it. Left here: text widths and weights,
+  localized fills, and the GO HOME vertical brands, which get copies
+  the reference barely shows.
 
 - **Standing validation for each pass.** Review fresh source→SVG crops,
   update the matching `components.svg` excerpts and source documentation,
@@ -363,6 +370,12 @@ below; end-to-end and live checks are recorded separately.
   it belongs to the UI or its presentation. Those authoring inputs are
   needed for a faithful reconstruction; the other local screen exports
   are not independent noise samples. No arbitrary grain or `photo` tags.
+  **Note 2026-11-15.** The print pass adds per-channel grain and the
+  reference is known to be a lossless digital export, so the material
+  is designed, not presentation residue. Whether the pass's grain
+  matches Neomil's clear ground has not been measured (Entropism's
+  sage fills were: std 4.5 reference, 4.8 ours). That measurement is
+  what remains of this item.
 
 All three agents' proposals and their integrated SVG/Rust counterparts
 were reviewed. Detailed source masks, local error measurements and limits

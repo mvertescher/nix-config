@@ -174,6 +174,15 @@ account cards are source artwork, not an account-management backend.
   No Neomil original contains a font record; shared document-font records
   in other eras do not identify these notices. Preserve the exact replay
   and fixed controls in [round fifty-two](../docs/reference-svg-round52.md).
+  **Re-scoped 2026-11-15; the notes above predate the print pass.** The
+  printing echoes are no longer fitted per element: the pass draws them
+  (`docs/print-overlay.md`), and the hand-drawn header and notice
+  copies were removed on 2026-11-14. What is left of this item: the
+  active card's scan modulation, which the pass does not reproduce;
+  and the two inactive cards, whose notices show copies (6.4 and 10.2
+  levels) that the reference hides -- the cards sit above the printed
+  layer, so that needs a per-element exemption from the pass, not a
+  colour gate (tried and disproved).
 - [x] **Contain card notices at narrower aspect ratios.** AI fits each
   complete notice block with a common font-size/tracking factor, retaining
   its hinted glyphs, anchors, baselines, stretch and text. All three cards

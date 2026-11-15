@@ -122,6 +122,12 @@ trace screen and are not backend defects.
   open. See [the BA
   review](../docs/neomil/mailbox-fidelity.md#ba-body-baseline-source-and-native-review)
   and [round thirty-eight](../docs/reference-svg-round38.md).
+  **Re-scoped 2026-11-15; the notes above predate the print pass.**
+  Echoes are the pass's; the mailbox draws none of its own and its fit
+  is the era default (heading and rule copies within about 1 px of the
+  reference). Left here: the cartridge strips' fine art and edge
+  softness, and the red row stripes that dark text on the selected row
+  picks up in the reference, which the pass's fill gate suppresses.
 - [x] **Correct ordinary cartridge terminal depth and inner-edge joins.**
   AL found the source lower ridge about 10–11 native pixels below the
   upper edge; the old SVG/Iced had a prominent inner edge near 5 and a

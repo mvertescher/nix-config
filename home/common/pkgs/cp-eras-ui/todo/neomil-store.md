@@ -324,6 +324,12 @@ content is intentionally static; no network/payment backend is specified.
   lower repetitions and other margin printing keep this item open. See
   [round twenty-five](../docs/reference-svg-round25.md), including the
   clipped-mesh correction and separate glyph-reuse performance task.
+  **Re-scoped 2026-11-15; the notes above predate the print pass.**
+  Faint copies are the pass's; the store's hand-drawn echo files and
+  the nav echo were removed on 2026-11-14. Left here: the CC35
+  compliance lines' primary typography (shorter, dimmer, narrower than
+  the source) and the dim repeated-mark fields that are designed
+  duplicates, not registration copies.
 - [x] **Make margin CJK deterministic.** The source `益荒男` run is now a
   measured vector rather than a fallback-font-dependent text run. The N
   frozen and live store matrix cases both match their reviewed baseline
@@ -397,6 +403,13 @@ content is intentionally static; no network/payment backend is specified.
   source-supported explanation of those local losses before another
   blur/opacity fit. This does not recover the original background asset.
   See [round fifty-six](../docs/reference-svg-round56.md#neomil-subtitle-ground-and-impression).
+  **Re-scoped 2026-11-15; the notes above predate the print pass.** The
+  echoes are done by the pass (titles, frame, nav rows and code cells;
+  cells measure 1.15-1.18 of the reference, inside the normal spread).
+  The "two fixed affine maps" above are the pass's two scaled copies,
+  with the store's own measured registration. Left here: scan
+  modulation on the selected VIDEO row's fill, which the pass does not
+  reproduce.
 - [x] **Restore directional socket printing echoes.** AA adds leftward
   card-1, rightward card-3/4 and downward selected-card trails while
   preserving all 25 bright primary cells. Native source RGB error on fixed
