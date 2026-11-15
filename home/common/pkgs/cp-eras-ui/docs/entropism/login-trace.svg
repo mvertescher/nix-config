@@ -110,17 +110,24 @@
     <path id="caret" d="M 576.5,439.375 H 595.5" fill="none" stroke="#75967b" stroke-width="0.5"><animate id="caret-blink" attributeName="opacity" values="1;0" keyTimes="0;0.5" calcMode="discrete" dur="1.2s" repeatCount="indefinite"/></path>
 
     <!-- NEXT, filled, x 932..1037, y 413..446 -->
-    <rect x="932" y="413" width="105" height="33" fill="#8aac8c"/>
-    <text x="940" y="433" font-size="22" font-weight="500" fill="#20281c" letter-spacing="2">NEXT</text>
+    <!-- 2026-11-14: fill #87aa89 (4K median over the plate, a little under
+         the band) and the label at natural tracking in letters 1.16 wide:
+         the photo's NEXT spans x 2260..2375 native in N E X T 26/22/26/27 px
+         wide letters, where letter-spacing 2 drew narrow letters, far apart. -->
+    <rect x="932" y="413" width="105" height="33" fill="#87aa89"/>
+    <text transform="translate(940,433) scale(1.16,1)" font-size="22" font-weight="500" fill="#20281c">NEXT</text>
   </g>
 
   <!-- ==== solid footer band, x 36..1565, y 765..880 ==== -->
   <g>
     <rect x="36" y="765" width="1529" height="115" fill="#8aac8c"/>
-    <g font-family="Rajdhani" font-size="15" fill="#20281c" letter-spacing="1">
+    <!-- 2026-11-14: the era's footer type, 17 / 500 at natural tracking, as
+         the other three traces set it: the photo's runs are 312 / 600 / 339
+         native px wide with a 26 px cap, as on the mail sheet. -->
+    <g font-family="Rajdhani" font-size="17" font-weight="500" fill="#20281c">
       <text x="61" y="863">INTERFACE LOADED</text>
-      <text x="519" y="863">PROVIDED BY NEXUS NETWORK V10.8</text>
-      <text x="1383" y="863">BUILD 6.47.48441.R15</text>
+      <text x="518" y="863">PROVIDED BY NEXUS NETWORK V10.8</text>
+      <text x="1382" y="863">BUILD 6.47.48441.R15</text>
     </g>
   </g>
 </svg>

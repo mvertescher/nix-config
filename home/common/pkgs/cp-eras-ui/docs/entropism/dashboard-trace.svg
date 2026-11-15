@@ -207,19 +207,23 @@
        labels Rajdhani 600 at 23 (cap 15, natural tracking hits the
        measured runs 84/84/85/53 within 2px) ==== -->
   <g font-family="Rajdhani" fill="#a0d2a9">
-    <g font-size="22" font-weight="bold" text-anchor="middle">
+    <!-- 2026-11-14: letters 500 stretched 1.65 / 1.65 / 1.6 and labels 500
+         at 22.5 stretched 1.008, the mailbox sheet's section type: the
+         photo's stems are 5.5-6.0 / 3.8-4.0 native px, where bold and 600
+         drew 10.5-10.7 / 5.6. -->
+    <g font-size="22" font-weight="500" text-anchor="middle">
       <rect x="133" y="145" width="26" height="26" fill="none" stroke="#9ac3a0" stroke-width="1.5"/>
-      <text transform="translate(146,165) scale(1.6,1)">A</text>
+      <text transform="translate(146,165) scale(1.65,1)">A</text>
       <rect x="1014" y="145" width="26" height="26" fill="none" stroke="#9ac3a0" stroke-width="1.5"/>
-      <text transform="translate(1027,165) scale(1.5,1)">B</text>
+      <text transform="translate(1027,165) scale(1.65,1)">B</text>
       <rect x="1329" y="142" width="26" height="26" fill="none" stroke="#9ac3a0" stroke-width="1.5"/>
-      <text transform="translate(1342,162) scale(1.5,1)">C</text>
+      <text transform="translate(1342,162) scale(1.6,1)">C</text>
     </g>
-    <g font-size="23" font-weight="600">
-      <text x="169"  y="164">MAIL BOX</text>
-      <text x="1047" y="164">MESSAGE</text>
-      <text x="1380" y="162">SECURITY</text>
-      <text x="1379" y="186">LEVEL</text>
+    <g font-size="22.5" font-weight="500">
+      <text transform="translate(169,164) scale(1.008,1)">MAIL BOX</text>
+      <text transform="translate(1047,164) scale(1.008,1)">MESSAGE</text>
+      <text transform="translate(1380,162) scale(1.008,1)">SECURITY</text>
+      <text transform="translate(1379,186) scale(1.008,1)">LEVEL</text>
     </g>
   </g>
 
@@ -305,17 +309,20 @@
   </g>
 
   <!-- ==== SECURITY LEVEL badges: four 68x68 at x 1380, T2 filled ====
-       glyphs: bold extended, cap 18 — Rajdhani Bold 27 stretched to the
-       measured run width; the photo's T is 17 wide, its 1 is 6 -->
-  <g font-family="Rajdhani" font-size="27" font-weight="bold" text-anchor="middle">
+       glyphs (2026-11-14): the mailbox sheet's source-traced badge art
+       (mailbox-badges.md; eras::entropism BADGE_*), the same four glyphs
+       this photo draws, anchored at each badge's measured offset. They
+       were Rajdhani Bold 27 stretched 1.37-1.5, stems 11-12 native px
+       against the photo's 7-8. -->
+  <g>
     <rect x="1380" y="214" width="68" height="68" fill="none" stroke="#8fba97" stroke-width="1.25"/>
-    <text transform="translate(1414,257) scale(1.37,1)" fill="#acddb4">T1</text>
+    <path d="M 1400.420,240.837 L 1418.337,240.837 L 1418.337,243.337 L 1410.837,243.337 L 1410.837,257.503 L 1407.920,257.503 L 1407.920,243.337 L 1400.420,243.337 Z M 1425.420,240.003 L 1427.087,240.003 L 1427.087,257.503 L 1424.587,257.503 L 1424.587,244.587 L 1420.837,244.587 L 1420.837,242.503 L 1423.337,242.087 L 1424.170,241.253 Z" fill="#acddb4"/>
     <!-- T2's solid fill is in #select-lit above -->
-    <text transform="translate(1414,346) scale(1.42,1)" fill="#22301f">T2</text>
+    <path d="M 1396.670,329.792 L 1414.587,329.792 L 1414.587,332.292 L 1406.670,332.292 L 1406.670,346.458 L 1403.337,346.458 L 1403.337,332.292 L 1396.670,332.292 Z M 1421.670,329.583 L 1427.087,329.583 L 1427.920,330.417 L 1429.170,330.417 L 1431.253,332.917 L 1431.253,335.833 L 1429.587,337.500 L 1426.253,339.167 L 1420.837,340.833 L 1419.587,342.083 L 1419.170,343.542 L 1431.670,343.542 L 1431.670,346.188 L 1416.670,346.188 L 1416.670,342.917 L 1418.337,340.000 L 1421.670,337.917 L 1426.670,336.667 L 1428.337,335.417 L 1428.337,333.333 L 1427.087,332.083 L 1425.420,331.667 L 1422.503,331.667 L 1417.503,333.333 L 1417.503,332.500 L 1416.670,332.083 L 1417.087,331.250 Z" fill="#22301f"/>
     <rect x="1380" y="393" width="68" height="68" fill="none" stroke="#8fba97" stroke-width="1.25"/>
-    <text transform="translate(1414,435) scale(1.5,1)" fill="#acddb4">T3</text>
+    <path d="M 1396.247,418.337 L 1414.164,418.337 L 1414.164,420.837 L 1406.664,420.837 L 1406.664,435.003 L 1403.747,435.003 L 1403.747,420.837 L 1396.247,420.837 Z M 1422.080,417.920 L 1427.913,418.337 L 1429.580,419.170 L 1431.663,421.670 L 1431.247,424.587 L 1429.997,425.837 L 1428.330,426.253 L 1428.330,427.087 L 1429.997,427.503 L 1431.247,428.753 L 1431.663,431.670 L 1429.163,434.587 L 1427.497,435.420 L 1422.913,435.837 L 1416.247,433.753 L 1417.080,431.253 L 1422.497,432.920 L 1426.663,432.503 L 1428.330,431.253 L 1428.330,429.587 L 1427.497,428.753 L 1425.413,427.920 L 1421.663,427.920 L 1421.663,425.420 L 1426.663,425.420 L 1427.913,424.587 L 1428.330,422.087 L 1427.497,421.253 L 1421.663,420.837 L 1417.913,422.087 L 1417.080,420.837 L 1417.080,419.587 Z" fill="#acddb4"/>
     <rect x="1380" y="482" width="68" height="68" fill="none" stroke="#8fba97" stroke-width="1.25"/>
-    <text transform="translate(1414,524) scale(1.38,1)" fill="#acddb4">T4</text>
+    <path d="M 1395.830,507.500 L 1413.747,507.500 L 1413.747,510.000 L 1406.247,510.000 L 1406.247,524.166 L 1403.330,524.166 L 1403.330,510.000 L 1395.830,510.000 Z M 1425.830,507.500 L 1428.747,507.500 L 1428.747,517.083 L 1432.080,517.083 L 1432.080,519.583 L 1428.747,519.583 L 1428.747,524.167 L 1425.413,524.167 L 1425.413,519.583 L 1415.830,519.583 L 1415.830,517.083 L 1425.413,507.917 L 1425.830,507.500 Z M 1419.997,517.083 L 1425.413,517.083 L 1425.413,510.583 L 1419.997,517.083 Z" fill="#acddb4"/>
   </g>
 
   </g>

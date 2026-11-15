@@ -479,42 +479,45 @@
       <text x="262.5833" y="24" font-weight="500" fill="#531719" text-anchor="end">Jackie</text>
       <use href="#pill-art" x="162.5" y="46.875" color="#531719"/>
     </g>
+    <!-- Resting senders at weight 500 over a 400 subject since 2026-11-14:
+         img-08 rows 1-7, subject stems 2.27-2.30 native px, "Jackie"
+         3.08-3.28 (one weight step). -->
     <g transform="translate(241.25,385.4167)">
       <use href="#row" fill="#280c0d" stroke="#660e0f" stroke-width="0.8333"/>
       <text x="7.0833" y="24" fill="#fb3535">I'm worried man</text>
-      <text x="262.5833" y="24" fill="#fb3535" text-anchor="end">Jackie</text>
+      <text x="262.5833" y="24" font-weight="500" fill="#fb3535" text-anchor="end">Jackie</text>
       <use href="#pill-art" x="162.5" y="44.375" color="#fb3535"/>
     </g>
     <g transform="translate(241.25,455.4167)">
       <use href="#row" fill="#280c0d" stroke="#660e0f" stroke-width="0.8333"/>
       <text x="7.0833" y="24" fill="#fb3535">Heist data sent to you</text>
-      <text x="262.5833" y="24" fill="#fb3535" text-anchor="end">Jackie</text>
+      <text x="262.5833" y="24" font-weight="500" fill="#fb3535" text-anchor="end">Jackie</text>
       <use href="#pill-art" x="162.5" y="44.375" color="#fb3535"/>
     </g>
     <g transform="translate(241.25,525.4167)">
       <use href="#row" fill="#26090a" stroke="#660e0f" stroke-width="0.8333"/>
       <text x="7.0833" y="24" fill="#fb3535">I'm worried man</text>
-      <text x="262.5833" y="24" fill="#fb3535" text-anchor="end">Jackie</text>
+      <text x="262.5833" y="24" font-weight="500" fill="#fb3535" text-anchor="end">Jackie</text>
     </g>
     <g transform="translate(241.25,595.4167)">
       <use href="#row" fill="#24090b" stroke="#660e0f" stroke-width="0.8333"/>
       <text x="7.0833" y="24" fill="#fb3535">Heist data sent to you</text>
-      <text x="262.5833" y="24" fill="#fb3535" text-anchor="end">Jackie</text>
+      <text x="262.5833" y="24" font-weight="500" fill="#fb3535" text-anchor="end">Jackie</text>
     </g>
     <g transform="translate(241.25,665.4167)">
       <use href="#row" fill="#210809" stroke="#660e0f" stroke-width="0.8333"/>
       <text x="7.0833" y="24" fill="#fb3535">I'm worried man</text>
-      <text x="262.5833" y="24" fill="#fb3535" text-anchor="end">Jackie</text>
+      <text x="262.5833" y="24" font-weight="500" fill="#fb3535" text-anchor="end">Jackie</text>
     </g>
     <g transform="translate(241.25,735.4167)">
       <use href="#row" fill="#1e0708" stroke="#660e0f" stroke-width="0.8333"/>
       <text x="7.0833" y="24" fill="#fb3535">I'm worried man</text>
-      <text x="262.5833" y="24" fill="#fb3535" text-anchor="end">Jackie</text>
+      <text x="262.5833" y="24" font-weight="500" fill="#fb3535" text-anchor="end">Jackie</text>
     </g>
     <g transform="translate(241.25,805.4167)">
       <use href="#row" fill="#1d0708" stroke="#660e0f" stroke-width="0.8333"/>
       <text x="7.0833" y="24" fill="#fb3535">Heist data sent to you</text>
-      <text x="262.5833" y="24" fill="#fb3535" text-anchor="end">Jackie</text>
+      <text x="262.5833" y="24" font-weight="500" fill="#fb3535" text-anchor="end">Jackie</text>
     </g>
     <rect x="241.25" y="875.4167" width="269.5833" height="0.8333" fill="#660e0f"/>
   </g>
@@ -543,7 +546,11 @@
   </g>
 
   <!-- ==== Urgent Information panel, x 729..1450 y 312..699 ==== -->
-  <text x="742" y="287" font-family="Rajdhani" font-size="20" font-weight="700"
+  <!-- Weight 600 since 2026-11-14 (was 700): stems 4.5-5.0 native px in
+       img-08, which 600 renders at 5.0 and 700 rendered at 6.5. Size 20.5833 at
+       baseline 285.33 (was 20 at 287): the photo's run spans x 1783..2216
+       native with its ink ending at y 686. -->
+  <text x="742" y="285.3333" font-family="Rajdhani" font-size="20.5833" font-weight="600"
         fill="#fb3535">Urgent Information (!)</text>
   <!-- panel and buttons together under #message-open (defs) -->
   <g clip-path="url(#message-open-clip)">

@@ -46,7 +46,7 @@
          - a nav column x 153..361 of five rows: VIDEO (filled, selected,
            y 248..315), AUDIO 318..380, GAMEPLAY 385..447, CYBERWARE
            452..514, CONTROLLER 519..581 - dark boxes with a 16px
-           bottom-left chamfer and a spine at x 148..151
+           bottom-left chamfer, printed twice up and left (no spine)
          - FOUR product cards, tops at y 151, 13px top-right chamfer:
            x 437..721, 769..1051 (SELECTED: taller, bottom 797.1, lighter
            translucent fill down to y 516), 1096..1378, 1425..1558.3 (a
@@ -692,17 +692,25 @@
 
   <!-- ==== nav column x 153..361 ==== -->
   <g font-family="Rajdhani" font-size="18" font-weight="500" letter-spacing="-0.3">
+    <!-- 2026-11-14: no spine. The photo prints two copies of each row up
+         and left of it (eras::neomil NAV_ECHO): (-3.6667,-1.3333) and
+         (-9.4583,-3.125); filled #6f1a1b / #421618 under the selected
+         row, outlined 1.5 in #fb3535 at .12 / .045 over the idle ones.
+         The 3px bars at x 148..151 this trace drew are not in the photo. -->
+    <use href="#nav67" x="143.5417" y="244.875" fill="#421618"/>
+    <use href="#nav67" x="149.3333" y="246.6667" fill="#6f1a1b"/>
     <use href="#nav67" x="153" y="248" fill="url(#store-nav-on)"/>
-    <rect x="148" y="248" width="3" height="51" fill="#fb3535"/>
     <text x="162.5" y="298.25" letter-spacing="-0.21" fill="#4a0f10">VIDEO</text>
     <!-- line weights re-measured 2026-11-14, docs/neomil/line-weights.md (nav rows: 2 native px of #62..#76; was #96282d 1.2) -->
     <g fill="#2e1012" stroke="#5e1112" stroke-width="0.8333">
       <use href="#nav62" x="153" y="318" fill="url(#store-nav-off1)"/><use href="#nav62" x="153" y="385" fill="url(#store-nav-off2)"/>
       <use href="#nav62" x="153" y="452" fill="url(#store-nav-off3)"/><use href="#nav62" x="153" y="519" fill="url(#store-nav-off4)"/>
     </g>
-    <g fill="#96282d">
-      <rect x="148" y="318" width="3" height="46"/><rect x="148" y="385" width="3" height="46"/>
-      <rect x="148" y="452" width="3" height="46"/><rect x="148" y="519" width="3" height="46"/>
+    <g fill="none" stroke="#fb3535" stroke-width="1.5">
+      <use href="#nav62" x="143.5417" y="314.875" stroke-opacity="0.045"/><use href="#nav62" x="149.3333" y="316.6667" stroke-opacity="0.12"/>
+      <use href="#nav62" x="143.5417" y="381.875" stroke-opacity="0.045"/><use href="#nav62" x="149.3333" y="383.6667" stroke-opacity="0.12"/>
+      <use href="#nav62" x="143.5417" y="448.875" stroke-opacity="0.045"/><use href="#nav62" x="149.3333" y="450.6667" stroke-opacity="0.12"/>
+      <use href="#nav62" x="143.5417" y="515.875" stroke-opacity="0.045"/><use href="#nav62" x="149.3333" y="517.6667" stroke-opacity="0.12"/>
     </g>
     <g fill="#fb3535">
       <text x="162.92" y="364.58" font-size="17.5" letter-spacing="-0.2">AUDIO</text>

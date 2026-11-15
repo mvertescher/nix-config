@@ -1427,6 +1427,19 @@ const MAIL_ROW_FILLS: &[Ink] = &[
     Ink::Fixed(rgb(0x1e0708)), Ink::Fixed(rgb(0x1d0708)),
 ];
 
+/// A resting row's printing: the subject regular, the sender one weight
+/// up. Measured 2026-11-14 at 4K on img-08 rows 1-7: subject stems 2.27-2.30
+/// native px (Rajdhani 400 here draws 2.39), "Jackie" 3.08-3.28, one weight
+/// step heavier (500 adds 0.97 at this size); until then both were set
+/// regular at 2.43. Anchors are the resting layout's (`text_x`/`title_dy`,
+/// the trailing sender 7 inside the row's right edge); inks are resolved
+/// by the renderer, so hover, held and selection printing keep theirs.
+pub const RESTING_ROW_TYPE: MailRowType = MailRowType {
+    title: Run::new(248.3333, 24.0, 17.5, Ink::Fixed(rgb(0xfb3535))),
+    from: Run::new(503.8333, 24.0, 17.5, Ink::Fixed(rgb(0xfb3535))).medium().right(),
+};
+const ROW_TYPES: [MailRowType; 8] = [RESTING_ROW_TYPE; 8];
+
 pub fn mailbox() -> Mailbox {
     Mailbox {
         text_baseline: 0.84,
@@ -1434,7 +1447,7 @@ pub fn mailbox() -> Mailbox {
         chrome: CHROME,
         overlay: OVERLAY,
         list: MailList {
-            row_type: &[],
+            row_type: &ROW_TYPES,
             // The selected row's printing is set medium, the rest
             // regular (mailbox-trace.svg, the row-1 note): at regular
             // the dark ink on the red fill printed thin and faint
@@ -1549,7 +1562,13 @@ pub fn mailbox() -> Mailbox {
             // pinned and `message` only says which row a click returns
             // to. Row 2 is a guess the trace cannot confirm or refute.
             message: 1,
-            title: Run::new(742.0, 287.0, 20.0, Ink::Fixed(rgb(0xfb3535))).bold(),
+            // Rajdhani 600, not 700: the heading's stems measure 4.5-5.0
+            // native px at 4K (img-08, the U stem and the run's median),
+            // which 600 draws at 5.0 and 700 drew at 6.5 (2026-11-14).
+            // Size 20.5833 and baseline 285.33, not 20 / 287: the photo's run
+            // is 434 native px wide (x 1783..2216) with a 31 px U, its ink
+            // ending at y 686, where 20 / 287 drew 422 px, 30 and 690.
+            title: Run::new(742.0, 285.3333, 20.5833, Ink::Fixed(rgb(0xfb3535))).semibold(),
             title_upper: false,
             from: None,
             heading: Some("Urgent Information (!)"),
@@ -2449,16 +2468,55 @@ const NAV67: &[Seg] = &[
     Seg::Line(16.0, 67.0),
     Seg::Line(0.0, 51.0),
 ];
+/// The nav rows' printing echo: two copies of the row, up and to the
+/// left of it, `(dx, dy, alpha)` in design px. Measured 2026-11-14 at 4K
+/// on img-09 (the four idle rows' left, top and bottom edges): the near
+/// copy's edge centres sit 8.8 native px left of the outline and 3.2 up,
+/// peaking R +0x15 over the ground in a soft ~4 px profile; the far copy
+/// 22.7 left and 7.5 up at +0x07. The alphas are fitted to those peaks on
+/// this crate's 4K render (0.09 / 0.025 drew +0x10 / +0x04). There is no solid spine: the bright
+/// 3px bar this table drew at x 148..151 until then is not in the photo
+/// (the 2026-11-13 review's "detached stripe").
+pub const NAV_ECHO: [(f32, f32, f32); 2] = [(-3.6667, -1.3333, 0.12), (-9.4583, -3.125, 0.045)];
+/// The echo is printed soft: 1.5 dp carries the near copy's measured
+/// integral (about 70 level-px across the edge) at its measured peak.
+pub const NAV_ECHO_WIDTH: f32 = 1.5;
+/// On the selected row the copies are filled, not outlined (the photo's
+/// striated bands left of and above VIDEO): the far copy alone over the
+/// ground samples #421618, the near copy over it #6f1a1b. Drawn opaque
+/// under the plate, so the plate keeps its own edge.
+pub const NAV_ECHO_FILLS: [iced::Color; 2] = [rgb(0x6f1a1b), rgb(0x421618)];
+const fn echo_ink(alpha: f32) -> Ink {
+    Ink::Fixed(iced::Color { a: alpha, ..rgb(0xfb3535) })
+}
+/// An idle row's echo, printed over the plate.
+const NAV_ECHO_62: &[Prim] = &[
+    Prim::At { x: NAV_ECHO[1].0, y: NAV_ECHO[1].1, prims: &[
+        shut_path(0.0, 0.0, NAV62, echo_ink(NAV_ECHO[1].2), NAV_ECHO_WIDTH),
+    ] },
+    Prim::At { x: NAV_ECHO[0].0, y: NAV_ECHO[0].1, prims: &[
+        shut_path(0.0, 0.0, NAV62, echo_ink(NAV_ECHO[0].2), NAV_ECHO_WIDTH),
+    ] },
+];
+/// The selected row's echo, under the plate.
+const NAV_ECHO_67: &[Prim] = &[
+    Prim::At { x: NAV_ECHO[1].0, y: NAV_ECHO[1].1, prims: &[
+        fill_path(0.0, 0.0, NAV67, Ink::Fixed(NAV_ECHO_FILLS[1])),
+    ] },
+    Prim::At { x: NAV_ECHO[0].0, y: NAV_ECHO[0].1, prims: &[
+        fill_path(0.0, 0.0, NAV67, Ink::Fixed(NAV_ECHO_FILLS[0])),
+    ] },
+];
 // The rest plate: was edged 1.2 in the mid red (#a32226), which the 4K
 // comparison put at 2.9-3.5 native px against the source's 1.9-2.4 px of
 // #62..#76 (line-weights.md).
 const NAV_ROW: &[Prim] = &[
     REST_PLATE.plate(0.0, 0.0, NAV62),
-    fill_rect(-5.0, 0.0, 3.0, 46.0, Ink::Dim),
+    Prim::At { x: 0.0, y: 0.0, prims: NAV_ECHO_62 },
 ];
 const NAV_SELECTED: &[Prim] = &[
+    Prim::At { x: 0.0, y: 0.0, prims: NAV_ECHO_67 },
     fill_path(0.0, 0.0, NAV67, Ink::Select),
-    fill_rect(-5.0, 0.0, 3.0, 51.0, Ink::Fg),
 ];
 
 // components.svg § 9 #nav-hover / #nav-press are inferred coats on
@@ -2467,19 +2525,19 @@ const NAV_SELECTED: &[Prim] = &[
 // shrinks a row, changes its label, or selects a product card.
 const NAV_HOVER: &[Prim] = &[
     Prim::Path { x: 0.0, y: 0.0, segs: NAV62, close: true, fill: Some(Ink::Fixed(rgb(0x551719))), stroke: Some(Ink::Fg), width: WEIGHTS.line },
-    fill_rect(-5.0, 0.0, 3.0, 46.0, Ink::Fg),
+    Prim::At { x: 0.0, y: 0.0, prims: NAV_ECHO_62 },
 ];
 const NAV_PRESSED: &[Prim] = &[
     fill_path(0.0, 0.0, NAV62, Ink::Fixed(rgb(0xa52223))),
-    fill_rect(-5.0, 0.0, 3.0, 46.0, Ink::Fg),
+    Prim::At { x: 0.0, y: 0.0, prims: NAV_ECHO_62 },
 ];
 const NAV_SELECTED_HOVER: &[Prim] = &[
+    Prim::At { x: 0.0, y: 0.0, prims: NAV_ECHO_67 },
     fill_path(0.0, 0.0, NAV67, Ink::Fixed(rgb(0xf63333))),
-    fill_rect(-5.0, 0.0, 3.0, 51.0, Ink::Fg),
 ];
 const NAV_SELECTED_PRESSED: &[Prim] = &[
+    Prim::At { x: 0.0, y: 0.0, prims: NAV_ECHO_67 },
     fill_path(0.0, 0.0, NAV67, Ink::Fixed(rgb(0xa52223))),
-    fill_rect(-5.0, 0.0, 3.0, 51.0, Ink::Fg),
 ];
 macro_rules! nav_states {
     ($index:expr, $top:expr) => {
@@ -3197,14 +3255,20 @@ mod store_interaction_tests {
 
     #[test]
     fn category_coats_follow_the_inferred_nav_and_filled_control_ladders() {
-        for (drawing, fill, stroke) in [
-            (NAV_HOVER, rgb(0x551719), Some(Ink::Fg)),
-            (NAV_PRESSED, rgb(0xa52223), None),
-            (NAV_SELECTED_HOVER, rgb(0xf63333), None),
-            (NAV_SELECTED_PRESSED, rgb(0xa52223), None),
+        // Idle rows print their echo over the coat, selected rows under it;
+        // no state draws the bright spine the source does not have.
+        for (drawing, fill, stroke, echo, coat) in [
+            (NAV_HOVER, rgb(0x551719), Some(Ink::Fg), NAV_ECHO_62, 0),
+            (NAV_PRESSED, rgb(0xa52223), None, NAV_ECHO_62, 0),
+            (NAV_SELECTED_HOVER, rgb(0xf63333), None, NAV_ECHO_67, 1),
+            (NAV_SELECTED_PRESSED, rgb(0xa52223), None, NAV_ECHO_67, 1),
         ] {
-            assert!(matches!(drawing[0], Prim::Path { fill: Some(Ink::Fixed(c)), stroke: s, .. } if c == fill && s == stroke));
-            assert!(matches!(drawing[1], Prim::Rect { fill: Some(Ink::Fg), .. }));
+            assert_eq!(drawing.len(), 2);
+            assert!(matches!(drawing[coat], Prim::Path { fill: Some(Ink::Fixed(c)), stroke: s, .. } if c == fill && s == stroke));
+            assert!(matches!(drawing[1 - coat], Prim::At { x: 0.0, y: 0.0, prims } if prims == echo));
+        }
+        for drawing in [NAV_ROW, NAV_SELECTED] {
+            assert!(!drawing.iter().any(|p| matches!(p, Prim::Rect { .. })));
         }
         for state in STORE_STATES.iter().filter(|state| state.group == Group::Category) {
             for drawing in [state.pressed, state.selected_pressed.unwrap()] {

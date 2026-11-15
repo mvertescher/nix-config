@@ -69,7 +69,9 @@ const SHELF_REFERENCE: &[Prim] = &{
     out
 };
 const NAV_ROW_BARE: &[Prim] = &[clear_fill(NAV_ROW[0]), NAV_ROW[1]];
-const NAV_SELECTED_BARE: &[Prim] = &[clear_fill(NAV_SELECTED[0]), NAV_SELECTED[1]];
+// The selected row's echo is printed under its field, so with the
+// field in the backdrop the echo moves there too (NAVS*, before the field).
+const NAV_SELECTED_BARE: &[Prim] = &[clear_fill(NAV_SELECTED[1])];
 const fn nav_branch(source: &[Prim], selected: bool) -> [Prim; 2] {
     assert!(source.len() == 2);
     let mut out = [source[0], source[1]];
@@ -337,15 +339,15 @@ const NAV_FIELD_ON4_R: &[Prim] = &[Prim::Ramp { x: 0.0, y: 0.0, w: 208.0, h: 67.
 const NAV_FIELD_ON4_MIX: &[Prim] = &[Prim::Ramp { x: 0.0, y: 0.0, w: 208.0, h: 67.0, from: (0.00000000, 0.00000000), to: (1.00000000, 0.00000000), stops: &[(0.0, rgb(0x000000)), (1.0, rgb(0xffffff))] }];
 const NAV_FIELD_ON4: &[Prim] = &[Prim::Masked { prims: &[NAV_FIELD_ON4_L[0], Prim::Masked { prims: NAV_FIELD_ON4_R, mask: NAV_FIELD_ON4_MIX }], mask: ON_MASK4 }];
 
-const NAVS0: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_ON0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_OFF1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_OFF2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_OFF3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_OFF4 }];
+const NAVS0: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_ECHO_67 }, Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_ON0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_OFF1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_OFF2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_OFF3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_OFF4 }];
 
-const NAVS1: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_OFF0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_ON1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_OFF2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_OFF3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_OFF4 }];
+const NAVS1: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_OFF0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_ECHO_67 }, Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_ON1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_OFF2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_OFF3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_OFF4 }];
 
-const NAVS2: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_OFF0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_OFF1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_ON2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_OFF3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_OFF4 }];
+const NAVS2: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_OFF0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_OFF1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_ECHO_67 }, Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_ON2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_OFF3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_OFF4 }];
 
-const NAVS3: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_OFF0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_OFF1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_OFF2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_ON3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_OFF4 }];
+const NAVS3: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_OFF0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_OFF1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_OFF2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_ECHO_67 }, Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_ON3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_OFF4 }];
 
-const NAVS4: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_OFF0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_OFF1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_OFF2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_OFF3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_ON4 }];
+const NAVS4: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_OFF0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_OFF1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_OFF2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_OFF3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_ECHO_67 }, Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_ON4 }];
 
 const BACK00: &[Prim] = &[Prim::Soft { prims: STORE_GROUND }, Prim::Motion { motion: SHELF_OPEN, prims: &[Prim::Soft { prims: CARDS0 }] }, Prim::Soft { prims: NAVS0 }];
 
