@@ -156,6 +156,8 @@ pub fn style() -> Style {
             // [A] [B] [C] of mailbox-trace at 26x26.
             ws_width: 28.0,
             ws_corners: None,
+            ws_count: 0,
+            ws_empty: None,
             // The header strings start 12px inside their segment
             // (mailbox/login x 61 in a frame at 49).
             pad_x: 12.0,

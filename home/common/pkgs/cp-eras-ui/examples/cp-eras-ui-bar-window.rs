@@ -69,10 +69,16 @@ fn sample(style: &Style) -> Readings {
         .to_string();
     Readings {
         host: "nomad".to_string(),
+        // Every state a workspace cell has: six listed, each with windows
+        // (all Hyprland keeps of an inactive one), 3 active and 5 urgent;
+        // an era that always shows ten (`Bar::ws_count`) draws 7 to 10
+        // empty.
         workspaces: (1..=6)
             .map(|id| Workspace {
                 id,
                 active: id == 3,
+                occupied: true,
+                urgent: id == 5,
             })
             .collect(),
         window: "~/src/cp-eras-ui - nvim src/bar.rs".to_string(),
@@ -220,7 +226,7 @@ impl BarWindow {
             // `None`: the golden is a still life, and hit-testing it
             // could never exercise would only be a claim the capture
             // cannot check.
-            container(bar(&self.style, &self.readings, None))
+            container(bar(&self.style, &self.readings, None, None))
                 .height(Length::Fixed(cp_eras_ui::bar::surface_height(&self.style) as f32)),
             // Flush under the bar, and right-aligned with a margin,
             // which is where the live bar puts it: the overlay surface

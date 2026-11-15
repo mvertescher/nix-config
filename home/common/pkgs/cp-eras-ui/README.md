@@ -223,10 +223,20 @@ where plain alpha gave 112.
 
 The header reserves `Bar::height` (62 dp) and its surface is
 `bar::surface_height` (64 dp): the rule's echo hangs 2 dp into the
-window gap, as in the design. Workspaces are drawn as the compositor
-lists them (Hyprland's existing workspaces), the active one on the solid
-red plate; the bar has no click-to-switch and no urgent or empty state
-to show, as before.
+window gap, as in the design.
+
+Workspaces: `Bar::ws_count` (Neomil 10, the host's SUPER+1..0) makes the
+bar show 1..n always, an absent workspace empty, plus any listed past n;
+0 (the strip eras) draws exactly what Hyprland lists. A cell is active
+(Neomil: the solid red plate), urgent (the alert coat; the urgency is
+taken from the `urgent>>` event and cleared when the workspace is
+visited), occupied (the rest plate) or empty (`Badge::empty`, Neomil's
+`GHOST_PLATE`; a strip era's `Bar::ws_empty`). Clicking a cell sends
+`dispatch workspace <n>` over the IPC socket -- so an empty workspace
+with an `on-created-empty` rule opens its app -- and the wheel steps
+along the row; both use the tray's mechanism, a `mouse_area` over
+what was drawn. The header lights the badge under the pointer in
+`Badge::lit` (`LIT_PLATE`); the strip eras have no hover coat.
 
 ### Scale: desktop and TV
 

@@ -178,6 +178,8 @@ pub fn style() -> Style {
             ws_lead: 7.2,
             ws_width: 40.0,
             ws_corners: None,
+            ws_count: 0,
+            ws_empty: None,
             pad_x: 12.0,
             // The right end of a button is the tab's alone: 8 gap, 22
             // tab, 8 inset, and no label ever sits on one.

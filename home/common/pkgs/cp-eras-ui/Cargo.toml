@@ -118,6 +118,14 @@ cryoglyph = { path = "vendor/cryoglyph" }
 # optional per-era print pass (`src/print.rs`), which is skipped unless set.
 # Provenance and removal condition: vendor/iced_wgpu/PATCHES.md.
 iced_wgpu = { path = "vendor/iced_wgpu" }
+# Close and destroy the layer surface of an output that went away instead
+# of dropping it unannounced; with the iced_layershell patch below, this is
+# what stops a leak per output re-creation. Provenance, the change and the
+# removal condition: vendor/layershellev/PATCHES.md.
+layershellev = { path = "vendor/layershellev" }
+# Free the iced window of a closed `AllScreens` surface, which upstream could
+# not find. Provenance and removal condition: vendor/iced_layershell/PATCHES.md.
+iced_layershell = { path = "vendor/iced_layershell" }
 
 [[bin]]
 name = "cp-eras-ui-bar"

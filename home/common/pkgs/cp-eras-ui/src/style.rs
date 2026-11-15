@@ -421,6 +421,17 @@ pub struct Bar {
     /// are the store nav's chevrons and its readouts are the customer
     /// chip, and no single corner treatment is both.
     pub ws_corners: Option<Corners>,
+    /// How many workspaces the bar always shows: 1 to `ws_count` whether
+    /// or not the compositor has them, an absent one in `ws_empty`, so
+    /// clicking it creates it (and a workspace with an `on-created-empty`
+    /// rule launches its app). Any the compositor lists past the count
+    /// follow; special (negative) workspaces are left out. Zero shows
+    /// exactly what the compositor lists, as the strip eras always have.
+    /// See `bar::shown_workspaces`.
+    pub ws_count: u8,
+    /// The dress of a workspace with no windows, under `ws_count`.
+    /// `None` draws it in `idle`, the same as an occupied one.
+    pub ws_empty: Option<Dress>,
     /// Horizontal padding inside a module.
     pub pad_x: f32,
     /// Extra width a module reserves past its label, beyond `pad_x` --
@@ -518,6 +529,8 @@ impl Default for Bar {
             ws_lead: 6.4,
             ws_width: 35.0,
             ws_corners: None,
+            ws_count: 0,
+            ws_empty: None,
             pad_x: 13.0,
             trail: 0.0,
             em: 0.58,
@@ -673,6 +686,11 @@ pub struct Badge {
     /// A reading that is a warning (a muted sink, no route out, a tray
     /// item asking to be looked at).
     pub alert: BadgeCoat,
+    /// A workspace badge for a workspace with no windows (`Bar::ws_count`):
+    /// quieter than `rest`.
+    pub empty: BadgeCoat,
+    /// A badge that answers the pointer, hovered: the era's hover rung.
+    pub lit: BadgeCoat,
 }
 
 /// The dashboard's tab plate, holding one line of text: square, a

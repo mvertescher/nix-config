@@ -183,12 +183,29 @@ pub enum Value {
     Icon(image::Handle),
 }
 
-/// Which of a badge's three coats it wears.
+/// Which of a badge's coats it wears.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Wear {
     Rest,
     On,
     Alert,
+    /// A workspace with no windows.
+    Empty,
+    /// Under the pointer, on a badge that answers it.
+    Lit,
+}
+
+impl Wear {
+    /// The coat this one wears while the pointer is over its badge: the
+    /// era's hover rung for a resting or empty badge. The selected badge
+    /// and one in alarm keep theirs -- the first is where a click would
+    /// take you already, and the second outranks a hover.
+    pub fn hovered(self) -> Wear {
+        match self {
+            Wear::Rest | Wear::Empty | Wear::Lit => Wear::Lit,
+            Wear::On | Wear::Alert => self,
+        }
+    }
 }
 
 fn coat(b: &Badge, wear: Wear) -> &BadgeCoat {
@@ -196,6 +213,8 @@ fn coat(b: &Badge, wear: Wear) -> &BadgeCoat {
         Wear::Rest => &b.rest,
         Wear::On => &b.on,
         Wear::Alert => &b.alert,
+        Wear::Empty => &b.empty,
+        Wear::Lit => &b.lit,
     }
 }
 

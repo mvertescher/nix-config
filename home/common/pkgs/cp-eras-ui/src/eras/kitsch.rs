@@ -173,6 +173,8 @@ pub fn style() -> Style {
                     .with_top_right(Cut::Round { radius: 3.0 })
                     .with_bottom_right(Cut::Chamfer { x: 12.0, y: 12.0 }),
             ),
+            ws_count: 0,
+            ws_empty: None,
             pad_x: 13.0,
             trail: 13.0,
             em: 0.58,

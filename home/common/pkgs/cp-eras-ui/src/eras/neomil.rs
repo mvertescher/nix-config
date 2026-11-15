@@ -208,6 +208,28 @@ pub const HEADER: Header = Header {
             ink: Ink::Alert,
             caption_alpha: 0.9,
         },
+        // Not in the design, which draws five occupied workspaces: an
+        // empty one is the idle mailbox button, `GHOST_PLATE` -- the rest
+        // rung's dim `border` edge on the near-ground #1a0607 face,
+        // lettered in the mid red `dim` (line-weights.md, Treatments) --
+        // so it recedes behind the occupied badges' brighter edge and
+        // face without leaving the row.
+        empty: BadgeCoat {
+            face: GHOST_PLATE.face,
+            edge: GHOST_PLATE.edge,
+            ink: Ink::Dim,
+            caption_alpha: 0.75,
+        },
+        // The hover rung, `LIT_PLATE`: #551719 face, edge and marks lifted
+        // to #f63333 (components.svg section 9, inferred). Close to the
+        // alert coat by construction -- that coat is the lit face under
+        // the hotter alert ink (#ff3b45).
+        lit: BadgeCoat {
+            face: LIT_PLATE.face,
+            edge: LIT_PLATE.edge,
+            ink: LIT_PLATE.ink,
+            caption_alpha: 0.75,
+        },
     },
     // `tw = 250`, `th = 16`, face `fill-opacity .7`, text 8.5 at
     // `ls: 0.08`, baseline `th * 0.72`.
@@ -366,6 +388,14 @@ pub fn style() -> Style {
             ws_lead: 12.0,
             ws_width: 35.0,
             ws_corners: None,
+            // The host binds SUPER+1..0 to workspaces 1-10 and gives 9
+            // (Claude) and 10 (the dashboard) `on-created-empty` apps, so
+            // all ten are always shown and clicking an empty one opens
+            // it. Ten badges and their gaps are 387 dp of the header, the
+            // design's five 192.
+            ws_count: 10,
+            // The header draws its own (`HEADER.badge.empty`).
+            ws_empty: None,
             pad_x: 13.0,
             trail: 13.0,
             em: 0.58,

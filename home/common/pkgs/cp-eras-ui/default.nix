@@ -61,14 +61,18 @@ let
         && (type == "directory" || lib.hasSuffix ".png" (toString path)))
       || (lib.hasPrefix "${toString ./vendor/iced_wgpu/src/shader}/" (toString path)
         && lib.hasSuffix ".wgsl" (toString path))
-      || (toString path == "${toString ./vendor/cryoglyph/src/shader.wgsl}");
+      || (toString path == "${toString ./vendor/cryoglyph/src/shader.wgsl}")
+      # The patched iced_layershell compiles its docs in with include_str!.
+      || (toString path == "${toString ./vendor/iced_layershell/README.md}")
+      || (lib.hasPrefix "${toString ./vendor/iced_layershell/src/build_pattern}/" (toString path)
+        && lib.hasSuffix ".md" (toString path));
   };
 
   cargoArtifacts = craneLib.buildDepsOnly {
     src = cleanSrc;
-    # Registry dependents need iced_wgpu's and cryoglyph's actual APIs. Crane
-    # replaces local crates with dummy targets; restore these patched
-    # dependencies afterward.
+    # Registry dependents need the patched crates' actual APIs (iced_wgpu,
+    # cryoglyph, layershellev, iced_layershell). Crane replaces local crates
+    # with dummy targets; restore these patched dependencies afterward.
     # Reference only the vendor directory to retain the dependency cache
     # when application sources change.
     extraDummyScript = ''
@@ -78,6 +82,12 @@ let
       rm -rf "$out/vendor/cryoglyph"
       cp -r ${./vendor/cryoglyph} "$out/vendor/cryoglyph"
       chmod -R u+w "$out/vendor/cryoglyph"
+      rm -rf "$out/vendor/layershellev"
+      cp -r ${./vendor/layershellev} "$out/vendor/layershellev"
+      chmod -R u+w "$out/vendor/layershellev"
+      rm -rf "$out/vendor/iced_layershell"
+      cp -r ${./vendor/iced_layershell} "$out/vendor/iced_layershell"
+      chmod -R u+w "$out/vendor/iced_layershell"
     '';
     nativeBuildInputs = [ pkg-config cmake ];
     buildInputs = [

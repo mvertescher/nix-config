@@ -127,8 +127,8 @@ mod surfaces;
 mod tray;
 
 use cp_eras_ui::bar::{
-    bar, tray_menu_with_hover, MenuEntry, MenuInteraction, MenuPath, MenuPointer, Readings,
-    TrayAction, TrayMenu,
+    bar, shown_workspaces, tray_menu_with_hover, workspace_target, MenuEntry, MenuInteraction,
+    MenuPath, MenuPointer, Readings, TrayAction, TrayMenu, WorkspaceAction,
 };
 use cp_eras_ui::{catalog, shell};
 use cp_eras_ui::{Element, Style};
@@ -216,10 +216,12 @@ enum Message {
     /// reading is already in the snapshot; this only says to look now
     /// rather than at the next tick.
     Hypr,
-    /// A pointer event on the tray cell at this index. The bar is
-    /// otherwise entirely non-interactive, and this is the only reason
-    /// it accepts pointer input at all.
+    /// A pointer event on the tray cell at this index.
     Tray(usize, TrayAction),
+    /// A workspace cell was clicked, or the wheel turned over the row.
+    /// The tray cells and these are the only parts of the bar that take
+    /// pointer input.
+    Workspace(WorkspaceAction),
     /// The pointer moved, on either surface.
     Pointer(f32),
     /// An item answered with its menu.
@@ -328,6 +330,15 @@ impl BarApp {
                 }
             }
             Message::Hypr => self.refresh_hypr(),
+            // Resolved against the row as drawn, so a step lands on the
+            // cell next to the lit one; the compositor is asked on a
+            // thread of its own, and its answer arrives as `Message::Hypr`.
+            Message::Workspace(action) => {
+                let shown = shown_workspaces(self.style.bar.ws_count, &self.readings.workspaces);
+                if let Some(id) = workspace_target(&shown, action) {
+                    hypr::switch(id);
+                }
+            }
             Message::Pointer(x) => self.pointer = x,
             // Handed to the tray thread rather than acted on here: the
             // call goes to another process, and the bar must not wait
@@ -496,7 +507,7 @@ impl BarApp {
                 // cover. A tray cell captures the press before this
                 // sees it, so clicking one still opens a menu.
                 mouse_area(
-                    container(bar(&self.style, &self.readings, Some(Message::Tray)))
+                    container(bar(&self.style, &self.readings, Some(Message::Tray), Some(Message::Workspace)))
                         .style(catalog::ground)
                         .width(Length::Fill)
                         .height(Length::Fill),

@@ -25,10 +25,106 @@ use iced::{mouse, Color, Length, Padding, Point, Rectangle, Renderer, Size};
 
 
 /// One workspace as the compositor reports it.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct Workspace {
     pub id: i32,
     pub active: bool,
+    /// At least one window is on it. Hyprland keeps an inactive
+    /// workspace only while it has windows, so of the ones it lists only
+    /// the active one can be unoccupied; an absent one that the bar
+    /// shows anyway (`Bar::ws_count`) is unoccupied by definition.
+    pub occupied: bool,
+    /// A window on it asked for attention and the workspace has not been
+    /// visited since.
+    pub urgent: bool,
+}
+
+/// What a workspace cell shows, in order of precedence: the active
+/// workspace is shown as active even while a window on it is urgent
+/// (visiting it is what clears the urgency), and urgency outranks
+/// whether anything else is there.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WorkspaceState {
+    Empty,
+    Occupied,
+    Active,
+    Urgent,
+}
+
+impl Workspace {
+    pub fn state(&self) -> WorkspaceState {
+        if self.active {
+            WorkspaceState::Active
+        } else if self.urgent {
+            WorkspaceState::Urgent
+        } else if self.occupied {
+            WorkspaceState::Occupied
+        } else {
+            WorkspaceState::Empty
+        }
+    }
+}
+
+/// The workspaces an era's bar shows, from the ones the compositor
+/// lists: with a `count` (`Bar::ws_count`), 1 to `count` in order, each
+/// either as listed or absent and so empty, then any listed past the
+/// count; special workspaces (Hyprland's negative ids, the scratchpads)
+/// are left out, since `workspace <id>` cannot reach them. With no count,
+/// exactly what is listed, as the bar always drew.
+pub fn shown_workspaces(count: u8, listed: &[Workspace]) -> Vec<Workspace> {
+    if count == 0 {
+        return listed.to_vec();
+    }
+    let count = i32::from(count);
+    let mut shown: Vec<Workspace> = (1..=count)
+        .map(|id| {
+            listed
+                .iter()
+                .find(|ws| ws.id == id)
+                .cloned()
+                .unwrap_or(Workspace { id, ..Workspace::default() })
+        })
+        .collect();
+    let mut extra: Vec<Workspace> = listed.iter().filter(|ws| ws.id > count).cloned().collect();
+    extra.sort_by_key(|ws| ws.id);
+    shown.extend(extra);
+    shown
+}
+
+/// What a pointer did to the workspace cells.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WorkspaceAction {
+    /// A cell was clicked: go to this workspace.
+    Switch(i32),
+    /// The wheel turned over the cells, by this many detents: positive
+    /// towards the higher-numbered end of the row (the wheel turned
+    /// down), negative towards the lower.
+    Step(i32),
+}
+
+/// How a workspace cell's pointer events get back to whoever can talk to
+/// the compositor; a bare function pointer for the reason [`OnTray`] is.
+pub type OnWorkspace<Message> = fn(WorkspaceAction) -> Message;
+
+/// The workspace an action asks for, among the ones `shown` (as
+/// [`shown_workspaces`] gives them): `None` when it asks for the one
+/// already active -- a no-op, and under Hyprland's
+/// `workspace_back_and_forth` a jump *away* -- or when a step has no
+/// active workspace to start from. A step stops at either end of the row
+/// rather than wrapping.
+pub fn workspace_target(shown: &[Workspace], action: WorkspaceAction) -> Option<i32> {
+    let active = shown.iter().position(|ws| ws.active);
+    let target = match action {
+        WorkspaceAction::Switch(id) => id,
+        WorkspaceAction::Step(delta) => {
+            let from = active?;
+            let last = shown.len().checked_sub(1)? as i64;
+            let to = (from as i64 + i64::from(delta)).clamp(0, last) as usize;
+            shown[to].id
+        }
+    };
+    let current = active.map(|i| shown[i].id);
+    (current != Some(target)).then_some(target)
 }
 
 /// The default audio sink, as the sound server reports it.
@@ -2314,12 +2410,28 @@ fn tray_cell<'a, Message: Clone + 'static>(
             .on_middle_press(on_tray(index, TrayAction::Secondary))
             .on_right_press(on_tray(index, TrayAction::Context))
             .on_scroll(move |delta| on_tray(index, TrayAction::Scroll(detents(delta))))
-            // The one cell on the bar that does anything, so it is the
-            // one cell that should look like it does.
+            // A cell that does something looks like it does: the tray's
+            // and the workspaces' are the only ones.
             .interaction(mouse::Interaction::Pointer)
             .into(),
         ..slot
     }
+}
+
+/// A workspace cell's pointer events, by the same mechanism as a tray
+/// cell's (a `mouse_area` over what was drawn): a press switches to
+/// workspace `id`, the wheel steps along the row -- up towards the lower
+/// numbers, down towards the higher, the way the row reads.
+fn workspace_area<'a, Message: Clone + 'static>(
+    element: Element<'a, Message>,
+    id: i32,
+    on_workspace: OnWorkspace<Message>,
+) -> Element<'a, Message> {
+    mouse_area(element)
+        .on_press(on_workspace(WorkspaceAction::Switch(id)))
+        .on_scroll(move |delta| on_workspace(WorkspaceAction::Step(-detents(delta))))
+        .interaction(mouse::Interaction::Pointer)
+        .into()
 }
 
 /// A wheel movement as whole detents, keeping the delta's own sign.
@@ -2340,6 +2452,19 @@ fn detents(delta: mouse::ScrollDelta) -> i32 {
         0
     } else {
         lines.abs().ceil().copysign(lines) as i32
+    }
+}
+
+/// What a strip era's workspace cell wears in each state: the selection
+/// for the active one, the era's alert for an urgent one (in entropism,
+/// its ` (!)` suffix), the idle dress for an occupied one, and
+/// `Bar::ws_empty` (or idle) for an empty one.
+fn workspace_dress(b: &crate::style::Bar, state: WorkspaceState) -> (Wear, Dress) {
+    match state {
+        WorkspaceState::Active => (Wear::Selected, b.selected),
+        WorkspaceState::Urgent => (Wear::Alert, b.alert),
+        WorkspaceState::Occupied => (Wear::Idle, b.idle),
+        WorkspaceState::Empty => (Wear::Idle, b.ws_empty.unwrap_or(b.idle)),
     }
 }
 
@@ -2438,13 +2563,16 @@ fn window_label<'a, Message: 'static>(style: &Style, window: &str) -> Element<'a
 /// It is a parameter rather than a field on [`Readings`] because it is
 /// the one thing here that is not a *reading* -- the readings are what
 /// the machine is doing, and this is what the bar should do about it.
+/// `on_workspace` is the same for the workspace cells: a click switches
+/// to that workspace, the wheel steps along the row.
 pub fn bar<'a, Message: Clone + 'static>(
     style: &Style,
     r: &'a Readings,
     on_tray: Option<OnTray<Message>>,
+    on_workspace: Option<OnWorkspace<Message>>,
 ) -> Element<'a, Message> {
     if let Some(header) = style.bar.header {
-        return header_bar(style, &header, r, on_tray);
+        return header_bar(style, &header, r, on_tray, on_workspace);
     }
     let style = &lined(style);
     let b = &style.bar;
@@ -2454,13 +2582,8 @@ pub fn bar<'a, Message: Clone + 'static>(
     if tape {
         left.push(host_tape(style, &r.host));
     }
-    for (index, ws) in r.workspaces.iter().enumerate() {
-        let wear = if ws.active {
-            Wear::Selected
-        } else {
-            Wear::Idle
-        };
-        let mut dress = dress_for(style, wear);
+    for (index, ws) in shown_workspaces(b.ws_count, &r.workspaces).iter().enumerate() {
+        let (wear, mut dress) = workspace_dress(b, ws.state());
         if let Some(corners) = b.ws_corners {
             dress.corners = corners;
         }
@@ -2477,6 +2600,9 @@ pub fn bar<'a, Message: Clone + 'static>(
         } else {
             b.ws_gap
         };
+        if let Some(on_workspace) = on_workspace {
+            slot.element = workspace_area(slot.element, ws.id, on_workspace);
+        }
         left.push(slot);
     }
 
@@ -2678,20 +2804,33 @@ impl Cell {
 /// The header's badges, as the readings make them.
 struct Cells {
     workspaces: Vec<Cell>,
+    /// The workspace each of `workspaces` stands for, in the same order.
+    workspace_ids: Vec<i32>,
     tray: Vec<Cell>,
     system: Vec<Cell>,
 }
 
-fn header_cells(h: &Header, r: &Readings) -> Cells {
-    let workspaces = r
-        .workspaces
+/// The coat a workspace badge wears in each state.
+fn workspace_coat(state: WorkspaceState) -> Coat {
+    match state {
+        WorkspaceState::Active => Coat::On,
+        WorkspaceState::Urgent => Coat::Alert,
+        WorkspaceState::Occupied => Coat::Rest,
+        WorkspaceState::Empty => Coat::Empty,
+    }
+}
+
+fn header_cells(style: &Style, h: &Header, r: &Readings) -> Cells {
+    let shown = shown_workspaces(style.bar.ws_count, &r.workspaces);
+    let workspace_ids = shown.iter().map(|ws| ws.id).collect();
+    let workspaces = shown
         .iter()
         .map(|ws| {
             Cell::text(
                 h,
                 h.workspace_badge,
                 format!("{}{}", h.workspace_prefix, ws.id),
-                if ws.active { Coat::On } else { Coat::Rest },
+                workspace_coat(ws.state()),
             )
         })
         .collect();
@@ -2740,7 +2879,32 @@ fn header_cells(h: &Header, r: &Readings) -> Cells {
             Cell::text(h, "VOL", volume, Coat::Rest)
         });
     }
-    Cells { workspaces, tray, system }
+    Cells { workspaces, workspace_ids, tray, system }
+}
+
+/// Where each workspace badge falls, as `(x, width)` from the bar's left
+/// edge. Shared by the drawing, the hit areas and the hover, so none of
+/// the three can disagree about where a badge is.
+fn workspace_spans(h: &Header, cells: &[Cell]) -> Vec<(f32, f32)> {
+    let mut x = h.margin;
+    cells
+        .iter()
+        .map(|cell| {
+            let span = (x, cell.width);
+            x += cell.width + h.gap;
+            span
+        })
+        .collect()
+}
+
+/// Which badge of `spans` (from [`workspace_spans`]) a point in the bar's
+/// dp lands on: within the badge row's height and a badge's own width,
+/// never the gap between two.
+fn badge_at(h: &Header, spans: &[(f32, f32)], p: Point) -> Option<usize> {
+    if p.y < h.row_top || p.y >= h.row_top + h.badge.height {
+        return None;
+    }
+    spans.iter().position(|&(x, w)| p.x >= x && p.x < x + w)
 }
 
 /// Where the right-hand groups fall, as distances from the bar's right
@@ -2782,6 +2946,9 @@ struct HeaderPlate {
     clock: String,
     date: String,
     host: Option<String>,
+    /// The workspace badges answer the pointer, so the one under it wears
+    /// the badge's `lit` coat (`Wear::hovered`).
+    hover: bool,
     /// A digest of everything above, so the canvas re-tessellates only
     /// when a reading changes rather than on every pointer move.
     key: u64,
@@ -2801,10 +2968,12 @@ impl std::fmt::Debug for Cells {
 struct PlateCache {
     cache: canvas::Cache,
     key: std::cell::Cell<u64>,
+    /// The workspace badge under the pointer, by index.
+    hovered: Option<usize>,
 }
 
 impl HeaderPlate {
-    fn paint(&self, frame: &mut Frame, w: f32) {
+    fn paint(&self, frame: &mut Frame, w: f32, hovered: Option<usize>) {
         let (style, h) = (&self.style, &self.h);
         // What a translucent part is printed over: the glow, or the
         // era's ground where the header declares none.
@@ -2825,12 +2994,18 @@ impl HeaderPlate {
 
         // Left: WORKSPACE over the workspace badges.
         caption(frame, h.workspace_caption, h.margin, At::Start);
-        let mut x = h.margin;
-        for cell in &self.cells.workspaces {
-            badge(frame, cell, x);
-            x += cell.width + h.gap;
+        let spans = workspace_spans(h, &self.cells.workspaces);
+        for (i, (cell, &(x, _))) in self.cells.workspaces.iter().zip(&spans).enumerate() {
+            if hovered == Some(i) {
+                let lit = Cell { wear: cell.wear.hovered(), ..cell.clone() };
+                badge(frame, &lit, x);
+            } else {
+                badge(frame, cell, x);
+            }
         }
-        let left_end = (x - h.gap)
+        let left_end = spans
+            .last()
+            .map_or(h.margin, |&(x, w)| x + w)
             .max(h.margin + parts::measure(&h.caption, h.workspace_caption));
 
         // Right: the clock on the margin, the date under it and the
@@ -2892,6 +3067,33 @@ impl HeaderPlate {
 impl<Message> canvas::Program<Message, Style> for HeaderPlate {
     type State = PlateCache;
 
+    /// Follows the pointer over the workspace badges, and asks for a
+    /// redraw only when the badge under it changes. The click itself is
+    /// the hit areas' (`header_bar`), which sit over this canvas and
+    /// make the cursor `levitate` for it -- hence `land`: the position is
+    /// still the pointer's, only the claim on it is theirs.
+    fn update(
+        &self,
+        state: &mut Self::State,
+        _event: &canvas::Event,
+        bounds: Rectangle,
+        cursor: mouse::Cursor,
+    ) -> Option<canvas::Action<Message>> {
+        if !self.hover {
+            return None;
+        }
+        let spans = workspace_spans(&self.h, &self.cells.workspaces);
+        let now = cursor
+            .land()
+            .position_in(bounds)
+            .and_then(|p| badge_at(&self.h, &spans, p));
+        if now == state.hovered {
+            return None;
+        }
+        state.hovered = now;
+        Some(canvas::Action::request_redraw())
+    }
+
     fn draw(
         &self,
         state: &Self::State,
@@ -2901,8 +3103,10 @@ impl<Message> canvas::Program<Message, Style> for HeaderPlate {
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
         use std::hash::{Hash, Hasher};
+        let hovered = state.hovered.filter(|_| self.hover);
         let mut hasher = std::collections::hash_map::DefaultHasher::new();
         self.key.hash(&mut hasher);
+        hovered.hash(&mut hasher);
         bounds.width.to_bits().hash(&mut hasher);
         bounds.height.to_bits().hash(&mut hasher);
         let key = hasher.finish();
@@ -2910,7 +3114,7 @@ impl<Message> canvas::Program<Message, Style> for HeaderPlate {
             state.cache.clear();
             state.key.set(key);
         }
-        vec![state.cache.draw(renderer, bounds.size(), |frame| self.paint(frame, bounds.width))]
+        vec![state.cache.draw(renderer, bounds.size(), |frame| self.paint(frame, bounds.width, hovered))]
     }
 }
 
@@ -2966,10 +3170,11 @@ fn header_bar<'a, Message: Clone + 'static>(
     h: &Header,
     r: &'a Readings,
     on_tray: Option<OnTray<Message>>,
+    on_workspace: Option<OnWorkspace<Message>>,
 ) -> Element<'a, Message> {
     use std::hash::{Hash, Hasher};
 
-    let cells = header_cells(h, r);
+    let cells = header_cells(style, h, r);
     let title = if r.window.is_empty() { h.no_window.to_string() } else { r.window.clone() };
     let host = (style.bar.host_tape && !r.host.is_empty()).then(|| r.host.clone());
 
@@ -2991,6 +3196,8 @@ fn header_bar<'a, Message: Clone + 'static>(
 
     let (tray_offsets, _) = right_offsets(h, &cells, &r.clock, &r.date);
     let tray_widths: Vec<f32> = cells.tray.iter().map(|cell| cell.width).collect();
+    let workspace_spans = workspace_spans(h, &cells.workspaces);
+    let workspace_ids = cells.workspace_ids.clone();
 
     let plate = HeaderPlate {
         style: *style,
@@ -3000,6 +3207,7 @@ fn header_bar<'a, Message: Clone + 'static>(
         clock: r.clock.clone(),
         date: r.date.clone(),
         host,
+        hover: on_workspace.is_some(),
         key: hasher.finish(),
     };
 
@@ -3008,6 +3216,30 @@ fn header_bar<'a, Message: Clone + 'static>(
         layers = layers.push(canvas(Glow { style: *style, glow }).width(Length::Fill).height(Length::Fill));
     }
     layers = layers.push(canvas(plate).width(Length::Fill).height(Length::Fill));
+
+    // A badge's hit area: an empty box the badge's size, laid over where
+    // the canvas drew it, inside a `mouse_area` that takes its events.
+    let hit = |width: f32| Space::new().width(Length::Fixed(width)).height(Length::Fixed(h.badge.height));
+
+    // The workspace badges' hit areas: a row from the left edge at the
+    // spans the canvas drew them at, each switching to its workspace and
+    // stepping along the row on the wheel -- `workspace_area`, as the
+    // strip eras' cells get it.
+    if let Some(on_workspace) = on_workspace.filter(|_| !workspace_spans.is_empty()) {
+        let mut hits = row![];
+        let mut x = 0.0;
+        for (&(left, width), &id) in workspace_spans.iter().zip(&workspace_ids) {
+            hits = hits.push(Space::new().width(Length::Fixed(left - x)).height(Length::Shrink));
+            hits = hits.push(workspace_area(hit(width).into(), id, on_workspace));
+            x = left + width;
+        }
+        layers = layers.push(
+            container(hits)
+                .padding(Padding::ZERO.top(h.row_top))
+                .width(Length::Fill)
+                .height(Length::Fill),
+        );
+    }
 
     // The tray cells' hit areas, over the badges the canvas drew: a row
     // pinned to the right edge at the same offsets.
@@ -3019,16 +3251,12 @@ fn header_bar<'a, Message: Clone + 'static>(
                 hits = hits.push(Space::new().width(Length::Fixed(gap.max(0.0))).height(Length::Shrink));
             }
             hits = hits.push(
-                mouse_area(
-                    Space::new()
-                        .width(Length::Fixed(width))
-                        .height(Length::Fixed(h.badge.height)),
-                )
-                .on_press(on_tray(index, TrayAction::Activate))
-                .on_middle_press(on_tray(index, TrayAction::Secondary))
-                .on_right_press(on_tray(index, TrayAction::Context))
-                .on_scroll(move |delta| on_tray(index, TrayAction::Scroll(detents(delta))))
-                .interaction(mouse::Interaction::Pointer),
+                mouse_area(hit(width))
+                    .on_press(on_tray(index, TrayAction::Activate))
+                    .on_middle_press(on_tray(index, TrayAction::Secondary))
+                    .on_right_press(on_tray(index, TrayAction::Context))
+                    .on_scroll(move |delta| on_tray(index, TrayAction::Scroll(detents(delta))))
+                    .interaction(mouse::Interaction::Pointer),
             );
         }
         let tail = last - tray_widths[tray_widths.len() - 1];
@@ -3346,7 +3574,9 @@ mod tests {
 
     fn readings() -> Readings {
         Readings {
-            workspaces: (1..=3).map(|id| Workspace { id, active: id == 2 }).collect(),
+            workspaces: (1..=3)
+                .map(|id| Workspace { id, active: id == 2, occupied: true, ..Workspace::default() })
+                .collect(),
             cpu: 12,
             memory: 47,
             temperature: None,
@@ -3361,9 +3591,11 @@ mod tests {
     #[test]
     fn the_header_badges_follow_the_readings() {
         let h = style().bar.header.expect("neomil header");
-        let cells = header_cells(&h, &readings());
+        let cells = header_cells(&style(), &h, &readings());
         let wears: Vec<_> = cells.workspaces.iter().map(|c| c.wear).collect();
-        assert_eq!(wears, [Coat::Rest, Coat::On, Coat::Rest]);
+        // Neomil shows ten: the three listed, then seven absent, empty.
+        assert_eq!(wears[..3], [Coat::Rest, Coat::On, Coat::Rest]);
+        assert_eq!(wears[3..], [Coat::Empty; 7]);
         assert!(matches!(&cells.workspaces[1].value, Value::Text(t) if t == "T2"));
         // No network reading and no sensor: no badge, not a blank one.
         // The muted sink is the one alarm.
@@ -3382,12 +3614,149 @@ mod tests {
         let h = style().bar.header.expect("neomil header");
         let mut r = readings();
         r.tray = vec![TrayItem { label: "SYNC".into(), icon: None, attention: false }];
-        let cells = header_cells(&h, &r);
+        let cells = header_cells(&style(), &h, &r);
         let (tray, system) = right_offsets(&h, &cells, &r.clock, &r.date);
         let last = cells.system.last().unwrap();
         assert_eq!(system.last().copied(), Some(h.margin + h.clock_block + h.gap + last.width));
         let run: f32 = cells.system.iter().map(|c| c.width + h.gap).sum::<f32>() - h.gap;
         assert!((system[0] - (h.margin + h.clock_block + h.gap + run)).abs() < 1e-3);
         assert!((tray[0] - (system[0] + h.group_gap + cells.tray[0].width)).abs() < 1e-3);
+    }
+
+    fn ws(id: i32, active: bool, occupied: bool, urgent: bool) -> Workspace {
+        Workspace { id, active, occupied, urgent }
+    }
+
+    #[test]
+    fn a_workspace_state_ranks_active_over_urgent_over_occupied() {
+        assert_eq!(ws(1, true, true, true).state(), WorkspaceState::Active);
+        assert_eq!(ws(1, true, false, false).state(), WorkspaceState::Active);
+        assert_eq!(ws(1, false, true, true).state(), WorkspaceState::Urgent);
+        assert_eq!(ws(1, false, false, true).state(), WorkspaceState::Urgent);
+        assert_eq!(ws(1, false, true, false).state(), WorkspaceState::Occupied);
+        assert_eq!(ws(1, false, false, false).state(), WorkspaceState::Empty);
+    }
+
+    #[test]
+    fn no_count_shows_exactly_what_is_listed() {
+        let listed = vec![ws(3, true, true, false), ws(-98, false, true, false), ws(12, false, true, false)];
+        assert_eq!(shown_workspaces(0, &listed), listed);
+    }
+
+    #[test]
+    fn a_count_fills_in_the_absent_ones_and_keeps_the_rest_after() {
+        let listed = vec![
+            ws(12, false, true, false),
+            ws(3, true, true, false),
+            ws(-98, false, true, false),
+            ws(5, false, true, true),
+            ws(11, false, true, false),
+        ];
+        let shown = shown_workspaces(10, &listed);
+        let ids: Vec<i32> = shown.iter().map(|w| w.id).collect();
+        assert_eq!(ids, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+        let states: Vec<_> = shown.iter().map(Workspace::state).collect();
+        use WorkspaceState::*;
+        assert_eq!(
+            states,
+            [Empty, Empty, Active, Empty, Urgent, Empty, Empty, Empty, Empty, Empty, Occupied, Occupied]
+        );
+    }
+
+    #[test]
+    fn a_click_switches_unless_it_is_where_we_are() {
+        let shown = shown_workspaces(10, &[ws(3, true, true, false)]);
+        assert_eq!(workspace_target(&shown, WorkspaceAction::Switch(10)), Some(10));
+        assert_eq!(workspace_target(&shown, WorkspaceAction::Switch(1)), Some(1));
+        assert_eq!(workspace_target(&shown, WorkspaceAction::Switch(3)), None);
+    }
+
+    #[test]
+    fn the_wheel_steps_along_the_row_and_stops_at_its_ends() {
+        let shown = shown_workspaces(10, &[ws(3, true, true, false)]);
+        assert_eq!(workspace_target(&shown, WorkspaceAction::Step(1)), Some(4));
+        assert_eq!(workspace_target(&shown, WorkspaceAction::Step(-2)), Some(1));
+        assert_eq!(workspace_target(&shown, WorkspaceAction::Step(-9)), Some(1));
+        assert_eq!(workspace_target(&shown, WorkspaceAction::Step(40)), Some(10));
+        assert_eq!(workspace_target(&shown, WorkspaceAction::Step(0)), None);
+        // Already at an end, and with nothing active, a step goes nowhere.
+        let first = shown_workspaces(10, &[ws(1, true, true, false)]);
+        assert_eq!(workspace_target(&first, WorkspaceAction::Step(-1)), None);
+        let none = shown_workspaces(10, &[]);
+        assert_eq!(workspace_target(&none, WorkspaceAction::Step(1)), None);
+        // Listed-only rows step between what is listed.
+        let listed = [ws(2, false, true, false), ws(5, true, true, false), ws(9, false, true, false)];
+        assert_eq!(workspace_target(&listed, WorkspaceAction::Step(1)), Some(9));
+        assert_eq!(workspace_target(&listed, WorkspaceAction::Step(-1)), Some(2));
+    }
+
+    #[test]
+    fn each_state_wears_its_coat() {
+        use WorkspaceState::*;
+        assert_eq!(workspace_coat(Active), Coat::On);
+        assert_eq!(workspace_coat(Urgent), Coat::Alert);
+        assert_eq!(workspace_coat(Occupied), Coat::Rest);
+        assert_eq!(workspace_coat(Empty), Coat::Empty);
+        // Hover lights a resting or empty badge; the selected one and an
+        // alarm keep their own.
+        assert_eq!(Coat::Rest.hovered(), Coat::Lit);
+        assert_eq!(Coat::Empty.hovered(), Coat::Lit);
+        assert_eq!(Coat::On.hovered(), Coat::On);
+        assert_eq!(Coat::Alert.hovered(), Coat::Alert);
+        // Neomil's empty and lit coats are the named treatments.
+        let b = style().bar.header.expect("neomil header").badge;
+        assert_eq!((b.empty.face, b.empty.edge, b.empty.ink), (crate::eras::neomil::GHOST_PLATE.face, Ink::Border, Ink::Dim));
+        let lit = crate::eras::neomil::LIT_PLATE;
+        assert_eq!((b.lit.face, b.lit.edge, b.lit.ink), (lit.face, lit.edge, lit.ink));
+        // The strip eras: selection, alert, idle, and idle again for an
+        // empty cell where the era names no `ws_empty`.
+        for era in [Era::Entropism, Era::Kitsch, Era::Neokitsch] {
+            let bar = crate::eras::style(era).bar;
+            assert_eq!(workspace_dress(&bar, Active), (Wear::Selected, bar.selected));
+            assert_eq!(workspace_dress(&bar, Urgent), (Wear::Alert, bar.alert));
+            assert_eq!(workspace_dress(&bar, Occupied), (Wear::Idle, bar.idle));
+            assert_eq!(workspace_dress(&bar, Empty), (Wear::Idle, bar.idle));
+            assert_eq!(bar.ws_count, 0);
+        }
+        let mut bar = crate::eras::style(Era::Kitsch).bar;
+        bar.ws_empty = Some(bar.alert);
+        assert_eq!(workspace_dress(&bar, Empty), (Wear::Idle, bar.alert));
+    }
+
+    /// Which badge a point lands on, and so which workspace a click
+    /// there switches to: the hit areas and the hover are both laid out
+    /// from `workspace_spans`, the spans the canvas draws at.
+    #[test]
+    fn a_point_lands_on_the_badge_drawn_there() {
+        crate::fonts::ensure_test_fonts();
+        let s = style();
+        let h = s.bar.header.expect("neomil header");
+        assert_eq!(s.bar.ws_count, 10);
+        let cells = header_cells(&s, &h, &readings());
+        let spans = workspace_spans(&h, &cells.workspaces);
+        assert_eq!(spans.len(), 10);
+        assert_eq!(cells.workspace_ids, (1..=10).collect::<Vec<_>>());
+        // The design's pitch: 36 wide, 3 apart, from the margin.
+        assert_eq!(spans[0], (h.margin, 36.0));
+        assert_eq!(spans[1].0, h.margin + 39.0);
+        let id_at = |x: f32, y: f32| badge_at(&h, &spans, Point::new(x, y)).map(|i| cells.workspace_ids[i]);
+        let mid = h.row_top + h.badge.height / 2.0;
+        assert_eq!(id_at(h.margin, mid), Some(1));
+        assert_eq!(id_at(h.margin + 35.9, mid), Some(1));
+        // The gap between two badges is nobody's.
+        assert_eq!(id_at(h.margin + 37.0, mid), None);
+        assert_eq!(id_at(h.margin + 39.0, h.row_top), Some(2));
+        let (x10, w10) = spans[9];
+        assert_eq!(id_at(x10 + w10 / 2.0, mid), Some(10));
+        assert_eq!(id_at(x10 + w10 + 0.1, mid), None);
+        // Above and below the row, and left of the margin: no badge.
+        assert_eq!(id_at(h.margin + 5.0, h.row_top - 0.1), None);
+        assert_eq!(id_at(h.margin + 5.0, h.row_top + h.badge.height), None);
+        assert_eq!(id_at(h.margin - 0.1, mid), None);
+        // Each span is the badge's own measured width, laid end to end.
+        for (cell, (pair, next)) in cells.workspaces.iter().zip(spans.iter().zip(spans.iter().skip(1))) {
+            assert_eq!(pair.1, cell.width);
+            assert!((next.0 - (pair.0 + pair.1 + h.gap)).abs() < 1e-4);
+        }
     }
 }
