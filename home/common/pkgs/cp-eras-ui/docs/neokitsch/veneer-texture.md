@@ -15,6 +15,82 @@ The reference art is third-party and never redistributed, so the texture is
 parameters below, reads no image, and writes `veneer/*.png`. The references
 were used only to measure (numbers below) and to compare by eye.
 
+## Third pass (2026-11-15): the noise-field figure with the measured line
+
+The owner chose to combine the two generators: the noise field's
+*figure* (where the grain flows, the streak positions) drawn with the
+blend generator's measured *line, ground and grain*
+([veneer-construction.md](veneer-construction.md)). `scripts/make-veneer.py`
+now does that; `make-veneer-blend.py` is unchanged and still imports it
+for `SURFACES` (size, seed), `R` and `png_indexed`. The six PNGs in
+`veneer/` were regenerated (same names, sizes, 8-bit indexed format, so
+`src/veneer.rs` is unchanged; 1.13 MB on disk, was 714 KB: the grain
+compresses worse).
+
+The pipeline, per surface (everything numpy, no image read):
+
+1. **Field.** As before, families of `phi(s, t) = s + D(s, t)` in design px
+   with windows along `t` and an optional `mirror` (book-match). The axes
+   are now the measured ones: store card t 121.46 (texel 291.5), panel
+   154.4 (370.5), EMAIL 150.8 (362), mailbox 238.1 (571.5), SMG 99.6
+   (239); the BASKET's two leaves are no longer mirrored. The spacing
+   noise `B` is off (`SPACING['amp'] = 0`); the per-line weights and the
+   tone terms (blotch, edge shade, palette ramp) are gone. New term
+   `lean`: past `ts` (a number, or `(at s=0, at s=S)`) the lines run at
+   slope `amount` (ds/dt) after a softplus knee `w` wide, steepening by
+   `accel` (power `accel_power` across the grain). It drives the store
+   streak and the EMAIL hook, and it does not fold back like a symmetric
+   `bend` does.
+2. **Lines.** Levels `phi = (k + offset) * pitch`. `pitch` is the measured
+   per-comb spacing in native px / `R`: store card 11.6 (two combs give
+   the measured 5.8 gaps), panel 10.2, EMAIL 8.9, SMG 4.9, mailbox 5.7,
+   BASKET 4.4 (one comb). `twin = dict(offset, shift)`: the second comb at
+   `offset` of a pitch (the measured gap ratio: panel 0.42, EMAIL 0.62,
+   SMG 0.61, mailbox 0.74, store card 0.5), its figure terms moved `shift`
+   design px along the grain so the combs knee on alternate rows (store
+   card -2, panel -1.5, EMAIL -1). Each level is traced as a contour from
+   where it crosses its family's box (`PERIM`, `STEP`); a contour is kept
+   once.
+3. **Straight runs.** `QUANT`: direction held in 30-degree bins (3 degrees
+   of hysteresis), a vertex where the bin changes, chords between,
+   Douglas-Peucker at `tol` 0.5 design px, every corner filleted at
+   `radius` 9.5 texels. A gentle lean stays one straight run; a turn
+   becomes 30-degree knees whose rows across neighbouring lines are the
+   folds.
+4. **Render.** 1-texel box strokes over the flat `look['ground']`,
+   compounding towards `CORE` (150, 61, 30) with per-channel opacity from
+   `look['single']`; per-channel `[1, 3, 1]` grain `look['grain']`;
+   256-colour k-means palette. `ink` on a family scales its opacity.
+
+Authoring a surface: measure `look`, `pitch` and the twin ratio
+(veneer-construction.md), place the axis, then build the figure from
+terms and judge it at native 4K against the reference. Avoid profiles
+with a corner on a seam the lines cross (`bend` with `c` or `p <= 1`
+inside the box): their contours hairpin there; the tracer steps through,
+but the line comes out doubled. A `fold`'s `c` knee is fine (one-sided).
+
+Numbers (4K, reference / committed second pass / now):
+
+- Pitch, mean gap of G minima: store card 5.76 / 4.88 / 5.88; panel
+  5.14-5.22 / 4.85-4.99 / 5.10-5.19; EMAIL 4.10-4.17 / 4.57-4.68 /
+  4.20-4.38; SMG 2.88-3.27 / 4.55-4.60 / 2.63-2.94; mailbox 3.25-4.70 /
+  3.94-4.40 / 3.67-4.64; BASKET 4.0 / 4.3-4.4 / 4.3-5.0.
+- Store streak, pixels per column with G < 80 (G < 140), rows 240-345, at
+  x 200 / 300 / 400 / 500 / 540 / 600 / 620: reference 3(10) 0(13) 0(25)
+  7(22) 9(19) 4(25) 3(30) (x 200 is text); committed 0(4) 0(6) 0(15)
+  6(24) 7(32) 11(38) 12(43); now 0(12) 0(13) 0(18) 3(22) 6(23) 7(25)
+  7(25).
+- Brightest 20% mean RGB, store card: 254,211,133 / 255,210,135 /
+  255,211,131.
+
+Still wrong: the store core does not thin at the right edge (7 px at x
+600-620 against 3-4) and starts later (x 500: 3 against 7); its upper
+streak (t 42) is weaker than the reference's sweep; the panel fold is
+smaller and lower than the reference's and its bottom-left lean less
+extensive; the EMAIL crossing is narrower and its right-edge core lighter;
+the mailbox and SMG seams are thinner creases than the reference's hooks;
+overall the reference reads a little darker (more lines in the figure).
+
 ## Surfaces
 
 | Texture | Surface | Design box | Texels |
@@ -116,7 +192,7 @@ pass's scratch, numbers only kept here.
   110-220); an EMAIL strip drifts under 1 px over 100. The store card's top
   40 px has a cathedral zigzag of about 30-40 px along the line, +-2-3 px.
 
-## The generator
+## The generator (first and second passes; superseded by the third pass above)
 
 `scripts/make-veneer.py`, numpy only. A texture is the iso-lines of scalar
 fields `phi(s, t) = s + D(s, t)` (`s` across the grain, `t` along). A surface
