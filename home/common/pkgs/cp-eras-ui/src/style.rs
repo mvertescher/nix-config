@@ -1819,6 +1819,13 @@ pub struct Legend {
     /// Set in Krona One Regular (Kitsch's badge-note face) instead;
     /// wins over `wide`, and `weight` is ignored.
     pub krona: bool,
+    /// Extra stem weight, in design pixels: the run is drawn as glyph
+    /// outlines and each outline is also stroked this wide in its own
+    /// ink, so every edge moves out by half of it. For a face whose
+    /// static weights straddle the measured one (Kitsch's GUEST 7702
+    /// sits between Rajdhani SemiBold and Bold). Zero leaves the run on
+    /// its usual route, pixel for pixel.
+    pub embolden: f32,
 }
 
 impl Legend {
@@ -1838,7 +1845,13 @@ impl Legend {
             wide: false,
             word_space: 0.0,
             krona: false,
+            embolden: 0.0,
         }
+    }
+
+    pub const fn emboldened(mut self, embolden: f32) -> Legend {
+        self.embolden = embolden;
+        self
     }
 
     pub const fn wide(mut self) -> Legend {
@@ -2455,6 +2468,19 @@ pub enum Piece {
         close: bool,
     },
     Label(Note),
+    /// A horizontal rule whose ink fades along its length: the line
+    /// from `x0` to `x1` at `y`, `width` tall, its ink's alpha read off
+    /// `stops` -- `(x, alpha)` in design pixels, in order, held flat
+    /// before the first and after the last. Kitsch's bracket lines fade
+    /// out to the right this way (an SVG gradient stroke in the traces).
+    Fade {
+        x0: f32,
+        x1: f32,
+        y: f32,
+        width: f32,
+        ink: Ink,
+        stops: &'static [(f32, f32)],
+    },
     /// Monochrome letter contours in design pixels relative to `note.at`.
     /// The anchor follows both window axes; contours scale uniformly like
     /// text. The note supplies content, ink and an empty-art text fallback.

@@ -1118,6 +1118,62 @@ fn curve_at(
     }
 }
 
+/// A [`Piece::Fade`]: the rule as strips about a device pixel wide,
+/// each in the ink at the alpha its stop table gives its centre (read
+/// linearly between stops), composited as an sRGB mix over the ground.
+#[allow(clippy::too_many_arguments)]
+fn fade_at(
+    frame: &mut canvas::Frame,
+    scale: Scale,
+    s: Paint,
+    x0: f32,
+    x1: f32,
+    y: f32,
+    width: f32,
+    role: Ink,
+    stops: &[(f32, f32)],
+) {
+    if x1 <= x0 || stops.is_empty() {
+        return;
+    }
+    let c = s.ink_override.unwrap_or(role).of(&s.style.palette);
+    let n = ((x1 - x0) * scale.sx).ceil().max(1.0) as usize;
+    let h = scale.len(width);
+    let top = y * scale.sy - h / 2.0;
+    for i in 0..n {
+        let a = x0 + (x1 - x0) * i as f32 / n as f32;
+        let b = x0 + (x1 - x0) * (i + 1) as f32 / n as f32;
+        let alpha = fade_alpha(stops, (a + b) / 2.0) * c.a * s.alpha;
+        if alpha <= 0.0 {
+            continue;
+        }
+        // The canvas blends in linear light; the trace's gradient fades
+        // in sRGB. Over the era's ground, `blend_over` picks the alpha
+        // that lands the sRGB mix.
+        frame.fill_rectangle(
+            Point::new(a * scale.sx, top),
+            Size::new((b - a) * scale.sx, h),
+            blend_over(Color { a: alpha, ..c }, s.style.palette.bg),
+        );
+    }
+}
+
+/// The alpha a [`Piece::Fade`] stop table gives design x `x`.
+fn fade_alpha(stops: &[(f32, f32)], x: f32) -> f32 {
+    let first = stops[0];
+    if x <= first.0 {
+        return first.1;
+    }
+    for pair in stops.windows(2) {
+        let ((xa, aa), (xb, ab)) = (pair[0], pair[1]);
+        if x <= xb {
+            let t = if xb > xa { (x - xa) / (xb - xa) } else { 1.0 };
+            return aa + (ab - aa) * t;
+        }
+    }
+    stops[stops.len() - 1].1
+}
+
 /// A [`Piece::Curve`]'s path, in canvas pixels.
 fn curve_path(scale: Scale, start: (f32, f32), steps: &[Seg], close: bool) -> canvas::Path {
     canvas::Path::new(|b| {
@@ -2168,6 +2224,9 @@ fn pieces(frame: &mut canvas::Frame, scale: Scale, s: Paint, artwork: &[Piece]) 
                 stroke.map(|r| (ink(s, r), *width)),
             ),
             Piece::Label(note) => label(frame, scale, s, note.at, ink(s, note.at.ink), note.text),
+            Piece::Fade { x0, x1, y, width, ink: role, stops } => {
+                fade_at(frame, scale, s, *x0, *x1, *y, *width, *role, stops)
+            }
             Piece::LabelArt { note, pieces: art } => {
                 if art.is_empty() {
                     label(frame, scale, s, note.at, ink(s, note.at.ink), note.text);

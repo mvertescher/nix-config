@@ -35,3 +35,19 @@ broader vignette is separate from the card cutoff. This correction does
 not paint a dark rectangle over the ground or footer to imitate it.
 Likewise, the source supports only the default selected-card-2 shelf;
 the fade on card-4 selection and feedback is an inferred continuation.
+
+## 2026-11-15: clean cut
+
+The review of 2026-11-13 read the five stepped slices as a streaky
+artefact: each repeated the whole card, so the M of MAGNUM, the band's
+glyphs and the stats stayed legible through x1550 in visible steps. The
+source's residue carries no such detail -- per design px past the cut,
+on native #52, the band reads 0.62 at x1525, 0.27..0.31 to x1529, 0.13
+to x1535 and ground by x1545, and it is a halo, not the card. An
+edge-column smear (each slice showing the last opaque column shifted
+out) was tried and combed the title's stems into stripes. The card is
+now cut clean: opaque through x1524 (local 81, `CARD_4_CUT`) and one
+antialiasing column at 0.62 (`CARD_4_SMEAR`). The halo past x1525 is not
+drawn. The card itself sits 1.2 px left of the source (left outline
+x1443.0 against 1444.2), so the cut catches a sliver of the M's first
+stem that the photo's cut does not.

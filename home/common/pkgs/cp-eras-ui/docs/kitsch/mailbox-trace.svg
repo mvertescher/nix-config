@@ -36,7 +36,11 @@
          - THE LIST BRACKET: a ~1.2px teal outline (FWHM 0.8 / eqw 1.5
            across the top and left edges; drawn 1.25 on .5 coordinates
            like the panel outline), top edge y 268.5 from
-           x 138 fading out by x~402, top-left corner r~20, left edge
+           x 138 fading out by x~402, top-left corner r~20 (2026-11-15:
+           re-measured as line centres: top y 268.4 fading x 330..430, a
+           circular corner r 36.2, left x 120.6, a circular turn r 49.5 at
+           y 594 into the wave's top y 643.9, no line on the outer branch,
+           bottom y 748.5 fading x 380..480; see kitsch.rs LIST_*), left edge
            x 120.5 from y 288 down. At y~600 the left edge FORKS: one
            branch rounds right into a horizontal at y 644 (to x 282)
            and then a ~37-degree diagonal down-right to (374,748); the
@@ -149,6 +153,17 @@
       <stop offset="0.7" stop-color="#15281e" stop-opacity="0.45"/>
       <stop offset="1" stop-color="#26884f" stop-opacity="0"/>
     </radialGradient>
+    <!-- the list bracket's two fades, peak over ground measured 2026-11-15 -->
+    <linearGradient id="fadeTop" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#5fd6c2" stop-opacity="1"/><stop offset="0.3" stop-color="#5fd6c2" stop-opacity="0.86"/>
+      <stop offset="0.6" stop-color="#5fd6c2" stop-opacity="0.44"/><stop offset="0.84" stop-color="#5fd6c2" stop-opacity="0.11"/>
+      <stop offset="1" stop-color="#5fd6c2" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="fadeFoot" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#5fd6c2" stop-opacity="1"/><stop offset="0.4" stop-color="#5fd6c2" stop-opacity="0.83"/>
+      <stop offset="0.6" stop-color="#5fd6c2" stop-opacity="0.63"/><stop offset="0.8" stop-color="#5fd6c2" stop-opacity="0.36"/>
+      <stop offset="1" stop-color="#5fd6c2" stop-opacity="0"/>
+    </linearGradient>
     <!-- the bracket's top and bottom lines fade out to the right -->
     <linearGradient id="fadeR" x1="0" x2="1" y1="0" y2="0">
       <stop offset="0"   stop-color="#5fd6c2" stop-opacity="1"/>
@@ -262,12 +277,15 @@
 
   <!-- ==== the list bracket and its wave ==== -->
   <!-- the wave: solid teal between the two branches of the left edge -->
-  <path d="M 120.5,606 Q 120.5,644 158,644 H 278 Q 289,644 296,653 L 362,741 Q 367,748 376,748 H 180 Q 120.5,748 120.5,690 Z"
+  <path d="M 120.6,594.4 C 120.6,621.74 142.76,643.9 170.1,643.9 H 273.3 Q 284.3,643.9 290.9,652.7 L 358,742.1 Q 362.8,748.5 370.8,748.5 V 749.2 H 187.9 C 150.62,749.2 120.4,718.98 120.4,681.7 V 594.4 Z"
         fill="#1db5a4"/>
   <!-- outline: top edge (fading right), corner, left edge, the two branches -->
-  <path d="M 402,268.5 H 140 Q 120.5,268.5 120.5,288 V 606 Q 120.5,644 158,644 H 278 Q 289,644 296,653 L 362,741 Q 367,748.5 376,748.5 H 451"
-        fill="none" stroke="url(#fadeR)" stroke-width="1.25"/>
-  <path d="M 120.5,606 V 690 Q 120.5,748.5 180,748.5" fill="none" stroke="#5fd6c2" stroke-width="1.25"/>
+  <!-- 2026-11-15, measured on native #51: circular corner r 36.2, circular turn r 49.5
+       into the wave, fillets r 22 / 16; below the fork no line (the wave's edge is the
+       outer branch); both runs fade out to the right by the measured profiles -->
+  <path d="M 330,268.4 H 156.8 C 136.81,268.4 120.6,284.61 120.6,304.6 V 594.4 C 120.6,621.74 142.76,643.9 170.1,643.9 H 273.3 Q 284.3,643.9 290.9,652.7 L 358,742.1 Q 362.8,748.5 370.8,748.5 H 380" fill="none" stroke="#5fd6c2" stroke-width="1.25"/>
+  <path d="M 330,268.4 H 430" fill="none" stroke="url(#fadeTop)" stroke-width="1.25"/>
+  <path d="M 380,748.5 H 480" fill="none" stroke="url(#fadeFoot)" stroke-width="1.25"/>
 
   <!-- selected row: icon cell + body, solid yellow, split by a 2px gap at x 196 -->
   <g fill="#e8c21f">
