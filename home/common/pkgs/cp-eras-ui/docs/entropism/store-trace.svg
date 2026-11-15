@@ -459,9 +459,12 @@
     <text x="126" y="787" font-size="8.5" fill="#70926d">SPARE TIME MANAGER WAS DEVELOPED BY</text>
     <text x="126" y="796" font-size="8.5" fill="#70926d">SEOCHO. SERVING CUSTOMERS SINCE 2006.</text>
     <rect x="294" y="779" width="26" height="26" fill="none" stroke="#88b088" stroke-width="1.5"/>
-    <text x="300" y="799" font-size="19" fill="#88b088">A</text>
+    <!-- 2026-11-14: the era's boxed letters (as the mailbox and hub sheets
+         set them, 500 at 22 stretched 1.65), centred on the photo's ink:
+         A x 719..759, B 1129..1164 native, bottoms at 1918. -->
+    <text transform="translate(307.9,799) scale(1.65,1)" font-size="22" font-weight="500" text-anchor="middle" fill="#88b088">A</text>
     <rect x="464" y="779" width="26" height="26" fill="none" stroke="#88b088" stroke-width="1.5"/>
-    <text x="470" y="799" font-size="19" fill="#88b088">B</text>
+    <text transform="translate(477.7,799) scale(1.65,1)" font-size="22" font-weight="500" text-anchor="middle" fill="#88b088">B</text>
   </g>
 
   </g>

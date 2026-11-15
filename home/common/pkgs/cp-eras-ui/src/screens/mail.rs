@@ -726,11 +726,18 @@ mod interaction_tests {
                 assert_eq!(list.row_type_at(row, true), list.row_type_at(row, false));
             }
         }
-        // Neomil sets only the selected row's printing medium, at the
-        // resting anchors (mailbox-trace.svg, the row-1 note).
+        // Neomil sets the selected row's printing medium (mailbox-trace.svg,
+        // the row-1 note) and a resting row's sender medium over a regular
+        // subject (2026-11-14 stem measurement), all at the resting anchors.
         let list = crate::style::Era::Neomil.style().mailbox.list;
         for row in 0..list.rows.len() {
-            assert!(list.row_type_at(row, false).is_none());
+            let idle = list.row_type_at(row, false).unwrap();
+            assert!(!idle.title.medium && !idle.title.semibold && !idle.title.bold);
+            assert!(idle.from.medium && !idle.from.semibold && !idle.from.bold && idle.from.right);
+            assert_eq!((idle.title.x, idle.title.y, idle.title.size),
+                (list.text_x, list.title_dy, list.title_size));
+            assert_eq!((idle.from.x, idle.from.y, idle.from.size),
+                (list.row.x + list.row.w - 7.0, list.title_dy, list.from_size));
             let selected = list.row_type_at(row, true).unwrap();
             assert!(selected.title.medium && selected.from.medium);
             assert_eq!((selected.title.x, selected.title.y, selected.title.size),

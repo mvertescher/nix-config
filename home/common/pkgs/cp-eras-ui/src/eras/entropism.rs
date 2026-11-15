@@ -59,6 +59,32 @@ pub const OUTLINE: iced::Color = rgb(0x8fba97);
 pub const DIM: iced::Color = rgb(0x3d4d38);
 pub const ON_SOLID: iced::Color = rgb(0x1f2a1c);
 
+/// The footer strip's strings (INTERFACE LOADED / PROVIDED BY / BUILD) on
+/// every screen: Rajdhani 500 at this size, natural tracking. Measured
+/// 2026-11-14 at 4K: the four photos set the three strings 312-314,
+/// 600-602 and 338-339 native px wide with a 26-27 px cap height, which
+/// this draws at 312 / 599 / 339 and 26. Each screen keeps its own x.
+pub const FOOTER_SIZE: f32 = 17.0;
+/// The boxed section letter (A / B / C in a 26x26 box) on the mailbox,
+/// hub and store: Rajdhani 500 at this size, stretched wide. The same
+/// letters measure the same on all three photos (A 41-43 x 34-35 native
+/// px, B and C 35-36 wide; stems 5.5-6.2), as the mailbox draws them.
+pub const BOXED_LETTER_SIZE: f32 = 22.0;
+/// Horizontal stretch of A and B; C is set narrower.
+pub const BOXED_LETTER_STRETCH: f32 = 1.65;
+pub const BOXED_C_STRETCH: f32 = 1.6;
+/// A section heading beside its boxed letter (MAIL BOX, MESSAGE,
+/// SECURITY LEVEL): Rajdhani 500 at this size and stretch. Photos: 201-205
+/// native px wide for MAIL BOX / MESSAGE, cap height 35, stems 3.8-4.0.
+pub const SECTION_SIZE: f32 = 22.5;
+pub const SECTION_STRETCH: f32 = 1.008;
+/// The login screen photographs a stop under the sheets the palette was
+/// sampled from (see the `--- login ---` note): its footer band reads
+/// #8aac8c and the NEXT button, a little darker again, #87aa89 (4K median
+/// over the plate, 2026-11-14; the published `cta` drew #a6d3a7).
+pub const LOGIN_BAND: iced::Color = rgb(0x8aac8c);
+pub const LOGIN_CTA: iced::Color = rgb(0x87aa89);
+
 pub fn palette() -> Palette {
     Palette {
         bg: BG,
@@ -435,11 +461,16 @@ pub const ACCESS: Access = Access {
         }),
         // The short caret underline under the first pair of characters.
         caret: Some(Plate::filled(Plot::new(576.5, 439.125, 19.0, 0.5), Ink::Border)),
-        action: Some(Plate::filled(Plot::new(932.0, 413.0, 105.0, 33.0), Ink::Cta)),
+        action: Some(Plate::filled(Plot::new(932.0, 413.0, 105.0, 33.0), Ink::Cta)
+            .reference_fill(LOGIN_CTA)),
+        // Natural tracking, glyphs 1.1 wide: the photo's NEXT spans the
+        // same 116 native px as the old 2-unit tracking did, but in wider
+        // letters (N E X T 26/22/26/27 px against 23/18/24/21) with
+        // ordinary gaps (2026-11-14); 1.16 lands the run at the photo's width.
         action_label: Some(
             Legend::new("NEXT", 940.0, 433.0, 22.0, Ink::OnSelect)
                 .medium()
-                .tracked(2.0),
+                .stretched(1.16),
         ),
         ..Slot::EMPTY
     }],
@@ -449,12 +480,16 @@ pub const ACCESS: Access = Access {
     // screens use.
     colophon: Colophon::Band {
         plate: Plate::filled(Plot::new(36.0, 765.0, 1529.0, 115.0), Ink::Select)
-            .reference_fill(rgb(0x8aac8c)),
+            .reference_fill(LOGIN_BAND),
+        // The era's footer type, as the hub, mail and store set it: the
+        // photo's runs are 312 / 600 / 339 native px from x 148 / 1246 /
+        // 3320, which 15 px tracked 1 drew at 305 / 594 / 340 in smaller,
+        // spaced-out letters (2026-11-14).
         labels: &[
-            Legend::new("INTERFACE LOADED", 61.0, 863.0, 15.0, Ink::OnSelect).tracked(1.0),
-            Legend::new("PROVIDED BY NEXUS NETWORK V10.8", 519.0, 863.0, 15.0, Ink::OnSelect)
-                .tracked(1.0),
-            Legend::new("BUILD 6.47.48441.R15", 1383.0, 863.0, 15.0, Ink::OnSelect).tracked(1.0),
+            Legend::new("INTERFACE LOADED", 61.0, 863.0, FOOTER_SIZE, Ink::OnSelect).medium(),
+            Legend::new("PROVIDED BY NEXUS NETWORK V10.8", 518.0, 863.0, FOOTER_SIZE, Ink::OnSelect)
+                .medium(),
+            Legend::new("BUILD 6.47.48441.R15", 1382.0, 863.0, FOOTER_SIZE, Ink::OnSelect).medium(),
         ],
     },
 };
@@ -549,11 +584,11 @@ static BODY_HEADINGS: [Piece; 12] = [
         trim: Trim::NONE,
     },
     Piece::Label(Note {
-        at: Run::new(104.3, 119.25, 22.0, Ink::Fg).medium().stretched(1.65),
+        at: Run::new(104.3, 119.25, BOXED_LETTER_SIZE, Ink::Fg).medium().stretched(BOXED_LETTER_STRETCH),
         text: "A",
     }),
     Piece::Label(Note {
-        at: Run::new(137.03, 117.92, 22.5, Ink::Fg).medium().stretched(1.008),
+        at: Run::new(137.03, 117.92, SECTION_SIZE, Ink::Fg).medium().stretched(SECTION_STRETCH),
         text: "MAIL BOX",
     }),
     Piece::Label(Note {
@@ -573,7 +608,7 @@ static BODY_HEADINGS: [Piece; 12] = [
         trim: Trim::NONE,
     },
     Piece::Label(Note {
-        at: Run::new(560.2, 119.25, 22.0, Ink::Fg).medium().stretched(1.65),
+        at: Run::new(560.2, 119.25, BOXED_LETTER_SIZE, Ink::Fg).medium().stretched(BOXED_LETTER_STRETCH),
         text: "B",
     }),
     Piece::Label(Note {
@@ -590,7 +625,7 @@ static BODY_HEADINGS: [Piece; 12] = [
         trim: Trim::NONE,
     },
     Piece::Label(Note {
-        at: Run::new(1351.6, 119.25, 22.0, Ink::Fg).medium().stretched(1.6),
+        at: Run::new(1351.6, 119.25, BOXED_LETTER_SIZE, Ink::Fg).medium().stretched(BOXED_C_STRETCH),
         text: "C",
     }),
     Piece::Label(Note {
@@ -606,15 +641,15 @@ static BODY_HEADINGS: [Piece; 12] = [
 /// The footer strip's three strings, typed on from the left.
 static FOOTER_STRINGS: [Piece; 3] = [
     Piece::Label(Note {
-        at: Run::new(61.0, 865.0, 17.0, Ink::Fg).medium(),
+        at: Run::new(61.0, 865.0, FOOTER_SIZE, Ink::Fg).medium(),
         text: "INTERFACE LOADED",
     }),
     Piece::Label(Note {
-        at: Run::new(518.0, 865.0, 17.0, Ink::Fg).medium(),
+        at: Run::new(518.0, 865.0, FOOTER_SIZE, Ink::Fg).medium(),
         text: "PROVIDED BY NEXUS NETWORK V10.8",
     }),
     Piece::Label(Note {
-        at: Run::new(1382.0, 865.0, 17.0, Ink::Fg).medium(),
+        at: Run::new(1382.0, 865.0, FOOTER_SIZE, Ink::Fg).medium(),
         text: "BUILD 6.47.48441.R15",
     }),
 ];
@@ -722,151 +757,167 @@ const MAILBOX_BADGE_LABELS: &[Run] = &[
 ];
 
 // Source T silhouettes and all four digits; see docs/entropism/mailbox-badges.md.
+// The badge glyphs, shared by the mailbox badges and the hub's SECURITY
+// LEVEL column: source-traced T silhouettes and digits
+// (docs/entropism/mailbox-badges.md), relative to the label anchor (its
+// centre x, baseline). The hub photo draws the same four glyphs
+// (per-glyph ink widths equal to the native pixel), so it sets these
+// rather than a stretched Rajdhani run.
+pub const BADGE_T1_T: [(f32, f32); 8] = [
+    (-14.500000, -16.333000),
+    (3.417000, -16.333000),
+    (3.417000, -13.833000),
+    (-4.083000, -13.833000),
+    (-4.083000, 0.333000),
+    (-7.000000, 0.333000),
+    (-7.000000, -13.833000),
+    (-14.500000, -13.833000),
+];
+pub const BADGE_T1_1: [(f32, f32); 9] = [
+    (10.500000, -17.167000),
+    (12.167000, -17.167000),
+    (12.167000, 0.333000),
+    (9.667000, 0.333000),
+    (9.667000, -12.583000),
+    (5.917000, -12.583000),
+    (5.917000, -14.667000),
+    (8.417000, -15.083000),
+    (9.250000, -15.917000),
+];
+pub const BADGE_T3_T: [(f32, f32); 8] = [
+    (-18.583333, -17.583000),
+    (-0.666333, -17.583000),
+    (-0.666333, -15.083000),
+    (-8.166333, -15.083000),
+    (-8.166333, -0.917000),
+    (-11.083333, -0.917000),
+    (-11.083333, -15.083000),
+    (-18.583333, -15.083000),
+];
+pub const BADGE_T3_3: [(f32, f32); 32] = [
+    (7.250000, -18.000000),
+    (13.083333, -17.583333),
+    (14.750000, -16.750000),
+    (16.833333, -14.250000),
+    (16.416667, -11.333333),
+    (15.166667, -10.083333),
+    (13.500000, -9.666667),
+    (13.500000, -8.833333),
+    (15.166667, -8.416667),
+    (16.416667, -7.166667),
+    (16.833333, -4.250000),
+    (14.333333, -1.333333),
+    (12.666667, -0.500000),
+    (8.083333, -0.083333),
+    (1.416667, -2.166667),
+    (2.250000, -4.666667),
+    (7.666667, -3.000000),
+    (11.833333, -3.416667),
+    (13.500000, -4.666667),
+    (13.500000, -6.333333),
+    (12.666667, -7.166667),
+    (10.583333, -8.000000),
+    (6.833333, -8.000000),
+    (6.833333, -10.500000),
+    (11.833333, -10.500000),
+    (13.083333, -11.333333),
+    (13.500000, -13.833333),
+    (12.666667, -14.666667),
+    (6.833333, -15.083333),
+    (3.083333, -13.833333),
+    (2.250000, -15.083333),
+    (2.250000, -16.333333),
+];
+pub const BADGE_T2_T: [(f32, f32); 8] = [
+    (-18.250000, -16.208000),
+    (-0.333000, -16.208000),
+    (-0.333000, -13.708000),
+    (-8.250000, -13.708000),
+    (-8.250000, 0.458000),
+    (-11.583000, 0.458000),
+    (-11.583000, -13.708000),
+    (-18.250000, -13.708000),
+];
+pub const BADGE_T2_2: [(f32, f32); 27] = [
+    (6.750000, -16.416667),
+    (12.166667, -16.416667),
+    (13.000000, -15.583333),
+    (14.250000, -15.583333),
+    (16.333333, -13.083333),
+    (16.333333, -10.166667),
+    (14.666667, -8.500000),
+    (11.333333, -6.833333),
+    (5.916667, -5.166667),
+    (4.666667, -3.916667),
+    (4.250000, -2.458333),
+    (16.750000, -2.458333),
+    (16.750000, 0.187500),
+    (1.750000, 0.187500),
+    (1.750000, -3.083333),
+    (3.416667, -6.000000),
+    (6.750000, -8.083333),
+    (11.750000, -9.333333),
+    (13.416667, -10.583333),
+    (13.416667, -12.666667),
+    (12.166667, -13.916667),
+    (10.500000, -14.333333),
+    (7.583333, -14.333333),
+    (2.583333, -12.666667),
+    (2.583333, -13.500000),
+    (1.750000, -13.916667),
+    (2.166667, -14.750000),
+];
+pub const BADGE_T4_T: [(f32, f32); 8] = [
+    (-18.500000, -17.249667),
+    (-0.583000, -17.249667),
+    (-0.583000, -14.749667),
+    (-8.083000, -14.749667),
+    (-8.083000, -0.583667),
+    (-11.000000, -0.583667),
+    (-11.000000, -14.749667),
+    (-18.500000, -14.749667),
+];
+pub const BADGE_T4_4_START: (f32, f32) = (11.500000, -17.250000);
+pub const BADGE_T4_4: [Seg; 16] = [
+    Seg::Line(14.416667, -17.250000),
+    Seg::Line(14.416667, -7.666667),
+    Seg::Line(17.750000, -7.666667),
+    Seg::Line(17.750000, -5.166667),
+    Seg::Line(14.416667, -5.166667),
+    Seg::Line(14.416667, -0.583333),
+    Seg::Line(11.083333, -0.583333),
+    Seg::Line(11.083333, -5.166667),
+    Seg::Line(1.500000, -5.166667),
+    Seg::Line(1.500000, -7.666667),
+    Seg::Line(11.083333, -16.833333),
+    Seg::Line(11.500000, -17.250000),
+    Seg::Move(5.666667, -7.666667),
+    Seg::Line(11.083333, -7.666667),
+    Seg::Line(11.083333, -14.166667),
+    Seg::Line(5.666667, -7.666667),
+];
+
 const MAILBOX_BADGE_ART: &[MailBadgeArt] = &[
     MailBadgeArt { text: "T1", replace_prefix: 2, pieces: &[
-        Piece::Poly { points: &[
-            (-14.500000, -16.333000),
-            (3.417000, -16.333000),
-            (3.417000, -13.833000),
-            (-4.083000, -13.833000),
-            (-4.083000, 0.333000),
-            (-7.000000, 0.333000),
-            (-7.000000, -13.833000),
-            (-14.500000, -13.833000),
-        ], fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
-        Piece::Poly { points: &[
-            (10.500000, -17.167000),
-            (12.167000, -17.167000),
-            (12.167000, 0.333000),
-            (9.667000, 0.333000),
-            (9.667000, -12.583000),
-            (5.917000, -12.583000),
-            (5.917000, -14.667000),
-            (8.417000, -15.083000),
-            (9.250000, -15.917000),
-        ], fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
+        Piece::Poly { points: &BADGE_T1_T, fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
+        Piece::Poly { points: &BADGE_T1_1, fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
     ] },
     MailBadgeArt { text: "T3", replace_prefix: 2, pieces: &[
-        Piece::Poly { points: &[
-            (-18.583333, -17.583000),
-            (-0.666333, -17.583000),
-            (-0.666333, -15.083000),
-            (-8.166333, -15.083000),
-            (-8.166333, -0.917000),
-            (-11.083333, -0.917000),
-            (-11.083333, -15.083000),
-            (-18.583333, -15.083000),
-        ], fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
-        Piece::Poly { points: &[
-            (7.250000, -18.000000),
-            (13.083333, -17.583333),
-            (14.750000, -16.750000),
-            (16.833333, -14.250000),
-            (16.416667, -11.333333),
-            (15.166667, -10.083333),
-            (13.500000, -9.666667),
-            (13.500000, -8.833333),
-            (15.166667, -8.416667),
-            (16.416667, -7.166667),
-            (16.833333, -4.250000),
-            (14.333333, -1.333333),
-            (12.666667, -0.500000),
-            (8.083333, -0.083333),
-            (1.416667, -2.166667),
-            (2.250000, -4.666667),
-            (7.666667, -3.000000),
-            (11.833333, -3.416667),
-            (13.500000, -4.666667),
-            (13.500000, -6.333333),
-            (12.666667, -7.166667),
-            (10.583333, -8.000000),
-            (6.833333, -8.000000),
-            (6.833333, -10.500000),
-            (11.833333, -10.500000),
-            (13.083333, -11.333333),
-            (13.500000, -13.833333),
-            (12.666667, -14.666667),
-            (6.833333, -15.083333),
-            (3.083333, -13.833333),
-            (2.250000, -15.083333),
-            (2.250000, -16.333333),
-        ], fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
+        Piece::Poly { points: &BADGE_T3_T, fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
+        Piece::Poly { points: &BADGE_T3_3, fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
     ] },
     MailBadgeArt { text: "T2", replace_prefix: 2, pieces: &[
-        Piece::Poly { points: &[
-            (-18.250000, -16.208000),
-            (-0.333000, -16.208000),
-            (-0.333000, -13.708000),
-            (-8.250000, -13.708000),
-            (-8.250000, 0.458000),
-            (-11.583000, 0.458000),
-            (-11.583000, -13.708000),
-            (-18.250000, -13.708000),
-        ], fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
+        Piece::Poly { points: &BADGE_T2_T, fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
         // Source contour; the foot keeps medium coverage at the lower edge.
-        Piece::Poly { points: &[
-            (6.750000, -16.416667),
-            (12.166667, -16.416667),
-            (13.000000, -15.583333),
-            (14.250000, -15.583333),
-            (16.333333, -13.083333),
-            (16.333333, -10.166667),
-            (14.666667, -8.500000),
-            (11.333333, -6.833333),
-            (5.916667, -5.166667),
-            (4.666667, -3.916667),
-            (4.250000, -2.458333),
-            (16.750000, -2.458333),
-            (16.750000, 0.187500),
-            (1.750000, 0.187500),
-            (1.750000, -3.083333),
-            (3.416667, -6.000000),
-            (6.750000, -8.083333),
-            (11.750000, -9.333333),
-            (13.416667, -10.583333),
-            (13.416667, -12.666667),
-            (12.166667, -13.916667),
-            (10.500000, -14.333333),
-            (7.583333, -14.333333),
-            (2.583333, -12.666667),
-            (2.583333, -13.500000),
-            (1.750000, -13.916667),
-            (2.166667, -14.750000),
-        ], fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
+        Piece::Poly { points: &BADGE_T2_2, fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
     ] },
     MailBadgeArt { text: "T4", replace_prefix: 2, pieces: &[
-        Piece::Poly { points: &[
-            (-18.500000, -17.249667),
-            (-0.583000, -17.249667),
-            (-0.583000, -14.749667),
-            (-8.083000, -14.749667),
-            (-8.083000, -0.583667),
-            (-11.000000, -0.583667),
-            (-11.000000, -14.749667),
-            (-18.500000, -14.749667),
-        ], fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
+        Piece::Poly { points: &BADGE_T4_T, fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true },
         // One fill with a reversed counter keeps the ink continuous without
         // compositing overlapping diagonal, stem and crossbar polygons.
         Piece::Curve {
-            start: (11.500000, -17.250000),
-            steps: &[
-                Seg::Line(14.416667, -17.250000),
-                Seg::Line(14.416667, -7.666667),
-                Seg::Line(17.750000, -7.666667),
-                Seg::Line(17.750000, -5.166667),
-                Seg::Line(14.416667, -5.166667),
-                Seg::Line(14.416667, -0.583333),
-                Seg::Line(11.083333, -0.583333),
-                Seg::Line(11.083333, -5.166667),
-                Seg::Line(1.500000, -5.166667),
-                Seg::Line(1.500000, -7.666667),
-                Seg::Line(11.083333, -16.833333),
-                Seg::Line(11.500000, -17.250000),
-                Seg::Move(5.666667, -7.666667),
-                Seg::Line(11.083333, -7.666667),
-                Seg::Line(11.083333, -14.166667),
-                Seg::Line(5.666667, -7.666667),
-            ],
+            start: BADGE_T4_4_START,
+            steps: &BADGE_T4_4,
             fill: Some(Ink::Fg), stroke: None, width: 0.0, close: true,
         },
     ] },
@@ -1665,10 +1716,15 @@ pub const STORE: &[Prim] = &[
 ];
 
 /// The footer's three strings.
+///
+/// The era's footer type (`FOOTER_SIZE`, Rajdhani 500), at this sheet's
+/// own starts (store-trace.svg already set them so): the photo's runs begin at native x 148 / 1219 / 3362 and
+/// BUILD ends at 3699, 18 px inside the frame. Until 2026-11-14 they were
+/// 15 px regular, 271 / 523 / 294 wide, and BUILD stopped 43 px short.
 const STORE_FOOTER: &[Prim] = &[
-    txt(61.0, 865.0, 15.0, Ink::Fg, "INTERFACE LOADED"),
-    txt(506.0, 865.0, 15.0, Ink::Fg, "PROVIDED BY NEXUS NETWORK V10.8"),
-    txt(1400.0, 865.0, 15.0, Ink::Fg, "BUILD 6.47.48441.R15"),
+    medium(61.0, 864.2, FOOTER_SIZE, Ink::Fg, "INTERFACE LOADED"),
+    medium(507.0, 864.2, FOOTER_SIZE, Ink::Fg, "PROVIDED BY NEXUS NETWORK V10.8"),
+    medium(1400.0, 864.2, FOOTER_SIZE, Ink::Fg, "BUILD 6.47.48441.R15"),
 ];
 
 /// The store's body (:235-365), in the trace's paint order.
@@ -1709,10 +1765,14 @@ const STORE_BODY: &[Prim] = &[
     // role was the dim #5d7752, and MID since `border` brightened.
     txt(126.0, 787.0, 8.5, Ink::Mid, "SPARE TIME MANAGER WAS DEVELOPED BY"),
     txt(126.0, 796.0, 8.5, Ink::Mid, "SEOCHO. SERVING CUSTOMERS SINCE 2006."),
+    // The era's boxed letters (`BOXED_LETTER_*`), centred on the photo's
+    // ink (A x 719..759, B 1129..1164 native, bottoms at 1918); until
+    // 2026-11-14 a plain 19 px regular A and B, half the photo's width
+    // and stem (2.8 px against 5.9).
     line_rect(294.0, 779.0, 26.0, 26.0, Ink::Fg, 1.5),
-    txt(300.0, 799.0, 19.0, Ink::Fg, "A"),
+    wide_mid(307.9, 798.3, BOXED_LETTER_SIZE, BOXED_LETTER_STRETCH, Ink::Fg, Face::Medium, "A"),
     line_rect(464.0, 779.0, 26.0, 26.0, Ink::Fg, 1.5),
-    txt(470.0, 799.0, 19.0, Ink::Fg, "B"),
+    wide_mid(477.7, 798.3, BOXED_LETTER_SIZE, BOXED_LETTER_STRETCH, Ink::Fg, Face::Medium, "B"),
 ];
 
 // --- end store -----------------------------------------------------------
@@ -1922,15 +1982,23 @@ const HUB_SCAN: &[Prim] = &[
     // 1.5-1.6, centred at the trace's translate() x (:154-158; a run
     // measured by hand placed them until 2026-09-07)
     line_rect(133.0, 145.0, 26.0, 26.0, Ink::Fixed(HUB_LETTER_BOX), 1.5),
-    wide_mid(146.0, 165.0, 22.0, 1.6, Ink::Fixed(HUB_SECTION), Face::Bold, "A"),
+    // The era's boxed letters, as the mailbox sets them: until 2026-11-14
+    // Rajdhani 700, whose stems measured 10.5-10.7 native px against the
+    // photo's 5.5-6.0.
+    wide_mid(146.0, 164.0, BOXED_LETTER_SIZE, BOXED_LETTER_STRETCH, Ink::Fixed(HUB_SECTION), Face::Medium, "A"),
     line_rect(1014.0, 145.0, 26.0, 26.0, Ink::Fixed(HUB_LETTER_BOX), 1.5),
-    wide_mid(1027.0, 165.0, 22.0, 1.5, Ink::Fixed(HUB_SECTION), Face::Bold, "B"),
+    wide_mid(1027.0, 164.0, BOXED_LETTER_SIZE, BOXED_LETTER_STRETCH, Ink::Fixed(HUB_SECTION), Face::Medium, "B"),
     line_rect(1329.0, 142.0, 26.0, 26.0, Ink::Fixed(HUB_LETTER_BOX), 1.5),
-    wide_mid(1342.0, 162.0, 22.0, 1.5, Ink::Fixed(HUB_SECTION), Face::Bold, "C"),
-    semibold(169.0, 164.0, 23.0, Ink::Fixed(HUB_SECTION), "MAIL BOX"),
-    semibold(1047.0, 164.0, 23.0, Ink::Fixed(HUB_SECTION), "MESSAGE"),
-    semibold(1380.0, 162.0, 23.0, Ink::Fixed(HUB_SECTION), "SECURITY"),
-    semibold(1379.0, 186.0, 23.0, Ink::Fixed(HUB_SECTION), "LEVEL"),
+    wide_mid(1342.0, 161.0, BOXED_LETTER_SIZE, BOXED_C_STRETCH, Ink::Fixed(HUB_SECTION), Face::Medium, "C"),
+    // Section headings in the era's heading type (`SECTION_*`), as the
+    // mailbox sets them; Rajdhani 600 at 23 until 2026-11-14 (stems 5.6
+    // native px against the photo's 3.8-4.0). Baselines a unit above the
+    // old Text runs: the stretched route lands glyphs ~2.4 native px lower,
+    // and the photo's ink ends at y 393 (letters 395, C 389).
+    wide(169.0, 163.0, SECTION_SIZE, SECTION_STRETCH, Ink::Fixed(HUB_SECTION), Face::Medium, "MAIL BOX"),
+    wide(1047.0, 163.0, SECTION_SIZE, SECTION_STRETCH, Ink::Fixed(HUB_SECTION), Face::Medium, "MESSAGE"),
+    wide(1380.0, 161.0, SECTION_SIZE, SECTION_STRETCH, Ink::Fixed(HUB_SECTION), Face::Medium, "SECURITY"),
+    wide(1379.0, 185.0, SECTION_SIZE, SECTION_STRETCH, Ink::Fixed(HUB_SECTION), Face::Medium, "LEVEL"),
     // the 3x2 tile grid, each placed at its caption `<use x y>`: row 1
     // feet at y 438 (frames y 226..438), row 2 at y 710 (y 499..710),
     // columns x 128 / 418 / 716
@@ -1958,18 +2026,62 @@ const HUB_SCAN: &[Prim] = &[
     wide(1032.2, 489.4, 17.0, 1.135, Ink::Fixed(HUB_BODY), Face::Medium, "Risus commodo viverra ma-"),
     wide(1032.2, 510.4, 17.0, 1.135, Ink::Fixed(HUB_BODY), Face::Medium, "ecenas accumsan lacus vel"),
     wide(1032.2, 531.4, 17.0, 1.135, Ink::Fixed(HUB_BODY), Face::Medium, "facilisis."),
-    // SECURITY LEVEL badges: four 68x68 at x 1380, T2 filled. Glyphs
-    // bold 27 stretched to the measured runs, centred at x 1414
-    // (:227-233)
+    // SECURITY LEVEL badges: four 68x68 at x 1380, T2 filled (:227-233).
+    // The glyphs are the mailbox badges' source-traced art (`BADGE_*`),
+    // anchored where the hub photo puts each one: the mailbox anchor
+    // (box + 36, 43.5; T4 35.5) moved by the measured offset, -1.08..-1.17
+    // in x and -0.33 / -1.5 / -0.58 / -0.75 in y. Until 2026-11-14 they
+    // were Rajdhani 700 at 27 stretched 1.37-1.5, whose stems measured
+    // 11.2-12.5 native px against the photo's 7.4-8.4.
     line_rect(1380.0, 214.0, 68.0, 68.0, Ink::Border, 1.25),
-    wide_mid(1414.0, 257.0, 27.0, 1.37, Ink::Fixed(HUB_LABEL), Face::Bold, "T1"),
+    Prim::At { x: 1414.92, y: 257.17, prims: HUB_T1 },
     // T2's fill lights with the tile's (`#select-lit`, :237)
     Prim::Motion { motion: SELECT_LIT, prims: &[fill_rect(1380.0, 304.0, 68.0, 68.0, Ink::Select)] },
-    wide_mid(1414.0, 346.0, 27.0, 1.42, Ink::Fixed(HUB_ON_SOLID), Face::Bold, "T2"),
+    Prim::At { x: 1414.92, y: 346.0, prims: HUB_T2 },
     line_rect(1380.0, 393.0, 68.0, 68.0, Ink::Border, 1.25),
-    wide_mid(1414.0, 435.0, 27.0, 1.5, Ink::Fixed(HUB_LABEL), Face::Bold, "T3"),
+    Prim::At { x: 1414.83, y: 435.92, prims: HUB_T3 },
     line_rect(1380.0, 482.0, 68.0, 68.0, Ink::Border, 1.25),
-    wide_mid(1414.0, 524.0, 27.0, 1.38, Ink::Fixed(HUB_LABEL), Face::Bold, "T4"),
+    Prim::At { x: 1414.33, y: 524.75, prims: HUB_T4 },
+];
+
+/// [`BADGE_T1_T`] and the rest as closed ring paths: the polygon's first
+/// point starts the path and each step draws to the next, back to the
+/// first.
+const fn ring<const N: usize>(points: [(f32, f32); N]) -> [Seg; N] {
+    let mut out = [Seg::Line(0.0, 0.0); N];
+    let mut i = 0;
+    while i < N {
+        let (x, y) = points[(i + 1) % N];
+        out[i] = Seg::Line(x, y);
+        i += 1;
+    }
+    out
+}
+const fn glyph(start: (f32, f32), segs: &'static [Seg], ink: Ink) -> Prim {
+    Prim::Path { x: start.0, y: start.1, segs, close: true, fill: Some(ink), stroke: None, width: 0.0 }
+}
+const RING_T1_T: [Seg; 8] = ring(BADGE_T1_T);
+const RING_T1_1: [Seg; 9] = ring(BADGE_T1_1);
+const RING_T2_T: [Seg; 8] = ring(BADGE_T2_T);
+const RING_T2_2: [Seg; 27] = ring(BADGE_T2_2);
+const RING_T3_T: [Seg; 8] = ring(BADGE_T3_T);
+const RING_T3_3: [Seg; 32] = ring(BADGE_T3_3);
+const RING_T4_T: [Seg; 8] = ring(BADGE_T4_T);
+const HUB_T1: &[Prim] = &[
+    glyph(BADGE_T1_T[0], &RING_T1_T, Ink::Fixed(HUB_LABEL)),
+    glyph(BADGE_T1_1[0], &RING_T1_1, Ink::Fixed(HUB_LABEL)),
+];
+const HUB_T2: &[Prim] = &[
+    glyph(BADGE_T2_T[0], &RING_T2_T, Ink::Fixed(HUB_ON_SOLID)),
+    glyph(BADGE_T2_2[0], &RING_T2_2, Ink::Fixed(HUB_ON_SOLID)),
+];
+const HUB_T3: &[Prim] = &[
+    glyph(BADGE_T3_T[0], &RING_T3_T, Ink::Fixed(HUB_LABEL)),
+    glyph(BADGE_T3_3[0], &RING_T3_3, Ink::Fixed(HUB_LABEL)),
+];
+const HUB_T4: &[Prim] = &[
+    glyph(BADGE_T4_T[0], &RING_T4_T, Ink::Fixed(HUB_LABEL)),
+    glyph(BADGE_T4_4_START, &BADGE_T4_4, Ink::Fixed(HUB_LABEL)),
 ];
 
 // --- end dashboard -------------------------------------------------------
