@@ -223,7 +223,20 @@ Open:
   it. Not checked: a tray menu on the re-created bar; the watchdog firing
   for real; the release package (only the debug binary was run).
   Consequence, accepted by Matt 2026-11-13: a bar on every output.
-- [ ] **Each output re-creation leaks about 16 MB.** Measured on the same
+- [x] **Fixed 2026-11-15: each output re-creation leaked about 16 MB.**
+  Two upstream bugs, not one. (1) iced_layershell's
+  `handle_closed_event` finds the iced window through the surface's
+  binding, which an AllScreens surface never has, so the window
+  (renderer, wgpu surface, swapchain, UI state) was never freed and the
+  app never heard `Closed` -- this alone is the leak. (2) layershellev
+  dropped an unplugged output's surface record before iced was told and
+  never sent the destroy requests. Patching (2) alone changed nothing.
+  Both crates are vendored with the fix (`vendor/*/PATCHES.md`).
+  Measured on headless sway 1.12, ten re-creations of a 3840x2160
+  output: 23.9 MB a cycle before, about 0.3 after, threads flat. NOT
+  yet seen on Hyprland itself; watch the bar's resident size across a
+  few TV wakes. The original note follows.
+- [x] **(superseded) Each output re-creation leaks about 16 MB.** Measured on the same
   run: 251 -> 266 -> 280 -> 299 MB resident over three disable/enable
   cycles (each cycle is two surface creations, fallback then real), not
   released 20 s later; threads 60 -> 62. Harmless at a reconnect or two a
@@ -243,3 +256,24 @@ Open:
   After re-enabling a monitor the display stays asleep until
   `hyprctl dispatch dpms on`, and `grim` blocks forever while it is. The
   active workspace changed (3 -> 2) across the cycle.
+
+### Workspaces answer clicks (2026-11-15)
+
+- [x] Click a workspace cell to switch, scroll over the row to step;
+  cells show active, urgent, occupied and empty (`Workspace::state`).
+  Neomil shows a fixed ten (`Bar::ws_count`), so an empty badge can be
+  clicked to create its workspace and start what the host pins there
+  (9 Claude, 10 the dashboard); its empty coat is `GHOST_PLATE`, its
+  hover `LIT_PLATE`. The other eras list what Hyprland lists, as
+  before, and have no hover. The click is `dispatch workspace <id>` on
+  the bar's own request socket.
+- [ ] **Not yet used on the real desktop.** Clicks, scroll, hover and
+  the urgent flow were unit-tested and rendered, not driven live (the
+  orchestrator does not switch workspaces on Matt's session). The
+  parser was checked against terra's `hyprctl workspaces` text.
+- [ ] **At the TV fitting ten badges squeeze the title plate** to about
+  98 units, and the title truncates. Fine at the desktop fitting.
+  Options if it bothers: a lower `ws_count` for the TV, or badges that
+  drop their LEVEL caption.
+- [ ] Hover (`LIT_PLATE`) and urgent (alert coat) are nearly the same
+  colour (#f63333 against #ff3b45). Judge on the display.
