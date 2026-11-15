@@ -80,14 +80,24 @@ in {
     '';
   };
 
+  # This module owns the baseline look, so stylix's hyprland target is
+  # off: it wrote the same keys at normal priority, which forced every
+  # value here to mkForce and every theme one step past that -- two
+  # files that each had to know the other's priority number. With the
+  # target off, the look below is a set of defaults and a theme
+  # overrides any of it with a plain definition (THEMES-SPLIT-PLAN.md,
+  # seam 1). The target also set `misc.background_color`, kept below,
+  # and turned hyprpaper on, which each theme does for itself.
+  stylix.targets.hyprland.enable = false;
+
   wayland.windowManager.hyprland.settings = {
     exec-once = [ "hyprctl dispatch workspace 3" ];
     general = {
-      gaps_in = gapS;
-      gaps_out = gapM;
-      border_size = border;
-      "col.inactive_border" = lib.mkForce "rgba(${cy0}${tr0})";
-      "col.active_border" = lib.mkForce "rgba(${re0}${trF})";
+      gaps_in = lib.mkDefault gapS;
+      gaps_out = lib.mkDefault gapM;
+      border_size = lib.mkDefault border;
+      "col.inactive_border" = lib.mkDefault "rgba(${cy0}${tr0})";
+      "col.active_border" = lib.mkDefault "rgba(${re0}${trF})";
       resize_on_border = false;
       allow_tearing = false;
       layout = "dwindle";
@@ -121,19 +131,20 @@ in {
       # it is not a recovery path.
       allow_session_lock_restore = true;
       disable_hyprland_logo = true;
+      background_color = lib.mkDefault "rgb(${no0})";
       disable_splash_rendering = true;
       force_default_wallpaper = 0;
       initial_workspace_tracking = 1;
     };
 
     decoration = {
-      rounding = lib.mkForce radius;
-      rounding_power = power;
+      rounding = lib.mkDefault radius;
+      rounding_power = lib.mkDefault power;
       active_opacity = activeTr;
       inactive_opacity = inActiveTr;
 
       blur = {
-        enabled = true;
+        enabled = lib.mkDefault true;
         size = blurSize;
         passes = blurPass;
         inherit noise;
@@ -144,12 +155,12 @@ in {
       };
 
       shadow = {
-        enabled = true;
-        range = 30;
-        scale = 2;
+        enabled = lib.mkDefault true;
+        range = lib.mkDefault 30;
+        scale = lib.mkDefault 2;
         render_power = 5;
-        color = lib.mkForce "rgba(${re0}${tr2})";
-        color_inactive = lib.mkForce "rgba(${no0}${tr2})";
+        color = lib.mkDefault "rgba(${re0}${tr2})";
+        color_inactive = lib.mkDefault "rgba(${no0}${tr2})";
       };
 
       dim_inactive = false;
@@ -169,23 +180,23 @@ in {
     ];
 
     animations = {
-      enabled = false;
+      enabled = lib.mkDefault false;
     };
 
 
     group = {
-      "col.border_active" = lib.mkForce "rgba(${re0}${trF})";
-      "col.border_inactive" = lib.mkForce "rgba(${re1}${trF})";
-      "col.border_locked_active" = lib.mkForce "rgba(${vi0}${trF})";
-      "col.border_locked_inactive" = lib.mkForce "rgba(${vi0}${tr7})";
+      "col.border_active" = lib.mkDefault "rgba(${re0}${trF})";
+      "col.border_inactive" = lib.mkDefault "rgba(${re1}${trF})";
+      "col.border_locked_active" = lib.mkDefault "rgba(${vi0}${trF})";
+      "col.border_locked_inactive" = lib.mkDefault "rgba(${vi0}${tr7})";
 
       groupbar = {
-        "col.active" = lib.mkForce "rgba(${re0}${trF})";
-        "col.inactive" = lib.mkForce "rgba(${re1}${trF})";
-        "col.locked_active" = lib.mkForce "rgba(${vi0}${trF})";
-        "col.locked_inactive" = lib.mkForce "rgba(${vi0}${tr7})";
+        "col.active" = lib.mkDefault "rgba(${re0}${trF})";
+        "col.inactive" = lib.mkDefault "rgba(${re1}${trF})";
+        "col.locked_active" = lib.mkDefault "rgba(${vi0}${trF})";
+        "col.locked_inactive" = lib.mkDefault "rgba(${vi0}${tr7})";
         font_size = fontM;
-        text_color = lib.mkForce "rgba(${no0}${trF})";
+        text_color = lib.mkDefault "rgba(${no0}${trF})";
         height = 1;
         indicator_height = 24;
         text_offset = -12;

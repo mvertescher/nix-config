@@ -60,7 +60,7 @@ let
 
   ui = uiFont.name;
   wide = "Orbitron";
-  o = lib.mkOverride 30; # one step past era.nix's 40
+  o = lib.mkOverride 30; # this file refines era.nix within the one theme, so it sits above era.nix's plain definitions
 in
 {
   toml = ''

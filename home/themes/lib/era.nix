@@ -181,9 +181,10 @@ let
         }
         .${texture};
 
-  # home/common/hyprland pins its colours and rounding with mkForce so
-  # they beat stylix. A second mkForce here would collide at equal
-  # priority rather than override, so an era sits one step stronger.
+  # For what stylix or a shared module defines at normal priority (the
+  # terminal's opacity, the mono face). The window manager no longer
+  # needs it: home/common/hyprland sets its look as defaults, so an era
+  # states its own with plain definitions.
   eraOverride = lib.mkOverride 40;
   rgba = role: "rgba(${lib.removePrefix "#" c.${role}}ff)";
 
@@ -491,29 +492,29 @@ lib.mkMerge [
     # --- window manager ------------------------------------------------
     wayland.windowManager.hyprland.settings = {
       general = {
-        border_size = eraOverride 1;
-        "col.active_border" = eraOverride (rgba "fg");
-        "col.inactive_border" = eraOverride (rgba "border");
+        border_size = 1;
+        "col.active_border" = rgba "fg";
+        "col.inactive_border" = rgba "border";
       };
 
       decoration = {
-        rounding = eraOverride k.radius;
-        blur.enabled = eraOverride k.blur;
-        shadow.enabled = eraOverride false;
+        rounding = k.radius;
+        blur.enabled = k.blur;
+        shadow.enabled = false;
       };
 
       group = {
-        "col.border_active" = eraOverride (rgba "fg");
-        "col.border_inactive" = eraOverride (rgba "border");
-        "col.border_locked_active" = eraOverride (rgba "alert");
-        "col.border_locked_inactive" = eraOverride (rgba "border");
+        "col.border_active" = rgba "fg";
+        "col.border_inactive" = rgba "border";
+        "col.border_locked_active" = rgba "alert";
+        "col.border_locked_inactive" = rgba "border";
 
         groupbar = {
-          "col.active" = eraOverride (rgba "fg");
-          "col.inactive" = eraOverride (rgba "border");
-          "col.locked_active" = eraOverride (rgba "alert");
-          "col.locked_inactive" = eraOverride (rgba "border");
-          text_color = eraOverride (rgba "bg");
+          "col.active" = rgba "fg";
+          "col.inactive" = rgba "border";
+          "col.locked_active" = rgba "alert";
+          "col.locked_inactive" = rgba "border";
+          text_color = rgba "bg";
         };
       };
 
