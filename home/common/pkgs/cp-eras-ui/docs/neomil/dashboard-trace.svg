@@ -490,7 +490,9 @@
 
 <!-- Explicit rectangles retain fractional scan pitch in native rsvg renders.
      Opaque minimum-luminance base; every cycle fades to transparency at both
-     ends, matching PANEL_ECHOES without quantizing a repeating pattern tile. -->
+     ends, matching the hand-drawn panel echoes the app once drew
+     (PANEL_ECHOES, removed 2026-11-14 for the print pass) without
+     quantizing a repeating pattern tile. -->
 <linearGradient id="go-home-echo-cycle" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="white" stop-opacity="0"/><stop offset="0.125" stop-color="white" stop-opacity="0.146447"/><stop offset="0.25" stop-color="white" stop-opacity="0.5"/><stop offset="0.375" stop-color="white" stop-opacity="0.853553"/><stop offset="0.5" stop-color="white" stop-opacity="1"/><stop offset="0.625" stop-color="white" stop-opacity="0.853553"/><stop offset="0.75" stop-color="white" stop-opacity="0.5"/><stop offset="0.875" stop-color="white" stop-opacity="0.146447"/><stop offset="1" stop-color="white" stop-opacity="0"/></linearGradient>
 <mask id="go-home-echo-mask" maskUnits="userSpaceOnUse" x="1120" y="306" width="260" height="460">
   <rect x="1120" y="306" width="260" height="460" fill="#909090"/>

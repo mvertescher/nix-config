@@ -701,8 +701,11 @@ pub const WELL: iced::Color = rgb(0x430e0f);
 /// line peaking #72..#7b on its four sides (line-weights.md).
 pub const FIELD_EDGE: iced::Color = rgb(0x760e0f);
 pub const COMMIT: iced::Color = rgb(0xa52223);
-/// The compliance micro-text under a card, a shade off the bright red.
-pub const NOTICE: iced::Color = rgb(0xe63132);
+/// The compliance micro-text under a card: the bright red line ink. All
+/// three notices in the photo peak at (251, 53, 53) (2026-11-15; this was
+/// #e63132, peaking at 228, since the canvas conversion, with no
+/// measurement behind it).
+pub const NOTICE: iced::Color = LINE_INK;
 
 /// The two-line compliance notice every card in the photo carries.
 const NOTICE_1: &str = "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO";

@@ -2089,6 +2089,17 @@ const HUB_T4: &[Prim] = &[
 // --- end dashboard -------------------------------------------------------
 
 // --- print -----------------------------------------------------------------
+/// The copies' diagonal break-up (see [`PRINT`]): pitch 1.6 dp, normal at
+/// 40 degrees (lines running lower-left to upper-right, as the store's
+/// left-edge copies lean), +-0.3 about the copy's colour.
+const ENTROPISM_TEXTURE: crate::print::Texture = crate::print::Texture {
+    pitch: 1.6,
+    angle: 40.0,
+    crest: [1.3, 1.3, 1.3],
+    trough: [0.7, 0.7, 0.7],
+    phase: 0.0,
+};
+
 /// Entropism's print material (`crate::print`; measurements in
 /// `docs/print-overlay.md`, "Registration copies, measured 2026-11-14").
 /// Registration copies refitted 2026-11-14 on the store reference (file
@@ -2100,22 +2111,32 @@ const HUB_T4: &[Prim] = &[
 /// blur sigma 1.5-2 native px, normal alpha
 /// better than lighten or add on every site. A third copy near 3.5x took
 /// 0.1-0.2 on a few sites but only lowered the residual 2-4 %: not drawn.
-/// The copies are visible through a diagonal circuit-like pattern that this
-/// pass does not model (texture flat). Rows of the old fit (3.33 px banding)
+/// Gains refitted 2026-11-15 with the model-free copy contrast (copy side
+/// minus mirror side, which cancels the glow): on 20 dark-ground text
+/// sites across the four screens the reference's copy 1 is 0.55 (median;
+/// 0.41-1.18) of what 0.36 drew, copy 2 0.39 on text but about 1.0 beside
+/// the light sage fills, whose copies do not lose to blur (the reference's
+/// far copy is softer than ours; one softness for both copies cannot
+/// match both): 0.20 and 0.09. The copies are broken up by a diagonal
+/// circuit-like pattern: its autocorrelation inside the copies of four
+/// fill edges is a lattice at about (+-2.5, 3) and (5, 0) native px, i.e.
+/// two diagonal families of pitch ~3.8 native px (1.6 dp) at about +-40
+/// degrees, residual about 0.2 of the copy's mean. Drawn as one family
+/// ([`ENTROPISM_TEXTURE`]): a maze it is not, but solid it was. Rows of the old fit (3.33 px banding)
 /// were not re-measured. Light fills carry chromatic grain of ~2.3 % (sage
 /// selection row: RGB std 4.4/6.0/9.0 on 168/212/171), the dark ground about
 /// 0.7 levels; no scanlines on fills or ground. The bloom is not drawn.
 pub const PRINT: crate::print::Print = crate::print::Print {
     echo: [
-        crate::print::Echo { kx: 0.0061, ky: 0.0068, gain: 0.36 },
-        crate::print::Echo { kx: 0.0152, ky: 0.0160, gain: 0.14 },
+        crate::print::Echo { kx: 0.0061, ky: 0.0068, gain: 0.20 },
+        crate::print::Echo { kx: 0.0152, ky: 0.0160, gain: 0.09 },
         crate::print::Echo::NONE,
     ],
     echo_centre: (790.0, 450.0),
     echo_blend: crate::print::Blend::Over,
     echo_soft: 0.75,
     echo_lift: (0.02, 0.10),
-    echo_texture: crate::print::Texture::FLAT,
+    echo_texture: ENTROPISM_TEXTURE,
     echo_gate: (0.40, 0.55),
     echo_gate_radius: 6.0,
     echo_ground: crate::print::GROUND,

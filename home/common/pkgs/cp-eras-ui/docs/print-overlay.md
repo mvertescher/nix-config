@@ -1,4 +1,4 @@
-# Print overlay, 2026-11-13 (copies remeasured, and on for all eras, 2026-11-14; ground and chroma gates 2026-11-15)
+# Print overlay, 2026-11-13 (copies remeasured, and on for all eras, 2026-11-14; ground and chroma gates, Entropism refit 2026-11-15)
 
 Owner decision 6 (`docs/review-2026-11-13/DECISIONS.md`): one shared
 print-texture pass per era instead of element-by-element echo and grain
@@ -242,6 +242,110 @@ carry copies; nothing in the references says which.
 
 
 
+## Entropism refit; Neomil cards, Kitsch BRAINDANCE, Neomil code cells, 2026-11-15
+
+Same model-free copy contrast as above (session scratch
+`ghost-refit/tools/`: `sites.py` for marks, `fills.py` for light fills --
+the median profile outside a fill's outward edge minus outside its
+inward edge, so the glow cancels -- and `acf.py`, a masked
+autocorrelation of the copies' texture).
+
+### Entropism
+
+The 2026-11-14 bloom-aware fit gave 0.36 / 0.14; as with Kitsch, the glow
+had taken part of the fit. Reference / ours, 4K, channel G:
+
+| | sites | before (0.36 / 0.14) | after (0.20 / 0.09 + texture) |
+|---|---|---|---|
+| copy 1, light text on dark ground (all four screens) | 20 | median 0.55 (0.41-1.18) | median 0.97 (0.63-2.18) |
+| copy 2, same sites | 21 | median 0.39 | median 0.60 |
+| light sage fills (T2 x2, BRAINDANCE, REPORT SPAM, mail selected row, SMG row, store card, NEXT) | 7 usable | 0.53-0.83 | 0.85-1.47, median 1.14 |
+
+The two copies do not scale alike. Beside a fill the reference's copy 2
+(the band from d1 to d2 outside the edge) is as strong as ours was
+(about 0.14 of the fill's contrast), and its copy 1 only adds to about
+0.2 in total; on text copy 2 is 0.39 of ours, and on thick marks (4ST,
+T4) 0.7-0.86, on thin ones 0.1-0.2. So the reference's far copy is
+softer than its near one and thin strokes lose it to blur; the pass has
+one softness for both. 0.09 is the compromise: text copy 2 still about
+1.6x the reference's, the fill bands about 0.65 of it. A per-copy
+softness (the far copy blurred more) would fit both; it needs more than
+the 4-tap box to blur by ~4 native px without breaking into taps, and is
+not done.
+
+Texture. The copies are broken up by a maze-like pattern. Its
+autocorrelation inside the copies beside four fill edges (dashboard T2,
+mail REPORT SPAM / T2 / selected row, store SMG row / card) is the same
+on all three screens: a lattice with peaks near (+-2.5, 3) and (5, 0)
+native px and troughs at (+-2, 0) and (0, +-3) -- two diagonal families
+of pitch about 3.8 native px (1.6 dp) with normals near +-40 degrees --
+and its rms is 0.16-0.24 of the copy's mean (two families: about 0.2-0.3
+each). The store's left-edge copies lean "/". Drawn as one family,
+`Texture { pitch: 1.6, angle: 40, crest 1.3, trough 0.7 }` per channel
+(`ENTROPISM_TEXTURE`): regular diagonal hatching, not a maze, but
+compared by eye at 4K (dashboard EMAILS and T2, store RIFLES / SMG, mail
+rows and REPORT SPAM) it is closer to the reference than the solid
+copies. At 1600x900 the 1.6 dp pitch snaps to 2 device px.
+
+Not changed: blur (`echo_soft` 0.75) and the bloom, which is still not
+drawn.
+
+### Neomil login: no gate on the ground's redness
+
+The premise was that Neomil hides copies on its dark red fills. Measured
+on the mailbox, it does not: the message rows are dark red fills too,
+and the copies of their text are at full strength there (reference /
+ours, copy 1: row subjects 0.87, 1.06, 0.95; "Jackie" 1.01, 0.92; NEW
+0.90). The rows' ground chroma along red (`R - max(G, B)`, encoded) is
+0.11-0.17 in the reference and 0.11-0.17 in our art; the inactive
+login cards' is 0.14 (card 3) to 0.25 (card 2). Card 3 and mailbox row 3
+are the same colour within 2 levels, and one hides copies while the
+other shows them, so no gate on the ground's colour (redness, chroma
+along the copy's hue, luminance) can separate them. What hides the
+copies on the inactive cards is not in the frame's colours -- most
+likely the cards are composited above the printed layer -- i.e. a
+per-element property. The gate was prototyped (`echo_hue_ground`, the
+ground's chroma projected on the copy's) and removed again. So
+`PRINT_LOGIN`'s gains were **not** raised to the free-fit 0.45 / 0.18:
+with copies on the inactive cards that would worsen two notices to fix
+one. Its scale was not moved either: the header rule's copies (7 and 13
+native px) fix copy 1's vertical scale at 1.05 %, against which the
+notices' "a pixel farther out" is within the copies' scatter.
+
+The notice ink was #e63132 (red 228 at its peak) by oversight: it came
+in with the canvas conversion with no measurement behind it, and all
+three notices in the reference peak at (251, 53, 53), the line ink. It
+is now `LINE_INK`. Copy contrast after (reference / ours): active
+notice 33.6 / 25.1 (was 22.5), inactive notices -0.8 / 6.4 and 1.0 /
+10.2 (were 4.8 and 8.4; the brighter ink copies brighter).
+
+### Kitsch BRAINDANCE panel body: not the pass
+
+At 8x the reference's body text (yellow on a maroon panel, about
+(45, 15, 35)) has a dark olive, diagonally hatched halo hugging every
+glyph on all sides, 1-6 native px out: a centred treatment, which is why
+the copy-minus-mirror contrast is about 1 level (R 1.0, G 0.4; ours 11.8
+and 9.4). It is not the pass's copies weakened by a gate: the same
+panel's yellow outline has ordinary outward copies in the reference
+(31.5 against our 20.8), and the copy of its left outline that lands
+inside the panel body is there too (R 34-40 over 12). So a gate on the
+copied colour's hue or luminance would remove copies the reference
+keeps. What it needs is a per-element text treatment: a hatched halo
+(the same diagonal maze as Entropism's copies, dark olive, about 6
+native px, symmetric) on the panel's body text, and no outward copy of
+that text -- i.e. the text drawn above the printed layer. Also an art
+difference: our panel body is dark grey, the reference's maroon. Left.
+
+### Neomil store scatter-code cells: left
+
+The hypothesis "copy gain rises with the mark's brightness or
+saturation" has nothing to vary on Neomil: every mark on the four
+screens is the same red ink (peak (251, 53, 53)), cells and text alike.
+With our current render's masks the cells' copy ratio is 1.15 (copy 1)
+and 1.18 (copy 2), inside the 0.87-1.36 spread of the mailbox rows'
+sites; the earlier 0.75 used a mask from the pass-on frame. No general
+parameter explains it; not changed.
+
 ### On by default, 2026-11-14
 
 Who wears it:
@@ -306,9 +410,10 @@ What looks different from the hand-drawn copies, by eye at 4K:
   (contrast -0.8 and 1.0) while ours have 4.7 and 8.4: the Neomil
   references hide copies on their red fills, dark ones too, not only on
   the bright tiles. So raising `PRINT_LOGIN`'s gains would fix one notice
-  and worsen the other two; not changed. What would: a gate on the ground's
-  redness (the card fill is about (90, 20, 25), luminance 0.07-0.11, below
-  the ground gate), and the notice ink at 251.
+  and worsen the other two; not changed. (A gate on the ground's redness
+  was tried 2026-11-15 and does not work: the mailbox rows are the same
+  dark red and keep their copies; see "Neomil login: no gate" above. The
+  notice ink is now 251.)
 - GO HOME vertical brands: the pass draws copies to their right that the
   reference barely shows (the hand-drawn ones were similar).
 - Gained: copies the hand drawing never had and the reference does (store
@@ -348,12 +453,18 @@ Tuning knobs (read once at start): `CP_ERAS_UI_PRINT=<strength>`,
   regions stay darker than the reference (mail body mean G 38 vs 46).
 - Non-Neomil eras: the copies are crisper than the reference's, which
   are broken by a diagonal pattern and wrapped in bloom the pass does not
-  draw. Kitsch gains corrected 2026-11-15; Entropism's measure 1.3-1.9x
-  the reference's on dark ground the same way (ratio 0.52-0.77, 3 sites)
-  and are left at the fit.
+  draw. Kitsch and Entropism gains corrected 2026-11-15 (Entropism also
+  wears a one-family diagonal texture for the maze). Entropism's far copy
+  is still about 1.6x the reference's on thin text and 0.65x beside light
+  fills: one softness for both copies.
 - Kitsch's BRAINDANCE panel body (yellow on dark): the reference's
   copies are dark, hatched and nearly symmetric (copy contrast 1 level);
-  ours are solid (12 levels after the gain change). Not modelled.
+  ours are solid (12 levels after the gain change). A centred hatched
+  halo around the text, not the pass; needs a per-element treatment (see
+  above). Not modelled.
+- Neomil's inactive login cards hide copies in the reference (notices
+  -0.8 and 1.0 levels against ours 6.4 and 10.2); not a property of the
+  ground's colour, so not gated.
 - Neomil copies of a neutral mark are dropped, not drawn (chroma gate):
   the references have no neutral mark to fit.
 - Entropism mean colour rises 1-3.6 levels (G) against a reference ~1-2

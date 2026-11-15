@@ -693,7 +693,8 @@
   <!-- ==== nav column x 153..361 ==== -->
   <g font-family="Rajdhani" font-size="18" font-weight="500" letter-spacing="-0.3">
     <!-- 2026-11-14: no spine. The photo prints two copies of each row up
-         and left of it (eras::neomil NAV_ECHO): (-3.6667,-1.3333) and
+         and left of it (the app drew them as NAV_ECHO until 2026-11-14;
+         the print pass, PRINT_STORE, makes them now): (-3.6667,-1.3333) and
          (-9.4583,-3.125); filled #6f1a1b / #421618 under the selected
          row, outlined 1.5 in #fb3535 at .12 / .045 over the idle ones.
          The 3px bars at x 148..151 this trace drew are not in the photo. -->
