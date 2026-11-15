@@ -148,3 +148,127 @@ kept here because owner decision 3 chose textures.
   knee) is unknown. It is fitted as an independent sheet.
 - Tracer limits: cores and seams below the pixel pitch are untraced, so
   the convergence rows there come from extrapolation, not measurement.
+
+## Line, ground and grain (third pass, 2026-11-14)
+
+Measured on the 4K crops (store card unless stated), scripts in the pass's
+scratch. These replace the Gaussian strokes, flat cream ground and 1-D ramp
+palette of the second pass, which read as "flat cream with brown lines".
+
+- **A line is a 1-texel box stroke, drawn over the ground.** Averaged over
+  40 rows of near-vertical grain, a line centred on a pixel column drops
+  that one column to G 138-151 (ground 202-209) and leaves its neighbours
+  at 197-207; a line straddling two columns drops both to 170-185. Summed,
+  the deficit is the same (~55-65 G levels x px) either way, so the stroke
+  is about one texel wide with box anti-aliasing, not a soft 1.9 px
+  Gaussian (the earlier FWHM figures measured the straddling cases).
+- **Ink compounds towards a floor, not towards black.** One centred line:
+  `(211, 144, 67)` on ground `(255*, 206, 131)` (`*` R clipped; 262 is
+  used before clipping). The densest streak core reads `(148-159, 60-73,
+  30-34)`. That is "over" compositing with a constant line colour
+  `CORE = (150, 61, 30)` at per-channel opacity
+  `alpha = (ground - single) / (ground - core)` = 0.46 / 0.43 / 0.63
+  (R / G / B): n overlapping strokes leave `prod(1 - alpha*coverage)` of
+  the ground, so a pile of lines darkens to the core colour and stops. The
+  second pass's soft saturation of a Gaussian sum is replaced by this.
+- **Core profile (the convergence to match).** Columns through the store
+  streak, G below 80: 8 px tall at x 540, 3-4 px at x 600, 2-3 px at x 620
+  (minimum G 60 throughout); around it a band of compounded lines at G
+  80-140, ~25 px tall at x 300-500, which at 6x is a lattice: lines from
+  above and below bend in with a ~10-15 px radius (not a sharp knee) and
+  cross at shallow angles, leaving rows of light diamonds.
+- **Ground tone is flat.** The ground (80th percentile in 9x9, blurred
+  sigma 12, text masked) varies by +-2 G levels across the clear field of
+  the store card (rows 130-240 and 340-450: 202.7-209.9). The visible
+  lighter/darker banding is line density (convergences, bunching, the
+  twin comb), so it comes from the geometry; no low-frequency tone field
+  is added.
+- **Grain.** Per-pixel noise on the ground, measured as the residual from
+  the column mean in line-aligned windows: std R 3.4-4.4, G 5.2-5.7,
+  B 6.2-6.9; the channels are nearly independent (correlation 0.03-0.23),
+  lag-1 autocorrelation 0.53-0.59 and lag-2 0.01-0.14. Independent normal
+  noise per channel through a separable `[1, 3, 1]` filter has lag-1 0.55
+  and lag-2 0.09, so that is the model. It is chroma speckle, which a 1-D
+  palette ramp cannot hold, so the PNG palette is now a deterministic
+  256-colour k-means of the rendered RGB (still an 8-bit indexed PNG;
+  `src/veneer.rs` only needs indices and a palette).
+
+| Surface | Ground (R*, G, B) | One centred line | Grain std (R, G, B) |
+| --- | --- | --- | --- |
+| store card | 262, 206, 131 | 211, 144, 67 | 3.7, 5.3, 6.4 |
+| panel | 262, 194, 110 | 217, 154, 76 | 4.1, 4.6, 4.9 |
+| EMAIL | 262, 191, 108 | 199, 138, 65 | 3.7, 4.8, 5.2 |
+| mailbox | 258, 202, 130 | 207, 146, 83 | 3.4, 5.0, 6.1 |
+| SMG | 249, 198, 128 | 202, 140, 74 | 6.0, 5.2, 6.2 |
+| BASKET | 249, 181, 107 | 202, 120, 79 | 6.0, 6.0, 6.0 (few clear px) |
+
+Grounds are the median of clear pixels above their 20th percentile; single
+lines the median of traced centre pixels in their darkest 30%; grain from
+a sigma-2 high-pass on clear pixels, scaled by 0.86 (the store card's ratio
+between that estimate and the line-aligned one). The core colour of the
+other surfaces is the store core scaled by their ground (none has a core
+dense enough to measure). Check: the panel's rendered rows 450-550 have
+mean RGB (248.6, 185.9, 103.1) against the reference's (246.6, 184.8,
+102.7), p10 and p90 within 2 levels per channel.
+
+## Surface description (generator parameters)
+
+`scripts/make-veneer-blend.py` takes, per surface:
+
+- `LOOK[name]`: `ground` (R, G, B before clipping), `single` (one
+  centred line's colour; with the shared `CORE` it fixes the per-channel
+  opacity) and `grain` (per-channel std). `WIDTH` is the stroke width in
+  texels (1.0).
+- `GEOMETRY[name]`: `copies` (affine copies every sheet is drawn with:
+  `['id']`, `['mirror_y', m]`, `['mirror_x', m]`, `['translate', dx, dy]`)
+  and `sheets`. A sheet is `keys` (K+1 polylines with the same vertex
+  count, texels of the surface box), `steps` (K counts: lines between
+  consecutive keys, plus the last key), `radii` (fillet per vertex row,
+  0 = sharp). Optional: `smooth` and `smooth_upto` (the first
+  `smooth_upto` vertices are a smooth key part, drawn through `smooth`
+  rounds of Chaikin corner cutting instead of fillets), `ink` (opacity
+  multiplier), `copies` (overrides the surface's). A twin comb is a second
+  sheet offset by part of a pitch.
+- `render_rgb(name, geo=None)` returns the float image before palette
+  quantisation, so a new surface can be previewed and compared without
+  writing a PNG.
+
+Authoring a new surface: trace the reference, fit keys (below), measure
+`ground` / `single` / `grain` as in the previous section, add both entries.
+
+## Fitting (third pass) and where it stands
+
+Tools (pass scratch, `lib/`): the previous pass's polyline ICP
+(`blend.fit_sheets`); `gfit.py`, a graph-sheet fitter for grain that runs
+along one axis (lines are u(t) between knot rows, keys are knot values,
+all sheets solve one sparse least squares; region-growing ICP from a seed
+band, initialised from the traced crossings at a seed row so the comb's
+phase is right); `sfit.py`, smooth keys (Chaikin) fitted by nonlinear
+least squares of signed distance to traced points; and a darkness-map fit
+for convergences the tracer cannot see (rendered vs reference optical
+depth, blurred sigma 2, plus a traced-residual term).
+
+| Surface | Fit | rms / matched | Adopted in GEOMETRY |
+| --- | --- | --- | --- |
+| store card, middle | ICP (previous pass) | 0.44 px, centre | yes |
+| store card, streak end row + radii | darkness map + traced residual | depth-map loss 0.260 -> 0.053 | yes |
+| store card, top family (top edge -> right verticals) | smooth keys, 9 control points | 1.56 px on 38% of its points | yes (replaces the top-band wedge sheets) |
+| store card, top-left | not fitted (two attempts failed: straight segments from the left edge make a fan; a graph fit along x crosses its own lines) | | no: the middle sheet's converging left ends still draw a dark wedge |
+| panel | graph sheet + twin, knots 10/20 | 0.95 / 1.02 px, 96% of the 82% usable points | no: the fold's lines run near-horizontal and are not graphs over y, so the fit has no fold; neither does it look like the reference |
+| EMAIL | graph sheet + twin, knots 20 | 0.82 px, 97.5% | no: fits the vertical grain and the top-left crossings but not the book-match hook |
+| mailbox, SMG, BASKET | not fitted: the tracer resolves 4-19 crossings per column (pitch 1.5-4 px, text) | | hand-set as before |
+
+## Still wrong (third pass)
+
+- Store card: the streak band has dark lines along its upper and lower
+  edges where the horizontal runs stack, and a light middle; the reference
+  is a lattice of crossing lines with no edge lines and a core only on the
+  right. The construction needed is post-knee runs that keep descending
+  across the axis (the leaves crossing), which the end-row fit did not
+  find. A vertical seam at x ~500 where the top family meets the middle
+  sheet. The top-left wedge.
+- The other five surfaces keep the hand-set geometry and only gain the
+  new line, ground and grain rendering.
+- The committed textures were **not** regenerated: side by side, the
+  committed noise-field store card still reads closer to the reference
+  than this one.

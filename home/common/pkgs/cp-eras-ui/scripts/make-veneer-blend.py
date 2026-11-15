@@ -29,27 +29,44 @@ import numpy as np
 _spec = importlib.util.spec_from_file_location('mv', Path(__file__).with_name('make-veneer.py'))
 mv = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(mv)
 
-SIGMA = 0.55     # stroke gaussian, texels (FWHM ~1.3, measured 1.2-1.9 native px)
-INK = 0.5        # optical depth at a stroke's centre
-SAT = 1.5        # overlapping strokes compound, saturating (cores stop near G 57)
-GROUND_TAU = 0.1 # light -> base step of the palette, in optical depth
+# Line look, measured on the 4K references (veneer-construction.md,
+# "Line, ground and grain"). A line is a 1-texel-wide box stroke (coverage =
+# its overlap with the texel), composited *over* the ground in the line
+# colour `core` with per-channel opacity `alpha`; n overlapping strokes
+# leave the ground showing through prod(1 - alpha*coverage), so a pile of
+# strokes darkens towards `core` and stops there (the streak cores).
+# alpha follows from one centred line: (ground - single) / (ground - core).
+# Ground: the measured paper colour (R before clipping), plus per-channel
+# pixel grain: independent normal noise per channel through a separable
+# [1, 3, 1] filter (lag-1 autocorrelation 0.55, as measured), std `grain`.
+CORE = (150.0, 61.0, 30.0)   # the store streak core, darkest compounded ink
+LOOK = {
+    #                 ground (R, G, B)        single centred line        grain std (R, G, B)
+    'store-card':      dict(ground=(262, 206, 131), single=(211, 144, 67), grain=(3.7, 5.3, 6.4)),
+    'dashboard-panel': dict(ground=(262, 194, 110), single=(217, 154, 76), grain=(4.1, 4.6, 4.9)),
+    'dashboard-email': dict(ground=(262, 191, 108), single=(199, 138, 65), grain=(3.7, 4.8, 5.2)),
+    'mailbox-row':     dict(ground=(258, 202, 130), single=(207, 146, 83), grain=(3.4, 5.0, 6.1)),
+    'store-nav':       dict(ground=(249, 198, 128), single=(202, 140, 74), grain=(6.0, 5.2, 6.2)),
+    'store-basket':    dict(ground=(249, 181, 107), single=(202, 120, 79), grain=(6.0, 6.0, 6.0)),
+}
+WIDTH = 1.0      # stroke width, texels
 
 # Per surface: sheets (keys x vertices in texels, steps, per-row fillet
 # radii) and the copies each sheet is drawn with. Provenance per surface
 # in docs/neokitsch/veneer-construction.md.
 GEOMETRY = {
-    # fitted (ICP, rms 0.43 px centre / 0.80 px upper half); top band approximate
+    # middle (keys 0-2 + twin): ICP rms 0.44 px centre, streak end row (v4) and radii by darkness-map fit; top family (S-curves from the top edge into the right-hand verticals): smooth-key LSQ, rms 1.56 px on 38% of its points; mirrored about the streak
     'store-card': dict(
         copies=[['id'], ['mirror_y', 291.5]],
         sheets=[
-            dict(steps=[16, 26, 11], radii=[0.0, 8.0, 6.0, 6.0, 0.0],
-                 keys=[[[-35.0, 24.5], [19.9, 179.2], [20.2, 250.7], [38.0, 275.8], [648.1, 290.7]], [[41.4, 43.0], [197.7, 156.2], [198.1, 266.1], [255.1, 284.1], [615.2, 284.0]], [[48.4, 70.4], [498.6, 106.3], [498.3, 250.6], [494.4, 269.4], [675.9, 304.4]], [[-106.2, 60.2], [629.8, 69.1], [629.9, 212.4], [673.0, 254.2], [789.6, 363.9]]]),
-            dict(steps=[16, 26, 11], radii=[0.0, 8.0, 6.0, 6.0, 0.0],
-                 keys=[[[-20.3, 54.8], [26.2, 179.8], [24.6, 250.1], [35.5, 270.0], [667.7, 294.8]], [[67.4, 59.0], [203.4, 155.4], [203.2, 268.8], [272.1, 293.0], [648.0, 294.8]], [[99.3, 73.8], [504.4, 105.2], [504.3, 274.5], [528.8, 285.4], [584.6, 277.8]], [[-146.0, 56.2], [634.2, 67.6], [636.3, 185.3], [657.5, 236.6], [664.0, 281.9]]]),
-            dict(steps=[44], radii=[0.0, 6.0, 10.0, 0.0],
-                 keys=[[[150.0, -30.0], [165.7, -21.5], [198.5, 39.7], [-29.6, 31.0]], [[700.0, -30.0], [646.0, 57.3], [561.9, 92.1], [-30.2, 66.1]]]),
-            dict(steps=[44], radii=[0.0, 6.0, 10.0, 0.0],
-                 keys=[[[156.0, -30.0], [174.6, -12.4], [201.5, 37.5], [-21.5, 34.1]], [[706.0, -30.0], [641.5, 31.0], [582.2, 92.8], [-25.0, 65.6]]]),
+            dict(steps=[16, 26], radii=[0.0, 8.0, 7.0, 37.1, 0.0],
+                 keys=[[[-35.0, 24.5], [19.9, 179.2], [20.2, 250.7], [38.0, 275.8], [588.94, 294.32]], [[41.4, 43.0], [197.7, 156.2], [198.1, 266.1], [255.1, 284.1], [290.46, 283.81]], [[48.4, 70.4], [498.6, 106.3], [498.3, 250.6], [494.4, 269.4], [768.79, 307.4]]]),
+            dict(steps=[16, 26], radii=[0.0, 8.0, 7.0, 37.1, 0.0],
+                 keys=[[[-20.3, 54.8], [26.2, 179.8], [24.6, 250.1], [43.62, 275.8], [594.56, 294.32]], [[67.4, 59.0], [203.4, 155.4], [203.2, 268.8], [260.72, 284.1], [296.07, 283.81]], [[99.3, 73.8], [504.4, 105.2], [504.3, 274.5], [500.02, 269.4], [774.4, 307.4]]]),
+            dict(steps=[11], radii=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 7.0, 37.1, 0.0], smooth=2, smooth_upto=10,
+                 keys=[[[246.17, 2.84], [275.84, 3.01], [298.27, 31.34], [330.89, 51.27], [366.0, 58.2], [403.12, 66.15], [411.39, 76.96], [441.85, 73.69], [483.82, 104.15], [498.6, 106.3], [498.3, 250.6], [494.4, 269.4], [768.79, 307.4]], [[619.16, 7.16], [621.68, 11.26], [623.06, 10.99], [622.49, 16.85], [629.78, 25.18], [634.52, 32.38], [633.7, 44.62], [645.38, 60.9], [635.73, 59.92], [629.8, 69.1], [629.9, 212.4], [673.0, 254.2], [1021.84, 351.22]]]),
+            dict(steps=[11], radii=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 8.0, 7.0, 37.1, 0.0], smooth=2, smooth_upto=10,
+                 keys=[[[251.97, 2.84], [281.64, 3.01], [304.07, 31.34], [336.69, 51.27], [371.8, 58.2], [408.92, 66.15], [417.19, 76.96], [447.65, 73.69], [489.62, 104.15], [504.4, 105.2], [504.3, 274.5], [500.02, 269.4], [774.4, 307.4]], [[624.96, 7.16], [627.48, 11.26], [628.86, 10.99], [628.29, 16.85], [635.58, 25.18], [640.32, 32.38], [639.5, 44.62], [651.18, 60.9], [641.53, 59.92], [634.2, 67.6], [636.3, 185.3], [678.62, 254.2], [1027.46, 351.22]]]),
         ]),
     # hand-set from the trace (ICP rms 0.39 px on 53% of points)
     'store-nav': dict(
@@ -110,6 +127,8 @@ def transform(kind):
         return np.array([[1.0, 0, 0], [0, -1.0, 2 * kind[1]]])
     if kind[0] == 'mirror_x':
         return np.array([[-1.0, 0, 2 * kind[1]], [0, 1.0, 0]])
+    if kind[0] == 'translate':
+        return np.array([[1.0, 0, kind[1]], [0, 1.0, kind[2]]])
     raise ValueError(kind)
 
 
@@ -122,6 +141,15 @@ def sheet_lines(sheet):
             u = s / n
             out.append((1 - u) * keys[i] + u * keys[i + 1])
     return out
+
+
+def chaikin(P, rounds):
+    """Corner cutting: `rounds` passes of Chaikin's scheme (a smooth key
+    drawn through its control polygon), end points kept."""
+    for _ in range(rounds):
+        Q, R = P[:-1] * 0.75 + P[1:] * 0.25, P[:-1] * 0.25 + P[1:] * 0.75
+        P = np.vstack([P[:1], np.stack([Q, R], 1).reshape(-1, 2), P[-1:]])
+    return P
 
 
 def fillet(V, radii):
@@ -152,8 +180,23 @@ def fillet(V, radii):
     return np.array(pts)
 
 
-def stroke(tau, P, pad=4):
-    H, W = tau.shape
+def path(V, sheet):
+    """A line's drawn path: the first `smooth_upto` vertices (a smooth key
+    part) through `smooth` rounds of Chaikin, the rest filleted per row."""
+    k, n = sheet.get('smooth_upto', 0), sheet.get('smooth', 0)
+    if k <= 1 or n == 0:
+        return fillet(V, sheet['radii'])
+    head = chaikin(V[:k], n)
+    if k >= len(V):
+        return head
+    tail = fillet(V[k - 1:], sheet['radii'][k - 1:])
+    return np.vstack([head[:-1], tail])
+
+
+def stroke(taus, P, alpha, width=WIDTH, pad=2):
+    """Add one stroke's optical depth -ln(1 - alpha_c * coverage) per
+    channel; coverage is a `width`-wide box's overlap with the texel."""
+    H, W = taus.shape[1:]
     x0 = max(int(np.floor(P[:, 0].min())) - pad, 0); x1 = min(int(np.ceil(P[:, 0].max())) + pad, W)
     y0 = max(int(np.floor(P[:, 1].min())) - pad, 0); y1 = min(int(np.ceil(P[:, 1].max())) + pad, H)
     if x1 <= x0 or y1 <= y0:
@@ -169,27 +212,75 @@ def stroke(tau, P, pad=4):
         t = np.clip(((X - a[0]) * d[0] + (Y - a[1]) * d[1]) / L2, 0, 1)
         sub = D[by0 - y0:by1 - y0, bx0 - x0:bx1 - x0]
         np.minimum(sub, np.hypot(X - a[0] - t * d[0], Y - a[1] - t * d[1]), out=sub)
-    tau[y0:y1, x0:x1] += INK * np.exp(-0.5 * (D / SIGMA) ** 2)
+    cov = np.clip(np.minimum(D + width / 2, 0.5) - np.maximum(D - width / 2, -0.5), 0, None)
+    for c in range(3):
+        taus[c, y0:y1, x0:x1] -= np.log1p(-np.minimum(alpha[c] * cov, 0.999))
+
+
+def grain(shape, std, seed):
+    """Per-channel pixel grain: normal noise through a separable [1, 3, 1]
+    (wrapping), scaled to unit variance and then to `std`."""
+    rng = np.random.Generator(np.random.PCG64(seed))
+    out = np.empty((3,) + shape)
+    for c in range(3):
+        n = rng.standard_normal(shape)
+        n = np.roll(n, 1, 0) + 3 * n + np.roll(n, -1, 0)
+        n = np.roll(n, 1, 1) + 3 * n + np.roll(n, -1, 1)
+        out[c] = n / 11.0 * std[c]       # 11 = sum of the 2-D kernel's squares
+    return out
+
+
+def palette_quantise(rgb, k=256, iters=8):
+    """Deterministic k-means of the RGB texels into a k-colour palette
+    (initialised at luminance quantiles of every 7th texel)."""
+    X = rgb.reshape(-1, 3)
+    S = X[::7]
+    lum = S @ np.array([0.3, 0.59, 0.11])
+    order = np.argsort(lum, kind='stable')
+    C = S[order[(np.arange(k) * (len(S) - 1)) // (k - 1)]].copy()
+
+    def assign(P):
+        out = np.empty(len(P), np.int64)
+        cc = (C * C).sum(1)[None]
+        for i in range(0, len(P), 65536):
+            Q = P[i:i + 65536]
+            out[i:i + 65536] = np.argmin(cc - 2 * Q @ C.T, 1)
+        return out
+    for _ in range(iters):
+        a = assign(S)
+        cnt = np.bincount(a, minlength=k)
+        for c in range(3):
+            s = np.bincount(a, weights=S[:, c], minlength=k)
+            C[:, c] = np.where(cnt > 0, s / np.maximum(cnt, 1), C[:, c])
+    C = np.clip(np.round(C), 0, 255)
+    idx = assign(X).reshape(rgb.shape[:2])
+    return idx.astype(np.uint8), C.astype(np.uint8)
+
+
+def render_rgb(name, geo=None, grain_on=True):
+    """The surface as float RGB (H x W x 3), before palette quantisation."""
+    spec, look = mv.SURFACES[name], LOOK[name]
+    geo = GEOMETRY[name] if geo is None else geo
+    W, H = spec['size']
+    tw, th = int(np.ceil(W * mv.R)), int(np.ceil(H * mv.R))
+    ground, single = np.array(look['ground'], float), np.array(look['single'], float)
+    core = np.minimum(np.array(CORE) * ground / np.array(LOOK['store-card']['ground'], float), single - 1)
+    alpha = (ground - single) / (ground - core)
+    taus = np.zeros((3, th, tw))
+    for sheet in geo['sheets']:
+        a = alpha * sheet.get('ink', 1.0)
+        for c in sheet.get('copies', geo['copies']):
+            M = transform(c)
+            for V in sheet_lines(sheet):
+                stroke(taus, path(V @ M[:, :2].T + M[:, 2], sheet), a)
+    rgb = core[:, None, None] + (ground - core)[:, None, None] * np.exp(-taus)
+    if grain_on:
+        rgb = rgb + grain((th, tw), look['grain'], spec['seed'] + 7)
+    return np.clip(rgb, 0, 255).transpose(1, 2, 0)
 
 
 def render(name):
-    spec, geo = mv.SURFACES[name], GEOMETRY[name]
-    W, H = spec['size']
-    tw, th = int(np.ceil(W * mv.R)), int(np.ceil(H * mv.R))
-    tau = np.zeros((th, tw))
-    for sheet in geo['sheets']:
-        lines = sheet_lines(sheet)
-        for c in geo['copies']:
-            M = transform(c)
-            for V in lines:
-                stroke(tau, fillet(V @ M[:, :2].T + M[:, 2], sheet['radii']))
-    tau = SAT * (1 - np.exp(-tau / SAT))
-    rng = np.random.Generator(np.random.PCG64(spec['seed'] + 7))
-    tau = tau + 0.02 * rng.standard_normal(tau.shape)         # pore noise
-    b, span = spec['base_at'], 255 - spec['base_at']
-    idx = np.where(tau < GROUND_TAU, np.maximum(tau, 0) / GROUND_TAU * b,
-                   b + (tau - GROUND_TAU) / spec['taumax'] * span)
-    return np.clip(np.round(idx), 0, 255).astype(np.uint8)
+    return palette_quantise(render_rgb(name))
 
 
 def main():
@@ -201,8 +292,8 @@ def main():
     for name in GEOMETRY:
         if args.only and name not in args.only:
             continue
-        idx = render(name)
-        data = mv.png_indexed(idx, mv.ramp(mv.SURFACES[name]))
+        idx, pal = render(name)
+        data = mv.png_indexed(idx, pal)
         (out / f'{name}.png').write_bytes(data)
         print(f'{hashlib.sha256(data).hexdigest()}  {name}.png  {idx.shape[1]}x{idx.shape[0]}', file=sys.stderr)
 
