@@ -35,7 +35,8 @@ the golden matrix, and the Neomil and Entropism cases with
 Not covered: `Renderer::screenshot` (iced's in-process screenshot task)
 renders without the pass, and the tiny-skia fallback renderer has none.
 The pass is a fixed cost per presented frame while set: one extra render
-target the size of the surface and up to 13 texture samples per pixel.
+target the size of the surface and up to 16 texture samples per pixel
+(four for the fill gate, four per registration copy, up to three copies).
 
 Remove with the first change's removal, or when cp-eras-ui drops the print
 material, or if upstream gains a post-processing hook that can carry it.

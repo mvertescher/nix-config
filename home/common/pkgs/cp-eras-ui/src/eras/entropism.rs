@@ -1976,24 +1976,34 @@ const HUB_SCAN: &[Prim] = &[
 
 // --- print -----------------------------------------------------------------
 /// Entropism's print material (`crate::print`; measurements in
-/// `docs/print-overlay.md`). Faint, soft copies of the light ink displaced
-/// outward from the screen centre: a whole-frame correlation fit gives a
-/// 0.6 % scale on all four references, the visible ghost on isolated stems
-/// sits farther, so 0.8 % with a second copy at twice it was chosen by eye,
-/// opacities held down so the mean colour does not overshoot the reference
-/// (its frame strokes are already brighter than the art);
-/// rows banded at about 3.3 px; light fills carry
-/// chromatic grain of ~2.3 % (sage selection row: RGB std 4.4/6.0/9.0 on
-/// 168/212/171), the dark ground about 0.7 levels; no scanlines on fills or
-/// ground.
+/// `docs/print-overlay.md`, "Registration copies, measured 2026-11-14").
+/// Registration copies refitted 2026-11-14 on the store reference (file
+/// `entropism-dashboard.png`, which is the store) with a bloom-aware model
+/// (a centred blur for the glow plus N shifted copies), 4 sites, and 19
+/// sites of the mailbox and dashboard without the bloom term: two copies at
+/// 0.61 % / 0.68 % and 1.52 % / 1.60 % (across / down; 2.5x, not 2x),
+/// opacity 0.36 and 0.14 (medians; sites range 0.19-0.60 and 0.06-0.29),
+/// blur sigma 1.5-2 native px, normal alpha
+/// better than lighten or add on every site. A third copy near 3.5x took
+/// 0.1-0.2 on a few sites but only lowered the residual 2-4 %: not drawn.
+/// The copies are visible through a diagonal circuit-like pattern that this
+/// pass does not model (texture flat). Rows of the old fit (3.33 px banding)
+/// were not re-measured. Light fills carry chromatic grain of ~2.3 % (sage
+/// selection row: RGB std 4.4/6.0/9.0 on 168/212/171), the dark ground about
+/// 0.7 levels; no scanlines on fills or ground. The bloom is not drawn.
 pub const PRINT: crate::print::Print = crate::print::Print {
-    echo_scale: 0.008,
-    echo_alpha: (0.32, 0.18),
-    echo_scan_depth: 0.3,
-    echo_scan_pitch: 3.33,
+    echo: [
+        crate::print::Echo { kx: 0.0061, ky: 0.0068, gain: 0.36 },
+        crate::print::Echo { kx: 0.0152, ky: 0.0160, gain: 0.14 },
+        crate::print::Echo::NONE,
+    ],
+    echo_centre: (790.0, 450.0),
+    echo_blend: crate::print::Blend::Over,
+    echo_soft: 0.75,
+    echo_lift: (0.02, 0.10),
+    echo_texture: crate::print::Texture::FLAT,
     echo_gate: (0.40, 0.55),
     echo_gate_radius: 6.0,
-    echo_soft: 2.0,
     scan_depth: 0.0,
     scan_pitch: 1.985,
     grain_mul: 0.028,

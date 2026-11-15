@@ -3555,28 +3555,110 @@ const DASHBOARD_FOOTER_TEXT_ECHO_2: &[Prim] = &[
 // --- end dashboard -------------------------------------------------------
 
 // --- print -----------------------------------------------------------------
-/// Neomil's print material (`crate::print`; measurements in
-/// `docs/print-overlay.md`). Every bright element of all four references
-/// has faint copies displaced outward from the screen centre, fitted as a
-/// whole-frame scale of 0.55 % per copy (dashboard 0.50 %, store 0.55 %,
-/// login 0.8 %, a second copy at twice the step), with rows modulated at the
-/// established 1.985 px scan pitch to ~60 % depth. Opacities and softness
-/// were set by eye on the mailbox, which draws no per-element copies. Clear ground has no
-/// scanlines (row amplitude 0.01 levels) and the dashboard's flat red tiles
-/// are exactly #ef3333 with zero variance, so there are no global fill
-/// scanlines; the ground's own texture is about one level of fine noise.
-pub const PRINT: crate::print::Print = crate::print::Print {
-    echo_scale: 0.0055,
-    echo_alpha: (0.24, 0.14),
-    echo_scan_depth: 0.6,
-    echo_scan_pitch: 1.985,
+/// Neomil's print material (`crate::print`; measurements and method in
+/// `docs/print-overlay.md`, "Registration copies, measured 2026-11-14").
+///
+/// Fitted on isolated features of all four references with a forward model
+/// of N blurred copies of the crisp ink (per-row gain free): exactly two
+/// copies, a third takes no weight; the two are each the frame scaled about a
+/// point near the screen centre, the second about twice as far out; normal
+/// alpha compositing fits better than lighten or add wherever the copies
+/// overlap (dashboard marker boxes rms 0.0074 against 0.0141 add and 0.0181
+/// lighten; 34/37 mailbox and 31/32 store sites better than lighten). Blur
+/// sigma 1.05-1.14 native px. The copies are coloured by rows of 4.764
+/// native px (1.985 dp) in the same phase on all four screens: at the crest
+/// the ink red with its green and blue mostly removed, at the trough a dull
+/// red at about 0.58 of the ink's red and its full green and blue.
+///
+/// The registration differs between the references (below); this, the
+/// mailbox fit, is the era's treatment for a new screen because the
+/// mailbox draws no per-element copies of its own. Gains are opacities of
+/// the textured copy; the fitted ink-relative red gains are these times the
+/// texture's mean red, 0.79. Clear ground has no scanlines (row amplitude
+/// 0.01 levels) and the dashboard's flat red tiles are exactly #ef3333 with
+/// zero variance, so there are no global fill scanlines; the ground's own
+/// texture is about one level of fine noise.
+pub const PRINT: crate::print::Print = PRINT_MAILBOX;
+
+const PRINT_TEXTURE: crate::print::Texture = crate::print::Texture {
+    pitch: 1.985,
+    angle: 90.0,
+    crest: [1.0, 0.30, 0.30],
+    trough: [0.58, 0.98, 0.98],
+    // The red crest on native row 4.68 (pixel centre 5.18) + n 4.764.
+    phase: -0.0867,
+};
+
+/// The mailbox (`img-08-main`): 37 sites. Copy 1 0.60 % across, 1.00 %
+/// down; copy 2 1.22 % across. Copy 2 down is taken from the header rule,
+/// whose copies sit cleanly apart at -6.6 and -12.7 native px (1.0 % and
+/// 1.9 %); the 37-site fit gave 1.73 % with 1.1 px scatter. About native
+/// (1920, 1117); red gains 0.30 / 0.15.
+const PRINT_MAILBOX: crate::print::Print = crate::print::Print {
+    echo: [
+        crate::print::Echo { kx: 0.0060, ky: 0.0100, gain: 0.38 },
+        crate::print::Echo { kx: 0.0122, ky: 0.0190, gain: 0.19 },
+        crate::print::Echo::NONE,
+    ],
+    echo_centre: (800.0, 465.4),
+    echo_blend: crate::print::Blend::Over,
+    echo_soft: 0.45,
+    echo_lift: (0.02, 0.10),
+    echo_texture: PRINT_TEXTURE,
     echo_gate: (0.20, 0.32),
     echo_gate_radius: 6.0,
-    echo_soft: 1.5,
     scan_depth: 0.0,
     scan_pitch: 1.985,
     grain_mul: 0.0,
     grain_add: 0.004,
     grain_cell: 0.42,
 };
+
+/// The dashboard (`img-07-dashboard`): 13 hand-picked sites, residual
+/// 0.1-0.2 native px. Copy 1 0.50 % both ways, copy 2 0.92 % / 0.93 %
+/// (1.85x), about native (1935, 1160); red gains 0.46 / 0.30.
+const PRINT_DASHBOARD: crate::print::Print = crate::print::Print {
+    echo: [
+        crate::print::Echo { kx: 0.0050, ky: 0.0050, gain: 0.58 },
+        crate::print::Echo { kx: 0.0092, ky: 0.0093, gain: 0.38 },
+        crate::print::Echo::NONE,
+    ],
+    echo_centre: (806.3, 483.3),
+    ..PRINT_MAILBOX
+};
+
+/// The store (`img-09-store`): 32 sites. Copy 1 0.54 % / 1.07 %, copy 2
+/// 1.45 % / 2.25 %, about native (1920, 1091); red gains 0.41 / 0.23.
+const PRINT_STORE: crate::print::Print = crate::print::Print {
+    echo: [
+        crate::print::Echo { kx: 0.0054, ky: 0.0107, gain: 0.52 },
+        crate::print::Echo { kx: 0.0145, ky: 0.0225, gain: 0.29 },
+        crate::print::Echo::NONE,
+    ],
+    echo_centre: (800.0, 454.6),
+    ..PRINT_MAILBOX
+};
+
+/// The login (`img-06-private`): only 8 usable sites (most of its ink sits
+/// on the red cards, which hide the copies), so the weakest fit; the header
+/// rule's copies sit 7 and 13 native px above it (1.05 % / 1.95 % down from
+/// the mailbox centre); across 0.59 % / 1.3 %; red gains 0.34 / 0.23.
+const PRINT_LOGIN: crate::print::Print = crate::print::Print {
+    echo: [
+        crate::print::Echo { kx: 0.0059, ky: 0.0105, gain: 0.43 },
+        crate::print::Echo { kx: 0.0130, ky: 0.0195, gain: 0.29 },
+        crate::print::Echo::NONE,
+    ],
+    ..PRINT_MAILBOX
+};
+
+/// The material as fitted on one reference screen (`print::of_screen`).
+pub(crate) const fn print_for(screen: crate::print::Screen) -> crate::print::Print {
+    match screen {
+        crate::print::Screen::Login => PRINT_LOGIN,
+        crate::print::Screen::Dashboard => PRINT_DASHBOARD,
+        crate::print::Screen::Mailbox => PRINT_MAILBOX,
+        crate::print::Screen::Store => PRINT_STORE,
+    }
+}
 // --- end print -------------------------------------------------------------

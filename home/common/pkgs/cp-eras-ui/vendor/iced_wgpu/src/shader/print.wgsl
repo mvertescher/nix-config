@@ -6,27 +6,41 @@
 // are encoded here; the result is decoded again for the sRGB target.
 //
 // Three terms, each zero when its strength is zero:
-//   1. Registration copies: the frame scaled about the screen centre by
-//      (1 + n*k), n = 2 then 1, lighten-composited at alpha a_n, the copy's
-//      rows modulated by a cosine at the echo pitch. A fill gate suppresses
-//      copies where the neighbourhood is a light fill, so dark ink on a fill
-//      is not lightened by a copy of the fill around it.
+//   1. Registration copies: up to three copies of the frame, each scaled
+//      about a centre by (1 + kx, 1 + ky), blurred (4-tap box, sigma = h),
+//      its colour scaled per channel between a texture's crest and trough
+//      factors along a cosine (rows for Neomil), and
+//      composited farthest first at its opacity: alpha-over (or lighten).
+//      Two gates keep the copies *under* the art: the lift gate shows a copy
+//      only where it is lighter than the pixel under it, and the fill gate
+//      suppresses copies where the neighbourhood is a light fill, so dark
+//      ink on a fill is not lightened by a copy of the fill around it.
 //   2. Fill scanlines: a darkening multiply by a raised cosine.
 //   3. Grain: bilinear value noise, per channel, multiplicative plus additive.
 
 struct Uniforms {
     // size.x, size.y (device px), sx, sy (device px per design px)
     u0: vec4<f32>,
-    // echo k, alpha (far copy), alpha (near copy), echo scan depth
+    // copy a: kx, ky, opacity; copy b: kx (farthest first)
     u1: vec4<f32>,
-    // echo pitch (device px), echo phase (cycles), gate lo, gate hi
+    // copy b: ky, opacity; copy c: kx, ky
     u2: vec4<f32>,
-    // gate radius (device px), scan depth, scan pitch (device px), scan phase
+    // copy c: opacity, unused, scale centre (device px)
     u3: vec4<f32>,
-    // grain mul, grain add (encoded units), grain cell (device px), seed
+    // texture pitch (device px), phase (cycles), unit direction (device)
     u4: vec4<f32>,
-    // copy softness: half-spread of the 4-tap box (device px), unused x3
+    // texture crest factor per channel, blend (0 over, 1 lighten)
     u5: vec4<f32>,
+    // texture trough factor per channel, unused
+    u6: vec4<f32>,
+    // fill gate lo, hi, ring radius (device px), copy blur sigma (device px)
+    u7: vec4<f32>,
+    // lift gate lo, hi, fill scan depth, fill scan pitch (device px)
+    u8: vec4<f32>,
+    // fill scan phase, grain mul, grain add (encoded), grain cell (device px)
+    u9: vec4<f32>,
+    // grain seed, unused x3
+    u10: vec4<f32>,
 }
 
 @group(0) @binding(0) var u_sampler: sampler;
@@ -66,7 +80,8 @@ fn at(p: vec2<f32>) -> vec3<f32> {
     return encode(textureSampleLevel(u_frame, u_sampler, uv, 0.0).rgb);
 }
 
-// A copy sampled as a 4-tap box of half-spread h (0: one bilinear tap).
+// A copy sampled as a 4-tap box at (+-h, +-h): per-axis standard deviation
+// h (0: one bilinear tap).
 fn copy_at(p: vec2<f32>, h: f32) -> vec3<f32> {
     if (h <= 0.0) {
         return at(p);
@@ -116,45 +131,56 @@ fn noise(p: vec2<f32>, c: u32, s: u32) -> f32 {
     return mix(mix(a, b, f.x), mix(d, e, f.x), f.y) / (0.57735027 * sqrt(wx * wy));
 }
 
+// One copy, composited over `out`. `here` is the frame's own colour,
+// `tint` the texture's per-channel factor, `gate` the fill gate.
+fn composite(out: vec3<f32>, here: vec3<f32>, p: vec2<f32>, k: vec2<f32>, a: f32,
+             tint: vec3<f32>, gate: f32) -> vec3<f32> {
+    if ((k.x == 0.0 && k.y == 0.0) || a <= 0.0) {
+        return out;
+    }
+    let c = u.u3.zw;
+    let src = copy_at(c + (p - c) / (vec2<f32>(1.0) + k), u.u7.w);
+    var lift = 1.0;
+    if (u.u8.y > u.u8.x) {
+        lift = smoothstep(u.u8.x, u.u8.y, luma(src) - luma(here));
+    }
+    let w = clamp(a * gate * lift, 0.0, 1.0);
+    let col = clamp(src * tint, vec3<f32>(0.0), vec3<f32>(1.0));
+    let over = mix(out, col, w);
+    return select(over, max(out, over), u.u5.w > 0.5);
+}
+
 @fragment
 fn fs_main(@builtin(position) pos: vec4<f32>) -> @location(0) vec4<f32> {
     let p = pos.xy;
     let src = textureLoad(u_frame, vec2<i32>(p), 0);
     var out = encode(src.rgb);
-    let size = u.u0.xy;
-    let centre = size * 0.5;
 
     // 1. Registration copies.
-    let k = u.u1.x;
-    if (k > 0.0 && (u.u1.y > 0.0 || u.u1.z > 0.0)) {
-        let r = u.u3.x;
+    if (u.u1.z > 0.0 || u.u2.y > 0.0 || u.u3.x > 0.0) {
+        let r = u.u7.z;
         let ring = (luma(at(p + vec2<f32>(r, 0.0))) + luma(at(p - vec2<f32>(r, 0.0)))
             + luma(at(p + vec2<f32>(0.0, r))) + luma(at(p - vec2<f32>(0.0, r)))) * 0.25;
-        let gate = select(1.0 - smoothstep(u.u2.z, u.u2.w, ring), 1.0, u.u2.w <= u.u2.z);
-        let m = 1.0 + u.u1.w * scan(p.y, u.u2.x, u.u2.y);
-        let base = out;
-        // The far copy is painted first, as the fainter print under the nearer.
-        let far = copy_at(centre + (p - centre) / (1.0 + 2.0 * k), u.u5.x);
-        let a2 = clamp(u.u1.y * m * gate, 0.0, 1.0);
-        out = max(out, mix(out, far, a2));
-        let near = copy_at(centre + (p - centre) / (1.0 + k), u.u5.x);
-        let a1 = clamp(u.u1.z * m * gate, 0.0, 1.0);
-        out = max(out, mix(out, near, a1));
-        // Copies only ever lighten what is under them.
-        out = max(out, base);
+        let gate = select(1.0 - smoothstep(u.u7.x, u.u7.y, ring), 1.0, u.u7.y <= u.u7.x);
+        let t = scan(dot(p, u.u4.zw), u.u4.x, u.u4.y);
+        let tint = max(vec3<f32>(0.0), mix(u.u6.xyz, u.u5.xyz, 0.5 + 0.5 * t));
+        let here = out;
+        out = composite(out, here, p, u.u1.xy, u.u1.z, tint, gate);
+        out = composite(out, here, p, vec2<f32>(u.u1.w, u.u2.x), u.u2.y, tint, gate);
+        out = composite(out, here, p, u.u2.zw, u.u3.x, tint, gate);
     }
 
-    // 2. Fill scanlines: darken by depth at the trough, 1 at the crest.
-    if (u.u3.y > 0.0) {
-        out = out * (1.0 - u.u3.y * (0.5 - 0.5 * scan(p.y, u.u3.z, u.u3.w)));
+// 2. Fill scanlines: darken by depth at the trough, 1 at the crest.
+    if (u.u8.z > 0.0) {
+        out = out * (1.0 - u.u8.z * (0.5 - 0.5 * scan(p.y, u.u8.w, u.u9.x)));
     }
 
     // 3. Grain.
-    if (u.u4.x > 0.0 || u.u4.y > 0.0) {
-        let q = p / max(u.u4.z, 1.0);
-        let s = bitcast<u32>(i32(u.u4.w));
+    if (u.u9.y > 0.0 || u.u9.z > 0.0) {
+        let q = p / max(u.u9.w, 1.0);
+        let s = bitcast<u32>(i32(u.u10.x));
         let n = vec3<f32>(noise(q, 0u, s), noise(q, 1u, s), noise(q, 2u, s));
-        out = out + n * (u.u4.x * out + vec3<f32>(u.u4.y));
+        out = out + n * (u.u9.y * out + vec3<f32>(u.u9.z));
     }
 
     return vec4<f32>(decode(clamp(out, vec3<f32>(0.0), vec3<f32>(1.0))), src.a);
