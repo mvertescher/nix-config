@@ -272,3 +272,78 @@ depth, blurred sigma 2, plus a traced-residual term).
 - The committed textures were **not** regenerated: side by side, the
   committed noise-field store card still reads closer to the reference
   than this one.
+
+## Store card, fourth pass: the streak as crossing leaves
+
+Oriented ridge filters on the 4K crop (17 angles from -40 to +40 degrees)
+show the store streak's construction. Above the axis, rows 276-288 carry
+lines descending to the right at +15 to +20 degrees from x 220 to 540. Below
+it, the mirror image carries lines at -12 to -17 degrees. In rows 288-296,
+x 100-260, both orientations are present: lines from each leaf continue past
+the axis and cross there. From x 340 rightwards, near-horizontal ridges at
+y ~283 and ~302 converge on the axis (288 and 294 at x 500), and they meet
+in the core at x 500-620.
+
+**Model (in GEOMETRY).** Each middle-sheet line now ends in a tail
+`[knee, crossing knee, C]`. From the bottom of its vertical run at
+(x_v, y_k), a straight run descends at theta until it reaches
+y = 291.5 + h, on the far side of the axis. From there it runs to a shared
+convergence point C = (640.3, 291.5 + 0.55). The mirror copy is the other
+leaf, so the two leaves cross.
+
+| Key | y_k | theta (deg) | h |
+| --- | --- | --- | --- |
+| x_v ~20 | 268 | 24 | 17.7 |
+| x_v ~198 | 265.2 | 11.9 | 9.2 |
+| x_v ~498 | 271.5 | 7.2 | 5.1 |
+| top family, right | 245.8 | 10 | 0.8 |
+
+The fillets are 30 at the knee and 16 at the crossing knee. The twin uses
+the same rule from its own knee (capped at +-6 px from the main sheet).
+
+How the parameters were fitted: Powell on the band rows 240-345, with text
+masked. The loss has three terms: oriented-filter energy (blurred sigma
+2.5), darkness (blurred sigma 2), and the per-column counts of G < 80 and
+G < 140 at x 160-620 against the reference. Bounds keep h > 0, which forces
+the crossing. key 0's knee and angle were then set by hand (268 / 24) to
+shrink the empty diamond at the left end of the band. Scripts:
+`e3/model.py`, `fit2.py` and `build.py` in the pass scratch.
+
+**Top-left.** Middle keys 0 and 1 gained 10-point smooth heads. Key 0 enters
+from the left edge (y 186). Key 1 enters from the top-left corner and runs
+straight to its fold, because S-shaped initialisations fitted worse
+(coverage 63% vs 70%). Key 2's head is the top family's key 0, so the top
+sheets skip their first line (`skip`, a new sheet option). This removes
+the wedge and the doubled line at x ~500.
+
+| Region (traced points) | Previous rms / coverage | Now |
+| --- | --- | --- |
+| centre (x 190-520, y 95-262) | 0.57 / 98.2% | 0.81 / 97.9% |
+| streak band (x 150-629, y 262-322) | 0.93 / 81.1% | 1.01 / 90.5% |
+| top-left (x 0-200, y 0-150) | 0.89 / 52.2% | 1.18 / 70.1% |
+| top band (x 250-629, y 0-100) | 1.35 / 56.4% | 1.24 / 74.6% |
+| whole card | 1.08 / 77.7% | 1.14 / 85.7% |
+
+Streak darkness, 3 columns averaged: pixels with G < 80 (and G < 140).
+
+| x | 200 | 300 | 400 | 500 | 540 | 600 | 620 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| reference | 0 (3) | 0 (12) | 0 (23) | 7 (21) | 10 (17) | 4 (21) | 3 (27) |
+| now | 2 (15) | 4 (18) | 4 (23) | 6 (21) | 8 (17) | 9 (13) | 8 (13) |
+
+**Still wrong.**
+
+- The band edges are drawn as crisp single lines where the crossing knees
+  stack along a straight fold row. The reference's band edges are soft.
+- A thin dark axis line runs from x ~200, where the reference has no core.
+  The core does not thin past x 560 (8-9 px at x 600-620 against 3-4).
+  Moving C, or letting the crossing knees fan rather than lie on one fold
+  row, is the next thing to try.
+- The top-left is straight diagonals, not the reference's stair-step
+  S-curves. The wedge is gone, but the curves are missing.
+- At x ~500 a fold discontinuity remains between the middle sheet's sharp
+  fold and the top family's smooth heads.
+- The centre rms rose from 0.57 to 0.81 px, because the knee fillet grew
+  from 7 to 30.
+- The committed noise-field PNG still reads closer to the reference
+  overall. It was not regenerated.
