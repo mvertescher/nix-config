@@ -1,5 +1,7 @@
 # Login primary card fit, 2026-09-27
 
+> **Partly superseded 2026-11-14.** The hand-drawn echo copies described here were removed when the print pass went on for all eras; the pass draws them now ([print-overlay.md](../print-overlay.md), "Per-element copies removed"). The primary fits stand.
+
 Source: `images/img-06-private.png` (#59), 3840×2160. Design coordinates
 below divide native pixels by 2.4. The SVG is
 `docs/neomil/login-trace.svg`, rendered at 3840×2160 with the bundled

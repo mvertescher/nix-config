@@ -120,7 +120,11 @@ impl Hub {
                     self.open();
                 }
             }
-            Message::Stroke(Stroke::Back) => { self.dashboard.clear_feedback(); self.route = Route::Dashboard; }
+            Message::Stroke(Stroke::Back) => {
+                self.dashboard.clear_feedback();
+                self.route = Route::Dashboard;
+                self.wear();
+            }
             Message::Go(to) => {
                 if self.route == Route::Dashboard {
                     self.go(to);
@@ -151,6 +155,21 @@ impl Hub {
                 self.route = Route::Store;
             }
         }
+        self.wear();
+    }
+
+    /// Hand the renderer the print material fitted on the showing
+    /// screen (`print::of_screen`): the references were not all printed
+    /// with the same registration, so the mailbox and the store reached
+    /// from here wear their own fits, as their own binaries do, and the
+    /// dashboard its. Every route change comes through `go` or Back.
+    fn wear(&self) {
+        let screen = match self.route {
+            Route::Dashboard => crate::print::Screen::Dashboard,
+            Route::Mail => crate::print::Screen::Mailbox,
+            Route::Store => crate::print::Screen::Store,
+        };
+        crate::print::wear_screen(self.dashboard.style.era, screen);
     }
 
     /// The keyboard, whole, plus the showing screen's clock while its

@@ -1,4 +1,4 @@
-# Print overlay prototype, 2026-11-13 (copies remeasured 2026-11-14)
+# Print overlay, 2026-11-13 (copies remeasured, and on for all eras, 2026-11-14)
 
 Owner decision 6 (`docs/review-2026-11-13/DECISIONS.md`): one shared
 print-texture pass per era instead of element-by-element echo and grain
@@ -6,8 +6,8 @@ fitting. This records what the reference surface measures as, what the
 prototype draws, and its limits. Code: `src/print.rs` (era-side data and
 CPU mirror), `src/eras/{neomil,entropism}.rs` `PRINT`,
 `vendor/iced_wgpu/src/print.rs` + `shader/print.wgsl` (the pass;
-`vendor/iced_wgpu/PATCHES.md`). Prototype for the owner to judge; the
-goldens were not refreshed.
+`vendor/iced_wgpu/PATCHES.md`). On by default for every era since
+2026-11-14 (Matt: "On for all eras"); see "On by default" below.
 
 ## What the references show
 
@@ -128,30 +128,68 @@ first by `echo_blend` (`Over`, or the old `Lighten`); gated by
 it -- what puts it under the art) and by the fill gate. `print::of(era)` is
 the era's treatment for a new screen (Neomil: the mailbox fit);
 `print::of_screen(era, Screen)` returns the per-screen fit, which the four
-reference binaries wear. Strength is still 0 by default; the goldens are
-unchanged.
+reference binaries wear. `print::DEFAULT_STRENGTH` is 1: the fit is worn
+by default (below).
 
 Overrides: `CP_ERAS_UI_PRINT_SET="echo1=kx,ky,gain;echo2=...;echo_centre=x,y;echo_blend=over|lighten;echo_soft=s;echo_lift=lo,hi;tex_pitch=p;tex_angle=a;tex_crest=r,g,b;tex_trough=r,g,b;tex_phase=f;..."`.
 
-### Per-element copies the pass doubles
+### On by default, 2026-11-14
 
-With the pass on, these era-drawn copies are drawn as well as the pass's
-own (Neomil dashboard marker boxes show four copies instead of two):
+Who wears it:
 
-- Neomil dashboard: `neomil_dashboard_margin_echoes.rs`,
-  `..._header_echoes.rs`, `..._tape_chip_echoes.rs`, `..._label_echoes.rs`
-  (VEHICLES etc.), `..._echoes.rs` (`PANEL_ECHOES`),
-  `..._panel_printing.rs` (`PRINTING_ECHOES`), `..._panel_primary.rs`
-  (`HEADING_ECHOES`), `..._brand_echoes.rs`, and the footer
-  `DASHBOARD_FOOTER_{FRAME,TEXT}_ECHO_{1,2}` in `src/eras/neomil.rs`.
-- Neomil login: `neomil_login_echoes.rs` (`HEADER_ECHOES`), the reference
-  note copies (`NoteEcho`, `src/screens/login/echo.rs`).
-- Neomil store: `src/eras/neomil/store_echo.rs`, `store_title_echo.rs`,
-  `store_frame_echo.rs`.
-- Neomil mailbox: none, which is why its fit is the era default.
-- Kitsch / Neo-kitsch: `PanelEcho::Wave` / `PanelEcho::Rings` and the mail
-  `MailRowEcho` ghosts are designed echoes, not print copies, but sit near
-  them; not checked one by one.
+- `cp-eras-ui-login`, `-mailbox`, `-store`, `-dashboard`: their screen's
+  fit (`print::wear_screen`). The dashboard binary's hub re-wears on each
+  route, so the mailbox and the store reached from it wear their own fits
+  (`screens::hub`, `Hub::wear`), as their own binaries do.
+- `cp-eras-ui-mail` (the working mail client): the era's treatment for a
+  new screen, `print::of` (Neomil: the mailbox fit).
+- Not the status bar (`cp-eras-ui-bar`, `-bar-window`): a live desktop
+  surface designed separately, with its own rule echo and the
+  `PanelEcho` menu motifs. Its render is unchanged byte for byte.
+- `CP_ERAS_UI_PRINT=0` turns the pass off in any of them.
+
+### Per-element copies removed (they doubled the pass)
+
+With the pass on, these era-drawn copies were drawn as well as the pass's
+own (Neomil dashboard marker boxes showed four copies instead of two).
+Each was checked at 4K against the reference with the pass on; all are
+radial registration copies the pass reproduces, so all were deleted:
+
+- Neomil dashboard: `neomil_dashboard_{margin,header,tape_chip,label,brand}_echoes.rs`,
+  `neomil_dashboard_echoes.rs` (`PANEL_ECHOES`),
+  `neomil_dashboard_panel_printing.rs` (`PRINTING_ECHOES`, the whole file),
+  `HEADING_ECHOES` in `..._panel_primary.rs`, and the footer
+  `DASHBOARD_FOOTER_{FRAME,TEXT}_ECHO_{1,2}`. The dashboard now has four
+  software layers instead of eight.
+- Neomil login: `neomil_login_echoes.rs` (`HEADER_ECHOES`) and the notice
+  copy (`NoteEcho`, `Slot::reference_note_echo`, `src/screens/login/echo.rs`).
+  Its offset (-2.5, +2.5) dp was exactly copy 1 of `PRINT_LOGIN` at the
+  notes' position.
+- Neomil store: `neomil/store_echo.rs` (scatter-code trails: "directional"
+  only in that they point away from the centre), `store_title_echo.rs`,
+  `store_frame_echo.rs`, and the nav rows' `NAV_ECHO` (measured -8.8/-3.2
+  and -22.7/-7.5 native px; `PRINT_STORE` puts copies at about -8.4/-5.2
+  and -22.5/-11 there: the same across, a few px more up). With them gone
+  the store's feedback states equal `STORE_STATES` again.
+
+What looks different from the hand-drawn copies, by eye at 4K:
+
+- Store scatter-code cells: the reference's trails are a fairly continuous
+  smear; the pass gives two discrete, fainter steps of the same length.
+  The hand-drawn trail matched the intensity better.
+- Login notices: the pass's copies are fainter than the reference's (the
+  hand-drawn single copy at 0.30 was closer in strength). The login fit is
+  the weakest (8 sites).
+- GO HOME vertical brands: the pass draws copies to their right that the
+  reference barely shows (the hand-drawn ones were similar).
+- Gained: copies the hand drawing never had and the reference does (store
+  nav labels AUDIO / GAMEPLAY, login PROTOCOL glyph and tape, HAND GUN).
+
+Kept, as designed motifs rather than registration copies: the bar's
+`PanelEcho` (`EdgeBar`, `Rings`, `Wave`; the bar does not wear the pass),
+and the mail `MailRowEcho` hover / pressed ghosts (Kitsch: one copy lifted
+20 dp up-right; Neo-kitsch: seven nested rings), which are feedback-state
+drawings at offsets the pass does not produce.
 
 Evidence (native 4K crops, 4-10x zooms, profiles, model diagram) was
 written outside the repository; no reference pixels are committed.
@@ -179,11 +217,17 @@ Tuning knobs (read once at start): `CP_ERAS_UI_PRINT=<strength>`,
 
 - No bloom (needs a separable blur, i.e. more passes). Entropism text
   regions stay darker than the reference (mail body mean G 38 vs 46).
-- The pass cannot tell per-element copies from its own: Neomil dashboard
-  (GO HOME body, labels, header, margin and brand copies), store titles and
-  login notice copies are now drawn twice.
+- Non-Neomil eras: the copies are crisper and a little more solid than
+  the reference's, which are broken by a diagonal pattern and wrapped in
+  bloom the pass does not draw; light text over a mid fill (Kitsch
+  dashboard tiles) shows a copy the reference hides. Gains left at the fit.
+- White ink under Neomil's red texture (the mail client's title tab) gets
+  pale cyan-striped copies; the texture was fitted on red ink only.
 - Entropism mean colour rises 1-3.6 levels (G) against a reference ~1-2
   above the goldens: its frame strokes were already brighter than the art.
-- Lavapipe cost: +~45 ms at 1600x900, +~350 ms at 3840x2160 per frame
-  (13 taps/pixel); real-GPU cost unmeasured.
+- Lavapipe cost of the pass alone (timed 2026-11-14 with a throwaway
+  wgpu test on llvmpipe, a 32-thread machine under heavy unrelated load,
+  best of 8): Neomil 68 ms / Entropism 98 ms at 1600x900, 347 / 422 ms at
+  3840x2160, against 4 / 8 ms for a bare clear pass. The 2026-11-13 figure
+  was +~45 / +~350 ms. Real-GPU cost unmeasured.
 - `Renderer::screenshot` and the tiny-skia backend do not run the pass.

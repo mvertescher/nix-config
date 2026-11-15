@@ -68,10 +68,8 @@ const SHELF_REFERENCE: &[Prim] = &{
     }
     out
 };
-const NAV_ROW_BARE: &[Prim] = &[clear_fill(NAV_ROW[0]), NAV_ROW[1]];
-// The selected row's echo is printed under its field, so with the
-// field in the backdrop the echo moves there too (NAVS*, before the field).
-const NAV_SELECTED_BARE: &[Prim] = &[clear_fill(NAV_SELECTED[1])];
+const NAV_ROW_BARE: &[Prim] = &[clear_fill(NAV_ROW[0])];
+const NAV_SELECTED_BARE: &[Prim] = &[clear_fill(NAV_SELECTED[0])];
 const fn nav_branch(source: &[Prim], selected: bool) -> [Prim; 2] {
     assert!(source.len() == 2);
     let mut out = [source[0], source[1]];
@@ -213,39 +211,20 @@ mod tests {
     }
 }
 
-include!("store_frame_echo.rs");
-
-const ORDINARY1: &[Prim] = &[fill_path(3.0, 154.5, FRAME_C1, alpha(rgb(0xff3c3e), 0.040)),
-    Prim::At { x: 0.0, y: 0.0, prims: FRAME_ECHO_FAR_C1 },
-    Prim::At { x: 0.0, y: 0.0, prims: FRAME_ECHO_NEAR_C1 },
-    Prim::At { x: 0.0, y: 0.0, prims: store_echo::IDLE_LEFT1 }];
-
-const ORDINARY2: &[Prim] = &[fill_path(3.0, 154.5, FRAME_C1, alpha(rgb(0xff3c3e), 0.040)),
-    Prim::At { x: 0.0, y: 0.0, prims: FRAME_ECHO_FAR_C2 },
-    Prim::At { x: 0.0, y: 0.0, prims: FRAME_ECHO_NEAR_C2 },
-    Prim::At { x: 0.0, y: 0.0, prims: store_echo::IDLE_LEFT1 }];
-
-const ORDINARY3: &[Prim] = &[fill_path(1.1, 154.5, FRAME_C3, alpha(rgb(0xff312f), 0.043)),
-    Prim::At { x: 0.0, y: 0.0, prims: FRAME_ECHO_FAR_C3 },
-    Prim::At { x: 0.0, y: 0.0, prims: FRAME_ECHO_NEAR_C3 },
-    Prim::At { x: 0.0, y: 0.0, prims: store_echo::IDLE_RIGHT3 }];
-
-const ORDINARY4: &[Prim] = &[fill_rect(0.4, 154.5, 132.9, 457.4, alpha(rgb(0xff312e), 0.041)),
-    Prim::At { x: 0.0, y: 0.0, prims: FRAME_ECHO_FAR_C4 },
-    Prim::At { x: 0.0, y: 0.0, prims: FRAME_ECHO_NEAR_C4 },
-    Prim::At { x: 0.0, y: 0.0, prims: store_echo::IDLE_RIGHT4 }];
+const ORDINARY1: &[Prim] = &[fill_path(3.0, 154.5, FRAME_C1, alpha(rgb(0xff3c3e), 0.040))];
+const ORDINARY2: &[Prim] = ORDINARY1;
+const ORDINARY3: &[Prim] = &[fill_path(1.1, 154.5, FRAME_C3, alpha(rgb(0xff312f), 0.043))];
+const ORDINARY4: &[Prim] = &[fill_rect(0.4, 154.5, 132.9, 457.4, alpha(rgb(0xff312e), 0.041))];
 
 const CUT_MASK: &[Prim] = &[fill_rect(0.0, 151.0, 133.3, 646.1, WHITE)];
 
-const GROWN_WITH_ECHO: &[Prim] = &[Prim::At { x: 0.0, y: 0.0, prims: GROWN_SURFACE },
-    Prim::At { x: 0.0, y: 0.0, prims: store_echo::IDLE_DOWN }];
-const GROWN_CUT: &[Prim] = &[Prim::Masked { prims: GROWN_WITH_ECHO, mask: CUT_MASK }];
+const GROWN_CUT: &[Prim] = &[Prim::Masked { prims: GROWN_SURFACE, mask: CUT_MASK }];
 
-const CARDS0: &[Prim] = &[Prim::At { x: 437.0, y: 0.0, prims: GROWN_WITH_ECHO },Prim::At { x: 769.0, y: 0.0, prims: ORDINARY2 },Prim::At { x: 1096.0, y: 0.0, prims: ORDINARY3 },Prim::At { x: 1425.0, y: 0.0, prims: ORDINARY4 }];
+const CARDS0: &[Prim] = &[Prim::At { x: 437.0, y: 0.0, prims: GROWN_SURFACE },Prim::At { x: 769.0, y: 0.0, prims: ORDINARY2 },Prim::At { x: 1096.0, y: 0.0, prims: ORDINARY3 },Prim::At { x: 1425.0, y: 0.0, prims: ORDINARY4 }];
 
-const CARDS1: &[Prim] = &[Prim::At { x: 437.0, y: 0.0, prims: ORDINARY1 },Prim::At { x: 769.0, y: 0.0, prims: GROWN_WITH_ECHO },Prim::At { x: 1096.0, y: 0.0, prims: ORDINARY3 },Prim::At { x: 1425.0, y: 0.0, prims: ORDINARY4 }];
+const CARDS1: &[Prim] = &[Prim::At { x: 437.0, y: 0.0, prims: ORDINARY1 },Prim::At { x: 769.0, y: 0.0, prims: GROWN_SURFACE },Prim::At { x: 1096.0, y: 0.0, prims: ORDINARY3 },Prim::At { x: 1425.0, y: 0.0, prims: ORDINARY4 }];
 
-const CARDS2: &[Prim] = &[Prim::At { x: 437.0, y: 0.0, prims: ORDINARY1 },Prim::At { x: 769.0, y: 0.0, prims: ORDINARY2 },Prim::At { x: 1096.0, y: 0.0, prims: GROWN_WITH_ECHO },Prim::At { x: 1425.0, y: 0.0, prims: ORDINARY4 }];
+const CARDS2: &[Prim] = &[Prim::At { x: 437.0, y: 0.0, prims: ORDINARY1 },Prim::At { x: 769.0, y: 0.0, prims: ORDINARY2 },Prim::At { x: 1096.0, y: 0.0, prims: GROWN_SURFACE },Prim::At { x: 1425.0, y: 0.0, prims: ORDINARY4 }];
 
 const CARDS3: &[Prim] = &[Prim::At { x: 437.0, y: 0.0, prims: ORDINARY1 },Prim::At { x: 769.0, y: 0.0, prims: ORDINARY2 },Prim::At { x: 1096.0, y: 0.0, prims: ORDINARY3 },Prim::At { x: 1425.0, y: 0.0, prims: GROWN_CUT }];
 
@@ -339,15 +318,15 @@ const NAV_FIELD_ON4_R: &[Prim] = &[Prim::Ramp { x: 0.0, y: 0.0, w: 208.0, h: 67.
 const NAV_FIELD_ON4_MIX: &[Prim] = &[Prim::Ramp { x: 0.0, y: 0.0, w: 208.0, h: 67.0, from: (0.00000000, 0.00000000), to: (1.00000000, 0.00000000), stops: &[(0.0, rgb(0x000000)), (1.0, rgb(0xffffff))] }];
 const NAV_FIELD_ON4: &[Prim] = &[Prim::Masked { prims: &[NAV_FIELD_ON4_L[0], Prim::Masked { prims: NAV_FIELD_ON4_R, mask: NAV_FIELD_ON4_MIX }], mask: ON_MASK4 }];
 
-const NAVS0: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_ECHO_67 }, Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_ON0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_OFF1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_OFF2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_OFF3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_OFF4 }];
+const NAVS0: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_ON0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_OFF1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_OFF2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_OFF3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_OFF4 }];
 
-const NAVS1: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_OFF0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_ECHO_67 }, Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_ON1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_OFF2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_OFF3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_OFF4 }];
+const NAVS1: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_OFF0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_ON1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_OFF2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_OFF3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_OFF4 }];
 
-const NAVS2: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_OFF0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_OFF1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_ECHO_67 }, Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_ON2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_OFF3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_OFF4 }];
+const NAVS2: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_OFF0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_OFF1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_ON2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_OFF3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_OFF4 }];
 
-const NAVS3: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_OFF0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_OFF1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_OFF2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_ECHO_67 }, Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_ON3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_OFF4 }];
+const NAVS3: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_OFF0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_OFF1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_OFF2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_ON3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_OFF4 }];
 
-const NAVS4: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_OFF0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_OFF1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_OFF2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_OFF3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_ECHO_67 }, Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_ON4 }];
+const NAVS4: &[Prim] = &[Prim::At { x: 153.0, y: 248.0, prims: NAV_FIELD_OFF0 },Prim::At { x: 153.0, y: 318.0, prims: NAV_FIELD_OFF1 },Prim::At { x: 153.0, y: 385.0, prims: NAV_FIELD_OFF2 },Prim::At { x: 153.0, y: 452.0, prims: NAV_FIELD_OFF3 },Prim::At { x: 153.0, y: 519.0, prims: NAV_FIELD_ON4 }];
 
 const BACK00: &[Prim] = &[Prim::Soft { prims: STORE_GROUND }, Prim::Motion { motion: SHELF_OPEN, prims: &[Prim::Soft { prims: CARDS0 }] }, Prim::Soft { prims: NAVS0 }];
 
@@ -392,107 +371,4 @@ const BACK34: &[Prim] = &[Prim::Soft { prims: STORE_GROUND }, Prim::Motion { mot
 // The rest material is under the opaque feedback coat. Add a semantic
 // echo immediately before the unchanged Dots leaf only for reference
 // feedback drawings; custom palettes keep STORE_STATES byte-for-byte.
-const fn with_echo<const N: usize, const M: usize>(source: &[Prim], at: usize,
-    echo: &'static [Prim]) -> [Prim; M] {
-    assert!(source.len() == N && M == N + 1 && at < N);
-    assert!(matches!(source[at], Prim::Dots { .. }));
-    let mut out = [source[0]; M];
-    let mut i = 0;
-    while i < M {
-        out[i] = if i == at { Prim::At { x: 0.0, y: 0.0, prims: echo } }
-            else { source[if i < at { i } else { i - 1 }] };
-        i += 1;
-    }
-    out
-}
-const H1: &[Prim] = &with_echo::<{CARD1.len()}, {CARD1.len()+1}>(STORE_STATES[5].hover, 11, store_echo::ACTIVE_LEFT1_HOVER);
-const P1: &[Prim] = &with_echo::<{CARD1.len()}, {CARD1.len()+1}>(STORE_STATES[5].pressed, 11, store_echo::ACTIVE_LEFT1_HELD);
-const H3: &[Prim] = &with_echo::<{CARD3.len()}, {CARD3.len()+1}>(STORE_STATES[7].hover, 11, store_echo::ACTIVE_RIGHT3_HOVER);
-const P3: &[Prim] = &with_echo::<{CARD3.len()}, {CARD3.len()+1}>(STORE_STATES[7].pressed, 11, store_echo::ACTIVE_RIGHT3_HELD);
-// The cutoff card keeps its three outer leaves; its Dots are inside the
-// recolored CARD_CUT at outer slot 1. Insert there, before the Dots.
-const H4_CUT: &[Prim] = &with_echo::<{CARD_CUT.len()}, {CARD_CUT.len()+1}>(card_hover::CUT, 13, store_echo::ACTIVE_RIGHT4_HOVER);
-const P4_CUT: &[Prim] = &with_echo::<{CARD_CUT.len()}, {CARD_CUT.len()+1}>(card_held::CUT, 13, store_echo::ACTIVE_RIGHT4_HELD);
-const fn cut_state(source: &[Prim], cut: &'static [Prim]) -> [Prim; 3] {
-    assert!(source.len() == 3);
-    let mut out = [source[0], source[1], source[2]];
-    match out[1] {
-        Prim::At { x, y, .. } => out[1] = Prim::At { x, y, prims: cut },
-        _ => panic!("cut card content wrapper"),
-    }
-    out
-}
-const H4: &[Prim] = &cut_state(STORE_STATES[8].hover, H4_CUT);
-const P4: &[Prim] = &cut_state(STORE_STATES[8].pressed, P4_CUT);
-const HG: &[Prim] = &with_echo::<{GROWN.len()}, {GROWN.len()+1}>(CARD_GROWN_HOVER, 31, store_echo::ACTIVE_DOWN_HOVER);
-const PG: &[Prim] = &with_echo::<{GROWN.len()}, {GROWN.len()+1}>(CARD_GROWN_HELD, 31, store_echo::ACTIVE_DOWN_HELD);
-const fn reference_states() -> [crate::style::PlateStates; 9] {
-    let mut out = [STORE_STATES[0]; 9];
-    let mut i = 0;
-    while i < 9 { out[i] = STORE_STATES[i]; i += 1; }
-    out[5].hover = H1; out[5].pressed = P1;
-    out[6].hover = H1; out[6].pressed = P1;
-    out[7].hover = H3; out[7].pressed = P3;
-    out[8].hover = H4; out[8].pressed = P4;
-    i = 5;
-    while i < 9 { out[i].selected_hover = Some(HG); out[i].selected_pressed = Some(PG); i += 1; }
-    out
-}
-const REFERENCE_STATES: &[crate::style::PlateStates] = &reference_states();
-
-pub(super) const REFERENCE: StoreReference = StoreReference { states: Some(REFERENCE_STATES), scene: SCENE, backdrops: &[StoreBackdrop { category: 0, card: 0, prims: BACK00 },StoreBackdrop { category: 1, card: 0, prims: BACK01 },StoreBackdrop { category: 2, card: 0, prims: BACK02 },StoreBackdrop { category: 3, card: 0, prims: BACK03 },StoreBackdrop { category: 4, card: 0, prims: BACK04 },StoreBackdrop { category: 0, card: 1, prims: BACK10 },StoreBackdrop { category: 1, card: 1, prims: BACK11 },StoreBackdrop { category: 2, card: 1, prims: BACK12 },StoreBackdrop { category: 3, card: 1, prims: BACK13 },StoreBackdrop { category: 4, card: 1, prims: BACK14 },StoreBackdrop { category: 0, card: 2, prims: BACK20 },StoreBackdrop { category: 1, card: 2, prims: BACK21 },StoreBackdrop { category: 2, card: 2, prims: BACK22 },StoreBackdrop { category: 3, card: 2, prims: BACK23 },StoreBackdrop { category: 4, card: 2, prims: BACK24 },StoreBackdrop { category: 0, card: 3, prims: BACK30 },StoreBackdrop { category: 1, card: 3, prims: BACK31 },StoreBackdrop { category: 2, card: 3, prims: BACK32 },StoreBackdrop { category: 3, card: 3, prims: BACK33 },StoreBackdrop { category: 4, card: 3, prims: BACK34 }] };
-
-#[cfg(test)]
-mod echo_tests {
-    use super::*;
-
-    #[test]
-    fn reference_echoes_precede_unchanged_cells_in_every_feedback_state() {
-        assert_eq!(REFERENCE_STATES.len(), STORE_STATES.len());
-        assert_eq!(&REFERENCE_STATES[..5], &STORE_STATES[..5]);
-        for (card, dot) in [(0, 11), (1, 11), (2, 11)] {
-            let ordinary = STORE_STATES[5 + card];
-            let reference = REFERENCE_STATES[5 + card];
-            for (base, with_echo) in [(ordinary.hover, reference.hover),
-                (ordinary.pressed, reference.pressed)] {
-                assert_eq!(with_echo.len(), base.len() + 1);
-                assert_eq!(&with_echo[..dot], &base[..dot]);
-                assert!(matches!(with_echo[dot], Prim::At { prims, .. } if prims.len() == 25));
-                assert_eq!(&with_echo[dot + 1..], &base[dot..]);
-                let Prim::Dots { rows, cell, pitch, .. } = with_echo[dot + 1] else { panic!("primary cells moved") };
-                assert_eq!((rows, cell, pitch), (QR, 3.0, 3.6667));
-            }
-        }
-        let ordinary = STORE_STATES[8];
-        let reference = REFERENCE_STATES[8];
-        for (base, with_echo) in [(ordinary.hover, reference.hover),
-            (ordinary.pressed, reference.pressed)] {
-            assert_eq!(with_echo.len(), base.len());
-            assert_eq!(with_echo[0], base[0], "outer coat stays intact");
-            assert_eq!(with_echo[2], base[2], "open edge stays intact");
-            let Prim::At { x: bx, y: by, prims: inner } = base[1] else { panic!("cut content") };
-            let Prim::At { x: ax, y: ay, prims: echoed } = with_echo[1] else { panic!("echoed cut content") };
-            assert_eq!((ax, ay), (bx, by));
-            assert_eq!(&echoed[..13], &inner[..13]);
-            assert!(matches!(echoed[13], Prim::At { prims, .. } if prims.len() == 25));
-            assert_eq!(&echoed[14..], &inner[13..]);
-        }
-        for card in 0..4 {
-            let ordinary = STORE_STATES[5 + card];
-            let reference = REFERENCE_STATES[5 + card];
-            for (base, with_echo) in [
-                (ordinary.selected_hover.unwrap(), reference.selected_hover.unwrap()),
-                (ordinary.selected_pressed.unwrap(), reference.selected_pressed.unwrap()),
-            ] {
-                assert_eq!(with_echo.len(), base.len() + 1);
-                assert_eq!(&with_echo[..31], &base[..31]);
-                assert!(matches!(with_echo[31], Prim::At { prims, .. } if prims.len() == 25));
-                assert_eq!(&with_echo[32..], &base[31..]);
-            }
-        }
-        assert!(matches!(CARDS3[3], Prim::At { prims, .. } if matches!(prims[0], Prim::Masked { .. })));
-        let Prim::At { prims: cells, .. } = store_echo::ACTIVE_DOWN_HELD[0] else { panic!("selected echo cell") };
-        let Prim::Motion { prims: inked, .. } = cells[0] else { panic!("selected echo band") };
-        assert!(matches!(inked[0], Prim::Rect { fill: Some(Ink::Fixed(c)), .. } if c == rgb(0x4a0f10)));
-    }
-}
+pub(super) const REFERENCE: StoreReference = StoreReference { states: Some(STORE_STATES), scene: SCENE, backdrops: &[StoreBackdrop { category: 0, card: 0, prims: BACK00 },StoreBackdrop { category: 1, card: 0, prims: BACK01 },StoreBackdrop { category: 2, card: 0, prims: BACK02 },StoreBackdrop { category: 3, card: 0, prims: BACK03 },StoreBackdrop { category: 4, card: 0, prims: BACK04 },StoreBackdrop { category: 0, card: 1, prims: BACK10 },StoreBackdrop { category: 1, card: 1, prims: BACK11 },StoreBackdrop { category: 2, card: 1, prims: BACK12 },StoreBackdrop { category: 3, card: 1, prims: BACK13 },StoreBackdrop { category: 4, card: 1, prims: BACK14 },StoreBackdrop { category: 0, card: 2, prims: BACK20 },StoreBackdrop { category: 1, card: 2, prims: BACK21 },StoreBackdrop { category: 2, card: 2, prims: BACK22 },StoreBackdrop { category: 3, card: 2, prims: BACK23 },StoreBackdrop { category: 4, card: 2, prims: BACK24 },StoreBackdrop { category: 0, card: 3, prims: BACK30 },StoreBackdrop { category: 1, card: 3, prims: BACK31 },StoreBackdrop { category: 2, card: 3, prims: BACK32 },StoreBackdrop { category: 3, card: 3, prims: BACK33 },StoreBackdrop { category: 4, card: 3, prims: BACK34 }] };

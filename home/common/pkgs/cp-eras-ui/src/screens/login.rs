@@ -54,7 +54,6 @@ use crate::widgets::ground;
 use crate::Element;
 use iced::keyboard::{self, key::Named, Key};
 use iced::widget::{canvas, stack};
-mod echo;
 use iced::{mouse, Color, Length, Point, Rectangle, Renderer, Size, Subscription, Task, Vector};
 use std::time::Instant;
 
@@ -257,7 +256,7 @@ impl Login {
     }
 
     pub fn view(&self) -> Element<'_, Message> {
-        // The backdrop and note echoes need separate canvases: `iced_wgpu`
+        // The backdrop needs a canvas of its own: `iced_wgpu`
         // buckets a canvas's geometry into meshes, images and text and
         // draws the buckets in that order, so an image is painted over
         // every shape in the same canvas no matter when it was asked
@@ -275,9 +274,6 @@ impl Login {
             })
             .width(Length::Fill)
             .height(Length::Fill),
-            canvas(echo::NoticeEcho { style: self.style })
-                .width(Length::Fill)
-                .height(Length::Fill),
             canvas(Art {
                 style: self.style,
                 input_epoch: self.input_epoch,

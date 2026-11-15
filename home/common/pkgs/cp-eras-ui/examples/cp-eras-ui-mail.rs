@@ -26,6 +26,9 @@ const WINDOW_SIZE: iced::Size = shell::FRAME;
 
 pub fn main() -> iced::Result {
     let style = shell::style();
+    // The era's print material for a new screen (`print::of`): the mail
+    // client is the working mailbox, so it wears what the screens wear.
+    cp_eras_ui::print::wear(style.era);
     shell::application(move || App::new(style), App::update, App::view)
         .title(App::title)
         .subscription(App::subscription)

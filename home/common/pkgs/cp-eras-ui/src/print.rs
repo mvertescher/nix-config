@@ -19,8 +19,10 @@
 //! 1.985 px that swing the copy between saturated and pale red). Clear
 //! ground and the large flat fills carry no texture of their own.
 //!
-//! Every strength zero ([`Print::OFF`]) and the pass does not run at all: the
-//! frame is drawn exactly as before.
+//! Every strength zero ([`Print::OFF`], or `CP_ERAS_UI_PRINT=0`) and the
+//! pass does not run at all: the frame is drawn exactly as without it. The
+//! era-drawn copies the pass replaced (Neomil's dashboard, login and store
+//! echoes) are gone, so with the pass off those screens show no copies.
 
 use crate::style::Era;
 
@@ -226,10 +228,12 @@ impl Default for Print {
     }
 }
 
+/// The strength [`wear`] applies when `CP_ERAS_UI_PRINT` is unset: the
+/// fit itself. On for every era since the owner's decision of 2026-11-14
+/// ("On for all eras"); `CP_ERAS_UI_PRINT=0` still turns the pass off.
+pub const DEFAULT_STRENGTH: f32 = 1.0;
+
 /// The era's material as its tables state it.
-/// The strength [`wear`] applies when `CP_ERAS_UI_PRINT` is unset. See the
-/// note in `wear`.
-pub const DEFAULT_STRENGTH: f32 = 0.0;
 
 pub fn of(era: Era) -> Print {
     match era {
@@ -261,8 +265,11 @@ pub fn wear_screen(era: Era, screen: Screen) {
 }
 
 /// State `era`'s material to the renderer for every later frame of this
-/// process. Called by the four reference-screen binaries; the bar and the
-/// mail client never call it, so they never get the pass.
+/// process. The four reference-screen binaries wear their screen's fit
+/// ([`wear_screen`]; the dashboard's hub re-wears it on each route), the
+/// mail client the era's treatment for a new screen (this). The status bar
+/// never calls it, so it never gets the pass: it is a live desktop surface
+/// designed separately and draws its own rule echo.
 ///
 /// Two capture/tuning variables, read here only:
 /// - `CP_ERAS_UI_PRINT=<strength>` scales the fitted strengths (0 turns the
@@ -276,9 +283,6 @@ fn wear_material(mut print: Print) {
     if let Ok(spec) = std::env::var("CP_ERAS_UI_PRINT_SET") {
         print = print.with_overrides(&spec);
     }
-    // DEFAULT_STRENGTH is 0 while the look awaits the owner's review (2026-11-13,
-    // todo/review-2026-11-13.md section 4): the pass is built and fitted but off,
-    // so every golden is unchanged. Set it to 1.0 to wear the fit by default.
     let strength = std::env::var("CP_ERAS_UI_PRINT").ok().and_then(|v| v.trim().parse::<f32>().ok()).unwrap_or(DEFAULT_STRENGTH);
     let print = print.at(strength);
     iced_wgpu::print::set((!print.is_off()).then(|| print.params(0.0, 0.0, 0)));

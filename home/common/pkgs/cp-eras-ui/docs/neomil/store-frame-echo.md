@@ -1,5 +1,7 @@
 # Store frame echoes — source geometry, ground and paint constraints
 
+> **Superseded 2026-11-14.** The hand-drawn copies this record fits were removed when the print pass went on for all eras; the pass draws them now. See [print-overlay.md](../print-overlay.md), "Per-element copies removed". The measurements below are history.
+
 [Round seventy-four](../reference-svg-round74.md) integrates two faint ordinary
 Store frame impressions missing from the earlier rendering. Fixed affine
 contours, masked coverage and a coupled lower-stem/bar correction improve

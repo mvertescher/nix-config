@@ -2044,21 +2044,6 @@ pub struct Slot {
     pub badge_art: &'static [Plate],
     pub badge_letter: Option<Legend>,
     pub notes: &'static [Legend],
-    /// A photographed duplicate behind plain, untracked, equally sized
-    /// notes, only in the reference palette. It follows their fitted size.
-    pub reference_note_echo: Option<NoteEcho>,
-}
-
-/// Source-space printing duplicated behind a slot's notes. Distances are
-/// measured at `reference_size` and scale with each fitted note's font.
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct NoteEcho {
-    pub reference_size: f32,
-    pub offset: (f32, f32),
-    pub stroke: f32,
-    pub blur: f32,
-    pub opacity: f32,
-    pub ink: Color,
 }
 
 impl Slot {
@@ -2084,7 +2069,6 @@ impl Slot {
         badge_art: &[],
         badge_letter: None,
         notes: &[],
-        reference_note_echo: None,
     };
 }
 

@@ -1573,7 +1573,7 @@ mod tests {
             };
             *prims
         }).collect();
-        assert_eq!(groups.len(), 7);
+        assert_eq!(groups.len(), 3);
         let mut layers = vec![SoftLayer { prims: ground, cut: false, render: true }];
         layers.extend(groups.iter().map(|prims| SoftLayer { prims, cut: true, render: true }));
 

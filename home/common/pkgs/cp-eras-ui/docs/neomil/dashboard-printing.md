@@ -1,5 +1,7 @@
 # Dashboard printing follow-up, 2026-09-21
 
+> **Superseded 2026-11-14.** The hand-drawn copies this record fits were removed when the print pass went on for all eras; the pass draws them now. See [print-overlay.md](../print-overlay.md), "Per-element copies removed". The measurements below are history.
+
 This continues the [dashboard fidelity audit](dashboard-fidelity.md).
 Source: `images/img-07-dashboard.png`, 3840×2160, Behance asset
 `3fc4ef118663901.60e5fa6a7f2f7.png`. Coordinates use the 1600×900 design

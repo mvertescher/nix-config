@@ -2410,16 +2410,17 @@ mod tests {
         let cache = SoftCache::default();
         let style = crate::style::Era::Neomil.style();
         let dashboard = soft_layers(style.dashboard);
-        assert_eq!(dashboard.len(), 8, "retain the original separately filtered images");
+        assert_eq!(dashboard.len(), 4, "retain the original separately filtered images");
         assert!(!dashboard[0].1);
         assert!(dashboard[1..].iter().all(|layer| layer.1));
         let route_count = dashboard.len() + soft_layers(style.store).len()
             + soft_layers(style.mailbox.backdrop).len();
-        // Mail now retains its separately clipped, source-measured panel
-        // alongside the ground; the dashboard's eight images stay intact.
-        assert_eq!(route_count, 11);
+        // Mail retains its separately clipped, source-measured panel
+        // alongside the ground; the dashboard keeps four images (its
+        // hand-drawn echo layers went when the print pass took them over).
+        assert_eq!(route_count, 7);
         assert!(cache.can_prepare(route_count, (3840, 2160)), "route payloads fit without allocating 4K pixels in this test");
-        assert_eq!(3840usize * 2160 * 4 * route_count, 364_953_600);
+        assert_eq!(3840usize * 2160 * 4 * route_count, 232_243_200);
         assert!(!cache.can_prepare(16, (3840, 2160)));
         assert!(!cache.can_prepare(SOFT_CACHE_ENTRIES + 1, (1, 1)));
     }

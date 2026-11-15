@@ -1,5 +1,7 @@
 # Dashboard footer type and printing (NM1)
 
+> **Partly superseded 2026-11-14.** The hand-drawn echo copies described here were removed when the print pass went on for all eras; the pass draws them now ([print-overlay.md](../print-overlay.md), "Per-element copies removed"). The primary fits stand.
+
 Source: `images/img-07-dashboard.png`, screen #60, 3840×2160. The affected
 design crop is `(1195,862)..(1372,899)` on the 1600×900 canvas. The trace,
 component excerpt, and Neomil scene table use the same literal code,

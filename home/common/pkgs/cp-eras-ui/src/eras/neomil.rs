@@ -26,12 +26,10 @@ use crate::style::{DarkPlate, Weights};
 use crate::widgets::surface::{Corners, Cut};
 // --- login ---
 use crate::style::{
-    Access, Bevel, Blink, Caret, Colophon, Emblem, Entry, Fixture, Legend, Masthead, NoteEcho, Plate, Plot, Slot,
+    Access, Bevel, Blink, Caret, Colophon, Emblem, Entry, Fixture, Legend, Masthead, Plate, Plot, Slot,
 };
 #[path = "neomil_login_art.rs"]
 mod neomil_login_art;
-#[path = "neomil_login_echoes.rs"]
-mod neomil_login_echoes;
 #[path = "neomil_store_art.rs"]
 mod neomil_store_art;
 // --- end login ---
@@ -749,7 +747,6 @@ const LOGIN_CARD_MATERIAL: &[Prim] = &[
 ];
 const LOGIN_REFERENCE_GROUND: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: LOGIN_GROUND },
-    Prim::At { x: 0.0, y: 0.0, prims: neomil_login_echoes::HEADER_ECHOES },
 ];
 const LOGIN_REFERENCE_BACKDROP: &[Prim] = &[
     // Backdrop's first top-level primitive must remain Soft. Ground and
@@ -1080,14 +1077,6 @@ pub const ACCESS: Access = Access {
                 Legend::new(NOTICE_1, 378.0, 701.4, 8.43, Ink::Fixed(NOTICE)),
                 Legend::new(NOTICE_2, 378.0, 710.4, 8.43, Ink::Fixed(NOTICE)),
             ],
-            reference_note_echo: Some(NoteEcho {
-                reference_size: 8.43,
-                offset: (-2.5, 2.5),
-                stroke: 0.7,
-                blur: 0.45,
-                opacity: 0.30,
-                ink: NOTICE,
-            }),
             ..Slot::EMPTY
         },
         // Card 2, x 692..947: dim translucent red over the glow.
@@ -1677,8 +1666,9 @@ pub const MAILBOX_MOTIONS: &[MailMotion] = &[
 //
 // The measured rotated code/branding and card-edge maker runs use
 // `Prim::Turn`; the rifle's source-supported SVG linework is carried in
-// the shared gun template. The source's printing echoes, logotype
-// streaks and Japanese skew remain separate artwork work.
+// the shared gun template. The source's printing echoes are the print
+// pass's (`crate::print`); logotype streaks and Japanese skew remain
+// separate artwork work.
 
 use crate::style::{
     fill_path, fill_rect, hline, line_path, line_rect, shut_path, txt, txt_bold, txt_end, Anchor,
@@ -1788,7 +1778,7 @@ pub const GUN_LIT: iced::Color = rgb(0xb02c30);
 
 /// The scatter-code glyph: 25 loose 3px squares on a 9x9 lattice at a
 /// measured 3.6667px pitch, with no finder patterns -- not a QR.
-/// Primary cell centers only; source echoes remain a separate layer.
+/// Primary cell centers only; their copies are the print pass's.
 const QR: &[&str] = &[
     "#..#.#..#",
     ".#....#..",
@@ -2023,14 +2013,13 @@ const fn frame_leaf(p: Prim) -> Prim {
 }
 
 macro_rules! card {
-    ($card:expr, $fill:expr, $scatter_x:expr, $stats:ident, $echo:ident,
+    ($card:expr, $fill:expr, $scatter_x:expr, $stats:ident,
      $frame_x:expr, $frame:ident, $edge:ident, $print:ident, $box_x:expr) => {
         &[
             card_underlay(&[Prim::Path { x: $frame_x, y: 154.5, segs: $frame, close: true, fill: Some(Ink::Fixed($fill)), stroke: None, width: 1.2 }]),
             Prim::At { x: 0.0, y: 0.0, prims: $edge },
             Prim::At { x: 0.0, y: 0.0, prims: ICONS_HEAD },
             Prim::At { x: 0.0, y: 0.0, prims: ICONS_FOOT },
-            Prim::At { x: 0.0, y: 0.0, prims: store_title_echo::$echo },
             card_title($card, false, Ink::Fg),
             card_subtitle($card, false, Ink::Fg),
             line_rect($box_x, 182.9, 7.2, 48.4, Ink::Dim, 0.8),
@@ -2042,8 +2031,8 @@ macro_rules! card {
     };
 }
 
-const CARD1: &[Prim] = card!(1, CARD1_FILL, 14.375, STATS_1, CARD1, 3.0, FRAME_C1, EDGE_C1, CARD1_EDGE_PRINT, 260.65);
-const CARD3: &[Prim] = card!(3, CARD3_FILL, 12.4583, STATS_3, CARD3, 1.1, FRAME_C3, EDGE_C3, CARD3_EDGE_PRINT, 258.7333333);
+const CARD1: &[Prim] = card!(1, CARD1_FILL, 14.375, STATS_1, 3.0, FRAME_C1, EDGE_C1, CARD1_EDGE_PRINT, 260.65);
+const CARD3: &[Prim] = card!(3, CARD3_FILL, 12.4583, STATS_3, 1.1, FRAME_C3, EDGE_C3, CARD3_EDGE_PRINT, 258.7333333);
 
 /// The selected card: the same drawing grown to y797.1, its upper two
 /// thirds washed, its gun solid and 14px further left, and the detail
@@ -2178,7 +2167,6 @@ const GROWN: &[Prim] = &[
 const CARD_CUT: &[Prim] = &[
     Prim::At { x: 0.0, y: 0.0, prims: ICONS_HEAD },
     Prim::At { x: 0.0, y: 0.0, prims: ICONS_FOOT },
-    Prim::At { x: 0.0, y: 0.0, prims: store_title_echo::CARD4 },
     card_title(4, false, Ink::Fg),
     card_subtitle(4, false, Ink::Fg),
     Prim::At { x: 0.0, y: 0.0, prims: CARD_EDGE_PRINT },
@@ -2288,10 +2276,8 @@ macro_rules! card_content_states {
                 let mut out = card_leaf_inks::<{ CARD_CUT.len() }>(CARD_CUT, $held);
                 out[0] = Prim::At { x: 0.0, y: 0.0, prims: HEAD };
                 out[1] = Prim::At { x: 0.0, y: 0.0, prims: FOOT };
-                out[2] = Prim::At { x: 0.0, y: 0.0, prims:
-                    if $held { store_title_echo::CARD4_HELD } else { store_title_echo::CARD4 } };
-                out[5] = Prim::At { x: 0.0, y: 0.0, prims: EDGE };
-                out[6] = Prim::At { x: 0.0, y: 0.0, prims: GUN };
+                out[4] = Prim::At { x: 0.0, y: 0.0, prims: EDGE };
+                out[5] = Prim::At { x: 0.0, y: 0.0, prims: GUN };
                 out
             };
         }
@@ -2324,7 +2310,7 @@ const fn card_coat(source: Prim, held: bool, selected: bool, rest: iced::Color) 
 }
 
 const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bool,
-    third: bool, cut: bool, coat: &'static [Prim], specs: &'static [Prim], echoes: &'static [Prim],
+    third: bool, cut: bool, coat: &'static [Prim], specs: &'static [Prim],
     held_edge: Option<Prim>) -> [Prim; N] {
     let mut out = card_leaf_inks::<N>(source, held);
     out[0] = if selected { coat[0] } else { card_underlay(coat) };
@@ -2346,15 +2332,13 @@ const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bo
         out[2] = source[2];
     } else {
         let offset = if selected { 1 } else { 0 };
-        let echo_offset = if selected { 0 } else { 1 };
         out[1 + offset] = if held && !selected {
             match held_edge { Some(edge) => edge, None => source[1 + offset] }
         } else { source[1 + offset] }; // the ordinary ring and bright spine
         out[2 + offset] = Prim::At { x: 0.0, y: 0.0, prims: head };
         out[3 + offset] = Prim::At { x: 0.0, y: 0.0, prims: foot };
-        if !selected { out[4] = Prim::At { x: 0.0, y: 0.0, prims: echoes }; }
-        out[7 + offset + echo_offset] = Prim::At { x: if selected { -4.6 } else { 0.0 }, y: 0.0, prims: edge };
-        out[8 + offset + echo_offset] = Prim::At { x: if selected { -14.0 } else { 0.0 }, y: 0.0, prims: gun };
+        out[7 + offset] = Prim::At { x: if selected { -4.6 } else { 0.0 }, y: 0.0, prims: edge };
+        out[8 + offset] = Prim::At { x: if selected { -14.0 } else { 0.0 }, y: 0.0, prims: gun };
         if selected {
             out[1] = Prim::At { x: 0.0, y: 0.0,
                 prims: if held { CARD_GROWN_HELD_WASH } else { CARD_GROWN_HOVER_WASH } };
@@ -2363,27 +2347,27 @@ const fn card_feedback<const N: usize>(source: &[Prim], held: bool, selected: bo
             out[N - 1] = Prim::At { x: 0.0, y: 0.0,
                 prims: if held { FRAME_SEL_HELD } else { FRAME_SEL_OVER_WASH } };
         } else {
-            out[10] = Prim::At { x: 0.0, y: 0.0, prims: specs };
+            out[9] = Prim::At { x: 0.0, y: 0.0, prims: specs };
         }
     }
     out
 }
 
 const CARD_GROWN_HOVER_COAT: &[Prim] = &card_coat(GROWN[0], false, true, CARD2_FILL);
-const CARD_GROWN_HOVER: &[Prim] = &card_feedback::<{ GROWN.len() }>(GROWN, false, true, false, false, CARD_GROWN_HOVER_COAT, &[], &[], None);
+const CARD_GROWN_HOVER: &[Prim] = &card_feedback::<{ GROWN.len() }>(GROWN, false, true, false, false, CARD_GROWN_HOVER_COAT, &[], None);
 const CARD_GROWN_HELD_COAT: &[Prim] = &card_coat(GROWN[0], true, true, CARD2_FILL);
-const CARD_GROWN_HELD: &[Prim] = &card_feedback::<{ GROWN.len() }>(GROWN, true, true, false, false, CARD_GROWN_HELD_COAT, &[], &[], None);
+const CARD_GROWN_HELD: &[Prim] = &card_feedback::<{ GROWN.len() }>(GROWN, true, true, false, false, CARD_GROWN_HELD_COAT, &[], None);
 
 macro_rules! product_states {
-    ($index:expr, $off:ident, $fill:expr, $cut:expr, $specs:ident, $echo:ident, $echo_held:ident, $held_edge:expr) => {{
+    ($index:expr, $off:ident, $fill:expr, $cut:expr, $specs:ident, $held_edge:expr) => {{
         const HOVER_COAT: &[Prim] = &card_coat($off[0], false, false, $fill);
         const HELD_COAT: &[Prim] = &card_coat($off[0], true, false, $fill);
         crate::style::PlateStates {
             group: Group::Card, index: $index,
             hover: &card_feedback::<{ $off.len() }>($off, false, false, $index == 2, $cut, HOVER_COAT,
-                card_hover::$specs, store_title_echo::$echo, None),
+                card_hover::$specs, None),
             pressed: &card_feedback::<{ $off.len() }>($off, true, false, $index == 2, $cut, HELD_COAT,
-                card_held::$specs, store_title_echo::$echo_held, $held_edge),
+                card_held::$specs, $held_edge),
             selected_hover: Some(CARD_GROWN_HOVER),
             selected_pressed: Some(CARD_GROWN_HELD),
             selected_away: None,
@@ -2468,54 +2452,20 @@ const NAV67: &[Seg] = &[
     Seg::Line(16.0, 67.0),
     Seg::Line(0.0, 51.0),
 ];
-/// The nav rows' printing echo: two copies of the row, up and to the
-/// left of it, `(dx, dy, alpha)` in design px. Measured 2026-11-14 at 4K
-/// on img-09 (the four idle rows' left, top and bottom edges): the near
-/// copy's edge centres sit 8.8 native px left of the outline and 3.2 up,
-/// peaking R +0x15 over the ground in a soft ~4 px profile; the far copy
-/// 22.7 left and 7.5 up at +0x07. The alphas are fitted to those peaks on
-/// this crate's 4K render (0.09 / 0.025 drew +0x10 / +0x04). There is no solid spine: the bright
-/// 3px bar this table drew at x 148..151 until then is not in the photo
-/// (the 2026-11-13 review's "detached stripe").
-pub const NAV_ECHO: [(f32, f32, f32); 2] = [(-3.6667, -1.3333, 0.12), (-9.4583, -3.125, 0.045)];
-/// The echo is printed soft: 1.5 dp carries the near copy's measured
-/// integral (about 70 level-px across the edge) at its measured peak.
-pub const NAV_ECHO_WIDTH: f32 = 1.5;
-/// On the selected row the copies are filled, not outlined (the photo's
-/// striated bands left of and above VIDEO): the far copy alone over the
-/// ground samples #421618, the near copy over it #6f1a1b. Drawn opaque
-/// under the plate, so the plate keeps its own edge.
-pub const NAV_ECHO_FILLS: [iced::Color; 2] = [rgb(0x6f1a1b), rgb(0x421618)];
-const fn echo_ink(alpha: f32) -> Ink {
-    Ink::Fixed(iced::Color { a: alpha, ..rgb(0xfb3535) })
-}
-/// An idle row's echo, printed over the plate.
-const NAV_ECHO_62: &[Prim] = &[
-    Prim::At { x: NAV_ECHO[1].0, y: NAV_ECHO[1].1, prims: &[
-        shut_path(0.0, 0.0, NAV62, echo_ink(NAV_ECHO[1].2), NAV_ECHO_WIDTH),
-    ] },
-    Prim::At { x: NAV_ECHO[0].0, y: NAV_ECHO[0].1, prims: &[
-        shut_path(0.0, 0.0, NAV62, echo_ink(NAV_ECHO[0].2), NAV_ECHO_WIDTH),
-    ] },
-];
-/// The selected row's echo, under the plate.
-const NAV_ECHO_67: &[Prim] = &[
-    Prim::At { x: NAV_ECHO[1].0, y: NAV_ECHO[1].1, prims: &[
-        fill_path(0.0, 0.0, NAV67, Ink::Fixed(NAV_ECHO_FILLS[1])),
-    ] },
-    Prim::At { x: NAV_ECHO[0].0, y: NAV_ECHO[0].1, prims: &[
-        fill_path(0.0, 0.0, NAV67, Ink::Fixed(NAV_ECHO_FILLS[0])),
-    ] },
-];
+/// The nav rows' printing copies (measured 2026-11-14 on img-09: the near
+/// copy 8.8 native px left of the outline and 3.2 up, the far 22.7 left and
+/// 7.5 up; filled bands #6f1a1b / #421618 left of and above the selected
+/// row) are the store's registration copies, drawn by the print pass
+/// (`crate::print`, `PRINT_STORE`), not here. There is no solid spine: the
+/// bright 3px bar this table drew at x 148..151 until then is not in the
+/// photo (the 2026-11-13 review's "detached stripe").
 // The rest plate: was edged 1.2 in the mid red (#a32226), which the 4K
 // comparison put at 2.9-3.5 native px against the source's 1.9-2.4 px of
 // #62..#76 (line-weights.md).
 const NAV_ROW: &[Prim] = &[
     REST_PLATE.plate(0.0, 0.0, NAV62),
-    Prim::At { x: 0.0, y: 0.0, prims: NAV_ECHO_62 },
 ];
 const NAV_SELECTED: &[Prim] = &[
-    Prim::At { x: 0.0, y: 0.0, prims: NAV_ECHO_67 },
     fill_path(0.0, 0.0, NAV67, Ink::Select),
 ];
 
@@ -2525,18 +2475,14 @@ const NAV_SELECTED: &[Prim] = &[
 // shrinks a row, changes its label, or selects a product card.
 const NAV_HOVER: &[Prim] = &[
     Prim::Path { x: 0.0, y: 0.0, segs: NAV62, close: true, fill: Some(Ink::Fixed(rgb(0x551719))), stroke: Some(Ink::Fg), width: WEIGHTS.line },
-    Prim::At { x: 0.0, y: 0.0, prims: NAV_ECHO_62 },
 ];
 const NAV_PRESSED: &[Prim] = &[
     fill_path(0.0, 0.0, NAV62, Ink::Fixed(rgb(0xa52223))),
-    Prim::At { x: 0.0, y: 0.0, prims: NAV_ECHO_62 },
 ];
 const NAV_SELECTED_HOVER: &[Prim] = &[
-    Prim::At { x: 0.0, y: 0.0, prims: NAV_ECHO_67 },
     fill_path(0.0, 0.0, NAV67, Ink::Fixed(rgb(0xf63333))),
 ];
 const NAV_SELECTED_PRESSED: &[Prim] = &[
-    Prim::At { x: 0.0, y: 0.0, prims: NAV_ECHO_67 },
     fill_path(0.0, 0.0, NAV67, Ink::Fixed(rgb(0xa52223))),
 ];
 macro_rules! nav_states {
@@ -2571,10 +2517,10 @@ pub(crate) const STORE_STATES: &[crate::style::PlateStates] = &[
     nav_states!(2, 385.0),
     nav_states!(3, 452.0),
     nav_states!(4, 519.0),
-    product_states!(0, CARD1, CARD1_FILL, false, SPECS_1, CARD1, CARD1_HELD, Some(EDGE_C1_HELD_AT)),
-    product_states!(1, CARD1, CARD1_FILL, false, SPECS_1, CARD1, CARD1_HELD, Some(EDGE_C1_HELD_AT)),
-    product_states!(2, CARD3, CARD3_FILL, false, SPECS_3, CARD3, CARD3_HELD, Some(EDGE_C3_HELD_AT)),
-    product_states!(3, CARD4, CARD4_FILL, true, SPECS_1, CARD4, CARD4_HELD, None),
+    product_states!(0, CARD1, CARD1_FILL, false, SPECS_1, Some(EDGE_C1_HELD_AT)),
+    product_states!(1, CARD1, CARD1_FILL, false, SPECS_1, Some(EDGE_C1_HELD_AT)),
+    product_states!(2, CARD3, CARD3_FILL, false, SPECS_3, Some(EDGE_C3_HELD_AT)),
+    product_states!(3, CARD4, CARD4_FILL, true, SPECS_1, None),
 ];
 
 /// The left-margin chip: two ticks, a block and the numbered 12.5
@@ -2615,10 +2561,6 @@ const SHELF: &[Prim] = &[
 
 #[path = "neomil/store_material.rs"]
 mod store_material;
-#[path = "neomil/store_echo.rs"]
-mod store_echo;
-#[path = "neomil/store_title_echo.rs"]
-mod store_title_echo;
 #[path = "neomil/store_margin.rs"]
 mod store_margin;
 
@@ -2725,24 +2667,10 @@ mod dashboard_chrome;
 mod dashboard_type;
 #[path = "neomil_dashboard_material.rs"]
 mod dashboard_material;
-#[path = "neomil_dashboard_echoes.rs"]
-mod dashboard_echoes;
 #[path = "neomil_dashboard_ink.rs"]
 mod dashboard_ink;
-#[path = "neomil_dashboard_label_echoes.rs"]
-mod dashboard_label_echoes;
-#[path = "neomil_dashboard_header_echoes.rs"]
-mod dashboard_header_echoes;
-#[path = "neomil_dashboard_tape_chip_echoes.rs"]
-mod dashboard_tape_chip_echoes;
-#[path = "neomil_dashboard_panel_printing.rs"]
-mod dashboard_panel_printing;
 #[path = "neomil_dashboard_panel_primary.rs"]
 mod dashboard_panel_primary;
-#[path = "neomil_dashboard_margin_echoes.rs"]
-mod dashboard_margin_echoes;
-#[path = "neomil_dashboard_brand_echoes.rs"]
-mod dashboard_brand_echoes;
 
 /// Accepted outer silhouettes; source-fitted inset paths and solid edge tabs.
 const CELL_UP_OUTER: &[Seg] = &[
@@ -3255,17 +3183,16 @@ mod store_interaction_tests {
 
     #[test]
     fn category_coats_follow_the_inferred_nav_and_filled_control_ladders() {
-        // Idle rows print their echo over the coat, selected rows under it;
-        // no state draws the bright spine the source does not have.
-        for (drawing, fill, stroke, echo, coat) in [
-            (NAV_HOVER, rgb(0x551719), Some(Ink::Fg), NAV_ECHO_62, 0),
-            (NAV_PRESSED, rgb(0xa52223), None, NAV_ECHO_62, 0),
-            (NAV_SELECTED_HOVER, rgb(0xf63333), None, NAV_ECHO_67, 1),
-            (NAV_SELECTED_PRESSED, rgb(0xa52223), None, NAV_ECHO_67, 1),
+        // Each state is its coat alone: the print pass draws the rows'
+        // copies, and no state draws the bright spine the source lacks.
+        for (drawing, fill, stroke) in [
+            (NAV_HOVER, rgb(0x551719), Some(Ink::Fg)),
+            (NAV_PRESSED, rgb(0xa52223), None),
+            (NAV_SELECTED_HOVER, rgb(0xf63333), None),
+            (NAV_SELECTED_PRESSED, rgb(0xa52223), None),
         ] {
-            assert_eq!(drawing.len(), 2);
-            assert!(matches!(drawing[coat], Prim::Path { fill: Some(Ink::Fixed(c)), stroke: s, .. } if c == fill && s == stroke));
-            assert!(matches!(drawing[1 - coat], Prim::At { x: 0.0, y: 0.0, prims } if prims == echo));
+            assert_eq!(drawing.len(), 1);
+            assert!(matches!(drawing[0], Prim::Path { fill: Some(Ink::Fixed(c)), stroke: s, .. } if c == fill && s == stroke));
         }
         for drawing in [NAV_ROW, NAV_SELECTED] {
             assert!(!drawing.iter().any(|p| matches!(p, Prim::Rect { .. })));
@@ -3474,7 +3401,7 @@ const DASHBOARD_FOOTER_CODE_SIZE: f32 = 9.2;
 const DASHBOARD_FOOTER_CODE_BASELINE_DY: f32 = -0.833333;
 const DASHBOARD_FOOTER_CODE_STRETCH: f32 = 0.844 * 9.8 / DASHBOARD_FOOTER_CODE_SIZE;
 // Iced paints the SVG caption sizes 1–2 native pixels too tall at 4K.
-// Preserve each nominal width and the two existing echo offsets.
+// Preserve each nominal width.
 const DASHBOARD_FOOTER_CAPTION_BASELINE_DY: f32 = -0.416667;
 const DASHBOARD_FOOTER_COMBAT_SIZE: f32 = 9.0;
 const DASHBOARD_FOOTER_COMBAT_STRETCH: f32 = 0.79 * 9.5 / DASHBOARD_FOOTER_COMBAT_SIZE;
@@ -3486,23 +3413,15 @@ pub const DASHBOARD: &[Prim] = &[
     Prim::Soft { prims: &[
         Prim::At { x: 0.0, y: 0.0, prims: dashboard_ground::BACKGROUND },
         Prim::At { x: 0.0, y: 0.0, prims: CELL_MATERIAL },
-        Prim::At { x: 0.0, y: 0.0, prims: dashboard_margin_echoes::ECHOES },
         Prim::At { x: 0.0, y: 0.0, prims: dashboard_material::BADGES },
-        Prim::At { x: 0.0, y: 0.0, prims: dashboard_header_echoes::HEADER_ECHOES },
-        Prim::At { x: 0.0, y: 0.0, prims: dashboard_tape_chip_echoes::ECHOES },
         Prim::At { x: 0.0, y: 0.0, prims: dashboard_ink::MATERIAL },
-        Prim::At { x: 0.0, y: 0.0, prims: dashboard_label_echoes::LABEL_ECHOES },
     ] },
     Prim::Motion { motion: GO_HOME_OPEN, prims: &[
         Prim::Soft { prims: dashboard_material::PANEL_MATERIAL },
-        Prim::Soft { prims: dashboard_echoes::PANEL_ECHOES },
-        Prim::Soft { prims: dashboard_panel_printing::PRINTING_ECHOES },
-        Prim::Soft { prims: dashboard_panel_primary::HEADING_ECHOES },
         Prim::Soft { prims: dashboard_panel_primary::PRIMARY_MATERIAL },
         // Subpixel source strokes need coverage in the same software surface
         // as the maker material, rather than canvas hairline tessellation.
         Prim::Soft { prims: dashboard_panel_primary::MICROTEXT },
-        Prim::Soft { prims: dashboard_brand_echoes::ECHOES },
     ] },
     Prim::At { x: 0.0, y: 0.0, prims: dashboard_chrome::HEADER },
     // The header rule: a `hairline` of the bright line ink centred on the
@@ -3539,26 +3458,6 @@ pub const DASHBOARD: &[Prim] = &[
         prims: GO_HOME,
     },
     Prim::At { x: 0.0, y: 0.0, prims: dashboard_chrome::MARGINS },
-    Prim::Motion {
-        motion: Motion { id: "footer-frame-echo-1", begin: 0, dur: 1,
-            ease: Easing::Linear, change: Change::Opacity { alpha: (0.25, 0.25) } },
-        prims: DASHBOARD_FOOTER_FRAME_ECHO_1,
-    },
-    Prim::Motion {
-        motion: Motion { id: "footer-frame-echo-2", begin: 0, dur: 1,
-            ease: Easing::Linear, change: Change::Opacity { alpha: (0.13, 0.13) } },
-        prims: DASHBOARD_FOOTER_FRAME_ECHO_2,
-    },
-    Prim::Motion {
-        motion: Motion { id: "footer-text-echo-1", begin: 0, dur: 1,
-            ease: Easing::Linear, change: Change::Opacity { alpha: (0.23, 0.23) } },
-        prims: DASHBOARD_FOOTER_TEXT_ECHO_1,
-    },
-    Prim::Motion {
-        motion: Motion { id: "footer-text-echo-2", begin: 0, dur: 1,
-            ease: Easing::Linear, change: Change::Opacity { alpha: (0.11, 0.11) } },
-        prims: DASHBOARD_FOOTER_TEXT_ECHO_2,
-    },
     // Footer tape: narrow/tall primary lettering over soft local copies.
     // Keep the accepted outer-left trim and inner opening. The source's
     // primary bottom band fades only below design y888.75.
@@ -3599,22 +3498,6 @@ pub const DASHBOARD: &[Prim] = &[
     Prim::ReusableWide { x: 1214.2, y: 875.1 + DASHBOARD_FOOTER_CODE_BASELINE_DY, size: DASHBOARD_FOOTER_CODE_SIZE, stretch: DASHBOARD_FOOTER_CODE_STRETCH, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
     Prim::ReusableWide { x: 1276.2, y: 874.6 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_COMBAT_SIZE, stretch: DASHBOARD_FOOTER_COMBAT_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
     Prim::ReusableWide { x: 1276.6, y: 883.0 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_DEFENCE_SIZE, stretch: DASHBOARD_FOOTER_DEFENCE_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
-];
-const DASHBOARD_FOOTER_FRAME_ECHO_1: &[Prim] = &[
-    line_rect(1211.5, 866.5, 144.0, 24.0, Ink::Fg, 2.5),
-];
-const DASHBOARD_FOOTER_FRAME_ECHO_2: &[Prim] = &[
-    line_rect(1212.5, 867.5, 144.0, 24.0, Ink::Fg, 2.5),
-];
-const DASHBOARD_FOOTER_TEXT_ECHO_1: &[Prim] = &[
-    Prim::ReusableWide { x: 1215.0, y: 876.1 + DASHBOARD_FOOTER_CODE_BASELINE_DY, size: DASHBOARD_FOOTER_CODE_SIZE, stretch: DASHBOARD_FOOTER_CODE_STRETCH, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
-    Prim::ReusableWide { x: 1277.0, y: 875.6 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_COMBAT_SIZE, stretch: DASHBOARD_FOOTER_COMBAT_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
-    Prim::ReusableWide { x: 1277.4, y: 884.0 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_DEFENCE_SIZE, stretch: DASHBOARD_FOOTER_DEFENCE_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
-];
-const DASHBOARD_FOOTER_TEXT_ECHO_2: &[Prim] = &[
-    Prim::ReusableWide { x: 1216.0, y: 877.1 + DASHBOARD_FOOTER_CODE_BASELINE_DY, size: DASHBOARD_FOOTER_CODE_SIZE, stretch: DASHBOARD_FOOTER_CODE_STRETCH, ink: Ink::Fg, face: Face::Bold, anchor: Anchor::Start, content: "68SD1D1100D1S" },
-    Prim::ReusableWide { x: 1278.0, y: 876.6 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_COMBAT_SIZE, stretch: DASHBOARD_FOOTER_COMBAT_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
-    Prim::ReusableWide { x: 1278.4, y: 885.0 + DASHBOARD_FOOTER_CAPTION_BASELINE_DY, size: DASHBOARD_FOOTER_DEFENCE_SIZE, stretch: DASHBOARD_FOOTER_DEFENCE_STRETCH, ink: Ink::Fg, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
 ];
 // --- end dashboard -------------------------------------------------------
 
