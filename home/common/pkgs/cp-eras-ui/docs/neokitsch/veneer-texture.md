@@ -306,6 +306,84 @@ sweep is equally strong across the card where the reference's is
 strongest right of x ~330; the store core is still not pointed and its
 knees do not rise towards the right edge.
 
+### Fourth refinement (2026-11-16)
+
+Two surfaces refit after the 2026-11-16 fidelity review
+(`dashboard-panel.png`, `dashboard-email.png`); the other four PNGs are
+byte-identical (sha256 checked). Generator changes, none of which alters
+a surface that does not use them:
+
+- `ramp` takes `k` as a list (piecewise across the grain, knee width).
+- `shear` takes `accel` (as `lean` does): the lean grows with distance
+  past `ts`, so the lines curve into arcs instead of running straight.
+- A family may carry `quant` (overrides `QUANT` for that family only)
+  and `fade = (a, b)`: its lines' opacity rises over `a` design px after
+  the window's start and falls over `b` before its end (smoothstep), so
+  a crossing comb fades into the other leaf instead of stopping on a row.
+- `look['width']` sets the stroke width in texels (default 1.0).
+
+**Panel: the "hard rectangular edge".** It was the left strip's lines
+under the crease: near the strip edge (native x 300-445, y 636-696) they
+ran ~83 deg, packed, and stopped on the strip cut, while the right strip's
+ran 50-70. In the reference the fold dies out towards the right (angles
+82 at x 310 falling to ~45 at x 430 and ~6 at x 535), and the crease
+curves up into the edge. Two findings that steer the terms: a ramp's
+amount *falling* across the grain flattens the lines (the slope is
+`A u_t / (1 + A' u)`), so tapering the sweep towards the edge made it
+worse; and the lines steepen where the amount *rises*. Now:
+`PANEL_SWEEP` amount 130 at s 108.3, 115 at 139.6, 122 at 181, 107 at
+187.5, its knee row lowered at the right (t 248 / 256 at s 139.6 / 170.8)
+and softer there (`k` 2 to s 110, 4 at s 150, 5 at the edge: the
+reference's knee turns over ~50 native rows); `PANEL_EDGE`, a ramp from
+t 232 to 252 (k 3) whose amount rises from 0 at s 181 to 15 at the edge,
+turns the crease up into the strip edge (40 drew a dark vertical blot at
+1600x900); `PANEL_RIGHT` (the right strip's first ramp) 22 at s 187.5 to
+0 at the right edge (was 40 / 30), so the strip's lines are near-vertical
+at the right as the reference's are. Mean angle error against the
+reference, rows 515-742, x 10-300 / 300-445 / 445-553 (committed / now):
+14.1 / 14.0, 15.0 / 11.6, 14.8 / 10.1.
+
+**Panel: why it reads soft.** Measured, not the print pass and not the
+sampler. At 3840x2160 the screen's lines keep their contrast (mean line
+depth, G, in vertical grain at native 470-520: reference 31.5, texture
+29.6, render with `CP_ERAS_UI_PRINT=0` 26.8, with the print pass 26.7;
+the render is 0.84 texel + 0.09 / 0.06 of its right / lower neighbours:
+the panel's origin is a fraction of a texel off, a ~10% loss). At
+1600x900 the screen is exactly the 2.4-texel box of the texture
+(correlation 0.98 against a simulated box): `src/veneer.rs` does what it
+should. The review's crop set the reference at native 4K beside ours at
+1600x900, which is most of the difference. What remains is the texture:
+the reference's line is a little wider (mean profile at the line
+162 / 184-185.5 either side; ours 164 / 188-189), and a 1-texel line loses
+more under the box. The panel now strokes 1.3 texels with a lighter
+single line ((220, 158, 79), was (217, 154, 76)): profile 162 / 185-186.5;
+G std after a 2.4 box in vertical grain reference / committed / now
+10.3 / 8.2 / 9.0, in the fold 12.0 / 10.8 / 12.3; mean G vertical 184.8 /
+186.2 / 184.8, fold 175.1 / 175.5 / 171.5. The rest of the 1600x900 gap
+is the reference's more regular ~5-texel pitch (more power at periods
+4.5-12 texels, less at 2-3). Nothing outside the generator needs to
+change for this; the sub-texel origin at 4K is a layout rounding (the
+panel's design origin is not on the 1/2.4 px grid), not the sampler.
+
+**EMAIL card.** The band's top and bottom were window ends. Both leaves
+now `fade` over 10 px at those ends (upper `(0, 10)`, lower `(10, 0)`),
+the lean knees are softer (`EMAIL_LEAN_*` w 6, was 4) and both families
+trace with 10-degree bins (`EMAIL_QUANT`, step 10, hysteresis 1.5): the
+band's lines curve into the chevron and the swirl's 30-degree chords are
+gone. The swirl is two arcs now: `EMAIL_SWIRL` on the main comb (ts 55,
+w 15, amount 0 to 0.2, accel 0.012 to 0.02) leans up-left more and more
+towards the top, and `EMAIL_SWIRL_TWIN` (amount 0 to -0.1, accel -0.008
+to -0.012) the twin up-right, so they cross in the reference's lenses
+rather than a straight comb across a vertical one.
+
+Still wrong after it: the panel's crease is still straighter than the
+reference's between native x 200 and 420, and its turn up at the edge is
+a short corner rather than the reference's long curve; the EMAIL swirl
+is denser and its arcs shallower than the reference's, which reach nearly
+horizontal under the chamfer; the EMAIL band's lattice is a little
+weaker than the reference's. The mail row, SMG button and store streak
+(review items 3 and 4) were not revisited.
+
 ## Surfaces
 
 | Texture | Surface | Design box | Texels |

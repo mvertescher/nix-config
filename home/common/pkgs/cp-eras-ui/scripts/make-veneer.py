@@ -100,12 +100,17 @@ STREAK_BEND = dict(kind='bend', ts=121.46, w=16.0, p=2.0,
 # The EMAIL card (2026-11-15 second refinement). LEAN_L is the lower leaf's
 # lean in its mirrored coordinates; the two are not symmetric, so the
 # crossing band sits a little above the axis, as the reference's does.
-EMAIL_LEAN_U = dict(kind='lean', ts=(122.0, 110.0), w=4.0, amount=(-0.3, -0.15))
-EMAIL_LEAN_L = dict(kind='lean', ts=(140.0, 118.0), w=4.0, amount=(-0.3, -0.15))
+EMAIL_LEAN_U = dict(kind='lean', ts=(122.0, 110.0), w=6.0, amount=(-0.3, -0.15))
+EMAIL_LEAN_L = dict(kind='lean', ts=(140.0, 118.0), w=6.0, amount=(-0.3, -0.15))
 EMAIL_CUSP = dict(kind='bend', ts=150.8, w=18.0, c=0.6, amount=(0.0, -50.0), power=3.0)
 EMAIL_EDGE = dict(kind='knot', at=(97.0, 160.0), r=(14.0, 1e6), amount=5.0, real=True)
 EMAIL_TOP = dict(kind='bend', ts=70.0, w=110.0, p=2.0, amount=(0.0, 30.0), real=True)
-EMAIL_SWIRL = dict(kind='shear', ts=44.0, w=9.0, amount=(0.5, 1.3), comb='main')
+EMAIL_SWIRL = dict(kind='shear', ts=55.0, w=15.0, amount=(0.0, 0.2), accel=(0.012, 0.02), comb='main')
+EMAIL_SWIRL_TWIN = dict(kind='shear', ts=55.0, w=15.0, amount=(0.0, -0.1), accel=(-0.008, -0.012), comb='twin')
+# Both EMAIL leaves: 10-degree direction bins (the 30-degree knees drew the
+# swirl's arcs and the band's crossing lines as chords), and the crossing
+# comb fades over 10 px at its window end instead of stopping on a row.
+EMAIL_QUANT = dict(step=10.0, hyst=1.5)
 MAIL_STEP = [(0.0, 50.0), (17.0, 70.0), (32.0, 60.0), (55.0, 35.0)]
 MAIL_SEAM = dict(kind='bend', ts=238.1, w=6.0, p=2.0, amount=(-1.0, -12.0))
 MAIL_CREASE = dict(kind='bend', ts=238.1, w=2.0, p=2.0, amount=(0.0, -4.0), power=1.5)
@@ -133,15 +138,13 @@ BASKET_CREASE = dict(kind='bend', ts=85.0, w=1.5, p=2.0, amount=(2.5, 3.0))
 # the strip edge at (450, 615).
 PANEL_UNDER = [(0.0, 265.0), (35.4, 278.3), (66.7, 290.8), (87.5, 300.8), (108.3, 300.8),
                (139.6, 298.3), (170.8, 294.2), (187.5, 295.0)]
-PANEL_SWEEP = dict(kind='ramp', k=2.0,
-                   a=[(14.6, 220.8), (56.2, 225.0), (97.9, 230.4), (139.6, 243.8), (170.8, 252.1), (187.5, 255.0)],
-                   b=[(4.2, 250.0), (35.4, 262.5), (66.7, 275.0), (87.5, 286.7), (108.3, 288.3), (139.6, 289.6),
-                      (170.8, 291.7), (187.5, 293.8)],
-                   amount=[(4.2, 35.0), (35.4, 55.0), (66.7, 90.0), (108.3, 130.0), (139.6, 110.0), (187.5, 85.0)])
+PANEL_SWEEP = dict(kind='ramp', k=[(0.0, 2.0), (110.0, 2.0), (150.0, 4.0), (187.5, 5.0)], a=[(14.6, 220.8), (56.2, 225.0), (97.9, 230.4), (139.6, 248.0), (170.8, 256.0), (187.5, 255.0)], b=[(4.2, 250.0), (35.4, 262.5), (66.7, 275.0), (87.5, 286.7), (108.3, 288.3), (139.6, 289.6), (170.8, 291.7), (187.5, 293.8)], amount=[(4.2, 35.0), (35.4, 55.0), (66.7, 90.0), (108.3, 130.0), (139.6, 115.0), (181.0, 122.0), (187.5, 107.0)])
 PANEL_CREASE = dict(kind='ramp', k=1.0,
                     a=[(83.3, 276.7), (113.8, 267.5), (139.6, 264.2), (170.8, 259.2), (187.5, 256.2)],
                     b=[(83.3, 279.2), (113.8, 270.0), (139.6, 266.7), (170.8, 261.7), (187.5, 258.8)],
                     amount=[(75.0, 0.0), (104.2, 18.0), (187.5, 18.0)])
+PANEL_EDGE = dict(kind='ramp', k=3.0, a=[(0.0, 232.0)], b=[(0.0, 252.0)], amount=[(181.0, 0.0), (187.5, 15.0)])
+PANEL_RIGHT = dict(kind='ramp', k=3.0, a=[(187.5, 260.4), (230.4, 266.7)], b=[(187.5, 291.7), (230.4, 316.7)], amount=[(187.5, 22.0), (230.4, 0.0)])
 PANEL_UNDER_L = dict(kind='ramp', k=3.0, a=PANEL_UNDER, b=[(s, t + 60.0) for s, t in PANEL_UNDER],
                      amount=[(0.0, 170.0), (77.9, 170.0)])
 PANEL_UNDER_R = dict(kind='ramp', k=3.0, a=PANEL_UNDER, b=[(s, t + 62.5) for s, t in PANEL_UNDER],
@@ -207,8 +210,9 @@ SURFACES = {
         wave=dict(amp=1.6, along=160.0, across=40.0),
         kinks=dict(n=10, amp=1.2, rs=(3.0, 8.0), rt=(4.0, 12.0)),
         families=[
-            dict(window=(None, 160.0), terms=[EMAIL_LEAN_U, EMAIL_CUSP, EMAIL_EDGE, EMAIL_TOP, EMAIL_SWIRL]),
-            dict(mirror=150.8, window=(125.0, None), terms=[
+            dict(window=(None, 160.0), fade=(0.0, 10.0), quant=EMAIL_QUANT,
+                 terms=[EMAIL_LEAN_U, EMAIL_CUSP, EMAIL_EDGE, EMAIL_TOP, EMAIL_SWIRL, EMAIL_SWIRL_TWIN]),
+            dict(mirror=150.8, window=(125.0, None), fade=(10.0, 0.0), quant=EMAIL_QUANT, terms=[
                 EMAIL_LEAN_L, EMAIL_CUSP, EMAIL_EDGE, EMAIL_TOP,
                 dict(kind='bend', ts=325.2, w=34.0, amount=(8.0, 0.0), real=True),
             ]),
@@ -231,15 +235,14 @@ SURFACES = {
     'dashboard-panel': dict(
         size=(230.4, 309.0), axis='v', seed=1202, pitch=10.2 / R,
         twin=dict(offset=0.42, shift=-1.5),
-        look=dict(ground=(262, 194, 110), single=(217, 154, 76), grain=(4.1, 4.6, 4.9)),
+        look=dict(ground=(262, 194, 110), single=(220, 158, 79), grain=(4.1, 4.6, 4.9), width=1.3),
         wave=dict(amp=1.8, along=200.0, across=50.0),
         kinks=dict(n=10, amp=1.0, rs=(3.0, 9.0), rt=(5.0, 14.0)),
         families=[
-            dict(window=(153.4, None), swindow=(None, 77.7), trim=True, terms=[PANEL_SWEEP, PANEL_CREASE, PANEL_UNDER_L]),
-            dict(window=(153.4, None), swindow=(78.1, 187.6), trim=True, terms=[PANEL_SWEEP, PANEL_CREASE, PANEL_UNDER_R]),
+            dict(window=(153.4, None), swindow=(None, 77.7), trim=True, terms=[PANEL_EDGE, PANEL_SWEEP, PANEL_CREASE, PANEL_UNDER_L]),
+            dict(window=(153.4, None), swindow=(78.1, 187.6), trim=True, terms=[PANEL_EDGE, PANEL_SWEEP, PANEL_CREASE, PANEL_UNDER_R]),
             dict(window=(153.4, None), swindow=(187.4, None), terms=[
-                dict(kind='ramp', k=3.0, a=[(187.5, 260.4), (230.4, 266.7)], b=[(187.5, 291.7), (230.4, 316.7)],
-                     amount=[(187.5, 40.0), (230.4, 30.0)]),
+                PANEL_RIGHT,
                 dict(kind='ramp', k=3.0, a=[(187.5, 291.7), (230.4, 316.7)], b=[(0.0, 341.7)],
                      amount=[(187.5, 20.0), (230.4, 20.0)]),
             ]),
@@ -455,6 +458,8 @@ def family_phi(surf, fam, s, t):
             # sweep, its crease and the run below it.
             a = pw(s, term['a']); b = pw(s, term['b'])
             k = term.get('k', 2.0)
+            if isinstance(k, list):
+                k = pw(s, k)  # knee width varying across the grain
             u = (k * np.logaddexp(0.0, (tt - a) / k) - k * np.logaddexp(0.0, (tt - b) / k)) / np.maximum(b - a, 1e-6)
             phi = phi + pw(s, term['amount']) * u
         elif kind == 'shear':
@@ -463,7 +468,12 @@ def family_phi(surf, fam, s, t):
             # a soft knee `w` wide between: grain running off an edge.
             z = (term['ts'] - tt) / term['w']
             knee = term['w'] * np.logaddexp(0.0, z)
-            phi = phi + across(s, S, term['amount'], term.get('power', 1.0)) * knee
+            shear = across(s, S, term['amount'], term.get('power', 1.0)) * knee
+            if 'accel' in term:
+                # The lean steepens further from ts: the lines curve
+                # into arcs instead of running off the edge straight.
+                shear = shear + across(s, S, term['accel']) * knee * knee / 2.0
+            phi = phi + shear
         elif kind == 'lean':
             # One-sided, the other way: past ts (t > ts) the lines lean
             # at `amount` (ds/dt, negative leans them towards +s), after
@@ -754,9 +764,13 @@ def trim(Q, box):
 def lines(spec):
     """All of a surface's drawn lines, as polylines in texels (x, y)."""
     surf = Surface(spec)
-    q = dict(QUANT, **spec.get('quant', {}))
     out = []
     for fam in spec['families']:
+        q = dict(QUANT, **spec.get('quant', {}), **fam.get('quant', {}))
+        fade = fam.get('fade')
+        if fade:
+            box = domain(surf, fam)
+            fade = (box[2], box[3], fade[0], fade[1], spec['axis'])
         for twin in ((False, True) if surf.twin else (False,)):
             for Q, _ in trace_family(surf, fam, twin):
                 if len(Q) < 3:
@@ -767,14 +781,29 @@ def lines(spec):
                 V = V * R
                 if spec['axis'] == 'h':
                     V = V[:, ::-1]
-                out.append((fillet(V, q['radius']), fam.get('ink', 1.0)))
+                out.append((fillet(V, q['radius']), fam.get('ink', 1.0), fade))
     return out
 
 
 # ---------------------------------------------------------------------------
 # Rendering, as measured (veneer-construction.md, "Line, ground and grain").
 
-def stroke(taus, P, alpha, width=1.0, pad=2):
+def faded(fade, X, Y):
+    """A family's opacity near its window ends: `fade` = (t0, t1, a, b,
+    axis); the lines fade in over `a` design px after t0 and out over
+    `b` before t1 (smoothstep), so a crossing comb fades into the other
+    leaf instead of stopping on a cut row."""
+    t0, t1, a, b, axis = fade
+    t = (Y if axis == 'v' else X) / R
+    f = np.ones_like(t)
+    if a:
+        u = np.clip((t - t0) / a, 0.0, 1.0); f = f * u * u * (3 - 2 * u)
+    if b:
+        u = np.clip((t1 - t) / b, 0.0, 1.0); f = f * u * u * (3 - 2 * u)
+    return f
+
+
+def stroke(taus, P, alpha, width=1.0, pad=2, fade=None):
     """Add one stroke's optical depth -ln(1 - alpha_c * coverage) per
     channel; coverage is a `width`-wide box's overlap with the texel."""
     H, W = taus.shape[1:]
@@ -795,6 +824,9 @@ def stroke(taus, P, alpha, width=1.0, pad=2):
         sub = D[by0 - y0:by1 - y0, bx0 - x0:bx1 - x0]
         np.minimum(sub, np.hypot(X - a[0] - t * d[0], Y - a[1] - t * d[1]), out=sub)
     cov = np.clip(np.minimum(D + width / 2, 0.5) - np.maximum(D - width / 2, -0.5), 0, None)
+    if fade is not None:
+        X, Y = np.meshgrid(np.arange(x0, x1) + 0.5, np.arange(y0, y1) + 0.5)
+        cov = cov * faded(fade, X, Y)
     for c in range(3):
         taus[c, y0:y1, x0:x1] -= np.log1p(-np.minimum(alpha[c] * cov, 0.999))
 
@@ -822,8 +854,8 @@ def render_rgb(spec, grain_on=True):
     core = np.minimum(np.array(CORE) * ground / store, single - 1)
     alpha = (ground - single) / (ground - core)
     taus = np.zeros((3, th, tw))
-    for P, ink in lines(spec):
-        stroke(taus, P, alpha * ink)
+    for P, ink, fade in lines(spec):
+        stroke(taus, P, alpha * ink, width=look.get('width', 1.0), fade=fade)
     rgb = core[:, None, None] + (ground - core)[:, None, None] * np.exp(-taus)
     if grain_on:
         rgb = rgb + grain((th, tw), look['grain'], spec['seed'] + 7)
