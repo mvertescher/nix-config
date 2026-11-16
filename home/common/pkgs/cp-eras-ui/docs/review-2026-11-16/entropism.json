@@ -1,0 +1,118 @@
+{
+  "id": "entropism",
+  "name": "Entropism",
+  "previous_score": 8,
+  "score": 8,
+  "overall": "Still the closest of the four eras: layout, copy, palette, the store cards and the hub grid line up almost one-for-one, and the 2026-11-14 batch fixed what it targeted (NEXT fill and label, footer type, BUILD string, boxed letters, section headings). The print pass is the visible change since the first review. Ours now has faint offset copies beside frames and text, and grain on the sage fills, so the screens no longer look like clean vector art. That moves the right way overall, but the texture is not yet the reference's. Ours is coarser and noisier at this size: sage-fill grain measures std 5.0 against 3.7 at 1600 px, and the dark ground 1.0 against 0.5, as low-frequency mottling where the reference shows faint horizontal striations. The copies sit beside the glyphs as an offset, mostly up and left at the top of the screen. The reference wraps glyphs in a soft, hatched halo, so small caption text in ours smears where the reference's stays clean. The type is unchanged and remains the biggest constant gap. Rajdhani is squarer, with a single-storey 'a', and runs bolder on the hub tile labels and headers, where the reference uses a rounder humanist sans in a regular weight. The score stays at 8: the fixed items and the new material are offset by the noisier texture. That is a judgement from 1600 px images and marginal between 8 and 8.5.",
+  "regressions": [
+    "Grain is too coarse and too strong at viewing size. The sage fills (login footer, selected mail row, store card, BRAINDANCE tile) measure std 5.0 against the reference's 3.7 at 1600 px and read as a speckled, blotchy chromatic noise. The reference's grain is about 2.4x finer and almost averages out at this size. The yellow PETROCHEM bands look muddier under it.",
+    "The dark ground has low-frequency mottling (std 1.0 against the reference's 0.5 at 1600 px) that the reference does not have. The reference's ground shows faint horizontal striations instead (visible with the levels stretched; see login-texture.png).",
+    "Text copies are displaced copies, not a halo. On USERNAME:, the hub tile labels and the store logo, the faint copy sits a pixel or two up and left with a dotted, hatched edge. The reference's equivalent is a soft hatched bloom hugging each glyph. On 7-8 px caption text (COMBAT COLONIZATION / DEFENCE PROGRAM, the store fine print) the copy fills the gap between the two tight lines, so ours smears where the reference stays legible.",
+    "Ink on the sage fills is a little darker and heavier than the reference in places: the store's stat numbers (86 30 5 5), the login footer strings, NEXT. It is mild, not the washed-out problem the first review reported, and on the selected mail row it is about level with the reference. The ink rule overshoots slightly here, where it used to fall short."
+  ],
+  "screens": [
+    {
+      "id": "login", "name": "Login", "score": 8.5,
+      "verdict": "The composition is near-identical, and NEXT and the footer now match. What remains is the typeface, one missing double space, and a print texture that is noisier than the reference's.",
+      "matches": [
+        "The header strip, centred USERNAME / input / NEXT group, cursor underline and footer band sit at the same positions and sizes.",
+        "NEXT's fill is now the reference's greyer sage, and its label sits at normal spacing.",
+        "The footer strings (INTERFACE LOADED / PROVIDED BY / BUILD) now match in size, tracking and placement.",
+        "Faint offset copies now appear beside the header frame and the footer band's sides, as in the reference, including the dark side bars left and right of the footer.",
+        "The warm dark ground with its brighter upper-centre pool matches."
+      ],
+      "gaps": [
+        {"text": "Header, USERNAME: and footer type: ours is Rajdhani, squarer and a step bolder than the reference's lighter, rounder sans (compare C, S, G, R).", "status": "known", "severity": "medium"},
+        {"text": "Sage footer band: the grain is coarse, blotchy chromatic speckle (std 5.0 vs 3.7 at 1600 px). The reference's is fine, with faint vertical streaks.", "status": "new", "severity": "medium"},
+        {"text": "Text glow: the reference wraps USERNAME: and the asterisks in a soft hatched halo. Ours draws a crisp glyph with a hard-edged copy offset up and left.", "status": "known", "severity": "medium"},
+        {"text": "Ground: faint horizontal striations in the reference; ours shows low-frequency mottling instead.", "status": "unsure", "severity": "low"},
+        {"text": "Header left string: the reference has a double space (\"SURGICAL  SOFTWAREV2\"); ours still has a single space.", "status": "new", "severity": "low"},
+        {"text": "The input box's outline is a touch heavier and brighter than the reference's.", "status": "new", "severity": "low"}
+      ],
+      "question": null,
+      "since_2026_11_13": [
+        {"text": "Header, USERNAME: and footer strings: our type is squarer and noticeably bolder than the reference's light, rounded sans.", "now": "unchanged"},
+        {"text": "NEXT button: wide letter-spacing, and a brighter, mintier fill than the reference's greyer sage.", "now": "fixed"},
+        {"text": "Footer strings: widely tracked and dimmer where the reference sets them tighter at normal spacing.", "now": "fixed"},
+        {"text": "Whole ground: the reference has fine horizontal scanlines and print grain; ours is a smooth gradient.", "now": "improved"},
+        {"text": "Header left string: the reference has a double space; ours has a single space.", "now": "unchanged"}
+      ]
+    },
+    {
+      "id": "mailbox", "name": "Mailbox", "score": 8,
+      "verdict": "Layout, copy and line breaks still match line for line, and the selected-row ink is no longer washed out. The typeface (most of all in the body paragraphs) and a coarser fill grain are what a viewer notices.",
+      "matches": [
+        "The three boxed-letter sections, the seven-row list, the message panel, the four action buttons and the 2x2 T badges sit at the same positions and sizes.",
+        "The body paragraphs keep the same words and hyphenated breaks.",
+        "The selected cells are the same (row 1, title bar, REPORT SPAM, T2), with the open envelope on row 2.",
+        "Ink on the selected row and title bar is now about as dark as the reference's.",
+        "Offset copies beside the list frame and on the light text, similar in strength to the reference."
+      ],
+      "gaps": [
+        {"text": "Body paragraphs and row titles: Rajdhani's single-storey 'a', square 'o' and mechanical rhythm against the reference's rounder humanist sans with a double-storey 'a'. This is the most visible type difference in the era.", "status": "known", "severity": "medium"},
+        {"text": "Sage fills (row 1, title bar, REPORT SPAM, T2) carry a visibly speckled, blotchy grain that makes them look dirtier than the reference's smooth-reading fills. There is also a hatched band down the selected row's left edge.", "status": "new", "severity": "medium"},
+        {"text": "Selected row: YOU'LL REGRET THAT is still slightly letter-spaced and lighter in weight, and FROM: JACKIE is paler grey-green than the reference's.", "status": "known", "severity": "low"},
+        {"text": "Frame lines (list, message panel, buttons) are a little heavier and crisper than the reference's soft, glowing 1.5 px lines.", "status": "new", "severity": "low"},
+        {"text": "No bloom: the reference's light text and frames glow softly; ours have offset copies but no halo.", "status": "known", "severity": "low"}
+      ],
+      "question": null,
+      "since_2026_11_13": [
+        {"text": "Selected row 1 and the message title bar: our text inside the sage fill is thin, light grey-green and letter-spaced.", "now": "improved"},
+        {"text": "Row titles and body copy: our font is squarer and more mechanical than the reference's rounder humanist sans.", "now": "unchanged"},
+        {"text": "Sage fills are a slightly brighter, more saturated mint than the reference's greyer sage.", "now": "fixed"},
+        {"text": "Ground and text: the reference has scanlines and a slight doubled, ghosted print edge; ours is crisp.", "now": "improved"}
+      ]
+    },
+    {
+      "id": "store", "name": "Store", "score": 8,
+      "verdict": "The cards, rifle art, yellow bands, logo and nav still line up almost exactly, and the BUILD string and boxed letters are fixed. The header type is now visibly smaller than the reference's, and the selected card's label inks are pale.",
+      "matches": [
+        "The 4ST logo (solid 4S, outlined T, spaced S T O R E) with offset copies behind it much like the reference's, plus the customer and loyalty block.",
+        "Card geometry: the selected sage card, the yellow PETROCHEM / BETTERLIFE TEC bands (colour within about 10 levels), the rifle line art, the stat strips, the socket cells and card 4's cut at the right edge.",
+        "The footer BUILD string now runs to the reference's position at the right.",
+        "The boxed A and B now have a box with a doubled offset edge, as in the reference.",
+        "The left nav with SMG selected, and the fine print under the cards."
+      ],
+      "gaps": [
+        {"text": "Header strip strings (DIGITAL DISTRIBUTION SOFTWAREV2, STORE ACCESS SCREEN, FLAIR TRS 5MMP) are about a size smaller and lighter than the reference's. On the other three screens they match.", "status": "new", "severity": "medium"},
+        {"text": "Selected card's PETROCHEM tag: the reference has a near-black box with bold yellow text. Ours is a grey-olive box with thin, pale text. BETTERLIFE TEC is also thinner.", "status": "new", "severity": "medium"},
+        {"text": "Selected card's sage fill and yellow band: the coarse grain speckles both and makes the band look muddier than the reference's clean, saturated yellow.", "status": "new", "severity": "medium"},
+        {"text": "Boxed A and B: the letters are still thinner and dimmer than the reference's bold, glowing A and B.", "status": "known", "severity": "low"},
+        {"text": "Nav labels, card titles and the fine print: Rajdhani is squarer, and the 7 px fine print is narrower and dimmer (the '6' in 2006 reads as a 5).", "status": "known", "severity": "low"},
+        {"text": "No glow on the logo or the cards.", "status": "known", "severity": "low"}
+      ],
+      "question": null,
+      "since_2026_11_13": [
+        {"text": "Boxed A and B: in the reference each letter is bold, with a doubled, outlined look; ours are thin, plain letters in a single box.", "now": "improved"},
+        {"text": "Footer right BUILD string: the reference's is larger and runs nearly to the frame edge; ours is smaller and ends about 20 px short.", "now": "fixed"},
+        {"text": "Nav labels and card titles: our font is a little squarer and heavier.", "now": "unchanged"},
+        {"text": "Fine print and socket captions are slightly more condensed.", "now": "unchanged"},
+        {"text": "Ground: no scanlines, and no glow on the logo and cards.", "now": "improved"}
+      ]
+    },
+    {
+      "id": "dashboard", "name": "Dashboard", "score": 7.5,
+      "verdict": "The grid, panels and badges match and the section headings are fixed. The caption strips are still the weak spot: the selected one has no dark frame, and the unselected ones' two lines crush together under the copies. The tile labels run bold.",
+      "matches": [
+        "The 3x2 tile grid, the MESSAGE panel and the T1-T4 column have the right positions, sizes and spacing.",
+        "The section headings (MAIL BOX, MESSAGE, SECURITY LEVEL) and the T labels now match the reference's weight.",
+        "The BRAINDANCE paragraph keeps the same words and hyphenated breaks.",
+        "The selected cells are the same (BRAINDANCE, T2), and the BRAINDANCE strip's centre divider is now visible."
+      ],
+      "gaps": [
+        {"text": "Caption strip on the BRAINDANCE tile: the reference has a dark outer frame and dark cell lines with a bold, dark code. Ours has no dark frame, a grey divider, and a lighter, thinner code, so the strip still half dissolves into the tile.", "status": "known", "severity": "medium"},
+        {"text": "Captions on the unselected tiles (COMBAT COLONIZATION / DEFENCE PROGRAM): ours is a tall condensed face with the two lines almost touching. The offset copy fills the gap, so the caption smears. The reference sets two clearly separate, squatter lines.", "status": "known", "severity": "medium"},
+        {"text": "Tile labels (EMAILS, MATRIX, SECURITY SYSTEMS, PRIVATE, DEVICES) and the BRAINDANCE panel heading are bold in ours. The reference sets them regular weight with a glow.", "status": "new", "severity": "medium"},
+        {"text": "The BRAINDANCE tile's sage fill and the T2 fill carry the coarse speckled grain.", "status": "new", "severity": "low"},
+        {"text": "No bloom around the frames and labels; the copies are offset rather than a halo.", "status": "known", "severity": "low"}
+      ],
+      "question": "Rajdhani's single-storey 'a' and square forms are now the largest constant difference across all four screens (most visible in the mailbox body and the hub tile labels). Is another typeface search worth doing, for an open-licence rounded humanist sans with a double-storey 'a', or is Rajdhani accepted?",
+      "since_2026_11_13": [
+        {"text": "Caption strip on the BRAINDANCE tile: faint grey text, with almost no visible divider or frame.", "now": "improved"},
+        {"text": "Section headings (MAIL BOX, MESSAGE, SECURITY LEVEL) and the T1-T4 labels are visibly bolder than the reference's.", "now": "fixed"},
+        {"text": "Caption fine print on the unselected tiles: a taller, narrower face than the reference's squatter, heavier caption type.", "now": "worse"},
+        {"text": "Ground: no scanline grain or glow around the frames.", "now": "improved"}
+      ]
+    }
+  ]
+}

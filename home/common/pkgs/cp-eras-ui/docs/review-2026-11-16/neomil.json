@@ -1,0 +1,118 @@
+{
+  "id": "neomil",
+  "name": "Neomil",
+  "score": 8.5,
+  "previous_score": 8,
+  "overall": "Still the closest era, and the three days of work show. Most of what the first review listed has been dealt with: the selected mail row and Switch Weapon now carry firm dark ink, the sender name is bolder, the store menu's bright stripe is gone, and the print pass gives every screen the faint offset copies the reference has. Flipping between the two at 1600 px, the composition, palette and type line up almost element for element. The overlay is a net gain: grain in flat areas measures close to the reference (SD about 1.1 against 0.8 in the black, 1.1 against 1.0 on the active login card), and the copies sit in about the right direction and strength on titles, margin codes and the footer tape. What remains is local. Dark ink on a red fill is still too faint in two places nobody fixed (the login Login button and the store CUSTOMER bar). The print pass softens dark art inside the light active login card. The selected mail cartridge is filled where the reference's is dark. A few microtext runs are dimmer and narrower than the source. On the dashboard the owner's inverted LOCATIONS tile is now the biggest visible difference from the art. That tile was approved and is not scored as an error, but it is what a viewer notices first. All judgements are from 1600-pixel images plus a few native 4K crops; anything under about 1 px is marginal.",
+  "regressions": [
+    "Login: the dark emblem inside the active (light red) card is softer than before and than the reference. The hexagon interior has a lighter diagonal smear, and the left block and bars have blurred edges. The reference draws them crisp black. This is probably the print pass's copies reaching dark-on-light art that the gate was meant to protect (unsure of cause).",
+    "Login/mailbox/dashboard header: the LEVEL T1 badge now shows a legible second 'T1' and 'LEVEL' offset up-left inside the badge, and its fill reads paler grey than the reference's dark translucent plate. The reference's copies sit as streaks at the badge's left edge, not as a doubled glyph inside it.",
+    "Mailbox/store margin tabs: a crisp two-bar '=' now sits left of the small square beside the '1'/'2' tabs. The reference has only a faint smear there.",
+    "Header hairline rule: it measures heavier than the reference at 1600 (two strong pixel rows, #B73043 + #892C4B, against #A52D3F + #4D294A), with a darker row above. Marginal, consistent with the known 'off-grid lines read 0.2-0.5 px wide' note after the 0.8333 dp weight change.",
+    "Dashboard: the inverted selected tile (owner's addition, not in the reference) is now the most noticeable difference from the art at rest. Its code glyph is blurred red on dark where the other tiles' codes are crisp black."
+  ],
+  "screens": [
+    {
+      "id": "login",
+      "name": "Login",
+      "score": 8.5,
+      "verdict": "Still very close. The inactive cards' wash is now near the reference, but the print pass has softened the dark emblem in the active card, and the Login button's label is still faint red on red.",
+      "matches": [
+        "Header (CUSTOMER/T1 badge, #NC488402 protocol block, red tape, T1-T4 with T2 lit, hairline rule), the three USER 01 cards, portraits, password field and the margin marks are all in place.",
+        "Inactive cards: the top-to-bottom tone now tracks the reference closely; at 1600 both read as an even maroon.",
+        "Print copies: faint offset copies now show behind CUSTOMER, #NC488402, password: and the notices, in about the reference's direction and strength. Background grain is close to the reference's."
+      ],
+      "gaps": [
+        {"text": "The 'Login' label in the password button is pale red that almost disappears into the button. The reference prints it in firm dark ink. This is the same ink-on-fill problem fixed on the mailbox, not applied here.", "status": "new", "severity": "medium"},
+        {"text": "Active card emblem: the hexagon and left block are smeared and soft, with a lighter diagonal band through the hexagon. The reference is crisp black with a thin outer ring round the hexagon. The bottom icon row also differs: the reference has a stepped block, a dot, a boxed slash with two small squares and three lines of microtext; ours has a square, a dot and a boxed slash with no microtext.", "status": "new", "severity": "medium"},
+        {"text": "LEVEL T1 badge: a legible doubled 'T1'/'LEVEL' inside the badge, and a paler, greyer fill than the reference's dark plate.", "status": "new", "severity": "low"},
+        {"text": "Protocol block microtext (ONLY CC35 CERTIFIED...) is dimmer and blurrier than the reference's clear red lines.", "status": "unsure", "severity": "low"},
+        {"text": "Inactive cards: the reference has faint fine horizontal scanlines; ours carries grain but no row structure (visible only when enlarged).", "status": "known", "severity": "low"}
+      ],
+      "since_2026_11_13": [
+        {"text": "Inactive cards 2 and 3: visible top-to-bottom wash, pinkish-grey at top and darker below; the reference is a more even maroon with fine horizontal scanlines.", "now": "improved"},
+        {"text": "Header labels: our ghost copy above each label is more legible and more detached than the reference's faint smear.", "now": "improved"},
+        {"text": "Fine print under the cards and in the protocol block is thinner and lighter than the reference's heavier, bled ink.", "now": "unchanged"},
+        {"text": "Card edges are razor-sharp; the reference edges glow slightly.", "now": "improved"}
+      ],
+      "question": null
+    },
+    {
+      "id": "mailbox",
+      "name": "Mailbox",
+      "score": 8.5,
+      "verdict": "The first review's headline gap is fixed: the selected row and Switch Weapon now read as dark ink on red. What is left is the selected cartridge's fill and a few small marks.",
+      "matches": [
+        "Tabs, eight cartridges, eight rows with three NEW stamps, scroll rail with the R marker, the Urgent Information panel and the footer tape all match in position.",
+        "Switch Weapon: dark ink on the red button, a near-exact match to the reference.",
+        "Sender 'Jackie' is now visibly bolder than the subject, as in the reference.",
+        "Cartridges and Confirm / Jump labels now carry offset print copies like the reference's."
+      ],
+      "gaps": [
+        {"text": "Selected cartridge (top left): in the reference the disc and lower label are dark, almost black, inside a red outline, so it reads as a hollow, inverted icon. Ours fills the disc and label with mid red and draws the rings dark, so the selected cartridge looks like the others, only lighter.", "status": "new", "severity": "medium"},
+        {"text": "Selected row 'List of messages' is firmer than before but still a little lighter and thinner than the reference's dark ink. The selected row's NEW stamp outline is paler than the reference's black box.", "status": "known", "severity": "low"},
+        {"text": "Margin tabs: a crisp '=' pair of bars left of the '1' and '2' tab squares that the reference lacks.", "status": "new", "severity": "low"},
+        {"text": "Urgent Information heading and body are a touch brighter than the reference (marginal at this size).", "status": "unsure", "severity": "low"},
+        {"text": "Vertical margin codes start a few pixels lower than the reference's.", "status": "unsure", "severity": "low"}
+      ],
+      "since_2026_11_13": [
+        {"text": "Selected row and the Switch Weapon button: text is a thin dim maroon where the reference has near-black heavier ink.", "now": "fixed"},
+        {"text": "Unselected rows: the reference 'Jackie' is bolder than the subject; ours sets both at the same weight.", "now": "fixed"},
+        {"text": "'Urgent Information (!)' heading is heavier and brighter than the reference.", "now": "improved"},
+        {"text": "Button and row outlines are brighter, crisper red lines than the reference's dim outlines.", "now": "improved"},
+        {"text": "Disc icons lack the soft offset echo behind each cartridge.", "now": "fixed"}
+      ],
+      "question": "The selected cartridge in the reference is dark inside a red outline, inverted against the other seven. Should ours follow that? It would match the art and echo the hub's inverted tile."
+    },
+    {
+      "id": "store",
+      "name": "Store",
+      "score": 8.5,
+      "verdict": "Now carries the reference's doubled printing on titles, stats and sockets, and the menu stripe is gone. The CUSTOMER bar and some dim microtext remain.",
+      "matches": [
+        "MASURAO logo, customer/loyalty block, five-item menu with VIDEO filled, four weapon cards with the taller centre card, stat blocks, sockets, side bars and the bottom-left tape all match in place and shape.",
+        "Print doubling: MAGNUM 650, HAND GUN, the stat numbers and EMPTY SOCKET now have offset copies close to the reference's, most visibly on cards 3 and 4.",
+        "Menu items: the bright detached stripe is gone; the left edge now shows only the faint offset copy, as in the reference.",
+        "The three small card icons are hollow outlined squares, as in the reference."
+      ],
+      "gaps": [
+        {"text": "CUSTOMER / #NC488402 bar: ours is a brighter red bar with dim red text. The reference bar is darker (#872c2f) with lighter, clearly readable text.", "status": "known", "severity": "medium"},
+        {"text": "The 'ONLY CC35 CERTIFIED...' compliance lines on each card are dimmer, thinner and narrower than the reference's.", "status": "known", "severity": "low"},
+        {"text": "Top strip: 'JHN 102 CKC 151 CC10 ASS' is about 15% narrower and dimmer than the reference, leaving a gap before the arrow. The arrow has a heavier triangular head than the reference's thin arrow.", "status": "new", "severity": "low"},
+        {"text": "Menu rows sit a few pixels left and up of the reference.", "status": "known", "severity": "low"},
+        {"text": "Fine dot-grid and scan texture inside the menu and card fills is only grain in ours.", "status": "known", "severity": "low"}
+      ],
+      "since_2026_11_13": [
+        {"text": "Card text has strong offset ghost copies (a doubled '86') in the reference; ours is single-struck.", "now": "fixed"},
+        {"text": "Left of each menu item, ours draws a bright detached vertical stripe; the reference has only a faint dark offset edge.", "now": "fixed"},
+        {"text": "Card icons: the reference draws hollow outlined squares; ours look filled and heavier.", "now": "fixed"},
+        {"text": "CUSTOMER / #NC488402 bar: reference text is paler and reads clearly; ours is red on red and faint.", "now": "unchanged"},
+        {"text": "Menu and card fills lack the reference's fine dot-grid and scan texture.", "now": "improved"}
+      ],
+      "question": null
+    },
+    {
+      "id": "dashboard",
+      "name": "Dashboard",
+      "score": 8,
+      "verdict": "At rest everything but one tile overlays the reference, with stacked-plate seams and print copies now present. The owner's inverted LOCATIONS tile is a deliberate departure and the first thing a viewer notices.",
+      "matches": [
+        "Header with the next TECHNOLOGY mark, tab labels, staggered 3+3 diamonds with labels, the codes and glyphs on each tile, and the GO HOME panel with its M logo all match.",
+        "Diamonds now show the darker under-plate and thin dark seams where facets and side tabs overlap, so the tiles read as stacked plates as in the reference.",
+        "Footer tape (68SD1D1100D1S / COMBAT COLONIZATION DEFENCE PROGRAM) now matches closely, with print copies."
+      ],
+      "gaps": [
+        {"text": "LOCATIONS is drawn inverted (dark fill, red outline, red blurred code). The reference shows all six tiles identical. This is the owner's approved selection state, not a fidelity error, but it is the largest visible difference from the art. Its code glyph is soft red where the others are crisp black, and its inset ink is reasoned, not measured.", "status": "known", "severity": "medium"},
+        {"text": "GO HOME body text and heading are slightly brighter, with stronger smeared copies than the reference's.", "status": "unsure", "severity": "low"},
+        {"text": "Header rule and panel outlines read slightly heavier than the reference at 1600 (lines off the pixel grid).", "status": "known", "severity": "low"},
+        {"text": "LEVEL T1 badge has a doubled glyph inside and a paler fill (shared header; see login).", "status": "new", "severity": "low"}
+      ],
+      "since_2026_11_13": [
+        {"text": "Diamonds lack the reference's darker under-layer and thin dark seams between stacked plates; ours are one flat red.", "now": "improved"},
+        {"text": "Footer tape at bottom right: small glyph and caption differences.", "now": "improved"},
+        {"text": "Interaction: tiles have no selected or focused look, and only one tile leads anywhere (design choice, not fidelity).", "now": "fixed"}
+      ],
+      "question": "The inverted tile is now the screen's largest departure from the art. Keep the full inversion, or tone it down (for example dark ink on red with a heavier inset outline) so the hub at rest still reads like the reference?"
+    }
+  ]
+}
