@@ -1149,6 +1149,19 @@ use crate::style::{
 /// the only store ink the era's role table has no name for.
 pub const STORE_BAND: iced::Color = rgb(0xeebf09);
 pub const STORE_ON_BAND: iced::Color = rgb(0x35462e);
+/// The maker's tag on the band: a near-black box with the band's yellow
+/// in SemiBold. Measured 2026-11-16 at 4K on both cards (the selected and an
+/// idle one): box #382d09 / #31270b, x 465.5..525 and y 325..333.3 on
+/// the first card (card-relative 4.5..64, 65..73.3); lettering heavy
+/// (stems 3-4 native px, ink mass 1.4x the Regular drawn until then),
+/// spanning 466.9..521.3. Until then the box was the greyer #35462e,
+/// 3..61 x 62..73, and the lettering Regular and 10 units narrower.
+pub const STORE_TAG: iced::Color = rgb(0x352a0a);
+const PETROCHEM_TAG: [Prim; 2] = [
+    fill_rect(4.5, 65.0, 59.5, 8.3, Ink::Fixed(STORE_TAG)),
+    Prim::Wide { x: 5.6, y: 71.5, size: 9.5, stretch: 1.18, ink: Ink::Fixed(STORE_BAND),
+        face: Face::SemiBold, anchor: crate::style::Anchor::Start, content: "PETROCHEM" },
+];
 
 /// The socket-row glyph: a 9x9 dot matrix with the middle row and
 /// column empty, not a QR. Sampled at every dot centre on cards 1 and 2
@@ -1261,8 +1274,8 @@ const CARD: &[Prim] = &[
     txt(12.0, 24.5, 24.0, Ink::Select, "MAGNUM 650"),
     txt(12.0, 43.5, 20.0, Ink::Select, "HAND GUN"),
     fill_rect(3.0, 55.0, 259.0, 20.0, Ink::Fixed(STORE_BAND)),
-    fill_rect(3.0, 62.0, 58.0, 11.0, Ink::Fixed(STORE_ON_BAND)),
-    txt(6.0, 71.0, 9.5, Ink::Fixed(STORE_BAND), "PETROCHEM"),
+    PETROCHEM_TAG[0],
+    PETROCHEM_TAG[1],
     ORDINARY_BETTERLIFE_TEC,
     RIFLE_PLAIN,
     RIFLE_PLAIN_DETAIL,
@@ -1355,8 +1368,8 @@ const GROWN: &[Prim] = &[
     Prim::Viewport { x: 29.0, y: 0.0, w: 236.0, h: 412.0, prims: GROWN_TITLE_ON_RIGHT },
     txt(13.0, 43.5, 20.0, Ink::OnSelect, "HAND GUN"),
     fill_rect(3.0, 55.0, 259.0, 20.0, Ink::Fixed(STORE_BAND)),
-    fill_rect(3.0, 62.0, 58.0, 11.0, Ink::Fixed(STORE_ON_BAND)),
-    txt(6.0, 71.0, 9.5, Ink::Fixed(STORE_BAND), "PETROCHEM"),
+    PETROCHEM_TAG[0],
+    PETROCHEM_TAG[1],
     BETTERLIFE_TEC,
     RIFLE_INVERSE,
     RIFLE_INVERSE_DETAIL,
@@ -1697,6 +1710,15 @@ const SHARED_GROUND: &[Prim] = &[
 ];
 const MAIL_GROUND: &[Prim] = &[Prim::Soft { prims: SHARED_GROUND }];
 
+/// The header strip's type, the same on all four screens: Rajdhani 500
+/// at 17 on baseline 60. Measured 2026-11-16 at 4K: the strings' caps
+/// span y 49.2..60.4 and the first starts at x 61.7 on the store as on
+/// the hub, login and mailbox photos; the store set them Regular 15 on
+/// baseline 61 until then, a size smaller and lighter.
+pub(crate) const fn strip_label(x: f32, ink: Ink, content: &'static str) -> Prim {
+    Prim::Text { x, y: 60.0, size: 17.0, ink, face: Face::Medium, anchor: crate::style::Anchor::Start, content }
+}
+
 pub const STORE: &[Prim] = &[
     // ground (:168), composited
     Prim::Soft { prims: SHARED_GROUND },
@@ -1705,9 +1727,9 @@ pub const STORE: &[Prim] = &[
     line_rect(49.0, 43.0, 1502.0, 26.0, Ink::Border, 1.5),
     vline(467.0, 43.0, 69.0, Ink::Border, 1.5),
     vline(1357.0, 43.0, 69.0, Ink::Border, 1.5),
-    txt(61.0, 61.0, 15.0, Ink::Fg, "DIGITAL DISTRIBUTION SOFTWAREV2"),
-    txt(506.0, 61.0, 15.0, Ink::Fg, "STORE ACCESS SCREEN"),
-    txt(1372.0, 61.0, 15.0, Ink::Fg, "FLAIR TRS 5MMP"),
+    strip_label(61.0, Ink::Fixed(HUB_STRIP), "DIGITAL DISTRIBUTION SOFTWAREV2"),
+    strip_label(506.75, Ink::Fixed(HUB_STRIP), "STORE ACCESS SCREEN"),
+    strip_label(1372.6, Ink::Fixed(HUB_STRIP), "FLAIR TRS 5MMP"),
     // the body: everything between the strips, scanned down at boot
     // (`#body-scan`, :193, rect x 100 y 90 w 1500 h 730)
     Prim::Motion { motion: body_scan(100.0, 90.0, 1500.0, 730.0), prims: STORE_BODY },
@@ -1803,8 +1825,11 @@ use crate::style::{hline, Anchor};
 
 /// Ink on the solid fill: the selected tile's label and T2.
 const HUB_ON_SOLID: iced::Color = rgb(0x22301f);
-/// The selected tile's caption box, drawn dark on the fill.
-const HUB_ON_CAPTION: iced::Color = rgb(0x2e4a2c);
+/// The selected tile's caption box, drawn dark on the fill. Measured
+/// 2026-11-16 at 4K on BRAINDANCE: the code's 4 px stems reach #1c3412
+/// (eroded median #284222), the 2 px caption lines #1e3b17 / #203b17;
+/// it was #2e4a2c, the lightest of those strokes' edges.
+const HUB_ON_CAPTION: iced::Color = rgb(0x223c1b);
 /// Badge glyphs and the panel heading.
 const HUB_LABEL: iced::Color = rgb(0xacddb4);
 /// The five idle tile labels, fitted independently of the panel heading.
@@ -1855,27 +1880,61 @@ const fn wide_mid(x: f32, y: f32, size: f32, stretch: f32, ink: Ink, face: Face,
 // foot-left corner with the tile's own frame at y 0 and the box's bottom
 // edge lying on it. Top rule 28px up, divider 96px in, both 1.7px (the
 // def's `<path d="M 0,-28 H 194 M 96,-28 V 0">`), two cells of text
-// stretched to the measured runs. The def sets them 700; the idle boxes
-// are drawn 600 here, the selected one at the trace's 700 (until
-// 2026-11-13 it was 600 too, and the dark caption on the sage fill came
-// out thin and pale beside the source's firm ink).
+// stretched to the measured runs.
+//
+// The type, measured 2026-11-16 at 4K on the hub photo (`images/
+// entropism-store.png`) against ours with the print pass off. The two
+// right-hand lines are the same size in the photo -- caps 17 native rows
+// each, line 1's ink ending at 422.5 and line 2's at 432.1, a 6-row gap --
+// where ours set line 1 at 12 (20 rows, gap 5) over line 2 at 10.5, so the
+// print copies filled the gap. Widths: line 1 80.4, line 2 68.8, the code
+// 58.75 (ours 75.8 / 65.4 / 55.8). The idle code's stems are 4 native px
+// (ours 3): Bold, the lines SemiBold. On the selected tile the lines were
+// Bold and ran 1.3x the photo's ink mass; they take the idle weights too.
+//
+// The selected box also has a frame: the selected tile is a solid with
+// no outline, and the photo draws the box's left, right and foot as dark
+// 1.4 px rules just inside the fill (centres 1.25 and 193.15 in from the
+// tile's left, 0.2 above its foot), so the strip reads as a box and not
+// as two rules on the fill. The idle boxes sit on the tile's own frame.
 macro_rules! caption {
-    ($rule_ink:expr, $text_ink:expr, $face:expr) => {
-        &[
+    ($rule_ink:expr, $text_ink:expr) => {
+        [
             hline(0.0, -28.0, 194.0, $rule_ink, 1.7),
             vline(96.0, -28.0, 0.0, $rule_ink, 1.7),
-            Prim::ReusableWide { x: 6.0, y: -15.0, size: 12.0, stretch: 0.78, ink: $text_ink, face: $face, anchor: Anchor::Start, content: "85SD4F3Q5S41" },
-            Prim::ReusableWide { x: 103.0, y: -15.0, size: 12.0, stretch: 0.685, ink: $text_ink, face: $face, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
-            Prim::ReusableWide { x: 103.0, y: -6.0, size: 10.5, stretch: 0.82, ink: $text_ink, face: $face, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
+            Prim::ReusableWide { x: 6.0, y: -15.0, size: 12.0, stretch: CAPTION_CODE_STRETCH, ink: $text_ink, face: Face::Bold, anchor: Anchor::Start, content: "85SD4F3Q5S41" },
+            Prim::ReusableWide { x: 103.0, y: CAPTION_LINE_1, size: CAPTION_SIZE_1, stretch: CAPTION_STRETCH_1, ink: $text_ink, face: Face::SemiBold, anchor: Anchor::Start, content: "COMBAT COLONIZATION" },
+            Prim::ReusableWide { x: 103.0, y: CAPTION_LINE_2, size: CAPTION_SIZE_2, stretch: CAPTION_STRETCH_2, ink: $text_ink, face: Face::SemiBold, anchor: Anchor::Start, content: "DEFENCE PROGRAM" },
         ]
     };
 }
+/// The caption type (above): the code's stretch, and each line's size,
+/// stretch and baseline from the foot.
+const CAPTION_CODE_STRETCH: f32 = 0.809;
+const CAPTION_SIZE_1: f32 = 10.25;
+const CAPTION_STRETCH_1: f32 = 0.851;
+const CAPTION_LINE_1: f32 = -16.25;
+const CAPTION_SIZE_2: f32 = 11.0;
+const CAPTION_STRETCH_2: f32 = 0.824;
+const CAPTION_LINE_2: f32 = -6.8;
+/// The selected box's frame rule (above).
+const CAPTION_FRAME: f32 = 1.4;
 /// The box as the five idle tiles wear it, `<use href="#caption"
 /// fill="#a2cfa7" stroke="#a8d7a7">`.
-const CAPTION: &[Prim] = caption!(Ink::Fixed(HUB_CAPTION), Ink::Fixed(HUB_CAPTION_TEXT), Face::SemiBold);
+const CAPTION: &[Prim] = &caption!(Ink::Fixed(HUB_CAPTION), Ink::Fixed(HUB_CAPTION_TEXT));
 /// The box as the selected tile wears it, `<use href="#caption"
-/// fill="#2e4a2c" stroke="#2e4a2c">` -- dark on the sage fill.
-const CAPTION_ON: &[Prim] = caption!(Ink::Fixed(HUB_ON_CAPTION), Ink::Fixed(HUB_ON_CAPTION), Face::Bold);
+/// fill="#2e4a2c" stroke="#2e4a2c">` -- dark on the sage fill -- with
+/// its frame.
+const CAPTION_ON: &[Prim] = &{
+    let b = caption!(Ink::Fixed(HUB_ON_CAPTION), Ink::Fixed(HUB_ON_CAPTION));
+    let ink = Ink::Fixed(HUB_ON_CAPTION);
+    [
+        b[0], b[1], b[2], b[3], b[4],
+        vline(1.25, -28.0, 0.0, ink, CAPTION_FRAME),
+        vline(193.15, -28.0, 0.0, ink, CAPTION_FRAME),
+        hline(0.55, -0.2, 193.85, ink, CAPTION_FRAME),
+    ]
+};
 
 // One menu tile, foot-anchored like the caption def so the `At` that
 // places it carries the trace's own `<use href="#caption" x y>`
@@ -1959,9 +2018,9 @@ pub const DASHBOARD: &[Prim] = &[
     line_rect(49.0, 43.0, 1498.0, 26.0, Ink::Border, 1.25),
     vline(465.0, 43.0, 69.0, Ink::Border, 1.25),
     vline(1353.0, 43.0, 69.0, Ink::Border, 1.25),
-    medium(61.0, 60.0, 17.0, Ink::Fixed(HUB_STRIP), "RIPPERDOC SURGICAL SOFTWAREV2"),
-    medium(518.0, 60.0, 17.0, Ink::Fixed(HUB_STRIP), "STORE ACCESS SCREEN"),
-    medium(1382.0, 60.0, 17.0, Ink::Fixed(HUB_STRIP), "FLAIR TRS 5MMP"),
+    strip_label(61.0, Ink::Fixed(HUB_STRIP), "RIPPERDOC SURGICAL SOFTWAREV2"),
+    strip_label(518.0, Ink::Fixed(HUB_STRIP), "STORE ACCESS SCREEN"),
+    strip_label(1382.0, Ink::Fixed(HUB_STRIP), "FLAIR TRS 5MMP"),
     // the body: everything between the strips, scanned down at boot
     // (`#body-scan`, :156, rect x 100 y 130 w 1400 h 605)
     Prim::Motion { motion: body_scan(100.0, 130.0, 1400.0, 605.0), prims: HUB_SCAN },

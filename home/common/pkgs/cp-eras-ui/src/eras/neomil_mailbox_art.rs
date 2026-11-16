@@ -5424,30 +5424,10 @@ pub(super) const HEADER: &[Prim] = &[
 ];
 
 pub(super) const MARGINS: &[Prim] = &[
-    Prim::Path { x: 0.0, y: 0.0, segs: &[
-        Seg::Move(40.0, 223.0),
-        Seg::Line(48.0, 223.0),
-        Seg::Line(48.0, 224.5),
-        Seg::Line(40.0, 224.5),
-        Seg::Line(40.0, 223.0),
-        Seg::Line(40.0, 223.0),
-    ], close: false, fill: Some(Ink::Fixed(rgb(0xe63132))), stroke: None, width: 0.0 },
-    Prim::Path { x: 0.0, y: 0.0, segs: &[
-        Seg::Move(40.0, 227.0),
-        Seg::Line(46.0, 227.0),
-        Seg::Line(46.0, 228.5),
-        Seg::Line(40.0, 228.5),
-        Seg::Line(40.0, 227.0),
-        Seg::Line(40.0, 227.0),
-    ], close: false, fill: Some(Ink::Fixed(rgb(0xe63132))), stroke: None, width: 0.0 },
-    Prim::Path { x: 0.0, y: 0.0, segs: &[
-        Seg::Move(50.0, 223.0),
-        Seg::Line(56.0, 223.0),
-        Seg::Line(56.0, 229.0),
-        Seg::Line(50.0, 229.0),
-        Seg::Line(50.0, 223.0),
-        Seg::Line(50.0, 223.0),
-    ], close: false, fill: Some(Ink::Fixed(rgb(0xe63132))), stroke: None, width: 0.0 },
+    // The margin tab's companion mark (`super::MARGIN_TAB_GAP`): 5 x 4.6
+    // at the photographed (51.25, 222.1), left of the numbered square at
+    // 61.7. The trace's two thin bars left of it are gone (store's CHIP).
+    super::margin_tab_mark(61.7, 222.1, 4.6, Ink::Fixed(rgb(0xe63132))),
     Prim::Path { x: 0.0, y: 0.0, segs: &[
         Seg::Move(61.0, 221.0),
         Seg::Line(73.5, 221.0),
@@ -5474,30 +5454,7 @@ pub(super) const MARGINS: &[Prim] = &[
         Seg::Quad { cx: 64.23, cy: 226.57, x: 64.23, y: 226.36 },
         Seg::Line(64.23, 226.36),
     ], close: false, fill: Some(Ink::Fixed(rgb(0x200a0b))), stroke: None, width: 0.0 },
-    Prim::Path { x: 0.0, y: 0.0, segs: &[
-        Seg::Move(1521.0, 223.0),
-        Seg::Line(1529.0, 223.0),
-        Seg::Line(1529.0, 224.5),
-        Seg::Line(1521.0, 224.5),
-        Seg::Line(1521.0, 223.0),
-        Seg::Line(1521.0, 223.0),
-    ], close: false, fill: Some(Ink::Fixed(rgb(0xe63132))), stroke: None, width: 0.0 },
-    Prim::Path { x: 0.0, y: 0.0, segs: &[
-        Seg::Move(1521.0, 227.0),
-        Seg::Line(1527.0, 227.0),
-        Seg::Line(1527.0, 228.5),
-        Seg::Line(1521.0, 228.5),
-        Seg::Line(1521.0, 227.0),
-        Seg::Line(1521.0, 227.0),
-    ], close: false, fill: Some(Ink::Fixed(rgb(0xe63132))), stroke: None, width: 0.0 },
-    Prim::Path { x: 0.0, y: 0.0, segs: &[
-        Seg::Move(1531.0, 223.0),
-        Seg::Line(1537.0, 223.0),
-        Seg::Line(1537.0, 229.0),
-        Seg::Line(1531.0, 229.0),
-        Seg::Line(1531.0, 223.0),
-        Seg::Line(1531.0, 223.0),
-    ], close: false, fill: Some(Ink::Fixed(rgb(0xe63132))), stroke: None, width: 0.0 },
+    super::margin_tab_mark(1542.1, 222.1, 4.6, Ink::Fixed(rgb(0xe63132))),
     Prim::Path { x: 0.0, y: 0.0, segs: &[
         Seg::Move(1542.0, 221.0),
         Seg::Line(1554.5, 221.0),

@@ -672,11 +672,20 @@ pub fn style() -> Style {
 // the deep red the badges are filled with -- is taken from the palette
 // so the theme still reaches the screen.
 
-/// Dark ink for text printed on a red card. The palette's `on_select`
-/// (#1a0405) is the ink for a *selected* surface and is most of a stop
-/// darker than the trace's #420f10, which is what the photo shows under
-/// USER 01, `Login` and the code tape.
-pub const ON_CARD: iced::Color = rgb(0x420f10);
+/// The era's ink for text printed on a red fill: the live card (USER 01),
+/// the Login button, the margin tab numerals, the pressed hub glyphs. The
+/// same colour as the palette's `on_select` (#1a0405), which the mailbox's
+/// selected row and Switch Weapon print in.
+///
+/// Measured 2026-11-16 at 4K (`img-06-private`): USER 01's stems are 4
+/// native px and reach a plateau of #1a0608 (darkest #120204); the Login
+/// label's 3 px stems never plateau (eroded median #4b0f10, darkest
+/// #1f090a), as Switch Weapon's do not either (#470b0c, darkest #120101)
+/// although it is printed in #1a0405. This was #420f10 until then, a
+/// sample of those non-plateau strokes: drawn exactly (its luminance is
+/// already inside the glyph shader's dark-ink window) it came out as a
+/// pale red Login label whose darkest pixel was #420f10.
+pub const ON_CARD: iced::Color = rgb(0x1a0405);
 /// Ink retained for the legacy built-in portrait fallback.
 pub const PORTRAIT: iced::Color = rgb(0x4f1a1e);
 /// Card two: translucent red over the blue glow, top and foot.
@@ -1097,7 +1106,7 @@ pub const ACCESS: Access = Access {
                 Plate::filled(Plot::new(372.0, 635.0, 253.0, 48.0), Ink::Fixed(COMMIT))
                     .bevelled(Bevel::br(9.0)),
             ),
-            action_label: Some(Legend::new("Login", 383.0, 657.0, 17.0, Ink::Fixed(ON_CARD))),
+            action_label: Some(Legend::new("Login", 383.0, 657.0, 17.0, Ink::Fixed(ON_CARD)).medium()),
             // Static open-top slot measured at native source scale.
             // Paint after the button; the former caret plate was hidden
             // underneath it. Three bars preserve the hollow centre.
@@ -2556,14 +2565,32 @@ pub(crate) const STORE_STATES: &[crate::style::PlateStates] = &[
     product_states!(3, CARD4, CARD4_FILL, true, SPECS_1, None),
 ];
 
-/// The left-margin chip: two ticks, a block and the numbered 12.5
-/// square, one below the origin (`#chip`; photo 12.5x12.1 at (62.5,187.9)).
+/// The left-margin tab: [`MARGIN_TAB_MARK`] and the numbered 12.5 square
+/// one below the origin (photo 12.5x12.1 at (62.5,187.9)).
 const CHIP: &[Prim] = &[
-    fill_rect(-21.0, 3.0, 8.0, 1.5, Ink::Fg),
-    fill_rect(-21.0, 7.0, 6.0, 1.5, Ink::Fg),
-    fill_rect(-11.0, 3.0, 6.0, 6.0, Ink::Fg),
+    MARGIN_TAB_MARK,
     fill_rect(0.0, 1.0, 12.5, 12.5, Ink::Fg),
 ];
+/// A margin tab's companion mark: a square of `MARGIN_TAB_MARK_SIZE`
+/// standing `MARGIN_TAB_GAP` left of the numbered square, top-aligned
+/// with it. Measured 2026-11-16 at 4K, the same on the store (52.5..57.5 x
+/// 187.9..192.9 beside 62.9..75.4) and the mailbox (51.25..56.25 and
+/// 1532.1..1537.1 x 222.1..226.7, beside 61.7 and 1542.1). The traces'
+/// two thin bars left of it (8 and 6 x 1.5) were a reading of the faint
+/// print copies there: the reference has no crisp mark left of the
+/// square, only the striped copies of the two squares, which the print
+/// pass draws.
+pub const MARGIN_TAB_GAP: f32 = 5.4;
+pub const MARGIN_TAB_MARK_SIZE: f32 = 5.0;
+/// The companion mark of a margin tab whose numbered square's left edge
+/// and top are at (`square_x`, `top`): `h` tall (the mailbox's measures
+/// 4.6, the store's 5.0).
+pub(crate) const fn margin_tab_mark(square_x: f32, top: f32, h: f32, ink: Ink) -> Prim {
+    fill_rect(square_x - MARGIN_TAB_GAP - MARGIN_TAB_MARK_SIZE, top, MARGIN_TAB_MARK_SIZE, h, ink)
+}
+/// The store's mark: its numbered square is photographed 0.9 right of
+/// the chip origin and 1.9 below it.
+const MARGIN_TAB_MARK: Prim = margin_tab_mark(0.9, 1.9, MARGIN_TAB_MARK_SIZE, Ink::Fg);
 const MARGIN_CODE: &[Prim] = &[
     Prim::Tracked { x: 0.0, y: 0.0, size: 10.5, ink: Ink::Fg,
         face: Face::Regular, anchor: Anchor::Start, tracking: 0.4,
@@ -2581,7 +2608,21 @@ const MARGIN_HATCH_OPACITY: Motion = Motion {
     id: "store-margin-hatch", begin: 0, dur: 1, ease: Easing::Linear,
     change: Change::Opacity { alpha: (0.67, 0.67) },
 };
-const ARROW: &[Seg] = &[Seg::Line(985.0, 35.0), Seg::Line(985.0, 45.0)];
+/// The top strip's left arrow, from its tip: a slender head 11.5 long and
+/// 5.8 tall on a 1.25 shaft (measured 2026-11-16 at 4K: tip 979.2, head
+/// y 37.9..43.75 ending at 990.6, shaft y 40.4..41.65 to 1000.8; it was a
+/// 10-tall head 8 long on a 2 shaft).
+const ARROW: &[Seg] = &[Seg::Line(990.6, 37.9), Seg::Line(990.6, 43.75)];
+/// The CUSTOMER / #NC488402 bar: a darker red than the mid red, under
+/// the bright line ink (measured 2026-11-16 at 4K, median of the bar
+/// between the letters #842b2e .. #832e35; the mid red #a32226 drawn
+/// until then read as a brighter bar with dimmer text).
+pub const CUSTOMER_BAR: iced::Color = rgb(0x842d31);
+/// The bar's labels, Rajdhani 500: the reference's strokes are 2-3
+/// native px with an ink mass 1.4x that of the Regular drawn until then.
+const fn bar_label(x: f32, y: f32, anchor: Anchor, content: &'static str) -> Prim {
+    Prim::Text { x, y, size: 12.0, ink: Ink::Fg, face: Face::Medium, anchor, content }
+}
 
 /// The four product cards at their columns (:341-514): its own table
 /// because `STORE` wipes it in under `#shelf-open`.
@@ -2602,16 +2643,20 @@ pub const STORE: &[Prim] = &[
     Prim::Soft { prims: STORE_GROUND },
     // top strip
     Prim::At { x: 0.0, y: 0.0, prims: neomil_store_art::KIROSHI_HEADER },
-    txt(862.0, 44.0, 9.0, Ink::Dim, "JHN 102 CKC 151 CC10 AS5"),
-    fill_rect(983.0, 39.0, 17.0, 2.0, Ink::Fg),
-    fill_path(977.0, 40.0, ARROW, Ink::Fg),
+    // In the bright line ink, as the arrow is, and stretched: the
+    // reference's run spans x 860.0..972.9 (ours 862.5..956.3 unstretched,
+    // in the mid red, until 2026-11-16).
+    Prim::Wide { x: 859.4, y: 44.0, size: 9.0, stretch: 1.204, ink: Ink::Fg,
+        face: Face::Regular, anchor: Anchor::Start, content: "JHN 102 CKC 151 CC10 AS5" },
+    fill_rect(990.4, 40.4, 10.4, 1.25, Ink::Fg),
+    fill_path(979.2, 40.9, ARROW, Ink::Fg),
     // Actual source kanji/wordmark/hatching, retained as editable
     // contours rather than an image or a font-dependent skew.
     Prim::At { x: 0.0, y: 0.0, prims: neomil_store_art::LOGO },
     // customer block
-    fill_rect(153.0, 158.0, 210.0, 21.0, Ink::Dim),
-    txt(160.0, 173.0, 12.0, Ink::Fg, "CUSTOMER"),
-    txt_end(353.0, 173.0, 12.0, Ink::Fg, "#NC488402"),
+    fill_rect(153.0, 158.0, 210.0, 21.0, Ink::Fixed(CUSTOMER_BAR)),
+    bar_label(160.0, 173.0, Anchor::Start, "CUSTOMER"),
+    bar_label(353.0, 173.0, Anchor::End, "#NC488402"),
     txt(160.0, 204.0, 12.0, Ink::Fg, "LOYALTY DISCOUNT"),
     txt_end(353.0, 204.0, 12.0, Ink::Fg, "10%"),
     txt(160.0, 219.0, 12.0, Ink::Fg, "LAST UPDATE"),
@@ -3017,7 +3062,7 @@ mod hub_interaction_tests {
             let rest = &CELLS[index];
             for (drawing, fill, detail) in [
                 (state.hover, rgb(0xf63333), rgb(0x59171b)),
-                (state.pressed, rgb(0xa52223), rgb(0x420f10)),
+                (state.pressed, rgb(0xa52223), ON_CARD),
             ] {
                 assert_eq!(drawing.len(), rest.len());
                 for (&drawn, &original) in drawing.iter().zip(rest) {

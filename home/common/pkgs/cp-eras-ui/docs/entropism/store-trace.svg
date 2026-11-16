@@ -141,8 +141,8 @@
       <text x="106.5" y="26" font-size="24" fill="#a8d4a2" letter-spacing="-0.5">650</text>
       <text x="12" y="44.5" font-size="20" fill="#a8d4a2" letter-spacing="1">HAND GUN</text>
       <rect x="3" y="55" width="259" height="20" fill="#eebf09"/>
-      <rect x="3" y="62" width="58" height="11" fill="#35462e"/>
-      <text x="6" y="71" font-size="9.5" fill="#eebf09">PETROCHEM</text>
+      <rect x="4.5" y="65" width="59.5" height="8.3" fill="#352a0a"/>
+      <text transform="translate(5.6,71.5) scale(1.18,1)" font-size="9.5" font-weight="600" fill="#eebf09">PETROCHEM</text>
       <!-- Ordinary BETTERLIFE TEC: one shared fit to card-2/card-3 source support; selected printing unchanged. -->
     <g role="img" aria-label="BETTERLIFE TEC">
       <text x="0" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.122222 0 0 1 185.486111 0)">B</text>
@@ -193,8 +193,8 @@
       <text x="106.5" y="26" font-size="24" fill="#a8d4a2" letter-spacing="-0.5">650</text>
       <text x="12" y="44.5" font-size="20" fill="#a8d4a2" letter-spacing="1">HAND GUN</text>
       <rect x="3" y="55" width="259" height="20" fill="#eebf09"/>
-      <rect x="3" y="62" width="58" height="11" fill="#35462e"/>
-      <text x="6" y="71" font-size="9.5" fill="#eebf09">PETROCHEM</text>
+      <rect x="4.5" y="65" width="59.5" height="8.3" fill="#352a0a"/>
+      <text transform="translate(5.6,71.5) scale(1.18,1)" font-size="9.5" font-weight="600" fill="#eebf09">PETROCHEM</text>
       <!-- Ordinary BETTERLIFE TEC: one shared fit to card-2/card-3 source support; selected printing unchanged. -->
     <g role="img" aria-label="BETTERLIFE TEC">
       <text x="0" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.122222 0 0 1 185.486111 0)">B</text>
@@ -306,8 +306,8 @@
     <path d="M 467,43 V 69 M 1357,43 V 69" fill="none" stroke="#93bd95" stroke-width="1.25"/>
     <g font-family="Rajdhani" font-size="17" font-weight="500" fill="#95c292">
       <text x="61" y="60">DIGITAL DISTRIBUTION SOFTWAREV2</text>
-      <text x="507" y="60">STORE ACCESS SCREEN</text>
-      <text x="1372" y="60">FLAIR TRS 5MMP</text>
+      <text x="506.75" y="60">STORE ACCESS SCREEN</text>
+      <text x="1372.6" y="60">FLAIR TRS 5MMP</text>
     </g>
   </g>
 
@@ -397,8 +397,8 @@
     <text x="106.5" y="26" font-size="24" fill="#35462e" letter-spacing="-0.5">650</text>
     <text x="13" y="44.5" font-size="20" fill="#35462e" letter-spacing="1">HAND GUN</text>
     <rect x="3" y="55" width="259" height="20" fill="#eebf09"/>
-    <rect x="3" y="62" width="58" height="11" fill="#35462e"/>
-    <text x="6" y="71" font-size="9.5" fill="#eebf09">PETROCHEM</text>
+    <rect x="4.5" y="65" width="59.5" height="8.3" fill="#352a0a"/>
+    <text transform="translate(5.6,71.5) scale(1.18,1)" font-size="9.5" font-weight="600" fill="#eebf09">PETROCHEM</text>
     <!-- Selected BETTERLIFE TEC: source-fitted Medium glyph placements; exact photographed contours remain unresolved. -->
     <g role="img" aria-label="BETTERLIFE TEC">
       <text x="186.91667" y="71.8" font-size="9.5" font-weight="500" fill="#35462e" transform="matrix(1.250000 0 0 1 -47.770833 0)">B</text>
