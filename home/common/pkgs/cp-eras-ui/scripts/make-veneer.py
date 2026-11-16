@@ -29,6 +29,8 @@ drawn with the *line, ground and grain* measured for the blend generator.
    `ripple` (zigzag), `knot`. Amounts and curves may be piecewise linear
    across the grain ([(s, value), ...]). A family may also be cut to a
    strip across the grain (`swindow`); its lines end at the cut, a jog.
+   With `trim` its lines end exactly on its box, so two strips whose
+   fields agree meet end to end without a dotted seam.
    A term marked `comb` ('main' or 'twin') shapes that comb only, so the
    other runs straight through it and the two cross (the EMAIL card's
    top arcs).
@@ -112,6 +114,54 @@ SMG_CREASE = dict(kind='bend', ts=99.6, w=1.5, p=2.0, amount=(1.0, 3.0))
 BASKET_SEAM = dict(kind='bend', ts=85.0, w=6.0, p=2.0, amount=(4.5, 5.5))
 BASKET_CREASE = dict(kind='bend', ts=85.0, w=1.5, p=2.0, amount=(2.5, 3.0))
 
+# The dashboard panel's lower leaf (2026-11-15 third refinement), traced
+# off the reference with a structure tensor (native 4K crop / R = design
+# px). Each line is an S: vertical, a knee down-LEFT into PANEL_SWEEP (45
+# deg at the left edge, ~75 mid-panel), a steep run, a second knee into
+# PANEL_UNDER_* and, in the bottom-left corner, horizontal to the edge.
+# The steep row slopes down to the right at ~0.4 (native (10, 620) to
+# (210, 710)); PANEL_UNDER_L's band follows it with a constant amount, so
+# phi's slope across the grain cancels there (1 - amount / width * 0.4 is
+# ~0) and the corner's lines run horizontal at an even spacing instead of
+# bunching (the old R2's amount fell 2.2 per px across s 79-94, which
+# packed them into a dark clump and made the stepped kinks at native x
+# ~135 / ~200). Right of s 78 (the reference's jog at native x 187, its
+# lower end only: above PANEL_UNDER_* the two strips' fields agree and
+# their lines meet end to end, `trim`) PANEL_UNDER_R only leans the lines
+# ~30 deg. PANEL_CREASE is a thin band (2.5 px) the lines cross almost
+# along: the reference's thin dark crease line from native (200, 664) to
+# the strip edge at (450, 615).
+PANEL_UNDER = [(0.0, 265.0), (35.4, 278.3), (66.7, 290.8), (87.5, 300.8), (108.3, 300.8),
+               (139.6, 298.3), (170.8, 294.2), (187.5, 295.0)]
+PANEL_SWEEP = dict(kind='ramp', k=2.0,
+                   a=[(14.6, 220.8), (56.2, 225.0), (97.9, 230.4), (139.6, 243.8), (170.8, 252.1), (187.5, 255.0)],
+                   b=[(4.2, 250.0), (35.4, 262.5), (66.7, 275.0), (87.5, 286.7), (108.3, 288.3), (139.6, 289.6),
+                      (170.8, 291.7), (187.5, 293.8)],
+                   amount=[(4.2, 35.0), (35.4, 55.0), (66.7, 90.0), (108.3, 130.0), (139.6, 110.0), (187.5, 85.0)])
+PANEL_CREASE = dict(kind='ramp', k=1.0,
+                    a=[(83.3, 276.7), (113.8, 267.5), (139.6, 264.2), (170.8, 259.2), (187.5, 256.2)],
+                    b=[(83.3, 279.2), (113.8, 270.0), (139.6, 266.7), (170.8, 261.7), (187.5, 258.8)],
+                    amount=[(75.0, 0.0), (104.2, 18.0), (187.5, 18.0)])
+PANEL_UNDER_L = dict(kind='ramp', k=3.0, a=PANEL_UNDER, b=[(s, t + 60.0) for s, t in PANEL_UNDER],
+                     amount=[(0.0, 170.0), (77.9, 170.0)])
+PANEL_UNDER_R = dict(kind='ramp', k=3.0, a=PANEL_UNDER, b=[(s, t + 62.5) for s, t in PANEL_UNDER],
+                     amount=[(77.9, 45.0), (187.5, 40.0)])
+
+# The store card's upper streak (2026-11-15 third refinement). In the
+# reference the lines above it run down-right at 45-75 deg, flatten to
+# ~80 deg in a dark band at native y 70-100 (TOP_SWEEP: a ramp the lines
+# cross almost along, which packs them) and knee back to vertical on a
+# row that rises towards the right edge, native y 140 at x 200 to y 95 at
+# the edge (TOP_KNEE). The old shear at t 34 plus a bend at t 42 drew a
+# zigzag that leaned only ~60 deg and curved the wrong way at the right.
+TOP_EDGE = [(0.0, 102 / R), (170.0, 100 / R), (262.1, 88 / R)]
+TOP_SWEEP = dict(kind='ramp', k=2.0, a=[(0.0, 70 / R), (262.1, 78 / R)], b=TOP_EDGE,
+                 amount=[(0.0, -75.0), (262.1, -75.0)])
+TOP_KNEE = dict(kind='ramp', k=3.0, a=TOP_EDGE,
+                b=[(83.0, 140 / R), (140.0, 136 / R), (181.0, 120 / R), (202.0, 106 / R), (233.0, 99 / R),
+                   (262.1, 95 / R)],
+                amount=[(0.0, -25.0), (262.1, -25.0)])
+
 SURFACES = {
     # Store, the selected card's body and socket band (262.1 x 241.7).
     # Vertical grain; the streak at t 121.46 (texel 291.5) is a book-match:
@@ -127,10 +177,9 @@ SURFACES = {
         kinks=dict(n=10, amp=1.4, rs=(3.0, 8.0), rt=(5.0, 14.0)),
         families=[
             dict(window=(None, 123.0), terms=[
-                dict(kind='shear', ts=34.0, w=4.0, amount=(2.0, 1.2)),
+                dict(kind='shear', ts=29.0, w=4.0, amount=(2.0, 1.5)),
                 dict(kind='ripple', ts=32.0, w=4.0, amount=1.8, wavelength=(14.0, 45.0)),
-                dict(kind='bend', ts=42.0, w=6.0, p=2.0, amount=(0.0, 40.0), power=3.0),
-                STREAK_LEAN, STREAK_BEND,
+                TOP_SWEEP, TOP_KNEE, STREAK_LEAN, STREAK_BEND,
             ]),
             dict(mirror=121.46, window=(119.9, 192.6), terms=[STREAK_LEAN, STREAK_BEND]),
             dict(window=(192.6, None), terms=[
@@ -186,16 +235,8 @@ SURFACES = {
         wave=dict(amp=1.8, along=200.0, across=50.0),
         kinks=dict(n=10, amp=1.0, rs=(3.0, 9.0), rt=(5.0, 14.0)),
         families=[
-            dict(window=(153.4, None), swindow=(None, 187.6), terms=[
-                dict(kind='ramp', k=2.0,
-                     a=[(14.6, 220.8), (56.2, 225.0), (97.9, 230.4), (139.6, 243.8), (170.8, 256.7), (187.5, 260.8)],
-                     b=[(14.6, 261.7), (56.2, 275.8), (83.3, 286.7), (97.9, 281.2), (139.6, 272.9), (170.8, 265.0), (187.5, 262.5)],
-                     amount=[(14.6, 95.0), (56.2, 125.0), (97.9, 105.0), (139.6, 70.0), (187.5, 30.0)]),
-                dict(kind='ramp', k=2.0,
-                     a=[(0.0, 288.3), (83.3, 288.3), (97.9, 282.1), (139.6, 273.8), (170.8, 267.5), (187.5, 264.2)],
-                     b=[(0.0, 329.2), (83.3, 333.3)],
-                     amount=[(14.6, 220.0), (79.2, 150.0), (93.8, 70.0), (187.5, 60.0)]),
-            ]),
+            dict(window=(153.4, None), swindow=(None, 77.7), trim=True, terms=[PANEL_SWEEP, PANEL_CREASE, PANEL_UNDER_L]),
+            dict(window=(153.4, None), swindow=(78.1, 187.6), trim=True, terms=[PANEL_SWEEP, PANEL_CREASE, PANEL_UNDER_R]),
             dict(window=(153.4, None), swindow=(187.4, None), terms=[
                 dict(kind='ramp', k=3.0, a=[(187.5, 260.4), (230.4, 266.7)], b=[(187.5, 291.7), (230.4, 316.7)],
                      amount=[(187.5, 40.0), (230.4, 30.0)]),
@@ -692,6 +733,24 @@ def fillet(V, r):
     return np.array(pts)
 
 
+def trim(Q, box):
+    """End a line exactly on its box: the tracer's last step lands up to
+    STEP beyond it, which at a strip cut leaves the ends of the lines on
+    either side overlapping in a dotted seam."""
+    s0, s1, t0, t1 = box
+    a, b = Q[-2], Q[-1]
+    d = b - a
+    f = 1.0
+    for i, lo, hi in ((0, s0, s1), (1, t0, t1)):
+        if b[i] > hi and d[i] > 0:
+            f = min(f, (hi - a[i]) / d[i])
+        if b[i] < lo and d[i] < 0:
+            f = min(f, (lo - a[i]) / d[i])
+    Q = Q.copy()
+    Q[-1] = a + d * max(f, 0.0)
+    return Q
+
+
 def lines(spec):
     """All of a surface's drawn lines, as polylines in texels (x, y)."""
     surf = Surface(spec)
@@ -702,6 +761,8 @@ def lines(spec):
             for Q, _ in trace_family(surf, fam, twin):
                 if len(Q) < 3:
                     continue
+                if fam.get('trim'):
+                    Q = trim(Q, domain(surf, fam))
                 V = knees(Q, q['step'], q['hyst'], q['tol'])
                 V = V * R
                 if spec['axis'] == 'h':

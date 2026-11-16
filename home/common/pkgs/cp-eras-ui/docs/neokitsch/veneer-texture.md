@@ -229,6 +229,83 @@ rising knees, upper streak, zigzag) were not revisited, and neither was
 the overall density: the panel reads ~5 G levels lighter and ~8% sparser
 than the reference, the store card's lines ~14 levels lighter.
 
+### Third refinement (2026-11-15)
+
+Two surfaces refit (`dashboard-panel.png`, `store-card.png`); the other
+four PNGs are byte-identical. Angles as in the sections above (native
+4K crop, structure tensor; panel: degrees from vertical, + = down-left;
+store card: - = down-right).
+
+One generator change, which alters no other surface: a family with
+`trim` ends its lines exactly on its box (`trim()`); the tracer's last
+step otherwise lands up to `STEP` past the cut, and where two strips
+meet the overlapping ends draw a dotted seam.
+
+- **Panel, lower leaf.** Traced again: each reference line is an S --
+  vertical, a knee down-left into a sweep (45 deg at the left edge, ~75
+  mid-panel), a short steep run, a second knee and, in the bottom-left
+  corner, horizontal to the edge. The steep row slopes down-right at
+  ~0.4 (native (10, 620), (85, 650), (160, 680), (210, 710)). The old R2
+  had none of this at native x > 135, and its amount fell 2.2 per px
+  across s 79-94 (150 to 70): that packed the corner's lines into the
+  dark clump and drew the stepped kinks at x ~135 and ~200. Now
+  `PANEL_SWEEP` (the knee row as before, its lower edge just above the
+  steep row, amount 35 / 55 / 90 / 130 / 110 / 85 at s 4 / 35 / 67 / 108
+  / 140 / 187.5: rising, and falling by under 0.6 per px) and
+  `PANEL_UNDER_L` / `_R`, a band 60 wide starting under the steep row
+  (`PANEL_UNDER`). `_L` (s < 78) has a constant amount 170: with the band
+  sloping 0.4, the slope of `phi` across the grain nearly cancels in it
+  (1 - 170 / 60 * 0.4 ~ 0), so the corner's lines run horizontal at an
+  even spacing -- the reference's construction, rather than a ramp
+  whose amount falls (which bunches them). `_R` (78 < s < 187.5)
+  leans them ~30 deg (45 to 40). The two are separate strips (`swindow`
+  77.7 / 78.1, `trim`): below the steep row they differ and the lines
+  jog at s 78, the reference's jog at native x 187 (y 680 down); above
+  it the fields agree and the lines meet end to end. `PANEL_CREASE`, a
+  ramp 2.5 px wide, amount 0 rising to 18 by s 104, from native (200,
+  664) to the strip edge at (450, 615): the lines cross it almost along
+  and pack into a thin dark crease line. A taper faster than ~1 per px
+  in the sweep's amount still hairpins (tried: 130 to 80 over s 108-140
+  reversed the lines at native x 285-310).
+  Numbers: mean angle error against the reference (committed / now), x < 440, rows
+  515-740, 23.2 / 14.3 deg; reference / committed / now: bottom-left corner (x 10-120, y 690-742) mean
+  G 165.7 / 159.7 / 171.6, line spacing 3.38 / 3.62 / 3.82 px (no
+  clump); fold window (30-520, 420-700) G 177.6 / 182.9 / 182.2, pitch
+  5.81 / 6.24 / 5.95. Plain vertical grain (30-520, 460-520): G 184.8 /
+  186.2, pitch 5.08 / 5.07 -- the panel was never sparser where the
+  grain is straight; the 8% came from the fold's flatter angles, so
+  `pitch` is unchanged.
+- **Store card, upper streak.** The reference's lines above it run down-
+  right at 45-75 deg, flatten to ~80 deg in a dark band at native y
+  70-100, then knee back to vertical on a row that rises to the right
+  (y 140 at x 200, 95 at the edge). Ours leaned ~60 deg with a zigzag
+  and curved the other way at the right (+50 at y 77-89, the old bend at
+  t 42). Now the shear knees at t 29 (amount 2.0 to 1.5), `TOP_SWEEP` a
+  ramp from native y 70-78 to `TOP_EDGE` (y 102 / 100 / 88 at s 0 / 170
+  / 262) of amount -75 (the lines cross it almost along: the dark band)
+  and `TOP_KNEE` from there to the rising knee row, amount -25. Mean
+  angle error rows 5-170, x < 440 (committed / now): 34.8 / 24.2 deg. The top zigzag
+  (ripple) is unchanged.
+- **Store card, "14 levels lighter".** Window choice. The window used
+  (30-600, 20-200) holds the reference's text and its upper sweep. In
+  clear grain (300-600, 400-460) reference / committed: G 192.6 / 195.3,
+  pitch 5.47 / 5.50, line minimum G 165 / 161 -- the line itself is not
+  lighter. With the upper sweep added the old window reads 177.7 /
+  191.8 / 183.2 (pitch 6.80 / 6.28 / 6.80). Line opacity was not changed.
+- **Store streak**: not refit. Pixels per column with G < 80 (G < 140),
+  x 200 ... 620: reference 3(10) 0(13) 0(25) 7(22) 9(19) 4(25) 3(30);
+  now 0(9) 0(14) 1(19) 6(27) 7(23) 5(22) 3(22) (the knee changes above
+  shift it by a pixel or two).
+
+Still wrong after it: the panel crease is straighter and more even than
+the reference's, which curves up into the strip edge at native x ~443,
+and the lines under it at native x 260-435 run ~80 deg for ~40 px before
+steepening where the reference's leave at 45-60; the corner's
+horizontals turn more gradually than the reference's. The store's upper
+sweep is equally strong across the card where the reference's is
+strongest right of x ~330; the store core is still not pointed and its
+knees do not rise towards the right edge.
+
 ## Surfaces
 
 | Texture | Surface | Design box | Texels |
