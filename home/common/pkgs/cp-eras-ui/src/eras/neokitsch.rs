@@ -55,6 +55,41 @@ pub const AMBER: iced::Color = rgb(0xfcc474);
 /// `login-trace.svg` samples. `#2c1c14` until 2026-11-15 read greyer.
 pub const FIELD: iced::Color = rgb(0x3c1c11);
 pub const ON_VENEER: iced::Color = rgb(0x3a2410);
+/// Text on veneer: the dark brown the reference prints on its veneer
+/// plates, measured 2026-11-16 at 3840x2160 as the median of stroke
+/// interiors (ink eroded by a pixel, so the photo's edge blur is left
+/// out): the selected mail row's "Urgent information (!)" `#6a4530`,
+/// its "FROM: MOM" `#6d462e`, the SMG button's label `#66412a`
+/// (`docs/neokitsch/veneer-print.md`). One ink, not three: the
+/// envelope's thin strokes read lighter (`#774f33`) only because they
+/// never reach their plateau. Also the rim of a [`VENEER_TAB`].
+///
+/// The selected store card's body is the exception that keeps
+/// `ON_VENEER`: the reference's is `#63411e` but a stop heavier than
+/// our Regular, and the darker ink is what holds its weight.
+pub const VENEER_PRINT: iced::Color = rgb(0x69432d);
+/// A veneer plate's tab ([`crate::style::VeneerTab`]): a light tab
+/// hanging from the plate's bottom edge in a dark rim that flares into
+/// the edge. Measured 2026-11-16 at 3840x2160 on the reference's
+/// selected mail row and SMG button, which carry the same tab
+/// (`docs/neokitsch/veneer-print.md`): it rises 3.0 above the edge
+/// (3.1, 2.7) and hangs 1.7 below it (2.1, 1.4, which each use sets),
+/// corners r1.2, a rim 1.4 wide (FWHM 3.0-3.6 native px on both), a
+/// fillet r1.7 into the edge (the rim's foot reaches 4 native px out
+/// along the edge). Each use sets `x`, `w`, `edge` and, where it is not
+/// the mail row's `VENEER_LIGHT`, the tab's fill.
+pub const VENEER_TAB: crate::style::VeneerTab = crate::style::VeneerTab {
+    x: 0.0,
+    w: 35.0,
+    edge: 0.0,
+    rise: 3.0,
+    hang: 1.7,
+    radius: 1.2,
+    rim: 1.4,
+    flare: 1.7,
+    fill: Ink::Fixed(VENEER_LIGHT),
+    rim_ink: Ink::Fixed(VENEER_PRINT),
+};
 pub const DIM: iced::Color = rgb(0x8a7048);
 /// Lit side of the relief bevel, against `FRAME_INNER` as its shaded
 /// one. Originally "top stop of the device frame's outer stroke"; no
@@ -489,10 +524,21 @@ pub const HAIRLINE: iced::Color = rgb(0xc8914d);
 pub const CAPTION: iced::Color = rgb(0xd9a877);
 /// The micro-text beside a letter box, a stop under the captions.
 pub const MICRO: iced::Color = rgb(0xa97c48);
-/// The wire band's brightest strand. The band steps from 30% of this
-/// at the top strand to full at the bottom, and the floor between the
-/// strands glows the same way.
+/// The wire band's brightest strand, its bottom one. The floor between
+/// the strands glows from black at the top strand to `WIRE_GLOW`.
 pub const WIRE: iced::Color = rgb(0xeab15c);
+/// The wire band's top strand. Measured 2026-11-16 at 3840x2160 as the
+/// median strand peaks over 17 columns of the left plateau: from
+/// `#2c150c` at the top strand to `#eaad60` at the bottom, a near-linear
+/// ramp in encoded values (fitted exponent 0.86 / 0.94 / 1.33 per
+/// channel; one shared 0.94 leaves 11 levels rms, most of it the
+/// reference's own strand-to-strand flicker). The dark strands are
+/// redder than the bright ones, which the straight interpolation from
+/// this brown to `WIRE` carries.
+pub const WIRE_TOP: iced::Color = rgb(0x2d140c);
+/// Exponent of the strand ramp: strand `i` of `n` takes
+/// `WIRE_TOP + (WIRE - WIRE_TOP) * (i / (n - 1))^WIRE_RAMP`.
+pub const WIRE_RAMP: f32 = 0.94;
 pub const WIRE_GLOW: iced::Color = rgb(0x371c11);
 
 const NOTE_1: &str = "SPARE TIME MANAGER WAS DEVELOPED BY SEOCHO.";
@@ -961,7 +1007,7 @@ pub const ACCESS: Access = Access {
 // source #71 has two more resolved strands than the hub.
 use crate::style::{
     Frame, Mail, MailBadges, MailButtons, MailEnvelope, MailList, MailSelectedPrinting, MailRowCoat, MailRowStates, MailRowEcho, MailRowType, MailMotion, MailPanel, MailPart, Mailbox,
-    Note, Piece, RowDecor, Run, Seg, Trim, Veneer, FromAt, BL, TR,
+    Note, Piece, RowDecor, RuleTab, Run, Seg, Trim, Veneer, VeneerTab, FromAt, BL, TR,
 };
 
 /// The selection bar's own two tones, measured off the photograph at
@@ -1267,11 +1313,17 @@ const MAIL_ROW_TYPE: &[MailRowType] = &[
 /// The mailbox selection bar's silhouette (mailbox-trace.svg `#selclip`):
 /// 477x55 from (35,315), a 22 chamfer top right and a 4 round bottom
 /// right. The veneer texture is clipped to it.
+/// The selected row's outline. Its right end is rounded where the
+/// reference's is (measured 2026-11-16 at 3840x2160, right-edge profile
+/// every 4 px): the chamfer turns into the side over 335-340 rather than
+/// at a corner, and the foot's radius is 6 (the edge leaves the side 14
+/// native px above the foot), where until then both were sharp or r4.
 const MAIL_SELECTION: &[Prim] = &[fill_path(35.0, 315.0, &[
     Seg::Line(490.0, 315.0),
-    Seg::Line(512.0, 337.0),
-    Seg::Line(512.0, 366.0),
-    Seg::Quad { cx: 512.0, cy: 370.0, x: 508.0, y: 370.0 },
+    Seg::Line(509.6, 334.6),
+    Seg::Quad { cx: 512.0, cy: 337.0, x: 512.0, y: 340.4 },
+    Seg::Line(512.0, 364.0),
+    Seg::Quad { cx: 512.0, cy: 370.0, x: 506.0, y: 370.0 },
     Seg::Line(35.0, 370.0),
 ], Ink::Fixed(BAR))];
 
@@ -1326,7 +1378,12 @@ pub fn mailbox() -> Mailbox {
             spine: None,
             rule: Some(Frame::new(0.0, 60.2, 448.0, 1.5)),
             rule_ink: Ink::Fg,
-            tab: Some(Frame::new(386.5, 55.2, 31.0, 5.0)),
+            // Measured 2026-11-16 at 3840x2160 above the selected row:
+            // the tab's top 304.4, its foot on the rule (here 309.0),
+            // 30.7 across the top and the sides falling 0.37 per unit
+            // of height -- steeper and wider-topped than the 0.7 slope
+            // drawn until then.
+            tab: Some(RuleTab { frame: Frame::new(385.05, 55.6, 34.05, 4.6), inset: 1.7 }),
             tab_ink: Ink::Alert,
             // the selection: a gold bar with a 22px chamfer on its
             // top-right corner and nowhere else
@@ -1335,7 +1392,11 @@ pub fn mailbox() -> Mailbox {
             sel_icon: None,
             sel_icon_trim: Trim::NONE,
             sel_fill: Ink::Select,
-            sel_notch: Some(Frame::new(420.0, 363.0, 37.0, 10.0)),
+            // The tab under the bar's bottom-right: the reference's is
+            // gold (`#f1bb73` mean, `#f7c175` median, the row's own
+            // gold) in a dark rim, not the dark notch drawn until
+            // 2026-11-16. Tab 421.0-456.0 measured.
+            sel_notch: Some(VeneerTab { x: 421.0, w: 35.0, edge: 370.0, hang: 2.1, ..VENEER_TAB }),
             veneer: Some(Veneer {
                 // measured on the bar: a #f8c678 base carrying 32
                 // hairlines of #cf975c on a 1.7 pitch
@@ -1361,12 +1422,14 @@ pub fn mailbox() -> Mailbox {
             title_bold: false,
             title_ink: Ink::Fg,
             selected_ink: Ink::OnSelect,
-            // The photograph and trace distinguish all three marks over
-            // the veneer; the general palette's on_select is much darker.
+            // The era's text-on-veneer ink for all three marks. Until
+            // 2026-11-16 they were `#7b5438`, `#895f3b` and `#865c39`,
+            // sampled where the photo's blur had not let the strokes
+            // reach their plateau, and read pale grey.
             selected_printing: Some(MailSelectedPrinting {
-                title: Ink::Fixed(rgb(0x7b5438)),
-                sender: Ink::Fixed(rgb(0x895f3b)),
-                envelope: Ink::Fixed(rgb(0x865c39)),
+                title: Ink::Fixed(VENEER_PRINT),
+                sender: Ink::Fixed(VENEER_PRINT),
+                envelope: Ink::Fixed(VENEER_PRINT),
             }),
             from_dy: 48.2,
             from_size: 13.0,
@@ -2338,6 +2401,26 @@ const TEE: &[Seg] = &[
 // selected button is veneer in the source -- the generated `store-nav`
 // texture here, clipped to the button -- with a dark label; the rest
 // are outlines.
+/// The selected nav button's label: text on veneer
+/// ([`VENEER_PRINT`]) at the reference's weight. Measured 2026-11-16 at
+/// 3840x2160 on SMG: stems 4.3 native px (FWHM, five stems 3.8-4.4)
+/// against Regular's 3.1 (Medium 3.9, SemiBold 5.0: Medium is the
+/// nearer), letters 28 px tall from y 1039 and from x 277 against
+/// Regular's 26 from 1043 and 280. The idle labels keep their own
+/// setting.
+const NAV_SELECTED_FACE: Face = Face::Medium;
+const NAV_SELECTED_SIZE: f32 = 17.5;
+const NAV_SELECTED_LIFT: f32 = 1.2;
+const NAV_SELECTED_DX: f32 = -0.8;
+
+/// The selected nav button's [`VENEER_TAB`], for the button whose plate
+/// starts at `top`: the plate's foot is its edge, and the tab sits
+/// where the reference's does on SMG (241.25-275.75, fill `#fed492`
+/// measured, the store's `TAB`).
+const fn nav_veneer_tab(top: f32) -> crate::style::VeneerTab {
+    crate::style::VeneerTab { x: 241.25, w: 34.5, edge: top + 38.6, hang: 1.4, fill: Ink::Fixed(TAB), ..VENEER_TAB }
+}
+
 macro_rules! nav {
     ($plate:expr, $tab:expr, $top:expr, $tabtop:expr, $base:expr, $label:expr) => {
         (
@@ -2348,8 +2431,34 @@ macro_rules! nav {
                     texture: Texture::StoreNav,
                     shape: &[fill_path(97.0, $top, $plate, Ink::Fixed(SMG_FILL))],
                 },
-                fill_path(243.0, $tabtop, $tab, Ink::Fixed(NAV_TAB)),
-                txt(115.0, $base, 17.0, Ink::OnSelect, $label),
+                // The veneer tab over the plate, then its rim.
+                Prim::Path {
+                    x: nav_veneer_tab($top).tab_path().0 .0,
+                    y: nav_veneer_tab($top).tab_path().0 .1,
+                    segs: &nav_veneer_tab($top).tab_path().1,
+                    close: true,
+                    fill: Some(nav_veneer_tab($top).fill),
+                    stroke: None,
+                    width: 0.0,
+                },
+                Prim::Path {
+                    x: nav_veneer_tab($top).rim_path().0 .0,
+                    y: nav_veneer_tab($top).rim_path().0 .1,
+                    segs: &nav_veneer_tab($top).rim_path().1,
+                    close: true,
+                    fill: Some(nav_veneer_tab($top).rim_ink),
+                    stroke: None,
+                    width: 0.0,
+                },
+                Prim::Text {
+                    x: 115.0 + NAV_SELECTED_DX,
+                    y: $base - NAV_SELECTED_LIFT,
+                    size: NAV_SELECTED_SIZE,
+                    ink: Ink::Fixed(VENEER_PRINT),
+                    face: NAV_SELECTED_FACE,
+                    anchor: Anchor::Start,
+                    content: $label,
+                },
             ],
             &[
                 shut_path(97.0, $top, $plate, Ink::Fixed(OUTLINE), 1.3),
@@ -2919,7 +3028,9 @@ const PANEL_FRAME: &[Prim] = &[
 // The badge's ink-only silhouette is in the existing header Soft group;
 // text remains native alongside the other security-level labels.
 const T2_BADGE: &[Prim] = &[
-    header_prim(HEADER_LABELS[11], Ink::Fixed(CAPTION)),
+    // The badge's LEVEL as bright as its T2 (`#f6b97b` against `#f9bc79`
+    // measured), in the badge's lit ink as on the mailbox.
+    header_prim(HEADER_LABELS[11], Ink::Fixed(BADGE_LIT)),
     header_prim(HEADER_LABELS[12], Ink::Fixed(BADGE_LIT)),
 ];
 
@@ -3071,17 +3182,23 @@ pub const DASHBOARD: &[Prim] = &[
     Prim::Soft { prims: HUB_HEADER_BACKDROP },
     // ==== header (:271-308) ====
     // Iced native cap alignment: one pixel above the SVG baseline at 4K.
-    header_prim(HEADER_LABELS[0], Ink::Fixed(HUB_MID)),
-    header_prim(HEADER_LABELS[1], Ink::Fixed(HUB_MID)),
-    header_prim(HEADER_LABELS[2], Ink::Fixed(HUB_MID)),
-    header_prim(HEADER_LABELS[3], Ink::Fixed(HUB_MID)),
-    header_prim(HEADER_LABELS[4], Ink::Fixed(HUB_MID)),
-    header_prim(HEADER_LABELS[5], Ink::Fixed(HUB_MID)),
-    header_prim(HEADER_LABELS[6], Ink::Fixed(HUB_MID)),
-    header_prim(HEADER_LABELS[7], Ink::Fixed(HUB_MID)),
-    header_prim(HEADER_LABELS[8], Ink::Fixed(HUB_MID)),
-    header_prim(HEADER_LABELS[9], Ink::Fixed(HUB_MID)),
-    header_prim(HEADER_LABELS[10], Ink::Fixed(HUB_MID)),
+    // In the era's light-text ink, as the mailbox sets the same header:
+    // measured 2026-11-16 at 3840x2160 the reference prints these labels
+    // as bright as the mailbox's (stroke-interior medians `#f5ba7f`
+    // SECURITY, `#f4b778` LEVEL, `#fbbc7a` T3, `#f9bb7b` LEVEL T1 at the
+    // left, `#f3bb8a` CUSTOMER; mailbox `#f7c186`, `#fab973`), where the
+    // trace's `HUB_MID #bd8951` printed them a third dimmer.
+    header_prim(HEADER_LABELS[0], Ink::Fg),
+    header_prim(HEADER_LABELS[1], Ink::Fg),
+    header_prim(HEADER_LABELS[2], Ink::Fg),
+    header_prim(HEADER_LABELS[3], Ink::Fg),
+    header_prim(HEADER_LABELS[4], Ink::Fg),
+    header_prim(HEADER_LABELS[5], Ink::Fg),
+    header_prim(HEADER_LABELS[6], Ink::Fg),
+    header_prim(HEADER_LABELS[7], Ink::Fg),
+    header_prim(HEADER_LABELS[8], Ink::Fg),
+    header_prim(HEADER_LABELS[9], Ink::Fg),
+    header_prim(HEADER_LABELS[10], Ink::Fg),
     Prim::At { x: 0.0, y: 0.0, prims: T2_BADGE },
     // Source-fitted section badges. A/B retain their existing wire masks;
     // backing color/profile and photographic softness remain separate work.

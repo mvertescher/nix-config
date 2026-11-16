@@ -638,16 +638,14 @@ mod interaction_tests {
     }
 
     #[test]
-    fn neokitsch_selected_printing_keeps_distinct_inks_across_selection_and_press() {
+    fn neokitsch_selected_printing_keeps_veneer_ink_across_selection_and_press() {
         let style = crate::style::Era::Neokitsch.style();
         let sheet = self::sheet(&style);
         let list = &style.mailbox.list;
         let inks = list.selected_printing.unwrap();
-        assert_eq!((inks.title, inks.sender, inks.envelope), (
-            Ink::Fixed(crate::palette::rgb(0x7b5438)),
-            Ink::Fixed(crate::palette::rgb(0x895f3b)),
-            Ink::Fixed(crate::palette::rgb(0x865c39)),
-        ));
+        // All three marks in the era's text-on-veneer ink (2026-11-16).
+        let veneer = Ink::Fixed(crate::eras::neokitsch::VENEER_PRINT);
+        assert_eq!((inks.title, inks.sender, inks.envelope), (veneer, veneer, veneer));
         for index in [sheet.selected, 0, list.rows.len() - 1] {
             let row = list.row.shifted(0.0, index as f32 * list.pitch);
             let (title, sender) = Sheet::printing_inks(list, index, row, true, None, None);
@@ -1586,22 +1584,13 @@ impl Sheet<'_> {
                 // lighting under it.
                 self.also(frame, scale, MailPart::Printing, |me, f| {
                     let s = me.paint();
-                    if let Some(n) = list.sel_notch.map(|n| n.shifted(0.0, shift)) {
-                        // The tab motif inverted: a dark trapezoid cut up
-                        // into the bar's bottom edge, outlined in the ink.
-                        poly_at(
-                            f,
-                            scale,
-                            &[
-                                (n.x, n.y + n.h),
-                                (n.x + n.h * 0.55, n.y),
-                                (n.x + n.w - n.h * 0.55, n.y),
-                                (n.x + n.w, n.y + n.h),
-                            ],
-                            true,
-                            Some(ink(s, Ink::Bg)),
-                            Some((ink(s, list.rule_ink), 1.0)),
-                        );
+                    if let Some(n) = list.sel_notch.map(|n| n.shifted(shift)) {
+                        // The tab hanging from the bar's foot, then its
+                        // dark rim around it, over the bar's grain.
+                        let (start, segs) = n.tab_path();
+                        f.fill(&curve_path(scale, start, &segs, true), ink(s, n.fill));
+                        let (start, segs) = n.rim_path();
+                        f.fill(&curve_path(scale, start, &segs, true), ink(s, n.rim_ink));
                     }
                     me.printing(f, scale, list, i, mail, row, true, printing, coat.and_then(|c| c.sender));
                 });
@@ -1642,14 +1631,14 @@ impl Sheet<'_> {
                     let at = rule.shifted(row.x, row.y);
                     box_at(frame, scale, at, Trim::NONE, Some(ink(s, list.rule_ink)), None);
                     if let Some(tab) = list.tab {
-                        let t = tab.shifted(row.x, row.y);
+                        let (t, k) = (tab.frame.shifted(row.x, row.y), tab.inset);
                         poly_at(
                             frame,
                             scale,
                             &[
                                 (t.x, t.y + t.h),
-                                (t.x + t.h * 0.7, t.y),
-                                (t.x + t.w - t.h * 0.7, t.y),
+                                (t.x + k, t.y),
+                                (t.x + t.w - k, t.y),
                                 (t.x + t.w, t.y + t.h),
                             ],
                             true,

@@ -1561,8 +1561,8 @@ fn fixture(pen: &mut Pen, fixture: &Fixture) {
 /// Every figure is `docs/neokitsch/login-trace.svg`'s: the outer
 /// plateau spaced 3.9, the centre one tightened to 3.03 so the bends
 /// fan, the departure walking right 1.9 a strand and the landing 2.2,
-/// mirrored about x=808, and the brightness stepping from 0.30 at the
-/// top strand to 1.0 at the bottom.
+/// mirrored about x=808, and the colour stepping from `WIRE_TOP` at the
+/// top strand to `WIRE` at the bottom.
 fn wire_band(pen: &mut Pen, outer: f32, inner: f32, end: f32, strands: usize) {
     const X0: f32 = 34.0;
     const X1: f32 = 1565.0;
@@ -1651,6 +1651,23 @@ fn wire_band(pen: &mut Pen, outer: f32, inner: f32, end: f32, strands: usize) {
     pen.frame.fill(&glow, gradient);
 
     let wire = pen.ink(Ink::Fixed(crate::eras::neokitsch::WIRE));
+    // Each strand's colour, interpolated in encoded values from
+    // `WIRE_TOP` at the top strand to `WIRE` at the bottom one and drawn
+    // opaque: an alpha ramp over the dark ground is blended in linear
+    // light and lifts the top strand from 0.30 to 0.59 of the bottom's
+    // brightness, which is why the band read evenly bright until
+    // 2026-11-16 (`crate::eras::neokitsch::WIRE_RAMP`).
+    let top = pen.ink(Ink::Fixed(crate::eras::neokitsch::WIRE_TOP));
+    let ramp = |i: usize| -> Color {
+        let t = (i as f32 / n).powf(crate::eras::neokitsch::WIRE_RAMP);
+        Color {
+            r: top.r + (wire.r - top.r) * t,
+            g: top.g + (wire.g - top.g) * t,
+            b: top.b + (wire.b - top.b) * t,
+            a: 1.0,
+        }
+    };
+    let level = |c: Color| (c.r + c.g + c.b) / (wire.r + wire.g + wire.b).max(1e-4);
     // Each wire sits in a soft vertical smear of its own light, and it
     // is not the trace's `halo` -- that is tagged `class="photo"` and
     // G2i hides it. This is the band's own interior glow, which the
@@ -1673,7 +1690,7 @@ fn wire_band(pen: &mut Pen, outer: f32, inner: f32, end: f32, strands: usize) {
     for (width, weight) in [(9.0f32, 0.05f32), (4.5, 0.09)] {
         for i in 0..strands {
             let path = canvas::Path::new(|p| strand(p, i, g));
-            let alpha = (0.30 + (1.0 - 0.30) * i as f32 / n) * weight;
+            let alpha = level(ramp(i)) * weight;
             pen.frame.stroke(
                 &path,
                 canvas::Stroke::default()
@@ -1684,11 +1701,10 @@ fn wire_band(pen: &mut Pen, outer: f32, inner: f32, end: f32, strands: usize) {
     }
     for i in 0..strands {
         let path = canvas::Path::new(|p| strand(p, i, g));
-        let alpha = 0.30 + (1.0 - 0.30) * i as f32 / n;
         pen.frame.stroke(
             &path,
             canvas::Stroke::default()
-                .with_color(Color { a: alpha, ..wire })
+                .with_color(ramp(i))
                 .with_width(pen.grid.span(1.2)),
         );
     }

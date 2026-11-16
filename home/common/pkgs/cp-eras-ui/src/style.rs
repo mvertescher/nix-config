@@ -2673,6 +2673,99 @@ pub struct MailEnvelope {
     pub open: &'static [Piece],
 }
 
+/// A tab on a veneer surface (Neo-kitsch): a light tab hanging from the
+/// surface's bottom edge, outlined on its top and sides by a dark rim
+/// that flares into the edge. Measured 2026-11-16 at 3840x2160 on the
+/// reference's selected mail row and SMG button, which carry the same
+/// tab (`docs/neokitsch/veneer-print.md`). Absolute design px; `x` is the
+/// tab's left edge and `edge` the surface's bottom edge.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct VeneerTab {
+    pub x: f32,
+    pub w: f32,
+    pub edge: f32,
+    /// How far the tab's top sits above `edge`, and its foot below it.
+    pub rise: f32,
+    pub hang: f32,
+    /// The tab's corner radius.
+    pub radius: f32,
+    /// The rim's width around the tab's top and sides.
+    pub rim: f32,
+    /// The fillet where the rim meets the edge.
+    pub flare: f32,
+    pub fill: Ink,
+    pub rim_ink: Ink,
+}
+
+impl VeneerTab {
+    /// The same tab moved down by `dy`.
+    pub const fn shifted(self, dy: f32) -> VeneerTab {
+        VeneerTab { edge: self.edge + dy, ..self }
+    }
+
+    /// The rim: its outer outline, closed along the edge, and the tab's
+    /// outline above the edge wound the other way as a hole (filled
+    /// non-zero or even-odd alike), so it rings the tab whichever is
+    /// drawn first. Its foot is the edge itself, so none of it shows
+    /// below the surface.
+    pub const fn rim_path(&self) -> ((f32, f32), [Seg; 15]) {
+        let (l, r) = (self.x - self.rim, self.x + self.w + self.rim);
+        let top = self.edge - self.rise - self.rim;
+        let k = self.radius + self.rim;
+        let f = self.flare;
+        let e = self.edge;
+        let t = self.edge - self.rise;
+        (
+            (l - f, e),
+            [
+                Seg::Quad { cx: l, cy: e, x: l, y: e - f },
+                Seg::Line(l, top + k),
+                Seg::Quad { cx: l, cy: top, x: l + k, y: top },
+                Seg::Line(r - k, top),
+                Seg::Quad { cx: r, cy: top, x: r, y: top + k },
+                Seg::Line(r, e - f),
+                Seg::Quad { cx: r, cy: e, x: r + f, y: e },
+                Seg::Line(l - f, e),
+                Seg::Move(self.x, e),
+                Seg::Line(self.x + self.w, e),
+                Seg::Line(self.x + self.w, t + self.radius),
+                Seg::Quad { cx: self.x + self.w, cy: t, x: self.x + self.w - self.radius, y: t },
+                Seg::Line(self.x + self.radius, t),
+                Seg::Quad { cx: self.x, cy: t, x: self.x, y: t + self.radius },
+                Seg::Line(self.x, e),
+            ],
+        )
+    }
+
+    /// The tab's own rounded rectangle: start point and segments.
+    pub const fn tab_path(&self) -> ((f32, f32), [Seg; 8]) {
+        let (l, r) = (self.x, self.x + self.w);
+        let (t, b) = (self.edge - self.rise, self.edge + self.hang);
+        let k = self.radius;
+        (
+            (l + k, t),
+            [
+                Seg::Line(r - k, t),
+                Seg::Quad { cx: r, cy: t, x: r, y: t + k },
+                Seg::Line(r, b - k),
+                Seg::Quad { cx: r, cy: b, x: r - k, y: b },
+                Seg::Line(l + k, b),
+                Seg::Quad { cx: l, cy: b, x: l, y: b - k },
+                Seg::Line(l, t + k),
+                Seg::Quad { cx: l, cy: t, x: l + k, y: t },
+            ],
+        )
+    }
+}
+
+/// A divider's filled tab (Neo-kitsch's mail rules): a trapezoid on the
+/// frame `(x, y, w, h)` whose top edge is inset by `inset` at each end.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct RuleTab {
+    pub frame: Frame,
+    pub inset: f32,
+}
+
 /// Inks printed over one era's selected mailbox surface. When absent,
 /// marks on that fill use `MailList::selected_ink` as before.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -2727,10 +2820,9 @@ pub struct MailList {
     /// relative to the row's top-left.
     pub rule: Option<Frame>,
     pub rule_ink: Ink,
-    /// The filled trapezoid neokitsch sets on each divider, relative to
-    /// the row's top-left: `(x, y, w, h)`, drawn as a trapezoid whose
-    /// top edge is inset by `h * 0.6`.
-    pub tab: Option<Frame>,
+    /// The filled trapezoid neokitsch sets on each divider, its frame
+    /// relative to the row's top-left.
+    pub tab: Option<RuleTab>,
     pub tab_ink: Ink,
     /// The selection fill, in absolute coordinates on its own row.
     pub sel: Frame,
@@ -2745,9 +2837,9 @@ pub struct MailList {
     /// the body above. Absolute, like `sel`.
     pub sel_icon: Option<Frame>,
     pub sel_icon_trim: Trim,
-    /// The dark outlined notch neokitsch cuts into the selection bar's
-    /// bottom edge -- its tab motif, inverted. Absolute, like `sel`.
-    pub sel_notch: Option<Frame>,
+    /// The tab neokitsch hangs from the selection bar's bottom edge: a
+    /// light tab in a dark rim ([`VeneerTab`]). Absolute, like `sel`.
+    pub sel_notch: Option<VeneerTab>,
     /// The material the selection is filled with, where the era fills
     /// it with one rather than with `palette.select`.
     pub veneer: Option<Veneer>,

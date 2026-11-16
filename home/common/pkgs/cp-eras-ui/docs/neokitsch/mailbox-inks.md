@@ -1,5 +1,10 @@
 # Selected mailbox printing — NK-05
 
+> Superseded 2026-11-16: the three inks below were sampled where the
+> strokes do not reach their plateau and read pale. All three marks now
+> use the era's text-on-veneer ink `VENEER_PRINT #69432d`, measured on
+> stroke interiors; see [veneer-print.md](veneer-print.md).
+
 The selected bar in `images/neokitsch-mail.png` is a 3840×2160 photograph
 of the 1600×900 design (2.4 source pixels per design pixel). It prints the
 row-2 subject, FROM line and closed envelope in three similar, distinct

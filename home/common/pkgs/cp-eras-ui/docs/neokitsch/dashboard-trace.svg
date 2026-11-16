@@ -339,8 +339,11 @@
   <!-- Label baselines re-measured 2026-11-15 at 3840x2160 (cap bottoms;
        the mail and dashboard sources agree within 0.15): the LEVELs at
        70.35 (left, T1, badge) and 71.1 (T3, T4), the Ts 91.95-92.5.
-       The mailbox trace prints the same header. -->
-  <g font-family="Rajdhani" fill="#bd8951">
+       The mailbox trace prints the same header. Ink: the era's light
+       text #e7c686, as the mailbox's; the reference prints these as
+       bright as the mailbox's (stroke interiors #f5ba7f SECURITY,
+       #fbbc7a T3, #f3bb8a CUSTOMER, 2026-11-16), not #bd8951. -->
+  <g font-family="Rajdhani" fill="#e7c686">
     <text x="118.3" y="42.4" font-size="13" font-weight="600" letter-spacing="0">CUSTOMER #NC488402</text>
     <text transform="translate(119.2 70.35) scale(1.25 1)" x="0" y="0" font-size="12" letter-spacing="2">LEVEL</text>
     <text transform="translate(131.5 92.1) scale(1.45 1)" x="0" y="0" font-size="21" font-weight="600">T1</text>
@@ -372,7 +375,7 @@
       <path d="M 1284.9,41.7 L 1298.8,41.7 Q 1301.6,41.7,1304,40.1 L 1311.7,34.7 Q 1313.7,33.3,1316.3,33.3 L 1334.5,33.3 Q 1337.3,33.3,1337.3,36.1 C 1337.3,65,1337.3,96,1337.3,102.3 Q 1337.3,105.1,1334.5,105.1 L 1284.7,105.1 Q 1281.9,105.1,1281.9,102.3 C 1281.9,93,1281.9,72,1281.9,44.7 Q 1281.9,41.7,1284.9,41.7 Z" stroke-width="1.1" stroke-opacity="1"/>
       <path d="M 1293,105.1 Q 1294.2,105.1,1294.6,103.5 L 1295.1,101.3 Q 1295.2,100.6,1296,100.6 H 1324.7 Q 1325.5,100.6,1325.7,101.4 L 1326.2,103.5 Q 1326.7,105.1,1327.8,105.1 Z" fill="#f2b463" stroke="none"/>
     </g>
-    <text x="1294.2" y="70.35" font-size="12.5" letter-spacing="0.3" fill="#d9a877">LEVEL</text>
+    <text x="1294.2" y="70.35" font-size="12.5" letter-spacing="0.3" fill="#e8c186">LEVEL</text>
     <text transform="translate(1296 92.05) scale(1.45 1)" x="0" y="0" font-size="21" font-weight="600" fill="#e8c186">T2</text>
   </g>
 
