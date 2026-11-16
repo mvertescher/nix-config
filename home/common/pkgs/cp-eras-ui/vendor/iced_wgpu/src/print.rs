@@ -48,6 +48,10 @@ pub struct Params {
     pub echo_blend: Blend,
     /// Softness of the copies: the standard deviation of their blur.
     pub echo_soft: f32,
+    /// Softness of the farthest copy, when larger than `echo_soft` (0: the
+    /// same). Above about 1.6 device px it is drawn as a 4x4 grid of taps
+    /// instead of the 4-tap box, so it does not break into separate taps.
+    pub echo_soft_far: f32,
     /// Lift gate: a copy shows only where it is lighter than the pixel
     /// under it, fading in over this encoded-luminance difference. This is
     /// what puts the copies *under* the art: ink is not covered by a copy
@@ -66,6 +70,15 @@ pub struct Params {
     /// at which copies start (`.0`) and finish (`.1`) being suppressed.
     pub echo_gate: (f32, f32),
     pub echo_gate_radius: f32,
+    /// Enclosure gate: the reach (design px) of a test for dark ink that a
+    /// light fill encloses. Along each of eight directions the lightest
+    /// *thick* sample (three samples `echo_enclose_thick` apart, all light)
+    /// within this reach is found; the least of the eight is the pixel's
+    /// enclosure, and copies are suppressed as it rises through
+    /// `echo_gate` like the ring's luminance. Dark ink inside a light fill
+    /// stays firm however large the ink is. `0` disables it.
+    pub echo_enclose: f32,
+    pub echo_enclose_thick: f32,
     /// Ground gate: `(lo, hi, floor)`. A copy's opacity is scaled by
     /// `mix(1, floor, smoothstep(lo, hi, L))`, `L` the encoded luminance of
     /// the pixel the copy lands on: copies of light marks are weaker over a
@@ -81,10 +94,13 @@ pub struct Params {
     pub scan_depth: f32,
     pub scan_pitch: f32,
     pub scan_phase: f32,
-    /// Grain: multiplicative and additive standard deviation (encoded
-    /// 0..1 units), cell size, seed.
-    pub grain_mul: f32,
-    pub grain_add: f32,
+    /// Grain: multiplicative and additive standard deviation per channel
+    /// (encoded 0..1 units), cell size (design px), seed. The noise is
+    /// integrated over each device pixel (up to 4x4 taps), so a cell
+    /// smaller than a pixel averages down as a downsampled image's grain
+    /// does, rather than being drawn at one pixel per cell.
+    pub grain_mul: [f32; 3],
+    pub grain_add: [f32; 3],
     pub grain_cell: f32,
     pub grain_seed: i32,
 }
@@ -97,6 +113,7 @@ impl Params {
         echo_centre: (800.0, 450.0),
         echo_blend: Blend::Over,
         echo_soft: 0.0,
+        echo_soft_far: 0.0,
         echo_lift: (0.0, 0.0),
         echo_tex_pitch: 2.0,
         echo_tex_angle: 90.0,
@@ -105,13 +122,15 @@ impl Params {
         echo_phase: 0.0,
         echo_gate: (1.0, 1.0),
         echo_gate_radius: 6.0,
+        echo_enclose: 0.0,
+        echo_enclose_thick: 2.0,
         echo_ground: (0.0, 0.0, 1.0),
         echo_chroma: (0.0, 0.0),
         scan_depth: 0.0,
         scan_pitch: 2.0,
         scan_phase: 0.0,
-        grain_mul: 0.0,
-        grain_add: 0.0,
+        grain_mul: [0.0; 3],
+        grain_add: [0.0; 3],
         grain_cell: 1.0,
         grain_seed: 0,
     };
@@ -125,8 +144,8 @@ impl Params {
     pub fn is_off(&self) -> bool {
         !(self.has_echo()
             || self.scan_depth > 0.0
-            || self.grain_mul > 0.0
-            || self.grain_add > 0.0)
+            || self.grain_mul.iter().any(|&v| v > 0.0)
+            || self.grain_add.iter().any(|&v| v > 0.0))
     }
 }
 
@@ -182,11 +201,18 @@ pub fn echo_order(echo: &[(f32, f32, f32); 3]) -> [(f32, f32, f32); 3] {
     out
 }
 
-/// The shader's uniform block, eleven `vec4`s (`shader/print.wgsl`).
+/// The shader's uniform block, fourteen `vec4`s (`shader/print.wgsl`).
 #[derive(Debug, Clone, Copy, PartialEq, bytemuck::Zeroable, bytemuck::Pod)]
 #[repr(C)]
 pub struct Uniforms {
-    pub u: [[f32; 4]; 11],
+    pub u: [[f32; 4]; 14],
+}
+
+/// Taps per axis with which the grain is integrated over a device pixel,
+/// for a grain cell of `cell` device px: enough that a sub-pixel cell
+/// averages down (1 from 1.5 px up, at most 4).
+pub fn grain_taps(cell: f32) -> f32 {
+    (1.5 / cell.max(1e-3)).ceil().clamp(1.0, 4.0)
 }
 
 impl Uniforms {
@@ -203,6 +229,8 @@ impl Uniforms {
         let (dx, dy) = (ca / sx, sa / sy);
         let n = (dx * dx + dy * dy).sqrt().max(1e-9);
         let tex_pitch = device_pitch(p.echo_tex_pitch, 1.0 / n);
+        let gmax = |v: [f32; 3]| v[0].max(v[1]).max(v[2]);
+        let cell = (p.grain_cell * s).max(0.25);
         let blend = match p.echo_blend {
             Blend::Over => 0.0,
             Blend::Lighten => 1.0,
@@ -229,7 +257,7 @@ impl Uniforms {
                 [
                     p.echo_gate.0,
                     p.echo_gate.1,
-                    (p.echo_gate_radius * s).max(1.0),
+                    if p.echo_gate_radius > 0.0 { (p.echo_gate_radius * s).max(1.0) } else { 0.0 },
                     p.echo_soft * s,
                 ],
                 [
@@ -238,18 +266,21 @@ impl Uniforms {
                     p.scan_depth,
                     device_pitch(p.scan_pitch, sy),
                 ],
-                [
-                    p.scan_phase,
-                    p.grain_mul,
-                    p.grain_add,
-                    (p.grain_cell * s).max(1.0),
-                ],
+                [p.scan_phase, gmax(p.grain_mul), gmax(p.grain_add), cell],
                 [
                     p.grain_seed as f32,
                     p.echo_ground.0,
                     p.echo_ground.1,
                     p.echo_ground.2,
                 ],
+                [
+                    p.echo_enclose * s,
+                    (p.echo_enclose_thick * s).max(1.0),
+                    p.echo_soft_far.max(p.echo_soft) * s,
+                    grain_taps(cell),
+                ],
+                [p.grain_mul[0], p.grain_mul[1], p.grain_mul[2], 0.0],
+                [p.grain_add[0], p.grain_add[1], p.grain_add[2], 0.0],
             ],
         }
     }

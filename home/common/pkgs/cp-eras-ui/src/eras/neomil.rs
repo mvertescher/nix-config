@@ -3569,6 +3569,14 @@ pub const PRINT: crate::print::Print = PRINT_MAILBOX;
 /// saturation (0.79), none below 0.25.
 const NEOMIL_CHROMA: (f32, f32) = (0.25, 0.45);
 
+/// Neomil's grain, measured 2026-11-16 on the login's dark ground at 4K
+/// (high-passed): std 1.06 / 1.20 / 1.74 levels, neighbour correlation
+/// 0.15 (about a native pixel); 0.63 / 0.69 / 0.93 when the reference is
+/// box-downsampled to 1600. Additive only: its flat red tiles have none.
+/// These are the noise field's; integration over a pixel lowers them by
+/// about 0.8 at 4K.
+const GRAIN_ADD: [f32; 3] = [0.0052, 0.0059, 0.0085];
+
 const PRINT_TEXTURE: crate::print::Texture = crate::print::Texture {
     pitch: 1.985,
     angle: 90.0,
@@ -3592,17 +3600,20 @@ const PRINT_MAILBOX: crate::print::Print = crate::print::Print {
     echo_centre: (800.0, 465.4),
     echo_blend: crate::print::Blend::Over,
     echo_soft: 0.45,
+    echo_soft_far: 0.0,
     echo_lift: (0.02, 0.10),
     echo_texture: PRINT_TEXTURE,
     echo_gate: (0.20, 0.32),
-    echo_gate_radius: 6.0,
+    echo_gate_radius: 0.0,
+    echo_enclose: crate::print::ENCLOSE,
+    echo_enclose_thick: 2.0,
     echo_ground: crate::print::GROUND,
     echo_chroma: NEOMIL_CHROMA,
     scan_depth: 0.0,
     scan_pitch: 1.985,
-    grain_mul: 0.0,
-    grain_add: 0.004,
-    grain_cell: 0.42,
+    grain_mul: [0.0; 3],
+    grain_add: GRAIN_ADD,
+    grain_cell: 0.33,
 };
 
 /// The dashboard (`img-07-dashboard`): 13 hand-picked sites, residual

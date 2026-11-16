@@ -45,6 +45,13 @@ struct Uniforms {
     u9: vec4<f32>,
     // grain seed, ground gate lo, hi, floor
     u10: vec4<f32>,
+    // enclosure reach, enclosure thickness step (device px), far copy blur
+    // sigma (device px), grain taps per axis
+    u11: vec4<f32>,
+    // grain mul per channel
+    u12: vec4<f32>,
+    // grain add per channel
+    u13: vec4<f32>,
 }
 
 @group(0) @binding(0) var u_sampler: sampler;
@@ -85,13 +92,60 @@ fn at(p: vec2<f32>) -> vec3<f32> {
 }
 
 // A copy sampled as a 4-tap box at (+-h, +-h): per-axis standard deviation
-// h (0: one bilinear tap).
+// h (0: one bilinear tap). Above 1.6 px the four taps would fall apart into
+// separate images of a thin mark, so a 4x4 grid (uniform, pitch h / 1.118,
+// the same standard deviation) is used instead.
 fn copy_at(p: vec2<f32>, h: f32) -> vec3<f32> {
     if (h <= 0.0) {
         return at(p);
     }
-    return (at(p + vec2<f32>(h, h)) + at(p + vec2<f32>(-h, h))
-        + at(p + vec2<f32>(h, -h)) + at(p + vec2<f32>(-h, -h))) * 0.25;
+    if (h <= 1.6) {
+        return (at(p + vec2<f32>(h, h)) + at(p + vec2<f32>(-h, h))
+            + at(p + vec2<f32>(h, -h)) + at(p + vec2<f32>(-h, -h))) * 0.25;
+    }
+    let d = h / 1.118034;
+    var acc = vec3<f32>(0.0);
+    for (var j = 0; j < 4; j = j + 1) {
+        for (var i = 0; i < 4; i = i + 1) {
+            acc = acc + at(p + vec2<f32>(f32(i) - 1.5, f32(j) - 1.5) * d);
+        }
+    }
+    return acc * (1.0 / 16.0);
+}
+
+// Encoded luminance of a fill at least two thickness steps thick: the
+// least of three samples along `d` from `q`. A thin light line is not a
+// fill; its pixels next to dark do not all read light.
+fn thick(q: vec2<f32>, d: vec2<f32>, t: f32) -> f32 {
+    return min(luma(at(q)), min(luma(at(q + d * t)), luma(at(q + d * (2.0 * t)))));
+}
+
+var<private> reach_steps: array<f32, 13> = array<f32, 13>(0.03, 0.06, 0.1, 0.15, 0.21, 0.28, 0.36, 0.45, 0.55, 0.66, 0.78, 0.9, 1.0);
+
+// How completely a light fill encloses `p`: along each of eight directions
+// the lightest thick sample within `reach` (13 steps from 0.03 of it, closer
+// near), and the least of the eight. A pixel of dark ink inside a
+// light fill reads as light as the fill; ground outside it, open in some
+// direction, reads dark. Stops early once a direction is open.
+fn enclosure(p: vec2<f32>, reach: f32, t: f32, lo: f32, hi: f32) -> f32 {
+    var e = 1.0;
+    for (var i = 0; i < 8; i = i + 1) {
+        let a = f32(i) * (TAU / 8.0);
+        let d = vec2<f32>(cos(a), sin(a));
+        var best = 0.0;
+        for (var j = 0; j < 13; j = j + 1) {
+            let f = reach_steps[j];
+            best = max(best, thick(p + d * (reach * f), d, t));
+            if (best >= hi) {
+                break;
+            }
+        }
+        e = min(e, best);
+        if (e <= lo) {
+            break;
+        }
+    }
+    return e;
 }
 
 const TAU: f32 = 6.283185307179586;
@@ -138,12 +192,12 @@ fn noise(p: vec2<f32>, c: u32, s: u32) -> f32 {
 // One copy, composited over `out`. `here` is the frame's own colour,
 // `tint` the texture's per-channel factor, `gate` the fill gate.
 fn composite(out: vec3<f32>, here: vec3<f32>, p: vec2<f32>, k: vec2<f32>, a: f32,
-             tint: vec3<f32>, gate: f32) -> vec3<f32> {
+             tint: vec3<f32>, gate: f32, h: f32) -> vec3<f32> {
     if ((k.x == 0.0 && k.y == 0.0) || a <= 0.0) {
         return out;
     }
     let c = u.u3.zw;
-    let src = copy_at(c + (p - c) / (vec2<f32>(1.0) + k), u.u7.w);
+    let src = copy_at(c + (p - c) / (vec2<f32>(1.0) + k), h);
     var lift = 1.0;
     if (u.u8.y > u.u8.x) {
         lift = smoothstep(u.u8.x, u.u8.y, luma(src) - luma(here));
@@ -173,13 +227,31 @@ fn fs_main(@builtin(position) pos: vec4<f32>) -> @location(0) vec4<f32> {
         let r = u.u7.z;
         let ring = (luma(at(p + vec2<f32>(r, 0.0))) + luma(at(p - vec2<f32>(r, 0.0)))
             + luma(at(p + vec2<f32>(0.0, r))) + luma(at(p - vec2<f32>(0.0, r)))) * 0.25;
-        let gate = select(1.0 - smoothstep(u.u7.x, u.u7.y, ring), 1.0, u.u7.y <= u.u7.x);
+        // A ring radius of 0 leaves the fill gate to the enclosure test.
+        let gate = select(1.0 - smoothstep(u.u7.x, u.u7.y, ring), 1.0, u.u7.y <= u.u7.x || r <= 0.0);
         let t = scan(dot(p, u.u4.zw), u.u4.x, u.u4.y);
         let tint = max(vec3<f32>(0.0), mix(u.u6.xyz, u.u5.xyz, 0.5 + 0.5 * t));
         let here = out;
-        out = composite(out, here, p, u.u1.xy, u.u1.z, tint, gate);
-        out = composite(out, here, p, vec2<f32>(u.u1.w, u.u2.x), u.u2.y, tint, gate);
-        out = composite(out, here, p, u.u2.zw, u.u3.x, tint, gate);
+        // The farthest copy (slot a) may be softer than the others.
+        out = composite(out, here, p, u.u1.xy, u.u1.z, tint, gate, u.u11.z);
+        out = composite(out, here, p, vec2<f32>(u.u1.w, u.u2.x), u.u2.y, tint, gate, u.u7.w);
+        out = composite(out, here, p, u.u2.zw, u.u3.x, tint, gate, u.u7.w);
+        // Enclosure gate, only where a copy changed the pixel: dark ink
+        // enclosed by a light fill (an emblem on a card) keeps no copies.
+        let moved = abs(out - here);
+        if (u.u11.x > 0.0 && u.u7.y > u.u7.x && max(moved.r, max(moved.g, moved.b)) > 0.25 / 255.0) {
+            let e = enclosure(p, u.u11.x, u.u11.y, u.u7.x, u.u7.y);
+            // Full suppression by the middle of the fill gate: a fill that
+            // encloses ink is a fill even if a little darker than the gate.
+            let g2 = 1.0 - smoothstep(u.u7.x, 0.5 * (u.u7.x + u.u7.y), e);
+            if (g2 < 1.0) {
+                let g = gate * g2;
+                out = here;
+                out = composite(out, here, p, u.u1.xy, u.u1.z, tint, g, u.u11.z);
+                out = composite(out, here, p, vec2<f32>(u.u1.w, u.u2.x), u.u2.y, tint, g, u.u7.w);
+                out = composite(out, here, p, u.u2.zw, u.u3.x, tint, g, u.u7.w);
+            }
+        }
     }
 
 // 2. Fill scanlines: darken by depth at the trough, 1 at the crest.
@@ -187,12 +259,23 @@ fn fs_main(@builtin(position) pos: vec4<f32>) -> @location(0) vec4<f32> {
         out = out * (1.0 - u.u8.z * (0.5 - 0.5 * scan(p.y, u.u8.w, u.u9.x)));
     }
 
-    // 3. Grain.
+    // 3. Grain: value noise of cell u9.w device px, integrated over the
+    // pixel on an m x m grid of taps (m = u11.w), so a cell smaller than a
+    // pixel averages down the way a downsampled print's grain does.
     if (u.u9.y > 0.0 || u.u9.z > 0.0) {
-        let q = p / max(u.u9.w, 1.0);
         let s = bitcast<u32>(i32(u.u10.x));
-        let n = vec3<f32>(noise(q, 0u, s), noise(q, 1u, s), noise(q, 2u, s));
-        out = out + n * (u.u9.y * out + vec3<f32>(u.u9.z));
+        let m = i32(u.u11.w);
+        let cell = max(u.u9.w, 0.25);
+        let corner = floor(p);
+        var n = vec3<f32>(0.0);
+        for (var j = 0; j < m; j = j + 1) {
+            for (var i = 0; i < m; i = i + 1) {
+                let q = (corner + (vec2<f32>(f32(i), f32(j)) + 0.5) / f32(m)) / cell;
+                n = n + vec3<f32>(noise(q, 0u, s), noise(q, 1u, s), noise(q, 2u, s));
+            }
+        }
+        n = n / f32(m * m);
+        out = out + n * (u.u12.xyz * out + u.u13.xyz);
     }
 
     return vec4<f32>(decode(clamp(out, vec3<f32>(0.0), vec3<f32>(1.0))), src.a);

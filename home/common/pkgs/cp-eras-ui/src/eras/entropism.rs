@@ -2126,25 +2126,31 @@ const ENTROPISM_TEXTURE: crate::print::Texture = crate::print::Texture {
 /// were not re-measured. Light fills carry chromatic grain of ~2.3 % (sage
 /// selection row: RGB std 4.4/6.0/9.0 on 168/212/171), the dark ground about
 /// 0.7 levels; no scanlines on fills or ground. The bloom is not drawn.
+/// 2026-11-16: the far copy is softer (`print::SOFT_FAR`), so its gain
+/// returns to the fill-band fit, 0.14; grain is the shared measured
+/// `print::GRAIN_*`; the ring fill gate gave way to `print::ENCLOSE`.
 pub const PRINT: crate::print::Print = crate::print::Print {
     echo: [
         crate::print::Echo { kx: 0.0061, ky: 0.0068, gain: 0.20 },
-        crate::print::Echo { kx: 0.0152, ky: 0.0160, gain: 0.09 },
+        crate::print::Echo { kx: 0.0152, ky: 0.0160, gain: 0.14 },
         crate::print::Echo::NONE,
     ],
     echo_centre: (790.0, 450.0),
     echo_blend: crate::print::Blend::Over,
     echo_soft: 0.75,
+    echo_soft_far: crate::print::SOFT_FAR,
     echo_lift: (0.02, 0.10),
     echo_texture: ENTROPISM_TEXTURE,
     echo_gate: (0.40, 0.55),
-    echo_gate_radius: 6.0,
+    echo_gate_radius: 0.0,
+    echo_enclose: crate::print::ENCLOSE,
+    echo_enclose_thick: 2.0,
     echo_ground: crate::print::GROUND,
     echo_chroma: (0.0, 0.0),
     scan_depth: 0.0,
     scan_pitch: 1.985,
-    grain_mul: 0.028,
-    grain_add: 0.003,
-    grain_cell: 0.8,
+    grain_mul: crate::print::GRAIN_MUL,
+    grain_add: crate::print::GRAIN_ADD,
+    grain_cell: crate::print::GRAIN_CELL,
 };
 // --- end print -------------------------------------------------------------

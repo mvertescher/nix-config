@@ -36,7 +36,10 @@ Not covered: `Renderer::screenshot` (iced's in-process screenshot task)
 renders without the pass, and the tiny-skia fallback renderer has none.
 The pass is a fixed cost per presented frame while set: one extra render
 target the size of the surface and up to 16 texture samples per pixel
-(four for the fill gate, four per registration copy, up to three copies).
+(four for the fill gate, four per registration copy, up to three copies);
+since 2026-11-16 the far copy may take 16, the enclosure gate up to
+312 more on pixels a copy changed (usually one ray, 39), and the grain
+up to 16 noise taps per pixel.
 
 Remove with the first change's removal, or when cp-eras-ui drops the print
 material, or if upstream gains a post-processing hook that can carry it.

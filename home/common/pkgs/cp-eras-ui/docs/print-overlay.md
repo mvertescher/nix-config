@@ -1,4 +1,4 @@
-# Print overlay, 2026-11-13 (copies remeasured, and on for all eras, 2026-11-14; ground and chroma gates, Entropism refit 2026-11-15)
+# Print overlay, 2026-11-13 (copies remeasured, and on for all eras, 2026-11-14; ground and chroma gates, Entropism refit 2026-11-15; enclosure gate, far-copy softness, measured grain 2026-11-16)
 
 Owner decision 6 (`docs/review-2026-11-13/DECISIONS.md`): one shared
 print-texture pass per era instead of element-by-element echo and grain
@@ -131,7 +131,7 @@ the era's treatment for a new screen (Neomil: the mailbox fit);
 reference binaries wear. `print::DEFAULT_STRENGTH` is 1: the fit is worn
 by default (below).
 
-Overrides: `CP_ERAS_UI_PRINT_SET="echo1=kx,ky,gain;echo2=...;echo_centre=x,y;echo_blend=over|lighten;echo_soft=s;echo_lift=lo,hi;echo_ground=lo,hi,floor;echo_chroma=lo,hi;tex_pitch=p;tex_angle=a;tex_crest=r,g,b;tex_trough=r,g,b;tex_phase=f;..."`.
+Overrides: `CP_ERAS_UI_PRINT_SET="echo1=kx,ky,gain;echo2=...;echo_centre=x,y;echo_blend=over|lighten;echo_soft=s;echo_soft_far=s;echo_enclose=reach[,thick];grain_mul=r,g,b;grain_add=r,g,b;echo_lift=lo,hi;echo_ground=lo,hi,floor;echo_chroma=lo,hi;tex_pitch=p;tex_angle=a;tex_crest=r,g,b;tex_trough=r,g,b;tex_phase=f;..."`.
 
 Two more gates since 2026-11-15 (next section): `echo_ground` (a copy
 landing on a mid-tone ground is weakened to `floor` of its opacity) and
@@ -346,6 +346,138 @@ and 1.18 (copy 2), inside the 0.87-1.36 spread of the mailbox rows'
 sites; the earlier 0.75 used a mask from the pass-on frame. No general
 parameter explains it; not changed.
 
+## Regressions from the 2026-11-16 re-review: enclosure gate, far-copy softness, measured grain
+
+Tools in the session scratch (`print-regress/tools/`: `grain.py` high-passed
+std and neighbour correlation per channel, `emb.py`, `nkprof.py`,
+`glow.py`), not the repository. All numbers 4K native unless "1600"
+(the reference box-downsampled to 1600x900, the goldens' size).
+
+### Dark ink inside a light fill: the enclosure gate (Neomil login emblem)
+
+The reference's emblem on the active card is flat black (R 17, p99 25 over
+14k pixels) with no copy anywhere inside it. Ours carried copies of the
+photo square (197, 42, 42; encoded luminance 0.29) and of its diagonal
+stripe into the black: R p90 45, p99 76 against our flat ink of 32. Cause:
+the fill gate averaged luminance on a 6 dp ring, and the hexagon is about
+70 dp across, so its interior saw only black on the ring and the gate
+opened; the lift gate then let the lighter copy in.
+
+The fill gate is now an **enclosure** test (`echo_enclose`, every era
+`print::ENCLOSE` = 90 dp; `echo_gate_radius` 0 retires the ring). Along
+eight directions, at 13 steps out to the reach, the lightest *thick*
+sample (three samples `echo_enclose_thick` = 2 dp apart, all light, so a
+thin line of ink is not a fill) is found; the least of the eight is how
+completely a light fill encloses the pixel. Copies are suppressed as it
+rises from `echo_gate.0` to the middle of `echo_gate`. It runs only where
+a copy changed the pixel. Dark ink inside a fill stays firm at any size;
+ground outside a fill is open in some direction and keeps its copies --
+including right up to the fill's own edge, where the ring used to cut
+them short (that cut made the hard-edged strip beside Neo-kitsch's bars).
+
+After: emblem R p50/p90/p99 32/33/34 at 4K, 32/32/33 at 1600 (was
+32/45/76 and 32/49/77): the ink is flat. Neomil's other dark-on-red marks
+(dashboard tile codes, mailbox selected row, store MASURAO bar) are as
+firm as before by eye at 1600. Not the pass: our emblem ink is (32, ...)
+where the reference's is 17, an art difference.
+
+### Grain
+
+The grain cell was clamped up to one device pixel, so at 1600x900 a
+0.8 dp Entropism cell (1.9 native px) became 2.4 native px of interpolated
+value noise: neighbour correlation 0.43 and the full 4K std, where
+downsampling the reference averages its grain to near-white and ~0.7 of
+its 4K std. Now the cell has no clamp and the noise is integrated over
+each device pixel on an m x m grid (`grain_taps`: m = ceil(1.5 / cell),
+1-4), which is what downsampling the print does. Grain is per channel
+(`grain_mul`, `grain_add: [f32; 3]`).
+
+Measured (high-passed std, levels; neighbour correlation a1):
+
+| | reference 4K | ref 1600 | before 4K | before 1600 | after 4K | after 1600 |
+|---|---|---|---|---|---|---|
+| Entropism sage R/G/B | 3.54/4.75/7.05, a1 0.5 | 2.57/3.27/4.56 | 4.51/5.43/4.56, a1 0.7 | 4.31/5.20/4.35, a1 0.43 | 3.33/4.57/6.87, a1 0.53 | 2.32/3.18/4.79, a1 0.11 |
+| Entropism dark ground | 0.73/0.65/0.56 | 0.58/0.50/0.45 | 1.16/1.00/0.90 | 1.11/0.96/0.86 | 0.75/0.68/0.68 | 0.57/0.51/0.50 |
+| Neomil dark ground | 1.06/1.20/1.74, a1 0.15 | 0.63/0.69/0.93 | 1.05/1.06/1.06 | 0.99/0.98/0.99, a1 0.4 | 1.10/1.24/1.76, a1 0.24 | 0.65/0.71/0.98 |
+| Kitsch pink field | 3.38/1.77/4.22 | 2.53/1.28/2.76 | none | 0.29/0.26/0.25 | -- | 2.30/1.28/2.79 |
+
+Kitsch, Neo-kitsch and Entropism measure as **one grain**: std
+`mul * v + add` with mul about (0.021, 0.024, 0.046) -- blue twice the
+others -- and add about 0.5 levels (Kitsch pink and ENTER bar, Neo-kitsch
+sky and ENTER bar, Entropism sage and ground all fit within ~10 %). They
+share `print::GRAIN_MUL` / `GRAIN_ADD` / `GRAIN_CELL` (0.55 dp); Kitsch and
+Neo-kitsch had no grain at all before. Neomil's is additive only (its red
+tiles are flat), blue strongest: `GRAIN_ADD` (0.0052, 0.0059, 0.0085) on
+a 0.33 dp cell. The stored values are the noise field's; integration
+lowers them ~0.9x (0.8x for Neomil) at 4K, which the fit includes.
+
+The reviewer's "horizontal striations" on Entropism's dark ground are not
+in the grain: row means vary 0.037 levels against 0.026 for white noise
+(columns 0.048 / 0.038). Not modelled. The sage's faint vertical streaks
+(column means ~1.9x white) are not modelled either. The TV fitting was
+not rendered; the pass's design-to-device scale comes from the target
+size, so its grain sits as at 4K.
+
+### Far copy softness (Entropism captions, Neo-kitsch bar ends)
+
+Beside Neo-kitsch's right ENTER bar (median over the bar's middle rows,
+copy side minus the mirror side at the bar's left end, every 2 px):
+reference 24 28 22 26 24 23 18 10 12 10 9 2 4 2 0 -- the copies reach
+22-26 px; ours ended at 16 px with a crisp outer edge (48 38 33 23 23 18
+11 1 0), the "detached sliver". The reference's far copy is softer than
+the near one; with `echo_soft_far` = `print::SOFT_FAR` = 1.7 dp (4 native
+px; drawn as a 4x4 tap grid above 1.6 device px) ours tapers to 18 px:
+46 40 30 22 17 15 11 8 6 -1. It also matches the 2026-11-15 finding that
+the far copy keeps its strength beside fills but falls to 0.1-0.2 on thin
+strokes, so Entropism's far gain goes back up to the fill-band fit, 0.09
+-> 0.14. Kitsch and Neo-kitsch wear the same softness; Neomil does not
+(its two copies of the header rule measured equally soft).
+
+Not fixed: Neo-kitsch's near copy at the bar end is still ~1.7x the
+reference's (46 vs 24-28 in the first 6 px), as the reviewer said of the
+T2-T4 header labels; the 2026-11-15 measurement on its dashboard labels
+gave the opposite (reference 1.07-1.26 of ours), so the gain was not cut
+on one site. The reference's halo there is mostly bloom (below). The
+Entropism 7-8 px captions changed little at 1600: our two caption lines
+sit closer and the glyphs are taller and bolder than the reference's,
+which is the art, not the copies.
+
+### Not done in this pass
+
+- Neomil header badge's legible second "T1"/"LEVEL" (re-review item 5):
+  not measured.
+- Kitsch copies grey vs the reference's mint halo (item 6): not measured;
+  the mint is most likely the bloom, which carries the mark's hue.
+
+### Bloom: what it would take
+
+Measured as the median profile away from a light fill's edge on the side
+its copies do not reach (so it is the glow alone), relative to the fill's
+contrast over the ground, fitted with a blurred half-plane
+`g * erfc(x / (sigma sqrt 2)) / 2`:
+
+| era | site | rel. excess at 2 / 4 / 8 / 12 px | gain g | sigma (native px) |
+|---|---|---|---|---|
+| Neo-kitsch | ENTER bar, left end | 0.23 / 0.17 / 0.08 / 0.03 | 0.33 | 5.6 |
+| Entropism | login footer band, top edge | 0.36 / 0.14 / 0.06 / 0.01 | 0.24 | 3.9 |
+| Kitsch | ENTER bar, right end (every 3 px: 0.31 / 0.15 / 0.07 / 0.02) | -- | ~0.3 | ~4 |
+| Neomil | active card, right edge | 0.004 everywhere | 0 | -- |
+
+So Neomil has none and the other three a glow of gain about 0.25-0.35 and
+sigma 4-6 native px (1.6-2.3 dp), hatched by the same diagonal maze as the
+copies (visible in the Neo-kitsch and Entropism crops). Implementation: a
+separable Gaussian of the frame's light part (`max(0, L - threshold)` or
+the frame itself, screened): two extra full-screen passes (horizontal,
+vertical) into one intermediate texture, at half resolution to keep 4K
+cheap (sigma 2-3 half-res px, 9-13 taps per pass), then added in the
+print pass as `out = 1 - (1 - out)(1 - g * glow * texture)` with the
+era's diagonal texture. Cost on lavapipe, extrapolated from the pass's
+measured 347-422 ms at 4K: a half-resolution 13-tap separable blur is
+about 2 x 13 / 4 = 6.5 taps per output pixel, against the print pass's
+~13-30, so roughly +100-150 ms at 4K and +20-30 ms at 1600. Parameters
+per era: gain, sigma, threshold. It would also restore Entropism's mean
+level in text regions (mail body G 38 vs 46) and Kitsch's mint halos.
+
 ### On by default, 2026-11-14
 
 Who wears it:
@@ -451,12 +583,15 @@ Tuning knobs (read once at start): `CP_ERAS_UI_PRINT=<strength>`,
 
 - No bloom (needs a separable blur, i.e. more passes). Entropism text
   regions stay darker than the reference (mail body mean G 38 vs 46).
-- Non-Neomil eras: the copies are crisper than the reference's, which
-  are broken by a diagonal pattern and wrapped in bloom the pass does not
-  draw. Kitsch and Entropism gains corrected 2026-11-15 (Entropism also
-  wears a one-family diagonal texture for the maze). Entropism's far copy
-  is still about 1.6x the reference's on thin text and 0.65x beside light
-  fills: one softness for both copies.
+- Non-Neomil eras: the copies are broken by a diagonal pattern and
+  wrapped in bloom the pass does not draw (proposal above). Kitsch and
+  Entropism gains corrected 2026-11-15 (Entropism also wears a one-family
+  diagonal texture for the maze). The far copy is softer than the near
+  one since 2026-11-16 (`SOFT_FAR`); Neo-kitsch's near copy beside its
+  bars is still ~1.7x the reference's.
+- The enclosure gate costs up to 8 x 13 x 3 extra samples on pixels a copy
+  changed (early exits make the usual case one ray); the grain up to 16
+  taps per pixel at 1600x900. Not re-timed.
 - Kitsch's BRAINDANCE panel body (yellow on dark): the reference's
   copies are dark, hatched and nearly symmetric (copy contrast 1 level);
   ours are solid (12 levels after the gain change). A centred hatched

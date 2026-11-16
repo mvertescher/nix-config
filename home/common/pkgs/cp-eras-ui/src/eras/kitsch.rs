@@ -3522,8 +3522,13 @@ pub const PRINT: crate::print::Print = crate::print::Print {
     echo_lift: (0.02, 0.10),
     echo_texture: crate::print::Texture::FLAT,
     echo_gate: (0.60, 0.75),
-    echo_gate_radius: 6.0,
+    echo_gate_radius: 0.0,
+    echo_enclose: crate::print::ENCLOSE,
+    echo_soft_far: crate::print::SOFT_FAR,
     echo_ground: crate::print::GROUND,
+    grain_mul: crate::print::GRAIN_MUL,
+    grain_add: crate::print::GRAIN_ADD,
+    grain_cell: crate::print::GRAIN_CELL,
     ..crate::print::Print::OFF
 };
 // --- end print -------------------------------------------------------------

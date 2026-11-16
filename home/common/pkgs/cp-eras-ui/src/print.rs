@@ -85,6 +85,8 @@ pub struct Print {
     pub echo_blend: Blend,
     /// Softness of the copies: the standard deviation of their blur.
     pub echo_soft: f32,
+    /// Softness of the farthest copy, if larger (0: `echo_soft`).
+    pub echo_soft_far: f32,
     /// Lift gate (encoded luminance difference): a copy shows only where it
     /// is lighter than the pixel under it, i.e. under the art. `(0, 0)` off.
     pub echo_lift: (f32, f32),
@@ -95,6 +97,12 @@ pub struct Print {
     /// of the fill would otherwise pale the dark ink printed on it.
     pub echo_gate: (f32, f32),
     pub echo_gate_radius: f32,
+    /// Enclosure gate: reach (design px) of the test for dark ink enclosed
+    /// by a light fill, and the thickness step a fill must hold over three
+    /// samples to count. Copies are suppressed through `echo_gate` as the
+    /// enclosing fill's luminance rises. `0` reach is off.
+    pub echo_enclose: f32,
+    pub echo_enclose_thick: f32,
     /// Ground gate `(lo, hi, floor)`: a copy landing on a ground of encoded
     /// luminance `L` is laid at `mix(1, floor, smoothstep(lo, hi, L))` of its
     /// opacity. The references' copies of light marks are about 0.6 as
@@ -110,10 +118,12 @@ pub struct Print {
     /// Fill scanlines over everything: darkening at the trough, pitch.
     pub scan_depth: f32,
     pub scan_pitch: f32,
-    /// Grain: standard deviation relative to the colour, plus an absolute
-    /// floor (encoded 0..1), and the size of one grain cell.
-    pub grain_mul: f32,
-    pub grain_add: f32,
+    /// Grain per channel: standard deviation relative to the colour, plus
+    /// an absolute floor (encoded 0..1), and the size of one grain cell in
+    /// design px. The noise is integrated over each device pixel, so its
+    /// size and strength relative to the art hold at any output size.
+    pub grain_mul: [f32; 3],
+    pub grain_add: [f32; 3],
     pub grain_cell: f32,
 }
 
@@ -124,23 +134,27 @@ impl Print {
         echo_centre: (800.0, 450.0),
         echo_blend: Blend::Over,
         echo_soft: 0.0,
+        echo_soft_far: 0.0,
         echo_lift: (0.0, 0.0),
         echo_texture: Texture::FLAT,
         echo_gate: (1.0, 1.0),
         echo_gate_radius: 6.0,
+        echo_enclose: 0.0,
+        echo_enclose_thick: 2.0,
         echo_ground: (0.0, 0.0, 1.0),
         echo_chroma: (0.0, 0.0),
         scan_depth: 0.0,
         scan_pitch: 2.0,
-        grain_mul: 0.0,
-        grain_add: 0.0,
+        grain_mul: [0.0; 3],
+        grain_add: [0.0; 3],
         grain_cell: 1.0,
     };
 
     /// Whether this material changes no pixel.
     pub fn is_off(&self) -> bool {
         let echo = self.echo.iter().any(Echo::is_live);
-        !(echo || self.scan_depth > 0.0 || self.grain_mul > 0.0 || self.grain_add > 0.0)
+        let grain = self.grain_mul.iter().chain(&self.grain_add).any(|&v| v > 0.0);
+        !(echo || self.scan_depth > 0.0 || grain)
     }
 
     /// The material at `strength` times its fitted strength: copy gains,
@@ -155,8 +169,8 @@ impl Print {
         Print {
             echo,
             scan_depth: (self.scan_depth * s).min(1.0),
-            grain_mul: self.grain_mul * s,
-            grain_add: self.grain_add * s,
+            grain_mul: self.grain_mul.map(|v| v * s),
+            grain_add: self.grain_add.map(|v| v * s),
             ..*self
         }
     }
@@ -172,6 +186,7 @@ impl Print {
             echo_centre: self.echo_centre,
             echo_blend: self.echo_blend,
             echo_soft: self.echo_soft,
+            echo_soft_far: self.echo_soft_far,
             echo_lift: self.echo_lift,
             echo_tex_pitch: t.pitch,
             echo_tex_angle: t.angle,
@@ -180,6 +195,8 @@ impl Print {
             echo_phase: t.phase + echo_phase,
             echo_gate: self.echo_gate,
             echo_gate_radius: self.echo_gate_radius,
+            echo_enclose: self.echo_enclose,
+            echo_enclose_thick: self.echo_enclose_thick,
             echo_ground: self.echo_ground,
             echo_chroma: self.echo_chroma,
             scan_depth: self.scan_depth,
@@ -199,8 +216,9 @@ impl Print {
     /// `tex_pitch`, `tex_angle`, `tex_crest=r,g,b`, `tex_trough=r,g,b`,
     /// `tex_phase`,
     /// `echo_gate=lo,hi`, `echo_gate_radius`, `echo_ground=lo,hi,floor`,
-    /// `echo_chroma=lo,hi`, `scan_depth`, `scan_pitch`,
-    /// `grain_mul`, `grain_add`, `grain_cell`.
+    /// `echo_chroma=lo,hi`, `echo_soft_far`, `echo_enclose=reach[,thick]`,
+    /// `scan_depth`, `scan_pitch`, `grain_mul=v|r,g,b`,
+    /// `grain_add=v|r,g,b`, `grain_cell`.
     pub fn with_overrides(mut self, spec: &str) -> Print {
         for item in spec.split(';') {
             let Some((key, value)) = item.split_once('=') else { continue };
@@ -219,6 +237,9 @@ impl Print {
                     _ => {}
                 },
                 ("echo_soft", Some(v), ..) => self.echo_soft = v,
+                ("echo_soft_far", Some(v), ..) => self.echo_soft_far = v,
+                ("echo_enclose", Some(v), ..) => self.echo_enclose = v,
+                ("echo_enclose", _, Some((r, t)), _) => (self.echo_enclose, self.echo_enclose_thick) = (r, t),
                 ("echo_lift", _, Some(p), _) => self.echo_lift = p,
                 ("tex_pitch", Some(v), ..) => self.echo_texture.pitch = v,
                 ("tex_angle", Some(v), ..) => self.echo_texture.angle = v,
@@ -231,8 +252,10 @@ impl Print {
                 ("echo_chroma", _, Some(p), _) => self.echo_chroma = p,
                 ("scan_depth", Some(v), ..) => self.scan_depth = v,
                 ("scan_pitch", Some(v), ..) => self.scan_pitch = v,
-                ("grain_mul", Some(v), ..) => self.grain_mul = v,
-                ("grain_add", Some(v), ..) => self.grain_add = v,
+                ("grain_mul", Some(v), ..) => self.grain_mul = [v; 3],
+                ("grain_mul", _, _, Some(d)) => self.grain_mul = d,
+                ("grain_add", Some(v), ..) => self.grain_add = [v; 3],
+                ("grain_add", _, _, Some(d)) => self.grain_add = d,
                 ("grain_cell", Some(v), ..) => self.grain_cell = v,
                 _ => {}
             }
@@ -254,6 +277,34 @@ impl Default for Print {
 /// and 10 Neo-kitsch sites (`docs/print-overlay.md`, "Copies
 /// over mid-tone grounds"). Light fills are handled by the fill gate.
 pub const GROUND: (f32, f32, f32) = (0.22, 0.30, 0.6);
+
+/// Reach of the enclosure gate every era wears ([`Print::echo_enclose`]),
+/// design px: dark ink that a light fill encloses within this distance in
+/// all eight directions keeps no copies, however large the ink (Neomil's
+/// login emblem, about 70 dp across, is crisp black in the reference).
+/// It replaces the 6 dp ring, which also cut the copies of a fill's own
+/// edge short on the ground just outside it.
+pub const ENCLOSE: f32 = 90.0;
+
+/// Softness of the far copy for the glowing eras, design px (4 native px):
+/// measured 2026-11-16 beside Neo-kitsch's ENTER bar (the copy side minus
+/// the mirror side reaches 22-26 native px out where the near-copy-only
+/// band ends at 16) and matching the earlier finding that the reference's
+/// far copy keeps its strength beside fills but falls to 0.1-0.2 on thin
+/// strokes. Neomil's two copies were measured equally soft (header rule).
+pub const SOFT_FAR: f32 = 1.7;
+
+/// The grain of Kitsch, Neo-kitsch and Entropism, which measure as one
+/// grain (2026-11-16, 4K references, high-passed, per channel): std
+/// `mul * v + add` with mul about (0.021, 0.024, 0.046) -- blue twice the
+/// others -- and add about 0.5 levels (Entropism sage 3.5/4.8/7.1 on
+/// 138/172/140, dark ground 0.7/0.65/0.56; Kitsch pink 3.4/1.8/4.2 on
+/// 139/57/79, ENTER bar 3.7/5.0/10.5; Neo-kitsch sky 2.4/2.0/5.5 on
+/// 91/68/107), neighbour correlation 0.45-0.6 at 4K. Values here are the
+/// noise field's: the per-pixel integration lowers them about 0.9x at 4K.
+pub const GRAIN_MUL: [f32; 3] = [0.0233, 0.0267, 0.0511];
+pub const GRAIN_ADD: [f32; 3] = [0.0018; 3];
+pub const GRAIN_CELL: f32 = 0.55;
 
 /// The strength [`wear`] applies when `CP_ERAS_UI_PRINT` is unset: the
 /// fit itself. On for every era since the owner's decision of 2026-11-14
@@ -410,6 +461,37 @@ mod tests {
     }
 
     #[test]
+    fn enclosure_soft_far_and_grain_reach_the_shader() {
+        for era in Era::ALL {
+            let p = of(era);
+            assert_eq!(p.echo_enclose, ENCLOSE, "{era:?}");
+            // The ring gate is retired: the enclosure test replaces it.
+            assert_eq!(p.echo_gate_radius, 0.0, "{era:?}");
+            let u = iced_wgpu::print::Uniforms::new(&p.params(0.0, 0.0, 0), iced_wgpu::core::Size::new(3840, 2160));
+            assert_eq!(u.u[7][2], 0.0, "{era:?}");
+            assert!((u.u[11][0] - ENCLOSE * 2.4).abs() < 1e-3, "{era:?}");
+            assert_eq!(&u.u[12][..3], &p.grain_mul, "{era:?}");
+            assert_eq!(&u.u[13][..3], &p.grain_add, "{era:?}");
+            // Grain cells are sub-pixel at 1600x900 and integrated, not
+            // clamped up to a whole pixel.
+            let small = iced_wgpu::print::Uniforms::new(&p.params(0.0, 0.0, 0), iced_wgpu::core::Size::new(1600, 900));
+            assert!((small.u[9][3] - p.grain_cell).abs() < 1e-6, "{era:?}");
+            assert!(small.u[11][3] >= 2.0, "{era:?}");
+        }
+        for era in [Era::Kitsch, Era::Neokitsch, Era::Entropism] {
+            let p = of(era);
+            assert_eq!((p.grain_mul, p.grain_add, p.echo_soft_far), (GRAIN_MUL, GRAIN_ADD, SOFT_FAR), "{era:?}");
+        }
+        // Neomil's grain is additive only, blue strongest.
+        let n = of(Era::Neomil);
+        assert_eq!(n.grain_mul, [0.0; 3]);
+        assert!(n.grain_add[2] > n.grain_add[0]);
+        assert_eq!(iced_wgpu::print::grain_taps(0.33), 4.0);
+        assert_eq!(iced_wgpu::print::grain_taps(1.32), 2.0);
+        assert_eq!(iced_wgpu::print::grain_taps(2.0), 1.0);
+    }
+
+    #[test]
     fn row_pattern_is_periodic_at_its_pitch() {
         for &pitch in &[2.0f32, 4.764, 7.94] {
             for i in 0..50 {
@@ -465,10 +547,12 @@ mod tests {
     #[test]
     fn overrides_parse() {
         let p = Print::OFF.with_overrides(
-            "echo1=0.01,0.02,0.4; echo2=0.02,0.03,0.2;bogus=1;scan_depth=x;tex_crest=1,0.3,0.3;echo_blend=lighten;echo_soft=0.5;echo_ground=0.2,0.3,0.6;echo_chroma=0.25,0.45",
+            "echo1=0.01,0.02,0.4; echo2=0.02,0.03,0.2;bogus=1;scan_depth=x;tex_crest=1,0.3,0.3;echo_blend=lighten;echo_soft=0.5;echo_ground=0.2,0.3,0.6;echo_chroma=0.25,0.45;grain_mul=0.01,0.02,0.04;grain_add=0.002;echo_enclose=50,1.5;echo_soft_far=1.7",
         );
         assert_eq!(p.echo_ground, (0.2, 0.3, 0.6));
         assert_eq!(p.echo_chroma, (0.25, 0.45));
+        assert_eq!((p.grain_mul, p.grain_add), ([0.01, 0.02, 0.04], [0.002; 3]));
+        assert_eq!((p.echo_enclose, p.echo_enclose_thick, p.echo_soft_far), (50.0, 1.5, 1.7));
         assert_eq!(p.echo[0], Echo { kx: 0.01, ky: 0.02, gain: 0.4 });
         assert_eq!(p.echo[1], Echo { kx: 0.02, ky: 0.03, gain: 0.2 });
         assert_eq!(p.echo_texture.crest, [1.0, 0.3, 0.3]);
