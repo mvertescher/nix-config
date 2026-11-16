@@ -357,13 +357,15 @@
 
   <!-- ==== customer chip and account lines ==== -->
   <rect x="124.5" y="178.5" width="213" height="21" rx="8" fill="none" stroke="#5fd6c2" stroke-width="1.25"/>
-  <g font-family="Rajdhani" font-size="12" fill="#7fe0c8">
-    <text x="133" y="193">customer</text>
-    <text x="243" y="193">#NC488402</text>
-    <text x="133" y="227">loyalty discount</text>
-    <text x="306" y="227" text-anchor="end">10%</text>
-    <text x="133" y="243">last update</text>
-    <text x="306" y="243" text-anchor="end">10/05/2077</text>
+  <!-- 2026-11-16 at 4K: the art's round wide sans is 1.17x wider than Rajdhani 12 at the same
+       height, stems 3.6 px against 1.75, ink ~#8effe6; Rajdhani 600 12.5 x1.07 #8cf8e0 (kitsch.rs ACCOUNT_*) -->
+  <g font-family="Rajdhani" font-size="12.5" font-weight="600" fill="#8cf8e0">
+    <text transform="translate(133 193) scale(1.07 1)">customer</text>
+    <text transform="translate(243 193) scale(1.07 1)">#NC488402</text>
+    <text transform="translate(133 227) scale(1.07 1)">loyalty discount</text>
+    <text transform="translate(306 227) scale(1.07 1)" text-anchor="end">10%</text>
+    <text transform="translate(133 243) scale(1.07 1)">last update</text>
+    <text transform="translate(306 243) scale(1.07 1)" text-anchor="end">10/05/2077</text>
   </g>
 
   <!-- ==== the nav bracket and its wave ==== -->
@@ -475,7 +477,9 @@
       <rect x="354" y="734.3" width="23.7" height="24.2"/>
       <rect x="1501" y="733.9" width="24.2" height="24.3"/>
     </g>
-    <g font-size="18" font-weight="700" text-anchor="middle" fill="#82f0d3">
+    <!-- 2026-11-16: the table now draws this (it had a Regular 14 in a 29x27 1.5 box); weight 500,
+         the badge every screen shares (kitsch.rs BADGE_*) -->
+    <g font-size="18" font-weight="500" text-anchor="middle" fill="#82f0d3">
       <text transform="translate(365.9 753.8) scale(1.7 1)">A</text>
       <text transform="translate(1513.1 753.4) scale(1.7 1)">C</text>
     </g>

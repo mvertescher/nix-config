@@ -419,10 +419,11 @@
       <rect x="673.3" y="109.8" width="24.2" height="24.2"/>
       <rect x="1215.2" y="109.8" width="24" height="24.2"/>
     </g>
-    <g font-size="18" font-weight="600" text-anchor="middle" fill="#82f0d3">
-      <text transform="translate(176.7 129.2) scale(1.7 1)">A</text>
-      <text transform="translate(685.4 129.2) scale(1.7 1)">C</text>
-      <text transform="translate(1227.2 129.2) scale(1.7 1)">D</text>
+    <!-- 2026-11-16: weight 500 (was 600: 7 px stems at 4K against the art's 5), the shared badge (kitsch.rs BADGE_*) -->
+    <g font-size="18" font-weight="500" text-anchor="middle" fill="#82f0d3">
+      <text transform="translate(176.7 128.4) scale(1.7 1)">A</text>
+      <text transform="translate(685.4 128.4) scale(1.7 1)">C</text>
+      <text transform="translate(1227.2 128.4) scale(1.7 1)">D</text>
     </g>
     <!-- section labels: the notes' wide face at a thinner stroke, cap y 155..162.9, USER x 165.4..203.8 / SECURITY LEVEL
          673.8..791.7 / DESCRIPTION 1215.8..1312.5 (2026-11-13: Michroma 10.56 x0.95; was Rajdhani 600 12.3 x1.37) -->
@@ -638,23 +639,36 @@
     <g transform="translate(919 586) rotate(30)"><use href="#card" fill="url(#u-locations)" stroke="none"/></g>
     <g transform="translate(731 586) rotate(-30)"><use href="#card" fill="url(#u-events)" stroke="none"/></g>
   </g>
+  <!-- fan connectors (2026-11-16, measured on the art at 4K): each fan's
+       facing blade edges run straight past the blades' rounded corners and
+       meet in a circular fillet r 21.5 (art 18.2-25.5, mean 21.4), one mint
+       stroke #78f8e0 at 1.1, the same ink and weight the idle blade
+       outlines now take (they were #a9e6df at 1.4). kitsch.rs `CONNECTOR_*`. -->
+  <g fill="none" stroke="#78f8e0" stroke-width="1.1">
+    <path d="M 439.72,427.85 L 447.62,432.41 A 21.5 21.5 0 0 0 469.12,432.41 L 475.28,428.85"/> <!-- V-W -->
+    <path d="M 414.72,471.15 L 422.25,475.50 A 21.5 21.5 0 0 1 433.00,494.12 L 433.00,502.00"/> <!-- V-PL -->
+    <path d="M 500.28,472.15 L 493.75,475.92 A 21.5 21.5 0 0 0 483.00,494.54 L 483.00,502.00"/> <!-- W-PL -->
+    <path d="M 800.00,497.00 L 800.00,504.88 A 21.5 21.5 0 0 1 789.25,523.50 L 781.72,527.85"/> <!-- PR-E -->
+    <path d="M 850.00,497.00 L 850.00,504.88 A 21.5 21.5 0 0 0 860.75,523.50 L 868.28,527.85"/> <!-- PR-L -->
+    <path d="M 806.72,571.15 L 814.25,566.80 A 21.5 21.5 0 0 1 835.75,566.80 L 843.28,571.15"/> <!-- E-L -->
+  </g>
   <!-- solid cards + individually fitted Rajdhani Medium labels;
        the same local run geometry is used for idle, selected and pressed states. -->
   <g font-family="Rajdhani" text-anchor="middle">
     <g transform="translate(364 413) rotate(30)">
-      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.4"/>
+      <use href="#card" fill="none" stroke="#78f8e0" stroke-width="1.1"/>
       <text x="0.83" y="5.25" font-size="21" font-weight="500" letter-spacing="0" fill="#7cffe5">VEHICLES</text>
     </g>
     <g transform="translate(551 414) rotate(-30)">
-      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.4"/>
+      <use href="#card" fill="none" stroke="#78f8e0" stroke-width="1.1"/>
       <text x="1.67" y="5.67" font-size="20" font-weight="500" letter-spacing="1" fill="#7cffe5">WEAPONS</text>
     </g>
     <g transform="translate(458 575) rotate(90)">
-      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.4"/>
+      <use href="#card" fill="none" stroke="#78f8e0" stroke-width="1.1"/>
       <text x="-3.33" y="6.50" font-size="20" font-weight="500" letter-spacing="1" fill="#7cffe5">PRODUCTS</text>
     </g>
     <g transform="translate(825 424) rotate(90)">
-      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.4"/>
+      <use href="#card" fill="none" stroke="#78f8e0" stroke-width="1.1"/>
       <text x="-4.17" y="8.58" font-size="20" font-weight="500" letter-spacing="1" fill="#7cffe5">PRODUCTS</text>
     </g>
     <!-- the selection -->
@@ -663,7 +677,7 @@
       <text x="-1.25" y="6.50" font-size="20" font-weight="500" letter-spacing="0.75" fill="#4a3a05">EVENTS</text>
     </g>
     <g transform="translate(919 586) rotate(30)">
-      <use href="#card" fill="none" stroke="#a9e6df" stroke-width="1.4"/>
+      <use href="#card" fill="none" stroke="#78f8e0" stroke-width="1.1"/>
       <text x="-2.50" y="6.08" font-size="20" font-weight="500" letter-spacing="0.5" fill="#7cffe5">LOCATIONS</text>
     </g>
   </g>
@@ -675,7 +689,7 @@
     <text x="1222" y="288" font-family="Rajdhani" font-size="20" font-weight="600"
           letter-spacing="1" fill="#4a3a05">BRAINDANCE</text>
     <!-- A connected diagonal ribbon, not a small detached rectangle. -->
-    <path d="M 1172.5,315 Q 1172.5,313 1174,311.5 L 1200.5,284.5 Q 1205,281 1205,286 V 296.5 H 1428.5 Q 1432,296.5 1432,300 V 305 Q 1432,308 1429.5,310.5 L 1411.5,328.5 Q 1408.5,331.5 1403.5,331.5 H 1176.5 Q 1172.5,331.5 1172.5,327.5 Z" fill="none" stroke="#f5cb23" stroke-width="1.25"/>
+    <path d="M 1172.5,315 Q 1172.5,313 1174,311.5 L 1200.5,284.5 Q 1205,281 1205,286 V 296.5 H 1428.5 Q 1432,296.5 1432,300 V 305 Q 1432,308 1429.5,310.5 L 1411.5,328.5 Q 1408.5,331.5 1403.5,331.5 H 1176.5 Q 1172.5,331.5 1172.5,327.5 Z" fill="#b4283c" fill-opacity="0.17" stroke="#f5cb23" stroke-width="1.25"/>
     <g fill="#d9b41f" font-family="Rajdhani" font-size="8" font-weight="600">
       <text transform="translate(1179.5 317.5) scale(1.08 1)">ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE</text>
       <text transform="translate(1179.5 325) scale(1.08 1)">ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE.</text>
@@ -705,7 +719,7 @@
       <text x="609.6" y="754.6">SATELITE <tspan x="652.14">SERVICES</tspan> <tspan x="696.55">SINCE</tspan> <tspan x="724.94">2006.</tspan></text>
     </g>
     <rect x="574.3" y="741" width="24" height="24.2" fill="none" stroke="#82f0d3" stroke-width="2"/>
-    <text transform="translate(586.3 761.2) scale(1.7 1)" font-size="18" font-weight="600" text-anchor="middle" fill="#82f0d3">B</text>
+    <text transform="translate(586.3 760.4) scale(1.7 1)" font-size="18" font-weight="500" text-anchor="middle" fill="#82f0d3">B</text>
     <text transform="translate(574.05 794.2) scale(0.95 1)" font-family="Michroma" font-size="10.56" font-weight="400" fill="#82f0d3">DEVICE SOFTWARE</text>
   </g>
 

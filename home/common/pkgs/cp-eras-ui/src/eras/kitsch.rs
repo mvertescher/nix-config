@@ -532,6 +532,22 @@ pub const BRIGHT: iced::Color = rgb(0x82f0d3);
 /// stem/arm contrast than Rajdhani, which no single weight reproduces.
 pub const NAME_EMBOLDEN: f32 = 0.25;
 
+/// The boxed corner badge (A / B / C / D) on every screen: a 24.2
+/// square under a 2-unit stroke, holding Rajdhani Medium 18 stretched
+/// 1.7 in the bright mint. Measured on the art at 4K (2026-11-16) on
+/// all four screens: the box 62-63 px outer with a 4-5 px edge; the
+/// letter cap 28-29 px, A 36-38 px wide, C 31, stems 5-6 px (7 on the
+/// store, under its stronger glow). The login's badge already drew
+/// this and measured equal to the art (A 69 x 47 px at its own size
+/// against 68 x 47); the dashboard's SemiBold had 7 px stems, the
+/// mailbox's Bold was unstretched (A 22 px wide) and the store's was a
+/// Regular 14 (A 16 x 21 px) in a 29 x 27 box at 1.5.
+pub const BADGE_SIDE: f32 = 24.2;
+pub const BADGE_WEIGHT: f32 = 2.0;
+pub const BADGE_LETTER_SIZE: f32 = 18.0;
+pub const BADGE_LETTER_STRETCH: f32 = 1.7;
+pub const BADGE_INK: iced::Color = BRIGHT;
+
 const NOTE_1: &str = "ACCESS MANAGER WAS DEVE-";
 /// Every Kitsch badge note (login, mailbox, dashboard, store corners) in
 /// Krona One (review 2026-11-13: Michroma's hairline came out thin and
@@ -664,10 +680,10 @@ pub const ACCESS: Access = Access {
                 2.0,
             )),
             badge_letter: Some(
-                Legend::new("A", 351.55, 390.4, 18.0, Ink::Fixed(BRIGHT))
+                Legend::new("A", 351.55, 390.4, BADGE_LETTER_SIZE, Ink::Fixed(BADGE_INK))
                     .centred()
                     .medium()
-                    .stretched(1.7),
+                    .stretched(BADGE_LETTER_STRETCH),
             ),
             notes: &[
                 Legend::new(NOTE_1, 372.3, 375.7, LOGIN_NOTE_SIZE, Ink::Fixed(BRIGHT))
@@ -832,7 +848,9 @@ pub const ACCESS: Access = Access {
         barcode: Plot::new(370.0, 632.0, 220.0, 63.0),
         labels: &[
             Legend::new("0033 05 64 08 CP", 375.5, 693.0, 5.5, Ink::Fixed(CHIP_INK)).turned(),
-            Legend::new("12345678123456789", 420.0, 696.0, 13.0, Ink::Fixed(BARCODE)),
+            // the digits, art 4K: x 423.2..547.3 (ours 420.2..521.4), cap
+            // 9.8 (ours 8.9), sitting on y 696.4
+            Legend::new("12345678123456789", 423.0, 696.9, 14.3, Ink::Fixed(BARCODE)).stretched(1.12),
         ],
     },
     colophon: Colophon::Notice {
@@ -906,7 +924,7 @@ const fn section(x: f32, s: &'static str) -> Piece {
 
 const fn letter(x: f32, y: f32, s: &'static str) -> Piece {
     Piece::Label(Note {
-        at: Run::new(x, y, 18.0, Ink::Fg).bold().centered(),
+        at: Run::new(x, y, BADGE_LETTER_SIZE, Ink::Fixed(BADGE_INK)).medium().stretched(BADGE_LETTER_STRETCH).centered(),
         text: s,
     })
 }
@@ -977,16 +995,42 @@ static WAVE: [Seg; 9] = [
     Seg::Cubic { c1x: 187.9 - 67.5 * ARC, c1y: 749.2, c2x: 120.4, c2y: 681.7 + 67.5 * ARC, x: 120.4, y: 681.7 },
     Seg::Line(120.4, 594.4),
 ];
+/// The warning strip under a yellow tab (the mailbox's message flag,
+/// the dashboard's BRAINDANCE ribbon): a translucent crimson over the
+/// ground inside its outline. Art at 4K (2026-11-16): inside the
+/// mailbox strip (97,39,42) near its top, (63,24,30) near its foot,
+/// where ours drew the bare ground (55,26,33) / (40,21,24); the
+/// dashboard's (115,51,37) / (90,45,26) / (71,42,13) against ours
+/// (78,53,28) / (64,49,21) / (58,47,18). The art grades it (redder at
+/// the top); one flat #b4283c at 0.17 -- composited in linear light,
+/// as iced blends -- splits the difference on both screens.
+pub const WARNING_FILL: iced::Color = iced::Color { a: 0.17, ..rgb(0xb4283c) };
+/// The mailbox strip's right end: the art carries the tab's right
+/// edge straight down to the body (x 1127.1..1127.9 from y 350 to
+/// 385) with the strip's 45-degree cut branching off it at y ~361;
+/// ours stopped the cut short of the tab, leaving the end open.
+pub const FLAG_RIGHT: f32 = 1127.4;
+/// The strip's interior: the outline closed along the tab's bottom.
+static FLAG_AREA: [(f32, f32); 7] = [
+    (575.0, 327.0),
+    (540.0, 363.0),
+    (540.0, 384.2),
+    (1104.0, 384.2),
+    (FLAG_RIGHT, 360.7),
+    (FLAG_RIGHT, 349.0),
+    (575.0, 349.0),
+];
+static FLAG_END: [(f32, f32); 2] = [(FLAG_RIGHT, 349.0), (FLAG_RIGHT, 384.6)];
 /// The outlined flag band hanging off the message tab's left edge.
 static FLAG: [(f32, f32); 5] = [
     (575.0, 327.0),
     (540.0, 363.0),
     (540.0, 384.2),
     (1104.0, 384.2),
-    (1127.5, 360.7),
+    (FLAG_RIGHT, 360.7),
 ];
 
-static CHROME: [Piece; 27] = [
+static CHROME: [Piece; 35] = [
     mid(205.0, 110.0, "SPARE TIME MANAGER WAS DEVELO-"),
     mid(205.0, 119.2, "PED BY SEOCHO. SERVING CUSTO-"),
     mid(205.0, 128.3, "MERS SINCE 2006."),
@@ -998,29 +1042,29 @@ static CHROME: [Piece; 27] = [
     Piece::Box {
         at: Frame::new(165.2, 106.2, 24.1, 23.8),
         fill: None,
-        stroke: Some(Ink::Fg),
-        width: 1.5,
+        stroke: Some(Ink::Fixed(BADGE_INK)),
+        width: BADGE_WEIGHT,
         trim: Trim::NONE,
     },
-    letter(177.25, 125.5, "A"),
+    letter(177.25, 126.4, "A"),
     section(165.2, "USER"),
     Piece::Box {
         at: Frame::new(586.2, 106.2, 24.2, 23.8),
         fill: None,
-        stroke: Some(Ink::Fg),
-        width: 1.5,
+        stroke: Some(Ink::Fixed(BADGE_INK)),
+        width: BADGE_WEIGHT,
         trim: Trim::NONE,
     },
-    letter(598.3, 125.5, "B"),
+    letter(598.3, 126.4, "B"),
     section(586.1, "DESCRIPTION"),
     Piece::Box {
         at: Frame::new(1216.6, 106.2, 24.4, 23.8),
         fill: None,
-        stroke: Some(Ink::Fg),
-        width: 1.5,
+        stroke: Some(Ink::Fixed(BADGE_INK)),
+        width: BADGE_WEIGHT,
         trim: Trim::NONE,
     },
-    letter(1228.8, 125.5, "C"),
+    letter(1228.8, 126.4, "C"),
     section(1216.85, "SECURITY LEVEL"),
     Piece::Poly {
         points: &USER_BOX,
@@ -1062,6 +1106,16 @@ static CHROME: [Piece; 27] = [
     },
     Piece::Fade { x0: 330.0, x1: 430.0, y: LIST_TOP, width: 1.25, ink: Ink::Fg, stops: LIST_TOP_FADE },
     Piece::Fade { x0: 380.0, x1: 480.0, y: 748.5, width: 1.25, ink: Ink::Fg, stops: LIST_FOOT_FADE },
+    // the security levels: the dashboard's `LEVEL_*` boxes and digits
+    // at the mailbox's own height (`MAIL_LEVEL_*`)
+    mail_level_box(0),
+    mail_level_box(1),
+    mail_level_box(2),
+    mail_level_box(3),
+    mail_level_digit(0),
+    mail_level_digit(1),
+    mail_level_digit(2),
+    mail_level_digit(3),
     Piece::Label(Note {
         at: Run::new(503.0, 870.0, 9.0, Ink::Fg).bold(),
         text: "ARASAKA CONSUMER TECHNOLOGY",
@@ -1075,7 +1129,21 @@ static CHROME: [Piece; 27] = [
 
 /// The message's flag band and the two lines of micro-print on it:
 /// the message's, extruded with it (`MAILBOX_MOTIONS`), not chrome.
-static MESSAGE_FLAG: [Piece; 3] = [
+static MESSAGE_FLAG: [Piece; 5] = [
+    Piece::Poly {
+        points: &FLAG_AREA,
+        fill: Some(Ink::Fixed(WARNING_FILL)),
+        stroke: None,
+        width: 0.0,
+        close: true,
+    },
+    Piece::Poly {
+        points: &FLAG_END,
+        fill: None,
+        stroke: Some(Ink::Select),
+        width: 1.25,
+        close: false,
+    },
     Piece::Poly {
         points: &FLAG,
         fill: None,
@@ -1126,8 +1194,31 @@ pub const MAILBOX_MOTIONS: &[MailMotion] = &[MailMotion {
     parts: &[MailPart::Pieces(&MESSAGE_FLAG), MailPart::Panel, MailPart::Title, MailPart::Buttons],
 }];
 
+/// The DETAILS / MODS / PRICE / DAMAGE tab stack, measured on the art
+/// at 4K (2026-11-16 re-review; the trace's figures were close in
+/// place but not in type or ink). Tabs: outline centres x 1216.6 ..
+/// 1376.3, rail at +9.1, bottom at +44.4, pitch 54.2 (the shape itself
+/// is `screens::mail`'s chevron), every corner rounded ~2 (`TAB_ROUND`);
+/// the outline's core is ~3 4K px (1.25-1.3 units) peaking #5af5e0
+/// under a glow, where ours was #7ddec8. Labels: cap 12.5 units (ours
+/// 10.4), MODS 101 px wide at 4K (ours 85), stems ~4.6 px (ours 2.3),
+/// core ink ~#62ffea -- Rajdhani Medium at 19 (3.8 px stems without
+/// the print pass; SemiBold read heavier than the art under it), not
+/// Regular 16. The
+/// DETAILS fill samples #ffd514 nearly flat top to bottom (was the
+/// trace's #e6c020).
+pub const TAB_X: f32 = 1216.6;
+pub const TAB_Y: f32 = 306.0;
+pub const TAB_W: f32 = 159.7;
+pub const TAB_H: f32 = 44.5;
+pub const TAB_PITCH: f32 = 54.2;
+pub const TAB_ROUND: f32 = 2.0;
+pub const TAB_WEIGHT: f32 = 1.3;
+pub const TAB_INK: iced::Color = rgb(0x5ef6e0);
+pub const TAB_FILL: iced::Color = rgb(0xffd515);
+pub const TAB_LABEL: Run = Run::new(25.0, 31.9, 19.0, Ink::Fixed(TAB_INK)).medium();
 static TABS: [&str; 4] = ["DETAILS", "MODS", "PRICE", "DAMAGE"];
-static LEVELS: [&str; 4] = ["01", "02", "03", "04"];
+const LEVELS: [&str; 4] = ["01", "02", "03", "04"];
 
 /// Source #51 has an open flap on the first row, closed on the other four.
 /// The open art is measured separately from the common envelope fallback;
@@ -1298,7 +1389,10 @@ pub fn mailbox() -> Mailbox {
             // the tab reads the selected row's own subject, trace line
             // 257, and no sender under it
             message: 0,
-            title: Run::new(590.0, 340.0, 17.0, Ink::OnSelect),
+            // art 4K (2026-11-16): cap 12.5, x 590.0..755.8, stems 3.3 px,
+            // sitting on y 340.4; Regular 17 drew cap 10.8, 590.4..728.3,
+            // stems 2.05 px
+            title: Run::new(590.0, 341.6, 19.6, Ink::OnSelect).medium(),
             title_upper: true,
             from: None,
             heading: None,
@@ -1311,20 +1405,20 @@ pub fn mailbox() -> Mailbox {
         },
         buttons: MailButtons {
             // four chevron tabs stacked down the right, where the other
-            // eras put a row of buttons
-            first: Frame::new(1216.0, 306.0, 161.0, 46.0),
+            // eras put a row of buttons: see `TAB_*`
+            first: Frame::new(TAB_X, TAB_Y, TAB_W, TAB_H),
             dx: 0.0,
-            dy: 54.0,
+            dy: TAB_PITCH,
             count: 4,
             filled: Some(0),
-            fill: Ink::Fixed(rgb(0xe6c020)),
+            fill: Ink::Fixed(TAB_FILL),
             idle_fill: None,
             joined: false,
             chevron: true,
-            trim: Trim::NONE,
-            width: 1.25,
-            stroke: Ink::Fg,
-            label: Run::new(27.0, 33.0, 16.0, Ink::Fg),
+            trim: Trim::round(0, TAB_ROUND),
+            width: TAB_WEIGHT,
+            stroke: Ink::Fixed(TAB_INK),
+            label: TAB_LABEL,
             tab: None,
             label_runs: &[],
             labels: &TABS,
@@ -1334,7 +1428,8 @@ pub fn mailbox() -> Mailbox {
             dx: 60.33,
             dy: 0.0,
             cols: 4,
-            count: 4,
+            // drawn as chrome from the shared `LEVEL_*` component
+            count: 0,
             selected: Some(1),
             trim: Trim::round(TL | TR | BR | BL, 2.0),
             width: 1.0,
@@ -1370,7 +1465,7 @@ pub fn mailbox() -> Mailbox {
 // the neutral choice it looks like.
 
 use crate::style::{
-    fill_path, fill_rect, line_path, line_rect, shut_path, txt, txt_bold, txt_end, txt_mid,
+    fill_path, fill_rect, line_path, line_rect, shut_path, txt_bold,
     Anchor, Group, Prim, Seg,
 };
 
@@ -1753,6 +1848,19 @@ const QR_FLAT: &[Prim] = qr!(Ink::Fixed(ON_BAND), 282.5);
 /// The selected card's lower list, at the photographed size and weight:
 /// "Recoil" cap 12.9, 42.9 wide and stem ~1.8px on #52, against Regular
 /// 16's 10.0 / 35.0 / 1.4.
+/// The store's account lines (customer / loyalty discount / last
+/// update). The art (4K, 2026-11-16) sets them in a round, wide sans:
+/// the same ascender-to-descender height as our Rajdhani 12, but 1.17x
+/// wider ("loyalty discount" 210 px against 180; "10/05/2077" 158
+/// against 125), stems 3.6 px against 1.75, core ink ~#8effe6 against
+/// the role `Fg` #7ddec8. No round face of that kind is in the crate,
+/// so Rajdhani SemiBold is widened to the art's extents.
+pub const ACCOUNT_SIZE: f32 = 12.5;
+pub const ACCOUNT_STRETCH: f32 = 1.07;
+pub const ACCOUNT_INK: iced::Color = rgb(0x8cf8e0);
+const fn account_line(x: f32, y: f32, anchor: Anchor, content: &'static str) -> Prim {
+    Prim::Wide { x, y, size: ACCOUNT_SIZE, stretch: ACCOUNT_STRETCH, ink: Ink::Fixed(ACCOUNT_INK), face: Face::SemiBold, anchor, content }
+}
 const GROWN_LIST_SIZE: f32 = 19.5;
 
 const fn grown_line(x: f32, y: f32, content: &'static str) -> Prim {
@@ -2266,12 +2374,12 @@ pub const STORE: &[Prim] = &[
     Prim::Spaced { x: 154.0, y: 155.0, size: 15.0, ink: Ink::Fg, face: Face::Medium, pitch: 32.0, content: "STORE" },
     // customer chip and account lines
     Prim::Round { x: 123.0, y: 178.0, w: 215.0, h: 22.0, r: 8.0, fill: None, stroke: Some(Ink::Border), width: 1.5 },
-    txt(133.0, 193.0, 12.0, Ink::Fg, "customer"),
-    txt(243.0, 193.0, 12.0, Ink::Fg, "#NC488402"),
-    txt(133.0, 227.0, 12.0, Ink::Fg, "loyalty discount"),
-    txt_end(306.0, 227.0, 12.0, Ink::Fg, "10%"),
-    txt(133.0, 243.0, 12.0, Ink::Fg, "last update"),
-    txt_end(306.0, 243.0, 12.0, Ink::Fg, "10/05/2077"),
+    account_line(133.0, 193.0, Anchor::Start, "customer"),
+    account_line(243.0, 193.0, Anchor::Start, "#NC488402"),
+    account_line(133.0, 227.0, Anchor::Start, "loyalty discount"),
+    account_line(306.0, 227.0, Anchor::End, "10%"),
+    account_line(133.0, 243.0, Anchor::Start, "last update"),
+    account_line(306.0, 243.0, Anchor::End, "10/05/2077"),
     // the nav bracket: one swept line wrapping the customer block, and
     // the solid wave it ends in
     fill_path(106.5, WAVE_TOP - WAVE_CORNER, WAVE_BODY, Ink::Fixed(WAVE_INK)),
@@ -2305,10 +2413,13 @@ pub const STORE: &[Prim] = &[
     store_note(181.4, 755.9, "MERS SINCE 2006."),
     store_note(1325.4, 746.3, "MAPS ARE PROVIDED BY SEOCHO."),
     store_note(1325.4, 755.4, "SATELITE SERVICES SINCE 2006."),
-    line_rect(350.0, 733.0, 28.0, 27.0, Ink::Fixed(MARK), 1.5),
-    txt_mid(364.0, 752.0, 14.0, Ink::Fixed(MARK), "A"),
-    line_rect(1500.0, 733.0, 29.0, 27.0, Ink::Fixed(MARK), 1.5),
-    txt_mid(1514.5, 752.0, 14.0, Ink::Fixed(MARK), "C"),
+    // the A and C badges: `BADGE_*` (art: boxes 352.9..378.8 x
+    // 733.3..759.6 and 1500.0..1526.2 x 732.9..759.2 outer, letters
+    // sitting on y 753.5)
+    line_rect(353.9, 734.3, BADGE_SIDE - 0.2, BADGE_SIDE, Ink::Fixed(BADGE_INK), BADGE_WEIGHT),
+    Prim::Wide { x: 365.85, y: 753.0, size: BADGE_LETTER_SIZE, stretch: BADGE_LETTER_STRETCH, ink: Ink::Fixed(BADGE_INK), face: Face::Medium, anchor: Anchor::Middle, content: "A" },
+    line_rect(1501.0, 733.9, BADGE_SIDE, BADGE_SIDE, Ink::Fixed(BADGE_INK), BADGE_WEIGHT),
+    Prim::Wide { x: 1513.1, y: 752.6, size: BADGE_LETTER_SIZE, stretch: BADGE_LETTER_STRETCH, ink: Ink::Fixed(BADGE_INK), face: Face::Medium, anchor: Anchor::Middle, content: "C" },
     // one line of bright micro-text centred at the foot
     Prim::Tracked { x: 503.0, y: 870.0, size: 9.0, tracking: 0.18, ink: Ink::Fixed(FOOT_MICRO), face: Face::Bold, anchor: Anchor::Start, content: "ARASAKA CONSUMER TECHNOLOGY" },
     Prim::Tracked { x: 641.0, y: 870.0, size: 9.0, tracking: 0.24, ink: Ink::Fixed(FOOT_MICRO), face: Face::Bold, anchor: Anchor::Start, content: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE." },
@@ -2669,14 +2780,18 @@ const GHOST_CW_SEVENTH: &[Prim] = &[Prim::Path {
     width: 0.9,
 }];
 
+/// The idle outlines take the connectors' ink and weight (art 4K,
+/// 2026-11-16: blade edges peak #78ffdb like the connectors that run
+/// out of them; ours were the paler #a9e6df at 1.4, 5.2 px wide at 4K
+/// against the art's ~4 with its glow), so each fan reads as one line.
 /// The solid blades at their own origin: idle face fields are in the
 /// leading software layer below, with 1.4px idle outlines above them.
 /// Selected/pressed gold retains its opaque fill and 1.8px outline.
-const BLADE_CW_OFF: &[Prim] = &[shut_path(CARD_CW_X, CARD_CW_Y, CARD_CW, Ink::Fixed(NAME_INK), 1.4)];
+const BLADE_CW_OFF: &[Prim] = &[shut_path(CARD_CW_X, CARD_CW_Y, CARD_CW, Ink::Fixed(CONNECTOR_INK), CONNECTOR_WEIGHT)];
 const BLADE_CW_ON: &[Prim] = &[shut_and_fill(CARD_CW_X, CARD_CW_Y, CARD_CW, Ink::Fixed(HUB_YELLOW), Ink::Fixed(SELECT_EDGE))];
-const BLADE_CCW_OFF: &[Prim] = &[shut_path(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, Ink::Fixed(NAME_INK), 1.4)];
+const BLADE_CCW_OFF: &[Prim] = &[shut_path(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, Ink::Fixed(CONNECTOR_INK), CONNECTOR_WEIGHT)];
 const BLADE_CCW_ON: &[Prim] = &[shut_and_fill(CARD_CCW_X, CARD_CCW_Y, CARD_CCW, Ink::Fixed(HUB_YELLOW), Ink::Fixed(SELECT_EDGE))];
-const BLADE_V_OFF: &[Prim] = &[Prim::Round { x: -25.0, y: -81.0, w: 50.0, h: 162.0, r: 8.0, fill: None, stroke: Some(Ink::Fixed(NAME_INK)), width: 1.4 }];
+const BLADE_V_OFF: &[Prim] = &[Prim::Round { x: -25.0, y: -81.0, w: 50.0, h: 162.0, r: 8.0, fill: None, stroke: Some(Ink::Fixed(CONNECTOR_INK)), width: CONNECTOR_WEIGHT }];
 const BLADE_V_ON: &[Prim] = &[Prim::Round { x: -25.0, y: -81.0, w: 50.0, h: 162.0, r: 8.0, fill: Some(Ink::Fixed(HUB_YELLOW)), stroke: Some(Ink::Fixed(SELECT_EDGE)), width: 1.8 }];
 
 // Inferred hub hover: brighten only the idle front edge. The SVG/photo
@@ -3018,6 +3133,144 @@ const DEPTH_EVENTS_D4_PLUS: &[Prim] = &[white_mask_bounds(705.000, 420.000, 212.
 const DEPTH_LOCATIONS_D3: &[Prim] = &[white_mask_bounds(890.300, 386.450, 248.600, 208.000), Prim::At { x: 957.150, y: 547.450, prims: &[dark_silhouette(FACE_CW_MASK[0])] }];
 const DEPTH_LOCATIONS_D4_PLUS: &[Prim] = &[white_mask_bounds(890.300, 386.450, 248.600, 208.000), Prim::At { x: 957.150, y: 547.450, prims: &[dark_silhouette(FACE_CW_MASK[0])] }, Prim::At { x: 976.300, y: 528.450, prims: &[dark_silhouette(FACE_CW_MASK[0])] }];
 
+
+/// Fan connectors: the thin mint strokes that join each fan's three
+/// solid blades into one Y-shaped outline. In the art (4K, 2026-11-16
+/// re-review) each one leaves a blade's long edge where its straight
+/// run ends, carries straight on past the blade's own rounded corner,
+/// turns through a circular fillet, and runs into the neighbouring
+/// blade's facing edge the same way. Six of them: VEHICLES-WEAPONS
+/// (top V), VEHICLES-PRODUCTS and WEAPONS-PRODUCTS on the left fan;
+/// PRODUCTS-EVENTS, PRODUCTS-LOCATIONS and EVENTS-LOCATIONS (bottom
+/// arch) on the right.
+///
+/// Measured on the art against the trace's blade geometry (all edges
+/// meet at 120 degrees): the fillet's apex sits 2.8-3.9 units off the
+/// edges' intersection, i.e. radii 18.2-25.5 (mean 21.4); one shared
+/// radius `CONNECTOR_RADIUS`. The stroke peaks at #79fae5 over the
+/// black with ~2.7 4K px integrated width, the same weight as the
+/// blades' own front outlines there: `CONNECTOR_WEIGHT` design units in
+/// `CONNECTOR_INK`. No fade along its length.
+pub const CONNECTOR_RADIUS: f32 = 21.5;
+pub const CONNECTOR_WEIGHT: f32 = 1.1;
+pub const CONNECTOR_INK: iced::Color = rgb(0x78f8e0);
+/// A fan blade's half length, half width and corner radius (the
+/// trace's `#card`, 162 x 50 r8); the straight run of a long edge ends
+/// `BLADE_HALF_LEN - BLADE_ROUND` from the centre.
+pub const BLADE_HALF_LEN: f32 = 81.0;
+pub const BLADE_HALF_W: f32 = 25.0;
+pub const BLADE_ROUND: f32 = 8.0;
+
+/// One long edge of a blade: centre, unit long axis, and which side
+/// (+1 along the axis's left-hand normal (-uy, ux), -1 opposite).
+#[derive(Clone, Copy)]
+pub struct BladeEdge {
+    pub cx: f32,
+    pub cy: f32,
+    pub ux: f32,
+    pub uy: f32,
+    pub side: f32,
+}
+const COS30: f32 = 0.866_025_4;
+/// Blade axes: rot 30 (VEHICLES, LOCATIONS), rot -30 (WEAPONS,
+/// EVENTS), rot 90 (PRODUCTS).
+const AXIS_CW: (f32, f32) = (COS30, 0.5);
+const AXIS_CCW: (f32, f32) = (COS30, -0.5);
+const AXIS_V: (f32, f32) = (0.0, 1.0);
+const fn blade_edge(cx: f32, cy: f32, axis: (f32, f32), side: f32) -> BladeEdge {
+    BladeEdge { cx, cy, ux: axis.0, uy: axis.1, side }
+}
+
+const fn const_sqrt(v: f32) -> f32 {
+    if v <= 0.0 {
+        return 0.0;
+    }
+    let mut x = if v > 1.0 { v } else { 1.0 };
+    let mut i = 0;
+    while i < 24 {
+        x = 0.5 * (x + v / x);
+        i += 1;
+    }
+    x
+}
+
+/// A connector between two blade edges as a stroked path: its start
+/// point and three segments (straight run, cubic fillet, straight run).
+/// General for any two non-parallel edges; the fillet is the circle of
+/// `radius` tangent to both edge lines on the side away from the
+/// blades, and each straight run starts where that blade's edge stops
+/// being straight.
+pub struct Connector {
+    pub x: f32,
+    pub y: f32,
+    pub segs: [Seg; 3],
+}
+pub const fn connector(a: BladeEdge, b: BladeEdge, radius: f32) -> Connector {
+    // each edge line: a point on it and its direction
+    let (pax, pay) = (a.cx - a.uy * BLADE_HALF_W * a.side, a.cy + a.ux * BLADE_HALF_W * a.side);
+    let (pbx, pby) = (b.cx - b.uy * BLADE_HALF_W * b.side, b.cy + b.ux * BLADE_HALF_W * b.side);
+    // intersection V = pa + ua s
+    let det = a.ux * (-b.uy) - a.uy * (-b.ux);
+    let (dx, dy) = (pbx - pax, pby - pay);
+    let s = (dx * (-b.uy) - dy * (-b.ux)) / det;
+    let (vx, vy) = (pax + a.ux * s, pay + a.uy * s);
+    // rays from V toward each blade
+    let (mut rax, mut ray) = (a.ux, a.uy);
+    if (a.cx - vx) * rax + (a.cy - vy) * ray < 0.0 {
+        rax = -rax;
+        ray = -ray;
+    }
+    let (mut rbx, mut rby) = (b.ux, b.uy);
+    if (b.cx - vx) * rbx + (b.cy - vy) * rby < 0.0 {
+        rbx = -rbx;
+        rby = -rby;
+    }
+    // c = cos of the angle between the rays; tangent distance r cot(phi/2)
+    let c = rax * rbx + ray * rby;
+    let t = radius * const_sqrt((1.0 + c) / (1.0 - c));
+    // cubic handle for the arc's sweep theta = pi - phi: 4/3 r tan(theta/4)
+    let cos_theta = -c;
+    let half_cos = const_sqrt((1.0 + cos_theta) / 2.0);
+    let half_sin = const_sqrt((1.0 - cos_theta) / 2.0);
+    let k = 4.0 / 3.0 * radius * half_sin / (1.0 + half_cos);
+    // where each blade's long edge stops being straight
+    let run_a = (a.cx - vx) * rax + (a.cy - vy) * ray - (BLADE_HALF_LEN - BLADE_ROUND);
+    let run_b = (b.cx - vx) * rbx + (b.cy - vy) * rby - (BLADE_HALF_LEN - BLADE_ROUND);
+    let (tax, tay) = (vx + rax * t, vy + ray * t);
+    let (tbx, tby) = (vx + rbx * t, vy + rby * t);
+    Connector {
+        x: vx + rax * run_a,
+        y: vy + ray * run_a,
+        segs: [
+            Seg::Line(tax, tay),
+            Seg::Cubic { c1x: tax - rax * k, c1y: tay - ray * k, c2x: tbx - rbx * k, c2y: tby - rby * k, x: tbx, y: tby },
+            Seg::Line(vx + rbx * run_b, vy + rby * run_b),
+        ],
+    }
+}
+const fn connector_path(c: &'static Connector) -> Prim {
+    line_path(c.x, c.y, &c.segs, Ink::Fixed(CONNECTOR_INK), CONNECTOR_WEIGHT)
+}
+const VEHICLES: (f32, f32) = (364.0, 413.0);
+const WEAPONS: (f32, f32) = (551.0, 414.0);
+const PRODUCTS_L: (f32, f32) = (458.0, 575.0);
+const PRODUCTS_R: (f32, f32) = (825.0, 424.0);
+const EVENTS: (f32, f32) = (731.0, 586.0);
+const LOCATIONS: (f32, f32) = (919.0, 586.0);
+const CONNECTOR_0: Connector = connector(blade_edge(VEHICLES.0, VEHICLES.1, AXIS_CW, -1.0), blade_edge(WEAPONS.0, WEAPONS.1, AXIS_CCW, -1.0), CONNECTOR_RADIUS);
+const CONNECTOR_1: Connector = connector(blade_edge(VEHICLES.0, VEHICLES.1, AXIS_CW, 1.0), blade_edge(PRODUCTS_L.0, PRODUCTS_L.1, AXIS_V, 1.0), CONNECTOR_RADIUS);
+const CONNECTOR_2: Connector = connector(blade_edge(WEAPONS.0, WEAPONS.1, AXIS_CCW, 1.0), blade_edge(PRODUCTS_L.0, PRODUCTS_L.1, AXIS_V, -1.0), CONNECTOR_RADIUS);
+const CONNECTOR_3: Connector = connector(blade_edge(PRODUCTS_R.0, PRODUCTS_R.1, AXIS_V, 1.0), blade_edge(EVENTS.0, EVENTS.1, AXIS_CCW, -1.0), CONNECTOR_RADIUS);
+const CONNECTOR_4: Connector = connector(blade_edge(PRODUCTS_R.0, PRODUCTS_R.1, AXIS_V, -1.0), blade_edge(LOCATIONS.0, LOCATIONS.1, AXIS_CW, -1.0), CONNECTOR_RADIUS);
+const CONNECTOR_5: Connector = connector(blade_edge(EVENTS.0, EVENTS.1, AXIS_CCW, 1.0), blade_edge(LOCATIONS.0, LOCATIONS.1, AXIS_CW, 1.0), CONNECTOR_RADIUS);
+const FAN_CONNECTORS: &[Prim] = &[
+    connector_path(&CONNECTOR_0),
+    connector_path(&CONNECTOR_1),
+    connector_path(&CONNECTOR_2),
+    connector_path(&CONNECTOR_3),
+    connector_path(&CONNECTOR_4),
+    connector_path(&CONNECTOR_5),
+];
 /// The left fan's ghosts: VEHICLES, WEAPONS, the left PRODUCTS.
 const FAN_LEFT: &[Prim] = &[
     // VEHICLES c(364,413) rot 30, 7 ghosts
@@ -3200,6 +3453,51 @@ pub const LEVEL_EDGE: iced::Color = rgb(0x9ff5d8);
 pub const LEVEL_DIGIT: iced::Color = rgb(0xa1ffe5);
 pub const LEVEL_FILL: iced::Color = rgb(0xffcc50);
 pub const ON_LEVEL: iced::Color = rgb(0xce6950);
+/// The digits: Rajdhani SemiBold at `LEVEL_DIGIT_SIZE`, the same on
+/// both screens (art: 45 4K px wide, cap 14.6, stems ~5.8-6.2 px on
+/// each; the mailbox's had been Bold 23).
+pub const LEVEL_DIGIT_SIZE: f32 = 22.0;
+/// The mailbox's row: the same boxes, pitch, inks and digits, 32 units
+/// tall where the dashboard's are 51 (art 4K, 2026-11-16: outline
+/// centres x 1215.1 / 1270.3 / 1336.1 / 1396.9, y 191.0 .. 223.1; the
+/// selected amber 1275.4 .. 1331.7 x 190.4 .. 223.8; digit baseline
+/// 215.0). `MAIL_LEVEL_BASELINE` is the run's y, which the mailbox's
+/// text placement sets 1.7 above the drawn baseline.
+pub const MAIL_LEVEL_X: f32 = 1215.45;
+pub const MAIL_LEVEL_Y: f32 = 191.3;
+pub const MAIL_LEVEL_H: f32 = 32.0;
+pub const MAIL_LEVEL_BASELINE: f32 = 216.7;
+/// Which level is lit on both screens.
+pub const LEVEL_SELECTED: usize = 1;
+/// One level box as a mailbox piece: the outline, or for the selected
+/// level the amber fill at the outline's outer size.
+const fn mail_level_box(i: usize) -> Piece {
+    let x = MAIL_LEVEL_X + LEVEL_PITCH * i as f32;
+    if i == LEVEL_SELECTED {
+        Piece::Box {
+            at: Frame::new(x - LEVEL_WEIGHT / 2.0, MAIL_LEVEL_Y - LEVEL_WEIGHT / 2.0, LEVEL_W + LEVEL_WEIGHT, MAIL_LEVEL_H + LEVEL_WEIGHT),
+            fill: Some(Ink::Fixed(LEVEL_FILL)),
+            stroke: None,
+            width: 0.0,
+            trim: Trim::round(TL | TR | BR | BL, LEVEL_R + LEVEL_WEIGHT / 2.0),
+        }
+    } else {
+        Piece::Box {
+            at: Frame::new(x, MAIL_LEVEL_Y, LEVEL_W, MAIL_LEVEL_H),
+            fill: None,
+            stroke: Some(Ink::Fixed(LEVEL_EDGE)),
+            width: LEVEL_WEIGHT,
+            trim: Trim::round(TL | TR | BR | BL, LEVEL_R),
+        }
+    }
+}
+const fn mail_level_digit(i: usize) -> Piece {
+    let ink = if i == LEVEL_SELECTED { ON_LEVEL } else { LEVEL_DIGIT };
+    Piece::Label(Note {
+        at: Run::new(MAIL_LEVEL_X + LEVEL_PITCH * i as f32 + LEVEL_W / 2.0, MAIL_LEVEL_BASELINE, LEVEL_DIGIT_SIZE, Ink::Fixed(ink)).semibold().centered(),
+        text: LEVELS[i],
+    })
+}
 const fn level_mid(i: usize) -> f32 {
     LEVEL_X + LEVEL_PITCH * i as f32 + LEVEL_W / 2.0
 }
@@ -3239,6 +3537,8 @@ pub const DASHBOARD: &[Prim] = &[
     // foreground outlines/labels. The same fixed field remains under a
     // selected face, whose opaque gold fill covers it.
     Prim::Soft { prims: FACE_FIELDS },
+    // the mint connectors joining each fan's blades: see `CONNECTOR_*`
+    Prim::At { x: 0.0, y: 0.0, prims: FAN_CONNECTORS },
     // header notes: Krona One, NOTE_SIZE, NOTE_TRACKING and NOTE_WORD_SPACE
     Prim::TrackedWords { x: 204.6, y: 114.0, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::KronaOne, anchor: Anchor::Start, tracking: NOTE_TRACKING, extra_space: NOTE_WORD_SPACE, content: "SPARE TIME MANAGER WAS DEVELO-" },
     Prim::TrackedWords { x: 204.6, y: 122.9, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::KronaOne, anchor: Anchor::Start, tracking: NOTE_TRACKING, extra_space: NOTE_WORD_SPACE, content: "PED BY SEOCHO. SERVING CUSTO-" },
@@ -3253,9 +3553,9 @@ pub const DASHBOARD: &[Prim] = &[
     line_rect(164.6, 109.8, 24.2, 24.2, Ink::Fixed(BRIGHT), 2.0),
     line_rect(673.3, 109.8, 24.2, 24.2, Ink::Fixed(BRIGHT), 2.0),
     line_rect(1215.2, 109.8, 24.0, 24.2, Ink::Fixed(BRIGHT), 2.0),
-    Prim::Wide { x: 176.7, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Middle, content: "A" },
-    Prim::Wide { x: 685.4, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Middle, content: "C" },
-    Prim::Wide { x: 1227.2, y: 129.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Middle, content: "D" },
+    Prim::Wide { x: 176.7, y: 128.4, size: BADGE_LETTER_SIZE, stretch: BADGE_LETTER_STRETCH, ink: Ink::Fixed(BADGE_INK), face: Face::Medium, anchor: Anchor::Middle, content: "A" },
+    Prim::Wide { x: 685.4, y: 128.4, size: BADGE_LETTER_SIZE, stretch: BADGE_LETTER_STRETCH, ink: Ink::Fixed(BADGE_INK), face: Face::Medium, anchor: Anchor::Middle, content: "C" },
+    Prim::Wide { x: 1227.2, y: 128.4, size: BADGE_LETTER_SIZE, stretch: BADGE_LETTER_STRETCH, ink: Ink::Fixed(BADGE_INK), face: Face::Medium, anchor: Anchor::Middle, content: "D" },
     // section labels: Michroma 10.56 x0.95
     Prim::Wide { x: 164.8, y: 162.9, size: DASH_LABEL_SIZE, stretch: DASH_LABEL_STRETCH, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, content: "USER" },
     Prim::Wide { x: 673.1, y: 162.9, size: DASH_LABEL_SIZE, stretch: DASH_LABEL_STRETCH, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, content: "SECURITY LEVEL" },
@@ -3265,21 +3565,21 @@ pub const DASHBOARD: &[Prim] = &[
     Prim::Text { x: 164.0, y: 218.0, size: 21.5, ink: Ink::Fixed(NAME_INK), face: Face::SemiBold, anchor: Anchor::Start, content: "GUES 7702" },
     // security level boxes: see `LEVEL_*`
     level_box(0),
-    Prim::Text { x: level_mid(0), y: LEVEL_BASELINE, size: 22.0, ink: Ink::Fixed(LEVEL_DIGIT), face: Face::SemiBold, anchor: Anchor::Middle, content: "01" },
+    Prim::Text { x: level_mid(0), y: LEVEL_BASELINE, size: LEVEL_DIGIT_SIZE, ink: Ink::Fixed(LEVEL_DIGIT), face: Face::SemiBold, anchor: Anchor::Middle, content: "01" },
     Prim::Round { x: LEVEL_X - 0.5 + LEVEL_PITCH, y: LEVEL_Y - 0.5, w: LEVEL_W + 1.0, h: LEVEL_H + 1.0, r: LEVEL_R + 0.5, fill: Some(Ink::Fixed(LEVEL_FILL)), stroke: None, width: 0.0 },
-    Prim::Text { x: level_mid(1), y: LEVEL_BASELINE, size: 22.0, ink: Ink::Fixed(ON_LEVEL), face: Face::SemiBold, anchor: Anchor::Middle, content: "02" },
+    Prim::Text { x: level_mid(1), y: LEVEL_BASELINE, size: LEVEL_DIGIT_SIZE, ink: Ink::Fixed(ON_LEVEL), face: Face::SemiBold, anchor: Anchor::Middle, content: "02" },
     level_box(2),
-    Prim::Text { x: level_mid(2), y: LEVEL_BASELINE, size: 22.0, ink: Ink::Fixed(LEVEL_DIGIT), face: Face::SemiBold, anchor: Anchor::Middle, content: "03" },
+    Prim::Text { x: level_mid(2), y: LEVEL_BASELINE, size: LEVEL_DIGIT_SIZE, ink: Ink::Fixed(LEVEL_DIGIT), face: Face::SemiBold, anchor: Anchor::Middle, content: "03" },
     level_box(3),
-    Prim::Text { x: level_mid(3), y: LEVEL_BASELINE, size: 22.0, ink: Ink::Fixed(LEVEL_DIGIT), face: Face::SemiBold, anchor: Anchor::Middle, content: "04" },
+    Prim::Text { x: level_mid(3), y: LEVEL_BASELINE, size: LEVEL_DIGIT_SIZE, ink: Ink::Fixed(LEVEL_DIGIT), face: Face::SemiBold, anchor: Anchor::Middle, content: "04" },
     // the six solid blades in the trace's order (lines 243-267);
     // EVENTS is the selection
-    blade!(0, 364.0, 413.0, 30.0, BLADE_CW_ON, BLADE_CW_OFF, "VEHICLES", 0.83, 4.75, 21.0, 0.0),
-    blade!(1, 551.0, 414.0, -30.0, BLADE_CCW_ON, BLADE_CCW_OFF, "WEAPONS", 1.42, 5.17, 20.0, 1.0),
-    blade_v!(2, 458.0, 575.0, PRODUCTS_L_ON, PRODUCTS_L_OFF),
-    blade_v!(3, 825.0, 424.0, PRODUCTS_R_ON, PRODUCTS_R_OFF),
-    blade!(4, 731.0, 586.0, -30.0, BLADE_CCW_ON, BLADE_CCW_OFF, "EVENTS", -1.25, 6.5, 20.0, 0.75),
-    blade!(5, 919.0, 586.0, 30.0, BLADE_CW_ON, BLADE_CW_OFF, "LOCATIONS", -2.5, 6.08, 20.0, 0.5),
+    blade!(0, VEHICLES.0, VEHICLES.1, 30.0, BLADE_CW_ON, BLADE_CW_OFF, "VEHICLES", 0.83, 4.75, 21.0, 0.0),
+    blade!(1, WEAPONS.0, WEAPONS.1, -30.0, BLADE_CCW_ON, BLADE_CCW_OFF, "WEAPONS", 1.42, 5.17, 20.0, 1.0),
+    blade_v!(2, PRODUCTS_L.0, PRODUCTS_L.1, PRODUCTS_L_ON, PRODUCTS_L_OFF),
+    blade_v!(3, PRODUCTS_R.0, PRODUCTS_R.1, PRODUCTS_R_ON, PRODUCTS_R_OFF),
+    blade!(4, EVENTS.0, EVENTS.1, -30.0, BLADE_CCW_ON, BLADE_CCW_OFF, "EVENTS", -1.25, 6.5, 20.0, 0.75),
+    blade!(5, LOCATIONS.0, LOCATIONS.1, 30.0, BLADE_CW_ON, BLADE_CW_OFF, "LOCATIONS", -2.5, 6.08, 20.0, 0.5),
     // BRAINDANCE panel: tab, warning tape, outlined body, two
     // four-line paragraphs from source #49, wiped on from the
     // left once the fans have all but finished (`#panel-extrude`,
@@ -3299,7 +3599,7 @@ pub const DASHBOARD: &[Prim] = &[
     Prim::TrackedWords { x: 609.6, y: 745.4, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::KronaOne, anchor: Anchor::Start, tracking: NOTE_TRACKING, extra_space: NOTE_WORD_SPACE, content: "MAPS ARE PROVIDED BY SEOCHO." },
     Prim::TrackedWords { x: 609.6, y: 754.6, size: NOTE_SIZE, ink: Ink::Fixed(BRIGHT), face: Face::KronaOne, anchor: Anchor::Start, tracking: NOTE_TRACKING, extra_space: NOTE_WORD_SPACE, content: "SATELITE SERVICES SINCE 2006." },
     line_rect(574.3, 741.0, 24.0, 24.2, Ink::Fixed(BRIGHT), 2.0),
-    Prim::Wide { x: 586.3, y: 761.2, size: 18.0, stretch: 1.7, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Middle, content: "B" },
+    Prim::Wide { x: 586.3, y: 760.4, size: BADGE_LETTER_SIZE, stretch: BADGE_LETTER_STRETCH, ink: Ink::Fixed(BADGE_INK), face: Face::Medium, anchor: Anchor::Middle, content: "B" },
     Prim::Wide { x: 574.05, y: 794.2, size: DASH_LABEL_SIZE, stretch: DASH_LABEL_STRETCH, ink: Ink::Fixed(BRIGHT), face: Face::Michroma, anchor: Anchor::Start, content: "DEVICE SOFTWARE" },
     // the foot line, one bold weight, two runs (lines 318-321)
     txt_bold(503.0, 870.0, 9.0, Ink::Fixed(BRIGHT), "ARASAKA CONSUMER TECHNOLOGY"),
@@ -3310,6 +3610,7 @@ pub const DASHBOARD: &[Prim] = &[
 const HUB_PANEL: &[Prim] = &[
     fill_path(1218.0, 260.5, TAB, Ink::Fixed(HUB_YELLOW)),
     Prim::Tracked { x: 1222.0, y: 288.0, size: 20.0, tracking: 1.0, ink: Ink::Fixed(ON_HUB_YELLOW), face: Face::SemiBold, anchor: Anchor::Start, content: "BRAINDANCE" },
+    fill_path(1172.5, 315.0, HUB_RIBBON, Ink::Fixed(WARNING_FILL)),
     shut_path(1172.5, 315.0, HUB_RIBBON, Ink::Fixed(HUB_YELLOW), 1.25),
     Prim::Wide { x: 1179.5, y: 317.5, size: 8.0, stretch: 1.08, ink: Ink::Fixed(TAPE_INK), face: Face::SemiBold, anchor: Anchor::Start, content: "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE" },
     Prim::Wide { x: 1179.5, y: 325.0, size: 8.0, stretch: 1.08, ink: Ink::Fixed(TAPE_INK), face: Face::SemiBold, anchor: Anchor::Start, content: "ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE." },
@@ -3392,10 +3693,10 @@ mod dashboard_feedback_tests {
                 | Prim::Round { fill: on_fill, stroke: on_stroke, width: on_width, .. }) = on[0]
             else { panic!("missing selected face") };
             assert_eq!(off_fill, None);
-            assert_eq!(off_stroke, Some(Ink::Fixed(NAME_INK)));
+            assert_eq!(off_stroke, Some(Ink::Fixed(CONNECTOR_INK)));
             assert_eq!(on_fill, Some(Ink::Fixed(HUB_YELLOW)));
             assert_eq!(on_stroke, Some(Ink::Fixed(SELECT_EDGE)));
-            assert_eq!((off_width, on_width), (1.4, 1.8));
+            assert_eq!((off_width, on_width), (CONNECTOR_WEIGHT, 1.8));
         }
     }
 
@@ -3416,14 +3717,14 @@ mod dashboard_feedback_tests {
                     }
                     (Prim::Path { x: ax, y: ay, segs: asg, close: ac, fill: af, stroke: ast, width: aw },
                      Prim::Path { x: bx, y: by, segs: bsg, close: bc, fill: bf, stroke: bst, width: bw })
-                        if ast == Some(Ink::Fixed(NAME_INK)) && aw == 1.4 => {
+                        if ast == Some(Ink::Fixed(CONNECTOR_INK)) && aw == CONNECTOR_WEIGHT => {
                         assert_eq!((ax, ay, asg, ac, af), (bx, by, bsg, bc, bf));
                         assert_eq!((bst, bw), (Some(Ink::Fixed(BLADE_LABEL)), 1.8));
                         *changed += 1;
                     }
                     (Prim::Round { x: ax, y: ay, w: aw, h: ah, r: ar, fill: af, stroke: ast, width: ath },
                      Prim::Round { x: bx, y: by, w: bw, h: bh, r: br, fill: bf, stroke: bst, width: bth })
-                        if ast == Some(Ink::Fixed(NAME_INK)) && ath == 1.4 => {
+                        if ast == Some(Ink::Fixed(CONNECTOR_INK)) && ath == CONNECTOR_WEIGHT => {
                         assert_eq!((ax, ay, aw, ah, ar, af), (bx, by, bw, bh, br, bf));
                         assert_eq!((bst, bth), (Some(Ink::Fixed(BLADE_LABEL)), 1.8));
                         *changed += 1;

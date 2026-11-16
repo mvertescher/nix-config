@@ -1115,6 +1115,58 @@ fn poly_at(
     }
 }
 
+/// A closed polygon in design coordinates with rounded corners: each
+/// vertex `(x, y, r)` is replaced by a quadratic from a point `r` before
+/// it to a point `r` after it (clamped to half of either edge), with
+/// the vertex as the control point; `r` 0 keeps the corner sharp.
+fn rounded_poly_at(
+    frame: &mut canvas::Frame,
+    scale: Scale,
+    points: &[(f32, f32, f32)],
+    fill: Option<Color>,
+    stroke: Option<(Color, f32)>,
+) {
+    let n = points.len();
+    if n < 3 {
+        return;
+    }
+    let toward = |p: (f32, f32, f32), q: (f32, f32, f32)| {
+        let radius = p.2;
+        let (dx, dy) = (q.0 - p.0, q.1 - p.1);
+        let len = (dx * dx + dy * dy).sqrt().max(1e-6);
+        let r = radius.min(len / 2.0);
+        (p.0 + dx / len * r, p.1 + dy / len * r)
+    };
+    let path = canvas::Path::new(|b| {
+        for i in 0..n {
+            let p = points[i];
+            let before = toward(p, points[(i + n - 1) % n]);
+            let after = toward(p, points[(i + 1) % n]);
+            if i == 0 {
+                b.move_to(scale.point(before.0, before.1));
+            } else {
+                b.line_to(scale.point(before.0, before.1));
+            }
+            if p.2 > 0.0 {
+                b.quadratic_curve_to(scale.point(p.0, p.1), scale.point(after.0, after.1));
+            }
+        }
+        b.close();
+    });
+    if let Some(color) = fill {
+        frame.fill(&path, color);
+    }
+    if let Some((color, width)) = stroke {
+        frame.stroke(
+            &path,
+            canvas::Stroke::default()
+                .with_color(color)
+                .with_width(scale.len(width))
+                .with_line_join(canvas::LineJoin::Round),
+        );
+    }
+}
+
 /// A curved outline in design coordinates.
 ///
 /// The straight-line half of the era's art goes through [`poly_at`];
@@ -1975,13 +2027,13 @@ impl Sheet<'_> {
                 self.fill(frame, scale, |me, f| {
                     let fill = ink(me.paint(), b.fill);
                     if b.chevron {
-                        me.chevron(f, scale, at, Some(fill), b.width);
+                        me.chevron(f, scale, at, Some(fill), b);
                     } else {
                         box_at(f, scale, at, b.trim, Some(fill), None);
                     }
                 });
             } else if b.chevron {
-                self.chevron(frame, scale, at, None, b.width);
+                self.chevron(frame, scale, at, None, b);
             } else if !b.joined {
                 let fill = b.idle_fill.map(|i| ink(s, i));
                 box_at(frame, scale, at, b.trim, fill, Some((ink(s, b.stroke), b.width)));
@@ -2021,34 +2073,42 @@ impl Sheet<'_> {
     }
 
     /// Kitsch's tab: a peak rising out of the leading edge onto the top
-    /// rail, and a cut trailing corner. `M 0,46 V 24 L 22,0 L 28,9 H
-    /// 155 q 6,0 6,5 V 24 L 139,46 Z` in the trace, straightened.
+    /// rail, and a cut trailing corner. The trace's `M 0,46 V 24 L 22,0
+    /// L 28,9 H 155 q 6,0 6,5 V 24 L 139,46 Z` was remeasured on the art
+    /// at 4K (2026-11-16): a 45-degree rise `y = 22.5 - x` from the
+    /// leading edge to a peak capped by a vertical post at x 25.3 that
+    /// drops onto the rail at y 9.1, the trailing edge straight down to
+    /// y 20.6 and a 45-degree cut to `w - 23.3` on the bottom. Every
+    /// corner is rounded by the radius a `Trim::round` in `trim` gives
+    /// (sharp with `Trim::NONE`); the outline takes `stroke`.
     fn chevron(
         &self,
         frame: &mut canvas::Frame,
         scale: Scale,
         at: crate::style::Frame,
         fill: Option<iced::Color>,
-        width: f32,
+        b: &MailButtons,
     ) {
         let s = self.paint();
         let (x, y, w, h) = (at.x, at.y, at.w, at.h);
-        poly_at(
+        // the peak's cap is wider than the other corners: the art's
+        // ridge tops out at y -0.4, 2.4 under the sharp vertex
+        let r = if b.trim.round { b.trim.cut } else { 0.0 };
+        let peak = if b.trim.round { 5.2 } else { 0.0 };
+        rounded_poly_at(
             frame,
             scale,
             &[
-                (x, y + h),
-                (x, y + h * 0.52),
-                (x + 22.0, y),
-                (x + 28.0, y + 9.0),
-                (x + w - 6.0, y + 9.0),
-                (x + w, y + 14.0),
-                (x + w, y + h * 0.52),
-                (x + w - 22.0, y + h),
+                (x, y + h, r),
+                (x, y + 22.5, r),
+                (x + 25.3, y - 2.8, peak),
+                (x + 25.3, y + 9.1, r),
+                (x + w, y + 9.1, r),
+                (x + w, y + 20.6, r),
+                (x + w - 23.3, y + h, r),
             ],
-            true,
             fill,
-            if fill.is_some() { None } else { Some((ink(s, Ink::Fg), width)) },
+            if fill.is_some() { None } else { Some((ink(s, b.stroke), b.width)) },
         );
     }
 

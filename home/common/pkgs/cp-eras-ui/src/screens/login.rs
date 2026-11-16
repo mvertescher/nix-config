@@ -1462,19 +1462,29 @@ fn offset_poly<const N: usize>(pts: &[(f32, f32); N], d: f32) -> [(f32, f32); N]
 // --------------------------------------------------------------- fixture
 
 /// The bars of kitsch's barcode: a column profile of the photo,
-/// thresholded at the bar/gap midpoint. Fifty bars, x 377.5..590.4.
-const BARS: [(f32, f32); 50] = [
-    (377.5, 7.5), (385.8, 1.7), (389.2, 1.7), (392.1, 1.7), (395.0, 1.7),
-    (401.2, 3.3), (405.8, 2.9), (410.4, 1.7), (415.0, 1.7), (419.6, 2.9),
-    (425.8, 1.2), (428.8, 1.7), (431.2, 3.3), (436.2, 1.3), (440.4, 1.7),
-    (443.8, 2.9), (449.6, 1.7), (452.5, 3.3), (457.1, 2.1), (460.4, 3.3),
-    (464.6, 3.3), (469.2, 1.7), (473.8, 1.7), (478.3, 3.3), (484.6, 1.7),
-    (487.5, 1.7), (490.4, 3.3), (495.0, 1.7), (499.6, 1.7), (504.2, 3.3),
-    (510.0, 1.7), (513.3, 1.7), (516.2, 3.3), (520.8, 1.7), (525.4, 1.7),
-    (528.3, 2.9), (534.2, 2.1), (537.5, 2.9), (542.1, 1.7), (545.0, 3.3),
-    (549.6, 2.9), (554.2, 1.7), (558.3, 2.1), (563.3, 2.9), (567.5, 2.1),
-    (572.1, 1.7), (575.0, 3.3), (581.2, 1.7), (584.2, 3.3), (589.2, 1.2),
+/// thresholded at the bar/gap midpoint, then (2026-11-16, at 4K) each
+/// bar narrowed by `BAR_TRIM`: the halfway threshold took the glow
+/// into the bar, so the strip covered 0.55 of its length at half
+/// height against the art's 0.47. The first "bar" (377.5, 7.5) was
+/// the label tag's glow, not a bar: the tag itself is `TAG_W` wide
+/// (art x 370.2..385.1) and the first bar stands at 385.9.
+/// Forty-nine bars, x 386..590.
+const BARS: [(f32, f32); 49] = [
+    (385.95, 1.40), (389.35, 1.40), (392.25, 1.40), (395.15, 1.40), (401.35, 3.00),
+    (405.95, 2.60), (410.55, 1.40), (415.15, 1.40), (419.75, 2.60), (425.95, 0.90),
+    (428.95, 1.40), (431.35, 3.00), (436.35, 1.00), (440.55, 1.40), (443.95, 2.60),
+    (449.75, 1.40), (452.65, 3.00), (457.25, 1.80), (460.55, 3.00), (464.75, 3.00),
+    (469.35, 1.40), (473.95, 1.40), (478.45, 3.00), (484.75, 1.40), (487.65, 1.40),
+    (490.55, 3.00), (495.15, 1.40), (499.75, 1.40), (504.35, 3.00), (510.15, 1.40),
+    (513.45, 1.40), (516.35, 3.00), (520.95, 1.40), (525.55, 1.40), (528.45, 2.60),
+    (534.35, 1.80), (537.65, 2.60), (542.25, 1.40), (545.15, 3.00), (549.75, 2.60),
+    (554.35, 1.40), (558.45, 1.80), (563.45, 2.60), (567.65, 1.80), (572.25, 1.40),
+    (575.15, 3.00), (581.35, 1.40), (584.35, 3.00), (589.35, 0.90),
 ];
+/// The teal label tag at the barcode's left: art 4K x 370.2..385.1,
+/// y 631.5..699.4 (it runs 4.7 below the strip's own height).
+const TAG_W: f32 = 15.0;
+const TAG_DROP: f32 = 4.7;
 
 fn fixture(pen: &mut Pen, fixture: &Fixture) {
     match fixture {
@@ -1534,7 +1544,7 @@ fn fixture(pen: &mut Pen, fixture: &Fixture) {
             // The barcode standing in the bracket's foot: a teal label
             // strip, fifty bars, and the digits under them.
             pen.box_at(
-                Plot::new(barcode.x, barcode.y, 7.0, barcode.h),
+                Plot::new(barcode.x, barcode.y, TAG_W, barcode.h + TAG_DROP),
                 Ink::Fixed(crate::eras::kitsch::BARCODE_TAB),
             );
             for &(x, w) in &BARS {
