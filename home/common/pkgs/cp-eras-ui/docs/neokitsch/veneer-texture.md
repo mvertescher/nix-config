@@ -134,6 +134,101 @@ band past the reference's G < 140 counts); the store card's upper streak
 and zigzag, the EMAIL crossing, the small surfaces' seams and the
 overall line density were not revisited.
 
+### Second refinement (2026-11-15)
+
+Four surfaces refit (EMAIL card, mailbox row, SMG button, BASKET band);
+`dashboard-panel.png` and `store-card.png` are byte-identical. Angles
+below are line directions from a structure tensor on the native 4K crop
+(texel coordinates; for the EMAIL card degrees from vertical, negative =
+going down to the right; for the horizontal surfaces degrees from
+horizontal, positive = rising to the right). Reference / previous / now.
+
+Two generator changes, neither of which alters the panel or store card:
+
+- **`comb`.** A term marked `comb='main'` (or `'twin'`) shapes that comb
+  only; the other runs straight through it, so the two cross.
+- **Out-and-back traces trimmed.** A trace that ends where it started
+  (the tracer stepped through a cusp and came back up the same arm) is
+  cut at its farthest point, so the arm is not stroked twice. The EMAIL
+  card's knee at the axis made six such traces; the old SMG left bend
+  (`p=1` with its corner at t=0, inside the tracing box) made three.
+  The left-end bends of the SMG, mailbox and BASKET now sit at
+  `ts=-3`, outside the box.
+
+- **EMAIL card.** The previous seam bent every line nearly horizontal
+  (angles to +-90 from x 10 to 210) into a dark horizontal band, which
+  is not what the reference does: its lines lean only 15-20 deg into a
+  crossing lattice from texel y ~300 to ~384 at the left, and only
+  towards the right edge do they curve into a spindle whose point is on
+  the right edge at the axis. Now: `EMAIL_LEAN_U` / `EMAIL_LEAN_L`, a
+  lean of -0.3 at the left easing to -0.15 at the right (ts (122, 110)
+  for the upper leaf, (140, 118) for the lower in its mirrored
+  coordinates, so the band sits a little above the axis as the
+  reference's does), windows (None, 160) / (125, None); `EMAIL_CUSP`, a
+  knee bend at the axis (w 18, c 0.6, amount 0 to -50, power 3: only the
+  right edge gathers). Angle at rows 300 / 340 / 380, x 10 ... 210:
+  reference -5 -12 -17 -17 -12 -22 / 0 4 12 12 8 -37 / 5 13 17 13 6 52;
+  previous -11 -29 -55 -75 -85 90 / -55 -75 -88 88 -90 90 / 61 79 89
+  -87 89 -89; now -3 -7 -10 -15 -19 -23 / 2 -3 -17 -40 -66 -71 / -2 2
+  13 36 67 72. The top-left swirl is `EMAIL_SWIRL`, a `shear` on the
+  main comb only (above t 44, w 9, amount 0.5 to 1.3), the twin running
+  straight through it: the reference's crossing arcs under the chamfer
+  (its angle at y 0-60 is negative, up-left; the previous top bend leaned
+  the other way, +20..+35). `EMAIL_TOP` (a bend proportional to s, real,
+  t 70, w 110, 30) packs the upper half tighter and `EMAIL_EDGE` (a
+  knot centred past the right edge, r 14, 5) the right edge, as measured:
+  pitch at y 100-260 in six bins across, reference 5.5 4.2 3.8 3.7 3.9
+  3.1, previous 4.5 4.1 4.4 4.5 4.4 4.6, now 4.6 3.7 4.1 3.9 3.9 4.0. The
+  foot's bend now leans the lines a little left (amount 8 to 0), as the
+  reference's do (+3..+12 at y 560-660; the previous -5..-26).
+- **Mailbox row.** The seam's lines curved the wrong way: in the
+  reference they curve *down* into the seam, more towards the bottom
+  edge; ours rose. `MAIL_SEAM` is now w 6, amount -1 to -12 (was w 12,
+  4 to 40), `MAIL_CREASE` 0 to -4. Angle at x 530 / 545 / 560 (left of
+  the seam), rows 90 and 130: reference -80(text) 87(text) -60 / -2 -19
+  -54; previous 33 50 63 / 58 74 65; now 0 -13 -53 / -2 -19 -72. The
+  left end gains the reference's step: a `ramp` (amount -16) across a
+  band 36 wide whose centre runs t 50 / 70 / 60 / 35 at s 0 / 17 / 32 /
+  55 (`MAIL_STEP`), the lines descending ~30 deg through it. A band
+  that bulges more (the reference's centre swings 60 in t over 30 in s)
+  makes `phi` non-monotone across the grain and the lines overlap into
+  dark bundles: keep `amount * dcentre/ds / width` under ~0.6.
+- **SMG button.** The seam is narrower (w 6, amount 4 to 9; was w 10,
+  3 to 26): angle at x 230 / 250, rows 45 / 65 / 85: reference 44 -54 /
+  20 -25 / 1 -1; previous 41 -45 / 76 -53 / 68 -57; now 40 -37 / 59 -52
+  / 69 -61 (still too steep at the bottom). The right end now falls
+  towards the edge (bend w 20, p 2, amount -16 to -8): at x 435 / 465,
+  rows 20 and 50, reference -30 -29 / -45 -32, previous -3 -5 / 1 2, now
+  -22 -16 / -17 -16.
+- **BASKET band.** The right end fell in the reference and rose in ours;
+  now a bend at the right edge w 26, p 2, amount -4 to -18: at x 400 /
+  430 / 460, rows 53 and 77, reference -43 -44 -10 / -33 -19 -12,
+  previous 5 9 9 / 4 4 11, now -5 -12 -18 / -9 -21 -22. The seam bows
+  evenly top to bottom (amount 4.5 to 5.5, crease 2.5 to 3) as measured
+  (+16..+26 / -13..-19 at x 190 / 220 on every row); the left end's
+  lower lines fall to the edge (amount 0 to -18).
+
+Line density, mean G and pitch (native px) in clear windows, reference /
+now (the four surfaces above) or unchanged: EMAIL lower half 177.2 4.38
+/ 178.1 4.29, upper half 173.7 3.53 / 175.3 4.01; panel 177.6 5.81 /
+182.9 6.28 (unchanged); store card 177.7 6.80 / 191.8 6.27 (unchanged;
+the reference's lines are darker, not denser); SMG 179.0 4.12 / 174.0
+2.77; BASKET 162.3 4.03 / 165.9 4.52; mailbox 174.7 4.29 / 182.9 4.04.
+
+Still wrong after it: the EMAIL band's top and bottom edges are hard
+horizontal cuts (window ends) where the reference's are softer, and its
+crossing lines are straight where the reference's curve; the EMAIL
+swirl's arcs are 30-deg chords, not the reference's nested curves. The
+mailbox seam lacks the reference's dark full-height crease line, the
+lines meet in a V rather than turning vertical, and the left-end step
+is shallower than the reference's S. The SMG seam is still too steep at
+the bottom and the SMG lines are denser than the reference's (2.8 vs 4.1
+px). The panel (bottom-left clump, kinks at x ~135 / ~200, the lines
+under the crease, the crease line) and the store card (pointed core,
+rising knees, upper streak, zigzag) were not revisited, and neither was
+the overall density: the panel reads ~5 G levels lighter and ~8% sparser
+than the reference, the store card's lines ~14 levels lighter.
+
 ## Surfaces
 
 | Texture | Surface | Design box | Texels |

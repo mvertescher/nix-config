@@ -29,6 +29,9 @@ drawn with the *line, ground and grain* measured for the blend generator.
    `ripple` (zigzag), `knot`. Amounts and curves may be piecewise linear
    across the grain ([(s, value), ...]). A family may also be cut to a
    strip across the grain (`swindow`); its lines end at the cut, a jog.
+   A term marked `comb` ('main' or 'twin') shapes that comb only, so the
+   other runs straight through it and the two cross (the EMAIL card's
+   top arcs).
 
 2. Lines. The lines are the levels phi = (k + offset) * pitch: constant
    pitch away from the figure, `pitch` the measured per-comb spacing
@@ -92,6 +95,23 @@ STREAK_LEAN = dict(kind='lean', ts=(110.0, 115.5), w=1.2, amount=(-2.8, -3.0),
 STREAK_BEND = dict(kind='bend', ts=121.46, w=16.0, p=2.0,
                    amount=[(0.0, 0.0), (200.0, -3.0), (235.0, -4.0), (262.0, -3.5)])
 
+# The EMAIL card (2026-11-15 second refinement). LEAN_L is the lower leaf's
+# lean in its mirrored coordinates; the two are not symmetric, so the
+# crossing band sits a little above the axis, as the reference's does.
+EMAIL_LEAN_U = dict(kind='lean', ts=(122.0, 110.0), w=4.0, amount=(-0.3, -0.15))
+EMAIL_LEAN_L = dict(kind='lean', ts=(140.0, 118.0), w=4.0, amount=(-0.3, -0.15))
+EMAIL_CUSP = dict(kind='bend', ts=150.8, w=18.0, c=0.6, amount=(0.0, -50.0), power=3.0)
+EMAIL_EDGE = dict(kind='knot', at=(97.0, 160.0), r=(14.0, 1e6), amount=5.0, real=True)
+EMAIL_TOP = dict(kind='bend', ts=70.0, w=110.0, p=2.0, amount=(0.0, 30.0), real=True)
+EMAIL_SWIRL = dict(kind='shear', ts=44.0, w=9.0, amount=(0.5, 1.3), comb='main')
+MAIL_STEP = [(0.0, 50.0), (17.0, 70.0), (32.0, 60.0), (55.0, 35.0)]
+MAIL_SEAM = dict(kind='bend', ts=238.1, w=6.0, p=2.0, amount=(-1.0, -12.0))
+MAIL_CREASE = dict(kind='bend', ts=238.1, w=2.0, p=2.0, amount=(0.0, -4.0), power=1.5)
+SMG_SEAM = dict(kind='bend', ts=99.6, w=6.0, p=2.0, amount=(4.0, 9.0))
+SMG_CREASE = dict(kind='bend', ts=99.6, w=1.5, p=2.0, amount=(1.0, 3.0))
+BASKET_SEAM = dict(kind='bend', ts=85.0, w=6.0, p=2.0, amount=(4.5, 5.5))
+BASKET_CREASE = dict(kind='bend', ts=85.0, w=1.5, p=2.0, amount=(2.5, 3.0))
+
 SURFACES = {
     # Store, the selected card's body and socket band (262.1 x 241.7).
     # Vertical grain; the streak at t 121.46 (texel 291.5) is a book-match:
@@ -120,9 +140,17 @@ SURFACES = {
         ],
     ),
     # Dashboard, the selected EMAIL cascade card (#ncardsel, 90.5 x 325.2).
-    # Vertical grain; book-match about t 150.8 (texel 362), where both
-    # leaves hook right into a point at the right edge; a crossing leaf
-    # at the top-left chamfer; the foot bends left along the diagonal cut.
+    # Vertical grain, denser in the upper half (EMAIL_TOP) and towards the
+    # right edge (EMAIL_EDGE); book-match about t 150.8 (texel 362). Both
+    # leaves lean into the seam (EMAIL_LEAN_*: about 15-20 deg) and on
+    # across it, so at the left they cross in a lattice band from t ~125
+    # to ~160 (texel 300-384, the reference's); towards the right edge
+    # EMAIL_CUSP, a knee at the axis gathered to the edge (power 3), turns
+    # them into a spindle whose point is on the right edge at the axis.
+    # At the top the main comb alone shears up-left above t 44
+    # (EMAIL_SWIRL, `comb`), the twin running on straight through it: the
+    # reference's crossing arcs under the chamfer. The foot leans a little
+    # left along the diagonal cut.
     'dashboard-email': dict(
         size=(90.5, 325.2), axis='v', seed=1101, pitch=8.9 / R,
         twin=dict(offset=0.62, shift=-1.0),
@@ -130,17 +158,10 @@ SURFACES = {
         wave=dict(amp=1.6, along=160.0, across=40.0),
         kinks=dict(n=10, amp=1.2, rs=(3.0, 8.0), rt=(4.0, 12.0)),
         families=[
-            # Each leaf runs straight, then leans right ever harder into
-            # the seam and on across it, so the two leaves cross there.
-            dict(window=(None, 157.0), terms=[
-                dict(kind='bend', ts=0.0, w=30.0, amount=(-34.0, -10.0)),
-                dict(kind='lean', ts=(124.0, 96.0), w=3.0, amount=(-0.1, -0.1),
-                     accel=(-0.03, -0.1), accel_power=1.0),
-            ]),
-            dict(mirror=150.8, window=(144.6, None), terms=[
-                dict(kind='lean', ts=(124.0, 96.0), w=3.0, amount=(-0.1, -0.1),
-                     accel=(-0.03, -0.1), accel_power=1.0),
-                dict(kind='bend', ts=325.2, w=34.0, amount=(-26.0, -4.0), real=True),
+            dict(window=(None, 160.0), terms=[EMAIL_LEAN_U, EMAIL_CUSP, EMAIL_EDGE, EMAIL_TOP, EMAIL_SWIRL]),
+            dict(mirror=150.8, window=(125.0, None), terms=[
+                EMAIL_LEAN_L, EMAIL_CUSP, EMAIL_EDGE, EMAIL_TOP,
+                dict(kind='bend', ts=325.2, w=34.0, amount=(8.0, 0.0), real=True),
             ]),
         ],
     ),
@@ -186,9 +207,12 @@ SURFACES = {
             ]),
         ],
     ),
-    # Mailbox, the selected row (477 x 55). Horizontal grain; the left end's
-    # lines rise to the top edge; book-match about t 238.1 (texel 571.5):
-    # lines from both sides hook into it, a narrow crease.
+    # Mailbox, the selected row (477 x 55). Horizontal grain; at the left
+    # end the lines rise to the top edge and step down across a band that
+    # bulges right at mid-height (the ramp, centre MAIL_STEP, 36 wide);
+    # book-match about t 238.1 (texel 571.5): lines from both sides curve
+    # DOWN into it (the reference's arcs; the third pass had them rising),
+    # more towards the bottom edge.
     'mailbox-row': dict(
         size=(477.0, 55.0), axis='h', seed=1303, pitch=5.7 / R,
         twin=dict(offset=0.74),
@@ -197,19 +221,19 @@ SURFACES = {
         kinks=dict(n=10, amp=0.8, rs=(2.0, 5.0), rt=(6.0, 18.0)),
         families=[
             dict(window=(None, 239.0), terms=[
-                dict(kind='bend', ts=0.0, w=24.0, amount=(22.0, 10.0)),
-                dict(kind='bend', ts=238.1, w=12.0, p=2.0, amount=(4.0, 40.0), power=1.3),
-                dict(kind='bend', ts=238.1, w=2.0, p=2.0, amount=(0.0, 10.0), power=1.5),
+                dict(kind='bend', ts=-3.0, w=14.0, amount=(32.0, 12.0)),
+                dict(kind='ramp', k=5.0, a=[(x, t - 18.0) for x, t in MAIL_STEP],
+                     b=[(x, t + 18.0) for x, t in MAIL_STEP], amount=[(0.0, -16.0), (55.0, -16.0)]),
+                MAIL_SEAM, MAIL_CREASE,
             ]),
-            dict(mirror=238.1, window=(237.2, None), terms=[
-                dict(kind='bend', ts=238.1, w=12.0, p=2.0, amount=(4.0, 40.0), power=1.3),
-                dict(kind='bend', ts=238.1, w=2.0, p=2.0, amount=(0.0, 10.0), power=1.5),
-            ]),
+            dict(mirror=238.1, window=(237.2, None), terms=[MAIL_SEAM, MAIL_CREASE]),
         ],
     ),
     # Store, the selected SMG category (200.6 x 38.6). Horizontal grain,
     # lines pinching at the left end; book-match about t 99.6 (texel 239,
-    # the button's middle) where the lines bend into a vertical crease.
+    # the button's middle) where the lines rise into a narrow crease
+    # (about +-10 texels, 20-45 deg, as measured); at the right end they
+    # all fall towards the right edge.
     'store-nav': dict(
         size=(200.6, 38.6), axis='h', seed=1404, pitch=4.9 / R,
         twin=dict(offset=0.61),
@@ -218,21 +242,20 @@ SURFACES = {
         kinks=dict(n=6, amp=0.8, rs=(2.0, 5.0), rt=(5.0, 14.0)),
         families=[
             dict(window=(None, 100.4), terms=[
-                dict(kind='bend', ts=0.0, w=16.0, amount=(14.0, -10.0)),
-                dict(kind='bend', ts=99.6, w=10.0, p=2.0, amount=(3.0, 26.0), power=1.3),
-                dict(kind='bend', ts=99.6, w=2.0, p=2.0, amount=(0.0, 7.0), power=1.5),
+                dict(kind='bend', ts=-3.0, w=16.0, amount=(17.0, -12.0)),
+                SMG_SEAM, SMG_CREASE,
             ]),
             dict(mirror=99.6, window=(98.8, None), terms=[
-                dict(kind='bend', ts=99.6, w=10.0, p=2.0, amount=(3.0, 26.0), power=1.3),
-                dict(kind='bend', ts=99.6, w=2.0, p=2.0, amount=(0.0, 7.0), power=1.5),
-                dict(kind='bend', ts=200.6, w=14.0, amount=(-8.0, 8.0), real=True),
+                SMG_SEAM, SMG_CREASE,
+                dict(kind='bend', ts=200.6, w=20.0, p=2.0, amount=(-16.0, -8.0), real=True),
             ]),
         ],
     ),
     # Store, the BASKET plate's lower band (204.6 x 45). Horizontal grain,
-    # one comb, a crease at t 85 (design x 1377) that the lines barely bend
-    # into -- two leaves meeting, not a mirror (none was measured); they
-    # rise at the right end.
+    # one comb, a crease at t 85 (design x 1377) that the lines bow up
+    # into evenly top to bottom -- two leaves meeting, not a mirror (none
+    # was measured). At the left end the lower lines fall to the edge; at
+    # the right end the lines fall towards the edge, most at the bottom.
     'store-basket': dict(
         size=(204.6, 45.0), axis='h', seed=1606, pitch=4.4 / R,
         look=dict(ground=(249, 181, 107), single=(202, 120, 79), grain=(6.0, 6.0, 6.0)),
@@ -240,14 +263,12 @@ SURFACES = {
         kinks=dict(n=6, amp=0.8, rs=(2.0, 5.0), rt=(5.0, 14.0)),
         families=[
             dict(window=(None, 85.5), terms=[
-                dict(kind='bend', ts=85.0, w=6.0, p=2.0, amount=(2.0, 8.0)),
-                dict(kind='bend', ts=85.0, w=1.5, p=2.0, amount=(1.0, 5.0)),
-                dict(kind='bend', ts=0.0, w=14.0, amount=(6.0, -10.0), real=True),
+                BASKET_SEAM, BASKET_CREASE,
+                dict(kind='bend', ts=-3.0, w=14.0, amount=(0.0, -18.0), real=True),
             ]),
             dict(window=(84.5, None), terms=[
-                dict(kind='bend', ts=85.0, w=6.0, p=2.0, amount=(2.0, 8.0)),
-                dict(kind='bend', ts=85.0, w=1.5, p=2.0, amount=(1.0, 5.0)),
-                dict(kind='bend', ts=204.6, w=22.0, amount=(14.0, 4.0), real=True),
+                BASKET_SEAM, BASKET_CREASE,
+                dict(kind='bend', ts=204.6, w=26.0, p=2.0, amount=(-4.0, -18.0), real=True),
             ]),
         ],
     ),
@@ -447,9 +468,13 @@ def phi_at(surf, fam, s, t, twin):
     """phi of a family, for the main comb or the twin (whose figure terms
     sit `shift` design px further along the grain, so the two combs knee
     on alternate rows, as the reference's do)."""
+    # A term marked `comb` ('main' or 'twin') bends that comb only, so the
+    # other runs straight through it: two leaves crossing in one family.
+    which = 'twin' if twin else 'main'
+    terms = [term for term in fam['terms'] if term.get('comb', which) == which]
     if twin and surf.twin.get('shift'):
-        fam = dict(fam, terms=[shifted(term, surf.twin['shift']) for term in fam['terms']])
-    return family_phi(surf, fam, s, t)[0]
+        terms = [shifted(term, surf.twin['shift']) for term in terms]
+    return family_phi(surf, dict(fam, terms=terms), s, t)[0]
 
 
 def shifted(term, dt):
@@ -590,7 +615,13 @@ def trace_family(surf, fam, twin):
         j = same[np.argmin(dd)]
         if dd.min() < 4 * h and j < i:
             continue
-        keep.append((np.array(paths[i]), int(lev[i])))
+        Q = np.array(paths[i])
+        if len(Q) > 2 and np.hypot(*(Q[-1] - Q[0])) < 4 * h:
+            # Out and back: the tracer stepped through a cusp and came
+            # back along the same arm. Keep the way out only, to its
+            # farthest point, so the arm is not stroked twice.
+            Q = Q[:int(np.argmax(np.hypot(*(Q - Q[0]).T))) + 1]
+        keep.append((Q, int(lev[i])))
     return keep
 
 
