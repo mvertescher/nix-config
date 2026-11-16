@@ -1,7 +1,7 @@
 { pkgs, lib, config, ... }:
 
 let
-  shades = import ../../../lib/shades.nix { inherit lib; };
+  shades = import ../lib/shades.nix { inherit lib; };
   inherit (shades.forColors config.lib.stylix.colors) dark;
 in
 

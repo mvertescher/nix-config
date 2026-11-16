@@ -1,7 +1,7 @@
 { pkgs, lib, config, ... }:
 
 let
-  shades = import ../../../lib/shades.nix { inherit lib; };
+  shades = import ../lib/shades.nix { inherit lib; };
 
   # Rust replacement for upstream's mediaplayer.py, which needed python3 plus
   # PyGObject and the Playerctl GIR typelib. Talks D-Bus directly, so the

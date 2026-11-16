@@ -25,6 +25,7 @@ in
       });
     })
 
+    ./hyprland.nix
     ./starship.nix
     ./firefox
     ./hyprlock.nix

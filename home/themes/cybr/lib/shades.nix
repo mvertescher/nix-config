@@ -10,7 +10,7 @@
 # (its palette was built at these ratios) while following whatever
 # scheme is loaded. Usage:
 #
-#   shades = import ../../lib/shades.nix { inherit lib; };
+#   shades = import ./lib/shades.nix { inherit lib; };
 #   inherit (shades.forColors config.lib.stylix.colors) mid dark;
 #   # mid "base08" -> "631f21" on cybr
 { lib }:

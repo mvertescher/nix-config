@@ -1,16 +1,17 @@
 { pkgs, lib, config, ... }:
 
 let
-  shades = (import ../../lib/shades.nix { inherit lib; }).forColors config.lib.stylix.colors;
-
   # Lucid Color Palette dynamically derived from Stylix!
   no0 = config.lib.stylix.colors.base00; # Black
   re0 = config.lib.stylix.colors.base08; # Red # Green
   vi0 = config.lib.stylix.colors.base0E; # Violet
   cy0 = config.lib.stylix.colors.base0C; # Cyan
 
-  # Secondary dark accent shades, derived so they follow the active scheme
-  re1 = shades.mid "base08";
+  # The quiet end of a pair (an inactive group border, an inactive tab).
+  # A plain scheme colour: a theme that wants a derived shade states it
+  # itself (cybr does, from its own shades.nix), so this module needs no
+  # colour arithmetic and no helper from a theme.
+  re1 = config.lib.stylix.colors.base03;
 
   # Transparency Levels (Alpha channel)
   tr0 = "00";

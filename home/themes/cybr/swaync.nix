@@ -2,7 +2,7 @@
 
 let
   c = config.lib.stylix.colors;
-  inherit ((import ../../lib/shades.nix { inherit lib; }).forColors c) mid dark;
+  inherit ((import ./lib/shades.nix { inherit lib; }).forColors c) mid dark;
 in
 
 {
