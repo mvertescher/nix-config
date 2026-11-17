@@ -340,10 +340,10 @@
        the mail and dashboard sources agree within 0.15): the LEVELs at
        70.35 (left, T1, badge) and 71.1 (T3, T4), the Ts 91.95-92.5.
        The mailbox trace prints the same header. Ink: the era's light
-       text #e7c686, as the mailbox's; the reference prints these as
+       text #fabf77 (#e7c686 until 2026-11-16), as the mailbox's; the reference prints these as
        bright as the mailbox's (stroke interiors #f5ba7f SECURITY,
        #fbbc7a T3, #f3bb8a CUSTOMER, 2026-11-16), not #bd8951. -->
-  <g font-family="Rajdhani" fill="#e7c686">
+  <g font-family="Rajdhani" fill="#fabf77">
     <text x="118.3" y="42.4" font-size="13" font-weight="600" letter-spacing="0">CUSTOMER #NC488402</text>
     <text transform="translate(119.2 70.35) scale(1.25 1)" x="0" y="0" font-size="12" letter-spacing="2">LEVEL</text>
     <text transform="translate(131.5 92.1) scale(1.45 1)" x="0" y="0" font-size="21" font-weight="600">T1</text>

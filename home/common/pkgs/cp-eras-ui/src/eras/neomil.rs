@@ -106,6 +106,30 @@ pub const INVERTED_PLATE: DarkPlate = DarkPlate::new(Ink::Fixed(NAV_FILL), Ink::
 /// The inverted plate hovered: the lit rung's face, edge and marks; the
 /// inset stays the secondary mid red.
 pub const INVERTED_LIT_PLATE: DarkPlate = LIT_PLATE.with_inset(Ink::Dim, WEIGHTS.inset);
+/// The selected mail cartridge, inverted against the other seven
+/// (owner-approved 2026-11-16, review question 2; the reference draws it
+/// so). Measured at 3840x2160 on img-08's top cartridge against row 2's:
+/// an ordinary cartridge is a dark case with the disc and label filled
+/// `#fb3535`; the selected one swaps them. Its case face is `#dc3030`
+/// (median of the face, R 220 +- 6; the selected row's fill reads 227 and
+/// Switch Weapon 225, so the face is a step under the row's selection
+/// red rather than the same ink), its contact strip stays at the bright
+/// `LINE_INK` with the ribs in the face red, and a one-pixel `#fb3535`
+/// rim runs round the case (R 251 for 1 native px against the face's 220;
+/// the row's own edge overshoots by 6 levels only, so the rim is drawn,
+/// not photographic sharpening).
+pub const CARTRIDGE_FACE: iced::Color = rgb(0xdc3030);
+/// The selected cartridge's hollow disc and label: `#1a0f11`, the median
+/// of the label's interior (R 26, G 15, B 17; the clear ground beside the
+/// icon is 29, 18, 20). Nearer the ground than the inverted plate's
+/// `NAV_FILL #2e1012`, which reads lighter by 20 levels of red here. The
+/// print's copies land inside it in the reference (red streaks across
+/// the disc), so it is not an element above the print.
+pub const CARTRIDGE_HOLLOW: iced::Color = rgb(0x1a0f11);
+/// The selected cartridge's bright rim: one native pixel at 4K, half the
+/// era's `line` (the measured rim is 1 px of R 251, not the 2 px of an
+/// outline).
+pub const CARTRIDGE_RIM: f32 = WEIGHTS.line / 2.0;
 // --- end line vocabulary ---
 
 // --- header ---

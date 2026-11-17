@@ -688,7 +688,7 @@ mod interaction_tests {
             panel = "#16161f"
             border = "#916424"
             dim = "#8a7048"
-            fg = "#e7c686"
+            fg = "#fabf77"
             alert = "#fcc474"
             tape = "#e3af5f"
             banner = "#d3b279"

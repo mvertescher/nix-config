@@ -42,7 +42,22 @@ pub const BG: iced::Color = rgb(0x0a0a0a);
 pub const BLOOM: iced::Color = rgb(0x34344c);
 pub const FRAME: iced::Color = rgb(0x916424);
 pub const FRAME_INNER: iced::Color = rgb(0x5e3414);
-pub const GOLD_TEXT: iced::Color = rgb(0xe7c686);
+/// The era's light ink: every light glyph on the four screens, and the
+/// palette's `fg` (`home/themes/neokitsch/palettes.nix`, which must agree).
+/// Measured 2026-11-16 at 3840x2160 as the plateau of stroke interiors
+/// (each stroke eroded to its ridge, so edge blur and the halo drop out;
+/// the halo is the bloom's): large labels, body, clock, numerals, header
+/// labels and letter-box glyphs read one ink per photo, within about 5
+/// levels -- login `#fbbc6d`, dashboard `#fabb6c`, mailbox `#f9c281`,
+/// store `#f9c988` (the median of 5-13 runs each). The spread between
+/// photos is the photos' grading, not a second ink: the same letter-box
+/// glyph reads `#fbbc6b` on the login and `#fac98e` on the store, and the
+/// store's wire band is bluer by the same step. This is the median of the
+/// four. Thin type reads dimmer in the photo only because its strokes
+/// never reach the plateau; ours loses about the same to antialiasing,
+/// so it takes this ink too (`MICRO`). Until 2026-11-16 `#e7c686`, a pale
+/// cream (review 2026-11-16, question 4).
+pub const GOLD_TEXT: iced::Color = rgb(0xfabf77);
 pub const CHAMPAGNE: iced::Color = rgb(0xd3b279);
 pub const VENEER: iced::Color = rgb(0xe3af5f);
 pub const VENEER_LIGHT: iced::Color = rgb(0xf4c474);
@@ -145,7 +160,7 @@ pub fn palette() -> Palette {
         // replaced 2026-09-03 by `components.svg`, rebuilt from the traces;
         // sheet citations in this file are the old sheet's) filled the selected card's
         // footer nameplate `#3a2410` and prints the name on it in
-        // `#e7c686` -- the era's `fg`, a stop brighter than the
+        // `#e7c686` -- the era's `fg` then (now `GOLD_TEXT`), a stop brighter than the
         // champagne the unselected band is filled with.
         banner_selected: Some((ON_VENEER, GOLD_TEXT)),
         ornaments: Ornaments {
@@ -520,10 +535,23 @@ pub const CTA_CHAMFER: f32 = 15.0;
 pub const CTA_ROUND: f32 = 2.1;
 /// The line-work of the header's caption box and of a letter box.
 pub const HAIRLINE: iced::Color = rgb(0xc8914d);
-/// The mid gold the captions, the letters and the clock are set in.
-pub const CAPTION: iced::Color = rgb(0xd9a877);
-/// The micro-text beside a letter box, a stop under the captions.
-pub const MICRO: iced::Color = rgb(0xa97c48);
+/// The login logotype's captions (ARASAKA CONSUMER TECHNOLOGY and the
+/// three in the box under it) and the dashboard's letter-box outlines.
+/// Measured 2026-11-16 at 3840x2160 as stroke-interior plateaus: the
+/// captions `#efb374`, `#d79f5f`, `#dfa569`, `#dea367` (this is their
+/// median), the A box outline's peak `#daa56c` / `#dea66f`. In the photo
+/// they are the light ink not reaching its plateau; ours are semibold and
+/// do reach it, so they take the measured value rather than `GOLD_TEXT`.
+/// The letter glyphs themselves read `GOLD_TEXT` and now use it. Until
+/// 2026-11-16 `#d9a877`, which also set the letters and read cream.
+pub const CAPTION: iced::Color = rgb(0xdea367);
+/// The micro-text beside a letter box and the login's footer notice: the
+/// light ink itself. The photo's 7-px notes read `#be8848` (login) and
+/// `#b78446` (dashboard) at their cores and `#efb164` at their brightest
+/// tenth: `GOLD_TEXT` blurred below its plateau. Ours, set in
+/// `GOLD_TEXT`, antialias to a core near `#bf9359`. Until 2026-11-16 a
+/// separate `#a97c48`, which rendered to a core of `#815e36`.
+pub const MICRO: iced::Color = GOLD_TEXT;
 /// The wire band's brightest strand, its bottom one. The floor between
 /// the strands glows from black at the top strand to `WIRE_GLOW`.
 pub const WIRE: iced::Color = rgb(0xeab15c);
@@ -782,7 +810,7 @@ const LOGIN_BADGE_A_ART: &[Plate] = &[
         .outlined_path((420.0, 466.0), LOGIN_BADGE_A_OUTLINE),
     Plate::filled(Plot::new(416.0, 465.0, 26.0, 26.0), Ink::Fixed(HAIRLINE))
         .outlined_path((419.4, 490.8), LOGIN_BADGE_A_TAB),
-    Plate::filled(Plot::new(416.0, 465.0, 26.0, 26.0), Ink::Fixed(CAPTION))
+    Plate::filled(Plot::new(416.0, 465.0, 26.0, 26.0), Ink::Fixed(GOLD_TEXT))
         .outlined_path((420.0, 482.9167), LOGIN_BADGE_A_GLYPH),
 ];
 // The source B has a narrow spine and broad, flat counters. Both inner
@@ -813,7 +841,7 @@ const LOGIN_BADGE_B_ART: &[Plate] = &[
         .outlined_path((840.0, 466.0), LOGIN_BADGE_B_OUTLINE),
     Plate::filled(Plot::new(836.0, 465.0, 26.0, 26.0), Ink::Fixed(HAIRLINE))
         .outlined_path((839.4, 490.8), LOGIN_BADGE_B_TAB),
-    Plate::filled(Plot::new(836.0, 465.0, 26.0, 26.0), Ink::Fixed(CAPTION))
+    Plate::filled(Plot::new(836.0, 465.0, 26.0, 26.0), Ink::Fixed(GOLD_TEXT))
         .outlined_path((842.9167, 468.9167), LOGIN_BADGE_B_GLYPH),
 ];
 
@@ -979,7 +1007,7 @@ pub const ACCESS: Access = Access {
             800.0,
             875.0,
             9.5,
-            Ink::Fixed(HAIRLINE),
+            Ink::Fixed(MICRO),
         )
         .centred()
         .tracked(0.06)],
@@ -1282,31 +1310,31 @@ static PARAGRAPHS: [&[&str]; 3] = [
 const MAIL_ROW_TYPE: &[MailRowType] = &[
     MailRowType {
         title: Run::new(193.0, 27.825, 18.0, Ink::Fg).medium().stretched(0.975),
-        from: Run::new(193.4167, 49.0333, 13.0, Ink::Mid).medium().stretched(1.15),
+        from: Run::new(193.4167, 49.0333, 13.0, Ink::Fg).medium().stretched(1.15),
     },
     MailRowType {
         title: Run::new(193.5, 27.4083, 18.0, Ink::Fg).medium().stretched(0.975),
-        from: Run::new(193.0, 49.0333, 13.0, Ink::Mid).medium().stretched(1.16),
+        from: Run::new(193.0, 49.0333, 13.0, Ink::Fg).medium().stretched(1.16),
     },
     MailRowType {
         title: Run::new(193.0, 27.2, 18.0, Ink::Fg).medium().stretched(0.975),
-        from: Run::new(193.4167, 48.4083, 13.0, Ink::Mid).medium().stretched(1.13),
+        from: Run::new(193.4167, 48.4083, 13.0, Ink::Fg).medium().stretched(1.13),
     },
     MailRowType {
         title: Run::new(193.0, 27.2, 18.0, Ink::Fg).medium().stretched(0.975),
-        from: Run::new(193.4167, 48.2, 13.0, Ink::Mid).medium().stretched(1.15),
+        from: Run::new(193.4167, 48.2, 13.0, Ink::Fg).medium().stretched(1.15),
     },
     MailRowType {
         title: Run::new(193.0, 26.7833, 18.0, Ink::Fg).medium().stretched(0.975),
-        from: Run::new(193.4167, 48.2, 13.0, Ink::Mid).medium().stretched(1.13),
+        from: Run::new(193.4167, 48.2, 13.0, Ink::Fg).medium().stretched(1.13),
     },
     MailRowType {
         title: Run::new(193.0, 26.575, 18.0, Ink::Fg).medium().stretched(0.975),
-        from: Run::new(193.4167, 47.575, 13.0, Ink::Mid).medium().stretched(1.15),
+        from: Run::new(193.4167, 47.575, 13.0, Ink::Fg).medium().stretched(1.15),
     },
     MailRowType {
         title: Run::new(193.0, 26.1583, 18.0, Ink::Fg).medium().stretched(0.975),
-        from: Run::new(193.4167, 47.3667, 13.0, Ink::Mid).medium().stretched(1.15),
+        from: Run::new(193.4167, 47.3667, 13.0, Ink::Fg).medium().stretched(1.15),
     },
 ];
 
@@ -1433,7 +1461,7 @@ pub fn mailbox() -> Mailbox {
             }),
             from_dy: 48.2,
             from_size: 13.0,
-            from_ink: Ink::Mid,
+            from_ink: Ink::Fg,
             from_at: FromAt::Beneath,
             from_prefix: "FROM: ",
             title_upper: false,
@@ -2047,28 +2075,28 @@ const CARD: &[Prim] = &[
     shut_path(0.0, 618.0, CARD_EDGE, Ink::Fixed(OUTLINE), 1.3),
     fill_path(102.0, 632.9, CARD_TAB, Ink::Fixed(TAB)),
     Prim::At { x: 0.0, y: 345.0, prims: weapon::PATHS },
-    store_stat(33.0, 483.3, Ink::Fixed(BRIGHT), "DPS"),
-    store_stat(97.0, 483.3, Ink::Fixed(BRIGHT), "PNT"),
-    store_stat(149.25, 483.3, Ink::Fixed(BRIGHT), "ACC"),
-    store_stat(203.0, 483.3, Ink::Fixed(BRIGHT), "ROF"),
-    Prim::Text { x: 26.5, y: 520.5 - STORE_NATIVE_BASELINE_LIFT, size: 28.0, ink: Ink::Fixed(BRIGHT), face: Face::SemiBold, anchor: Anchor::Start, content: "620" },
-    store_number(99.5, 517.5, Ink::Fixed(BRIGHT), "30"),
-    store_number(158.5, 517.5, Ink::Fixed(BRIGHT), "5"),
-    store_number(211.5, 517.5, Ink::Fixed(BRIGHT), "5"),
+    store_stat(33.0, 483.3, Ink::Fixed(GOLD_TEXT), "DPS"),
+    store_stat(97.0, 483.3, Ink::Fixed(GOLD_TEXT), "PNT"),
+    store_stat(149.25, 483.3, Ink::Fixed(GOLD_TEXT), "ACC"),
+    store_stat(203.0, 483.3, Ink::Fixed(GOLD_TEXT), "ROF"),
+    Prim::Text { x: 26.5, y: 520.5 - STORE_NATIVE_BASELINE_LIFT, size: 28.0, ink: Ink::Fixed(GOLD_TEXT), face: Face::SemiBold, anchor: Anchor::Start, content: "620" },
+    store_number(99.5, 517.5, Ink::Fixed(GOLD_TEXT), "30"),
+    store_number(158.5, 517.5, Ink::Fixed(GOLD_TEXT), "5"),
+    store_number(211.5, 517.5, Ink::Fixed(GOLD_TEXT), "5"),
     fill_rect(0.0, 532.35, 262.1, 1.1, Ink::Fixed(STRAND)),
     fill_rect(0.0, 580.25, 262.1, 1.1, Ink::Fixed(STRAND)),
     fill_rect(50.75, 532.9, 1.1, 47.9, Ink::Fixed(STRAND)),
     fill_rect(118.25, 532.9, 1.1, 47.9, Ink::Fixed(STRAND)),
     fill_rect(189.85, 532.9, 1.1, 47.9, Ink::Fixed(STRAND)),
     Prim::At { x: 9.8, y: 542.2, prims: QR_LIGHT },
-    store_socket(83.1, 555.4, Ink::Fixed(LABEL), "EMPTY"),
-    store_socket(83.1, 568.9 - STORE_NATIVE_BASELINE_LIFT, Ink::Fixed(LABEL), "SOCKET"),
-    store_socket(154.6, 555.4, Ink::Fixed(LABEL), "EMPTY"),
-    store_socket(154.6, 568.9 - STORE_NATIVE_BASELINE_LIFT, Ink::Fixed(LABEL), "SOCKET"),
-    store_socket(226.3, 555.4, Ink::Fixed(LABEL), "EMPTY"),
-    store_socket(226.3, 568.9 - STORE_NATIVE_BASELINE_LIFT, Ink::Fixed(LABEL), "SOCKET"),
-    txt_bold(24.0, 613.0, 19.0, Ink::Fixed(BRIGHT), "MAGNUM 650"),
-    txt(133.0, 613.0, 19.0, Ink::Fixed(BRIGHT), "HAND GUN"),
+    store_socket(83.1, 555.4, Ink::Fixed(GOLD_TEXT), "EMPTY"),
+    store_socket(83.1, 568.9 - STORE_NATIVE_BASELINE_LIFT, Ink::Fixed(GOLD_TEXT), "SOCKET"),
+    store_socket(154.6, 555.4, Ink::Fixed(GOLD_TEXT), "EMPTY"),
+    store_socket(154.6, 568.9 - STORE_NATIVE_BASELINE_LIFT, Ink::Fixed(GOLD_TEXT), "SOCKET"),
+    store_socket(226.3, 555.4, Ink::Fixed(GOLD_TEXT), "EMPTY"),
+    store_socket(226.3, 568.9 - STORE_NATIVE_BASELINE_LIFT, Ink::Fixed(GOLD_TEXT), "SOCKET"),
+    txt_bold(24.0, 613.0, 19.0, Ink::Fixed(GOLD_TEXT), "MAGNUM 650"),
+    txt(133.0, 613.0, 19.0, Ink::Fixed(GOLD_TEXT), "HAND GUN"),
 ];
 
 /// The selected card: the same template stretched -- its top part
@@ -2140,12 +2168,12 @@ const GROWN: &[Prim] = &[
     shut_path(0.0, 688.9, GROWN_EDGE, Ink::Fixed(OUTLINE), 1.3),
     fill_path(102.0, 703.8, GROWN_TAB, Ink::Fixed(TAB)),
     Prim::At { x: 0.0, y: 263.3, prims: weapon::PATHS },
-    store_stat(33.0, 401.6, Ink::Fixed(BRIGHT), "DPS"),
-    store_stat(97.0, 401.6, Ink::Fixed(BRIGHT), "PNT"),
-    store_stat(149.25, 401.6, Ink::Fixed(BRIGHT), "ACC"),
-    store_stat(203.0, 401.6, Ink::Fixed(BRIGHT), "ROF"),
-    txt_bold(24.0, 683.9, 19.0, Ink::Fixed(BRIGHT), "MAGNUM 650"),
-    txt(133.0, 683.9, 19.0, Ink::Fixed(BRIGHT), "HAND GUN"),
+    store_stat(33.0, 401.6, Ink::Fixed(GOLD_TEXT), "DPS"),
+    store_stat(97.0, 401.6, Ink::Fixed(GOLD_TEXT), "PNT"),
+    store_stat(149.25, 401.6, Ink::Fixed(GOLD_TEXT), "ACC"),
+    store_stat(203.0, 401.6, Ink::Fixed(GOLD_TEXT), "ROF"),
+    txt_bold(24.0, 683.9, 19.0, Ink::Fixed(GOLD_TEXT), "MAGNUM 650"),
+    txt(133.0, 683.9, 19.0, Ink::Fixed(GOLD_TEXT), "HAND GUN"),
     // the gold body, faded in after the shelf's wipe: `#body-fade`
     // (store-trace :516-666) and `#body-fade-text` (:756-794) take its
     // opacity from 0 to 1 over 0.3 s from 0.4 s, `keySplines="0.61 1
@@ -2463,7 +2491,7 @@ macro_rules! nav {
             &[
                 shut_path(97.0, $top, $plate, Ink::Fixed(OUTLINE), 1.3),
                 fill_path(243.0, $tabtop, $tab, Ink::Fixed(NAV_TAB)),
-                txt(115.0, $base, 17.0, Ink::Fixed(BRIGHT), $label),
+                txt(115.0, $base, 17.0, Ink::Fixed(GOLD_TEXT), $label),
             ],
         )
     };
@@ -2586,7 +2614,7 @@ const CONTENT: &[Prim] = &[
     // solid source contours for 4S; the T remains an outline
     Prim::At { x: -28.333, y: -35.0, prims: STORE_SOLID_MARK },
     shut_path(237.5, 68.5, TEE, Ink::Fixed(STORE_LOGO_OUTLINE), 2.0),
-    Prim::Spaced { x: 113.0, y: 138.0, size: 16.5, ink: Ink::Fixed(LABEL), face: Face::Bold, pitch: 39.0, content: "STORE" },
+    Prim::Spaced { x: 113.0, y: 138.0, size: 16.5, ink: Ink::Fixed(GOLD_TEXT), face: Face::Bold, pitch: 39.0, content: "STORE" },
     // BASKET plate
     fill_path(1291.7, 19.6, PLATE_EDGE, Ink::Fixed(PLATE)),
     // The QR cell's hairline before the veneer: it ends where the band
@@ -2630,12 +2658,12 @@ const CONTENT: &[Prim] = &[
     store_metadata(1012.0, 148.0, true, false, STORE_METADATA_FIRST),
     store_metadata(1012.0, 155.0, true, true, STORE_METADATA_SECOND),
     // nav column
-    txt(96.0, 252.0, 11.5, Ink::Fixed(LABEL), "CUSTOMER"),
-    txt_end(289.0, 252.0, 11.5, Ink::Fixed(LABEL), "#NC488402"),
-    txt(96.0, 283.0, 11.5, Ink::Fixed(LABEL), "LOYALTY DISCOUNT"),
-    txt_end(288.0, 283.0, 11.5, Ink::Fixed(LABEL), "10%"),
-    txt(96.0, 299.0, 11.5, Ink::Fixed(LABEL), "LAST UPDATE"),
-    txt_end(288.0, 299.0, 11.5, Ink::Fixed(LABEL), "10/05/2077"),
+    txt(96.0, 252.0, 11.5, Ink::Fixed(GOLD_TEXT), "CUSTOMER"),
+    txt_end(289.0, 252.0, 11.5, Ink::Fixed(GOLD_TEXT), "#NC488402"),
+    txt(96.0, 283.0, 11.5, Ink::Fixed(GOLD_TEXT), "LOYALTY DISCOUNT"),
+    txt_end(288.0, 283.0, 11.5, Ink::Fixed(GOLD_TEXT), "10%"),
+    txt(96.0, 299.0, 11.5, Ink::Fixed(GOLD_TEXT), "LAST UPDATE"),
+    txt_end(288.0, 299.0, 11.5, Ink::Fixed(GOLD_TEXT), "10/05/2077"),
     Prim::Plate { group: Group::Category, index: 0, x: 92.9, y: 357.9, w: 200.6, h: 38.6, on: NAV_ON_0, off: NAV_OFF_0 },
     Prim::Plate { group: Group::Category, index: 1, x: 92.9, y: 418.6, w: 200.6, h: 38.6, on: NAV_ON_1, off: NAV_OFF_1 },
     Prim::Plate { group: Group::Category, index: 2, x: 92.9, y: 479.3, w: 200.6, h: 38.6, on: NAV_ON_2, off: NAV_OFF_2 },
@@ -2701,7 +2729,7 @@ const CONTENT: &[Prim] = &[
 //     3 of docs/review-2026-11-13/DECISIONS.md), and so does the trace.
 
 /// The run's dashboard ink families, the trace's hex values. None of
-/// them is an existing era const (`GOLD_TEXT #e7c686` and `AMBER
+/// them is an existing era const (`GOLD_TEXT`, then `#e7c686`, and `AMBER
 /// #fcc474` are each a step off), so they are named here rather than
 /// approximated; `MICRO #a97c48` and `CAPTION #d9a877` are reused where
 /// the trace samples the same hex.
@@ -2723,8 +2751,6 @@ pub const HUB_DARK: iced::Color = rgb(0x4b341f);
 pub const HUB_CAPTION: iced::Color = rgb(0xce9754);
 /// The panel tape's glyph ink (:742), a step brighter again.
 pub const HUB_TAPE: iced::Color = rgb(0xdea45c);
-/// The T2 badge's front outline and its "T2" (:304, :307).
-pub const BADGE_LIT: iced::Color = rgb(0xe8c186);
 /// The interior of the A/B letterboxes where they mask the wire band (:329).
 pub const BOX_FILL: iced::Color = rgb(0x4c3f5f);
 
@@ -3030,8 +3056,8 @@ const PANEL_FRAME: &[Prim] = &[
 const T2_BADGE: &[Prim] = &[
     // The badge's LEVEL as bright as its T2 (`#f6b97b` against `#f9bc79`
     // measured), in the badge's lit ink as on the mailbox.
-    header_prim(HEADER_LABELS[11], Ink::Fixed(BADGE_LIT)),
-    header_prim(HEADER_LABELS[12], Ink::Fixed(BADGE_LIT)),
+    header_prim(HEADER_LABELS[11], Ink::Fg),
+    header_prim(HEADER_LABELS[12], Ink::Fg),
 ];
 
 /// Dashboard source #69 header strand; mailbox #71 uses the separately
@@ -3095,13 +3121,13 @@ const CASCADE: &[Prim] = &[
     module!(4, 724.0, 284.0),
     module!(5, 826.0, 182.0),
     // labels (:441-449), right-anchored beside each card
-    Prim::Tracked { x: 237.0, y: 466.7, size: 17.0, tracking: 0.69, ink: Ink::Fixed(HUB_FILL), face: Face::Regular, anchor: Anchor::End, content: "EMAIL" },
-    Prim::Tracked { x: 337.375, y: 366.3, size: 17.0, tracking: 0.77, ink: Ink::Fixed(HUB_FILL), face: Face::Regular, anchor: Anchor::End, content: "MATRIX" },
-    Prim::Tracked { x: 439.375, y: 264.6, size: 17.0, tracking: 0.74, ink: Ink::Fixed(HUB_FILL), face: Face::Regular, anchor: Anchor::End, content: "BRAINDANCE" },
-    Prim::Tracked { x: 614.375, y: 466.7, size: 17.0, tracking: 0.68, ink: Ink::Fixed(HUB_FILL), face: Face::Regular, anchor: Anchor::End, content: "PRIVATE" },
-    Prim::Tracked { x: 714.625, y: 356.3, size: 17.0, tracking: 0.67, ink: Ink::Fixed(HUB_FILL), face: Face::Regular, anchor: Anchor::End, content: "SECURITY" },
-    Prim::Tracked { x: 714.625, y: 377.9, size: 17.0, tracking: 0.76, ink: Ink::Fixed(HUB_FILL), face: Face::Regular, anchor: Anchor::End, content: "SYSTEMS" },
-    Prim::Tracked { x: 816.792, y: 264.6, size: 17.0, tracking: 0.63, ink: Ink::Fixed(HUB_FILL), face: Face::Regular, anchor: Anchor::End, content: "DEVICES" },
+    Prim::Tracked { x: 237.0, y: 466.7, size: 17.0, tracking: 0.69, ink: Ink::Fixed(GOLD_TEXT), face: Face::Regular, anchor: Anchor::End, content: "EMAIL" },
+    Prim::Tracked { x: 337.375, y: 366.3, size: 17.0, tracking: 0.77, ink: Ink::Fixed(GOLD_TEXT), face: Face::Regular, anchor: Anchor::End, content: "MATRIX" },
+    Prim::Tracked { x: 439.375, y: 264.6, size: 17.0, tracking: 0.74, ink: Ink::Fixed(GOLD_TEXT), face: Face::Regular, anchor: Anchor::End, content: "BRAINDANCE" },
+    Prim::Tracked { x: 614.375, y: 466.7, size: 17.0, tracking: 0.68, ink: Ink::Fixed(GOLD_TEXT), face: Face::Regular, anchor: Anchor::End, content: "PRIVATE" },
+    Prim::Tracked { x: 714.625, y: 356.3, size: 17.0, tracking: 0.67, ink: Ink::Fixed(GOLD_TEXT), face: Face::Regular, anchor: Anchor::End, content: "SECURITY" },
+    Prim::Tracked { x: 714.625, y: 377.9, size: 17.0, tracking: 0.76, ink: Ink::Fixed(GOLD_TEXT), face: Face::Regular, anchor: Anchor::End, content: "SYSTEMS" },
+    Prim::Tracked { x: 816.792, y: 264.6, size: 17.0, tracking: 0.63, ink: Ink::Fixed(GOLD_TEXT), face: Face::Regular, anchor: Anchor::End, content: "DEVICES" },
     // captions under each foot (:571-576), at the first line's text
     // origin: 4.2..5.2 in from the card's left edge, 347.2 below its top
     Prim::At { x: 250.7, y: 731.25, prims: NCAPTION },
@@ -3167,7 +3193,7 @@ const PANEL: &[Prim] = &[
     // lines, and the module name (:747)
     micro!(1193.7, 645.8, HUB_TAPE, "ONLY CC35 CERTIFIED AND DHSF 5TH CLASS OFFICERS ARE"),
     micro!(1193.7, 652.1, HUB_TAPE, "ALLOWED TO MANIPULATE, ACCESS OR DISABLE THIS DEVICE."),
-    Prim::Text { x: 1286.7, y: 692.0, size: 20.0, ink: Ink::Fixed(HUB_FILL), face: Face::SemiBold, anchor: Anchor::Middle, content: "EMAIL" },
+    Prim::Text { x: 1286.7, y: 692.0, size: 20.0, ink: Ink::Fixed(GOLD_TEXT), face: Face::SemiBold, anchor: Anchor::Middle, content: "EMAIL" },
 ];
 
 /// The dashboard header notes' origins (`micro_note` x, and its y for

@@ -17,7 +17,7 @@
 #   themes.neokitsch = {
 #     enable = true;
 #     variant = "reference";
-#     colors.fg = "#e7c686";
+#     colors.fg = "#fabf77";
 #   };
 {
   config,
@@ -61,7 +61,7 @@ in
           lib.mkOption {
             type = lib.types.nullOr lib.types.str;
             default = null;
-            example = "#e7c686";
+            example = "#fabf77";
             description = "Override the ${role} role (\"#rrggbb\").";
           }
         );

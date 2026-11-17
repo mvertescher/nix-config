@@ -33,7 +33,7 @@
     panel = "#16161f";
     border = "#916424"; # sampled frame gold
     dim = "#8a7048";
-    fg = "#e7c686"; # sampled gold text
+    fg = "#fabf77"; # light text, stroke-plateau median of the four screens (2026-11-16; was #e7c686)
     alert = "#fcc474"; # sampled amber -- the only strong CTA colour
     tape = "#e3af5f"; # veneer mid-tone
 

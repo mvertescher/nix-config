@@ -2,7 +2,7 @@
 //! Scene coordinates scale uniformly. Counters use Scene's even-odd path filling.
 //! See docs/neokitsch/scene-badges.md for source measurements and remaining limits.
 use crate::style::{Ink, Prim, Seg, fill_path, shut_path};
-use super::{CAPTION, HUB_MID};
+use super::{CAPTION, GOLD_TEXT, HUB_MID};
 
 // Independently sampled A/B/C/D lower-tab interiors in the dashboard source.
 const BADGE_TAB: iced::Color = crate::palette::rgb(0xfcbe6d);
@@ -83,7 +83,7 @@ pub(super) const DASH_HEADER_A: &[Prim] = &[
     Prim::At { x: 250.45, y: 115.5, prims: &[
         Prim::Path { x: DASH_A_GLYPH_START.0, y: DASH_A_GLYPH_START.1,
             segs: DASH_A_GLYPH, close: true,
-            fill: Some(Ink::Fixed(CAPTION)), stroke: None, width: 0.0 },
+            fill: Some(Ink::Fixed(GOLD_TEXT)), stroke: None, width: 0.0 },
     ] },
 ];
 
@@ -98,7 +98,7 @@ pub(super) const DASH_HEADER_B: &[Prim] = &[
     Prim::At { x: 1023.25, y: 115.5, prims: &[
         Prim::Path { x: DASH_B_GLYPH_START.0, y: DASH_B_GLYPH_START.1,
             segs: DASH_B_GLYPH, close: true,
-            fill: Some(Ink::Fixed(CAPTION)), stroke: None, width: 0.0 },
+            fill: Some(Ink::Fixed(GOLD_TEXT)), stroke: None, width: 0.0 },
     ] },
 ];
 
@@ -152,7 +152,7 @@ const HUB_FOOT_C_GLYPH: &[Seg] = &[
 pub(super) const HUB_FOOT_C_ART: &[Prim] = &[
     shut_path(2.91667, 0.41667, HUB_FOOT_C_FRAME, Ink::Fixed(HUB_MID), 0.95),
     fill_path(4.16667, 25.41667, HUB_FOOT_C_TAB, Ink::Fixed(BADGE_TAB)),
-    fill_path(9.16667, 4.16667, HUB_FOOT_C_GLYPH, Ink::Fixed(CAPTION)),
+    fill_path(9.16667, 4.16667, HUB_FOOT_C_GLYPH, Ink::Fixed(GOLD_TEXT)),
 ];
 
 // Place with Prim::At { x: 574.58333, y: 821.66667, prims: HUB_FOOT_C_ART }.
@@ -199,7 +199,7 @@ const HUB_FOOT_D_GLYPH: &[Seg] = &[
 pub(super) const HUB_FOOT_D_ART: &[Prim] = &[
     shut_path(2.91667, 0.41667, HUB_FOOT_D_FRAME, Ink::Fixed(HUB_MID), 0.95),
     fill_path(4.16667, 25.83333, HUB_FOOT_D_TAB, Ink::Fixed(BADGE_TAB)),
-    fill_path(4.58333, 4.16667, HUB_FOOT_D_GLYPH, Ink::Fixed(CAPTION)),
+    fill_path(4.58333, 4.16667, HUB_FOOT_D_GLYPH, Ink::Fixed(GOLD_TEXT)),
 ];
 
 // Place with Prim::At { x: 1170.41667, y: 821.66667, prims: HUB_FOOT_D_ART }.

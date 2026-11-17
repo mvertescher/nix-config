@@ -4,6 +4,7 @@
 //! reuse source-confirmed geometry from the dashboard trace.
 use crate::palette::rgb;
 use crate::style::{Ink, Piece, Prim, Seg};
+use super::{CARTRIDGE_FACE, CARTRIDGE_HOLLOW, CARTRIDGE_RIM, LINE_INK};
 
 pub(super) const HEADER: &[Prim] = &[
     Prim::Path { x: 0.0, y: 0.0, segs: &[
@@ -7647,6 +7648,11 @@ pub(super) const ICON_NORMAL: &[Piece] = &[
     ], close: false, fill: None, stroke: Some(Ink::Fixed(rgb(0x9a2326))), width: 0.4 },
 ];
 
+// The selected cartridge is the ordinary one inverted (reference
+// img-08 at 3840x2160, 2026-11-16): the case face fills with the
+// selection red and the disc and label, red on the other seven, go
+// hollow -- dark inside a bright outline -- with the rings in the mid
+// red. See CARTRIDGE_FACE in neomil.rs for the measurements.
 pub(super) const ICON_SELECTED: &[Piece] = &[
     Piece::Curve { start: (0.0, 0.0), steps: &[
         Seg::Move(-15.8333, 0.0),
@@ -7671,12 +7677,24 @@ pub(super) const ICON_SELECTED: &[Piece] = &[
         Seg::Line(-24.5833, 7.0833),
         Seg::Line(-15.8333, 0.0),
         Seg::Line(-15.8333, 0.0),
-    ], close: false, fill: Some(Ink::Fixed(rgb(0xfb3535))), stroke: None, width: 0.0 },
+    ], close: false, fill: Some(Ink::Fixed(CARTRIDGE_FACE)), stroke: Some(Ink::Fixed(LINE_INK)), width: CARTRIDGE_RIM },
+    // The contact strip, bright: on the selected cartridge the strip
+    // stays lit while the face drops to the selection red, so its ribs
+    // read as face-red lines on it (measured, see CARTRIDGE_FACE).
     Piece::Curve { start: (0.0, 0.0), steps: &[
-        Seg::Move(-23.75, 7.9167),
-        Seg::Line(-16.25, 2.0833),
-        Seg::Line(12.0834, 11.6667),
+        Seg::Move(-24.5833, 7.0833),
+        Seg::Line(-15.8333, 0.0),
+        Seg::Line(11.25, 9.1667),
+        Seg::Quad { cx: 14.5834, cy: 10.0, x: 14.5834, y: 11.25 },
+        Seg::Line(14.5834, 12.9167),
         Seg::Line(12.0834, 12.9167),
+        Seg::Line(12.0834, 11.6667),
+        Seg::Line(-16.25, 2.0833),
+        Seg::Line(-23.75, 7.9167),
+        Seg::Line(-24.5833, 7.0833),
+    ], close: true, fill: Some(Ink::Fixed(LINE_INK)), stroke: None, width: 0.0 },
+    Piece::Curve { start: (0.0, 0.0), steps: &[
+        Seg::Move(12.0834, 12.9167),
         Seg::Line(2.9167, 19.5833),
         Seg::Line(2.9167, 21.6667),
         Seg::Line(-2.0833, 25.4167),
@@ -7701,7 +7719,7 @@ pub(super) const ICON_SELECTED: &[Piece] = &[
         Seg::Quad { cx: -61.6666, cy: 39.5833, x: -60.8333, y: 38.75 },
         Seg::Line(-47.5, 27.9167),
         Seg::Line(-47.5, 27.9167),
-    ], close: false, fill: Some(Ink::Fixed(rgb(0x59171b))), stroke: Some(Ink::Fixed(rgb(0xfb3535))), width: 0.6 },
+    ], close: false, fill: Some(Ink::Fixed(CARTRIDGE_HOLLOW)), stroke: Some(Ink::Fixed(rgb(0xfb3535))), width: 0.6 },
     Piece::Curve { start: (0.0, 0.0), steps: &[
         Seg::Move(-32.9166, 30.8333),
         Seg::Cubic { c1x: -39.1666, c1y: 29.5833, c2x: -41.25, c2y: 25.8333, x: -40.0, y: 20.8333 },
@@ -7713,7 +7731,7 @@ pub(super) const ICON_SELECTED: &[Piece] = &[
         Seg::Line(-31.25, 31.6667),
         Seg::Quad { cx: -32.0833, cy: 32.0833, x: -32.9166, y: 30.8333 },
         Seg::Line(-32.9166, 30.8333),
-    ], close: false, fill: Some(Ink::Fixed(rgb(0x59171b))), stroke: Some(Ink::Fixed(rgb(0xfb3535))), width: 0.55 },
+    ], close: false, fill: Some(Ink::Fixed(CARTRIDGE_HOLLOW)), stroke: Some(Ink::Fixed(rgb(0xfb3535))), width: 0.55 },
     Piece::Curve { start: (0.0, 0.0), steps: &[
         Seg::Move(-29.1666, 14.5833),
         Seg::Cubic { c1x: -21.6666, c1y: 9.1667, c2x: -7.9166, c2y: 12.5, x: -7.5, y: 18.3333 },
@@ -7721,7 +7739,7 @@ pub(super) const ICON_SELECTED: &[Piece] = &[
         Seg::Line(-11.25, 21.6667),
         Seg::Quad { cx: -11.6666, cy: 21.25, x: -11.25, y: 19.5833 },
         Seg::Cubic { c1x: -10.0, c1y: 13.75, c2x: -20.8333, c2y: 12.0833, x: -27.0833, y: 16.25 },
-    ], close: false, fill: None, stroke: Some(Ink::Fixed(rgb(0xfb3535))), width: 0.6 },
+    ], close: false, fill: None, stroke: Some(Ink::Dim), width: 0.6 },
     Piece::Curve { start: (0.0, 0.0), steps: &[
         Seg::Move(-27.5, 16.6667),
         Seg::Cubic { c1x: -23.3333, c1y: 14.1667, c2x: -16.6666, c2y: 14.5833, x: -14.1666, y: 17.9167 },
@@ -7737,7 +7755,7 @@ pub(super) const ICON_SELECTED: &[Piece] = &[
         Seg::Cubic { c1x: -22.9166, c1y: 23.75, c2x: -25.8333, c2y: 22.9167, x: -26.25, y: 21.25 },
         Seg::Cubic { c1x: -26.6666, c1y: 20.0, c2x: -26.25, c2y: 19.5833, x: -25.0, y: 18.75 },
         Seg::Line(-25.0, 18.75),
-    ], close: false, fill: Some(Ink::Fixed(rgb(0x59171b))), stroke: None, width: 0.0 },
+    ], close: false, fill: Some(Ink::Fixed(CARTRIDGE_HOLLOW)), stroke: None, width: 0.0 },
     Piece::Curve { start: (0.0, 0.0), steps: &[
         Seg::Move(-22.5, 20.0),
         Seg::Cubic { c1x: -21.25, c1y: 19.1667, c2x: -19.5833, c2y: 19.1667, x: -19.1666, y: 20.0 },
@@ -7792,7 +7810,7 @@ pub(super) const ICON_SELECTED: &[Piece] = &[
         Seg::Line(8.7500, 11.3783),
         Seg::Move(10.0000, 8.8847),
         Seg::Line(10.0000, 11.8014),
-    ], close: false, fill: None, stroke: Some(Ink::Fixed(rgb(0xdc3035))), width: 1.0 },
+    ], close: false, fill: None, stroke: Some(Ink::Fixed(CARTRIDGE_FACE)), width: 1.0 },
 ];
 
 pub(super) const ICON_POSITIONS: &[(f32, f32)] = &[

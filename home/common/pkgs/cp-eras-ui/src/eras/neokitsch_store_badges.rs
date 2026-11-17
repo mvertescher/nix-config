@@ -2,7 +2,7 @@
 //! Local coordinates retain the original scene anchors and uniform scaling.
 //! See docs/neokitsch/scene-badges.md for source measurements and remaining limits.
 use crate::style::{Ink, Prim, Seg};
-use super::{STORE_WIRE, TAB, BRIGHT};
+use super::{STORE_WIRE, TAB, GOLD_TEXT};
 
 pub(super) static STORE_A_BADGE: [Prim; 3] = [
     // A frame; local design coordinates relative to (360.0, 143.0).
@@ -49,7 +49,7 @@ pub(super) static STORE_A_BADGE: [Prim; 3] = [
             Seg::Line(14.5833, 12.4167),
             Seg::Line(9.1667, 12.4167),
         ],
-        close: true, fill: Some(Ink::Fixed(BRIGHT)), stroke: None, width: 0.0,
+        close: true, fill: Some(Ink::Fixed(GOLD_TEXT)), stroke: None, width: 0.0,
     },
 ];
 
@@ -107,7 +107,7 @@ pub(super) static STORE_B_BADGE: [Prim; 3] = [
             Seg::Quad { cx: 16.6667, cy: 16.6667, x: 15.4167, y: 16.6667 },
             Seg::Line(7.0833, 16.6667),
         ],
-        close: true, fill: Some(Ink::Fixed(BRIGHT)), stroke: None, width: 0.0,
+        close: true, fill: Some(Ink::Fixed(GOLD_TEXT)), stroke: None, width: 0.0,
     },
 ];
 
@@ -162,6 +162,6 @@ pub(super) static STORE_C_BADGE: [Prim; 3] = [
             Seg::Line(5.75, 7.0),
             Seg::Quad { cx: 5.75, cy: 4.9167, x: 7.8333, y: 4.9167 },
         ],
-        close: true, fill: Some(Ink::Fixed(BRIGHT)), stroke: None, width: 0.0,
+        close: true, fill: Some(Ink::Fixed(GOLD_TEXT)), stroke: None, width: 0.0,
     },
 ];

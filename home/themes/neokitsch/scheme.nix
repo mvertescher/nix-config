@@ -29,7 +29,7 @@ rec {
   accents = {
     base0B = "d3b279"; # champagne -- strings
     base0C = "b08a4a"; # mid gold
-    base0D = "e7c686"; # gold text -- functions
+    base0D = "fabf77"; # the light text ink (= fg) -- functions
     base0E = "fcc474"; # amber -- keywords
   };
 
