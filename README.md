@@ -95,74 +95,27 @@ Notes:
 
 ## Themes
 
-Themes live in `home/themes/` and style the desktop beyond what stylix
-does on its own — the bar, launcher, notification daemon, lock screen
-and hyprland's own decoration.
-
-- **`cybr`** — Cyberpunk 2077 Neomilitarism: red and cyan on black,
-  slanted separators, glow. Selected by importing it; its palette is
-  the fixed base16 file in `colors/`.
-- **`entropism`** — the salvaged-hardware era: necessity over style.
-  Monochrome degraded displays, square corners, 1px lines, no glow.
-  Configurable, so it is selected by importing *and* enabling it.
-
-A wrapper picks `entropism` from a host's home-manager modules:
+One theme lives here, in `home/themes/cybr`: Cyberpunk 2077
+Neomilitarism, red and cyan on black, slanted separators, glow. It
+styles the desktop beyond what stylix does on its own (the bar,
+launcher, notification daemon, lock screen and hyprland's own
+decoration), ships upstream cybrcore assets and a fixed 33-colour
+palette in `colors/`, and is selected by importing it:
 
 ```nix
 {
-  imports = [ ../../public/home/themes/entropism ];
-
-  themes.entropism = {
-    enable = true;
-
-    # burn-in (default) | dead-pixel | salvage-phosphor
-    variant = "dead-pixel";
-
-    # Override any semantic role; unset roles keep the variant's value.
-    colors.fg = "#c8d0c4";
-
-    # Wallpaper treatment, generated from `bg`:
-    # none (default) | scanlines | noise
-    texture = "scanlines";
-
-    # Defaults to Rajdhani, the typeface Cyberpunk 2077 sets its own
-    # interface in. `pkgs.departure-mono` is the bitmap-adjacent
-    # alternative.
-    # uiFont = { package = pkgs.departure-mono; name = "Departure Mono"; };
-  };
+  imports = [ ../../public/home/themes/cybr ];
 }
 ```
 
-The theme's API is semantic roles rather than base16 slots — `bg`,
-`panel`, `border`, `dim`, `fg`, `alert` and the optional `tape` label
-accent (which follows `fg` unless the variant or the host sets it).
-Every module downstream reads the resolved roles, so overriding one
-role retints stylix, waybar, rofi, swaync and the hyprland borders
-together.
-
-The generated base16 scheme is deliberately monochrome: syntax
-highlighting collapses onto `fg`/`dim`/`alert` rather than a rainbow.
-That is the aesthetic, not a bug.
-
-### Two kinds of theme
-
-There are two shapes here, on purpose:
-
-- **Vendored** (`cybr`): ships upstream cybrcore assets — `config.jsonc`,
-  `.rasi` files, SVG separators, shell scripts — and a fixed 33-colour
-  palette. Selected by importing it. What it looks like is what upstream
-  drew.
-- **Generated** (`entropism`, and the other Cyberpunk 2077 style eras as
-  they land): no assets at all. Every stylesheet is produced from
-  semantic roles, so the theme is configurable and a colour override
-  reaches every surface. Selected by importing *and* enabling, since it
-  carries options.
-
-The generated eras share `home/themes/lib/roles.nix` — the role
-vocabulary, the preset-plus-override resolution, and the base16
-projection. A new era supplies `palettes.nix` plus a thin `scheme.nix`
-binding it to that library, and inherits the rest. `cybr` deliberately
-does not use it.
+The generated Cyberpunk 2077 era themes (entropism, kitsch, neo-kitsch,
+neomil) and the `cp-eras-ui` crate that draws their screens were here
+until November 2026. They moved to a repository of their own, which a
+wrapper adds as a flake input alongside this one. What stays here for
+them is the shared Hyprland module, whose look is all `mkDefault` so a
+theme can set plain values over it, and the `custom.greetd` option for
+the era login screen, which expects the wrapper to supply
+`pkgs.cp-eras-ui` through an overlay.
 
 ## Bootstrapping on non-NixOS
 

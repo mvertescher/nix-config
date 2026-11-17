@@ -40,9 +40,9 @@ from a wrapper checkout, not from here.
 
 ## cp-eras-ui work
 
-Before planning or dispatching cp-eras work, read
-[`home/common/pkgs/cp-eras-ui/AGENTS.md`](home/common/pkgs/cp-eras-ui/AGENTS.md)
-for model selection and verification responsibilities.
+The crate and the four era themes are no longer in this repository:
+they moved to a repository of their own on 2026-11-16. Theme and crate
+work happens there, under its own `AGENTS.md`. Only `cybr` is here.
 
 ## Taking screenshots
 
