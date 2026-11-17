@@ -9,7 +9,7 @@ in
   stylix.targets.swaync.enable = false;
 
   # Launched by its systemd user unit rather than hyprland's exec-once.
-  # See ../lib/era.nix for the reasoning: exec-once only fires when the
+  # See themes/lib/era.nix in the ui repository for the reasoning: exec-once only fires when the
   # compositor starts, so a theme switch on a live session left the
   # desktop with no notification daemon until the next logout. The unit's
   # X-Restart-Triggers, which home-manager wires to swaync's config and

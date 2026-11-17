@@ -4,7 +4,7 @@
 # open window wearing the previous era's chrome until the user happens
 # to restart it themselves. This closes that gap.
 #
-# Extracted from lib/era.nix so the vendored `cybr` theme can have it
+# Extracted from the era builder (themes/lib/era.nix, now in the ui repository) so the vendored `cybr` theme can have it
 # too. cybr is not generated from roles and so does not go through the
 # era builder, which is exactly why it was the one theme still leaving
 # stale chrome behind.

@@ -31,9 +31,10 @@ in
         Which greeter greetd runs on the console.
 
         `tuigreet` is the text greeter on the tty, with the username
-        remembered across boots. `cp-eras-ui` is this repo's own login
-        screen (`home/common/pkgs/cp-eras-ui`, `cp-eras-ui-login
-        --greet`) run under the `cage` kiosk compositor: the era's
+        remembered across boots. `cp-eras-ui` is the era login screen
+        (`cp-eras-ui-login --greet`, from `pkgs.cp-eras-ui`: the `ui`
+        repository's overlay, which the host has to supply -- this
+        repository does not carry the package) run under the `cage` kiosk compositor: the era's
         access screen from the traces, password field live, dressed in
         `custom.greetd.era` and signing in `custom.greetd.user`. It
         asks nothing about the account -- the greeter user has no
@@ -97,7 +98,7 @@ in
 
     # hyprlock authenticates through PAM, and a PAM service can only be
     # declared at the system level. The themes configure hyprlock through
-    # home-manager (see home/themes/lib/era.nix), which installs the
+    # home-manager (see themes/lib/era.nix in the ui repository), which installs the
     # binary and writes its config but cannot create /etc/pam.d/hyprlock
     # -- so without this the lock screen takes the session lock, fails to
     # start PAM, and exits, leaving the compositor holding a lock with no
@@ -127,6 +128,10 @@ in
     };
 
     assertions = [
+      {
+        assertion = cfg.greeter != "cp-eras-ui" || pkgs ? cp-eras-ui;
+        message = "custom.greetd.greeter = \"cp-eras-ui\" needs pkgs.cp-eras-ui, which this repository no longer carries: add the ui flake's overlay to the host (mkNixos extraOverlays).";
+      }
       {
         assertion = cfg.greeter != "cp-eras-ui" || cfg.user != null;
         message = "custom.greetd.greeter = \"cp-eras-ui\" needs custom.greetd.user (or lastUser): the login screen has no username field.";

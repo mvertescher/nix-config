@@ -62,7 +62,7 @@ in
 
   config = {
     # Launched by waybar's own systemd user unit rather than hyprland's
-    # exec-once. See ../../lib/era.nix for the reasoning; the short version
+    # exec-once. See themes/lib/era.nix in the ui repository for the reasoning; the short version
     # is that exec-once only fires when the compositor starts, so switching
     # into this theme on a live session left the desktop with no bar.
     #

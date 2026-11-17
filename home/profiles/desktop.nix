@@ -12,8 +12,8 @@
 # The systemd user service works because the session comes up under uwsm,
 # which activates graphical-session.target even though the shared hyprland
 # module leaves `wayland.windowManager.hyprland.systemd.enable` false --
-# the same mechanism the themes' daemons rely on (see
-# ../themes/lib/era.nix).
+# the same mechanism the themes' daemons rely on (see the era builder,
+# themes/lib/era.nix in the ui repository).
 #
 # Selected by import, not by an option; ./laptop.nix is the laptop half.
 # See PROFILE-DESIGN.md in the consuming wrapper for the full argument.

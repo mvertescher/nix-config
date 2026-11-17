@@ -4,7 +4,7 @@
 # `userChrome` and palette-derived settings on top of this.
 #
 # That split is the point of this file. Before it, both
-# `home/themes/cybr/firefox` and `home/themes/lib/era.nix` declared
+# `home/themes/cybr/firefox` and the era builder (`themes/lib/era.nix` in the ui repository) declared
 # `programs.firefox.enable`, `profiles.default.id = 0` and an overlapping
 # set of preferences -- two copies, free to drift. Worse, only cybr
 # declared `policies.ExtensionSettings`, so **Sidebery was installed

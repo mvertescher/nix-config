@@ -136,7 +136,7 @@ in
 
     # Launched by its systemd user unit rather than hyprland's exec-once,
     # and configured through home-manager's `settings` rather than a
-    # hand-written hyprpaper.conf. See ../lib/era.nix for the reasoning.
+    # hand-written hyprpaper.conf. See themes/lib/era.nix in the ui repository for the reasoning.
     # The practical gain beyond surviving a live theme switch is that
     # home-manager puts the rendered config in the unit's
     # X-Restart-Triggers, so changing the wallpaper restarts the daemon

@@ -10,7 +10,7 @@ in
   imports = [
     # Same Firefox restart the generated eras get. cybr was the one
     # theme still leaving stale chrome behind on a switch, purely
-    # because it does not go through lib/era.nix.
+    # because it does not go through the era builder (themes/lib/era.nix in the ui repository).
     #
     # The stamp hashes the palette and the two stylesheets the chrome is
     # actually built from, so it moves when the browser's appearance
@@ -51,7 +51,7 @@ in
     # the fix for an unrelated `stylix.image` collision -- so nothing
     # carries the value across and it has to be stated here. Every
     # generated era already sets it from its resolved roles (see
-    # ../lib/era.nix); cybr was the only theme that did not.
+    # themes/lib/era.nix in the ui repository); cybr was the only theme that did not.
     polarity = lib.mkDefault "dark";
   };
 
@@ -73,7 +73,7 @@ in
   # palette is a fixed dark one with no light variant, so the literal
   # says exactly what the derivation would and keeps it visibly in step
   # with the `icon-theme` line in rofi/cybr-rofi/config.rasi. The
-  # generated eras do derive it -- see ../lib/era.nix -- because they
+  # generated eras do derive it -- see themes/lib/era.nix in the ui repository -- because they
   # have light variants and a bar that draws tray icons.
   gtk.iconTheme = lib.mkDefault {
     name = "Papirus-Dark";
