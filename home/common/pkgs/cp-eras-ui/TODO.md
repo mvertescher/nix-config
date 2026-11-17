@@ -1,5 +1,10 @@
 What all of this is in service of: [GOAL.md](GOAL.md).
 
+Where the project stands as of 2026-11-16, the open decisions and what
+to pick up next: [STATE.md](STATE.md). The current task list is
+[todo/review-2026-11-13.md](todo/review-2026-11-13.md); the section
+below dates from the work before 2026-11-13.
+
 ## Current remaining work (2026-10-04)
 
 The requested [font and text-effect audit](todo/font-rendering.md) and its
