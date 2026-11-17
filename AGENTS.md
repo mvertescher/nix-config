@@ -58,11 +58,10 @@ nix build .#checks.x86_64-linux.builder-api
   package when its purpose isn't obvious (e.g. `bat # better cat`).
 - Keep files free of trailing whitespace.
 
-## cp-eras-ui work
+## Themes
 
-The crate and the four era themes are no longer in this repository:
-they moved to a repository of their own on 2026-11-16. Theme and crate
-work happens there, under its own `AGENTS.md`. Only `cybr` is here.
+Only `cybr` is here. Other themes were moved to a repository of their
+own on 2026-11-16, and work on them happens there.
 
 ## Taking screenshots
 

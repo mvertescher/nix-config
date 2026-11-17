@@ -4,11 +4,12 @@
 # `userChrome` and palette-derived settings on top of this.
 #
 # That split is the point of this file. Before it, both
-# `home/themes/cybr/firefox` and the era builder (`themes/lib/era.nix` in the ui repository) declared
-# `programs.firefox.enable`, `profiles.default.id = 0` and an overlapping
-# set of preferences -- two copies, free to drift. Worse, only cybr
+# `home/themes/cybr/firefox` and the builder of the generated themes
+# (kept in another repository) declared `programs.firefox.enable`,
+# `profiles.default.id = 0` and an overlapping set of preferences --
+# two copies, free to drift. Worse, only cybr
 # declared `policies.ExtensionSettings`, so **Sidebery was installed
-# under the vendored theme and absent under all four generated eras**.
+# under the vendored theme and absent under every generated theme**.
 # An extension that appears and disappears with a colour scheme is the
 # same defect class as a daemon started from `exec-once`: something that
 # is not a theme concern, made to depend on the theme anyway.

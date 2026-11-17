@@ -21,7 +21,7 @@ in
   # not-a-matter-of-taste preferences live in
   # `home/common/gui/firefox.nix`. This file is the theme's half: chrome,
   # palette-derived prefs, and Sidebery's stylesheet. Sidebery itself is
-  # installed there, so it survives a switch to a generated era -- it did
+  # installed there, so it survives a switch to another theme -- it did
   # not before, because only this file declared the policy.
   programs.firefox = {
     profiles = {

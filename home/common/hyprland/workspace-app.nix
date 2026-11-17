@@ -34,7 +34,7 @@ in
 
     command = lib.mkOption {
       type = lib.types.str;
-      example = "cp-eras-ui-dashboard";
+      example = "my-dashboard";
       description = ''
         Command launched when the workspace is first visited while
         empty. Runs through the compositor, so it inherits a proper
@@ -45,7 +45,7 @@ in
     classes = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
-      example = lib.literalExpression ''[ "^(cp-eras-ui-(dashboard|store))$" ]'';
+      example = lib.literalExpression ''[ "^(my-(dashboard|store))$" ]'';
       description = ''
         Window class regexes that belong on `workspace`: a window that
         matches is sent there and shown fullscreen, wherever it was

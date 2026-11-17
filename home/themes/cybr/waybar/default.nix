@@ -62,9 +62,9 @@ in
 
   config = {
     # Launched by waybar's own systemd user unit rather than hyprland's
-    # exec-once. See themes/lib/era.nix in the ui repository for the reasoning; the short version
-    # is that exec-once only fires when the compositor starts, so switching
-    # into this theme on a live session left the desktop with no bar.
+    # exec-once: exec-once only fires when the compositor starts, so
+    # switching into this theme on a live session left the desktop with
+    # no bar.
     #
     # home-manager drops its `pkill -USR2 waybar` onChange hooks as soon as
     # systemd.enable is set, so the files this theme generates have to be

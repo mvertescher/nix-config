@@ -94,10 +94,6 @@
         builder-api = pkgs.callPackage ./lib/tests/builder-api.nix {
           inherit (self.lib) mkNixos mkHome mkDarwin;
         };
-
-        # The cp-eras-ui greeter's VM test lived here until 2026-11-16.
-        # The login screen it starts is in the private `ui` repository
-        # now, so the test moved to the wrapper that has both.
       };
 
       # Installer ISO with SSH keys baked in, for unattended provisioning

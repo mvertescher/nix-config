@@ -12,12 +12,11 @@
 #
 # The heavier thing this repo can check got its own path-filtered
 # workflow instead, because `on:` applies a path filter per workflow
-# rather than per job: installer-iso.yml for the ISO. (goldens.yml, the
-# cp-eras-ui matrix, left with that crate on 2026-11-16.) Both were once written off here as too
-# big for a runner, on a "~14 GB disk" figure that turned out to be the
-# old standard-runner spec -- a current `ubuntu-latest` has 145 GB with
-# 87 GB free, the matrix peaks near 6 GB and the ISO near 5 GB. That
-# sentence used to live in this comment; it was wrong.
+# rather than per job: installer-iso.yml for the ISO. It was once
+# written off here as too big for a runner, on a "~14 GB disk" figure
+# that turned out to be the old standard-runner spec -- a current
+# `ubuntu-latest` has 145 GB with 87 GB free, and the ISO peaks near
+# 5 GB. That sentence used to live in this comment; it was wrong.
 name: check
 
 on:

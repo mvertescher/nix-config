@@ -1,13 +1,13 @@
 # Restart a running Firefox when the browser theme changes.
 #
 # userChrome.css is read once at startup, so a theme switch leaves an
-# open window wearing the previous era's chrome until the user happens
+# open window wearing the previous theme's chrome until the user happens
 # to restart it themselves. This closes that gap.
 #
-# Extracted from the era builder (themes/lib/era.nix, now in the ui repository) so the vendored `cybr` theme can have it
-# too. cybr is not generated from roles and so does not go through the
-# era builder, which is exactly why it was the one theme still leaving
-# stale chrome behind.
+# Extracted from the builder of the generated themes (kept in another
+# repository) so the vendored `cybr` theme can have it too. cybr is not
+# generated from roles and so does not go through that builder, which
+# is exactly why it was the one theme still leaving stale chrome behind.
 #
 #   imports = [ (import ../lib/browser-restart.nix {
 #     inherit lib pkgs config;

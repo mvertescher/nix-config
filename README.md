@@ -148,14 +148,13 @@ palette in `colors/`, and is selected by importing it:
 }
 ```
 
-The four generated era themes and the `cp-eras-ui` crate that draws
-their screens were here until November 2026. They moved to a repository of their own, which a
-wrapper adds as a flake input alongside this one. What stays here for
-them is the shared Hyprland module, whose look is all `mkDefault` so a
-theme can set plain values over it, and the `custom.greetd` option for
-the era login screen (`custom.greetd.greeter = "cp-eras-ui"`), which
-expects the wrapper to supply `pkgs.cp-eras-ui` through `extraOverlays`
-and fails evaluation with a message saying so if it is missing.
+Other themes can live outside this repository, in a flake a wrapper
+adds alongside this one. Two things here are built for that. The shared
+Hyprland home module sets its whole look at `mkDefault`, so a theme
+overrides any of it with plain values. And the system module
+(`system/wm/hyprland.nix`) runs tuigreet on the console by default but
+takes `custom.greetd.command`, so a wrapper can put a graphical greeter
+of its own there.
 
 ## Checks and the installer ISO
 

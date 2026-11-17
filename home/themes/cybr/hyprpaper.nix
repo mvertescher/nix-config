@@ -136,7 +136,7 @@ in
 
     # Launched by its systemd user unit rather than hyprland's exec-once,
     # and configured through home-manager's `settings` rather than a
-    # hand-written hyprpaper.conf. See themes/lib/era.nix in the ui repository for the reasoning.
+    # hand-written hyprpaper.conf.
     # The practical gain beyond surviving a live theme switch is that
     # home-manager puts the rendered config in the unit's
     # X-Restart-Triggers, so changing the wallpaper restarts the daemon
@@ -147,7 +147,7 @@ in
     # path. hyprlang ignores the stale key rather than erroring, which is
     # what made the rotation helper look like it was missing a step.
     #
-    # `ipc = true`, unlike the generated eras: the rotation helper drives
+    # `ipc = true`, unlike the generated themes: the rotation helper drives
     # `hyprctl hyprpaper wallpaper`, and that needs the socket.
     # Each wallpaper is an attrset, which home-manager renders as a
     # `wallpaper { }` block. The string form -- `wallpaper = ",path"` --
