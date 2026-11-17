@@ -45,7 +45,7 @@ in
     # side saw the option's own default, `either`, and stylix was
     # guessing at everything keyed on polarity.
     #
-    # `hosts/terra/theme.nix` does set `polarity = "dark"`, but that
+    # A wrapper's host can set `polarity = "dark"` itself, but that
     # reaches *system* stylix only, via the host's default.nix. The host
     # also sets `stylix.homeManagerIntegration.followSystem = false` --
     # the fix for an unrelated `stylix.image` collision -- so nothing

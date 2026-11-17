@@ -11,8 +11,10 @@ this repository.
   `Co-Authored-By: Claude ...`, no `Claude-Session:` links, no
   "Generated with" footers. This overrides any default trailer the
   agent harness asks for.
-- Follow the existing conventional-commit style (`feat:`, `fix:`,
-  `docs:`, ...), scoped where it helps (`fix(server): ...`).
+- Subjects follow the existing style: the area, a colon, then a plain
+  sentence saying what changed (`cybr: the shade helper moves into the
+  theme`, `README, AGENTS: ...`). Older history used conventional
+  commits (`feat(...)`, `fix(...)`); new commits do not.
 
 ## Repository context
 
@@ -22,9 +24,27 @@ name — and never commit secrets or private host details; everything in
 this repo's history is public.
 
 This repo defines no hosts or deployable configurations of its own:
-wrappers own machine identity and call `lib.mkNixos` / `lib.mkHome`
-with their host sets (see README). Deploy/VM/caching workflows run
-from a wrapper checkout, not from here.
+wrappers own machine identity and call `lib.mkNixos` / `lib.mkHome` /
+`lib.mkDarwin` with their host sets (see README). Deploy/VM/caching
+workflows run from a wrapper checkout, not from here.
+
+## Builder API
+
+The builders in `lib/` are consumed by wrappers whose call sites cannot
+be updated from here, one of them on a machine nobody working in this
+repo can see. Changes must be **additive**: a new optional argument is
+fine; a new required argument, a rename or a changed default breaks a
+consumer at its next pin bump. The `user` defaults (`mverte` for
+`mkNixos` and `mkDarwin`, `mvertescher` for `mkHome`) differ on purpose
+and are frozen for the same reason. The same holds for the package
+names the overlays add.
+
+`checks.builder-api` (`lib/tests/builder-api.nix`) is the in-repo
+consumer that enforces this. Run it after touching `lib/`:
+
+```sh
+nix build .#checks.x86_64-linux.builder-api
+```
 
 ## Conventions
 

@@ -28,7 +28,7 @@
 
     # Hardlink identical files in the store. GC controls how much the
     # store holds; this controls how much of it is duplicated, and they
-    # are independent -- terra was collecting weekly and still carrying
+    # are independent -- a workstation was collecting weekly and still carrying
     # every copy of every shared file.
     #
     # The scheduled job rather than settings.auto-optimise-store: the
@@ -36,7 +36,7 @@
     # space nobody is short of. Once a week off-peak is the right trade
     # on both a workstation and a small VPS.
     #
-    # Safe alongside server's keep-outputs: this only replaces identical
+    # Safe alongside a host's keep-outputs: this only replaces identical
     # files with hardlinks, it never deletes a store path.
     optimise = {
       automatic = true;

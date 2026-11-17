@@ -1,7 +1,7 @@
-# Per-host `pkgs` for the two builders — the half of `mkNixos` and
-# `mkHome` that is genuinely identical, written once.
+# Per-host `pkgs` for the builders — the half of `mkNixos`, `mkHome`
+# and `mkDarwin` that is genuinely identical, written once.
 #
-# Both builders accept `extraOverlays` for the whole host set and honour
+# All of them accept `extraOverlays` for the whole host set and honour
 # a per-host `extraOverlays` on top of it. The common case is that no
 # host adds any, and then every host should share a single nixpkgs
 # instantiation instead of re-importing it per host; that is what
@@ -13,7 +13,7 @@
 # how one misses that their `user` defaults are *not* the same —
 # "mverte" for `mkNixos`, "mvertescher" for `mkHome`. That difference is
 # deliberate, load-bearing for the work wrapper and frozen (see
-# `PLAN.md`); with the shared half gone it is the only thing left in
+# `AGENTS.md`, "Builder API"); with the shared half gone it is the only thing left in
 # either block, which is where the reader's attention belongs.
 {
   inputs,

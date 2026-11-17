@@ -1,5 +1,5 @@
 # Every overlay this repo applies, in one list. The flake's own `pkgs`
-# and both builders read it, so every host and every wrapper sees the
+# and every builder reads it, so every host and every wrapper sees the
 # same package set.
 { inputs }:
 

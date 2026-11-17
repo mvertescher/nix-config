@@ -2,9 +2,9 @@
 # can provision a machine booted from it with zero console interaction.
 #
 # Build:  nix build .#installer-iso
-# Used by a wrapper flake's provisioning tool (nix-config-private's
-# ./provision), which builds it, has Vultr fetch it over plain HTTP once,
-# and boots new or reinstalled instances from it via the API.
+# Used by a wrapper flake's provisioning tool, which builds it, has
+# Vultr fetch it over plain HTTP once, and boots new or reinstalled
+# instances from it via the API.
 
 { modulesPath, ... }:
 
@@ -14,13 +14,13 @@ let
   # running host too, and these machines must only be able to *install*
   # a box, not log into the fleet (decided 2026-10-17).
   #
-  # arca: the small always-on cloud box, so an on-demand dev box can be
-  # provisioned while terra is down. terra's own key is already in
-  # ssh-keys.nix; the ISO uploaded 2026-08-17 predates it, which is why
-  # `./provision up arca` from terra failed with "no SSH as root".
-  # Rebuild and re-upload the ISO after changing either list.
+  # The one key here belongs to a small always-on box, so a machine can
+  # be provisioned while the main workstation is down. An ISO built
+  # before a key was added does not carry it, and an install from that
+  # machine then fails with "no SSH as root": rebuild and re-upload the
+  # ISO after changing either list.
   installerOnlyKeys = [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPevIyUUgWN5WCCnQFrueP2OTX/gcAD8PO0OWappqQVK mverte@arca"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPevIyUUgWN5WCCnQFrueP2OTX/gcAD8PO0OWappqQVK installer-only"
   ];
   sshKeys = (import ../lib/ssh-keys.nix) ++ installerOnlyKeys;
 in

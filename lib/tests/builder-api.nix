@@ -1,6 +1,6 @@
 # Does the builder API still accept a minimal call?
 #
-# `PLAN.md` states the constraint this exists to enforce: a second
+# `AGENTS.md` ("Builder API") states the constraint this exists to enforce: a second
 # consumer (the work machine) uses `lib.mkHome` from its own wrapper, and
 # **its call sites cannot be updated from this repo**. So changes here
 # have to be additive -- a new *optional* argument is fine, a new
@@ -75,7 +75,7 @@ let
   # These are cheap module-system reads that prove each builder accepted
   # the host set and produced an evaluated configuration. **This does not
   # prove a configuration builds** -- that is a wrapper's job, and
-  # nix-config-private's `./check` does it for the real hosts.
+  # its own checks do it for the real hosts.
   facts = {
     # mapAttrs over the host set: proves the name reached the config, so
     # a builder that returned an empty set fails here rather than

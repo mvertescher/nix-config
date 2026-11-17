@@ -1,5 +1,6 @@
 # Shared pkgs constructor: one definition of "this repo's nixpkgs" so
-# the flake's own pkgs and both builders (mkNixos, mkHome) can't drift.
+# the flake's own pkgs and the builders (mkNixos, mkHome, mkDarwin)
+# can't drift.
 { inputs, overlays }:
 
 system:

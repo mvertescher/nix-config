@@ -86,9 +86,9 @@ in {
   # value here to mkForce and every theme one step past that -- two
   # files that each had to know the other's priority number. With the
   # target off, the look below is a set of defaults and a theme
-  # overrides any of it with a plain definition (THEMES-SPLIT-PLAN.md,
-  # seam 1). The target also set `misc.background_color`, kept below,
-  # and turned hyprpaper on, which each theme does for itself.
+  # overrides any of it with a plain definition. The target also set
+  # `misc.background_color`, kept below, and turned hyprpaper on, which
+  # each theme does for itself.
   stylix.targets.hyprland.enable = false;
 
   wayland.windowManager.hyprland.settings = {

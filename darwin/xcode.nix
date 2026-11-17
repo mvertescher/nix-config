@@ -39,7 +39,7 @@ let
     # nix-darwin loads launchd daemons *before* postActivation runs, so on
     # the deploy that introduces or changes Xcode this starts ahead of the
     # link and xcode-select. Wait for them rather than exit: exiting left
-    # malum's first run (2026-09-26) doing nothing until the next deploy.
+    # a Mac's first run (2026-09-26) doing nothing until the next deploy.
     for _ in $(seq 1 120); do
       [ "$(xcode-select -p 2>/dev/null)" = "${developer}" ] && break
       sleep 5

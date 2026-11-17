@@ -3,8 +3,8 @@
 # This is the only real `nixosSystem` in this repo. check.yml deliberately
 # builds no host configuration -- there are none to build -- so until this
 # workflow existed, nothing in CI ever evaluated a NixOS module tree here.
-# `system/github-authorized-keys.nix` is shared with a wrapper's server
-# host and is exercised by this ISO and nothing else; an option rename in
+# `system/github-authorized-keys.nix` is shared with wrapper hosts
+# and is exercised by this ISO and nothing else; an option rename in
 # a nixpkgs bump would have surfaced during a provisioning run, from a
 # console, at the worst possible moment.
 #
@@ -15,7 +15,7 @@
 # had put a 21 GB disk-reclaim step at the top of goldens.yml; that step
 # is gone too.
 #
-# Measured on terra (32 vCPU, empty chroot store via `nix build --store`,
+# Measured on a workstation (32 vCPU, empty chroot store via `nix build --store`,
 # pristine `git archive` of HEAD, so nothing was warm):
 #
 #     cold build            2m12s wall
@@ -26,7 +26,7 @@
 #     system closure        2.3 GiB NAR, 781 paths
 #
 # 5.2 GB against 87 GB free is not close. The runner is 4 vCPU against
-# terra's 32 and mksquashfs is the parallel part, so expect this job to
+# the workstation's 32 and mksquashfs is the parallel part, so expect this job to
 # take appreciably longer than 2m12s -- the "Report" step below prints
 # the real numbers so the first run replaces this estimate with a fact,
 # the way goldens.yml's header was written after its first run.
@@ -95,13 +95,13 @@ jobs:
 
       # `.#` and not `path:.`: on a fresh checkout the two are equivalent,
       # but `path:` copies untracked files, and on a working checkout that
-      # includes a cargo target/ -- 20 GB of it on terra, which is the
+      # includes a cargo target/ -- 20 GB of it on a workstation, which is the
       # same trap the crate's matrix runner guards against.
       - name: Build the ISO
         run: nix build --print-build-logs .#packages.x86_64-linux.installer-iso
 
       # Numbers, not worries. Whatever this prints on the first run
-      # belongs in the header above, replacing the terra measurements.
+      # belongs in the header above, replacing the workstation measurements.
       - name: Report
         run: |
           echo "iso image:"

@@ -4,8 +4,8 @@
 # it needs none of the flake's `inputs` and can be applied to a bare
 # `<nixpkgs>`.
 #
-# Additive, which `PLAN.md` requires of anything the work wrapper
-# consumes -- its call sites cannot be updated from here. Every name
+# Additive, which `AGENTS.md` ("Builder API") requires of anything the
+# work wrapper consumes -- its call sites cannot be updated from here. Every name
 # below is absent from nixpkgs, so nothing that already resolves
 # changes meaning.
 #

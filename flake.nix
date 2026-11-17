@@ -1,5 +1,5 @@
 {
-  description = "Home Manager configuration";
+  description = "Shared NixOS, nix-darwin and home-manager configuration, as a library for wrapper flakes";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";

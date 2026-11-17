@@ -8,8 +8,8 @@
 #
 # This lives in the public repo because the installer ISO (see
 # ./installer.nix) is built from this flake alone and cannot import
-# anything private; the private server host imports this same file by
-# path. It used to be copy-pasted in both places.
+# anything private; wrapper hosts import this same file by path. It
+# used to be copy-pasted in both places.
 #
 # FAIL-CLOSED, deliberately. sshd's AuthorizedKeysCommand contract is
 # stricter than it looks: auth2-pubkey.c parses the command's stdout

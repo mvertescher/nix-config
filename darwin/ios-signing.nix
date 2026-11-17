@@ -37,7 +37,7 @@ let
 
   # Apple's WWDR G3 intermediate, which issues today's Apple Development
   # and Apple Distribution certificates. macOS ships Apple Root CA but
-  # not necessarily this intermediate -- malum had only the expired G1 --
+  # not necessarily this intermediate -- one Mac had only the expired G1 --
   # and without it the identity imports yet `find-identity -v` reports
   # 0 valid identities and codesign cannot build a chain. Pinned by hash;
   # valid until 2030-02-20.
@@ -100,7 +100,7 @@ let
       -P "$(cat ${lib.escapeShellArg cfg.identityPasswordFile})" -f pkcs12 \
       -T /usr/bin/codesign -T /usr/bin/productbuild -T /usr/bin/security >/dev/null
     # "Already exists" is success: once any keychain on the search list
-    # holds G3 (malum's login keychain gained one on 2026-09-28, from a
+    # holds G3 (a login keychain gained one on 2026-09-28, from a
     # release run or Xcode), importing it again fails with that error,
     # and under `set -e` it aborted every signing run although the
     # chain still resolves through the existing copy. Anything else is
