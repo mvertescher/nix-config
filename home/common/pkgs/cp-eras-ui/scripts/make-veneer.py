@@ -26,7 +26,8 @@ drawn with the *line, ground and grain* measured for the blend generator.
    `accel` -- the run into a streak, crossing the axis), `ramp` (a band
    between two curves across which the lines step sideways: the panel's
    sweep and crease), `fold` (a ridge), `shear` (lean off an edge),
-   `ripple` (zigzag), `knot`. Amounts and curves may be piecewise linear
+   `ripple` (zigzag), `knot`, `spindle` (lines gathered into a seam:
+   the store streak's core and run-in). Amounts and curves may be piecewise linear
    across the grain ([(s, value), ...]). A family may also be cut to a
    strip across the grain (`swindow`); its lines end at the cut, a jog.
    With `trim` its lines end exactly on its box, so two strips whose
@@ -91,14 +92,31 @@ SPACING = dict(amp=0.0, cell=6.0, along=150.0)
 QUANT = dict(step=30.0, hyst=3.0, tol=0.5, radius=9.5)
 CORE = (150.0, 61.0, 30.0)   # the store streak core, darkest compounded ink
 
-# The store streak (2026-11-15 refit): the lean's acceleration and the
-# core bend peak at s ~208-235 (native crop x 500-565) and ease off at the
-# right edge, so the core is darkest mid-card and thins to the right, as
-# the reference's spindle does (it was thickest at the edge).
-STREAK_LEAN = dict(kind='lean', ts=(110.0, 115.5), w=1.2, amount=(-2.8, -3.0),
-                   accel=[(0.0, 0.0), (150.0, -0.45), (208.0, -1.6), (235.0, -1.6), (262.0, -1.3)])
-STREAK_BEND = dict(kind='bend', ts=121.46, w=16.0, p=2.0,
-                   amount=[(0.0, 0.0), (200.0, -3.0), (235.0, -4.0), (262.0, -3.5)])
+# The store streak (2026-11-16 veneer pass). Mapped on the reference:
+# left of native x ~490 each leaf's lines knee sharply at y ~258-268 and
+# run down at 15-30 deg from horizontal into a lattice band (x 300-430:
+# G < 140 over 25-34 rows, no core); from x ~470 a dark spindle core
+# grows (G < 80 over 10 rows at x 490-550) and thins to 4 at the right
+# edge, while the run-in rises: right of x 500 the lines start curving at
+# y 250 (x 525) to 232 (x 600), a long curve rather than a knee. Now:
+# STREAK_LEAN (the knee and lattice run; twin-shifted, so the combs knee
+# on alternate rows, the reference's 7/4 gaps), STREAK_LEAN_FIXED (the
+# part that tapers out to the right; `fixed`, the same for both combs: a
+# twin-shifted taper beat the combs into pairs), and STREAK_SPINDLE: a
+# sech^2 core whose area peaks at s 215 (native x 516) and falls towards
+# the edge, which thins it, plus a wide Lorentzian part right of s 175
+# whose long run-in raises the knees towards the right edge.
+STREAK_TS = [(0.0, 110.0), (262.0, 115.5)]
+STREAK_LEAN = dict(kind='lean', ts=STREAK_TS, w=1.2, amount=-2.0)
+STREAK_LEAN_FIXED = dict(kind='lean', fixed=True, ts=STREAK_TS, w=1.2,
+                         amount=[(0.0, -0.8), (170.0, -0.9), (235.0, 0.0)],
+                         accel=[(0.0, 0.0), (120.0, -0.4), (160.0, -0.4), (185.0, -0.15), (205.0, 0.0)])
+STREAK_SPINDLE = dict(kind='spindle', seam=121.46, past=1.0, carry=0.1, parts=[
+    ([(130.0, 0.0), (215.0, 75.0), (240.0, 60.0), (262.0, 25.0)],
+     [(0.0, 4.0), (170.0, 3.0), (200.0, 2.0), (220.0, 1.8), (262.0, 1.0)], 'sech'),
+    ([(175.0, 0.0), (262.0, 30.0)], [(0.0, 6.0), (262.0, 9.0)]),
+])
+STREAK = [STREAK_LEAN, STREAK_LEAN_FIXED, STREAK_SPINDLE]
 
 # The EMAIL card (2026-11-15 second refinement). LEAN_L is the lower leaf's
 # lean in its mirrored coordinates; the two are not symmetric, so the
@@ -188,8 +206,12 @@ PANEL_UNDER_R = dict(kind='ramp', k=3.0, a=PANEL_UNDER, b=[(s, t + 62.5) for s, 
 # the edge (TOP_KNEE). The old shear at t 34 plus a bend at t 42 drew a
 # zigzag that leaned only ~60 deg and curved the wrong way at the right.
 TOP_EDGE = [(0.0, 102 / R), (170.0, 100 / R), (262.1, 88 / R)]
+# The sweep's amount is weighted to native x 400-500 (2026-11-16): the
+# reference's band is darkest there (mean G of its darkest 10 rows 143-150,
+# 166-170 left of x 400, 184-193 at the right edge, where ours was 131).
 TOP_SWEEP = dict(kind='ramp', k=2.0, a=[(0.0, 70 / R), (262.1, 78 / R)], b=TOP_EDGE,
-                 amount=[(0.0, -75.0), (262.1, -75.0)])
+                 amount=[(0.0, -45.0), (130.0, -50.0), (170.0, -75.0), (210.0, -75.0), (240.0, -35.0),
+                         (262.0, -20.0)])
 TOP_KNEE = dict(kind='ramp', k=3.0, a=TOP_EDGE,
                 b=[(83.0, 140 / R), (140.0, 136 / R), (181.0, 120 / R), (202.0, 106 / R), (233.0, 99 / R),
                    (262.1, 95 / R)],
@@ -209,12 +231,12 @@ SURFACES = {
         wave=dict(amp=2.0, along=150.0, across=40.0),
         kinks=dict(n=10, amp=1.4, rs=(3.0, 8.0), rt=(5.0, 14.0)),
         families=[
-            dict(window=(None, 123.0), terms=[
+            dict(window=(None, 121.46 + 2.5), fade=(0.0, 3.5), terms=[
                 dict(kind='shear', ts=29.0, w=4.0, amount=(2.0, 1.5)),
                 dict(kind='ripple', ts=32.0, w=4.0, amount=1.8, wavelength=(14.0, 45.0)),
-                TOP_SWEEP, TOP_KNEE, STREAK_LEAN, STREAK_BEND,
-            ]),
-            dict(mirror=121.46, window=(119.9, 192.6), terms=[STREAK_LEAN, STREAK_BEND]),
+                TOP_SWEEP, TOP_KNEE,
+            ] + STREAK),
+            dict(mirror=121.46, window=(121.46 - 2.5, 192.6), fade=(3.5, 0.0), terms=STREAK),
             dict(window=(192.6, None), terms=[
                 dict(kind='bend', ts=192.6, w=16.0, c=0.3, amount=(4.0, 26.0), power=1.5, real=True),
                 dict(kind='bend', ts=241.7, w=18.0, amount=(8.0, 14.0), real=True),
@@ -507,6 +529,28 @@ def family_phi(surf, fam, s, t):
             if 'accel' in term:
                 lean = lean + across(s, S, term['accel'], term.get('accel_power', 1.0)) * d * d / 2.0
             phi = phi + lean
+        elif kind == 'spindle':
+            # Lines gathered into a seam: dphi/dt = -sum (area / u0) * K(u /
+            # u0), u = t - seam, each part's area and u0 piecewise across
+            # the grain; K is a Lorentzian (a long gentle run-in) or, with
+            # 'sech', sech^2 (vertical until close, then a hard turn). The
+            # shift on the seam is area * pi / 2 (Lorentzian) or area, so
+            # narrowing u0 sharpens the core without the shift growing
+            # across the grain, which would make phi non-monotone (lines
+            # hairpin). Past the seam u0 is the constant `past` (a u0
+            # varying across the grain folds the lines there) and the
+            # shift added is scaled by `carry`: there it counts double.
+            # `seam` is not a `ts`, so the twin comb is not moved: both
+            # combs gather into one core, evenly interleaved.
+            u = tt - term['seam']
+            for part in term['parts']:
+                area, u0 = pw(s, part[0]), pw(s, part[1])
+                u0 = np.where(u > 0, term.get('past', u0), u0)
+                g = np.where(u > 0, term.get('carry', 1.0), 1.0)
+                if len(part) > 2 and part[2] == 'sech':
+                    phi = phi - area * (g * np.tanh(u / u0) + 1.0)
+                else:
+                    phi = phi - area * (g * np.arctan(u / u0) + np.pi / 2)
         elif kind == 'ripple':
             # Cathedral zigzag: a sideways wave along the grain, on the
             # side t < ts (soft edge `w`), its phase drifting across it.
@@ -551,6 +595,8 @@ def phi_at(surf, fam, s, t, twin):
 
 
 def shifted(term, dt):
+    if term.get('fixed'):
+        return term   # the same for both combs, so they stay interleaved
     term = dict(term)
     if isinstance(term.get('ts'), list):
         term['ts'] = [(x, v + dt) for x, v in term['ts']]

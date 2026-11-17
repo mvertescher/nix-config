@@ -477,6 +477,96 @@ the reference's leans. The SMG middle is ~7 G levels darker than the
 reference's (its 2.4-texel pitch with the measured single line), and its
 lower seam's chevrons are steeper than the reference's at rows 53-61.
 
+### Sixth refinement (2026-11-16): the store card's main streak
+
+One surface refit (`store-card.png`); the other five PNGs are
+byte-identical (sha256 checked). Generator changes, none of which alters
+a surface that does not use them:
+
+- New term `spindle`: lines gathered into a seam, `dphi/dt = -sum (area /
+  u0) K((t - seam) / u0)` per part, `area` and `u0` piecewise across the
+  grain, `K` a Lorentzian (a long gentle run-in) or, with `'sech'` as a
+  part's third element, sech^2 (vertical until close, then a hard turn).
+  The shift on the seam is `area * pi / 2` (Lorentzian) or `area` (sech),
+  so narrowing `u0` at a constant area sharpens the core without the
+  shift growing across the grain. Past the seam `u0` is the constant
+  `past` and the added shift is scaled by `carry` (a `u0` varying across
+  the grain there, or the full shift, folds the lines). The seam is
+  `seam`, not `ts`, so the twin comb is not moved.
+- A term marked `fixed` is the same for both combs (`shifted` leaves
+  it). A twin-shifted lean whose amount *tapers* across the grain beats
+  the two combs in and out of phase: they pair up into doubled lines
+  where the offset passes half a pitch.
+
+**What the reference's streak is** (native 4K crop, text masked;
+structure tensor sigma 3 for angles, per-column counts for darkness):
+
+- *Left of native x ~490: a knee and a lattice.* Lines are vertical to a
+  sharp knee row at y ~258 (x 250) to ~266 (x 450), the row converging
+  slightly on the axis to the right (lower knee mirrored, 325 to 316).
+  Past it they run down at 15-30 deg from horizontal and the two leaves
+  cross in a band y ~277-307 whose edges are darker (lines flattening)
+  and whose middle is light diamonds: G < 140 over 13-34 rows, no pixel
+  under G 80, darkest rows at 298-304, not on the axis. Further left
+  (x < 125, under the text) the band is wider (y 255-330) and the lines
+  cross steeper.
+- *From x ~470: a spindle.* A dark core grows on the axis (G < 80 rows at
+  x 450 / 470 / 490 / 510 / 530 / 550 / 570 / 590 / 610: 1 4 10 9 10 9
+  6 5 4; minimum G 57-64), thickest at x 490-550, thinning to the edge.
+- *The run-in rises.* Right of x ~500 the lines no longer knee: they
+  curve over a long distance, starting at y 250 (x 525), 244 (550), 232
+  (575-600), angle -6 / -21 / -37 / -51 per 6 rows at x 525, mirrored
+  below to y ~352. The change at x ~490-500 is continuous (no strip cut)
+  but abrupt, and reads as a vertical seam in the reference.
+- *Upper sweep.* Darkest 10-row band in rows 55-115 per 50-px column
+  (mean G): 168 170 169 166 166 170 169 167 150 143 161 184 193 -- it is
+  strongest at x 400-500 and gone at the right edge.
+
+**Now.** The streak is `STREAK = [STREAK_LEAN, STREAK_LEAN_FIXED,
+STREAK_SPINDLE]` on both leaves (`STREAK_BEND` and the old accelerating
+lean are gone), the leaves overlap 2.5 px past the axis each way and fade
+over 3.5 (`window` 121.46 +- 2.5, `fade`):
+
+- `STREAK_LEAN` (twin-shifted, so the knees alternate: the reference's
+  7/4 gaps under the lower knee row): ts 110 / 115.5 at s 0 / 262, w 1.2,
+  amount -2.0.
+- `STREAK_LEAN_FIXED` (same ts): amount -0.8 / -0.9 / 0 at s 0 / 170 /
+  235, accel 0 / -0.4 / -0.4 / -0.15 / 0 at s 0 / 120 / 160 / 185 / 205.
+- `STREAK_SPINDLE`, seam 121.46, past 1.0, carry 0.1: a sech part of area
+  0 / 75 / 60 / 25 at s 130 / 215 / 240 / 262 and u0 4 / 3 / 2 / 1.8 / 1.0
+  at s 0 / 170 / 200 / 220 / 262 (the core; its area falling to the
+  right is what thins it, lines leaving it past the seam), and a
+  Lorentzian part of area 0 / 30 at s 175 / 262, u0 6 / 9 (the long
+  run-in: the rising knees, without widening the G < 140 band, which a
+  lean starting higher did).
+- `TOP_SWEEP` amount -45 / -50 / -75 / -75 / -35 / -20 at s 0 / 130 /
+  170 / 210 / 240 / 262 (was -75 throughout). The shear, ripple
+  (zigzag) and `TOP_KNEE` are unchanged.
+
+Numbers (native 4K crop; reference / committed / now). Pixels per column
+with G < 80 (G < 140), rows 240-345, x 200 / 300 / 400 / 500 / 540 / 600
+/ 620: 3(10) 0(13) 0(25) 7(22) 9(19) 4(25) 3(30) / 0(9) 0(14) 1(19)
+6(27) 7(23) 5(22) 3(22) / 0(11) 0(14) 0(23) 5(22) 6(22) 4(22) 2(20).
+G < 80 at x 450 ... 610 step 20: 1 4 10 9 10 9 6 5 4 / 5 7 7 7 7 7 7 7 4
+/ 5 4 6 8 7 6 8 5 3. Mean angle error (deg) / mean G, text masked: rows
+0-170 19.1 / 19.3, G 184.1 / 180.5 / 182.8; rows 170-250 3.0 / 3.3;
+streak left (rows 250-335, x 150-450) 7.0 / 8.2, G 176.8 / 174.5 /
+178.2; streak right (rows 225-360, x 450-629) 12.0 / 10.3, G 171.6 /
+175.5 / 175.9; rows 360-460 13.9 / 14.2. Upper sweep, darkest band per
+50-px column: committed 152 152 152 151 151 147 148 147 142 140 132 133
+130; now 172 172 169 168 168 165 157 152 145 140 138 154 168.
+
+Still wrong after it: the core peaks at 7-8 rows of G < 80 where the
+reference's reaches 10 (its minimum G is 57-64, ours 73: our compounded
+ink stops short of the floor), and it starts ~20 px early (5 rows at x
+450 against 1); the left lattice band is a little lighter and narrower
+than the reference's, with no darker band edges; the right-hand run-in
+is a smooth fan where the reference's begins abruptly at x ~490 (and
+there carries a vertical seam down the card, which ours has only above
+the streak, where the weighted sweep leaves a lighter vertical patch at
+native x 500-629, y 110-200 that reads as a box edge at 1600x900); the
+top zigzag was not revisited.
+
 ## Surfaces
 
 | Texture | Surface | Design box | Texels |
