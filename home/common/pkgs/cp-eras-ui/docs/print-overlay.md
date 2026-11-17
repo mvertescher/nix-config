@@ -1,4 +1,4 @@
-# Print overlay, 2026-11-13 (copies remeasured, and on for all eras, 2026-11-14; ground and chroma gates, Entropism refit 2026-11-15; enclosure gate, far-copy softness, measured grain 2026-11-16)
+# Print overlay, 2026-11-13 (copies remeasured, and on for all eras, 2026-11-14; ground and chroma gates, Entropism refit 2026-11-15; enclosure gate, far-copy softness, measured grain 2026-11-16; elements above the print and the bloom, 2026-11-16)
 
 Owner decision 6 (`docs/review-2026-11-13/DECISIONS.md`): one shared
 print-texture pass per era instead of element-by-element echo and grain
@@ -445,11 +445,14 @@ which is the art, not the copies.
 ### Not done in this pass
 
 - Neomil header badge's legible second "T1"/"LEVEL" (re-review item 5):
-  not measured.
-- Kitsch copies grey vs the reference's mint halo (item 6): not measured;
-  the mint is most likely the bloom, which carries the mark's hue.
+  done later the same day, "Above the print, and the bloom" below.
+- Kitsch copies grey vs the reference's mint halo (item 6): it is the
+  bloom, which glows the mark's chroma; drawn since, same section.
 
 ### Bloom: what it would take
+
+(Superseded by "Above the print, and the bloom" below: re-measured per
+channel, the glow is the mark's chroma, with sigma 6-7 native px.)
 
 Measured as the median profile away from a light fill's edge on the side
 its copies do not reach (so it is the glow alone), relative to the fill's
@@ -560,6 +563,243 @@ drawings at offsets the pass does not produce.
 Evidence (native 4K crops, 4-10x zooms, profiles, model diagram) was
 written outside the repository; no reference pixels are committed.
 
+## Above the print, and the bloom, 2026-11-16
+
+Tools in the session scratch (`print-bloom/tools/`: `badge.py` zone
+means, `halo.py` ring colour by distance from ink, `hfft.py` hatch
+spectrum, `gprof.py` per-channel glow profile, plus `ghost-refit/tools/cc.py`
+for copy contrast), not the repository. 4K native unless "1600".
+
+### Elements above the printed layer
+
+Three places in the references show copies the frame's colours cannot
+explain (each was measured and no gate on luminance, chroma or hue
+separates them; see the sections above): Neomil's header badge plates
+(nothing of T1 / LEVEL doubled inside the plate, while the plate's own
+ghost shows outside it), Neomil's inactive login cards (notices without
+copies, while mailbox rows of the same colour keep theirs), and Kitsch's
+BRAINDANCE body text (no outward copy; a hatched olive halo instead).
+They are elements laid *after* the print. That is a property of the
+element, so it is stated per element.
+
+**Mechanism: a short list of shapes in the pass's uniforms.**
+`print::AbovePrint { x, y, w, h, bevel, cast, halo }` -- a rectangle with
+45-degree corner cuts in design px, the shape of a `Plate` -- up to
+`MAX_ABOVE` (12) per screen, carried on the material (`Print::above`) and
+sent as three `vec4`s each. In the pass:
+
+- a copy landing inside any region is dropped (antialiased over one
+  device pixel): the element covers the print;
+- a copy whose *source* lies in a region with `cast: false` is dropped:
+  the element casts nothing (text set over everything). With `cast: true`
+  (a plate printed underneath as well) its own copies still go outward;
+  for those the lift gate reads the channel in which the copy is lightest
+  instead of luminance, because a dim plate on a ground of about its own
+  luminance (badge plate 0.20 against the glow's 0.18) otherwise loses its
+  ghost to the gate -- the reference shows it plainly;
+- `halo` (per channel, the fraction of the way from the ground to the mark
+  at the mark's edge) draws a hatched halo hugging the light marks inside
+  the region: the lightest neighbour on four rings (8, 8, 12, 16 taps at
+  0.4 / 0.9 / 1.5 / 2.2 `halo_sigma`), Gaussian in distance, hatched by
+  the material's `hatch` at `halo_hatch` depth. Only region pixels pay.
+
+Why not a mask render target the scene writes: iced's canvas buckets each
+layer's geometry into meshes, images and text and draws them in its own
+order through its own pipelines; a second colour attachment would mean
+patching every pipeline (quad, triangle, text, image) to write a coverage
+channel, and the screens' canvases cache geometry, so a flag on a draw
+call would not be re-issued each frame. A reserved alpha channel fails the
+same way (the frame's alpha is the surface's). The regions are few, large
+and static per screen, and their geometry is already data on the era
+tables, so uniforms are the simplest thing that is correct; the cost is a
+loop over at most 12 regions on pixels a copy touches.
+
+**How a screen uses it.** List the elements beside their data and attach
+them to the screen's material:
+
+```rust
+const LOGIN_ABOVE: &[print::AbovePrint] = &[
+    print::AbovePrint::plate(&LOGIN_BADGE_CUSTOMER),   // casts its ghost
+    print::AbovePrint::plate(&LOGIN_CARD_2),
+];
+const PRINT_LOGIN: Print = Print { above: LOGIN_ABOVE, ..PRINT_MAILBOX };
+// or, for a text block: AbovePrint::block(x, y, w, h).with_halo(Halo { gain })
+```
+
+`AbovePrint::plate` reads the plate's own `Plot` and `Bevel`, so the
+plate is defined once (the login's badges and inactive cards are now named
+constants used by both the drawing and the list). `print::of_screen`
+returns the screen's list; `Print::above(list)` attaches one to any
+material, e.g. `print::of(era).above(MY_SCREEN_ABOVE)` for a new screen
+worn through `print::wear`'s internals. `CP_ERAS_UI_PRINT_SET="above=off"`
+drops them for measuring. Limits: rectangles with corner cuts only (no
+rounded or free paths), in the design frame, static per screen -- an
+element that moves needs its screen to restate the material.
+
+Applied (2026-11-16):
+
+| Case | Measure | Reference | Before | After |
+|---|---|---|---|---|
+| Neomil login, customer badge (T1) | red mean / max, up-left of T1 inside the plate | 69 / 79 | 85 / 155 | 66 / 69 |
+| | plain plate | 66 / 69 | 66 / 69 | 66 / 69 |
+| | outside the plate, up-left (its ghost) | 47 / 77 | 38 / 46 | 42 / 63 |
+| Neomil login, inactive card 2 notice | copy 1 / copy 2 contrast, levels R | -0.8 / -0.8 | 5.6 / 5.7 | -0.1 / -0.1 |
+| inactive card 3 notice | | 1.0 / -1.0 | 10.5 / 11.0 | -0.1 / -0.1 |
+| active card notice (not a region) | | 33.6 / 23.1 | 25.0 / 16.0 | 25.0 / 16.0 |
+| Kitsch BRAINDANCE body text | copy 1 contrast R / G | 1.0 / 0.4 | 11.2 / 9.2 | 0.2 / 0.2 (1.4 / 1.0 with the bloom on) |
+| same panel's outline (not a region) | copy 1 contrast R | 31.5 | 21.3 | 20.4 |
+
+All five login badges are regions (the four security badges too: the
+same plates). The rest of each frame is unchanged: on the Neomil login
+the pixels that differ lie only in the five badges and the two inactive
+cards (the active card and its emblem untouched); on the Kitsch dashboard
+only inside the text block.
+
+The Kitsch halo, measured on the eight lines (2920..3432 x 880..1240):
+excess over the ground (17, 11.5, 11.5) by distance from the ink's edge,
+R / G levels: reference 30 / 18.5 at 2-3 px, 22 / 12.4 at 3-4, 15 / 7 at
+4-5, 8 / 2.7 at 5-6, gone by 8; ours 34 / 20, 22 / 13, 17 / 10, 7 / 4.
+Hatch: G std in the ring 14.4 reference, 15.5 ours; pitch 3.96 native px
+(1.65 dp), normal at -45 degrees (the spectral peak). `Halo { gain:
+[0.34, 0.25, 0.08] }`, `halo_sigma` 1.4 dp, `halo_hatch` 0.75. By eye at
+5x the reference's hatching is less regular (a broken maze) than our
+straight lines; the strength and reach match.
+
+### Bloom
+
+Re-measured on the side of a light fill the copies do not reach (the side
+facing the screen centre), per channel, as the excess over the ground
+relative to that channel's fill-to-ground contrast, every px from the
+edge (`gprof.py`):
+
+| Era, site | R | G | B |
+|---|---|---|---|
+| Neo-kitsch login, right ENTER bar, left end (2..12 px) | .25 .22 .19 .17 .14 .12 .10 .07 .06 .05 .03 | .22 .18 .16 .13 .12 .10 .08 .06 .04 .03 .02 | .04 .03 .02 .02 .01 0 |
+| Neo-kitsch login, left bar, right end | the same within .02 | | |
+| Kitsch login, ENTER bar, right end (2..11) | 0 | .19 .17 .14 .12 .09 .07 .05 .03 .01 0 | .20 .17 .14 .11 .08 .06 .05 .03 .01 0 |
+| Entropism login, footer band, top edge (3..12) | .02 .01 0 | .17 .15 .12 .10 .07 .06 .04 .02 .01 .01 | .02 .01 0 |
+
+So the glow is not the mark's colour: it is its **chroma**. Kitsch's mint
+bar (124, 246, 216) glows green and blue with no red, Entropism's sage
+(135, 170, 138) green alone, Neo-kitsch's amber (255, 195, 112) red and
+green with no blue -- in each, the colour less its grey part `min(r, g,
+b)`. That is the mint the Kitsch reviewer saw where our copies were grey:
+it is the glow, not the copies. Fitted as a half-plane through a
+Gaussian, `gain * chroma * erfc(x / (sigma sqrt 2)) / 2`: Neo-kitsch sigma
+about 7 native px (2.9 dp), gain about 1.1-1.2 of the chroma; Kitsch sigma
+about 6 (2.5 dp), gain about 1.0, blue a little stronger than green;
+Entropism sigma about 7 (2.9 dp), but its sage has so little chroma (35
+levels of G) that the chroma model needs gain 2.3, and at that gain the
+store's yellow PETROCHEM / BETTERLIFE bands (chroma 200) blazed and their
+dark tag text was lost under the glow (seen at 1600; the reference's bands
+have no such glow). Entropism therefore glows green whatever the colour:
+`tint (0, 1, 0)`, chroma 0, gain 0.4 of the colour itself. Kitsch went
+the same way: its yellow BRAINDANCE tab (left edge, the side copies do not
+reach) glows G .19 .16 .13 and R .11 .08 .06 of its contrast at 2-4 px --
+G about as strongly as the mint bar, not in proportion to its larger
+chroma -- and the chroma model at the mint's gain put 2.3x that on the
+yellow and smeared the BRAINDANCE body text. Kitsch therefore glows its
+colour with red held down: `tint (0.25, 1, 1)`, chroma 0, gain 0.55. The
+chroma model stays for Neo-kitsch, where it fits (no blue in the glow). The earlier figures (gain 0.24-0.33, sigma
+3.9-5.6) were fits of the luminance with a free edge offset; they are
+superseded. Neomil: none (0.004).
+
+The pass (`vendor/iced_wgpu`, `shader/bloom.wgsl`): three extra
+half-resolution passes into two `Rgba16Float` targets -- threshold and
+2x2 downsample (each full-resolution pixel weighted by `smoothstep(knee)`
+of its encoded luminance before averaging, so thin light strokes glow),
+then a separable Gaussian across and down (taps out to three sigmas, at
+most 24 each side) -- and in the print pass, after the copies and the
+halo and before scanlines and grain, the glow sampled bilinearly, hatched
+and screened: `out = 1 - (1 - out)(1 - gain * glow * tint * (1 + hatch
+cos))`. The glow lies *around* light parts, not on them: it is held off
+a pixel that is itself light, and off a pixel mostly surrounded by light
+(the blurred light fraction, carried in the glow's alpha, above 0.5-0.7),
+so a fill and the dark ink on it (Entropism's NEXT, Kitsch's ENTER) keep
+their colour, as in the references. A first version without that hold
+turned Entropism's NEXT button bright green and greened its letters.
+Inside an element above the print there is no glow either (its own, or
+neighbours'): Kitsch's BRAINDANCE text has its halo and no glow.
+
+Parameters (`print::Bloom` on the era's `Print`; `print::GLOW` the shared
+knee 0.35-0.55 and chroma 1):
+
+| era | gain | sigma (dp) | tint | hatch |
+|---|---|---|---|---|
+| Neo-kitsch | 1.0 | 2.9 | 1, 1, 1 | 0.25, default hatch (1.6 dp, -45) |
+| Kitsch | 0.55, of the colour (chroma 0) | 2.5 | 0.25, 1, 1 | 0.25, the halo's hatch (1.65 dp, -45) |
+| Entropism | 0.4, of the colour (chroma 0) | 2.9 | 0, 1, 0 | 0.25, 1.75 dp at -42 (the footer glow's spectral peak, weak) |
+| Neomil | 0 | -- | -- | -- |
+
+Sigma is in design px, so it holds at 1600x900, 4K and the TV fitting.
+`CP_ERAS_UI_PRINT_SET="bloom=off"` removes the glow alone;
+`bloom_gain`, `bloom_sigma`, `bloom_knee`, `bloom_tint`, `bloom_hatch`,
+`bloom_chroma`, `hatch=pitch,angle` tune it; `CP_ERAS_UI_PRINT=0` still
+turns everything off.
+
+After (same sites, ours at 4K, relative excess every px from 2):
+
+| | channel | reference | ours |
+|---|---|---|---|
+| Neo-kitsch bar | R | .25 .22 .19 .17 .14 .12 .10 .07 .06 | .26 .26 .23 .18 .13 .10 .09 .08 .07 |
+| Kitsch bar | G | .19 .17 .14 .12 .09 .07 .05 .03 .01 | .20 .16 .13 .11 .08 .06 .04 .03 .01 |
+| | B | .20 .17 .14 .11 .08 .06 .05 .03 .01 | .20 .16 .14 .11 .08 .06 .05 .03 .01 |
+| | R | 0 | .05 .05 .05 .03 .02 .01 0 |
+| Kitsch BRAINDANCE tab (yellow), left edge | G | .19 .16 .13 .10 .08 .06 .04 .03 .02 | .24 .19 .17 .14 .11 .09 .06 .05 .04 |
+| | R | .11 .08 .06 .04 .04 .03 .03 .01 0 | .05 .05 .04 .04 .03 .02 .01 .01 .01 |
+| Entropism footer | G (from 3) | .17 .15 .12 .10 .07 .06 .04 .02 .01 | .15 .13 .11 .09 .07 .06 .05 .04 .02 |
+
+Neo-kitsch's is 1.1-1.2x in the first 6 px; Kitsch's yellow 1.2x in G and
+half the reference's red (one tint cannot hold both the mint's zero red and
+the yellow's), its mint on the reference; Entropism's is 0.9x near and its tail runs a few
+px longer. By eye at 4K the three read like the references' glows (soft,
+hue-carrying, faintly hatched), not like a blur of the frame.
+
+**Copies refitted with the bloom on (Neo-kitsch).** The outward profile at
+the right ENTER bar's end, every 2 px (copy side; glow and copies
+together): reference 68 62 49 46 38 34 28 20 22 20 18 10 13 11 9; ours
+before the bloom 65 53 40 31 26 24 20 17 15 9; with it 86 71 53 39 31 27
+22 18 15 10. The mirror side (glow alone) now matches (reference 44 34 27
+20 14 11 10; ours 47 35 22 21 15 12 12), so what remains is the copies:
+near 1.5x too strong, far too short. Copy gains 0.17 / 0.17 (from 0.21 /
+0.12) were tried: the bar end's copy part went to 39 38 36 26 23 20 15 11
+7 (reference 24 28 22 26 24 23 18 10 12 10 9) -- the far band better, the
+near no lower -- and the dashboard labels' copy-1 ratio (reference / ours)
+from median 1.10 to 1.25 (dark-ground labels 1.25-1.57). Not adopted: the
+copies are unchanged at 0.21 / 0.12. The reference's near copy beside a
+fill is weaker than beside text, which one gain cannot fit (the same
+finding as Entropism's far copy, 2026-11-15).
+
+### Cost
+
+The pass alone on lavapipe (llvmpipe, LLVM 21, this 32-thread machine
+otherwise idle), best of 8 after 2 warm-up frames, timed by the ignored
+test `print::bench::time_print_pass` (`iced_wgpu::print::bench`; how to
+run it is in its doc comment) on captures of each screen. "Neither" is the
+material with `bloom=off;above=off`, i.e. the pass as it was before:
+
+| screen | size | neither | + regions | + bloom | as worn |
+|---|---|---|---|---|---|
+| Neo-kitsch login (bloom) | 1600x900 | 20.0 | -- | 23.0 | 23.0 |
+| | 3840x2160 | 130.0 | -- | 148.6 | 148.6 |
+| Entropism login (bloom) | 1600x900 | 19.4 | -- | 22.9 | 22.9 |
+| | 3840x2160 | 132.5 | -- | 152.1 | 152.1 |
+| Kitsch dashboard (bloom, 1 halo region) | 1600x900 | about 20 | 22.7 | 23.4 | 25.6 |
+| | 3840x2160 | about 108 | 115.4 | 123.0 | 130.8 |
+| Neomil login (7 regions, no bloom) | 1600x900 | 18.9 | 24.5 | -- | 24.9 |
+| | 3840x2160 | 71.6 | 102.1 | -- | 101.0 |
+
+(ms; "about" where only the two single-off runs exist. The Kitsch row was
+timed before its glow moved to the tint model and was kept off the
+regions; the passes run are the same.) The bloom costs
+about 3 ms at 1600x900 and 15-20 ms at 4K, well under the proposal's
+estimate. The regions cost more than expected on Neomil's login, +30 ms at
+4K: the shader tests every region for every copy of every pixel (two
+point-in-region tests per copy, seven regions). A bounding-box test or a
+coarse tile list would remove most of it; not done. The 2026-11-14
+figures (347-422 ms at 4K) were taken under heavy unrelated load and are
+not comparable.
+
 ## The pass (2026-11-13 prototype; superseded where the section above says)
 
 Per pixel, in encoded sRGB: two copies of the frame scaled about the
@@ -581,10 +821,11 @@ Tuning knobs (read once at start): `CP_ERAS_UI_PRINT=<strength>`,
 
 ## Limits
 
-- No bloom (needs a separable blur, i.e. more passes). Entropism text
-  regions stay darker than the reference (mail body mean G 38 vs 46).
-- Non-Neomil eras: the copies are broken by a diagonal pattern and
-  wrapped in bloom the pass does not draw (proposal above). Kitsch and
+- Bloom since 2026-11-16 (Kitsch, Neo-kitsch, Entropism; Neomil none):
+  the glow's hatching is straight lines where the references' is a broken
+  maze; its gains rest on one or two sites per era.
+- Non-Neomil eras: the copies are broken by a diagonal pattern the pass
+  draws only for Entropism (one family of lines). Kitsch and
   Entropism gains corrected 2026-11-15 (Entropism also wears a one-family
   diagonal texture for the maze). The far copy is softer than the near
   one since 2026-11-16 (`SOFT_FAR`); Neo-kitsch's near copy beside its
@@ -592,14 +833,12 @@ Tuning knobs (read once at start): `CP_ERAS_UI_PRINT=<strength>`,
 - The enclosure gate costs up to 8 x 13 x 3 extra samples on pixels a copy
   changed (early exits make the usual case one ray); the grain up to 16
   taps per pixel at 1600x900. Not re-timed.
-- Kitsch's BRAINDANCE panel body (yellow on dark): the reference's
-  copies are dark, hatched and nearly symmetric (copy contrast 1 level);
-  ours are solid (12 levels after the gain change). A centred hatched
-  halo around the text, not the pass; needs a per-element treatment (see
-  above). Not modelled.
-- Neomil's inactive login cards hide copies in the reference (notices
-  -0.8 and 1.0 levels against ours 6.4 and 10.2); not a property of the
-  ground's colour, so not gated.
+- Elements above the print (Neomil login badges and inactive cards,
+  Kitsch BRAINDANCE body text) are listed per screen as rectangles with
+  corner cuts, static: an element that moves needs its screen to restate
+  the material. The Neomil mailbox and dashboard badges are not listed
+  (not measured there). Kitsch's BRAINDANCE panel body is dark grey where
+  the reference's is maroon (art).
 - Neomil copies of a neutral mark are dropped, not drawn (chroma gate):
   the references have no neutral mark to fit.
 - Entropism mean colour rises 1-3.6 levels (G) against a reference ~1-2

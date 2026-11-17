@@ -41,5 +41,20 @@ since 2026-11-16 the far copy may take 16, the enclosure gate up to
 312 more on pixels a copy changed (usually one ray, 39), and the grain
 up to 16 noise taps per pixel.
 
+Since 2026-11-16 the material may also carry (`docs/print-overlay.md`,
+"Above the print, and the bloom"):
+
+- Up to `MAX_OVER` (12) regions above the print (`print::Over`, three
+  `vec4`s each after the parameters' eighteen): no copy shows inside one,
+  a non-casting one leaves no copy of itself, and one may wear a hatched
+  halo around its light marks (up to 44 taps, region pixels only).
+- A bloom (`shader/bloom.wgsl`, new): three more full-screen passes at
+  half resolution into two `Rgba16Float` targets kept with the frame
+  target -- threshold + 2x2 downsample, a separable Gaussian across, then
+  down (at most 49 taps each) -- sampled once by the print pass (binding
+  3) and screened over. They run only while the material has a bloom.
+- `print::bench`, hidden, times the pass for the doc; not used in drawing.
+  The frame target gained `COPY_DST` usage for it.
+
 Remove with the first change's removal, or when cp-eras-ui drops the print
 material, or if upstream gains a post-processing hook that can carry it.

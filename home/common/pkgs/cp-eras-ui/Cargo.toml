@@ -160,3 +160,8 @@ path = "examples/cp-eras-ui-mail.rs"
 [[bin]]
 name = "cp-eras-ui-floppy"
 path = "examples/cp-eras-ui-floppy.rs"
+
+[dev-dependencies]
+# Parses the vendored print shaders in a test (already in the tree through
+# wgpu with WGSL input), so a shader error fails `cargo test`, not a render.
+naga = { version = "27", features = ["wgsl-in"] }

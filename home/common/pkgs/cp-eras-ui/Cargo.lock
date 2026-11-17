@@ -636,6 +636,7 @@ dependencies = [
  "iced_layershell",
  "iced_wgpu",
  "libpulse-binding",
+ "naga",
  "png",
  "resvg",
  "sysinfo",

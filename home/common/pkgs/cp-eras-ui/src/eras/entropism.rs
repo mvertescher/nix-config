@@ -2211,5 +2211,11 @@ pub const PRINT: crate::print::Print = crate::print::Print {
     grain_mul: crate::print::GRAIN_MUL,
     grain_add: crate::print::GRAIN_ADD,
     grain_cell: crate::print::GRAIN_CELL,
+    // Entropism glows green only, whatever the light colour: its sage
+    // footer glows in G alone (R and B under 0.02 of their contrast), and
+    // a chroma glow at the sage's gain would set its yellow bands ablaze.
+    bloom: crate::print::Bloom { gain: 0.4, sigma: 2.9, tint: [0.0, 1.0, 0.0], chroma: 0.0, hatch: 0.25, ..crate::print::GLOW },
+    hatch: crate::print::Hatch { pitch: 1.75, angle: -42.0 },
+    ..crate::print::Print::OFF
 };
 // --- end print -------------------------------------------------------------

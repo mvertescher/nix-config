@@ -3830,6 +3830,43 @@ pub const PRINT: crate::print::Print = crate::print::Print {
     grain_mul: crate::print::GRAIN_MUL,
     grain_add: crate::print::GRAIN_ADD,
     grain_cell: crate::print::GRAIN_CELL,
+    // The above-print halo (`DASHBOARD_ABOVE`): sigma 1.3 dp, hatched at
+    // full depth by lines 1.65 dp apart, normal at -45 degrees.
+    halo_sigma: 1.4,
+    halo_hatch: 0.75,
+    hatch: crate::print::Hatch { pitch: 1.65, angle: -45.0 },
+    // Kitsch glows its colour, red held down: the mint ENTER bar glows G and
+    // B with no R, the yellow BRAINDANCE tab G about as strongly (0.19 of
+    // its contrast at 2 px) and R at 0.11. A chroma glow at the mint's gain
+    // put 2.3x that on the yellow.
+    bloom: crate::print::Bloom { gain: 0.55, sigma: 2.5, tint: [0.25, 1.0, 1.0], chroma: 0.0, hatch: 0.25, ..crate::print::GLOW },
     ..crate::print::Print::OFF
 };
 // --- end print -------------------------------------------------------------
+
+/// The dashboard's elements above the printed layer (`print::AbovePrint`,
+/// `docs/print-overlay.md`, "Above the print"), 2026-11-16: the BRAINDANCE
+/// panel's body text. In the reference it casts no outward copy (copy
+/// contrast about 1 level, R 1.0 / G 0.4, against 9-12 for a printed mark)
+/// while the panel's outline beside it keeps its copies, and it wears a
+/// dark olive halo hugging every glyph. Measured at 4K on the eight lines
+/// (native 2920..3432 x 880..1240), distance from the ink's edge against
+/// the ground's (17, 11.5, 11.5): excess (32, 18, 1.4) levels at 2-3 px,
+/// (15, 7, 0.6) at 4-5, gone by 8 -- a Gaussian of sigma 3.1 native px
+/// (1.3 dp) from the edge, at the edge 0.175 / 0.128 / 0.04 of the way to
+/// the ink -- hatched at full depth (G std 14 on an excess of 18) by
+/// diagonal lines of pitch 3.96 native px (1.65 dp) whose normal points
+/// -45 degrees (spectral peak). The block reaches 4 dp past the glyphs so
+/// the halo fits inside it.
+const DASHBOARD_ABOVE: &[crate::print::AbovePrint] = &[
+    crate::print::AbovePrint::block(1217.0, 338.0, 214.0, 179.0)
+        .with_halo(crate::print::Halo { gain: [0.34, 0.25, 0.08] }),
+];
+
+/// The material as worn on one reference screen (`print::of_screen`).
+pub(crate) const fn print_for(screen: crate::print::Screen) -> crate::print::Print {
+    match screen {
+        crate::print::Screen::Dashboard => PRINT.above(DASHBOARD_ABOVE),
+        _ => PRINT,
+    }
+}

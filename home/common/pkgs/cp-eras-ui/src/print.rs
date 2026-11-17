@@ -65,6 +65,121 @@ impl Texture {
     pub const FLAT: Texture = Texture { pitch: 2.0, angle: 90.0, crest: [1.0; 3], trough: [1.0; 3], phase: 0.0 };
 }
 
+/// An element that sits *above* the printed layer: laid after the print,
+/// so no registration copy shows inside it. The references draw some
+/// elements so -- Neomil's header badge plates (nothing of the label
+/// printed on a plate shows doubled inside it), its inactive login cards
+/// (their notices carry no copies, while mailbox rows of the same colour
+/// do), Kitsch's BRAINDANCE body text (no outward copy, a hatched halo
+/// instead) -- and no gate on the frame's colours can tell them from
+/// elements that are printed (`docs/print-overlay.md`, "Above the print").
+///
+/// The outline is a rectangle with 45-degree corner cuts in design px,
+/// the shape of a [`Plate`](crate::style::Plate) ([`AbovePrint::plate`]).
+/// `cast`: whether the element is itself printed underneath, so it still
+/// casts its own copies outward (a plate), or set over everything and casts
+/// none (a text block, [`AbovePrint::block`]). `halo`: a hatched halo
+/// hugging the light marks inside it ([`Halo`]).
+///
+/// A screen states its elements above the print with its material
+/// ([`Print::above`]); the reference screens' lists are on the era tables
+/// beside the elements they cover.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct AbovePrint {
+    pub x: f32,
+    pub y: f32,
+    pub w: f32,
+    pub h: f32,
+    /// Corner cuts: top-left, top-right, bottom-right, bottom-left.
+    pub bevel: [f32; 4],
+    pub cast: bool,
+    pub halo: Halo,
+}
+
+/// The halo an [`AbovePrint`] region wears around its light marks: per
+/// channel, the fraction of the way from the ground to the mark's colour
+/// at the mark's edge. It falls off as a Gaussian of the material's
+/// `halo_sigma` and is hatched by its `hatch` at `halo_hatch` depth.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Halo {
+    pub gain: [f32; 3],
+}
+
+impl Halo {
+    pub const NONE: Halo = Halo { gain: [0.0; 3] };
+}
+
+impl AbovePrint {
+    /// A plate laid above the print: it covers the copies of what is
+    /// printed on it and casts its own copies outward.
+    pub const fn plate(plate: &crate::style::Plate) -> AbovePrint {
+        let b = plate.bevel;
+        AbovePrint {
+            x: plate.at.x,
+            y: plate.at.y,
+            w: plate.at.w,
+            h: plate.at.h,
+            bevel: [b.tl, b.tr, b.br, b.bl],
+            cast: true,
+            halo: Halo::NONE,
+        }
+    }
+
+    /// A block (of text) set over everything: no copy shows inside it and
+    /// none of it is copied outward.
+    pub const fn block(x: f32, y: f32, w: f32, h: f32) -> AbovePrint {
+        AbovePrint { x, y, w, h, bevel: [0.0; 4], cast: false, halo: Halo::NONE }
+    }
+
+    pub const fn with_halo(self, halo: Halo) -> AbovePrint {
+        AbovePrint { halo, ..self }
+    }
+
+    fn region(&self) -> iced_wgpu::print::Over {
+        iced_wgpu::print::Over {
+            x: self.x,
+            y: self.y,
+            w: self.w,
+            h: self.h,
+            bevel: self.bevel,
+            cast: self.cast,
+            halo: self.halo.gain,
+        }
+    }
+}
+
+/// The bloom: a soft glow around the frame's light parts, screened over
+/// the result (`docs/print-overlay.md`, "Bloom"). `gain` 0 is none.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Bloom {
+    /// Strength of the glow relative to the light part it comes from.
+    pub gain: f32,
+    /// Standard deviation of the glow, design px.
+    pub sigma: f32,
+    /// Encoded luminance over which a pixel becomes a source of glow:
+    /// none below `.0`, all of its colour from `.1`.
+    pub knee: (f32, f32),
+    /// Per channel factor on the glow's colour: ones keep the mark's hue.
+    pub tint: [f32; 3],
+    /// Depth of the material's `hatch` on the glow (0: smooth).
+    pub hatch: f32,
+    /// How much of a light colour's grey part (`min(r, g, b)`) is taken
+    /// away before it glows: 1 glows its chroma only.
+    pub chroma: f32,
+}
+
+impl Bloom {
+    pub const NONE: Bloom = Bloom { gain: 0.0, sigma: 2.0, knee: (0.3, 0.6), tint: [1.0; 3], hatch: 0.0, chroma: 0.0 };
+}
+
+/// A diagonal hatching: pitch (design px) and the angle of its normal in
+/// degrees from +x, y down. Shared by the halo and the bloom.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Hatch {
+    pub pitch: f32,
+    pub angle: f32,
+}
+
 /// The reference screens, for the per-screen fits of [`of_screen`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Screen {
@@ -125,7 +240,20 @@ pub struct Print {
     pub grain_mul: [f32; 3],
     pub grain_add: [f32; 3],
     pub grain_cell: f32,
+    /// Elements above the printed layer on this screen ([`AbovePrint`]).
+    /// At most [`MAX_ABOVE`]; more are dropped.
+    pub above: &'static [AbovePrint],
+    /// The above-print halo's Gaussian standard deviation, design px.
+    pub halo_sigma: f32,
+    /// Depth of `hatch` on the above-print halo.
+    pub halo_hatch: f32,
+    /// The hatching of the halo and the bloom.
+    pub hatch: Hatch,
+    pub bloom: Bloom,
 }
+
+/// How many [`AbovePrint`] elements a material carries.
+pub const MAX_ABOVE: usize = iced_wgpu::print::MAX_OVER;
 
 impl Print {
     /// No material. The pass is skipped and the frame is unchanged.
@@ -148,13 +276,23 @@ impl Print {
         grain_mul: [0.0; 3],
         grain_add: [0.0; 3],
         grain_cell: 1.0,
+        above: &[],
+        halo_sigma: 1.3,
+        halo_hatch: 0.0,
+        hatch: Hatch { pitch: 1.6, angle: -45.0 },
+        bloom: Bloom::NONE,
     };
 
     /// Whether this material changes no pixel.
     pub fn is_off(&self) -> bool {
         let echo = self.echo.iter().any(Echo::is_live);
         let grain = self.grain_mul.iter().chain(&self.grain_add).any(|&v| v > 0.0);
-        !(echo || self.scan_depth > 0.0 || grain)
+        !(echo || self.scan_depth > 0.0 || grain || self.bloom.gain > 0.0)
+    }
+
+    /// This material with `above` as the screen's elements above the print.
+    pub const fn above(self, above: &'static [AbovePrint]) -> Print {
+        Print { above, ..self }
     }
 
     /// The material at `strength` times its fitted strength: copy gains,
@@ -168,6 +306,7 @@ impl Print {
         }
         Print {
             echo,
+            bloom: Bloom { gain: self.bloom.gain * s, ..self.bloom },
             scan_depth: (self.scan_depth * s).min(1.0),
             grain_mul: self.grain_mul.map(|v| v * s),
             grain_add: self.grain_add.map(|v| v * s),
@@ -206,6 +345,23 @@ impl Print {
             grain_add: self.grain_add,
             grain_cell: self.grain_cell,
             grain_seed: seed,
+            over: {
+                let mut over = [iced_wgpu::print::Over::NONE; MAX_ABOVE];
+                for (slot, a) in over.iter_mut().zip(self.above) {
+                    *slot = a.region();
+                }
+                over
+            },
+            halo_sigma: self.halo_sigma,
+            hatch_pitch: self.hatch.pitch,
+            hatch_angle: self.hatch.angle,
+            halo_hatch: self.halo_hatch,
+            bloom_gain: self.bloom.gain,
+            bloom_sigma: self.bloom.sigma,
+            bloom_knee: self.bloom.knee,
+            bloom_tint: self.bloom.tint,
+            bloom_hatch: self.bloom.hatch,
+            bloom_chroma: self.bloom.chroma,
         }
     }
 
@@ -218,7 +374,11 @@ impl Print {
     /// `echo_gate=lo,hi`, `echo_gate_radius`, `echo_ground=lo,hi,floor`,
     /// `echo_chroma=lo,hi`, `echo_soft_far`, `echo_enclose=reach[,thick]`,
     /// `scan_depth`, `scan_pitch`, `grain_mul=v|r,g,b`,
-    /// `grain_add=v|r,g,b`, `grain_cell`.
+    /// `grain_add=v|r,g,b`, `grain_cell`; the bloom's `bloom=off` (gain 0:
+    /// the bloom alone off, for measuring), `bloom_gain`, `bloom_sigma`,
+    /// `bloom_knee=lo,hi`, `bloom_tint=r,g,b`, `bloom_hatch`; `hatch=pitch,angle`,
+    /// `halo_sigma`, `halo_hatch`; `above=off` drops the screen's
+    /// above-print elements.
     pub fn with_overrides(mut self, spec: &str) -> Print {
         for item in spec.split(';') {
             let Some((key, value)) = item.split_once('=') else { continue };
@@ -257,6 +417,18 @@ impl Print {
                 ("grain_add", Some(v), ..) => self.grain_add = [v; 3],
                 ("grain_add", _, _, Some(d)) => self.grain_add = d,
                 ("grain_cell", Some(v), ..) => self.grain_cell = v,
+                ("bloom", ..) if matches!(value.trim(), "off" | "0") => self.bloom.gain = 0.0,
+                ("bloom_gain", Some(v), ..) => self.bloom.gain = v,
+                ("bloom_sigma", Some(v), ..) => self.bloom.sigma = v,
+                ("bloom_knee", _, Some(p), _) => self.bloom.knee = p,
+                ("bloom_tint", Some(v), ..) => self.bloom.tint = [v; 3],
+                ("bloom_tint", _, _, Some(d)) => self.bloom.tint = d,
+                ("bloom_hatch", Some(v), ..) => self.bloom.hatch = v,
+                ("bloom_chroma", Some(v), ..) => self.bloom.chroma = v,
+                ("hatch", _, Some((p, a)), _) => self.hatch = Hatch { pitch: p, angle: a },
+                ("halo_sigma", Some(v), ..) => self.halo_sigma = v,
+                ("halo_hatch", Some(v), ..) => self.halo_hatch = v,
+                ("above", ..) if value.trim() == "off" => self.above = &[],
                 _ => {}
             }
         }
@@ -306,6 +478,14 @@ pub const GRAIN_MUL: [f32; 3] = [0.0233, 0.0267, 0.0511];
 pub const GRAIN_ADD: [f32; 3] = [0.0018; 3];
 pub const GRAIN_CELL: f32 = 0.55;
 
+/// The bloom shared by the glowing eras before their own gain, sigma and
+/// hatch: a light colour (encoded luminance from 0.35, fully from 0.55)
+/// glows with its chroma only -- the references' glows carry the mark's
+/// hue, saturated (Kitsch's mint ENTER bar glows green and blue with no
+/// red, Entropism's sage footer green alone, Neo-kitsch's amber bar red and
+/// green with no blue). Measured 2026-11-16, `docs/print-overlay.md`, "Bloom".
+pub const GLOW: Bloom = Bloom { gain: 0.0, sigma: 2.5, knee: (0.35, 0.55), tint: [1.0; 3], hatch: 0.0, chroma: 1.0 };
+
 /// The strength [`wear`] applies when `CP_ERAS_UI_PRINT` is unset: the
 /// fit itself. On for every era since the owner's decision of 2026-11-14
 /// ("On for all eras"); `CP_ERAS_UI_PRINT=0` still turns the pass off.
@@ -332,6 +512,7 @@ pub fn of(era: Era) -> Print {
 pub fn of_screen(era: Era, screen: Screen) -> Print {
     match era {
         Era::Neomil => crate::eras::neomil::print_for(screen),
+        Era::Kitsch => crate::eras::kitsch::print_for(screen),
         _ => of(era),
     }
 }
@@ -559,5 +740,187 @@ mod tests {
         assert_eq!(p.echo_blend, Blend::Lighten);
         assert_eq!(p.echo_soft, 0.5);
         assert_eq!(p.scan_depth, 0.0);
+    }
+}
+
+#[cfg(test)]
+mod above_and_bloom_tests {
+    use super::*;
+    use iced_wgpu::core::Size;
+    use iced_wgpu::print::Uniforms;
+
+    fn uniforms(p: &Print, w: u32, h: u32) -> Uniforms {
+        Uniforms::new(&p.params(0.0, 0.0, 0), Size::new(w, h))
+    }
+
+    #[test]
+    fn print_shaders_parse() {
+        for (name, src) in [
+            ("print.wgsl", include_str!("../vendor/iced_wgpu/src/shader/print.wgsl")),
+            ("bloom.wgsl", include_str!("../vendor/iced_wgpu/src/shader/bloom.wgsl")),
+        ] {
+            let module = naga::front::wgsl::parse_str(src).unwrap_or_else(|e| panic!("{name}: {}", e.emit_to_string(src)));
+            let mut v = naga::valid::Validator::new(naga::valid::ValidationFlags::all(), naga::valid::Capabilities::empty());
+            v.validate(&module).unwrap_or_else(|e| panic!("{name}: {e:?}"));
+        }
+        // The uniform block the shader declares is the one Rust writes.
+        let wgsl = include_str!("../vendor/iced_wgpu/src/shader/print.wgsl");
+        assert!(wgsl.contains(&format!("array<vec4<f32>, {}>", 3 * MAX_ABOVE)));
+        assert_eq!(std::mem::size_of::<Uniforms>(), (18 + 3 * MAX_ABOVE) * 16);
+    }
+
+    #[test]
+    fn above_print_regions_reach_the_shader() {
+        // Neomil's login: the five header badges and the two inactive cards.
+        let login = of_screen(Era::Neomil, Screen::Login);
+        assert_eq!(login.above.len(), 7);
+        let u = uniforms(&login, 3840, 2160);
+        assert_eq!(u.u[17][1], 7.0);
+        assert!((u.u[17][2] - 2.4).abs() < 1e-6);
+        let badge = login.above[0];
+        assert_eq!((badge.x, badge.y, badge.w, badge.h), (117.0, 104.0, 59.0, 57.0));
+        assert_eq!(badge.bevel, [0.0, 0.0, 0.0, 15.0]);
+        assert_eq!(u.over[0], [117.0, 104.0, 176.0, 161.0]);
+        assert_eq!(u.over[1], [0.0, 0.0, 0.0, 15.0]);
+        // Plates cast their own copies and wear no halo.
+        assert_eq!(u.over[2], [1.0, 0.0, 0.0, 0.0]);
+        let card = login.above[5];
+        assert_eq!((card.x, card.w, card.bevel), (692.0, 255.0, [0.0, 51.0, 0.0, 22.0]));
+        // A region's geometry is the plate's own.
+        let plate = crate::style::Plate::filled(crate::style::Plot::new(1.0, 2.0, 3.0, 4.0), crate::style::Ink::Fg)
+            .bevelled(crate::style::Bevel::tr(0.5));
+        let a = AbovePrint::plate(&plate);
+        assert_eq!((a.x, a.y, a.w, a.h, a.bevel, a.cast), (1.0, 2.0, 3.0, 4.0, [0.0, 0.5, 0.0, 0.0], true));
+
+        // Kitsch's dashboard: the BRAINDANCE body text casts nothing and
+        // wears a halo.
+        let dash = of_screen(Era::Kitsch, Screen::Dashboard);
+        assert_eq!(dash.above.len(), 1);
+        let u = uniforms(&dash, 1600, 900);
+        assert_eq!(u.u[17][1], 1.0);
+        assert_eq!(u.over[2][0], 0.0);
+        assert!(u.over[2][1] > u.over[2][2] && u.over[2][2] > u.over[2][3] && u.over[2][3] > 0.0);
+        assert!((u.u[17][0] - dash.halo_sigma).abs() < 1e-6);
+        assert_eq!(u.u[16][3], dash.halo_hatch);
+
+        // Only those two screens carry regions; the era's treatment for a
+        // new screen carries none; `above=off` drops them.
+        for era in Era::ALL {
+            assert!(of(era).above.is_empty(), "{era:?}");
+            for screen in [Screen::Login, Screen::Dashboard, Screen::Mailbox, Screen::Store] {
+                let n = of_screen(era, screen).above.len();
+                let expect = match (era, screen) {
+                    (Era::Neomil, Screen::Login) => 7,
+                    (Era::Kitsch, Screen::Dashboard) => 1,
+                    _ => 0,
+                };
+                assert_eq!(n, expect, "{era:?} {screen:?}");
+                assert!(n <= MAX_ABOVE);
+            }
+        }
+        let off = login.with_overrides("above=off");
+        assert!(off.above.is_empty());
+        assert_eq!(uniforms(&off, 1600, 900).u[17][1], 0.0);
+    }
+
+    #[test]
+    fn bloom_reaches_the_shader_and_turns_off_alone() {
+        // Neomil measured no glow.
+        assert_eq!(of(Era::Neomil).bloom.gain, 0.0);
+        for era in [Era::Kitsch, Era::Neokitsch, Era::Entropism] {
+            let p = of(era);
+            assert!(p.bloom.gain > 0.0, "{era:?}");
+            let u = uniforms(&p, 3840, 2160);
+            assert_eq!(u.u[14][0], p.bloom.gain);
+            // Sigma is in design px: 2.4 device px each at 4K, 1 at 1600.
+            assert!((u.u[14][1] - p.bloom.sigma * 2.4).abs() < 1e-4, "{era:?}");
+            assert!((uniforms(&p, 1600, 900).u[14][1] - p.bloom.sigma).abs() < 1e-5);
+            assert_eq!((u.u[14][2], u.u[14][3]), p.bloom.knee);
+            assert_eq!(&u.u[15][..3], &p.bloom.tint);
+            assert_eq!(u.u[15][3], p.bloom.hatch);
+            let rp = p.params(0.0, 0.0, 0);
+            assert_eq!(rp.bloom_chroma, p.bloom.chroma);
+            assert!(rp.has_bloom());
+            // `bloom=off` removes the glow and nothing else.
+            let off = p.with_overrides("bloom=off");
+            assert_eq!(off.bloom.gain, 0.0);
+            assert_eq!(Print { bloom: p.bloom, ..off }, p);
+            assert_eq!(uniforms(&off, 3840, 2160).u[14][0], 0.0);
+            // Strength scales the glow; zero strength is off.
+            assert!((p.at(0.5).bloom.gain - 0.5 * p.bloom.gain).abs() < 1e-6);
+            assert!(p.at(0.0).is_off());
+        }
+        let p = Print::OFF.with_overrides("bloom_gain=0.8;bloom_sigma=3;bloom_knee=0.3,0.5;bloom_tint=1,0.5,0;bloom_hatch=0.2;bloom_chroma=0.5;hatch=1.7,40;halo_sigma=1.1;halo_hatch=0.6");
+        assert_eq!((p.bloom.gain, p.bloom.sigma, p.bloom.knee, p.bloom.tint, p.bloom.hatch, p.bloom.chroma), (0.8, 3.0, (0.3, 0.5), [1.0, 0.5, 0.0], 0.2, 0.5));
+        assert_eq!((p.hatch.pitch, p.hatch.angle, p.halo_sigma, p.halo_hatch), (1.7, 40.0, 1.1, 0.6));
+        // A material with only a bloom still runs the pass.
+        assert!(!p.is_off() && !p.params(0.0, 0.0, 0).is_off());
+        // The blur's taps cover three sigmas at half resolution.
+        assert_eq!(iced_wgpu::print::bloom_taps(6.96), (3.48, 11.0));
+    }
+}
+
+/// Frame cost of the print pass alone (`docs/print-overlay.md`, "Cost"),
+/// on whatever adapter wgpu picks (lavapipe headless). Not run by default:
+///
+/// `CP_ERAS_UI_BENCH="era:screen:frame.png ..." cargo test --lib time_print_pass -- --ignored --nocapture`
+///
+/// Each frame (a capture of that screen, any size) is run with the era's
+/// material as is, with `bloom=off`, and with no regions above the print;
+/// best of 8 after 2 warm-up frames.
+#[cfg(test)]
+mod bench {
+    use super::*;
+
+    fn decode(path: &str) -> (u32, u32, Vec<u8>) {
+        let decoder = png::Decoder::new(std::io::BufReader::new(std::fs::File::open(path).expect(path)));
+        let mut reader = decoder.read_info().expect("png");
+        let mut buf = vec![0; reader.output_buffer_size()];
+        let info = reader.next_frame(&mut buf).expect("frame");
+        let rgba = match info.color_type {
+            png::ColorType::Rgba => buf[..info.buffer_size()].to_vec(),
+            png::ColorType::Rgb => buf[..info.buffer_size()].chunks(3).flat_map(|c| [c[0], c[1], c[2], 255]).collect(),
+            other => panic!("{other:?}"),
+        };
+        (info.width, info.height, rgba)
+    }
+
+    #[test]
+    #[ignore]
+    fn time_print_pass() {
+        let Ok(spec) = std::env::var("CP_ERAS_UI_BENCH") else { return };
+        use iced_wgpu::wgpu;
+        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor { backends: wgpu::Backends::VULKAN, ..Default::default() });
+        let adapter = futures_lite::future::block_on(instance.request_adapter(&wgpu::RequestAdapterOptions::default())).expect("adapter");
+        eprintln!("adapter: {:?}", adapter.get_info().name);
+        let (device, queue) = futures_lite::future::block_on(adapter.request_device(&wgpu::DeviceDescriptor::default())).expect("device");
+        for item in spec.split_whitespace() {
+            let mut parts = item.splitn(3, ':');
+            let (era, screen, path) = (parts.next().unwrap(), parts.next().unwrap(), parts.next().unwrap());
+            let era = Era::ALL.into_iter().find(|e| format!("{e:?}").eq_ignore_ascii_case(era)).expect("era");
+            let screen = match screen {
+                "login" => Screen::Login,
+                "dashboard" => Screen::Dashboard,
+                "mailbox" => Screen::Mailbox,
+                _ => Screen::Store,
+            };
+            let (w, h, pixels) = decode(path);
+            let p = of_screen(era, screen);
+            for (label, m) in [("as is", p), ("bloom=off", p.with_overrides("bloom=off")), ("above=off", p.with_overrides("above=off"))] {
+                let mut t = iced_wgpu::print::bench(
+                    &device,
+                    &queue,
+                    wgpu::TextureFormat::Rgba8UnormSrgb,
+                    wgpu::TextureFormat::Bgra8UnormSrgb,
+                    &m.params(0.0, 0.0, 0),
+                    iced_wgpu::core::Size::new(w, h),
+                    &pixels,
+                    10,
+                );
+                t.drain(..2);
+                let best = t.iter().min().unwrap();
+                eprintln!("{era:?} {screen:?} {w}x{h} {label}: best {:.1} ms", best.as_secs_f64() * 1e3);
+            }
+        }
     }
 }

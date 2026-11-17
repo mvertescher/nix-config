@@ -3407,6 +3407,7 @@ pub const PRINT: crate::print::Print = crate::print::Print {
     grain_mul: crate::print::GRAIN_MUL,
     grain_add: crate::print::GRAIN_ADD,
     grain_cell: crate::print::GRAIN_CELL,
+    bloom: crate::print::Bloom { gain: 1.0, sigma: 2.9, hatch: 0.25, ..crate::print::GLOW },
     ..crate::print::Print::OFF
 };
 // --- end print -------------------------------------------------------------

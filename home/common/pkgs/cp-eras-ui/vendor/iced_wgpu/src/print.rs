@@ -34,6 +34,42 @@ pub enum Blend {
     Lighten,
 }
 
+/// How many [`Over`] regions a material carries.
+pub const MAX_OVER: usize = 12;
+
+/// A region of the frame that sits *above* the printed layer: an element
+/// laid after the print, so no registration copy shows inside it. Its
+/// outline is a rectangle (design px) with 45-degree corner cuts, the
+/// shape of a cp-eras plate.
+///
+/// `cast`: whether what lies in the region is itself printed -- a plate
+/// that casts its own copies outward (true), or text set on top of
+/// everything that casts none (false).
+///
+/// `halo`: a hatched halo hugging the light marks inside the region, per
+/// channel the fraction of the way from the ground to the mark's colour
+/// at the mark's edge, falling off as a Gaussian of the material's
+/// `halo_sigma` (zero: none).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Over {
+    pub x: f32,
+    pub y: f32,
+    pub w: f32,
+    pub h: f32,
+    /// Corner cuts, top-left, top-right, bottom-right, bottom-left.
+    pub bevel: [f32; 4],
+    pub cast: bool,
+    pub halo: [f32; 3],
+}
+
+impl Over {
+    pub const NONE: Over = Over { x: 0.0, y: 0.0, w: 0.0, h: 0.0, bevel: [0.0; 4], cast: true, halo: [0.0; 3] };
+
+    pub fn is_live(&self) -> bool {
+        self.w > 0.0 && self.h > 0.0
+    }
+}
+
 /// One era's print material. See the module documentation for units.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Params {
@@ -103,6 +139,33 @@ pub struct Params {
     pub grain_add: [f32; 3],
     pub grain_cell: f32,
     pub grain_seed: i32,
+    /// Regions above the printed layer ([`Over`]); empty slots are
+    /// [`Over::NONE`]. Only the live ones are sent to the shader.
+    pub over: [Over; MAX_OVER],
+    /// Standard deviation of an [`Over`] region's halo, design px.
+    pub halo_sigma: f32,
+    /// Hatching of the halo and the bloom: pitch (design px) and the angle
+    /// of its normal (degrees from +x, y down). `halo_hatch` and
+    /// `bloom_hatch` are each one's depth: the halo or glow is scaled by
+    /// `1 + depth * cos(2pi d / pitch)` (0: solid).
+    pub hatch_pitch: f32,
+    pub hatch_angle: f32,
+    pub halo_hatch: f32,
+    /// Bloom: a soft glow of the frame's light parts, screened over the
+    /// result. `bloom_gain` 0 is none. The glow is the frame weighted by
+    /// `smoothstep(lo, hi, L)` of its encoded luminance (`bloom_knee`),
+    /// blurred by a Gaussian of `bloom_sigma` design px, scaled per channel
+    /// by `bloom_tint` (ones: the glow carries the mark's own colour), less
+    /// `bloom_chroma` of its grey part.
+    pub bloom_gain: f32,
+    pub bloom_sigma: f32,
+    pub bloom_knee: (f32, f32),
+    pub bloom_tint: [f32; 3],
+    pub bloom_hatch: f32,
+    /// How much of a light colour's grey part (`min(r, g, b)`) is taken
+    /// away before it glows: 0 the colour as it is, 1 its chroma only (a
+    /// mint mark glows green-blue, a sage one green).
+    pub bloom_chroma: f32,
 }
 
 impl Params {
@@ -133,7 +196,23 @@ impl Params {
         grain_add: [0.0; 3],
         grain_cell: 1.0,
         grain_seed: 0,
+        over: [Over::NONE; MAX_OVER],
+        halo_sigma: 1.3,
+        hatch_pitch: 1.6,
+        hatch_angle: -45.0,
+        halo_hatch: 0.0,
+        bloom_gain: 0.0,
+        bloom_sigma: 2.0,
+        bloom_knee: (0.3, 0.6),
+        bloom_tint: [1.0; 3],
+        bloom_hatch: 0.0,
+        bloom_chroma: 0.0,
     };
+
+    /// Whether the bloom draws.
+    pub fn has_bloom(&self) -> bool {
+        self.bloom_gain > 0.0 && self.bloom_sigma > 0.0
+    }
 
     /// Whether any registration copy would draw.
     pub fn has_echo(&self) -> bool {
@@ -143,6 +222,7 @@ impl Params {
     /// Whether the pass would change no pixel, so it is skipped.
     pub fn is_off(&self) -> bool {
         !(self.has_echo()
+            || self.has_bloom()
             || self.scan_depth > 0.0
             || self.grain_mul.iter().any(|&v| v > 0.0)
             || self.grain_add.iter().any(|&v| v > 0.0))
@@ -201,11 +281,30 @@ pub fn echo_order(echo: &[(f32, f32, f32); 3]) -> [(f32, f32, f32); 3] {
     out
 }
 
-/// The shader's uniform block, fourteen `vec4`s (`shader/print.wgsl`).
+/// The shader's uniform block (`shader/print.wgsl`): eighteen `vec4`s of
+/// parameters, then three per [`Over`] region (live ones first).
 #[derive(Debug, Clone, Copy, PartialEq, bytemuck::Zeroable, bytemuck::Pod)]
 #[repr(C)]
 pub struct Uniforms {
-    pub u: [[f32; 4]; 14],
+    pub u: [[f32; 4]; 18],
+    pub over: [[f32; 4]; 3 * MAX_OVER],
+}
+
+/// A design-space direction `angle` degrees from +x as a unit direction per
+/// device pixel, and a design pitch along it in device pixels (snapped as
+/// [`device_pitch`]).
+pub fn device_direction(angle: f32, pitch: f32, sx: f32, sy: f32) -> (f32, f32, f32) {
+    let (sa, ca) = angle.to_radians().sin_cos();
+    let (dx, dy) = (ca / sx, sa / sy);
+    let n = (dx * dx + dy * dy).sqrt().max(1e-9);
+    (device_pitch(pitch, 1.0 / n), dx / n, dy / n)
+}
+
+/// The bloom blur's standard deviation in half-resolution pixels, and how
+/// many taps either side of the centre (three sigmas, at most 24).
+pub fn bloom_taps(sigma_device: f32) -> (f32, f32) {
+    let h = (sigma_device * 0.5).max(0.25);
+    (h, (3.0 * h).ceil().clamp(1.0, 24.0))
 }
 
 /// Taps per axis with which the grain is integrated over a device pixel,
@@ -235,7 +334,18 @@ impl Uniforms {
             Blend::Over => 0.0,
             Blend::Lighten => 1.0,
         };
+        let (hatch_pitch, hx, hy) = device_direction(p.hatch_angle, p.hatch_pitch, sx, sy);
+        let mut over = [[0.0; 4]; 3 * MAX_OVER];
+        let mut live = 0;
+        for o in p.over.iter().filter(|o| o.is_live()) {
+            over[3 * live] = [o.x, o.y, o.x + o.w, o.y + o.h];
+            over[3 * live + 1] = o.bevel;
+            over[3 * live + 2] = [if o.cast { 1.0 } else { 0.0 }, o.halo[0], o.halo[1], o.halo[2]];
+            live += 1;
+        }
+        let bloom = if p.has_bloom() { p.bloom_gain } else { 0.0 };
         Self {
+            over,
             u: [
                 [w, h, sx, sy],
                 [e[0].0, e[0].1, e[0].2, e[1].0],
@@ -281,6 +391,10 @@ impl Uniforms {
                 ],
                 [p.grain_mul[0], p.grain_mul[1], p.grain_mul[2], 0.0],
                 [p.grain_add[0], p.grain_add[1], p.grain_add[2], 0.0],
+                [bloom, p.bloom_sigma * s, p.bloom_knee.0, p.bloom_knee.1],
+                [p.bloom_tint[0], p.bloom_tint[1], p.bloom_tint[2], p.bloom_hatch],
+                [hatch_pitch, hx, hy, p.halo_hatch],
+                [p.halo_sigma * s, live as f32, s, 0.0],
             ],
         }
     }
@@ -288,19 +402,120 @@ impl Uniforms {
 
 struct Target {
     size: Size<u32>,
+    texture: wgpu::Texture,
     view: wgpu::TextureView,
+    /// The print pass's bindings: the frame and the bloom's result.
     bind_group: wgpu::BindGroup,
+    /// The bloom's three passes: frame -> half A (threshold and
+    /// downsample), A -> B (across), B -> A (down).
+    bloom_down: wgpu::BindGroup,
+    bloom_across: wgpu::BindGroup,
+    bloom_up: wgpu::BindGroup,
+    half_a: wgpu::TextureView,
+    half_b: wgpu::TextureView,
+    half: Size<u32>,
+}
+
+/// The format the bloom is blurred in: encoded values, unclamped.
+const BLOOM_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Rgba16Float;
+
+/// One bloom pass's uniforms: half-resolution size, knee; blur direction,
+/// sigma (half px) and taps either side.
+#[derive(Debug, Clone, Copy, PartialEq, bytemuck::Zeroable, bytemuck::Pod)]
+#[repr(C)]
+struct BloomUniforms {
+    u: [[f32; 4]; 2],
 }
 
 /// The pass's pipeline and its offscreen frame, kept by the renderer.
 pub(crate) struct Pass {
     pipeline: wgpu::RenderPipeline,
     layout: wgpu::BindGroupLayout,
+    bloom_layout: wgpu::BindGroupLayout,
+    bloom_down: wgpu::RenderPipeline,
+    bloom_blur: wgpu::RenderPipeline,
     sampler: wgpu::Sampler,
     uniforms: wgpu::Buffer,
+    bloom_uniforms: [wgpu::Buffer; 3],
     source_format: wgpu::TextureFormat,
     pub(crate) target_format: wgpu::TextureFormat,
     target: Option<Target>,
+}
+
+fn layout_entries(extra: bool) -> Vec<wgpu::BindGroupLayoutEntry> {
+    let texture = |binding| wgpu::BindGroupLayoutEntry {
+        binding,
+        visibility: wgpu::ShaderStages::FRAGMENT,
+        ty: wgpu::BindingType::Texture {
+            sample_type: wgpu::TextureSampleType::Float { filterable: true },
+            view_dimension: wgpu::TextureViewDimension::D2,
+            multisampled: false,
+        },
+        count: None,
+    };
+    let mut entries = vec![
+        wgpu::BindGroupLayoutEntry {
+            binding: 0,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+            count: None,
+        },
+        wgpu::BindGroupLayoutEntry {
+            binding: 1,
+            visibility: wgpu::ShaderStages::FRAGMENT,
+            ty: wgpu::BindingType::Buffer {
+                ty: wgpu::BufferBindingType::Uniform,
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
+            count: None,
+        },
+        texture(2),
+    ];
+    if extra {
+        entries.push(texture(3));
+    }
+    entries
+}
+
+fn pipeline(
+    device: &wgpu::Device,
+    label: &str,
+    layout: &wgpu::BindGroupLayout,
+    shader: &wgpu::ShaderModule,
+    entry: &str,
+    format: wgpu::TextureFormat,
+) -> wgpu::RenderPipeline {
+    let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+        label: Some(label),
+        bind_group_layouts: &[layout],
+        push_constant_ranges: &[],
+    });
+    device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+        label: Some(label),
+        layout: Some(&pipeline_layout),
+        vertex: wgpu::VertexState {
+            module: shader,
+            entry_point: Some("vs_main"),
+            buffers: &[],
+            compilation_options: wgpu::PipelineCompilationOptions::default(),
+        },
+        fragment: Some(wgpu::FragmentState {
+            module: shader,
+            entry_point: Some(entry),
+            targets: &[Some(wgpu::ColorTargetState {
+                format,
+                blend: None,
+                write_mask: wgpu::ColorWrites::ALL,
+            })],
+            compilation_options: wgpu::PipelineCompilationOptions::default(),
+        }),
+        primitive: wgpu::PrimitiveState::default(),
+        depth_stencil: None,
+        multisample: wgpu::MultisampleState::default(),
+        multiview: None,
+        cache: None,
+    })
 }
 
 impl Pass {
@@ -309,86 +524,27 @@ impl Pass {
         source_format: wgpu::TextureFormat,
         target_format: wgpu::TextureFormat,
     ) -> Self {
-        let layout =
-            device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                label: Some("iced_wgpu.print.layout"),
-                entries: &[
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Sampler(
-                            wgpu::SamplerBindingType::Filtering,
-                        ),
-                        count: None,
-                    },
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 1,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Buffer {
-                            ty: wgpu::BufferBindingType::Uniform,
-                            has_dynamic_offset: false,
-                            min_binding_size: None,
-                        },
-                        count: None,
-                    },
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 2,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Texture {
-                            sample_type: wgpu::TextureSampleType::Float {
-                                filterable: true,
-                            },
-                            view_dimension: wgpu::TextureViewDimension::D2,
-                            multisampled: false,
-                        },
-                        count: None,
-                    },
-                ],
-            });
+        let layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some("iced_wgpu.print.layout"),
+            entries: &layout_entries(true),
+        });
+        let bloom_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some("iced_wgpu.print.bloom_layout"),
+            entries: &layout_entries(false),
+        });
 
-        let pipeline_layout =
-            device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                label: Some("iced_wgpu.print.pipeline_layout"),
-                bind_group_layouts: &[&layout],
-                push_constant_ranges: &[],
-            });
+        let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
+            label: Some("iced_wgpu.print.shader"),
+            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("shader/print.wgsl"))),
+        });
+        let bloom_shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
+            label: Some("iced_wgpu.print.bloom_shader"),
+            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("shader/bloom.wgsl"))),
+        });
 
-        let shader =
-            device.create_shader_module(wgpu::ShaderModuleDescriptor {
-                label: Some("iced_wgpu.print.shader"),
-                source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!(
-                    "shader/print.wgsl"
-                ))),
-            });
-
-        let pipeline =
-            device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-                label: Some("iced_wgpu.print.pipeline"),
-                layout: Some(&pipeline_layout),
-                vertex: wgpu::VertexState {
-                    module: &shader,
-                    entry_point: Some("vs_main"),
-                    buffers: &[],
-                    compilation_options:
-                        wgpu::PipelineCompilationOptions::default(),
-                },
-                fragment: Some(wgpu::FragmentState {
-                    module: &shader,
-                    entry_point: Some("fs_main"),
-                    targets: &[Some(wgpu::ColorTargetState {
-                        format: target_format,
-                        blend: None,
-                        write_mask: wgpu::ColorWrites::ALL,
-                    })],
-                    compilation_options:
-                        wgpu::PipelineCompilationOptions::default(),
-                }),
-                primitive: wgpu::PrimitiveState::default(),
-                depth_stencil: None,
-                multisample: wgpu::MultisampleState::default(),
-                multiview: None,
-                cache: None,
-            });
+        let pipeline = pipeline(device, "iced_wgpu.print.pipeline", &layout, &shader, "fs_main", target_format);
+        let bloom_down = pipeline_for(device, "iced_wgpu.print.bloom_down", &bloom_layout, &bloom_shader, "fs_down");
+        let bloom_blur = pipeline_for(device, "iced_wgpu.print.bloom_blur", &bloom_layout, &bloom_shader, "fs_blur");
 
         let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
             label: Some("iced_wgpu.print.sampler"),
@@ -405,12 +561,24 @@ impl Pass {
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
+        let bloom_uniform = || {
+            device.create_buffer(&wgpu::BufferDescriptor {
+                label: Some("iced_wgpu.print.bloom_uniforms"),
+                size: std::mem::size_of::<BloomUniforms>() as u64,
+                usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+                mapped_at_creation: false,
+            })
+        };
 
         Self {
             pipeline,
             layout,
+            bloom_layout,
+            bloom_down,
+            bloom_blur,
             sampler,
             uniforms,
+            bloom_uniforms: [bloom_uniform(), bloom_uniform(), bloom_uniform()],
             source_format,
             target_format,
             target: None,
@@ -424,56 +592,77 @@ impl Pass {
         size: Size<u32>,
     ) -> wgpu::TextureView {
         if self.target.as_ref().map(|t| t.size) != Some(size) {
-            let texture = device.create_texture(&wgpu::TextureDescriptor {
-                label: Some("iced_wgpu.print.frame"),
-                size: wgpu::Extent3d {
-                    width: size.width.max(1),
-                    height: size.height.max(1),
-                    depth_or_array_layers: 1,
-                },
-                mip_level_count: 1,
-                sample_count: 1,
-                dimension: wgpu::TextureDimension::D2,
-                format: self.source_format,
-                usage: wgpu::TextureUsages::RENDER_ATTACHMENT
-                    | wgpu::TextureUsages::TEXTURE_BINDING,
-                view_formats: &[],
-            });
-            let view =
-                texture.create_view(&wgpu::TextureViewDescriptor::default());
-            let bind_group =
+            let make = |label, w: u32, h: u32, format| {
+                device.create_texture(&wgpu::TextureDescriptor {
+                        label: Some(label),
+                        size: wgpu::Extent3d {
+                            width: w.max(1),
+                            height: h.max(1),
+                            depth_or_array_layers: 1,
+                        },
+                        mip_level_count: 1,
+                        sample_count: 1,
+                        dimension: wgpu::TextureDimension::D2,
+                        format,
+                        usage: wgpu::TextureUsages::RENDER_ATTACHMENT
+                            | wgpu::TextureUsages::TEXTURE_BINDING
+                            | wgpu::TextureUsages::COPY_DST,
+                        view_formats: &[],
+                    })
+            };
+            let texture = |label, w, h, format| {
+                make(label, w, h, format).create_view(&wgpu::TextureViewDescriptor::default())
+            };
+            let frame = make("iced_wgpu.print.frame", size.width, size.height, self.source_format);
+            let view = frame.create_view(&wgpu::TextureViewDescriptor::default());
+            let half = Size::new(size.width.div_ceil(2).max(1), size.height.div_ceil(2).max(1));
+            let half_a = texture("iced_wgpu.print.bloom_a", half.width, half.height, BLOOM_FORMAT);
+            let half_b = texture("iced_wgpu.print.bloom_b", half.width, half.height, BLOOM_FORMAT);
+            let group = |label, layout, uniforms: &wgpu::Buffer, views: &[&wgpu::TextureView]| {
+                let mut entries = vec![
+                    wgpu::BindGroupEntry {
+                        binding: 0,
+                        resource: wgpu::BindingResource::Sampler(&self.sampler),
+                    },
+                    wgpu::BindGroupEntry {
+                        binding: 1,
+                        resource: uniforms.as_entire_binding(),
+                    },
+                ];
+                for (i, v) in views.iter().enumerate() {
+                    entries.push(wgpu::BindGroupEntry {
+                        binding: 2 + i as u32,
+                        resource: wgpu::BindingResource::TextureView(v),
+                    });
+                }
                 device.create_bind_group(&wgpu::BindGroupDescriptor {
-                    label: Some("iced_wgpu.print.bind_group"),
-                    layout: &self.layout,
-                    entries: &[
-                        wgpu::BindGroupEntry {
-                            binding: 0,
-                            resource: wgpu::BindingResource::Sampler(
-                                &self.sampler,
-                            ),
-                        },
-                        wgpu::BindGroupEntry {
-                            binding: 1,
-                            resource: self.uniforms.as_entire_binding(),
-                        },
-                        wgpu::BindGroupEntry {
-                            binding: 2,
-                            resource: wgpu::BindingResource::TextureView(
-                                &view,
-                            ),
-                        },
-                    ],
-                });
+                    label: Some(label),
+                    layout,
+                    entries: &entries,
+                })
+            };
+            let bind_group = group("iced_wgpu.print.bind_group", &self.layout, &self.uniforms, &[&view, &half_a]);
+            let bloom_down = group("iced_wgpu.print.bloom_down", &self.bloom_layout, &self.bloom_uniforms[0], &[&view]);
+            let bloom_across = group("iced_wgpu.print.bloom_across", &self.bloom_layout, &self.bloom_uniforms[1], &[&half_a]);
+            let bloom_up = group("iced_wgpu.print.bloom_up", &self.bloom_layout, &self.bloom_uniforms[2], &[&half_b]);
             self.target = Some(Target {
                 size,
+                texture: frame,
                 view,
                 bind_group,
+                bloom_down,
+                bloom_across,
+                bloom_up,
+                half_a,
+                half_b,
+                half,
             });
         }
         self.target.as_ref().expect("target was just created").view.clone()
     }
 
-    /// Run the pass from the offscreen frame into `frame`.
+    /// Run the pass from the offscreen frame into `frame`: with a bloom,
+    /// first its three half-resolution passes, then the print pass.
     pub(crate) fn encode(
         &mut self,
         queue: &wgpu::Queue,
@@ -486,6 +675,39 @@ impl Pass {
         };
         let uniforms = Uniforms::new(params, target.size);
         queue.write_buffer(&self.uniforms, 0, bytemuck::bytes_of(&uniforms));
+
+        if params.has_bloom() {
+            let (sigma, taps) = bloom_taps(uniforms.u[14][1]);
+            let (w, h) = (target.half.width as f32, target.half.height as f32);
+            let knee = [w, h, params.bloom_knee.0, params.bloom_knee.1];
+            let passes = [
+                (&target.bloom_down, &target.half_a, [params.bloom_chroma, 0.0, 0.0, 0.0], &self.bloom_down),
+                (&target.bloom_across, &target.half_b, [1.0, 0.0, sigma, taps], &self.bloom_blur),
+                (&target.bloom_up, &target.half_a, [0.0, 1.0, sigma, taps], &self.bloom_blur),
+            ];
+            for (i, (group, out, blur, pipeline)) in passes.into_iter().enumerate() {
+                let u = BloomUniforms { u: [knee, blur] };
+                queue.write_buffer(&self.bloom_uniforms[i], 0, bytemuck::bytes_of(&u));
+                let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                    label: Some("iced_wgpu.print.bloom_pass"),
+                    color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                        view: out,
+                        depth_slice: None,
+                        resolve_target: None,
+                        ops: wgpu::Operations {
+                            load: wgpu::LoadOp::Clear(wgpu::Color::TRANSPARENT),
+                            store: wgpu::StoreOp::Store,
+                        },
+                    })],
+                    depth_stencil_attachment: None,
+                    timestamp_writes: None,
+                    occlusion_query_set: None,
+                });
+                pass.set_pipeline(pipeline);
+                pass.set_bind_group(0, group, &[]);
+                pass.draw(0..3, 0..1);
+            }
+        }
 
         let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             label: Some("iced_wgpu.print.render_pass"),
@@ -506,6 +728,69 @@ impl Pass {
         pass.set_bind_group(0, &target.bind_group, &[]);
         pass.draw(0..3, 0..1);
     }
+}
+
+/// Times the pass alone, for `docs/print-overlay.md` (not used in drawing):
+/// `pixels` (RGBA8, sRGB, `size`) is uploaded as the frame, then the pass
+/// is encoded into a `format` texture and waited on `frames` times. Returns
+/// each frame's wall time.
+#[doc(hidden)]
+pub fn bench(
+    device: &wgpu::Device,
+    queue: &wgpu::Queue,
+    source_format: wgpu::TextureFormat,
+    format: wgpu::TextureFormat,
+    params: &Params,
+    size: Size<u32>,
+    pixels: &[u8],
+    frames: usize,
+) -> Vec<std::time::Duration> {
+    let mut pass = Pass::new(device, source_format, format);
+    let _ = pass.target(device, size);
+    let target = pass.target.as_ref().expect("target");
+    queue.write_texture(
+        target.texture.as_image_copy(),
+        pixels,
+        wgpu::TexelCopyBufferLayout {
+            offset: 0,
+            bytes_per_row: Some(4 * size.width),
+            rows_per_image: None,
+        },
+        wgpu::Extent3d { width: size.width, height: size.height, depth_or_array_layers: 1 },
+    );
+    let out = device
+        .create_texture(&wgpu::TextureDescriptor {
+            label: Some("iced_wgpu.print.bench"),
+            size: wgpu::Extent3d { width: size.width, height: size.height, depth_or_array_layers: 1 },
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format,
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+            view_formats: &[],
+        })
+        .create_view(&wgpu::TextureViewDescriptor::default());
+    let _ = device.poll(wgpu::PollType::Wait { submission_index: None, timeout: None });
+    (0..frames)
+        .map(|_| {
+            let t = std::time::Instant::now();
+            let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
+            pass.encode(queue, &mut encoder, &out, params);
+            let index = queue.submit([encoder.finish()]);
+            let _ = device.poll(wgpu::PollType::Wait { submission_index: Some(index), timeout: None });
+            t.elapsed()
+        })
+        .collect()
+}
+
+fn pipeline_for(
+    device: &wgpu::Device,
+    label: &str,
+    layout: &wgpu::BindGroupLayout,
+    shader: &wgpu::ShaderModule,
+    entry: &str,
+) -> wgpu::RenderPipeline {
+    pipeline(device, label, layout, shader, entry, BLOOM_FORMAT)
 }
 
 #[cfg(test)]
