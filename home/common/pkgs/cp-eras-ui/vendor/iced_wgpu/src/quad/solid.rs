@@ -126,7 +126,18 @@ impl Pipeline {
                     entry_point: Some("solid_fs_main"),
                     targets: &quad::color_target_state(format),
                     compilation_options:
-                        wgpu::PipelineCompilationOptions::default(),
+                        // cp-eras-ui local patch (`light_edges`).
+                        wgpu::PipelineCompilationOptions {
+                            constants: &[(
+                                "LIGHT_EDGES",
+                                f64::from(
+                                    (crate::light_edges::Mode::current()
+                                        != crate::light_edges::Mode::Off)
+                                        as u8,
+                                ),
+                            )],
+                            ..Default::default()
+                        },
                 }),
                 primitive: wgpu::PrimitiveState {
                     topology: wgpu::PrimitiveTopology::TriangleList,

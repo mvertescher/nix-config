@@ -606,7 +606,10 @@ impl Pass {
                         format,
                         usage: wgpu::TextureUsages::RENDER_ATTACHMENT
                             | wgpu::TextureUsages::TEXTURE_BINDING
-                            | wgpu::TextureUsages::COPY_DST,
+                            | wgpu::TextureUsages::COPY_DST
+                            // The MSAA resolve copies the frame under a
+                            // layer's meshes (`light_edges`).
+                            | wgpu::TextureUsages::COPY_SRC,
                         view_formats: &[],
                     })
             };

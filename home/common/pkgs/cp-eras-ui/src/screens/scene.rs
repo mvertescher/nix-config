@@ -1298,7 +1298,7 @@ impl<M> Scene<M> {
                     let text =
                         Self::text(content, (ox + x) * k, (oy + y) * k, size * k, Color::TRANSPARENT, face, anchor);
                     let stroke = canvas::Stroke::default()
-                        .with_color(self.ink(ink, alpha))
+                        .with_color(stem::text_ink(self.ink(ink, alpha)))
                         .with_width(width * k);
                     text.draw_with(|path, _| frame.stroke(&path, stroke));
                 }
@@ -1353,7 +1353,7 @@ impl<M> Scene<M> {
                             let probe = canvas::Text { color: OUTLINE_SENTINEL, ..text.clone() };
                             if let Some(paths) = outlines.paths(content, font, size, &probe) {
                                 for path in paths {
-                                    f.fill(path, color);
+                                    f.fill(path, stem::text_ink(color));
                                 }
                                 stem::stroke_paths(f, paths, color, stem);
                             } else {
@@ -1395,7 +1395,7 @@ impl<M> Scene<M> {
                         if let Some(paths) = paths {
                             let color = self.ink(ink, alpha);
                             for path in paths {
-                                frame.fill(path, color);
+                                frame.fill(path, stem::text_ink(color));
                             }
                             stem::stroke_paths(frame, paths, color, stem::width(ink, color));
                         } else {

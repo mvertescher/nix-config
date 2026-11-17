@@ -9,6 +9,10 @@ pub struct Pipeline {
     format: wgpu::TextureFormat,
     sampler: wgpu::Sampler,
     raw: wgpu::RenderPipeline,
+    /// cp-eras-ui local patch (`light_edges`): the resolve that also reads
+    /// a copy of the frame under the meshes, used when the frame can be
+    /// copied.
+    raw_ground: wgpu::RenderPipeline,
     constant_layout: wgpu::BindGroupLayout,
     texture_layout: wgpu::BindGroupLayout,
     sample_count: u32,
@@ -38,7 +42,8 @@ impl Pipeline {
                     },
                     wgpu::BindGroupLayoutEntry {
                         binding: 1,
-                        visibility: wgpu::ShaderStages::VERTEX,
+                        visibility: wgpu::ShaderStages::VERTEX
+                            | wgpu::ShaderStages::FRAGMENT,
                         ty: wgpu::BindingType::Buffer {
                             ty: wgpu::BufferBindingType::Uniform,
                             has_dynamic_offset: false,
@@ -63,7 +68,24 @@ impl Pipeline {
                         multisampled: false,
                     },
                     count: None,
-                }],
+                },
+                    // cp-eras-ui local patch (`light_edges`): the
+                    // unresolved colour samples and the mark counts.
+                    multisampled_entry(1),
+                    multisampled_entry(2),
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 3,
+                        visibility: wgpu::ShaderStages::FRAGMENT,
+                        ty: wgpu::BindingType::Texture {
+                            sample_type: wgpu::TextureSampleType::Float {
+                                filterable: false,
+                            },
+                            view_dimension: wgpu::TextureViewDimension::D2,
+                            multisampled: false,
+                        },
+                        count: None,
+                    },
+                ],
             });
 
         let layout =
@@ -81,7 +103,7 @@ impl Pipeline {
                 )),
             });
 
-        let pipeline =
+        let pipeline = |entry_point: &str| {
             device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some("iced_wgpu::triangle::msaa pipeline"),
                 layout: Some(&layout),
@@ -94,7 +116,7 @@ impl Pipeline {
                 },
                 fragment: Some(wgpu::FragmentState {
                     module: &shader,
-                    entry_point: Some("fs_main"),
+                    entry_point: Some(entry_point),
                     targets: &[Some(wgpu::ColorTargetState {
                         format,
                         blend: Some(
@@ -118,12 +140,17 @@ impl Pipeline {
                 },
                 multiview: None,
                 cache: None,
-            });
+            })
+        };
+
+        let raw = pipeline("fs_main");
+        let raw_ground = pipeline("fs_ground");
 
         Self {
             format,
             sampler,
-            raw: pipeline,
+            raw,
+            raw_ground,
             constant_layout,
             texture_layout,
             sample_count: antialiasing.sample_count(),
@@ -165,15 +192,27 @@ impl Pipeline {
 
         encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             label: Some("iced_wgpu.triangle.render_pass"),
-            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                view: &targets.attachment,
-                depth_slice: None,
-                resolve_target: Some(&targets.resolve),
-                ops: wgpu::Operations {
-                    load: wgpu::LoadOp::Clear(wgpu::Color::TRANSPARENT),
-                    store: wgpu::StoreOp::Store,
-                },
-            })],
+            color_attachments: &[
+                Some(wgpu::RenderPassColorAttachment {
+                    view: &targets.attachment,
+                    depth_slice: None,
+                    resolve_target: Some(&targets.resolve),
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color::TRANSPARENT),
+                        store: wgpu::StoreOp::Store,
+                    },
+                }),
+                // cp-eras-ui local patch (`light_edges`): the mark count.
+                Some(wgpu::RenderPassColorAttachment {
+                    view: &targets.marks,
+                    depth_slice: None,
+                    resolve_target: None,
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color::TRANSPARENT),
+                        store: wgpu::StoreOp::Store,
+                    },
+                }),
+            ],
             depth_stencil_attachment: None,
             timestamp_writes: None,
             occlusion_query_set: None,
@@ -185,6 +224,9 @@ impl Pipeline {
 struct Targets {
     attachment: wgpu::TextureView,
     resolve: wgpu::TextureView,
+    marks: wgpu::TextureView,
+    /// A copy of the frame under the meshes (`light_edges`).
+    ground: wgpu::Texture,
     bind_group: wgpu::BindGroup,
     size: Size<u32>,
 }
@@ -203,6 +245,8 @@ impl Targets {
             depth_or_array_layers: 1,
         };
 
+        // cp-eras-ui local patch (`light_edges`): the samples are also read
+        // unresolved, by the resolve shader.
         let attachment = device.create_texture(&wgpu::TextureDescriptor {
             label: Some("iced_wgpu::triangle::msaa attachment"),
             size: extent,
@@ -210,7 +254,20 @@ impl Targets {
             sample_count,
             dimension: wgpu::TextureDimension::D2,
             format,
-            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT
+                | wgpu::TextureUsages::TEXTURE_BINDING,
+            view_formats: &[],
+        });
+
+        let marks = device.create_texture(&wgpu::TextureDescriptor {
+            label: Some("iced_wgpu::triangle::msaa marks"),
+            size: extent,
+            mip_level_count: 1,
+            sample_count,
+            dimension: wgpu::TextureDimension::D2,
+            format: crate::light_edges::MARK_FORMAT,
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT
+                | wgpu::TextureUsages::TEXTURE_BINDING,
             view_formats: &[],
         });
 
@@ -229,24 +286,71 @@ impl Targets {
         let attachment =
             attachment.create_view(&wgpu::TextureViewDescriptor::default());
 
+        let marks = marks.create_view(&wgpu::TextureViewDescriptor::default());
+
+        let ground = device.create_texture(&wgpu::TextureDescriptor {
+            label: Some("iced_wgpu::triangle::msaa ground"),
+            size: extent,
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format,
+            usage: wgpu::TextureUsages::COPY_DST
+                | wgpu::TextureUsages::TEXTURE_BINDING,
+            view_formats: &[],
+        });
+
+        let ground_view =
+            ground.create_view(&wgpu::TextureViewDescriptor::default());
+
         let resolve =
             resolve.create_view(&wgpu::TextureViewDescriptor::default());
 
         let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("iced_wgpu::triangle::msaa texture bind group"),
             layout: texture_layout,
-            entries: &[wgpu::BindGroupEntry {
-                binding: 0,
-                resource: wgpu::BindingResource::TextureView(&resolve),
-            }],
+            entries: &[
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::TextureView(&resolve),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: wgpu::BindingResource::TextureView(&attachment),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 2,
+                    resource: wgpu::BindingResource::TextureView(&marks),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 3,
+                    resource: wgpu::BindingResource::TextureView(&ground_view),
+                },
+            ],
         });
 
         Targets {
             attachment,
             resolve,
+            marks,
+            ground,
             bind_group,
             size,
         }
+    }
+}
+
+/// A multisampled, unfilterable float texture visible to the fragment stage.
+fn multisampled_entry(binding: u32) -> wgpu::BindGroupLayoutEntry {
+    wgpu::BindGroupLayoutEntry {
+        binding,
+        visibility: wgpu::ShaderStages::FRAGMENT,
+        ty: wgpu::BindingType::Texture {
+            sample_type: wgpu::TextureSampleType::Float { filterable: false },
+            view_dimension: wgpu::TextureViewDimension::D2,
+            multisampled: true,
+        },
+        count: None,
     }
 }
 
@@ -255,9 +359,12 @@ impl Targets {
 struct Ratio {
     u: f32,
     v: f32,
+    /// cp-eras-ui local patch: the light-edge resolve's mode
+    /// (`light_edges::Mode`), read by `blit.wgsl` as `u_ratio.z`.
+    mode: f32,
     // Padding field for 16-byte alignment.
     // See https://docs.rs/wgpu/latest/wgpu/struct.DownlevelFlags.html#associatedconstant.BUFFER_BINDINGS_NOT_16_BYTE_ALIGNED
-    _padding: [f32; 2],
+    _padding: f32,
 }
 
 pub struct State {
@@ -310,7 +417,8 @@ impl State {
         let ratio = Ratio {
             u: region_size.width as f32 / targets.size.width as f32,
             v: region_size.height as f32 / targets.size.height as f32,
-            _padding: [0.0; 2],
+            mode: crate::light_edges::Mode::current().uniform(),
+            _padding: 0.0,
         };
 
         if Some(ratio) != self.last_ratio {
@@ -335,7 +443,19 @@ impl State {
         pipeline: &Pipeline,
         encoder: &mut wgpu::CommandEncoder,
         target: &wgpu::TextureView,
+        bounds: crate::core::Rectangle,
     ) {
+        let targets = pipeline.targets.read().expect("Read MSAA targets");
+        let targets = targets.as_ref().unwrap();
+
+        // cp-eras-ui local patch (`light_edges`): copy the frame under the
+        // layer's meshes so the resolve can composite over it. Only when
+        // the frame allows it; otherwise the resolve leaves meshes drawn over
+        // nothing in this pass on the linear blend.
+        let ground = crate::light_edges::Mode::current()
+            != crate::light_edges::Mode::Off
+            && copy_ground(encoder, target.texture(), &targets.ground, bounds);
+
         let mut render_pass =
             encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("iced_wgpu::triangle::msaa render pass"),
@@ -353,19 +473,61 @@ impl State {
                 occlusion_query_set: None,
             });
 
-        render_pass.set_pipeline(&pipeline.raw);
+        render_pass.set_pipeline(if ground {
+            &pipeline.raw_ground
+        } else {
+            &pipeline.raw
+        });
         render_pass.set_bind_group(0, &self.constants, &[]);
-        render_pass.set_bind_group(
-            1,
-            &pipeline
-                .targets
-                .read()
-                .expect("Read MSAA targets")
-                .as_ref()
-                .unwrap()
-                .bind_group,
-            &[],
-        );
+        render_pass.set_bind_group(1, &targets.bind_group, &[]);
         render_pass.draw(0..6, 0..1);
     }
+}
+
+/// cp-eras-ui local patch (`light_edges`): copy the part of `frame` under
+/// `bounds` (physical pixels) into `ground`, at the same coordinates.
+/// `false`, copying nothing, when the frame cannot be a copy source or its
+/// format differs from the ground's (other than by the sRGB suffix).
+fn copy_ground(
+    encoder: &mut wgpu::CommandEncoder,
+    frame: &wgpu::Texture,
+    ground: &wgpu::Texture,
+    bounds: crate::core::Rectangle,
+) -> bool {
+    if !frame.usage().contains(wgpu::TextureUsages::COPY_SRC)
+        || frame.format().remove_srgb_suffix()
+            != ground.format().remove_srgb_suffix()
+    {
+        return false;
+    }
+    let w = frame.width().min(ground.width());
+    let h = frame.height().min(ground.height());
+    let x0 = (bounds.x.floor().max(0.0) as u32).min(w);
+    let y0 = (bounds.y.floor().max(0.0) as u32).min(h);
+    let x1 = ((bounds.x + bounds.width).ceil().max(0.0) as u32).min(w);
+    let y1 = ((bounds.y + bounds.height).ceil().max(0.0) as u32).min(h);
+    if x1 <= x0 || y1 <= y0 {
+        return true;
+    }
+    let origin = wgpu::Origin3d { x: x0, y: y0, z: 0 };
+    encoder.copy_texture_to_texture(
+        wgpu::TexelCopyTextureInfo {
+            texture: frame,
+            mip_level: 0,
+            origin,
+            aspect: wgpu::TextureAspect::All,
+        },
+        wgpu::TexelCopyTextureInfo {
+            texture: ground,
+            mip_level: 0,
+            origin,
+            aspect: wgpu::TextureAspect::All,
+        },
+        wgpu::Extent3d {
+            width: x1 - x0,
+            height: y1 - y0,
+            depth_or_array_layers: 1,
+        },
+    );
+    true
 }

@@ -23,6 +23,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![allow(missing_docs)]
 pub mod layer;
+pub mod light_edges;
 pub mod primitive;
 // Local patch: the optional print pass (PATCHES.md).
 pub mod print;

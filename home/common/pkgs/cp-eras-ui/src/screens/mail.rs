@@ -1408,12 +1408,12 @@ fn label_keep(
         if glyphs.len() != content.len() || skip_prefix > glyphs.len() {
             return false;
         }
-        let darken = stem::stroke(color, stem::width(s.ink_override.unwrap_or(at.ink), color));
+        let darken = stem::stroke(stem::text_ink(color), stem::width(s.ink_override.unwrap_or(at.ink), color));
         frame.with_save(|f| {
             f.translate(Vector::new(origin.x, origin.y));
             f.scale_nonuniform(Vector::new(at.stretch, 1.0));
             for (path, glyph_color) in glyphs.into_iter().skip(skip_prefix) {
-                f.fill(&path, glyph_color);
+                f.fill(&path, stem::text_ink(glyph_color));
                 if darken.width > 0.0 && glyph_color == color {
                     f.stroke(&path, darken);
                 }

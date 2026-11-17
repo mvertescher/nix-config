@@ -329,7 +329,7 @@ fn render<'a>(
     }
 
     if let Some((state, pipeline)) = msaa {
-        state.render(pipeline, encoder, target);
+        state.render(pipeline, encoder, target, bounds);
     }
 }
 
@@ -590,6 +590,32 @@ fn fragment_target(
     }
 }
 
+/// cp-eras-ui local patch (`light_edges`): with MSAA the triangle pipelines
+/// draw into two targets, the colour and the mark count the resolve reads.
+fn fragment_targets(
+    texture_format: wgpu::TextureFormat,
+    antialiasing: Option<Antialiasing>,
+) -> Vec<Option<wgpu::ColorTargetState>> {
+    let mut targets = vec![Some(fragment_target(texture_format))];
+    if antialiasing.is_some() {
+        targets.push(Some(crate::light_edges::mark_target()));
+    }
+    targets
+}
+
+/// The fragment entry point: `<name>_marked` when the pass has the mark
+/// target, `<name>` otherwise.
+fn fragment_entry(
+    name: &'static str,
+    antialiasing: Option<Antialiasing>,
+) -> &'static str {
+    match (name, antialiasing.is_some()) {
+        ("solid_fs_main", true) => "solid_fs_main_marked",
+        ("gradient_fs_main", true) => "gradient_fs_main_marked",
+        _ => name,
+    }
+}
+
 fn primitive_state() -> wgpu::PrimitiveState {
     wgpu::PrimitiveState {
         topology: wgpu::PrimitiveTopology::TriangleList,
@@ -777,8 +803,8 @@ mod solid {
                         },
                         fragment: Some(wgpu::FragmentState {
                             module: &shader,
-                            entry_point: Some("solid_fs_main"),
-                            targets: &[Some(triangle::fragment_target(format))],
+                            entry_point: Some(triangle::fragment_entry("solid_fs_main", antialiasing)),
+                            targets: &triangle::fragment_targets(format, antialiasing),
                             compilation_options:
                                 wgpu::PipelineCompilationOptions::default(),
                         }),
@@ -942,8 +968,8 @@ mod gradient {
                     },
                     fragment: Some(wgpu::FragmentState {
                         module: &shader,
-                        entry_point: Some("gradient_fs_main"),
-                        targets: &[Some(triangle::fragment_target(format))],
+                        entry_point: Some(triangle::fragment_entry("gradient_fs_main", antialiasing)),
+                        targets: &triangle::fragment_targets(format, antialiasing),
                         compilation_options:
                             wgpu::PipelineCompilationOptions::default(),
                     }),

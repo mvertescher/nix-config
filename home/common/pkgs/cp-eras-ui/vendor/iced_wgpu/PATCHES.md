@@ -58,3 +58,86 @@ Since 2026-11-16 the material may also carry (`docs/print-overlay.md`,
 
 Remove with the first change's removal, or when cp-eras-ui drops the print
 material, or if upstream gains a post-processing hook that can carry it.
+
+## Third change: light edges resolved in encoded space
+
+`src/light_edges.rs` is new (the rule's CPU mirror, its constants and
+unit tests; `pub mod light_edges` in `src/lib.rs`). Edited:
+`src/shader/blit.wgsl` (the MSAA resolve-and-composite), `src/triangle.rs`
+and `src/triangle/msaa.rs` (a second MSAA attachment and the frame copy),
+`src/shader/triangle/solid.wgsl` and `gradient.wgsl` (an entry point that
+also writes it), `src/geometry.rs` (`fill_text`'s outline route),
+`src/window/compositor.rs` (the surface is also a copy source where the
+platform allows) and `src/print.rs` (the print pass's frame target gains
+`COPY_SRC`; nothing the pass draws changes).
+
+Why: every canvas fill and stroke is drawn into a multisampled target of
+the sRGB surface format, resolved by averaging the samples in linear light
+and composited in linear light. The reference art and the traces (rsvg)
+blend encoded values. The sRGB curve is convex, so every partly covered
+pixel of a light mark on a dark ground comes out lighter than the encoded
+blend makes it, and every thin light line reads heavy: Neomil's 0.7 dp
+header rule measured 2.21 px against the reference's 1.80 px
+(`docs/review-2026-11-16/neomil-entropism-fixes.md`). Dark text on light
+fills had the mirror-image problem, corrected for glyphs in cryoglyph and
+on the outline route by `widgets::stem` in cp-eras-ui.
+
+What: the solid triangle pipeline's MSAA entry point
+(`solid_fs_main_marked`) also adds one per fragment, into an `R16Float`
+attachment with additive blending, when the vertex colour is opaque
+(`alpha >= 1`, carried flat). Within a pixel, samples above the lowest
+count are a *mark*; the others are what it was drawn over. Before the
+resolve draws, the part of the frame under the layer is copied into a
+texture of the targets' size (`copy_ground`), so samples that hold nothing
+from this pass are composited over what they will cover. The resolve
+(`fs_ground`, or `fs_main` when the frame cannot be copied) then:
+
+- returns the hardware resolve unchanged (bit-identical to upstream)
+  where every sample has the same count -- interiors, abutting fills,
+  translucent layers, text -- and where the mark is not lighter than what
+  it covers;
+- otherwise averages the samples' *encoded* values, which is exactly the
+  coverage blend an encoded rasteriser gives those samples, and mixes it
+  over the linear result by the mark's Michelson contrast of luminance
+  against the under: 0 at or below zero, a smoothstep to 1 at
+  `CONTRAST_FULL` (0.1). The result is opaque and replaces the frame's
+  pixel.
+
+Properties, unit-tested in `light_edges::tests` (`cargo test -p iced_wgpu
+--lib light_edges`): uniform and fully covered pixels unchanged; dark marks
+on light fills unchanged bit for bit (so `widgets::stem` and Neomil's dark
+tile insets keep what they had); for a light mark the edge row lands on
+the encoded blend (a quarter-covered row of #fb3535 on #14244d at encoded
+coverage 0.25, where linear gave 0.50); monotonic in coverage; never
+lightens a pixel; continuous in the inks; a mark drawn over nothing
+resolves, given the copied frame, exactly as if its ground had been drawn
+in the pass. `shader_constants_match` keeps the WGSL and Rust constants
+together.
+
+Text is excluded. Light text was tuned against the linear blend
+(cryoglyph's `PATCHES.md`) and is left alone: `geometry::Frame::fill_text`
+fills glyph outlines with `light_edges::text_ink`, an alpha of `1 - 2^-20`
+(a millionth of the colour under it shows through), so they are never
+marks; cp-eras-ui uses the same function where it fills or strokes glyph
+outlines itself. Gradient meshes are never marks either.
+
+`ICED_WGPU_LIGHT_EDGES=off` restores the upstream resolve exactly (for A/B
+renders from one binary); `=debug` paints each mark-edge pixel by its class
+instead (green: corrected, by weight; blue: a dark mark, untouched;
+purple: drawn over nothing and no frame copy, untouched).
+
+Not covered:
+
+- The quad pipeline (iced container and control borders, which this crate
+  uses only for built-in widget edges) keeps its analytic linear-light
+  antialiasing.
+- A frame that cannot be a copy source (a surface whose platform does not
+  offer `COPY_SRC`, `Renderer::screenshot`'s target): marks drawn over
+  nothing in their layer keep the linear blend there.
+- Translucent strokes are not marks, so their edges keep the linear blend.
+
+Cost per mesh layer: one copy of the layer's bounds from the frame, an
+extra `R16Float` MSAA attachment the size of the targets, and in the
+resolve up to two loads per sample per pixel, plus a few more on mark-edge
+pixels. Remove with the first change's removal, or if upstream resolves
+MSAA in encoded space for light marks.

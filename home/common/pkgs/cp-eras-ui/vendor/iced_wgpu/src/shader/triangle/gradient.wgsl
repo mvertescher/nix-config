@@ -84,8 +84,7 @@ fn gradient(
     return color + mix(-noise_granularity, noise_granularity, random(raw_position));
 }
 
-@fragment
-fn gradient_fs_main(input: GradientVertexOutput) -> @location(0) vec4<f32> {
+fn gradient_color(input: GradientVertexOutput) -> vec4<f32> {
     let colors = array<vec4<f32>, 8>(
         unpack_color(input.colors_1.xy),
         unpack_color(input.colors_1.zw),
@@ -120,6 +119,26 @@ fn gradient_fs_main(input: GradientVertexOutput) -> @location(0) vec4<f32> {
     }
 
     return gradient(input.raw_position, input.direction, colors, offsets, last_index);
+}
+
+@fragment
+fn gradient_fs_main(input: GradientVertexOutput) -> @location(0) vec4<f32> {
+    return gradient_color(input);
+}
+
+// cp-eras-ui local patch (`src/light_edges.rs`): the MSAA pass's entry
+// point. A gradient is never a mark: it adds nothing to the mark target.
+struct GradientMarkedOutput {
+    @location(0) color: vec4<f32>,
+    @location(1) mark: vec4<f32>,
+}
+
+@fragment
+fn gradient_fs_main_marked(input: GradientVertexOutput) -> GradientMarkedOutput {
+    var out: GradientMarkedOutput;
+    out.color = gradient_color(input);
+    out.mark = vec4<f32>(0.0);
+    return out;
 }
 
 fn random(coords: vec2<f32>) -> f32 {

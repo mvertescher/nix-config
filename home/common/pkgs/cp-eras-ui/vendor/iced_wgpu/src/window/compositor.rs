@@ -326,7 +326,7 @@ impl graphics::Compositor for Compositor {
         surface.configure(
             &self.engine.device,
             &wgpu::SurfaceConfiguration {
-                usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+                usage: surface_usage(surface, &self.adapter),
                 format: self.format,
                 present_mode: self.settings.present_mode,
                 width,
@@ -372,4 +372,16 @@ impl graphics::Compositor for Compositor {
     ) -> Vec<u8> {
         renderer.screenshot(viewport, background_color)
     }
+}
+
+/// cp-eras-ui local patch (`light_edges`): the surface is also a copy
+/// source where the platform allows it, so the MSAA resolve can read the
+/// frame under a layer's meshes.
+fn surface_usage(
+    surface: &wgpu::Surface<'_>,
+    adapter: &wgpu::Adapter,
+) -> wgpu::TextureUsages {
+    let supported = surface.get_capabilities(adapter).usages;
+    wgpu::TextureUsages::RENDER_ATTACHMENT
+        | (supported & wgpu::TextureUsages::COPY_SRC)
 }

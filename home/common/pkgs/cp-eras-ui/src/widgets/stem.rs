@@ -154,9 +154,10 @@ pub fn fill_text(frame: &mut canvas::Frame, text: canvas::Text, width: f32) {
         return;
     }
     let ink = text.color;
-    let darken = stroke(ink, width);
+    // Tagged as text like the fill (an emboldening stroke is the glyph too).
+    let darken = stroke(text_ink(ink), width);
     text.draw_with(|path, color| {
-        frame.fill(&path, color);
+        frame.fill(&path, text_ink(color));
         // A raster glyph (no outline) comes back in its own colours;
         // only outlines painted in the run's ink are grown.
         if color == ink {
@@ -165,13 +166,22 @@ pub fn fill_text(frame: &mut canvas::Frame, text: canvas::Text, width: f32) {
     });
 }
 
+/// The colour to fill (or stroke) glyph outlines with when they are
+/// painted directly rather than through `fill_text`: the same colour,
+/// tagged as text so the MSAA resolve leaves its edges on the linear blend
+/// light text was tuned against (`iced_wgpu::light_edges`, vendored).
+/// `Frame::fill_text` tags its own outlines.
+pub fn text_ink(color: Color) -> Color {
+    iced_wgpu::light_edges::text_ink(color)
+}
+
 /// Stroke already-filled outline `paths` by `width` in `color`; nothing
 /// when `width` is zero. For the scene's cached outline runs.
 pub fn stroke_paths(frame: &mut canvas::Frame, paths: &[canvas::Path], color: Color, width: f32) {
     if width <= 0.0 {
         return;
     }
-    let darken = stroke(color, width);
+    let darken = stroke(text_ink(color), width);
     for path in paths {
         frame.stroke(path, darken);
     }
