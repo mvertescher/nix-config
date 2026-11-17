@@ -34,6 +34,9 @@ drawn with the *line, ground and grain* measured for the blend generator.
    A term marked `comb` ('main' or 'twin') shapes that comb only, so the
    other runs straight through it and the two cross (the EMAIL card's
    top arcs).
+   A family marked `combs` ('main' or 'twin') traces that comb only; a
+   `fan` spreads a family's lines about a level near one end (the mail
+   row's sparse ends).
 
 2. Lines. The lines are the levels phi = (k + offset) * pitch: constant
    pitch away from the figure, `pitch` the measured per-comb spacing
@@ -112,10 +115,37 @@ EMAIL_SWIRL_TWIN = dict(kind='shear', ts=55.0, w=15.0, amount=(0.0, -0.1), accel
 # comb fades over 10 px at its window end instead of stopping on a row.
 EMAIL_QUANT = dict(step=10.0, hyst=1.5)
 MAIL_STEP = [(0.0, 50.0), (17.0, 70.0), (32.0, 60.0), (55.0, 35.0)]
-MAIL_SEAM = dict(kind='bend', ts=238.1, w=6.0, p=2.0, amount=(-1.0, -12.0))
-MAIL_CREASE = dict(kind='bend', ts=238.1, w=2.0, p=2.0, amount=(0.0, -4.0), power=1.5)
-SMG_SEAM = dict(kind='bend', ts=99.6, w=6.0, p=2.0, amount=(4.0, 9.0))
-SMG_CREASE = dict(kind='bend', ts=99.6, w=1.5, p=2.0, amount=(1.0, 3.0))
+# The mail row and SMG button (2026-11-16 veneer pass). Measured on the
+# reference: both rows are dense in the middle (period 2.6 / 2.4 texels,
+# one even comb) and sparse at the ends (8-10 / 6-8.7), the ends'
+# lines curving. The middle is two combs at offset 0.5; the twin fades
+# out towards the ends (`combs`, `fade`), and on the mail row a `fan`
+# spreads the main comb about a level below the bottom edge, so its
+# upper lines rise to the ends and leave by the top. MAIL_SEAM is a cusp
+# (p 0.5) whose amount grows down the row at ~0.6 per px: the lines curve
+# down into the axis ever more steeply, turn vertical and pack into the
+# dark crease (MAIL_SEAM2 the wider arcs); MAIL_BAND packs the bottom
+# rows of the middle into the reference's darker band. The main comb
+# inks at 1.3 and the twin at 0.7, so the ends' lines are as bold as the
+# reference's and the twin's 30-px fade does not read as a box at 1600x900.
+MAIL_SEAM = dict(kind='bend', ts=238.1, w=1.25, p=0.5, amount=[(0.0, -1.0), (10.0, -4.0), (55.0, -24.0)])
+MAIL_SEAM2 = dict(kind='bend', ts=238.1, w=10.0, p=1.5, amount=[(0.0, -1.0), (20.0, -3.0), (55.0, -8.0)])
+MAIL_BAND = dict(kind='bend', ts=238.1, w=140.0, p=4.0, amount=[(0.0, 0.0), (42.0, 0.0), (53.0, 4.0), (55.0, 4.0)])
+MAIL_FAN_L = dict(kind='fan', ts=0.0, w=62.0, p=5.0, gain=0.5, centre=60.0)
+MAIL_FAN_R = dict(kind='fan', ts=0.0, w=85.0, p=4.0, gain=0.63, centre=60.0)
+MAIL_LEFT = [dict(kind='bend', ts=-3.0, w=22.0, p=2.0, amount=[(0.0, 36.0), (20.0, 22.0), (40.0, 8.0), (55.0, 2.0)]),
+             dict(kind='ramp', k=5.0, a=[(x, t - 18.0) for x, t in MAIL_STEP],
+                  b=[(x, t + 18.0) for x, t in MAIL_STEP], amount=[(0.0, -16.0), (55.0, -16.0)]),
+             MAIL_SEAM, MAIL_SEAM2, MAIL_BAND, MAIL_FAN_L]
+MAIL_RIGHT = [dict(kind='bend', ts=-3.0, w=14.0, amount=(25.0, 8.0)), MAIL_SEAM, MAIL_SEAM2, MAIL_BAND, MAIL_FAN_R]
+# SMG: the crease's bend peaks at mid-height and dies out at the bottom
+# (the reference's chevrons: 44 deg at native row 45, ~0 at row 85); both
+# ends fall towards the edge, more towards the bottom, which spreads them.
+SMG_SEAM = dict(kind='bend', ts=99.6, w=6.0, p=2.0, amount=[(0.0, 3.0), (18.0, 6.0), (30.0, 1.5), (38.6, 0.0)])
+SMG_CREASE = dict(kind='bend', ts=99.6, w=1.5, p=2.0, amount=[(0.0, 1.0), (16.0, 3.0), (19.0, 3.0), (24.0, 2.5), (38.6, 0.0)])
+SMG_END = [(0.0, -8.0), (12.0, -14.0), (28.0, -26.0), (38.6, -22.0)]
+SMG_LEFT = [dict(kind='bend', ts=-3.0, w=20.0, p=2.0, amount=SMG_END), SMG_SEAM, SMG_CREASE]
+SMG_RIGHT = [dict(kind='bend', ts=200.6, w=20.0, p=2.0, amount=SMG_END, real=True), SMG_SEAM, SMG_CREASE]
 BASKET_SEAM = dict(kind='bend', ts=85.0, w=6.0, p=2.0, amount=(4.5, 5.5))
 BASKET_CREASE = dict(kind='bend', ts=85.0, w=1.5, p=2.0, amount=(2.5, 3.0))
 
@@ -251,48 +281,35 @@ SURFACES = {
             ]),
         ],
     ),
-    # Mailbox, the selected row (477 x 55). Horizontal grain; at the left
-    # end the lines rise to the top edge and step down across a band that
-    # bulges right at mid-height (the ramp, centre MAIL_STEP, 36 wide);
-    # book-match about t 238.1 (texel 571.5): lines from both sides curve
-    # DOWN into it (the reference's arcs; the third pass had them rising),
-    # more towards the bottom edge.
+    # Mailbox, the selected row (477 x 55). Horizontal grain, book-matched
+    # about t 238.1 (texel 571.5); see MAIL_* above. The left end keeps
+    # the step (ramp about MAIL_STEP) and a rise into the top-left corner.
     'mailbox-row': dict(
-        size=(477.0, 55.0), axis='h', seed=1303, pitch=5.7 / R,
-        twin=dict(offset=0.74),
+        size=(477.0, 55.0), axis='h', seed=1303, pitch=5.2 / R,
+        twin=dict(offset=0.5),
         look=dict(ground=(258, 202, 130), single=(207, 146, 83), grain=(3.4, 5.0, 6.1)),
         wave=dict(amp=2.0, along=120.0, across=20.0),
         kinks=dict(n=10, amp=0.8, rs=(2.0, 5.0), rt=(6.0, 18.0)),
         families=[
-            dict(window=(None, 239.0), terms=[
-                dict(kind='bend', ts=-3.0, w=14.0, amount=(32.0, 12.0)),
-                dict(kind='ramp', k=5.0, a=[(x, t - 18.0) for x, t in MAIL_STEP],
-                     b=[(x, t + 18.0) for x, t in MAIL_STEP], amount=[(0.0, -16.0), (55.0, -16.0)]),
-                MAIL_SEAM, MAIL_CREASE,
-            ]),
-            dict(mirror=238.1, window=(237.2, None), terms=[MAIL_SEAM, MAIL_CREASE]),
+            dict(window=(None, 238.0), trim=True, combs='main', ink=1.3, terms=MAIL_LEFT),
+            dict(window=(80.0, 238.0), trim=True, combs='twin', fade=(30.0, 0.0), ink=0.7, terms=MAIL_LEFT),
+            dict(mirror=238.1, window=(238.2, None), trim=True, combs='main', ink=1.3, terms=MAIL_RIGHT),
+            dict(mirror=238.1, window=(238.2, 396.2), trim=True, combs='twin', fade=(0.0, 30.0), ink=0.7, terms=MAIL_RIGHT),
         ],
     ),
     # Store, the selected SMG category (200.6 x 38.6). Horizontal grain,
-    # lines pinching at the left end; book-match about t 99.6 (texel 239,
-    # the button's middle) where the lines rise into a narrow crease
-    # (about +-10 texels, 20-45 deg, as measured); at the right end they
-    # all fall towards the right edge.
+    # book-matched about t 99.6 (texel 239); see SMG_* above.
     'store-nav': dict(
-        size=(200.6, 38.6), axis='h', seed=1404, pitch=4.9 / R,
-        twin=dict(offset=0.61),
+        size=(200.6, 38.6), axis='h', seed=1404, pitch=4.8 / R,
+        twin=dict(offset=0.5),
         look=dict(ground=(249, 198, 128), single=(202, 140, 74), grain=(6.0, 5.2, 6.2)),
         wave=dict(amp=1.6, along=100.0, across=20.0),
         kinks=dict(n=6, amp=0.8, rs=(2.0, 5.0), rt=(5.0, 14.0)),
         families=[
-            dict(window=(None, 100.4), terms=[
-                dict(kind='bend', ts=-3.0, w=16.0, amount=(17.0, -12.0)),
-                SMG_SEAM, SMG_CREASE,
-            ]),
-            dict(mirror=99.6, window=(98.8, None), terms=[
-                SMG_SEAM, SMG_CREASE,
-                dict(kind='bend', ts=200.6, w=20.0, p=2.0, amount=(-16.0, -8.0), real=True),
-            ]),
+            dict(window=(None, 100.4), combs='main', terms=SMG_LEFT),
+            dict(window=(30.0, 100.4), combs='twin', fade=(8.0, 0.0), terms=SMG_LEFT),
+            dict(mirror=99.6, window=(98.8, None), combs='main', terms=SMG_RIGHT),
+            dict(mirror=99.6, window=(98.8, 169.2), combs='twin', fade=(0.0, 8.0), terms=SMG_RIGHT),
         ],
     ),
     # Store, the BASKET plate's lower band (204.6 x 45). Horizontal grain,
@@ -358,6 +375,8 @@ def across(s, S, amount, power=1.0):
     points is piecewise linear instead."""
     if isinstance(amount, list):
         return pw(s, amount)
+    if np.isscalar(amount):
+        return amount
     a0, a1 = amount
     return a0 + (a1 - a0) * np.clip(s / S, 0.0, 1.0) ** power
 
@@ -502,7 +521,10 @@ def family_phi(surf, fam, s, t):
         elif kind == 'fan':
             fan = term
     if fan is not None:
-        g = 1.0 + fan['gain'] * np.exp(-np.abs(tm - fan['ts']) / fan['w'])
+        # Lines spread (gain > 0) by g about the level `centre` near ts,
+        # a profile exp(-(d/w)^p): the sparse, figured ends of a row
+        # whose middle is dense, the lines between leaving by the edges.
+        g = 1.0 + across(s, S, fan['gain']) * np.exp(-(np.abs(tm - fan['ts']) / fan['w']) ** fan.get('p', 1.0))
         phi = fan['centre'] + (phi - fan['centre']) / g
     # Irregular spacing: B is noise in phi itself, so a bunch of lines
     # stays a bunch along the grain. |dB/dphi| <= amp keeps it monotone.
@@ -771,7 +793,12 @@ def lines(spec):
         if fade:
             box = domain(surf, fam)
             fade = (box[2], box[3], fade[0], fade[1], spec['axis'])
-        for twin in ((False, True) if surf.twin else (False,)):
+        # `combs` ('main' or 'twin') traces one comb of the family only:
+        # a twin that fades out where the other leaf's lines spread.
+        combs = (False, True) if surf.twin else (False,)
+        if fam.get('combs'):
+            combs = (fam['combs'] == 'twin',)
+        for twin in combs:
             for Q, _ in trace_family(surf, fam, twin):
                 if len(Q) < 3:
                     continue

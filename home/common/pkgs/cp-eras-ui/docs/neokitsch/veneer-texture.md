@@ -384,6 +384,99 @@ horizontal under the chamfer; the EMAIL band's lattice is a little
 weaker than the reference's. The mail row, SMG button and store streak
 (review items 3 and 4) were not revisited.
 
+### Fifth refinement (2026-11-16): mail row and SMG button
+
+Two surfaces refit (`mailbox-row.png`, `store-nav.png`); the other four
+PNGs are byte-identical (sha256 checked). Generator changes, neither of
+which alters a surface that does not use it:
+
+- `fan` takes `p` (profile `exp(-(d/w)^p)`, default 1 as before) and a
+  `gain` piecewise across the grain. No surface used `fan` before.
+- A family may carry `combs='main'` or `'twin'`: it traces that comb
+  only, so a twin can have its own window, `fade` and `ink`.
+
+**What the reference's row does** (native 4K crop, structure tensor for
+angles, FFT of 24-row column profiles for the period; text masked):
+
+- *Density, not a highlight.* The middle (texel x ~280-880 of 1145) is
+  one even comb at period **2.6** (FFT peak 2.59, no 5.2 sub-harmonic);
+  both ends are sparse, period **8-10**, with bolder-reading lines. The
+  switch is abrupt (6.0 to 2.6 between neighbouring 40-px bins) and its
+  edge leans, which is the "lens" the review saw at 1600x900. The ends'
+  brightness is that density: median G 200-206 against 180-188 in the
+  middle, while the line cores (5th percentile) are the same 150-165.
+  The darker band along the bottom of the middle (rows ~102-127) is ink,
+  not shade: its line cores drop ~25-30 G levels (165 to 135-145) but its
+  bright gaps only ~5-15, which a multiplicative overlay would not do
+  (it would drop both by ~10%). Nothing along the top edge measures as a
+  bevel in the crop (row 0-12 mean G 190 against 184-189 below). So no
+  surface highlight is needed; everything is the texture's.
+- *Seam.* Lines curve down into x 571.5 ever more steeply (bottom rows:
+  -1 deg at 47 texels out, -8 at 45, -17 at 33, -48 at 15, -80 at 3) and
+  turn vertical; the crease is ~5 texels wide, G 122-139 in rows 104-132
+  (~55 below its surround), ~151-156 at rows 56-74, absent at the top.
+- *Ends.* Left: near-vertical lines into the top-left corner (x 10-85,
+  rows 4-34, -60..-89), a diagonal step band (-20..-35) from about
+  (110, 24) to (185, 54) and (160, 94), the bottom rows nearly flat.
+  Right: lines rise to the right (+13..+38 at x 930-1010, +55..+80 into
+  the top-right corner).
+- *SMG.* The same: middle period 2.3-2.5, ends 6-8.7. Both ends' lines
+  *fall* towards the edge (left: +13..+52 in rows 5-53, i.e. down to the
+  left; right: -10..-54), most at mid-height: nested arcs following the
+  rounded outline, which also spreads them. The seam's bend peaks at
+  mid-height (44 deg at row 45, 20 at row 65, ~0 at row 85): a dark crease
+  above, light chevrons below.
+
+**Mail row, now.** `pitch` 5.2 / R with `twin` offset 0.5 (two combs,
+2.6-texel gaps). Per half, two families: the main comb over the whole
+half (ink 1.3), and the twin windowed to t 80-238 (mirrored, 238.2-396.2)
+with a 30-px `fade` at its outer end (ink 0.7; at ink 1 and a 12-px fade
+the middle read as a darker box at 1600x900). Terms: `MAIL_FAN_L`
+(`fan` about level 60, gain 0.5, w 62, p 5) and `MAIL_FAN_R` (gain 0.63,
+w 85, p 4) spread the main comb at the ends and lift its upper lines out
+of the top edge; `MAIL_SEAM` a cusp (`bend` p 0.5, w 1.25) of amount -1 /
+-4 / -24 at s 0 / 10 / 55 (the angle profile above fits p 0.5 best;
+an amount growing ~0.45 per px packs the lines into the crease without
+reversing them; -45 drew a solid 8-texel stripe) plus `MAIL_SEAM2` (w 10,
+p 1.5, -1 / -3 / -8) for the wider arcs; `MAIL_BAND` (`bend` w 140, p 4
+about the axis, +4 over s 42-53) the bottom band. The left-end bend is
+now w 22, p 2, amount 36 / 22 / 8 / 2 at s 0 / 20 / 40 / 55 (a taper of
+1.25 per px hooked the top-left lines into loops), the step ramp is
+unchanged, and the right end gains a bend (ts -3 in the mirrored
+coordinates, w 14, 25 to 8). The halves' windows stop 0.1 px short of
+the axis: a seed on the cusp traced two points and, being an earlier
+seed, made the de-duplication drop the real trace of the top lines.
+
+**SMG, now.** `pitch` 4.8 / R, `twin` offset 0.5, the twin windowed to
+t 30-169 with an 8-px fade. `SMG_END` (amount -8 / -14 / -26 / -22 at s
+0 / 12 / 28 / 38.6, `bend` w 20 p 2 at each edge; the left one was the
+other sign, rising to the left) drops the lines into both edges, more
+lower down, which spreads them. `SMG_SEAM` 3 / 6 / 1.5 / 0 at s 0 / 18 /
+30 / 38.6 (was 4 to 9, steepest at the bottom), `SMG_CREASE` 1 / 3 / 3 /
+2.5 / 0 at s 0 / 16 / 19 / 24 / 38.6.
+
+Numbers (native 4K crop; reference / committed / now). Mean angle error
+(deg, text masked) by region, mail row x 0-260 / 260-520 / 520-625 /
+625-880 / 880-1145: 14.7 3.9 11.2 3.9 14.1 (all 9.9) / 17.3 4.1 8.1 3.8
+10.9 (all 9.8). Mean G same regions: 188.7 181.3 181.5 181.2 184.7 /
+182.5 182.9 178.5 183.0 183.1 / 189.2 179.3 171.8 179.3 190.5. Period
+(texels): middle 2.6 / 5.7-6.4 (pairs) / 2.5-3.0; ends 8-10 / 3.9-4.9 /
+7-14 (the far left 12-14). Crease, mean G at x 568-574, rows 104-118: 167 127 122 149 /
+155 162 153 173 / 109 113 103 140 (rows 56-74: 182 156 151 174 /
+172 173 169 177 / 150 134 128 165). SMG x 0-90 / 90-215 / 215-265 /
+265-390 / 390-482: 34.4 4.3 33.8 3.8 14.1 (all 12.4) / 7.4 6.7 15.5 5.4
+10.8 (all 7.9); mean G 182.5 181.4 175.4 181.8 183.0 / 178.5 175.2 165.1
+174.3 171.3 / 185.6 173.7 169.2 174.5 185.1.
+
+Still wrong after it: the mail row's left end lacks the reference's
+diagonal gathered streaks (its step band and top-left corner read as
+one smooth rise; angle error there is worse than before), the crease is
+~15 G levels too dark at the bottom and a wedge rather than an even
+stripe, and the twin's fade edge is still straight across the row where
+the reference's leans. The SMG middle is ~7 G levels darker than the
+reference's (its 2.4-texel pitch with the measured single line), and its
+lower seam's chevrons are steeper than the reference's at rows 53-61.
+
 ## Surfaces
 
 | Texture | Surface | Design box | Texels |
