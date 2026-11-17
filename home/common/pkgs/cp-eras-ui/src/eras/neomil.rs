@@ -991,6 +991,47 @@ const LOGIN_TIER_2: &[Seg] = &badge_at(&LOGIN_BADGE_TIER2_LOCAL, 1208.75, 126.25
 const LOGIN_TIER_3: &[Seg] = &badge_at(&LOGIN_BADGE_TIER3_LOCAL, 1269.16, 126.25);
 const LOGIN_TIER_4: &[Seg] = &badge_at(&LOGIN_BADGE_TIER4_LOCAL, 1329.58, 126.67);
 
+// The login's plates that sit above the printed layer (`LOGIN_ABOVE`).
+const LOGIN_BADGE_CUSTOMER: Plate = Plate::filled(Plot::new(117.0, 104.0, 59.0, 57.0), Ink::Border)
+                .bevelled(Bevel::bl(15.0))
+                .reference_fill(rgb(0x422e34))
+                .edged(Ink::Fg, 1.5).reference_edge(rgb(0x792a31), 0.75);
+const LOGIN_BADGE_LEVEL_1: Plate = Plate::filled(Plot::new(1133.0, 104.0, 59.0, 57.0), Ink::Border)
+                .bevelled(Bevel::bl(15.0))
+                .reference_fill(rgb(0x2f224a))
+                .edged(Ink::Fg, 1.5).reference_edge(rgb(0x6b1a37), 1.0);
+const LOGIN_BADGE_LEVEL_2: Plate = Plate::filled(Plot::new(1193.0, 104.0, 59.0, 57.0), Ink::Dim)
+                .bevelled(Bevel::bl(15.0))
+                .reference_fill(rgb(0x722942))
+                .edged(Ink::Fg, 1.5).reference_edge(rgb(0x73223c), 1.0);
+const LOGIN_BADGE_LEVEL_3: Plate = Plate::filled(Plot::new(1253.0, 104.0, 59.0, 57.0), Ink::Border)
+                .bevelled(Bevel::bl(15.0))
+                .reference_fill(rgb(0x2c2448))
+                .edged(Ink::Fg, 1.5).reference_edge(rgb(0x691b36), 1.0);
+const LOGIN_BADGE_LEVEL_4: Plate = Plate::filled(Plot::new(1313.0, 104.0, 59.0, 57.0), Ink::Border)
+                .bevelled(Bevel::bl(15.0))
+                .reference_fill(rgb(0x2b2546))
+                .edged(Ink::Fg, 1.5).reference_edge(rgb(0x691c36), 1.0);
+const LOGIN_CARD_2: Plate = Plate::filled(Plot::new(692.0, 315.0, 255.0, 340.0), Ink::Fixed(CARD_OPEN))
+                    .grading(Ink::Fixed(CARD_OPEN_FOOT))
+                    .bevelled(Bevel {
+                        tr: 51.0,
+                        bl: 22.0,
+                        ..Bevel::NONE
+                    })
+                    .edged(Ink::Dim, WEIGHTS.line);
+const LOGIN_CARD_3: Plate = Plate::filled(
+                    Plot::new(982.0, 315.0, 254.0, 340.0),
+                    Ink::Fixed(CARD_LOCKED),
+                )
+                .grading(Ink::Fixed(CARD_LOCKED_FOOT))
+                .bevelled(Bevel {
+                    tr: 51.0,
+                    bl: 22.0,
+                    ..Bevel::NONE
+                })
+                .edged(Ink::Fixed(EDGE_LOCKED), WEIGHTS.line);
+
 pub const ACCESS: Access = Access {
     reference_fg: Some(rgb(0xf63333)),
     backdrop: LOGIN_BACKDROP,
@@ -1001,26 +1042,11 @@ pub const ACCESS: Access = Access {
         // left, then four security badges of which the second is
         // filled in the mid red.
         badges: &[
-            Plate::filled(Plot::new(117.0, 104.0, 59.0, 57.0), Ink::Border)
-                .bevelled(Bevel::bl(15.0))
-                .reference_fill(rgb(0x422e34))
-                .edged(Ink::Fg, 1.5).reference_edge(rgb(0x792a31), 0.75),
-            Plate::filled(Plot::new(1133.0, 104.0, 59.0, 57.0), Ink::Border)
-                .bevelled(Bevel::bl(15.0))
-                .reference_fill(rgb(0x2f224a))
-                .edged(Ink::Fg, 1.5).reference_edge(rgb(0x6b1a37), 1.0),
-            Plate::filled(Plot::new(1193.0, 104.0, 59.0, 57.0), Ink::Dim)
-                .bevelled(Bevel::bl(15.0))
-                .reference_fill(rgb(0x722942))
-                .edged(Ink::Fg, 1.5).reference_edge(rgb(0x73223c), 1.0),
-            Plate::filled(Plot::new(1253.0, 104.0, 59.0, 57.0), Ink::Border)
-                .bevelled(Bevel::bl(15.0))
-                .reference_fill(rgb(0x2c2448))
-                .edged(Ink::Fg, 1.5).reference_edge(rgb(0x691b36), 1.0),
-            Plate::filled(Plot::new(1313.0, 104.0, 59.0, 57.0), Ink::Border)
-                .bevelled(Bevel::bl(15.0))
-                .reference_fill(rgb(0x2b2546))
-                .edged(Ink::Fg, 1.5).reference_edge(rgb(0x691c36), 1.0),
+            LOGIN_BADGE_CUSTOMER,
+            LOGIN_BADGE_LEVEL_1,
+            LOGIN_BADGE_LEVEL_2,
+            LOGIN_BADGE_LEVEL_3,
+            LOGIN_BADGE_LEVEL_4,
             // Login-local thin badge alphabet. The photo's LEVEL line
             // is 42px wide; Rajdhani 12 was only about 24px wide.
             Plate::outlined(Plot::new(127.32, 109.9, 42.1, 6.9), Ink::Fg, 0.625)
@@ -1124,14 +1150,7 @@ pub const ACCESS: Access = Access {
         // Card 2, x 692..947: dim translucent red over the glow.
         Slot {
             body: Some(
-                Plate::filled(Plot::new(692.0, 315.0, 255.0, 340.0), Ink::Fixed(CARD_OPEN))
-                    .grading(Ink::Fixed(CARD_OPEN_FOOT))
-                    .bevelled(Bevel {
-                        tr: 51.0,
-                        bl: 22.0,
-                        ..Bevel::NONE
-                    })
-                    .edged(Ink::Dim, WEIGHTS.line),
+                LOGIN_CARD_2,
             ),
             reference_body: Some(Plate::outlined(
                 Plot::new(692.0, 315.0, 255.0, 340.0), Ink::Dim, WEIGHTS.line,
@@ -1166,17 +1185,7 @@ pub const ACCESS: Access = Access {
         // Card 3, x 982..1236: the same card, darker still.
         Slot {
             body: Some(
-                Plate::filled(
-                    Plot::new(982.0, 315.0, 254.0, 340.0),
-                    Ink::Fixed(CARD_LOCKED),
-                )
-                .grading(Ink::Fixed(CARD_LOCKED_FOOT))
-                .bevelled(Bevel {
-                    tr: 51.0,
-                    bl: 22.0,
-                    ..Bevel::NONE
-                })
-                .edged(Ink::Fixed(EDGE_LOCKED), WEIGHTS.line),
+                LOGIN_CARD_3,
             ),
             reference_body: Some(Plate::outlined(
                 Plot::new(982.0, 315.0, 254.0, 340.0), Ink::Fixed(EDGE_LOCKED), WEIGHTS.line,
@@ -3659,6 +3668,8 @@ const PRINT_MAILBOX: crate::print::Print = crate::print::Print {
     grain_mul: [0.0; 3],
     grain_add: GRAIN_ADD,
     grain_cell: 0.33,
+    // No bloom: measured none (0.004 of the active card's contrast).
+    ..crate::print::Print::OFF
 };
 
 /// The dashboard (`img-07-dashboard`): 13 hand-picked sites, residual
@@ -3696,8 +3707,28 @@ const PRINT_LOGIN: crate::print::Print = crate::print::Print {
         crate::print::Echo { kx: 0.0130, ky: 0.0195, gain: 0.29 },
         crate::print::Echo::NONE,
     ],
+    above: LOGIN_ABOVE,
     ..PRINT_MAILBOX
 };
+
+/// The login's elements above the printed layer (`print::AbovePrint`,
+/// `docs/print-overlay.md`, "Above the print"), 2026-11-16. The header
+/// badges: the reference prints each plate over the copies -- nothing of
+/// "T1" or "LEVEL" shows doubled inside the customer badge (red mean / max
+/// 69 / 79 up-left of T1 against the plain plate's 66 / 69) -- while the
+/// plate's own ghost shows outside it, up-left. The two inactive cards:
+/// their notices have no copies in the reference (copy contrast -0.8 and
+/// 1.0 levels) although mailbox rows of the same colour keep theirs, so the
+/// cards are laid over the print; their outlines still cast copies.
+const LOGIN_ABOVE: &[crate::print::AbovePrint] = &[
+    crate::print::AbovePrint::plate(&LOGIN_BADGE_CUSTOMER),
+    crate::print::AbovePrint::plate(&LOGIN_BADGE_LEVEL_1),
+    crate::print::AbovePrint::plate(&LOGIN_BADGE_LEVEL_2),
+    crate::print::AbovePrint::plate(&LOGIN_BADGE_LEVEL_3),
+    crate::print::AbovePrint::plate(&LOGIN_BADGE_LEVEL_4),
+    crate::print::AbovePrint::plate(&LOGIN_CARD_2),
+    crate::print::AbovePrint::plate(&LOGIN_CARD_3),
+];
 
 /// The material as fitted on one reference screen (`print::of_screen`).
 pub(crate) const fn print_for(screen: crate::print::Screen) -> crate::print::Print {
