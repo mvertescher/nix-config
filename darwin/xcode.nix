@@ -49,12 +49,24 @@ let
       exit 1
     fi
 
-    xcodebuild -license check >/dev/null 2>&1 || xcodebuild -license accept
+    # Always accept: after a change of Xcode version `-license check`
+    # passed here while every tool still refused to run for the user
+    # ("You have not agreed to the Xcode license agreements", 27.2 after
+    # 26.6). Accepting again is harmless.
+    xcodebuild -license accept
     xcodebuild -checkFirstLaunchStatus || xcodebuild -runFirstLaunch
 
+    # A platform counts as installed only if its simulator runtime is the
+    # one this Xcode's SDK is for: an older Xcode's runtime (iOS 26.5
+    # under Xcode 27.2) is not it. Only iOS has an SDK to ask here; for
+    # the others any runtime of the platform still counts.
     ${lib.concatMapStrings (p: ''
-      if xcrun simctl list runtimes 2>/dev/null | grep -q '^${p} '; then
-        echo "${p} platform already installed"
+      want=""
+      if [ "${p}" = iOS ]; then
+        want="$(xcrun --sdk iphonesimulator --show-sdk-version 2>/dev/null || true)"
+      fi
+      if xcrun simctl list runtimes 2>/dev/null | grep -q "^${p} $want"; then
+        echo "${p} $want platform already installed"
       else
         xcodebuild -downloadPlatform ${p}
       fi
