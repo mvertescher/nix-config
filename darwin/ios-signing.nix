@@ -199,10 +199,23 @@ in
     # /run is cleared at boot, when sops-nix re-installs secrets from its
     # own launchd daemon rather than activation; decodeIdentity waits for
     # that secret to appear.
+    #
+    # launchd loads this before the Nix store volume is mounted, and a
+    # program it cannot find is not retried: the job ends "spawn failed"
+    # (exit 78) with an empty log and the identity is missing until
+    # someone restarts it by hand. So the program is /bin/sh, which is
+    # always there, and it waits for the store before running the script;
+    # a failed run (the secret never appeared) is tried again.
     launchd.daemons.ios-signing-identity.serviceConfig = {
       Label = "org.nixos.ios-signing-identity";
-      ProgramArguments = [ "${decodeIdentity}" ];
+      ProgramArguments = [
+        "/bin/sh"
+        "-c"
+        "/bin/wait4path /nix/store && exec ${decodeIdentity}"
+      ];
       RunAtLoad = true;
+      KeepAlive.SuccessfulExit = false;
+      ThrottleInterval = 30;
       StandardErrorPath = "/var/log/ios-signing-identity.log";
     };
   };
