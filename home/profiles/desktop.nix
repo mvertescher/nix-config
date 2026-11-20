@@ -15,7 +15,7 @@
 # the same mechanism the themes' daemons rely on.
 #
 # Selected by import, not by an option; ./laptop.nix is the laptop half.
-# See PROFILE-DESIGN.md in the consuming wrapper for the full argument.
+# See docs/profile-design.md in the consuming wrapper for the full argument.
 _:
 
 {
